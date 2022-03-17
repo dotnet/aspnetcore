@@ -1,35 +1,31 @@
 // Copyright (c) Andrew Arnott. All rights reserved.
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 
-using System;
-using System.Buffers;
+namespace Nerdbank.Streams;
 
-namespace Nerdbank.Streams
+internal static class Requires
 {
-    internal static class Requires
+    internal static void NotNull(object arg, string paramName)
     {
-        internal static void NotNull(object arg, string paramName)
+        if (arg == null)
         {
-            if (arg == null)
-            {
-                throw new ArgumentNullException(nameof(paramName));
-            }
+            throw new ArgumentNullException(paramName);
         }
+    }
 
-        internal static void Argument(bool condition, string paramName, string message)
+    internal static void Argument(bool condition, string paramName, string message)
+    {
+        if (condition)
         {
-            if (condition)
-            {
-                throw new ArgumentException(message, paramName);
-            }
+            throw new ArgumentException(message, paramName);
         }
+    }
 
-        internal static void Range(bool condition, string paramName)
+    internal static void Range(bool condition, string paramName)
+    {
+        if (condition)
         {
-            if (condition)
-            {
-                throw new ArgumentOutOfRangeException(paramName);
-            }
+            throw new ArgumentOutOfRangeException(paramName);
         }
     }
 }

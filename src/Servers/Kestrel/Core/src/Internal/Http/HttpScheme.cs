@@ -1,12 +1,29 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+
+/// <summary>
+/// This API supports framework infrastructure and is not intended to be used
+/// directly from application code.
+/// </summary>
+public enum HttpScheme
 {
-    public enum HttpScheme
-    {
-        Unknown = -1,
-        Http = 0,
-        Https = 1
-    }
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    Unknown = -1,
+
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    Http = 0,
+
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    Https = 1
 }

@@ -1,20 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
+namespace Microsoft.AspNetCore.Components.Authorization;
 
-namespace Microsoft.AspNetCore.Components.Authorization
+/// <summary>
+/// An interface implemented by <see cref="AuthenticationStateProvider"/> classes that can receive authentication
+/// state information from the host environment.
+/// </summary>
+public interface IHostEnvironmentAuthenticationStateProvider
 {
     /// <summary>
-    /// An interface implemented by <see cref="AuthenticationStateProvider"/> classes that can receive authentication
-    /// state information from the host environment.
+    /// Supplies updated authentication state data to the <see cref="AuthenticationStateProvider"/>.
     /// </summary>
-    public interface IHostEnvironmentAuthenticationStateProvider
-    {
-        /// <summary>
-        /// Supplies updated authentication state data to the <see cref="AuthenticationStateProvider"/>.
-        /// </summary>
-        /// <param name="authenticationStateTask">A task that resolves with the updated <see cref="AuthenticationState"/>.</param>
-        void SetAuthenticationState(Task<AuthenticationState> authenticationStateTask);
-    }
+    /// <param name="authenticationStateTask">A task that resolves with the updated <see cref="AuthenticationState"/>.</param>
+    void SetAuthenticationState(Task<AuthenticationState> authenticationStateTask);
 }

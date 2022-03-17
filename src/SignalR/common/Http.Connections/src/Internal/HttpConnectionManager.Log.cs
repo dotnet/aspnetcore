@@ -1,82 +1,41 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Connections.Internal
+namespace Microsoft.AspNetCore.Http.Connections.Internal;
+
+internal sealed partial class HttpConnectionManager
 {
-    internal partial class HttpConnectionManager
+    private static partial class Log
     {
-        private static class Log
-        {
-            private static readonly Action<ILogger, string, Exception?> _createdNewConnection =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "CreatedNewConnection"), "New connection {TransportConnectionId} created.");
+        [LoggerMessage(1, LogLevel.Debug, "New connection {TransportConnectionId} created.", EventName = "CreatedNewConnection")]
+        public static partial void CreatedNewConnection(ILogger logger, string transportConnectionId);
 
-            private static readonly Action<ILogger, string, Exception?> _removedConnection =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "RemovedConnection"), "Removing connection {TransportConnectionId} from the list of connections.");
+        [LoggerMessage(2, LogLevel.Debug, "Removing connection {TransportConnectionId} from the list of connections.", EventName = "RemovedConnection")]
+        public static partial void RemovedConnection(ILogger logger, string transportConnectionId);
 
-            private static readonly Action<ILogger, string, Exception?> _failedDispose =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(3, "FailedDispose"), "Failed disposing connection {TransportConnectionId}.");
+        [LoggerMessage(3, LogLevel.Error, "Failed disposing connection {TransportConnectionId}.", EventName = "FailedDispose")]
+        public static partial void FailedDispose(ILogger logger, string transportConnectionId, Exception exception);
 
-            private static readonly Action<ILogger, string, Exception?> _connectionReset =
-                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(4, "ConnectionReset"), "Connection {TransportConnectionId} was reset.");
+        [LoggerMessage(5, LogLevel.Trace, "Connection {TransportConnectionId} timed out.", EventName = "ConnectionTimedOut")]
+        public static partial void ConnectionTimedOut(ILogger logger, string transportConnectionId);
 
-            private static readonly Action<ILogger, string, Exception?> _connectionTimedOut =
-                LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, "ConnectionTimedOut"), "Connection {TransportConnectionId} timed out.");
+        [LoggerMessage(4, LogLevel.Trace, "Connection {TransportConnectionId} was reset.", EventName = "ConnectionReset")]
+        public static partial void ConnectionReset(ILogger logger, string transportConnectionId, Exception exception);
 
-            // 6, ScanningConnections - removed
+        [LoggerMessage(7, LogLevel.Error, "Scanning connections failed.", EventName = "ScanningConnectionsFailed")]
+        public static partial void ScanningConnectionsFailed(ILogger logger, Exception exception);
 
-            private static readonly Action<ILogger, Exception?> _scanningConnectionsFailed =
-                LoggerMessage.Define(LogLevel.Error, new EventId(7, "ScanningConnectionsFailed"), "Scanning connections failed.");
+        // 8, ScannedConnections - removed
 
-            // 8, ScannedConnections - removed
+        [LoggerMessage(9, LogLevel.Trace, "Starting connection heartbeat.", EventName = "HeartBeatStarted")]
+        public static partial void HeartBeatStarted(ILogger logger);
 
-            private static readonly Action<ILogger, Exception?> _heartbeatStarted =
-                LoggerMessage.Define(LogLevel.Trace, new EventId(9, "HeartBeatStarted"), "Starting connection heartbeat.");
+        [LoggerMessage(10, LogLevel.Trace, "Ending connection heartbeat.", EventName = "HeartBeatEnded")]
+        public static partial void HeartBeatEnded(ILogger logger);
 
-            private static readonly Action<ILogger, Exception?> _heartbeatEnded =
-                LoggerMessage.Define(LogLevel.Trace, new EventId(10, "HeartBeatEnded"), "Ending connection heartbeat.");
-
-            public static void CreatedNewConnection(ILogger logger, string connectionId)
-            {
-                _createdNewConnection(logger, connectionId, null);
-            }
-
-            public static void RemovedConnection(ILogger logger, string connectionId)
-            {
-                _removedConnection(logger, connectionId, null);
-            }
-
-            public static void FailedDispose(ILogger logger, string connectionId, Exception exception)
-            {
-                _failedDispose(logger, connectionId, exception);
-            }
-
-            public static void ConnectionTimedOut(ILogger logger, string connectionId)
-            {
-                _connectionTimedOut(logger, connectionId, null);
-            }
-
-            public static void ConnectionReset(ILogger logger, string connectionId, Exception exception)
-            {
-                _connectionReset(logger, connectionId, exception);
-            }
-
-            public static void ScanningConnectionsFailed(ILogger logger, Exception exception)
-            {
-                _scanningConnectionsFailed(logger, exception);
-            }
-
-            public static void HeartBeatStarted(ILogger logger)
-            {
-                _heartbeatStarted(logger, null);
-            }
-
-            public static void HeartBeatEnded(ILogger logger)
-            {
-                _heartbeatEnded(logger, null);
-            }
-        }
+        [LoggerMessage(11, LogLevel.Debug, "Connection {TransportConnectionId} closing because the authentication token has expired.", EventName = "AuthenticationExpired")]
+        public static partial void AuthenticationExpired(ILogger logger, string transportConnectionId);
     }
 }

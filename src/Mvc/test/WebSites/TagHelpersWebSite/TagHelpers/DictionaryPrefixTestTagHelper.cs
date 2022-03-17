@@ -1,33 +1,31 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace TagHelpersWebSite.TagHelpers
+namespace TagHelpersWebSite.TagHelpers;
+
+[HtmlTargetElement(Attributes = "prefix-*")]
+public class DictionaryPrefixTestTagHelper : TagHelper
 {
-    [HtmlTargetElement(Attributes = "prefix-*")]
-    public class DictionaryPrefixTestTagHelper : TagHelper
+    [HtmlAttributeName(DictionaryAttributePrefix = "prefix-")]
+    public IDictionary<string, ModelExpression> PrefixValues { get; set; } = new Dictionary<string, ModelExpression>();
+
+    public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        [HtmlAttributeName(DictionaryAttributePrefix = "prefix-")]
-        public IDictionary<string, ModelExpression> PrefixValues { get; set; } = new Dictionary<string, ModelExpression>();
+        var ulTag = new TagBuilder("ul");
 
-        public override void Process(TagHelperContext context, TagHelperOutput output)
+        foreach (var item in PrefixValues)
         {
-            var ulTag = new TagBuilder("ul");
+            var liTag = new TagBuilder("li");
 
-            foreach (var item in PrefixValues)
-            {
-                var liTag = new TagBuilder("li");
-                
-                liTag.InnerHtml.Append(item.Value.Name);
+            liTag.InnerHtml.Append(item.Value.Name);
 
-                ulTag.InnerHtml.AppendHtml(liTag);
-            }
-
-            output.Content.SetHtmlContent(ulTag);
+            ulTag.InnerHtml.AppendHtml(liTag);
         }
+
+        output.Content.SetHtmlContent(ulTag);
     }
 }

@@ -5,7 +5,7 @@
     ViewData["ActivePage"] = ManageNavPages.PersonalData;
 }
 
-<h4>@ViewData["Title"]</h4>
+<h3>@ViewData["Title"]</h3>
 
 <div class="alert alert-warning" role="alert">
     <p>
@@ -20,7 +20,7 @@
         {
             <div class="form-group">
                 <label asp-for="Input.Password"></label>
-                <input asp-for="Input.Password" class="form-control" autocomplete="current-password" />
+                <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" />
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
         }

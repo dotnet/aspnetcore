@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating a worker service.",
   "groupIdentity": "Microsoft.Worker.Empty",
-  "precedence": "7000",
-  "identity": "Microsoft.Worker.Empty.FSharp.5.0",
+  "precedence": "9000",
+  "identity": "Microsoft.Worker.Empty.FSharp.7.0",
   "shortName": "worker",
   "tags": {
     "language": "F#",
@@ -47,12 +47,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net5.0",
-          "description": "Target net5.0"
+          "choice": "net7.0",
+          "description": "Target net7.0"
         }
       ],
-      "replaces": "net5.0",
-      "defaultValue": "net5.0"
+      "replaces": "net7.0",
+      "defaultValue": "net7.0"
     },
     "copyrightYear": {
       "type": "generated",
@@ -77,6 +77,7 @@
   "defaultName": "WorkerService",
   "postActions": [
     {
+      "id": "restore",
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [

@@ -1,51 +1,50 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite.Controllers
+namespace RazorWebSite.Controllers;
+
+public class PartialViewEngineController : Controller
 {
-    public class PartialViewEngineController : Controller
+    public IActionResult ViewWithoutLayout()
     {
-        public IActionResult ViewWithoutLayout()
-        {
-            return PartialView();
-        }
+        return PartialView();
+    }
 
-        public IActionResult ViewWithFullPath()
-        {
-            return PartialView("/Views/ViewEngine/ViewWithFullPath.cshtml");
-        }
+    public IActionResult ViewWithFullPath()
+    {
+        return PartialView("/Views/ViewEngine/ViewWithFullPath.cshtml");
+    }
 
-        public IActionResult PartialViewWithNamePassedIn()
-        {
-            return PartialView("ViewWithLayout");
-        }
+    public IActionResult PartialViewWithNamePassedIn()
+    {
+        return PartialView("ViewWithLayout");
+    }
 
-        public IActionResult ViewWithNestedLayout()
-        {
-            return PartialView();
-        }
+    public IActionResult ViewWithNestedLayout()
+    {
+        return PartialView();
+    }
 
-        public IActionResult PartialWithDataFromController()
-        {
-            ViewData["data-from-controller"] = "hello from controller";
-            return PartialView("ViewWithDataFromController");
-        }
+    public IActionResult PartialWithDataFromController()
+    {
+        ViewData["data-from-controller"] = "hello from controller";
+        return PartialView("ViewWithDataFromController");
+    }
 
-        public IActionResult PartialWithModel()
+    public IActionResult PartialWithModel()
+    {
+        var model = new Person
         {
-            var model = new Person
-            {
-                Name = "my name is judge",
-                Address = new Address { ZipCode = "98052" }
-            };
-            return PartialView(model);
-        }
+            Name = "my name is judge",
+            Address = new Address { ZipCode = "98052" }
+        };
+        return PartialView(model);
+    }
 
-        public IActionResult ViewPartialMissingSection()
-        {
-            return View();
-        }
+    public IActionResult ViewPartialMissingSection()
+    {
+        return View();
     }
 }

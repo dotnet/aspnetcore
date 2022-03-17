@@ -1,55 +1,52 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+public class JQueryQueryStringValueProviderTest : EnumerableValueProviderTest
 {
-    public class JQueryQueryStringValueProviderTest : EnumerableValueProviderTest
+    protected override IEnumerableValueProvider GetEnumerableValueProvider(
+        BindingSource bindingSource,
+        Dictionary<string, StringValues> values,
+        CultureInfo culture)
     {
-        protected override IEnumerableValueProvider GetEnumerableValueProvider(
-            BindingSource bindingSource,
-            Dictionary<string, StringValues> values,
-            CultureInfo culture)
-        {
-            return new JQueryQueryStringValueProvider(bindingSource, values, culture);
-        }
+        return new JQueryQueryStringValueProvider(bindingSource, values, culture);
+    }
 
-        [Fact]
-        public void Filter_ExcludesItself()
-        {
-            // Arrange
-            var dictionary = new Dictionary<string, StringValues>();
-            var provider = new JQueryQueryStringValueProvider(
-                BindingSource.Form,
-                dictionary,
-                CultureInfo.CurrentCulture);
+    [Fact]
+    public void Filter_ExcludesItself()
+    {
+        // Arrange
+        var dictionary = new Dictionary<string, StringValues>();
+        var provider = new JQueryQueryStringValueProvider(
+            BindingSource.Form,
+            dictionary,
+            CultureInfo.CurrentCulture);
 
-            // Act
-            var result = provider.Filter();
+        // Act
+        var result = provider.Filter();
 
-            // Assert
-            Assert.Null(result);
-        }
+        // Assert
+        Assert.Null(result);
+    }
 
-        [Fact]
-        public override void GetValue_EmptyKey()
-        {
-            // Arrange
-            var store = new Dictionary<string, StringValues>(BackingStore)
+    [Fact]
+    public override void GetValue_EmptyKey()
+    {
+        // Arrange
+        var store = new Dictionary<string, StringValues>(BackingStore)
             {
                 { string.Empty, "some-value" },
             };
-            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, store, culture: null);
+        var valueProvider = GetEnumerableValueProvider(BindingSource.Query, store, culture: null);
 
-            // Act
-            var result = valueProvider.GetValue(string.Empty);
+        // Act
+        var result = valueProvider.GetValue(string.Empty);
 
-            // Assert
-            Assert.Equal("some-value", (string)result);
-        }
+        // Assert
+        Assert.Equal("some-value", (string)result);
     }
 }

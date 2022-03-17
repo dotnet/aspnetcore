@@ -1,49 +1,47 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Mvc.Routing
+namespace Microsoft.AspNetCore.Mvc.Routing;
+
+internal class DynamicControllerEndpointSelector : IDisposable
 {
-    internal class DynamicControllerEndpointSelector : IDisposable
+    private readonly DataSourceDependentCache<ActionSelectionTable<Endpoint>> _cache;
+
+    public DynamicControllerEndpointSelector(EndpointDataSource dataSource)
     {
-        private readonly DataSourceDependentCache<ActionSelectionTable<Endpoint>> _cache;
-
-        public DynamicControllerEndpointSelector(EndpointDataSource dataSource)
+        if (dataSource == null)
         {
-            if (dataSource == null)
-            {
-                throw new ArgumentNullException(nameof(dataSource));
-            }
-
-            _cache = new DataSourceDependentCache<ActionSelectionTable<Endpoint>>(dataSource, Initialize);
+            throw new ArgumentNullException(nameof(dataSource));
         }
 
-        private ActionSelectionTable<Endpoint> Table => _cache.EnsureInitialized();
+        _cache = new DataSourceDependentCache<ActionSelectionTable<Endpoint>>(dataSource, Initialize);
+    }
 
-        public IReadOnlyList<Endpoint> SelectEndpoints(RouteValueDictionary values)
-        {
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
+    private ActionSelectionTable<Endpoint> Table => _cache.EnsureInitialized();
 
-            var table = Table;
-            var matches = table.Select(values);
-            return matches;
-        }
-        private static ActionSelectionTable<Endpoint> Initialize(IReadOnlyList<Endpoint> endpoints)
+    public IReadOnlyList<Endpoint> SelectEndpoints(RouteValueDictionary values)
+    {
+        if (values == null)
         {
-            return ActionSelectionTable<Endpoint>.Create(endpoints);
+            throw new ArgumentNullException(nameof(values));
         }
 
-        public void Dispose()
-        {
-            _cache.Dispose();
-        }
+        var table = Table;
+        var matches = table.Select(values);
+        return matches;
+    }
+
+    private static ActionSelectionTable<Endpoint> Initialize(IReadOnlyList<Endpoint> endpoints)
+    {
+        return ActionSelectionTable<Endpoint>.Create(endpoints);
+    }
+
+    public void Dispose()
+    {
+        _cache.Dispose();
     }
 }

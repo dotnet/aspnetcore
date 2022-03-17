@@ -1,35 +1,42 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { ReconnectionHandler, ReconnectionOptions } from './CircuitStartOptions';
 import { ReconnectDisplay } from './ReconnectDisplay';
 import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
 import { UserSpecifiedDisplay } from './UserSpecifiedDisplay';
 import { Logger, LogLevel } from '../Logging/Logger';
+import { Blazor } from '../../GlobalExports';
 
 export class DefaultReconnectionHandler implements ReconnectionHandler {
   private readonly _logger: Logger;
+
   private readonly _reconnectCallback: () => Promise<boolean>;
+
   private _currentReconnectionProcess: ReconnectionProcess | null = null;
+
   private _reconnectionDisplay?: ReconnectDisplay;
 
   constructor(logger: Logger, overrideDisplay?: ReconnectDisplay, reconnectCallback?: () => Promise<boolean>) {
     this._logger = logger;
     this._reconnectionDisplay = overrideDisplay;
-    this._reconnectCallback = reconnectCallback || (() => window['Blazor'].reconnect());
+    this._reconnectCallback = reconnectCallback || Blazor.reconnect!;
   }
 
-  onConnectionDown (options: ReconnectionOptions, error?: Error) {
+  onConnectionDown(options: ReconnectionOptions, _error?: Error): void {
     if (!this._reconnectionDisplay) {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
-          ? new UserSpecifiedDisplay(modal, options.maxRetries, document)
-          : new DefaultReconnectDisplay(options.dialogId, options.maxRetries, document, this._logger);
+        ? new UserSpecifiedDisplay(modal, options.maxRetries, document)
+        : new DefaultReconnectDisplay(options.dialogId, options.maxRetries, document, this._logger);
     }
 
     if (!this._currentReconnectionProcess) {
-      this._currentReconnectionProcess = new ReconnectionProcess(options, this._logger, this._reconnectCallback, this._reconnectionDisplay!);
+      this._currentReconnectionProcess = new ReconnectionProcess(options, this._logger, this._reconnectCallback, this._reconnectionDisplay);
     }
   }
 
-  onConnectionUp() {
+  onConnectionUp(): void {
     if (this._currentReconnectionProcess) {
       this._currentReconnectionProcess.dispose();
       this._currentReconnectionProcess = null;
@@ -45,6 +52,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
 
 class ReconnectionProcess {
   readonly reconnectDisplay: ReconnectDisplay;
+
   isDisposed = false;
 
   constructor(options: ReconnectionOptions, private logger: Logger, private reconnectCallback: () => Promise<boolean>, display: ReconnectDisplay) {
@@ -73,13 +81,13 @@ class ReconnectionProcess {
         const result = await this.reconnectCallback();
         if (!result) {
           // If the server responded and refused to reconnect, stop auto-retrying.
-          this.reconnectDisplay.rejected();       
+          this.reconnectDisplay.rejected();
           return;
         }
         return;
-      } catch (err) {
+      } catch (err: unknown) {
         // We got an exception so will try again momentarily
-        this.logger.log(LogLevel.Error, err);
+        this.logger.log(LogLevel.Error, err as Error);
       }
       await this.delay(options.retryIntervalMilliseconds);
     }

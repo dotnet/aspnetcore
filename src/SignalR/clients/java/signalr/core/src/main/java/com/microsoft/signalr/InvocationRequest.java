@@ -1,13 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 package com.microsoft.signalr;
 
 import java.lang.reflect.Type;
 import java.util.concurrent.CancellationException;
 
-import io.reactivex.subjects.ReplaySubject;
-import io.reactivex.subjects.Subject;
+import io.reactivex.rxjava3.subjects.ReplaySubject;
+import io.reactivex.rxjava3.subjects.Subject;
 
 class InvocationRequest {
     private final Type returnType;

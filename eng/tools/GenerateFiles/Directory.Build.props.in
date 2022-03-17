@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <DefaultNetCoreTargetFramework>${DefaultNetCoreTargetFramework}</DefaultNetCoreTargetFramework>
-    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</TreatWarningsAsErrors>
+    <LibNetHostAppPackVersion Condition=" '$(LibNetHostAppPackVersion)' == '' ">${LibNetHostAppPackVersion}</LibNetHostAppPackVersion>
   </PropertyGroup>
 </Project>

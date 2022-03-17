@@ -1,58 +1,56 @@
-using Microsoft.Extensions.Logging;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Server.HttpSys;
+
+internal static class LoggerEventIds
 {
-    internal static class LoggerEventIds
-    {
-        public static EventId HttpSysListenerCtorError = new EventId(1, "HttpSysListenerCtorError");
-        public static EventId BindingToDefault = new EventId(2, "BindingToDefault");
-        public static EventId ClearedPrefixes = new EventId(3, "ClearedPrefixes");
-        public static EventId AcceptErrorStopping = new EventId(4, "AcceptErrorStopping");
-        public static EventId AcceptError = new EventId(5, "AcceptError");
-        public static EventId RequestProcessError = new EventId(6, "RequestProcessError");
-        public static EventId RequestsDrained = new EventId(7, "RequestsDrained");
-        public static EventId StopCancelled = new EventId(8, "StopCancelled");
-        public static EventId WaitingForRequestsToDrain = new EventId(9, "WaitingForRequestsToDrain");
-        public static EventId DisconnectRegistrationError = new EventId(10, "DisconnectRegistrationError");
-        public static EventId RegisterDisconnectListener = new EventId(11, "RegisterDisconnectListener");
-        public static EventId UnknownDisconnectError = new EventId(12, "UnknownDisconnectError");
-        public static EventId DisconnectHandlerError = new EventId(13, "DisconnectHandlerError");
-        public static EventId ListenerStarting = new EventId(14, "ListenerStarting");
-        public static EventId ListenerDisposeError = new EventId(15, "ListenerDisposeError");
-        public static EventId RequestListenerProcessError = new EventId(16, "RequestListenerProcessError");
-        public static EventId AttachedToQueue = new EventId(17, "AttachedToQueue");
-        public static EventId SetUrlPropertyError = new EventId(18, "SetUrlPropertyError");
-        public static EventId RegisteringPrefix = new EventId(19, "RegisteringPrefix");
-        public static EventId UnregisteringPrefix = new EventId(20, "UnregisteringPrefix");
-        public static EventId CloseUrlGroupError = new EventId(21, "CloseUrlGroupError");
-        public static EventId ChannelBindingUnSupported = new EventId(22, "ChannelBindingUnSupported");
-        public static EventId ChannelBindingMissing = new EventId(23, "ChannelBindingMissing");
-        public static EventId RequestError = new EventId(24, "RequestError");
-        public static EventId ErrorInReadingCertificate = new EventId(25, "ErrorInReadingCertificate");
-        public static EventId ChannelBindingNeedsHttps = new EventId(26, "ChannelBindingNeedsHttps");
-        public static EventId ChannelBindingRetrived = new EventId(27, "ChannelBindingRetrived");
-        public static EventId AbortError = new EventId(28, "AbortError");
-        public static EventId ErrorWhileRead = new EventId(29, "ErrorWhileRead");
-        public static EventId ErrorWhenReadBegun = new EventId(30, "ErrorWhenReadBegun");
-        public static EventId ErrorWhenReadAsync = new EventId(31, "ErrorWhenReadAsync");
-        public static EventId ErrorWhenFlushAsync = new EventId(32, "ErrorWhenFlushAsync");
-        public static EventId FewerBytesThanExpected = new EventId(33, "FewerBytesThanExpected");
-        public static EventId WriteError = new EventId(34, "WriteError");
-        public static EventId WriteErrorIgnored = new EventId(35, "WriteFlushedIgnored");
-        public static EventId WriteFlushCancelled = new EventId(36, "WriteFlushCancelled");
-        public static EventId ClearedAddresses = new EventId(37, "ClearedAddresses");
-        public static EventId FileSendAsyncError = new EventId(38, "FileSendAsyncError");
-        public static EventId FileSendAsyncCancelled = new EventId(39, "FileSendAsyncCancelled");
-        public static EventId FileSendAsyncErrorIgnored = new EventId(40, "FileSendAsyncErrorIgnored");
-        public static EventId WriteCancelled = new EventId(41, "WriteCancelled");
-        public static EventId ListenerStopping = new EventId(42, "ListenerStopping");
-        public static EventId ListenerStartError = new EventId(43, "ListenerStartError");
-        public static EventId DisconnectTriggered = new EventId(44, "DisconnectTriggered");
-        public static EventId ListenerStopError = new EventId(45, "ListenerStopError");
-        public static EventId ListenerDisposing = new EventId(46, "ListenerDisposing");
-    
-   
-
-      
-    }
+    public const int HttpSysListenerCtorError = 1;
+    public const int BindingToDefault = 2;
+    public const int ClearedPrefixes = 3;
+    public const int AcceptErrorStopping = 4;
+    public const int AcceptError = 5;
+    public const int RequestProcessError = 6;
+    public const int RequestsDrained = 7;
+    public const int StopCancelled = 8;
+    public const int WaitingForRequestsToDrain = 9;
+    public const int DisconnectRegistrationError = 10;
+    public const int RegisterDisconnectListener = 11;
+    public const int UnknownDisconnectError = 12;
+    public const int DisconnectHandlerError = 13;
+    public const int ListenerStarting = 14;
+    public const int ListenerDisposeError = 15;
+    public const int RequestListenerProcessError = 16;
+    public const int AttachedToQueue = 17;
+    public const int SetUrlPropertyError = 18;
+    public const int RegisteringPrefix = 19;
+    public const int UnregisteringPrefix = 20;
+    public const int CloseUrlGroupError = 21;
+    public const int ChannelBindingUnsupported = 22;
+    public const int ChannelBindingMissing = 23;
+    public const int RequestError = 24;
+    public const int ErrorInReadingCertificate = 25;
+    public const int ChannelBindingNeedsHttps = 26;
+    public const int ChannelBindingRetrieved = 27;
+    public const int AbortError = 28;
+    public const int ErrorWhileRead = 29;
+    public const int ErrorWhenReadBegun = 30;
+    public const int ErrorWhenReadAsync = 31;
+    public const int ErrorWhenFlushAsync = 32;
+    public const int FewerBytesThanExpected = 33;
+    public const int WriteError = 34;
+    public const int WriteErrorIgnored = 35;
+    public const int WriteFlushCancelled = 36;
+    public const int ClearedAddresses = 37;
+    public const int FileSendAsyncError = 38;
+    public const int FileSendAsyncCancelled = 39;
+    public const int FileSendAsyncErrorIgnored = 40;
+    public const int WriteCancelled = 41;
+    public const int ListenerStopping = 42;
+    public const int ListenerStartError = 43;
+    public const int DisconnectTriggered = 44;
+    public const int ListenerStopError = 45;
+    public const int ListenerDisposing = 46;
+    public const int RequestValidationFailed = 47;
+    public const int CreateDisconnectTokenError = 48;
 }

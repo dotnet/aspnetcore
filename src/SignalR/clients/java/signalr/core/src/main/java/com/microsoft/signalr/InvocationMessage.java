@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 package com.microsoft.signalr;
 
@@ -13,7 +13,7 @@ public class InvocationMessage extends HubMessage {
     private final String target;
     private final Object[] arguments;
     private Collection<String> streamIds;
-    
+
     public InvocationMessage(Map<String, String> headers, String invocationId, String target, Object[] args, Collection<String> streamIds) {
         if (headers != null && !headers.isEmpty()) {
             this.headers = headers;
@@ -25,7 +25,7 @@ public class InvocationMessage extends HubMessage {
             this.streamIds = streamIds;
         }
     }
-    
+
     public Map<String, String> getHeaders() {
         return headers;
     }
@@ -41,7 +41,7 @@ public class InvocationMessage extends HubMessage {
     public Object[] getArguments() {
         return arguments;
     }
-    
+
     public Collection<String> getStreamIds() {
         return streamIds;
     }

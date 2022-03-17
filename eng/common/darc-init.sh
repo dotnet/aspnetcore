@@ -6,7 +6,7 @@ versionEndpoint='https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc
 verbosity='minimal'
 
 while [[ $# > 0 ]]; do
-  opt="$(echo "$1" | awk '{print tolower($0)}')"
+  opt="$(echo "$1" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
     --darcversion)
       darcVersion=$2
@@ -53,7 +53,7 @@ fi
 function InstallDarcCli {
   local darc_cli_package_name="microsoft.dotnet.darc"
 
-  InitializeDotNetCli
+  InitializeDotNetCli true
   local dotnet_root=$_InitializeDotNetCli
 
   if [ -z "$toolpath" ]; then

@@ -1,26 +1,23 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.SignalR;
 
-namespace Microsoft.AspNetCore.SignalR
+/// <summary>
+/// A <see cref="Hub"/> activator abstraction.
+/// </summary>
+/// <typeparam name="THub">The hub type.</typeparam>
+public interface IHubActivator<THub> where THub : Hub
 {
     /// <summary>
-    /// A <see cref="Hub"/> activator abstraction.
+    /// Creates a hub.
     /// </summary>
-    /// <typeparam name="THub">The hub type.</typeparam>
-    public interface IHubActivator<THub> where THub : Hub
-    {
-        /// <summary>
-        /// Creates a hub.
-        /// </summary>
-        /// <returns>The created hub.</returns>
-        THub Create();
+    /// <returns>The created hub.</returns>
+    THub Create();
 
-        /// <summary>
-        /// Releases the specified hub.
-        /// </summary>
-        /// <param name="hub">The hub to release.</param>
-        void Release(THub hub);
-    }
+    /// <summary>
+    /// Releases the specified hub.
+    /// </summary>
+    /// <param name="hub">The hub to release.</param>
+    void Release(THub hub);
 }

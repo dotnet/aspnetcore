@@ -1,202 +1,183 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.Globalization;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+/// <summary>
+/// Executes an <see cref="ObjectResult"/> to write to the response.
+/// </summary>
+public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
 {
     /// <summary>
-    /// Executes an <see cref="ObjectResult"/> to write to the response.
+    /// Creates a new <see cref="ObjectResultExecutor"/>.
     /// </summary>
-    public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
+    /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
+    /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
+    public ObjectResultExecutor(
+        OutputFormatterSelector formatterSelector,
+        IHttpResponseStreamWriterFactory writerFactory,
+        ILoggerFactory loggerFactory,
+        IOptions<MvcOptions> mvcOptions)
     {
-        private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
-
-        /// <summary>
-        /// Creates a new <see cref="ObjectResultExecutor"/>.
-        /// </summary>
-        /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
-        public ObjectResultExecutor(
-            OutputFormatterSelector formatterSelector,
-            IHttpResponseStreamWriterFactory writerFactory,
-            ILoggerFactory loggerFactory)
-            : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null)
+        if (formatterSelector == null)
         {
+            throw new ArgumentNullException(nameof(formatterSelector));
         }
 
-        /// <summary>
-        /// Creates a new <see cref="ObjectResultExecutor"/>.
-        /// </summary>
-        /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
-        public ObjectResultExecutor(
-            OutputFormatterSelector formatterSelector,
-            IHttpResponseStreamWriterFactory writerFactory,
-            ILoggerFactory loggerFactory,
-            IOptions<MvcOptions> mvcOptions)
+        if (writerFactory == null)
         {
-            if (formatterSelector == null)
-            {
-                throw new ArgumentNullException(nameof(formatterSelector));
-            }
-
-            if (writerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(writerFactory));
-            }
-
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            FormatterSelector = formatterSelector;
-            WriterFactory = writerFactory.CreateWriter;
-            Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
-            var options = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
-            _asyncEnumerableReaderFactory = new AsyncEnumerableReader(options);
+            throw new ArgumentNullException(nameof(writerFactory));
         }
 
-        /// <summary>
-        /// Gets the <see cref="ILogger"/>.
-        /// </summary>
-        protected ILogger Logger { get; }
-
-        /// <summary>
-        /// Gets the <see cref="OutputFormatterSelector"/>.
-        /// </summary>
-        protected OutputFormatterSelector FormatterSelector { get; }
-
-        /// <summary>
-        /// Gets the writer factory delegate.
-        /// </summary>
-        protected Func<Stream, Encoding, TextWriter> WriterFactory { get; }
-
-        /// <summary>
-        /// Executes the <see cref="ObjectResult"/>.
-        /// </summary>
-        /// <param name="context">The <see cref="ActionContext"/> for the current request.</param>
-        /// <param name="result">The <see cref="ObjectResult"/>.</param>
-        /// <returns>
-        /// A <see cref="Task"/> which will complete once the <see cref="ObjectResult"/> is written to the response.
-        /// </returns>
-        public virtual Task ExecuteAsync(ActionContext context, ObjectResult result)
+        if (loggerFactory == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
-
-            InferContentTypes(context, result);
-
-            var objectType = result.DeclaredType;
-
-            if (objectType == null || objectType == typeof(object))
-            {
-                objectType = result.Value?.GetType();
-            }
-
-            var value = result.Value;
-
-            if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
-            {
-                return ExecuteAsyncEnumerable(context, result, value, reader);
-            }
-
-            return ExecuteAsyncCore(context, result, objectType, value);
+            throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        private async Task ExecuteAsyncEnumerable(ActionContext context, ObjectResult result, object asyncEnumerable, Func<object, Task<ICollection>> reader)
-        {
-            Log.BufferingAsyncEnumerable(Logger, asyncEnumerable);
+        FormatterSelector = formatterSelector;
+        WriterFactory = writerFactory.CreateWriter;
+        Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
+    }
 
-            var enumerated = await reader(asyncEnumerable);
-            await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
+    /// <summary>
+    /// Gets the <see cref="ILogger"/>.
+    /// </summary>
+    protected ILogger Logger { get; }
+
+    /// <summary>
+    /// Gets the <see cref="OutputFormatterSelector"/>.
+    /// </summary>
+    protected OutputFormatterSelector FormatterSelector { get; }
+
+    /// <summary>
+    /// Gets the writer factory delegate.
+    /// </summary>
+    protected Func<Stream, Encoding, TextWriter> WriterFactory { get; }
+
+    /// <summary>
+    /// Executes the <see cref="ObjectResult"/>.
+    /// </summary>
+    /// <param name="context">The <see cref="ActionContext"/> for the current request.</param>
+    /// <param name="result">The <see cref="ObjectResult"/>.</param>
+    /// <returns>
+    /// A <see cref="Task"/> which will complete once the <see cref="ObjectResult"/> is written to the response.
+    /// </returns>
+    public virtual Task ExecuteAsync(ActionContext context, ObjectResult result)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
         }
 
-        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type objectType, object value)
+        if (result == null)
         {
-            var formatterContext = new OutputFormatterWriteContext(
-                context.HttpContext,
-                WriterFactory,
-                objectType,
-                value);
-
-            var selectedFormatter = FormatterSelector.SelectFormatter(
-                formatterContext,
-                (IList<IOutputFormatter>)result.Formatters ?? Array.Empty<IOutputFormatter>(),
-                result.ContentTypes);
-            if (selectedFormatter == null)
-            {
-                // No formatter supports this.
-                Logger.NoFormatter(formatterContext, result.ContentTypes);
-
-                context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
-                return Task.CompletedTask;
-            }
-
-            Logger.ObjectResultExecuting(result, value);
-
-            result.OnFormatting(context);
-            return selectedFormatter.WriteAsync(formatterContext);
+            throw new ArgumentNullException(nameof(result));
         }
 
-        private static void InferContentTypes(ActionContext context, ObjectResult result)
-        {
-            Debug.Assert(result.ContentTypes != null);
-            if (result.ContentTypes.Count != 0)
-            {
-                return;
-            }
+        InferContentTypes(context, result);
 
-            // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
-            // then the one set on ObjectResult takes precedence over the Response object
-            var responseContentType = context.HttpContext.Response.ContentType;
-            if (!string.IsNullOrEmpty(responseContentType))
+        var objectType = result.DeclaredType;
+
+        if (objectType == null || objectType == typeof(object))
+        {
+            objectType = result.Value?.GetType();
+        }
+
+        var value = result.Value;
+        return ExecuteAsyncCore(context, result, objectType, value);
+    }
+
+    private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type? objectType, object? value)
+    {
+        var formatterContext = new OutputFormatterWriteContext(
+            context.HttpContext,
+            WriterFactory,
+            objectType,
+            value);
+
+        var selectedFormatter = FormatterSelector.SelectFormatter(
+            formatterContext,
+            (IList<IOutputFormatter>)result.Formatters ?? Array.Empty<IOutputFormatter>(),
+            result.ContentTypes);
+        if (selectedFormatter == null)
+        {
+            // No formatter supports this.
+            Log.NoFormatter(Logger, formatterContext, result.ContentTypes);
+
+            context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+            return Task.CompletedTask;
+        }
+
+        Log.ObjectResultExecuting(Logger, result, value);
+
+        result.OnFormatting(context);
+        return selectedFormatter.WriteAsync(formatterContext);
+    }
+
+    private static void InferContentTypes(ActionContext context, ObjectResult result)
+    {
+        Debug.Assert(result.ContentTypes != null);
+
+        // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
+        // then the one set on ObjectResult takes precedence over the Response object
+        var responseContentType = context.HttpContext.Response.ContentType;
+        if (result.ContentTypes.Count == 0 && !string.IsNullOrEmpty(responseContentType))
+        {
+            result.ContentTypes.Add(responseContentType);
+        }
+
+        if (result.Value is ProblemDetails)
+        {
+            result.ContentTypes.Add("application/problem+json");
+            result.ContentTypes.Add("application/problem+xml");
+        }
+    }
+
+    // Internal for unit testing
+    internal static partial class Log
+    {
+        // Removed Log.
+        // new EventId(1, "BufferingAsyncEnumerable")
+
+        public static void ObjectResultExecuting(ILogger logger, ObjectResult result, object? value)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
             {
-                result.ContentTypes.Add(responseContentType);
-            }
-            else if (result.Value is ProblemDetails)
-            {
-                result.ContentTypes.Add("application/problem+json");
-                result.ContentTypes.Add("application/problem+xml");
+                var objectResultType = result.GetType().Name;
+                var valueType = value == null ? "null" : value.GetType().FullName;
+                ObjectResultExecuting(logger, objectResultType, valueType);
             }
         }
 
-        private static class Log
+        [LoggerMessage(1, LogLevel.Information, "Executing {ObjectResultType}, writing value of type '{Type}'.", EventName = "ObjectResultExecuting", SkipEnabledCheck = true)]
+        private static partial void ObjectResultExecuting(ILogger logger, string objectResultType, string? type);
+
+        public static void NoFormatter(ILogger logger, OutputFormatterCanWriteContext context, MediaTypeCollection contentTypes)
         {
-            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
-
-            static Log()
+            if (logger.IsEnabled(LogLevel.Warning))
             {
-                _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
-                   LogLevel.Debug,
-                   new EventId(1, "BufferingAsyncEnumerable"),
-                   "Buffering IAsyncEnumerable instance of type '{Type}'.");
-            }
+                var considered = new List<string?>(contentTypes);
 
-            public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                if (context.ContentType.HasValue)
+                {
+                    considered.Add(Convert.ToString(context.ContentType, CultureInfo.InvariantCulture));
+                }
+
+                NoFormatter(logger, considered);
+            }
         }
+
+        [LoggerMessage(2, LogLevel.Warning, "No output formatter was found for content types '{ContentTypes}' to write the response.", EventName = "NoFormatter", SkipEnabledCheck = true)]
+        private static partial void NoFormatter(ILogger logger, List<string?> contentTypes);
     }
 }

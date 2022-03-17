@@ -1,16 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.JsonPatch.Operations;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNetCore.JsonPatch
-{
-    public interface IJsonPatchDocument
-    {
-        IContractResolver ContractResolver { get; set; }
+namespace Microsoft.AspNetCore.JsonPatch;
 
-        IList<Operation> GetOperations();
-    }
+public interface IJsonPatchDocument
+{
+    IContractResolver ContractResolver { get; set; }
+
+    IList<Operation> GetOperations();
 }

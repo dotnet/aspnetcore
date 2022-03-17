@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <symbol id="icon" fill="currentColor" viewBox="0 0 100 100">
+        <ellipse cx="0" cy="0" rx="100" ry="50" style="fill:yellow;stroke:purple;stroke-width:2"/>
+    </symbol>
+</svg>

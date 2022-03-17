@@ -1,15 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+
+internal class PageEndpointDataSourceIdMetadata
 {
-    internal class PageEndpointDataSourceIdMetadata
+    public PageEndpointDataSourceIdMetadata(int id)
     {
-        public PageEndpointDataSourceIdMetadata(int id)
-        {
-            Id = id;
-        }
-
-        public int Id { get; }
+        Id = id;
     }
+
+    public int Id { get; }
 }

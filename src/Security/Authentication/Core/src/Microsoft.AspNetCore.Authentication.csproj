@@ -4,7 +4,6 @@
     <Description>ASP.NET Core common types used by the various authentication middleware components.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security</PackageTags>
     <IsPackable>false</IsPackable>
@@ -20,7 +19,6 @@
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Extensions.WebEncoders" />
   </ItemGroup>

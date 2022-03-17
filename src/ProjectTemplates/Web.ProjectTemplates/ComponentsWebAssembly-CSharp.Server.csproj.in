@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'">ComponentsWebAssembly-CSharp.Server-53bc9b9d-9d6a-45d4-8429-2a2761773502</UserSecretsId>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' != 'True'">0</WebProject_DirectoryAccessLevelKey>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' == 'True'">1</WebProject_DirectoryAccessLevelKey>
@@ -11,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="${MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="${MicrosoftAspNetCoreComponentsWebAssemblyServerVersion}" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,22 +29,22 @@
   <!--#endif -->
   <!--#if (IndividualLocalAuth) -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion}" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion}" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="${MicrosoftAspNetCoreIdentityUIPackageVersion}" />
-    <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="${MicrosoftAspNetCoreApiAuthorizationIdentityServerPackageVersion}" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="${MicrosoftEntityFrameworkCoreSqlServerPackageVersion}" Condition="'$(UseLocalDB)' == 'True'" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqlitePackageVersion}" Condition="'$(UseLocalDB)' != 'True'" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCoreVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCoreVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="${MicrosoftAspNetCoreIdentityUIVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="${MicrosoftAspNetCoreApiAuthorizationIdentityServerVersion}" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="${MicrosoftEntityFrameworkCoreSqlServerVersion}" Condition="'$(UseLocalDB)' == 'True'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqliteVersion}" Condition="'$(UseLocalDB)' != 'True'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsVersion}" />
   </ItemGroup>
   <!--#endif -->
   <!--#if (OrganizationalAuth || IndividualB2CAuth) -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="${MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion}" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="${MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion}" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" />
-    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="${MicrosoftIdentityWebMicrosoftGraphPackageVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="${MicrosoftAspNetCoreAuthenticationJwtBearerVersion}" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="${MicrosoftAspNetCoreAuthenticationOpenIdConnectVersion}" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebVersion}" />
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="${MicrosoftIdentityWebMicrosoftGraphVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIVersion}" />
   </ItemGroup>
   <!--#endif -->
 

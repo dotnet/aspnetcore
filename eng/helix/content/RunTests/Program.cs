@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -17,16 +17,16 @@ namespace RunTests
                 var keepGoing = runner.SetupEnvironment();
                 if (keepGoing)
                 {
-                    keepGoing = await runner.InstallDotnetDump();
+                    keepGoing = await runner.InstallDotnetToolsAsync();
                 }
+#if INSTALLPLAYWRIGHT
                 if (keepGoing)
                 {
-                    keepGoing = await runner.InstallAspNetAppIfNeededAsync();
+                    keepGoing = await runner.InstallPlaywrightAsync();
                 }
-                if (keepGoing)
-                {
-                    keepGoing = runner.InstallAspNetRefIfNeeded();
-                }
+#else
+                Console.WriteLine("Playwright install skipped.");
+#endif
 
                 runner.DisplayContents();
 

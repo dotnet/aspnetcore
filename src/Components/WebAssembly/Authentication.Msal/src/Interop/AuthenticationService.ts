@@ -125,7 +125,7 @@ class MsalAuthorizeService implements AuthorizeService {
     async getTokenCore(scopes?: string[]): Promise<AccessToken | undefined> {
         const account = this.getAccount();
         if (!account) {
-            return;
+            throw new Error('Failed to retrieve token, no account found.');
         }
 
         this._requestedScopes = scopes;
@@ -148,10 +148,9 @@ class MsalAuthorizeService implements AuthorizeService {
             // Before we start any sign-in flow, clear out any previous state so that it doesn't pile up.
             this.purgeState();
 
-            const request: Msal.AuthorizationUrlRequest = {
-                redirectUri: this._settings.auth?.redirectUri,
-                state: await this.saveState(state),
-                scopes: []
+            const request: Partial<Msal.AuthorizationUrlRequest> = {
+                redirectUri: this._settings.auth.redirectUri!,
+                state: await this.saveState(state)
             };
 
             if (this._settings.defaultAccessTokenScopes && this._settings.defaultAccessTokenScopes.length > 0) {
@@ -185,21 +184,21 @@ class MsalAuthorizeService implements AuthorizeService {
                     await this._msalApplication.acquireTokenSilent(silentRequest);
                 }
             } catch (e) {
-                return this.error(e.errorMessage);
+                return this.error((e as Msal.AuthError).errorMessage);
             }
 
             return this.success(state);
         } catch (e) {
-            return this.error(e.message);
+            return this.error((e as Error).message);
         }
     }
 
-    async signInCore(request: Msal.AuthorizationUrlRequest): Promise<Msal.AuthenticationResult | Msal.AuthError | undefined> {
+    async signInCore(request: Partial<Msal.AuthorizationUrlRequest>): Promise<Msal.AuthenticationResult | Msal.AuthError | undefined> {
         const loginMode = this._settings.loginMode.toLowerCase();
         if (loginMode === 'redirect') {
-            return this.signInWithRedirect(<Msal.RedirectRequest> request);
+            return this.signInWithRedirect(request as Msal.RedirectRequest);
         } else {
-            return this.signInWithPopup(<Msal.PopupRequest> request);
+            return this.signInWithPopup(request as Msal.PopupRequest);
         }
     }
 
@@ -207,7 +206,7 @@ class MsalAuthorizeService implements AuthorizeService {
         try {
             return await this._msalApplication.loginRedirect(request);
         } catch (e) {
-            return e;
+            return e as any;
         }
     }
 
@@ -219,7 +218,7 @@ class MsalAuthorizeService implements AuthorizeService {
             if (this.isMsalError(e) && e.errorCode !== Msal.BrowserAuthErrorMessage.userCancelledError.code) {
                 this.signInWithRedirect(request);
             } else {
-                return e;
+                return e as any;
             }
         }
     }

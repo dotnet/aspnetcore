@@ -1,208 +1,203 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+namespace Microsoft.AspNetCore.Routing.Matching;
+
+public class HostMatcherPolicyTest
 {
-    public class HostMatcherPolicyTest
+    [Fact]
+    public void INodeBuilderPolicy_AppliesToEndpoints_EndpointWithoutMetadata_ReturnsFalse()
     {
-        [Fact]
-        public void INodeBuilderPolicy_AppliesToEndpoints_EndpointWithoutMetadata_ReturnsFalse()
+        // Arrange
+        var endpoints = new[] { CreateEndpoint("/", null), };
+
+        var policy = (INodeBuilderPolicy)CreatePolicy();
+
+        // Act
+        var result = policy.AppliesToEndpoints(endpoints);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void INodeBuilderPolicy_AppliesToEndpoints_EndpointWithoutHosts_ReturnsFalse()
+    {
+        // Arrange
+        var endpoints = new[]
         {
-            // Arrange
-            var endpoints = new[] { CreateEndpoint("/", null), };
-
-            var policy = (INodeBuilderPolicy)CreatePolicy();
-
-            // Act
-            var result = policy.AppliesToEndpoints(endpoints);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void INodeBuilderPolicy_AppliesToEndpoints_EndpointWithoutHosts_ReturnsFalse()
-        {
-            // Arrange
-            var endpoints = new[]
-            {
                 CreateEndpoint("/", new HostAttribute(Array.Empty<string>())),
             };
 
-            var policy = (INodeBuilderPolicy)CreatePolicy();
+        var policy = (INodeBuilderPolicy)CreatePolicy();
 
-            // Act
-            var result = policy.AppliesToEndpoints(endpoints);
+        // Act
+        var result = policy.AppliesToEndpoints(endpoints);
 
-            // Assert
-            Assert.False(result);
-        }
+        // Assert
+        Assert.False(result);
+    }
 
-        [Fact]
-        public void INodeBuilderPolicy_AppliesToEndpoints_EndpointHasHosts_ReturnsTrue()
+    [Fact]
+    public void INodeBuilderPolicy_AppliesToEndpoints_EndpointHasHosts_ReturnsTrue()
+    {
+        // Arrange
+        var endpoints = new[]
         {
-            // Arrange
-            var endpoints = new[]
-            {
                 CreateEndpoint("/", new HostAttribute(Array.Empty<string>())),
                 CreateEndpoint("/", new HostAttribute(new[] { "localhost", })),
             };
 
-            var policy = (INodeBuilderPolicy)CreatePolicy();
+        var policy = (INodeBuilderPolicy)CreatePolicy();
 
-            // Act
-            var result = policy.AppliesToEndpoints(endpoints);
+        // Act
+        var result = policy.AppliesToEndpoints(endpoints);
 
-            // Assert
-            Assert.True(result);
-        }
+        // Assert
+        Assert.True(result);
+    }
 
-        [Fact]
-        public void INodeBuilderPolicy_AppliesToEndpoints_EndpointHasDynamicMetadata_ReturnsFalse()
+    [Fact]
+    public void INodeBuilderPolicy_AppliesToEndpoints_EndpointHasDynamicMetadata_ReturnsFalse()
+    {
+        // Arrange
+        var endpoints = new[]
         {
-            // Arrange
-            var endpoints = new[]
-            {
                 CreateEndpoint("/", new HostAttribute(Array.Empty<string>())),
                 CreateEndpoint("/", new HostAttribute(new[] { "localhost", }), new DynamicEndpointMetadata()),
             };
 
-            var policy = (INodeBuilderPolicy)CreatePolicy();
+        var policy = (INodeBuilderPolicy)CreatePolicy();
 
-            // Act
-            var result = policy.AppliesToEndpoints(endpoints);
+        // Act
+        var result = policy.AppliesToEndpoints(endpoints);
 
-            // Assert
-            Assert.False(result);
-        }
+        // Assert
+        Assert.False(result);
+    }
 
-        [Theory]
-        [InlineData(":")]
-        [InlineData(":80")]
-        [InlineData("80:")]
-        [InlineData("")]
-        [InlineData("::")]
-        [InlineData("*:test")]
-        public void INodeBuilderPolicy_AppliesToEndpoints_InvalidHosts(string host)
+    [Theory]
+    [InlineData(":")]
+    [InlineData(":80")]
+    [InlineData("80:")]
+    [InlineData("")]
+    [InlineData("::")]
+    [InlineData("*:test")]
+    public void INodeBuilderPolicy_AppliesToEndpoints_InvalidHosts(string host)
+    {
+        // Arrange
+        var endpoints = new[] { CreateEndpoint("/", new HostAttribute(new[] { host })), };
+
+        var policy = (INodeBuilderPolicy)CreatePolicy();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() =>
         {
-            // Arrange
-            var endpoints = new[] { CreateEndpoint("/", new HostAttribute(new[] { host })), };
+            policy.AppliesToEndpoints(endpoints);
+        });
+    }
 
-            var policy = (INodeBuilderPolicy)CreatePolicy();
+    [Fact]
+    public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointWithoutMetadata_ReturnsTrue()
+    {
+        // Arrange
+        var endpoints = new[] { CreateEndpoint("/", null, new DynamicEndpointMetadata()), };
 
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                policy.AppliesToEndpoints(endpoints);
-            });
-        }
+        var policy = (IEndpointSelectorPolicy)CreatePolicy();
 
-        [Fact]
-        public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointWithoutMetadata_ReturnsTrue()
+        // Act
+        var result = policy.AppliesToEndpoints(endpoints);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointWithoutHosts_ReturnsTrue()
+    {
+        // Arrange
+        var endpoints = new[]
         {
-            // Arrange
-            var endpoints = new[] { CreateEndpoint("/", null, new DynamicEndpointMetadata()), };
-
-            var policy = (IEndpointSelectorPolicy)CreatePolicy();
-
-            // Act
-            var result = policy.AppliesToEndpoints(endpoints);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointWithoutHosts_ReturnsTrue()
-        {
-            // Arrange
-            var endpoints = new[]
-            {
                 CreateEndpoint("/", new HostAttribute(Array.Empty<string>()), new DynamicEndpointMetadata()),
             };
 
-            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+        var policy = (IEndpointSelectorPolicy)CreatePolicy();
 
-            // Act
-            var result = policy.AppliesToEndpoints(endpoints);
+        // Act
+        var result = policy.AppliesToEndpoints(endpoints);
 
-            // Assert
-            Assert.True(result);
-        }
+        // Assert
+        Assert.True(result);
+    }
 
-        [Fact]
-        public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointHasHosts_ReturnsTrue()
+    [Fact]
+    public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointHasHosts_ReturnsTrue()
+    {
+        // Arrange
+        var endpoints = new[]
         {
-            // Arrange
-            var endpoints = new[]
-            {
                 CreateEndpoint("/", new HostAttribute(Array.Empty<string>())),
                 CreateEndpoint("/", new HostAttribute(new[] { "localhost", }), new DynamicEndpointMetadata()),
             };
 
-            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+        var policy = (IEndpointSelectorPolicy)CreatePolicy();
 
-            // Act
-            var result = policy.AppliesToEndpoints(endpoints);
+        // Act
+        var result = policy.AppliesToEndpoints(endpoints);
 
-            // Assert
-            Assert.True(result);
-        }
+        // Assert
+        Assert.True(result);
+    }
 
-        [Fact]
-        public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointHasNoDynamicMetadata_ReturnsFalse()
+    [Fact]
+    public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointHasNoDynamicMetadata_ReturnsFalse()
+    {
+        // Arrange
+        var endpoints = new[]
         {
-            // Arrange
-            var endpoints = new[]
-            {
                 CreateEndpoint("/", new HostAttribute(Array.Empty<string>())),
                 CreateEndpoint("/", new HostAttribute(new[] { "localhost", })),
             };
 
-            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+        var policy = (IEndpointSelectorPolicy)CreatePolicy();
 
-            // Act
-            var result = policy.AppliesToEndpoints(endpoints);
+        // Act
+        var result = policy.AppliesToEndpoints(endpoints);
 
-            // Assert
-            Assert.False(result);
-        }
+        // Assert
+        Assert.False(result);
+    }
 
-        [Theory]
-        [InlineData(":")]
-        [InlineData(":80")]
-        [InlineData("80:")]
-        [InlineData("")]
-        [InlineData("::")]
-        [InlineData("*:test")]
-        public void IEndpointSelectorPolicy_AppliesToEndpoints_InvalidHosts(string host)
+    [Theory]
+    [InlineData(":")]
+    [InlineData(":80")]
+    [InlineData("80:")]
+    [InlineData("")]
+    [InlineData("::")]
+    [InlineData("*:test")]
+    public void IEndpointSelectorPolicy_AppliesToEndpoints_InvalidHosts(string host)
+    {
+        // Arrange
+        var endpoints = new[] { CreateEndpoint("/", new HostAttribute(new[] { host }), new DynamicEndpointMetadata()), };
+
+        var policy = (IEndpointSelectorPolicy)CreatePolicy();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() =>
         {
-            // Arrange
-            var endpoints = new[] { CreateEndpoint("/", new HostAttribute(new[] { host }), new DynamicEndpointMetadata()), };
+            policy.AppliesToEndpoints(endpoints);
+        });
+    }
 
-            var policy = (IEndpointSelectorPolicy)CreatePolicy();
-
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                policy.AppliesToEndpoints(endpoints);
-            });
-        }
-
-        [Fact]
-        public void GetEdges_GroupsByHost()
+    [Fact]
+    public void GetEdges_GroupsByHost()
+    {
+        // Arrange
+        var endpoints = new[]
         {
-            // Arrange
-            var endpoints = new[]
-            {
                 CreateEndpoint("/", new HostAttribute(new[] { "*:5000", "*:5001", })),
                 CreateEndpoint("/", new HostAttribute(Array.Empty<string>())),
                 CreateEndpoint("/", hostMetadata: null),
@@ -213,82 +208,81 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 CreateEndpoint("/", new HostAttribute("*:*")),
             };
 
-            var policy = CreatePolicy();
+        var policy = CreatePolicy();
 
-            // Act
-            var edges = policy.GetEdges(endpoints);
+        // Act
+        var edges = policy.GetEdges(endpoints);
 
-            var data = edges.OrderBy(e => e.State).ToList();
+        var data = edges.OrderBy(e => e.State).ToList();
 
-            // Assert
-            Assert.Collection(
-                data,
-                e =>
-                {
-                    Assert.Equal("*:*", e.State.ToString());
-                    Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[7], }, e.Endpoints.ToArray());
-                },
-                e =>
-                {
-                    Assert.Equal("*:5000", e.State.ToString());
-                    Assert.Equal(new[] { endpoints[0], endpoints[1], endpoints[2], }, e.Endpoints.ToArray());
-                },
-                e =>
-                {
-                    Assert.Equal("*:5001", e.State.ToString());
-                    Assert.Equal(new[] { endpoints[0], endpoints[1], endpoints[2], }, e.Endpoints.ToArray());
-                },
-                e =>
-                {
-                    Assert.Equal("*.contoso.com:*", e.State.ToString());
-                    Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[3], endpoints[4], }, e.Endpoints.ToArray());
-                },
-                e =>
-                {
-                    Assert.Equal("*.sub.contoso.com:*", e.State.ToString());
-                    Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[4], }, e.Endpoints.ToArray());
-                },
-                e =>
-                {
-                    Assert.Equal("www.contoso.com:*", e.State.ToString());
-                    Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[5], }, e.Endpoints.ToArray());
-                },
-                e =>
-                {
-                    Assert.Equal("www.contoso.com:5000", e.State.ToString());
-                    Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[6], }, e.Endpoints.ToArray());
-                });
-        }
-
-        private static RouteEndpoint CreateEndpoint(string template, IHostMetadata hostMetadata, params object[] more)
-        {
-            var metadata = new List<object>();
-            if (hostMetadata != null)
+        // Assert
+        Assert.Collection(
+            data,
+            e =>
             {
-                metadata.Add(hostMetadata);
-            }
-
-            if (more != null)
+                Assert.Equal("*:*", e.State.ToString());
+                Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[7], }, e.Endpoints.ToArray());
+            },
+            e =>
             {
-                metadata.AddRange(more);
-            }
+                Assert.Equal("*:5000", e.State.ToString());
+                Assert.Equal(new[] { endpoints[0], endpoints[1], endpoints[2], }, e.Endpoints.ToArray());
+            },
+            e =>
+            {
+                Assert.Equal("*:5001", e.State.ToString());
+                Assert.Equal(new[] { endpoints[0], endpoints[1], endpoints[2], }, e.Endpoints.ToArray());
+            },
+            e =>
+            {
+                Assert.Equal("*.contoso.com:*", e.State.ToString());
+                Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[3], endpoints[4], }, e.Endpoints.ToArray());
+            },
+            e =>
+            {
+                Assert.Equal("*.sub.contoso.com:*", e.State.ToString());
+                Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[4], }, e.Endpoints.ToArray());
+            },
+            e =>
+            {
+                Assert.Equal("www.contoso.com:*", e.State.ToString());
+                Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[5], }, e.Endpoints.ToArray());
+            },
+            e =>
+            {
+                Assert.Equal("www.contoso.com:5000", e.State.ToString());
+                Assert.Equal(new[] { endpoints[1], endpoints[2], endpoints[6], }, e.Endpoints.ToArray());
+            });
+    }
 
-            return new RouteEndpoint(
-                (context) => Task.CompletedTask,
-                RoutePatternFactory.Parse(template),
-                0,
-                new EndpointMetadataCollection(metadata),
-                $"test: {template} - {string.Join(", ", hostMetadata?.Hosts ?? Array.Empty<string>())}");
-        }
-
-        private static HostMatcherPolicy CreatePolicy()
+    private static RouteEndpoint CreateEndpoint(string template, IHostMetadata hostMetadata, params object[] more)
+    {
+        var metadata = new List<object>();
+        if (hostMetadata != null)
         {
-            return new HostMatcherPolicy();
+            metadata.Add(hostMetadata);
         }
 
-        private class DynamicEndpointMetadata : IDynamicEndpointMetadata
+        if (more != null)
         {
-            public bool IsDynamic => true;
+            metadata.AddRange(more);
         }
+
+        return new RouteEndpoint(
+            (context) => Task.CompletedTask,
+            RoutePatternFactory.Parse(template),
+            0,
+            new EndpointMetadataCollection(metadata),
+            $"test: {template} - {string.Join(", ", hostMetadata?.Hosts ?? Array.Empty<string>())}");
+    }
+
+    private static HostMatcherPolicy CreatePolicy()
+    {
+        return new HostMatcherPolicy();
+    }
+
+    private class DynamicEndpointMetadata : IDynamicEndpointMetadata
+    {
+        public bool IsDynamic => true;
     }
 }

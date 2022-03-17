@@ -1,114 +1,113 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Primitives;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+public class ValueProviderResultTest
 {
-    public class ValueProviderResultTest
+    [Fact]
+    public void Construct_With_NullString()
     {
-        [Fact]
-        public void Construct_With_NullString()
+        // Arrange & Act
+        var result = new ValueProviderResult((string)null);
+
+        // Assert
+        Assert.Equal(0, result.Length);
+        Assert.Empty(result.Values);
+        Assert.Null(result.FirstValue);
+        Assert.Equal(ValueProviderResult.None, result);
+        Assert.Empty((string)result);
+        Assert.Empty((string[])result);
+    }
+
+    [Fact]
+    public void Construct_With_NullArray()
+    {
+        // Arrange & Act
+        var result = new ValueProviderResult((string[])null);
+
+        // Assert
+        Assert.Equal(0, result.Length);
+        Assert.Empty(result.Values);
+        Assert.Null(result.FirstValue);
+        Assert.Equal(ValueProviderResult.None, result);
+        Assert.Empty((string)result);
+        Assert.Empty((string[])result);
+    }
+
+    [Fact]
+    public void Construct_With_None()
+    {
+        // Arrange & Act
+        var result = ValueProviderResult.None;
+
+        // Assert
+        Assert.Equal(0, result.Length);
+        Assert.Empty(result.Values);
+        Assert.Null(result.FirstValue);
+        Assert.Equal(ValueProviderResult.None, result);
+        Assert.Equal(ValueProviderResult.None, new ValueProviderResult(new StringValues()));
+        Assert.Empty((string)result);
+        Assert.Empty((string[])result);
+    }
+
+    [Fact]
+    public void Construct_With_String()
+    {
+        // Arrange & Act
+        var result = new ValueProviderResult("Hi There");
+
+        // Assert
+        Assert.Equal(1, result.Length);
+        Assert.Equal("Hi There", result.Values);
+        Assert.Equal("Hi There", result.FirstValue);
+        Assert.NotEqual(ValueProviderResult.None, result);
+        Assert.Equal("Hi There", (string)result);
+        Assert.Equal(new string[] { "Hi There" }, (string[])result);
+    }
+
+    [Fact]
+    public void Construct_With_Array()
+    {
+        // Arrange & Act
+        var result = new ValueProviderResult(new string[] { "Hi", "There" });
+
+        // Assert
+        Assert.Equal(2, result.Length);
+        Assert.Equal(new string[] { "Hi", "There" }, result.Values);
+        Assert.Equal("Hi", result.FirstValue);
+        Assert.NotEqual(ValueProviderResult.None, result);
+        Assert.Equal("Hi,There", (string)result);
+        Assert.Equal(new string[] { "Hi", "There" }, (string[])result);
+    }
+
+    [Fact]
+    public void Enumerator_WithString()
+    {
+        // Arrange
+        var result = new ValueProviderResult("Hi There");
+
+        // Act & Assert
+        Assert.Equal<string>(new string[] { "Hi There", }, result);
+    }
+
+    [Fact]
+    public void Enumerator_WithArray()
+    {
+        // Arrange
+        var result = new ValueProviderResult(new string[] { "Hi", "There" });
+
+        // Act & Assert
+        Assert.Equal<string>(new string[] { "Hi", "There" }, result);
+    }
+
+    public static TheoryData<ValueProviderResult, ValueProviderResult, bool> EqualsData
+    {
+        get
         {
-            // Arrange & Act
-            var result = new ValueProviderResult((string)null);
-
-            // Assert
-            Assert.Equal(0, result.Length);
-            Assert.Empty(result.Values);
-            Assert.Null(result.FirstValue);
-            Assert.Equal(ValueProviderResult.None, result);
-            Assert.Null((string)result);
-            Assert.Null((string[])result);
-        }
-
-        [Fact]
-        public void Construct_With_NullArray()
-        {
-            // Arrange & Act
-            var result = new ValueProviderResult((string[])null);
-
-            // Assert
-            Assert.Equal(0, result.Length);
-            Assert.Empty(result.Values);
-            Assert.Null(result.FirstValue);
-            Assert.Equal(ValueProviderResult.None, result);
-            Assert.Null((string)result);
-            Assert.Null((string[])result);
-        }
-
-        [Fact]
-        public void Construct_With_None()
-        {
-            // Arrange & Act
-            var result = ValueProviderResult.None;
-
-            // Assert
-            Assert.Equal(0, result.Length);
-            Assert.Empty(result.Values);
-            Assert.Null(result.FirstValue);
-            Assert.Equal(ValueProviderResult.None, result);
-            Assert.Equal(ValueProviderResult.None, new ValueProviderResult(new StringValues()));
-            Assert.Null((string)result);
-            Assert.Empty((string[])result);
-        }
-
-        [Fact]
-        public void Construct_With_String()
-        {
-            // Arrange & Act
-            var result = new ValueProviderResult("Hi There");
-
-            // Assert
-            Assert.Equal(1, result.Length);
-            Assert.Equal("Hi There", result.Values);
-            Assert.Equal("Hi There", result.FirstValue);
-            Assert.NotEqual(ValueProviderResult.None, result);
-            Assert.Equal("Hi There", (string)result);
-            Assert.Equal(new string[] { "Hi There" }, (string[])result);
-        }
-
-        [Fact]
-        public void Construct_With_Array()
-        {
-            // Arrange & Act
-            var result = new ValueProviderResult(new string[] { "Hi", "There" });
-
-            // Assert
-            Assert.Equal(2, result.Length);
-            Assert.Equal(new string[] { "Hi", "There" }, result.Values);
-            Assert.Equal("Hi", result.FirstValue);
-            Assert.NotEqual(ValueProviderResult.None, result);
-            Assert.Equal("Hi,There", (string)result);
-            Assert.Equal(new string[] { "Hi", "There" }, (string[])result);
-        }
-
-        [Fact]
-        public void Enumerator_WithString()
-        {
-            // Arrange
-            var result = new ValueProviderResult("Hi There");
-
-            // Act & Assert
-            Assert.Equal<string>(new string[] { "Hi There", }, result);
-        }
-
-        [Fact]
-        public void Enumerator_WithArray()
-        {
-            // Arrange
-            var result = new ValueProviderResult(new string[] { "Hi", "There" });
-
-            // Act & Assert
-            Assert.Equal<string>(new string[] { "Hi", "There" }, result);
-        }
-
-        public static TheoryData<ValueProviderResult, ValueProviderResult, bool> EqualsData
-        {
-            get
-            {
-                return new TheoryData<ValueProviderResult, ValueProviderResult, bool>()
+            return new TheoryData<ValueProviderResult, ValueProviderResult, bool>()
                 {
                     {
                         new ValueProviderResult("Hi"),
@@ -166,29 +165,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                         false
                     },
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(EqualsData))]
-        public void Operator_Equals(ValueProviderResult x, ValueProviderResult y, bool expected)
-        {
-            // Arrange
-            var result = x == y;
+    [Theory]
+    [MemberData(nameof(EqualsData))]
+    public void Operator_Equals(ValueProviderResult x, ValueProviderResult y, bool expected)
+    {
+        // Arrange
+        var result = x == y;
 
-            // Act & Assert
-            Assert.Equal(expected, result);
-        }
+        // Act & Assert
+        Assert.Equal(expected, result);
+    }
 
-        [Theory]
-        [MemberData(nameof(EqualsData))]
-        public void Operator_NotEquals(ValueProviderResult x, ValueProviderResult y, bool expected)
-        {
-            // Arrange
-            var result = x != y;
+    [Theory]
+    [MemberData(nameof(EqualsData))]
+    public void Operator_NotEquals(ValueProviderResult x, ValueProviderResult y, bool expected)
+    {
+        // Arrange
+        var result = x != y;
 
-            // Act & Assert
-            Assert.NotEqual(expected, result);
-        }
+        // Act & Assert
+        Assert.NotEqual(expected, result);
     }
 }

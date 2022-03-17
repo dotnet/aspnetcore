@@ -15,8 +15,6 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
 </Project>

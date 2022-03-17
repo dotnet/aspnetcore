@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace IdentitySample.Models.ManageViewModels
+namespace IdentitySample.Models.ManageViewModels;
+
+public class FactorViewModel
 {
-    public class FactorViewModel
-    {
-        public string Purpose { get; set; }
-    }
+    public string Purpose { get; set; }
 }

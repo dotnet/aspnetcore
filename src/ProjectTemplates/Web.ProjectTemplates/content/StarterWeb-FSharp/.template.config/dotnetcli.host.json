@@ -1,10 +1,16 @@
 {
   "$schema": "http://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
-    "HttpPort": {
+    "kestrelHttpPort": {
       "isHidden": true
     },
-    "HttpsPort": {
+    "kestrelHttpsPort": {
+      "isHidden": true
+    },
+    "iisHttpPort": {
+      "isHidden": true
+    },
+    "iisHttpsPort": {
       "isHidden": true
     },
     "ExcludeLaunchSettings": {

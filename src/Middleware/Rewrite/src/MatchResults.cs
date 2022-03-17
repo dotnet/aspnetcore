@@ -1,16 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Rewrite
+namespace Microsoft.AspNetCore.Rewrite;
+
+internal class MatchResults
 {
-    internal class MatchResults
-    {
-        public static readonly MatchResults EmptySuccess = new MatchResults { Success = true };
-        public static readonly MatchResults EmptyFailure = new MatchResults { Success = false };
+    public static readonly MatchResults EmptySuccess = new MatchResults(success: true);
+    public static readonly MatchResults EmptyFailure = new MatchResults(success: false);
 
-        public bool Success { get; set; }
-        public BackReferenceCollection BackReferences { get; set; }
+    public MatchResults(bool success, BackReferenceCollection? backReferences = null)
+    {
+        Success = success;
+        BackReferences = backReferences;
     }
+
+    [MemberNotNullWhen(true, nameof(BackReferences))]
+    public bool Success { get; }
+    public BackReferenceCollection? BackReferences { get; }
 }

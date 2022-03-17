@@ -1,26 +1,25 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Reflection;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing
-{
-    public class AspNetTestFrameworkExecutor : XunitTestFrameworkExecutor
-    {
-        public AspNetTestFrameworkExecutor(AssemblyName assemblyName, ISourceInformationProvider sourceInformationProvider, IMessageSink diagnosticMessageSink)
-            : base(assemblyName, sourceInformationProvider, diagnosticMessageSink)
-        {
-        }
+namespace Microsoft.AspNetCore.Testing;
 
-        protected override async void RunTestCases(IEnumerable<IXunitTestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
+public class AspNetTestFrameworkExecutor : XunitTestFrameworkExecutor
+{
+    public AspNetTestFrameworkExecutor(AssemblyName assemblyName, ISourceInformationProvider sourceInformationProvider, IMessageSink diagnosticMessageSink)
+        : base(assemblyName, sourceInformationProvider, diagnosticMessageSink)
+    {
+    }
+
+    protected override async void RunTestCases(IEnumerable<IXunitTestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
+    {
+        using (var assemblyRunner = new AspNetTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink, executionOptions))
         {
-            using (var assemblyRunner = new AspNetTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink, executionOptions))
-            {
-                await assemblyRunner.RunAsync();
-            }
+            await assemblyRunner.RunAsync().ConfigureAwait(false);
         }
     }
 }

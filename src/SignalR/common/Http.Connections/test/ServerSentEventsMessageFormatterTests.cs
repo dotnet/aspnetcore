@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
 using System.Collections.Generic;
@@ -9,35 +9,35 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Connections.Tests
+namespace Microsoft.AspNetCore.Http.Connections.Tests;
+
+public class ServerSentEventsMessageFormatterTests
 {
-    public class ServerSentEventsMessageFormatterTests
+    [Theory]
+    [MemberData(nameof(PayloadData))]
+    public async Task WriteTextMessageFromSingleSegment(string encoded, string payload)
     {
-        [Theory]
-        [MemberData(nameof(PayloadData))]
-        public async Task WriteTextMessageFromSingleSegment(string encoded, string payload)
-        {
-            var buffer = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(payload));
+        var buffer = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(payload));
 
-            var output = new MemoryStream();
-            await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, output, default);
+        var output = new MemoryStream();
+        await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, output, default);
 
-            Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
-        }
+        Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
+    }
 
-        [Theory]
-        [MemberData(nameof(PayloadData))]
-        public async Task WriteTextMessageFromMultipleSegments(string encoded, string payload)
-        {
-            var buffer = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(Encoding.UTF8.GetBytes(payload));
+    [Theory]
+    [MemberData(nameof(PayloadData))]
+    public async Task WriteTextMessageFromMultipleSegments(string encoded, string payload)
+    {
+        var buffer = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(Encoding.UTF8.GetBytes(payload));
 
-            var output = new MemoryStream();
-            await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, output, default);
+        var output = new MemoryStream();
+        await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, output, default);
 
-            Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
-        }
+        Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
+    }
 
-        public static IEnumerable<object[]> PayloadData => new List<object[]>
+    public static IEnumerable<object[]> PayloadData => new List<object[]>
         {
             new object[] { "\r\n", "" },
             new object[] { "data: Hello, World\r\n\r\n", "Hello, World" },
@@ -46,5 +46,4 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             new object[] { "data: Hello\r\ndata: \r\n\r\n", "Hello\n" },
             new object[] { "data: Hello\r\ndata: \r\n\r\n", "Hello\r\n" },
         };
-    }
 }

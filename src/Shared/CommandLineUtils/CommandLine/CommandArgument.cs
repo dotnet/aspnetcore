@@ -1,29 +1,28 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Extensions.CommandLineUtils
-{
-    internal class CommandArgument
-    {
-        public CommandArgument()
-        {
-            Values = new List<string>();
-        }
+namespace Microsoft.Extensions.CommandLineUtils;
 
-        public string Name { get; set; }
-        public bool ShowInHelpText { get; set; } = true;
-        public string Description { get; set; }
-        public List<string> Values { get; private set; }
-        public bool MultipleValues { get; set; }
-        public string Value
+internal class CommandArgument
+{
+    public CommandArgument()
+    {
+        Values = new List<string>();
+    }
+
+    public string Name { get; set; }
+    public bool ShowInHelpText { get; set; } = true;
+    public string Description { get; set; }
+    public List<string> Values { get; private set; }
+    public bool MultipleValues { get; set; }
+    public string Value
+    {
+        get
         {
-            get
-            {
-                return Values.FirstOrDefault();
-            }
+            return Values.FirstOrDefault();
         }
     }
 }

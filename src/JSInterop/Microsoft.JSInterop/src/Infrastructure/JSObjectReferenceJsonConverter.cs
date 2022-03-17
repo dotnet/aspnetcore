@@ -1,66 +1,32 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.JSInterop.Implementation;
 
-namespace Microsoft.JSInterop.Infrastructure
+namespace Microsoft.JSInterop.Infrastructure;
+
+internal sealed class JSObjectReferenceJsonConverter : JsonConverter<IJSObjectReference>
 {
-    internal sealed class JSObjectReferenceJsonConverter<TInterface, TImplementation> : JsonConverter<TInterface>
-        where TInterface : class, IJSObjectReference
-        where TImplementation : JSObjectReference, TInterface
+    private readonly JSRuntime _jsRuntime;
+
+    public JSObjectReferenceJsonConverter(JSRuntime jsRuntime)
     {
-        private static readonly JsonEncodedText _idKey = JsonEncodedText.Encode("__jsObjectId");
+        _jsRuntime = jsRuntime;
+    }
 
-        private readonly Func<long, TImplementation> _jsObjectReferenceFactory;
+    public override bool CanConvert(Type typeToConvert)
+        => typeToConvert == typeof(IJSObjectReference) || typeToConvert == typeof(JSObjectReference);
 
-        public JSObjectReferenceJsonConverter(Func<long, TImplementation> jsObjectReferenceFactory)
-        {
-            _jsObjectReferenceFactory = jsObjectReferenceFactory;
-        }
+    public override IJSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var id = JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref reader);
+        return new JSObjectReference(_jsRuntime, id);
+    }
 
-        public override bool CanConvert(Type typeToConvert)
-            => typeToConvert == typeof(TInterface) || typeToConvert == typeof(TImplementation);
-
-        public override TInterface? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            long id = -1;
-
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-            {
-                if (reader.TokenType == JsonTokenType.PropertyName)
-                {
-                    if (id == -1 && reader.ValueTextEquals(_idKey.EncodedUtf8Bytes))
-                    {
-                        reader.Read();
-                        id = reader.GetInt64();
-                    }
-                    else
-                    {
-                        throw new JsonException($"Unexcepted JSON property {reader.GetString()}.");
-                    }
-                }
-                else
-                {
-                    throw new JsonException($"Unexcepted JSON token {reader.TokenType}");
-                }
-            }
-
-            if (id == -1)
-            {
-                throw new JsonException($"Required property {_idKey} not found.");
-            }
-
-            return _jsObjectReferenceFactory(id);
-        }
-
-        public override void Write(Utf8JsonWriter writer, TInterface value, JsonSerializerOptions options)
-        {
-            writer.WriteStartObject();
-            writer.WriteNumber(_idKey, ((TImplementation)value).Id);
-            writer.WriteEndObject();
-        }
+    public override void Write(Utf8JsonWriter writer, IJSObjectReference value, JsonSerializerOptions options)
+    {
+        JSObjectReferenceJsonWorker.WriteJSObjectReference(writer, (JSObjectReference)value);
     }
 }

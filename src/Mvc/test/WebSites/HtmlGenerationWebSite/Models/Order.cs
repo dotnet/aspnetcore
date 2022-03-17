@@ -1,61 +1,57 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+namespace HtmlGenerationWebSite.Models;
 
-namespace HtmlGenerationWebSite.Models
+public class Order
 {
-    public class Order
+    public bool NeedSpecialHandle
     {
-        public bool NeedSpecialHandle
-        {
-            get;
-            set;
-        }
-
-        public DateTimeOffset OrderDate
-        {
-            get;
-            set;
-        }
-
-        public ICollection<string> PaymentMethod
-        {
-            get;
-            set;
-        }
-
-        public DateTime ShippingDateTime
-        {
-            get;
-            set;
-        }
-
-        public string Shipping
-        {
-            get;
-            set;
-        }
-
-        public IEnumerable<int> Products
-        {
-            get;
-            set;
-        }
-
-        public IEnumerable<int> SubstituteProducts
-        {
-            get;
-            set;
-        }
-
-        public Customer Customer
-        {
-            get;
-            set;
-        }
-
-        public IList<Product> ProductDetails { get; } = new List<Product>();
+        get;
+        set;
     }
+
+    public DateTimeOffset OrderDate
+    {
+        get;
+        set;
+    }
+
+    public ICollection<string> PaymentMethod
+    {
+        get;
+        set;
+    }
+
+    public DateTime ShippingDateTime
+    {
+        get;
+        set;
+    }
+
+    public string Shipping
+    {
+        get;
+        set;
+    }
+
+    public IEnumerable<int> Products
+    {
+        get;
+        set;
+    }
+
+    public IEnumerable<int> SubstituteProducts
+    {
+        get;
+        set;
+    }
+
+    public Customer Customer
+    {
+        get;
+        set;
+    }
+
+    public IList<Product> ProductDetails { get; } = new List<Product>();
 }

@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor;
+
+/// <summary>
+/// Defines methods that are used for creating <see cref="IRazorPage"/> instances at a given path.
+/// </summary>
+public interface IRazorPageFactoryProvider
 {
     /// <summary>
-    /// Defines methods that are used for creating <see cref="IRazorPage"/> instances at a given path.
+    /// Creates a <see cref="IRazorPage"/> factory for the specified path.
     /// </summary>
-    public interface IRazorPageFactoryProvider
-    {
-        /// <summary>
-        /// Creates a <see cref="IRazorPage"/> factory for the specified path.
-        /// </summary>
-        /// <param name="relativePath">The path to locate the page.</param>
-        /// <returns>The <see cref="RazorPageFactoryResult"/> instance.</returns>
-        RazorPageFactoryResult CreateFactory(string relativePath);
-    }
+    /// <param name="relativePath">The path to locate the page.</param>
+    /// <returns>The <see cref="RazorPageFactoryResult"/> instance.</returns>
+    RazorPageFactoryResult CreateFactory(string relativePath);
 }

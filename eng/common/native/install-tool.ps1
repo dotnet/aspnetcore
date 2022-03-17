@@ -105,7 +105,7 @@ try {
     Write-Error "There are multiple copies of $ToolName in $($ToolInstallDirectory): `n$(@($ToolFilePath | out-string))"
     exit 1
   } elseif (@($ToolFilePath).Length -Lt 1) {
-    Write-Host "$ToolName was not found in $ToolFilePath."
+    Write-Host "$ToolName was not found in $ToolInstallDirectory."
     exit 1
   }
 

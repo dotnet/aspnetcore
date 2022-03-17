@@ -2,11 +2,10 @@
 
   <PropertyGroup>
     <Description>Implements the SignalR Hub Protocol using Newtonsoft.Json.</Description>
-    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +19,10 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
   </ItemGroup>
 
 </Project>

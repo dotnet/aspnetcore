@@ -1,23 +1,23 @@
-﻿{
+{
   "solution": {
     "path": "..\\..\\..\\..\\AspNetCore.sln",
-    "projects" : [
-      "src\\Servers\\test\\FunctionalTests\\ServerComparison.FunctionalTests.csproj",
+    "projects": [
+      "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
+      "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",
+      "src\\DataProtection\\DataProtection\\src\\Microsoft.AspNetCore.DataProtection.csproj",
       "src\\Hosting\\Server.IntegrationTesting\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.csproj",
       "src\\Http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
       "src\\Middleware\\ResponseCompression\\src\\Microsoft.AspNetCore.ResponseCompression.csproj",
+      "src\\Security\\Authentication\\Core\\src\\Microsoft.AspNetCore.Authentication.csproj",
+      "src\\Security\\Authentication\\Negotiate\\src\\Microsoft.AspNetCore.Authentication.Negotiate.csproj",
       "src\\Servers\\HttpSys\\src\\Microsoft.AspNetCore.Server.HttpSys.csproj",
       "src\\Servers\\IIS\\IISIntegration\\src\\Microsoft.AspNetCore.Server.IISIntegration.csproj",
-      "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
-      "src\\Servers\\testassets\\ServerComparison.TestSites\\ServerComparison.TestSites.csproj",
       "src\\Servers\\IIS\\IIS\\src\\Microsoft.AspNetCore.Server.IIS.csproj",
       "src\\Servers\\IIS\\IntegrationTesting.IIS\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj",
-      "src\\Security\\Authentication\\Negotiate\\src\\Microsoft.AspNetCore.Authentication.Negotiate.csproj",
-      "src\\Security\\Authentication\\Core\\src\\Microsoft.AspNetCore.Authentication.csproj",
-      "src\\DataProtection\\DataProtection\\src\\Microsoft.AspNetCore.DataProtection.csproj",
-      "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
-      "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj"
+      "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "src\\Servers\\test\\FunctionalTests\\ServerComparison.FunctionalTests.csproj",
+      "src\\Servers\\testassets\\ServerComparison.TestSites\\ServerComparison.TestSites.csproj"
     ]
   }
 }

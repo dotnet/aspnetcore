@@ -1,21 +1,19 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc;
+
+public class HttpNotFoundResultTests
 {
-    public class HttpNotFoundResultTests
+    [Fact]
+    public void HttpNotFoundResult_InitializesStatusCode()
     {
-        [Fact]
-        public void HttpNotFoundResult_InitializesStatusCode()
-        {
-            // Arrange & act
-            var notFound = new NotFoundResult();
+        // Arrange & act
+        var notFound = new NotFoundResult();
 
-            // Assert
-            Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
-        }
+        // Assert
+        Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
     }
 }

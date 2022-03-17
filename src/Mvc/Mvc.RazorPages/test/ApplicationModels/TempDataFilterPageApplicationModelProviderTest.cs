@@ -1,184 +1,180 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
+
+public class TempDataFilterPageApplicationModelProviderTest
 {
-    public class TempDataFilterPageApplicationModelProviderTest
+    [Fact]
+    public void OnProvidersExecuting_DoesNotAddFilter_IfTypeHasNoTempDataProperties()
     {
-        [Fact]
-        public void OnProvidersExecuting_DoesNotAddFilter_IfTypeHasNoTempDataProperties()
-        {
-            // Arrange
-            var type = typeof(TestPageModel_NoTempDataProperties);
-            var provider = CreateProvider();
-            var context = CreateProviderContext(type);
+        // Arrange
+        var type = typeof(TestPageModel_NoTempDataProperties);
+        var provider = CreateProvider();
+        var context = CreateProviderContext(type);
 
-            // Act
-            provider.OnProvidersExecuting(context);
+        // Act
+        provider.OnProvidersExecuting(context);
 
-            // Assert
-            Assert.Empty(context.PageApplicationModel.Filters);
-        }
+        // Assert
+        Assert.Empty(context.PageApplicationModel.Filters);
+    }
 
-        [Fact]
-        public void OnProvidersExecuting_ValidatesTempDataProperties()
-        {
-            // Arrange
-            var type = typeof(TestPageModel_PrivateSet);
-            var expected = $"The '{type.FullName}.Test' property with TempDataAttribute is invalid. A property using TempDataAttribute must have a public getter and setter.";
+    [Fact]
+    public void OnProvidersExecuting_ValidatesTempDataProperties()
+    {
+        // Arrange
+        var type = typeof(TestPageModel_PrivateSet);
+        var expected = $"The '{type.FullName}.Test' property with TempDataAttribute is invalid. A property using TempDataAttribute must have a public getter and setter.";
 
-            var provider = CreateProvider();
-            var context = CreateProviderContext(type);
+        var provider = CreateProvider();
+        var context = CreateProviderContext(type);
 
-            // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
-            Assert.Equal(expected, ex.Message);
-        }
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
+        Assert.Equal(expected, ex.Message);
+    }
 
-        [Fact]
-        public void OnProvidersExecuting_ThrowsIfThePropertyTypeIsUnsupported()
-        {
-            // Arrange
-            var type = typeof(TestPageModel_InvalidProperties);
-            var expected = $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.ModelState' of type '{typeof(ModelStateDictionary)}'." +
-                Environment.NewLine +
-                $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.TimeZone' of type '{typeof(TimeZoneInfo)}'.";
+    [Fact]
+    public void OnProvidersExecuting_ThrowsIfThePropertyTypeIsUnsupported()
+    {
+        // Arrange
+        var type = typeof(TestPageModel_InvalidProperties);
+        var expected = $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.ModelState' of type '{typeof(ModelStateDictionary)}'." +
+            Environment.NewLine +
+            $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.TimeZone' of type '{typeof(TimeZoneInfo)}'.";
 
-            var provider = CreateProvider();
-            var context = CreateProviderContext(type);
+        var provider = CreateProvider();
+        var context = CreateProviderContext(type);
 
-            // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
-            Assert.Equal(expected, ex.Message);
-        }
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
+        Assert.Equal(expected, ex.Message);
+    }
 
-        [Fact]
-        public void AddsTempDataPropertyFilter_ForTempDataAttributeProperties()
-        {
-            // Arrange
-            var type = typeof(TestPageModel_OneTempDataProperty);
-            var provider = CreateProvider();
-            var context = CreateProviderContext(type);
+    [Fact]
+    public void AddsTempDataPropertyFilter_ForTempDataAttributeProperties()
+    {
+        // Arrange
+        var type = typeof(TestPageModel_OneTempDataProperty);
+        var provider = CreateProvider();
+        var context = CreateProviderContext(type);
 
-            // Act
-            provider.OnProvidersExecuting(context);
+        // Act
+        provider.OnProvidersExecuting(context);
 
-            // Assert
-            var filter = Assert.Single(context.PageApplicationModel.Filters);
-            Assert.IsType<PageSaveTempDataPropertyFilterFactory>(filter);
-        }
+        // Assert
+        var filter = Assert.Single(context.PageApplicationModel.Filters);
+        Assert.IsType<PageSaveTempDataPropertyFilterFactory>(filter);
+    }
 
-        [Fact]
-        public void InitializeFilterFactory_WithExpectedPropertyHelpers_ForTempDataAttributeProperties()
-        {
-            // Arrange
-            var type = typeof(TestPageModel_OneTempDataProperty);
-            var provider = CreateProvider();
-            var context = CreateProviderContext(type);
+    [Fact]
+    public void InitializeFilterFactory_WithExpectedPropertyHelpers_ForTempDataAttributeProperties()
+    {
+        // Arrange
+        var type = typeof(TestPageModel_OneTempDataProperty);
+        var provider = CreateProvider();
+        var context = CreateProviderContext(type);
 
-            // Act
-            provider.OnProvidersExecuting(context);
+        // Act
+        provider.OnProvidersExecuting(context);
 
-            // Assert
-            var filter = Assert.IsType<PageSaveTempDataPropertyFilterFactory>(Assert.Single(context.PageApplicationModel.Filters));
-            Assert.Collection(
-                filter.Properties,
-                property =>
-                {
-                    Assert.Equal("Test2", property.Key);
-                    Assert.Equal(type.GetProperty(nameof(TestPageModel_OneTempDataProperty.Test2)), property.PropertyInfo);
-                });
-        }
-
-        [Fact]
-        public void OnProvidersExecuting_SetsKeyPrefixToEmptyString()
-        {
-            // Arrange
-            var type = typeof(TestPageModel_OneTempDataProperty);
-            var provider = CreateProvider();
-            var context = CreateProviderContext(type);
-
-            // Act
-            provider.OnProvidersExecuting(context);
-
-            // Assert
-            var filter = Assert.IsType<PageSaveTempDataPropertyFilterFactory>(Assert.Single(context.PageApplicationModel.Filters));
-            Assert.Collection(
-                filter.Properties,
-                property =>
-                {
-                    Assert.Equal("Test2", property.Key);
-                });
-        }
-
-        private static PageApplicationModelProviderContext CreateProviderContext(Type handlerType)
-        {
-            var descriptor = new CompiledPageActionDescriptor();
-            var context = new PageApplicationModelProviderContext(descriptor, typeof(TestPage).GetTypeInfo())
+        // Assert
+        var filter = Assert.IsType<PageSaveTempDataPropertyFilterFactory>(Assert.Single(context.PageApplicationModel.Filters));
+        Assert.Collection(
+            filter.Properties,
+            property =>
             {
-                PageApplicationModel = new PageApplicationModel(descriptor, handlerType.GetTypeInfo(), Array.Empty<object>()),
-            };
+                Assert.Equal("Test2", property.Key);
+                Assert.Equal(type.GetProperty(nameof(TestPageModel_OneTempDataProperty.Test2)), property.PropertyInfo);
+            });
+    }
 
-            return context;
-        }
+    [Fact]
+    public void OnProvidersExecuting_SetsKeyPrefixToEmptyString()
+    {
+        // Arrange
+        var type = typeof(TestPageModel_OneTempDataProperty);
+        var provider = CreateProvider();
+        var context = CreateProviderContext(type);
 
-        private static TempDataFilterPageApplicationModelProvider CreateProvider()
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var filter = Assert.IsType<PageSaveTempDataPropertyFilterFactory>(Assert.Single(context.PageApplicationModel.Filters));
+        Assert.Collection(
+            filter.Properties,
+            property =>
+            {
+                Assert.Equal("Test2", property.Key);
+            });
+    }
+
+    private static PageApplicationModelProviderContext CreateProviderContext(Type handlerType)
+    {
+        var descriptor = new CompiledPageActionDescriptor();
+        var context = new PageApplicationModelProviderContext(descriptor, typeof(TestPage).GetTypeInfo())
         {
-            var tempDataSerializer = new DefaultTempDataSerializer();
-            return new TempDataFilterPageApplicationModelProvider(tempDataSerializer);
-        }
+            PageApplicationModel = new PageApplicationModel(descriptor, handlerType.GetTypeInfo(), Array.Empty<object>()),
+        };
 
-        private class TestPage : Page
-        {
-            public object Model => null;
+        return context;
+    }
 
-            public override Task ExecuteAsync() => null;
-        }
+    private static TempDataFilterPageApplicationModelProvider CreateProvider()
+    {
+        var tempDataSerializer = new DefaultTempDataSerializer();
+        return new TempDataFilterPageApplicationModelProvider(tempDataSerializer);
+    }
 
-        public class TestPageModel_NoTempDataProperties
-        {
-            public DateTime? DateTime { get; set; }
-        }
+    private class TestPage : Page
+    {
+        public object Model => null;
 
-        public class TestPageModel_NullableNonPrimitiveTempDataProperty
-        {
-            [TempData]
-            public DateTime? DateTime { get; set; }
-        }
+        public override Task ExecuteAsync() => null;
+    }
 
-        public class TestPageModel_OneTempDataProperty
-        {
-            public string Test { get; set; }
+    public class TestPageModel_NoTempDataProperties
+    {
+        public DateTime? DateTime { get; set; }
+    }
 
-            [TempData]
-            public string Test2 { get; set; }
-        }
+    public class TestPageModel_NullableNonPrimitiveTempDataProperty
+    {
+        [TempData]
+        public DateTime? DateTime { get; set; }
+    }
 
-        public class TestPageModel_PrivateSet
-        {
-            [TempData]
-            public string Test { get; private set; }
-        }
+    public class TestPageModel_OneTempDataProperty
+    {
+        public string Test { get; set; }
 
-        public class TestPageModel_InvalidProperties
-        {
-            [TempData]
-            public ModelStateDictionary ModelState { get; set; }
+        [TempData]
+        public string Test2 { get; set; }
+    }
 
-            [TempData]
-            public int SomeProperty { get; set; }
+    public class TestPageModel_PrivateSet
+    {
+        [TempData]
+        public string Test { get; private set; }
+    }
 
-            [TempData]
-            public TimeZoneInfo TimeZone { get; set; }
-        }
+    public class TestPageModel_InvalidProperties
+    {
+        [TempData]
+        public ModelStateDictionary ModelState { get; set; }
+
+        [TempData]
+        public int SomeProperty { get; set; }
+
+        [TempData]
+        public TimeZoneInfo TimeZone { get; set; }
     }
 }

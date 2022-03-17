@@ -1,36 +1,29 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+namespace SocialWeather;
 
-namespace SocialWeather
+public class Program
 {
-    public class Program
+    public static Task Main(string[] args)
     {
-        public static Task Main(string[] args)
-        {
-            var host = Host.CreateDefaultBuilder(args)
-                .ConfigureWebHost(webHostBuilder =>
+        var host = Host.CreateDefaultBuilder(args)
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
+                .ConfigureLogging(factory =>
                 {
-                    webHostBuilder
-                    .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
-                    .ConfigureLogging(factory =>
-                    {
-                        factory.AddConsole();
-                        factory.AddFilter("Console", level => level >= LogLevel.Information);
-                    })
-                    .UseKestrel()
-                    .UseContentRoot(Directory.GetCurrentDirectory())
-                    .UseIISIntegration()
-                    .UseStartup<Startup>();
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Information);
                 })
-                .Build();
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseStartup<Startup>();
+            })
+            .Build();
 
-            return host.RunAsync();
-        }
+        return host.RunAsync();
     }
 }

@@ -1,5 +1,5 @@
 <!--
-  This project produces a generic RPM installer for Linux x64 platforms only.
+  This project produces a generic RPM installer for Linux x64/arm64 platforms only.
 -->
 <Project DefaultTargets="Build">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
@@ -12,7 +12,9 @@
   <Import Project="..\Rpm.Runtime.Common.targets" />
 
   <PropertyGroup>
-    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-x64.rpm</TargetFileName>
+    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-$(RpmArch).rpm</TargetFileName>
     <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
+    <CblMarinerBaseName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)</CblMarinerBaseName>
+    <CblMarinerExtension>-$(RpmArch).rpm</CblMarinerExtension>
   </PropertyGroup>
 </Project>

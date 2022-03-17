@@ -1,3 +1,2 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
-Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString? markupContent) -> void

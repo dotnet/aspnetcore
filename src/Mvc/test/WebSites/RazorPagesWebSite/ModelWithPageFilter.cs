@@ -1,43 +1,40 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RazorPagesWebSite
+namespace RazorPagesWebSite;
+
+[HandlerChangingPageFilter]
+public class ModelWithPageFilter : PageModel
 {
-    [HandlerChangingPageFilter]
-    public class ModelWithPageFilter : PageModel
+    public string Message { get; private set; }
+
+    public void OnGet()
     {
-        public string Message { get; private set; }
-
-        public void OnGet()
-        {
-            Message = $"Hello from {nameof(OnGet)}";
-        }
-
-        public void OnGetEdit()
-        {
-            Message = $"Hello from {nameof(OnGetEdit)}";
-        }
+        Message = $"Hello from {nameof(OnGet)}";
     }
 
-    [AttributeUsage(AttributeTargets.Class)]
-    public class HandlerChangingPageFilterAttribute : Attribute, IPageFilter
+    public void OnGetEdit()
     {
-        public void OnPageHandlerSelected(PageHandlerSelectedContext context)
-        {
-            context.HandlerMethod = context.ActionDescriptor.HandlerMethods.First(m => m.Name == "Edit");
-        }
+        Message = $"Hello from {nameof(OnGetEdit)}";
+    }
+}
 
-        public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
-        {            
-        }
+[AttributeUsage(AttributeTargets.Class)]
+public class HandlerChangingPageFilterAttribute : Attribute, IPageFilter
+{
+    public void OnPageHandlerSelected(PageHandlerSelectedContext context)
+    {
+        context.HandlerMethod = context.ActionDescriptor.HandlerMethods.First(m => m.Name == "Edit");
+    }
 
-        public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
-        {
-        }
+    public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
+    {
+    }
+
+    public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
+    {
     }
 }

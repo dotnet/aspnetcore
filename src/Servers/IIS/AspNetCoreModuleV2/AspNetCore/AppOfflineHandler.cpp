@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #include "AppOfflineHandler.h"
 
@@ -8,7 +8,7 @@
 REQUEST_NOTIFICATION_STATUS AppOfflineHandler::ExecuteRequestHandler()
 {
     HTTP_DATA_CHUNK   DataChunk {};
-    auto pResponse = m_pContext.GetResponse();
+    auto* pResponse = m_pContext.GetResponse();
 
     DBG_ASSERT(pResponse);
 

@@ -1,142 +1,60 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Connections.Internal
+namespace Microsoft.AspNetCore.Http.Connections.Internal;
+
+internal sealed partial class HttpConnectionDispatcher
 {
-    internal partial class HttpConnectionDispatcher
+    internal static partial class Log
     {
-        internal static class Log
-        {
-            private static readonly Action<ILogger, string, Exception?> _connectionDisposed =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "ConnectionDisposed"), "Connection {TransportConnectionId} was disposed.");
+        [LoggerMessage(1, LogLevel.Debug, "Connection {TransportConnectionId} was disposed.", EventName = "ConnectionDisposed")]
+        public static partial void ConnectionDisposed(ILogger logger, string transportConnectionId);
 
-            private static readonly Action<ILogger, string, string, Exception?> _connectionAlreadyActive =
-                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(2, "ConnectionAlreadyActive"), "Connection {TransportConnectionId} is already active via {RequestId}.");
+        [LoggerMessage(2, LogLevel.Debug, "Connection {TransportConnectionId} is already active via {RequestId}.", EventName = "ConnectionAlreadyActive")]
+        public static partial void ConnectionAlreadyActive(ILogger logger, string transportConnectionId, string requestId);
 
-            private static readonly Action<ILogger, string, string, Exception?> _pollCanceled =
-                LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(3, "PollCanceled"), "Previous poll canceled for {TransportConnectionId} on {RequestId}.");
+        [LoggerMessage(3, LogLevel.Trace, "Previous poll canceled for {TransportConnectionId} on {RequestId}.", EventName = "PollCanceled")]
+        public static partial void PollCanceled(ILogger logger, string transportConnectionId, string requestId);
 
-            private static readonly Action<ILogger, Exception?> _establishedConnection =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "EstablishedConnection"), "Establishing new connection.");
+        [LoggerMessage(4, LogLevel.Debug, "Establishing new connection.", EventName = "EstablishedConnection")]
+        public static partial void EstablishedConnection(ILogger logger);
 
-            private static readonly Action<ILogger, Exception?> _resumingConnection =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(5, "ResumingConnection"), "Resuming existing connection.");
+        [LoggerMessage(5, LogLevel.Debug, "Resuming existing connection.", EventName = "ResumingConnection")]
+        public static partial void ResumingConnection(ILogger logger);
 
-            private static readonly Action<ILogger, long, Exception?> _receivedBytes =
-                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(6, "ReceivedBytes"), "Received {Count} bytes.");
+        [LoggerMessage(6, LogLevel.Trace, "Received {Count} bytes.", EventName = "ReceivedBytes")]
+        public static partial void ReceivedBytes(ILogger logger, long count);
 
-            private static readonly Action<ILogger, HttpTransportType, Exception?> _transportNotSupported =
-                LoggerMessage.Define<HttpTransportType>(LogLevel.Debug, new EventId(7, "TransportNotSupported"), "{TransportType} transport not supported by this connection handler.");
+        [LoggerMessage(7, LogLevel.Debug, "{TransportType} transport not supported by this connection handler.", EventName = "TransportNotSupported")]
+        public static partial void TransportNotSupported(ILogger logger, HttpTransportType transportType);
 
-            private static readonly Action<ILogger, HttpTransportType, HttpTransportType, Exception?> _cannotChangeTransport =
-                LoggerMessage.Define<HttpTransportType, HttpTransportType>(LogLevel.Debug, new EventId(8, "CannotChangeTransport"), "Cannot change transports mid-connection; currently using {TransportType}, requesting {RequestedTransport}.");
+        [LoggerMessage(8, LogLevel.Debug, "Cannot change transports mid-connection; currently using {TransportType}, requesting {RequestedTransport}.", EventName = "CannotChangeTransport")]
+        public static partial void CannotChangeTransport(ILogger logger, HttpTransportType transportType, HttpTransportType requestedTransport);
 
-            private static readonly Action<ILogger, Exception?> _postNotallowedForWebsockets =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(9, "PostNotAllowedForWebSockets"), "POST requests are not allowed for websocket connections.");
+        [LoggerMessage(9, LogLevel.Debug, "POST requests are not allowed for websocket connections.", EventName = "PostNotAllowedForWebSockets")]
+        public static partial void PostNotAllowedForWebSockets(ILogger logger);
 
-            private static readonly Action<ILogger, Exception?> _negotiationRequest =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(10, "NegotiationRequest"), "Sending negotiation response.");
+        [LoggerMessage(10, LogLevel.Debug, "Sending negotiation response.", EventName = "NegotiationRequest")]
+        public static partial void NegotiationRequest(ILogger logger);
 
-            private static readonly Action<ILogger, HttpTransportType, Exception?> _receivedDeleteRequestForUnsupportedTransport =
-                LoggerMessage.Define<HttpTransportType>(LogLevel.Trace, new EventId(11, "ReceivedDeleteRequestForUnsupportedTransport"), "Received DELETE request for unsupported transport: {TransportType}.");
+        [LoggerMessage(11, LogLevel.Trace, "Received DELETE request for unsupported transport: {TransportType}.", EventName = "ReceivedDeleteRequestForUnsupportedTransport")]
+        public static partial void ReceivedDeleteRequestForUnsupportedTransport(ILogger logger, HttpTransportType transportType);
 
-            private static readonly Action<ILogger, Exception?> _terminatingConnection =
-                LoggerMessage.Define(LogLevel.Trace, new EventId(12, "TerminatingConection"), "Terminating Long Polling connection due to a DELETE request.");
+        [LoggerMessage(12, LogLevel.Trace, "Terminating Long Polling connection due to a DELETE request.", EventName = "TerminatingConection")]
+        public static partial void TerminatingConnection(ILogger logger);
 
-            private static readonly Action<ILogger, string, Exception?> _connectionDisposedWhileWriteInProgress =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(13, "ConnectionDisposedWhileWriteInProgress"), "Connection {TransportConnectionId} was disposed while a write was in progress.");
+        [LoggerMessage(13, LogLevel.Debug, "Connection {TransportConnectionId} was disposed while a write was in progress.", EventName = "ConnectionDisposedWhileWriteInProgress")]
+        public static partial void ConnectionDisposedWhileWriteInProgress(ILogger logger, string transportConnectionId, Exception ex);
 
-            private static readonly Action<ILogger, string, Exception?> _failedToReadHttpRequestBody =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, "FailedToReadHttpRequestBody"), "Connection {TransportConnectionId} failed to read the HTTP request body.");
+        [LoggerMessage(14, LogLevel.Debug, "Connection {TransportConnectionId} failed to read the HTTP request body.", EventName = "FailedToReadHttpRequestBody")]
+        public static partial void FailedToReadHttpRequestBody(ILogger logger, string transportConnectionId, Exception ex);
 
-            private static readonly Action<ILogger, int, Exception?> _negotiateProtocolVersionMismatch =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(15, "NegotiateProtocolVersionMismatch"), "The client requested version '{clientProtocolVersion}', but the server does not support this version.");
+        [LoggerMessage(15, LogLevel.Debug, "The client requested version '{clientProtocolVersion}', but the server does not support this version.", EventName = "NegotiateProtocolVersionMismatch")]
+        public static partial void NegotiateProtocolVersionMismatch(ILogger logger, int clientProtocolVersion);
 
-            private static readonly Action<ILogger, string, Exception?> _invalidNegotiateProtocolVersion =
-               LoggerMessage.Define<string>(LogLevel.Debug, new EventId(16, "InvalidNegotiateProtocolVersion"), "The client requested an invalid protocol version '{queryStringVersionValue}'");
-
-            public static void ConnectionDisposed(ILogger logger, string connectionId)
-            {
-                _connectionDisposed(logger, connectionId, null);
-            }
-
-            public static void ConnectionAlreadyActive(ILogger logger, string connectionId, string requestId)
-            {
-                _connectionAlreadyActive(logger, connectionId, requestId, null);
-            }
-
-            public static void PollCanceled(ILogger logger, string connectionId, string requestId)
-            {
-                _pollCanceled(logger, connectionId, requestId, null);
-            }
-
-            public static void EstablishedConnection(ILogger logger)
-            {
-                _establishedConnection(logger, null);
-            }
-
-            public static void ResumingConnection(ILogger logger)
-            {
-                _resumingConnection(logger, null);
-            }
-
-            public static void ReceivedBytes(ILogger logger, long count)
-            {
-                _receivedBytes(logger, count, null);
-            }
-
-            public static void TransportNotSupported(ILogger logger, HttpTransportType transport)
-            {
-                _transportNotSupported(logger, transport, null);
-            }
-
-            public static void CannotChangeTransport(ILogger logger, HttpTransportType transport, HttpTransportType requestTransport)
-            {
-                _cannotChangeTransport(logger, transport, requestTransport, null);
-            }
-
-            public static void PostNotAllowedForWebSockets(ILogger logger)
-            {
-                _postNotallowedForWebsockets(logger, null);
-            }
-
-            public static void NegotiationRequest(ILogger logger)
-            {
-                _negotiationRequest(logger, null);
-            }
-
-            public static void ReceivedDeleteRequestForUnsupportedTransport(ILogger logger, HttpTransportType transportType)
-            {
-                _receivedDeleteRequestForUnsupportedTransport(logger, transportType, null);
-            }
-
-            public static void TerminatingConnection(ILogger logger)
-            {
-                _terminatingConnection(logger, null);
-            }
-
-            public static void ConnectionDisposedWhileWriteInProgress(ILogger logger, string connectionId, Exception ex)
-            {
-                _connectionDisposedWhileWriteInProgress(logger, connectionId, ex);
-            }
-
-            public static void FailedToReadHttpRequestBody(ILogger logger, string connectionId, Exception ex)
-            {
-                _failedToReadHttpRequestBody(logger, connectionId, ex);
-            }
-
-            public static void NegotiateProtocolVersionMismatch(ILogger logger, int clientProtocolVersion)
-            {
-                _negotiateProtocolVersionMismatch(logger, clientProtocolVersion, null);
-            }
-
-            public static void InvalidNegotiateProtocolVersion(ILogger logger, string requestedProtocolVersion)
-            {
-                _invalidNegotiateProtocolVersion(logger, requestedProtocolVersion, null);
-            }
-        }
+        [LoggerMessage(16, LogLevel.Debug, "The client requested an invalid protocol version '{queryStringVersionValue}'", EventName = "InvalidNegotiateProtocolVersion")]
+        public static partial void InvalidNegotiateProtocolVersion(ILogger logger, string queryStringVersionValue);
     }
 }

@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 package com.microsoft.signalr;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,9 +12,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.reactivex.subjects.CompletableSubject;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.CompletableSubject;
 
 class LongPollingTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
@@ -29,7 +30,7 @@ class LongPollingTransport implements Transport {
     private volatile Boolean active = false;
     private String pollUrl;
     private String closeError;
-    private CompletableSubject receiveLoop = CompletableSubject.create();
+    private BehaviorSubject<String> receiveLoopSubject = BehaviorSubject.create();
     private CompletableSubject closeSubject = CompletableSubject.create();
     private ExecutorService threadPool;
     private ExecutorService onReceiveThread;
@@ -78,12 +79,15 @@ class LongPollingTransport implements Transport {
                 this.threadPool = Executors.newCachedThreadPool();
                 threadPool.execute(() -> {
                     this.onReceiveThread = Executors.newSingleThreadExecutor();
-                    receiveLoop.subscribe(() -> {
-                        this.stop().onErrorComplete().subscribe();
+                    receiveLoopSubject.observeOn(Schedulers.io()).subscribe(u -> {
+                        poll(u);
                     }, e -> {
                         this.stop().onErrorComplete().subscribe();
+                    }, () -> {
+                        this.stop().onErrorComplete().subscribe();
                     });
-                    poll(url).subscribeWith(receiveLoop);
+                    // start polling
+                    receiveLoopSubject.onNext(url);
                 });
 
                 return Completable.complete();
@@ -91,14 +95,14 @@ class LongPollingTransport implements Transport {
         }));
     }
 
-    private Completable poll(String url) {
+    private void poll(String url) {
         if (this.active) {
             pollUrl = url + "&_=" + System.currentTimeMillis();
             logger.debug("Polling {}.", pollUrl);
-            return this.updateHeaderToken().andThen(Completable.defer(() -> {
+            this.updateHeaderToken().andThen(Completable.defer(() -> {
                 HttpRequest request = new HttpRequest();
                 request.addHeaders(headers);
-                Completable pollingCompletable = this.pollingClient.get(pollUrl, request).flatMapCompletable(response -> {
+                this.pollingClient.get(pollUrl, request).subscribe(response -> {
                     if (response.getStatusCode() == 204) {
                         logger.info("LongPolling transport terminated by server.");
                         this.active = false;
@@ -107,22 +111,32 @@ class LongPollingTransport implements Transport {
                         this.active = false;
                         this.closeError = "Unexpected response code " + response.getStatusCode() + ".";
                     } else {
-                        if (response.getContent() != null) {
+                        if (response.getContent() != null && response.getContent().hasRemaining()) {
                             logger.debug("Message received.");
-                            onReceiveThread.submit(() -> this.onReceive(response.getContent()));
+                            try {
+                                onReceiveThread.submit(() -> this.onReceive(response.getContent()));
+                            // it's possible for stop to be called while a request is in progress, if stop throws it wont wait for
+                            // an in-progress poll to complete and will shutdown the thread. We should ignore the exception so we don't
+                            // get an unhandled RX error
+                            } catch(Exception e) {}
                         } else {
                             logger.debug("Poll timed out, reissuing.");
                         }
                     }
-                    return poll(url);
+                    receiveLoopSubject.onNext(url);
+                }, e -> {
+                    receiveLoopSubject.onError(e);
                 });
 
-                return pollingCompletable;
-            }));
+                return Completable.complete();
+            }))
+            .subscribe(() -> {},
+            e -> {
+                receiveLoopSubject.onError(e);
+            });
         } else {
             logger.debug("Long Polling transport polling complete.");
-            receiveLoop.onComplete();
-            return Completable.complete();
+            receiveLoopSubject.onComplete();
         }
     }
 
@@ -162,7 +176,7 @@ class LongPollingTransport implements Transport {
                 HttpRequest request = new HttpRequest();
                 request.addHeaders(headers);
                 return this.pollingClient.delete(this.url, request).ignoreElement()
-                    .andThen(receiveLoop)
+                    .andThen(receiveLoopSubject.ignoreElements())
                     .doOnComplete(() -> {
                         cleanup(this.closeError);
                     });

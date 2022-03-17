@@ -6,11 +6,11 @@ Microsoft.AspNetCore.DataProtection.IDataProtector
 Microsoft.AspNetCore.DataProtection.IDataProtector.Protect(byte[]! plaintext) -> byte[]!
 Microsoft.AspNetCore.DataProtection.IDataProtector.Unprotect(byte[]! protectedData) -> byte[]!
 Microsoft.AspNetCore.DataProtection.Infrastructure.IApplicationDiscriminator
-Microsoft.AspNetCore.DataProtection.Infrastructure.IApplicationDiscriminator.Discriminator.get -> string!
-static Microsoft.AspNetCore.DataProtection.DataProtectionCommonExtensions.CreateProtector(this Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! provider, System.Collections.Generic.IEnumerable<string!>! purposes) -> Microsoft.AspNetCore.DataProtection.IDataProtector!
+Microsoft.AspNetCore.DataProtection.Infrastructure.IApplicationDiscriminator.Discriminator.get -> string?
 static Microsoft.AspNetCore.DataProtection.DataProtectionCommonExtensions.CreateProtector(this Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! provider, string! purpose, params string![]! subPurposes) -> Microsoft.AspNetCore.DataProtection.IDataProtector!
+static Microsoft.AspNetCore.DataProtection.DataProtectionCommonExtensions.CreateProtector(this Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! provider, System.Collections.Generic.IEnumerable<string!>! purposes) -> Microsoft.AspNetCore.DataProtection.IDataProtector!
 static Microsoft.AspNetCore.DataProtection.DataProtectionCommonExtensions.GetDataProtectionProvider(this System.IServiceProvider! services) -> Microsoft.AspNetCore.DataProtection.IDataProtectionProvider!
-static Microsoft.AspNetCore.DataProtection.DataProtectionCommonExtensions.GetDataProtector(this System.IServiceProvider! services, System.Collections.Generic.IEnumerable<string!>! purposes) -> Microsoft.AspNetCore.DataProtection.IDataProtector!
 static Microsoft.AspNetCore.DataProtection.DataProtectionCommonExtensions.GetDataProtector(this System.IServiceProvider! services, string! purpose, params string![]! subPurposes) -> Microsoft.AspNetCore.DataProtection.IDataProtector!
+static Microsoft.AspNetCore.DataProtection.DataProtectionCommonExtensions.GetDataProtector(this System.IServiceProvider! services, System.Collections.Generic.IEnumerable<string!>! purposes) -> Microsoft.AspNetCore.DataProtection.IDataProtector!
 static Microsoft.AspNetCore.DataProtection.DataProtectionCommonExtensions.Protect(this Microsoft.AspNetCore.DataProtection.IDataProtector! protector, string! plaintext) -> string!
 static Microsoft.AspNetCore.DataProtection.DataProtectionCommonExtensions.Unprotect(this Microsoft.AspNetCore.DataProtection.IDataProtector! protector, string! protectedData) -> string!

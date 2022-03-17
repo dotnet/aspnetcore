@@ -1,29 +1,28 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace ControllersFromServicesWebSite
+namespace ControllersFromServicesWebSite;
+
+[Route("/[controller]")]
+public class AnotherController : Controller
 {
-    [Route("/[controller]")]
-    public class AnotherController : Controller
+    [HttpGet]
+    public IActionResult Get()
     {
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return new ContentResult { Content = "1" };
-        }
+        return new ContentResult { Content = "1" };
+    }
 
-        [HttpGet("InServicesViewComponent")]
-        public IActionResult ViewComponentAction()
-        {
-            return ViewComponent("ComponentFromServices");
-        }
+    [HttpGet("InServicesViewComponent")]
+    public IActionResult ViewComponentAction()
+    {
+        return ViewComponent("ComponentFromServices");
+    }
 
-        [HttpGet("InServicesTagHelper")]
-        public IActionResult InServicesTagHelper()
-        {
-            return View();
-        }
+    [HttpGet("InServicesTagHelper")]
+    public IActionResult InServicesTagHelper()
+    {
+        return View();
     }
 }

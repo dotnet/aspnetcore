@@ -31,30 +31,27 @@
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
 
-  <!-- Include an assembly attribute into the built application assembly to indicate which flavor of the UI framework to use -->
+  <!-- Include an assembly attribute into the built application assembly to indicate which flavor of the UI framework to use (needed for project reference) -->
   <ItemGroup>
     <AssemblyAttribute Include="Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute">
       <_Parameter1>$(IdentityUIFrameworkVersion)</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 
-  <PropertyGroup>
-    <ResolveStaticWebAssetsInputsDependsOn>_SetBootstrapFrameworkVersion</ResolveStaticWebAssetsInputsDependsOn>
-  </PropertyGroup>
-
-  <Target Name="_SetBootstrapFrameworkVersion">
+  <Target
+    Name="_SetBootstrapFrameworkVersion"
+    AfterTargets="ResolveReferencedProjectsStaticWebAssetsConfiguration"
+    BeforeTargets="ResolveReferencedProjectsStaticWebAssets">
     <ItemGroup>
-      <_StaticWebAssetsProjectReference Condition="'%(FileName)' == 'Microsoft.AspNetCore.identity.UI'">
-        <AdditionalProperties>IdentityUIFrameworkVersion=$(IdentityUIFrameworkVersion)</AdditionalProperties>
-      </_StaticWebAssetsProjectReference>
+      <StaticWebAssetProjectConfiguration Condition="'%(FileName)' == 'Microsoft.AspNetCore.Identity.UI'">
+        <AdditionalBuildProperties>IdentityDefaultUIFramework=$(IdentityUIFrameworkVersion)</AdditionalBuildProperties>
+      </StaticWebAssetProjectConfiguration>
     </ItemGroup>
   </Target>
 

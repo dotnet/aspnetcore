@@ -1,35 +1,74 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Components.Forms
+namespace Microsoft.AspNetCore.Components.Forms;
+
+internal static class InputExtensions
 {
-    internal static class InputExtensions
+    public static bool TryParseSelectableValueFromString<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue>(
+        this InputBase<TValue> input, string? value,
+        [MaybeNullWhen(false)] out TValue result,
+        [NotNullWhen(false)] out string? validationErrorMessage)
     {
-        public static bool TryParseSelectableValueFromString<TValue>(this InputBase<TValue> input, string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+        try
         {
-            try
+            // We special-case bool values because BindConverter reserves bool conversion for conditional attributes.
+            if (typeof(TValue) == typeof(bool))
             {
-                if (BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var parsedValue))
+                if (TryConvertToBool(value, out result))
                 {
-                    result = parsedValue;
                     validationErrorMessage = null;
                     return true;
                 }
-                else
+            }
+            else if (typeof(TValue) == typeof(bool?))
+            {
+                if (TryConvertToNullableBool(value, out result))
                 {
-                    result = default;
-                    validationErrorMessage = $"The {input.DisplayName ?? input.FieldIdentifier.FieldName} field is not valid.";
-                    return false;
+                    validationErrorMessage = null;
+                    return true;
                 }
             }
-            catch (InvalidOperationException ex)
+            else if (BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var parsedValue))
             {
-                throw new InvalidOperationException($"{input.GetType()} does not support the type '{typeof(TValue)}'.", ex);
+                result = parsedValue;
+                validationErrorMessage = null;
+                return true;
             }
+
+            result = default;
+            validationErrorMessage = $"The {input.DisplayName ?? input.FieldIdentifier.FieldName} field is not valid.";
+            return false;
         }
+        catch (InvalidOperationException ex)
+        {
+            throw new InvalidOperationException($"{input.GetType()} does not support the type '{typeof(TValue)}'.", ex);
+        }
+    }
+
+    private static bool TryConvertToBool<TValue>(string? value, out TValue result)
+    {
+        if (bool.TryParse(value, out var @bool))
+        {
+            result = (TValue)(object)@bool;
+            return true;
+        }
+
+        result = default!;
+        return false;
+    }
+
+    private static bool TryConvertToNullableBool<TValue>(string? value, out TValue result)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            result = default!;
+            return true;
+        }
+
+        return TryConvertToBool(value, out result);
     }
 }

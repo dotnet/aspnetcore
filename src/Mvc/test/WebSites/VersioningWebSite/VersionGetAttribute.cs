@@ -1,31 +1,29 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace VersioningWebSite
+namespace VersioningWebSite;
+
+public class VersionGetAttribute : VersionRouteAttribute, IActionHttpMethodProvider
 {
-    public class VersionGetAttribute : VersionRouteAttribute, IActionHttpMethodProvider
+    public VersionGetAttribute(string template)
+        : base(template)
     {
-        public VersionGetAttribute(string template)
-            : base(template)
-        {
-        }
+    }
 
-        public VersionGetAttribute(string template, string versionRange)
-            : base(template, versionRange)
-        {
-        }
+    public VersionGetAttribute(string template, string versionRange)
+        : base(template, versionRange)
+    {
+    }
 
-        private readonly IEnumerable<string> _httpMethods = new[] { "GET" };
+    private readonly IEnumerable<string> _httpMethods = new[] { "GET" };
 
-        public IEnumerable<string> HttpMethods
+    public IEnumerable<string> HttpMethods
+    {
+        get
         {
-            get
-            {
-                return _httpMethods;
-            }
+            return _httpMethods;
         }
     }
 }

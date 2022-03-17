@@ -1,44 +1,40 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using FilesWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FilesWebSite.Controllers
+namespace FilesWebSite.Controllers;
+
+public class UploadFilesController : Controller
 {
-    public class UploadFilesController : Controller
+    [HttpPost("UploadFiles")]
+    public async Task<object> Post(User user)
     {
-        [HttpPost("UploadFiles")]
-        public async Task<object> Post(User user)
+        var resultUser = new
         {
-            var resultUser = new
-            {
-                Name = user.Name,
-                Age = user.Age,
-                Biography = await user.ReadBiography()
-            };
+            Name = user.Name,
+            Age = user.Age,
+            Biography = await user.ReadBiography()
+        };
 
-            return resultUser;
+        return resultUser;
+    }
+
+    [HttpPost("UploadProductSpecs")]
+    public object ProductSpecs(Product product)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
         }
 
-        [HttpPost("UploadProductSpecs")]
-        public object ProductSpecs(Product product)
+        var files = new Dictionary<string, List<string>>();
+        foreach (var keyValuePair in product.Specs)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var files = new Dictionary<string, List<string>>();
-            foreach (var keyValuePair in product.Specs)
-            {
-                files.Add(keyValuePair.Key, keyValuePair.Value?.Select(formFile => formFile?.FileName).ToList());
-            }
-
-            return new { Name = product.Name, Specs = files };
+            files.Add(keyValuePair.Key, keyValuePair.Value?.Select(formFile => formFile?.FileName).ToList());
         }
+
+        return new { Name = product.Name, Specs = files };
     }
 }

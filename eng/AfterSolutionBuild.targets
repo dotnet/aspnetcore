@@ -12,10 +12,10 @@
                     Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" />
     </ItemGroup>
 
-    <RepoTasks.RemoveSharedFrameworkDependencies Condition="@(_BuildOutput->Count()) != 0"
+    <RepoTasks.RemoveSharedFrameworkDependencies Condition="'@(_BuildOutput->Count())' != '0'"
       Files="@(_BuildOutput)"
       FrameworkOnlyPackages="@(AspNetCoreAppReference)"
-      SharedFrameworkTargetFramework="net$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" />
+      SharedFrameworkTargetFramework="$(DefaultNetCoreTargetFramework)" />
   </Target>
 
 </Project>

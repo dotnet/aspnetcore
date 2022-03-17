@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #include "stdafx.h"
 
@@ -34,7 +34,7 @@ namespace InprocessTests
             arguments,
             errorContext);
 
-        ASSERT_TRUE(ends_with(arguments[0], L"\\Fake\\hello-dotnet.exe", true));
+        ASSERT_TRUE(endsWith(arguments[0], L"\\Fake\\hello-dotnet.exe", true));
         ASSERT_STREQ(arguments[1].c_str(), L"-a");
         ASSERT_STREQ(arguments[2].c_str(), L"--tag");
         ASSERT_STREQ(arguments[3].c_str(), L"t");

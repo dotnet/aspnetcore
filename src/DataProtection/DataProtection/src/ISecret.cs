@@ -1,27 +1,26 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
-namespace Microsoft.AspNetCore.DataProtection
+namespace Microsoft.AspNetCore.DataProtection;
+
+/// <summary>
+/// Represents a secret value.
+/// </summary>
+public interface ISecret : IDisposable
 {
     /// <summary>
-    /// Represents a secret value.
+    /// The length (in bytes) of the secret value.
     /// </summary>
-    public interface ISecret : IDisposable
-    {
-        /// <summary>
-        /// The length (in bytes) of the secret value.
-        /// </summary>
-        int Length { get; }
+    int Length { get; }
 
-        /// <summary>
-        /// Writes the secret value to the specified buffer.
-        /// </summary>
-        /// <param name="buffer">The buffer which should receive the secret value.</param>
-        /// <remarks>
-        /// The buffer size must exactly match the length of the secret value.
-        /// </remarks>
-        void WriteSecretIntoBuffer(ArraySegment<byte> buffer);
-    }
+    /// <summary>
+    /// Writes the secret value to the specified buffer.
+    /// </summary>
+    /// <param name="buffer">The buffer which should receive the secret value.</param>
+    /// <remarks>
+    /// The buffer size must exactly match the length of the secret value.
+    /// </remarks>
+    void WriteSecretIntoBuffer(ArraySegment<byte> buffer);
 }

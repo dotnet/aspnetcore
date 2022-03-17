@@ -24,12 +24,17 @@ parameters:
   enablePublishBuildAssets: false
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
-  useBuildManifest: false
+  disableComponentGovernance: false
   mergeTestResults: false
   testRunTitle: ''
+  testResultsFormat: ''
   name: ''
   preSteps: []
   runAsPublic: false
+# Sbom related params
+  enableSbom: true
+  PackageVersion: 7.0.0
+  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
 
 jobs:
 - job: ${{ parameters.name }}
@@ -103,7 +108,7 @@ jobs:
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
-      - task: MicroBuildSigningPlugin@2
+      - task: MicroBuildSigningPlugin@3
         displayName: Install MicroBuild plugin
         inputs:
           signType: $(_SignType)
@@ -114,6 +119,7 @@ jobs:
         continueOnError: ${{ parameters.continueOnError }}
         condition: and(succeeded(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
 
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal')) }}:
     - task: NuGetAuthenticate@0
 
   - ${{ if or(eq(parameters.artifacts.download, 'true'), ne(parameters.artifacts.download, '')) }}:
@@ -131,10 +137,14 @@ jobs:
     - task: RichCodeNavIndexer@0
       displayName: RichCodeNav Upload
       inputs:
-        languages: 'csharp'
-        environment: ${{ coalesce(parameters.richCodeNavigationEnvironment, 'prod') }}
+        languages: ${{ coalesce(parameters.richCodeNavigationLanguage, 'csharp') }}
+        environment: ${{ coalesce(parameters.richCodeNavigationEnvironment, 'production') }}
         richNavLogOutputDirectory: $(Build.SourcesDirectory)/artifacts/bin
       continueOnError: true
+
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), ne(parameters.disableComponentGovernance, 'true')) }}:
+      - task: ComponentGovernanceComponentDetection@0
+        continueOnError: true
 
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -202,7 +212,7 @@ jobs:
       continueOnError: true
       condition: always()
 
-  - ${{ if eq(parameters.enablePublishTestResults, 'true') }}:
+  - ${{ if or(and(eq(parameters.enablePublishTestResults, 'true'), eq(parameters.testResultsFormat, '')), eq(parameters.testResultsFormat, 'xunit')) }}:
     - task: PublishTestResults@2
       displayName: Publish XUnit Test Results
       inputs:
@@ -213,6 +223,7 @@ jobs:
         mergeTestResults: ${{ parameters.mergeTestResults }}
       continueOnError: true
       condition: always()
+  - ${{ if or(and(eq(parameters.enablePublishTestResults, 'true'), eq(parameters.testResultsFormat, '')), eq(parameters.testResultsFormat, 'vstest')) }}:
     - task: PublishTestResults@2
       displayName: Publish TRX Test Results
       inputs:
@@ -242,11 +253,9 @@ jobs:
       continueOnError: ${{ parameters.continueOnError }}
       condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
 
-  - ${{ if eq(parameters.useBuildManifest, true) }}:
-    - task: PublishBuildArtifacts@1
-      displayName: Publish Build Manifest
-      inputs:
-        PathToPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/manifest.props'
-        PublishLocation: Container
-        ArtifactName: BuildManifests
-      continueOnError: ${{ parameters.continueOnError }}
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
+    - template: /eng/common/templates/steps/generate-sbom.yml
+      parameters:
+        PackageVersion: ${{ parameters.packageVersion}}
+        BuildDropPath: ${{ parameters.buildDropPath }}
+

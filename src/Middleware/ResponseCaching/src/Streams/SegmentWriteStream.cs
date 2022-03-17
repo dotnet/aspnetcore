@@ -1,206 +1,201 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+namespace Microsoft.AspNetCore.ResponseCaching;
 
-namespace Microsoft.AspNetCore.ResponseCaching
+internal class SegmentWriteStream : Stream
 {
-    internal class SegmentWriteStream : Stream
+    private readonly List<byte[]> _segments = new List<byte[]>();
+    private readonly MemoryStream _bufferStream = new MemoryStream();
+    private readonly int _segmentSize;
+    private long _length;
+    private bool _closed;
+    private bool _disposed;
+
+    internal SegmentWriteStream(int segmentSize)
     {
-        private readonly List<byte[]> _segments = new List<byte[]>();
-        private readonly MemoryStream _bufferStream = new MemoryStream();
-        private readonly int _segmentSize;
-        private long _length;
-        private bool _closed;
-        private bool _disposed;
-
-        internal SegmentWriteStream(int segmentSize)
+        if (segmentSize <= 0)
         {
-            if (segmentSize <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(segmentSize), segmentSize, $"{nameof(segmentSize)} must be greater than 0.");
-            }
-
-            _segmentSize = segmentSize;
+            throw new ArgumentOutOfRangeException(nameof(segmentSize), segmentSize, $"{nameof(segmentSize)} must be greater than 0.");
         }
 
-        // Extracting the buffered segments closes the stream for writing
-        internal List<byte[]> GetSegments()
+        _segmentSize = segmentSize;
+    }
+
+    // Extracting the buffered segments closes the stream for writing
+    internal List<byte[]> GetSegments()
+    {
+        if (!_closed)
         {
-            if (!_closed)
-            {
-                _closed = true;
-                FinalizeSegments();
-            }
-            return _segments;
+            _closed = true;
+            FinalizeSegments();
         }
+        return _segments;
+    }
 
-        public override bool CanRead => false;
+    public override bool CanRead => false;
 
-        public override bool CanSeek => false;
+    public override bool CanSeek => false;
 
-        public override bool CanWrite => !_closed;
+    public override bool CanWrite => !_closed;
 
-        public override long Length => _length;
+    public override long Length => _length;
 
-        public override long Position
+    public override long Position
+    {
+        get
         {
-            get
-            {
-                return _length;
-            }
-            set
-            {
-                throw new NotSupportedException("The stream does not support seeking.");
-            }
+            return _length;
         }
-
-        private void DisposeMemoryStream()
-        {
-            // Clean up the memory stream
-            _bufferStream.SetLength(0);
-            _bufferStream.Capacity = 0;
-            _bufferStream.Dispose();
-        }
-
-        private void FinalizeSegments()
-        {
-            // Append any remaining segments
-            if (_bufferStream.Length > 0)
-            {
-                // Add the last segment
-                _segments.Add(_bufferStream.ToArray());
-            }
-
-            DisposeMemoryStream();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            try
-            {
-                if (_disposed)
-                {
-                    return;
-                }
-
-                if (disposing)
-                {
-                    _segments.Clear();
-                    DisposeMemoryStream();
-                }
-
-                _disposed = true;
-                _closed = true;
-            }
-            finally
-            {
-                base.Dispose(disposing);
-            }
-        }
-
-        public override void Flush()
-        {
-            if (!CanWrite)
-            {
-                throw new ObjectDisposedException("The stream has been closed for writing.");
-            }
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            throw new NotSupportedException("The stream does not support reading.");
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
+        set
         {
             throw new NotSupportedException("The stream does not support seeking.");
         }
+    }
 
-        public override void SetLength(long value)
+    private void DisposeMemoryStream()
+    {
+        // Clean up the memory stream
+        _bufferStream.SetLength(0);
+        _bufferStream.Capacity = 0;
+        _bufferStream.Dispose();
+    }
+
+    private void FinalizeSegments()
+    {
+        // Append any remaining segments
+        if (_bufferStream.Length > 0)
         {
-            throw new NotSupportedException("The stream does not support seeking.");
+            // Add the last segment
+            _segments.Add(_bufferStream.ToArray());
         }
 
-        public override void Write(byte[] buffer, int offset, int count)
+        DisposeMemoryStream();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        try
         {
-            if (buffer == null)
+            if (_disposed)
             {
-                throw new ArgumentNullException(nameof(buffer));
-            }
-            if (offset < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), offset, "Non-negative number required.");
-            }
-            if (count < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count), count, "Non-negative number required.");
-            }
-            if (count > buffer.Length - offset)
-            {
-                throw new ArgumentException("Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.");
-            }
-            if (!CanWrite)
-            {
-                throw new ObjectDisposedException("The stream has been closed for writing.");
+                return;
             }
 
-            while (count > 0)
+            if (disposing)
             {
-                if ((int)_bufferStream.Length == _segmentSize)
-                {
-                    _segments.Add(_bufferStream.ToArray());
-                    _bufferStream.SetLength(0);
-                }
-
-                var bytesWritten = Math.Min(count, _segmentSize - (int)_bufferStream.Length);
-
-                _bufferStream.Write(buffer, offset, bytesWritten);
-                count -= bytesWritten;
-                offset += bytesWritten;
-                _length += bytesWritten;
+                _segments.Clear();
+                DisposeMemoryStream();
             }
+
+            _disposed = true;
+            _closed = true;
+        }
+        finally
+        {
+            base.Dispose(disposing);
+        }
+    }
+
+    public override void Flush()
+    {
+        if (!CanWrite)
+        {
+            throw new ObjectDisposedException("The stream has been closed for writing.");
+        }
+    }
+
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        throw new NotSupportedException("The stream does not support reading.");
+    }
+
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        throw new NotSupportedException("The stream does not support seeking.");
+    }
+
+    public override void SetLength(long value)
+    {
+        throw new NotSupportedException("The stream does not support seeking.");
+    }
+
+    public override void Write(byte[] buffer, int offset, int count)
+    {
+        if (buffer == null)
+        {
+            throw new ArgumentNullException(nameof(buffer));
+        }
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Non-negative number required.");
+        }
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), count, "Non-negative number required.");
+        }
+        if (count > buffer.Length - offset)
+        {
+            throw new ArgumentException("Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.");
+        }
+        if (!CanWrite)
+        {
+            throw new ObjectDisposedException("The stream has been closed for writing.");
         }
 
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            Write(buffer, offset, count);
-            return Task.CompletedTask;
-        }
+        Write(buffer.AsSpan(offset, count));
+    }
 
-        public override void WriteByte(byte value)
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        while (!buffer.IsEmpty)
         {
-            if (!CanWrite)
-            {
-                throw new ObjectDisposedException("The stream has been closed for writing.");
-            }
-
             if ((int)_bufferStream.Length == _segmentSize)
             {
                 _segments.Add(_bufferStream.ToArray());
                 _bufferStream.SetLength(0);
             }
 
-            _bufferStream.WriteByte(value);
-            _length++;
-        }
+            var bytesWritten = Math.Min(buffer.Length, _segmentSize - (int)_bufferStream.Length);
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            return StreamUtilities.ToIAsyncResult(WriteAsync(buffer, offset, count), callback, state);
-        }
-
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            if (asyncResult == null)
-            {
-                throw new ArgumentNullException(nameof(asyncResult));
-            }
-            ((Task)asyncResult).GetAwaiter().GetResult();
+            _bufferStream.Write(buffer.Slice(0, bytesWritten));
+            buffer = buffer.Slice(bytesWritten);
+            _length += bytesWritten;
         }
     }
+
+    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
+        Write(buffer, offset, count);
+        return Task.CompletedTask;
+    }
+
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        Write(buffer.Span);
+        return default;
+    }
+
+    public override void WriteByte(byte value)
+    {
+        if (!CanWrite)
+        {
+            throw new ObjectDisposedException("The stream has been closed for writing.");
+        }
+
+        if ((int)_bufferStream.Length == _segmentSize)
+        {
+            _segments.Add(_bufferStream.ToArray());
+            _bufferStream.SetLength(0);
+        }
+
+        _bufferStream.WriteByte(value);
+        _length++;
+    }
+
+    public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+        => TaskToApm.Begin(WriteAsync(buffer, offset, count, CancellationToken.None), callback, state);
+
+    public override void EndWrite(IAsyncResult asyncResult)
+        => TaskToApm.End(asyncResult);
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Concurrent;
@@ -8,78 +8,75 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.E2ETesting;
 using Xunit.Abstractions;
 
-namespace Templates.Test.Helpers
+namespace Templates.Test.Helpers;
+
+public class ProjectFactoryFixture : IDisposable
 {
-    public class ProjectFactoryFixture : IDisposable
+    private readonly ConcurrentDictionary<string, Project> _projects = new ConcurrentDictionary<string, Project>();
+
+    public IMessageSink DiagnosticsMessageSink { get; }
+
+    public ProjectFactoryFixture(IMessageSink diagnosticsMessageSink)
     {
-        private readonly ConcurrentDictionary<string, Project> _projects = new ConcurrentDictionary<string, Project>();
+        DiagnosticsMessageSink = diagnosticsMessageSink;
+    }
 
-        public IMessageSink DiagnosticsMessageSink { get; }
-
-        public ProjectFactoryFixture(IMessageSink diagnosticsMessageSink)
+    public async Task<Project> GetOrCreateProject(string projectKey, ITestOutputHelper output)
+    {
+        await TemplatePackageInstaller.EnsureTemplatingEngineInitializedAsync(output);
+        // Different tests may have different output helpers, so need to fix up the output to write to the correct log
+        if (_projects.TryGetValue(projectKey, out var project))
         {
-            DiagnosticsMessageSink = diagnosticsMessageSink;
+            project.Output = output;
+            return project;
         }
-
-        static ProjectFactoryFixture()
-        {
-            // There is no good place to put this, so this is the best one.
-            // This sets the defualt timeout for all the Selenium test assertions.
-            WaitAssert.DefaultTimeout = TimeSpan.FromSeconds(30);
-        }
-
-        public async Task<Project> GetOrCreateProject(string projectKey, ITestOutputHelper output)
-        {
-            await TemplatePackageInstaller.EnsureTemplatingEngineInitializedAsync(output);
-            return _projects.GetOrAdd(
-                projectKey,
-                (key, outputHelper) =>
-                {
-                    var project = new Project
-                    {
-                        Output = outputHelper,
-                        DiagnosticsMessageSink = DiagnosticsMessageSink,
-                        ProjectGuid = Path.GetRandomFileName().Replace(".", string.Empty)
-                    };
-                    project.ProjectName = $"AspNet.{project.ProjectGuid}";
-
-                    var assemblyPath = GetType().Assembly;
-                    var basePath = GetTemplateFolderBasePath(assemblyPath);
-                    project.TemplateOutputDir = Path.Combine(basePath, project.ProjectName);
-                    return project;
-                },
-                output);
-        }
-
-        private static string GetTemplateFolderBasePath(Assembly assembly) =>
-            (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
-            ? assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Single(a => a.Key == "TestTemplateCreationFolder")
-                .Value
-            : Path.Combine(Environment.GetEnvironmentVariable("HELIX_DIR"), "Templates", "BaseFolder");
-
-        public void Dispose()
-        {
-            var list = new List<Exception>();
-            foreach (var project in _projects)
+        return _projects.GetOrAdd(
+            projectKey,
+            (key, outputHelper) =>
             {
-                try
+                var project = new Project
                 {
-                    project.Value.Dispose();
-                }
-                catch (Exception e)
-                {
-                    list.Add(e);
-                }
-            }
+                    Output = outputHelper,
+                    DiagnosticsMessageSink = DiagnosticsMessageSink,
+                    ProjectGuid = Path.GetRandomFileName().Replace(".", string.Empty)
+                };
+                project.ProjectName = $"AspNet.{project.ProjectGuid}";
 
-            if (list.Count > 0)
+                var assemblyPath = GetType().Assembly;
+                var basePath = GetTemplateFolderBasePath(assemblyPath);
+                project.TemplateOutputDir = Path.Combine(basePath, project.ProjectName);
+                return project;
+            },
+            output);
+    }
+
+    private static string GetTemplateFolderBasePath(Assembly assembly) =>
+        (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
+        ? assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(a => a.Key == "TestTemplateCreationFolder")
+            .Value
+        : Path.Combine(Environment.GetEnvironmentVariable("HELIX_DIR"), "Templates", "BaseFolder");
+
+    public void Dispose()
+    {
+        var list = new List<Exception>();
+        foreach (var project in _projects)
+        {
+            try
             {
-                throw new AggregateException(list);
+                project.Value.Dispose();
             }
+            catch (Exception e)
+            {
+                list.Add(e);
+            }
+        }
+
+        if (list.Count > 0)
+        {
+            throw new AggregateException(list);
         }
     }
 }

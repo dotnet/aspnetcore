@@ -1,18 +1,24 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite
+namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
+
+internal class Condition
 {
-    internal class Condition
+    public Condition(Pattern input, UrlMatch match, bool orNext)
     {
-        public Pattern Input { get; set; }
-        public UrlMatch Match { get; set; }
-        public bool OrNext { get; set; }
+        Input = input;
+        Match = match;
+        OrNext = orNext;
+    }
 
-        public MatchResults Evaluate(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
-        {
-            var pattern = Input.Evaluate(context, ruleBackReferences, conditionBackReferences);
-            return Match.Evaluate(pattern, context);
-        }
+    public Pattern Input { get; }
+    public UrlMatch Match { get; }
+    public bool OrNext { get; }
+
+    public MatchResults Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
+    {
+        var pattern = Input.Evaluate(context, ruleBackReferences, conditionBackReferences);
+        return Match.Evaluate(pattern, context);
     }
 }

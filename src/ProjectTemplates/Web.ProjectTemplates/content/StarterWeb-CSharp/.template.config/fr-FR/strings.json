@@ -1,8 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Application web ASP.NET Core (modèle-vue-contrôleur)",
-    "description": "Modèle de projet permettant de créer une application ASP.NET Core avec des exemples de vues et de contrôleurs ASP.NET Core MVC. Vous pouvez également utiliser ce modèle pour les services HTTP RESTful.",
-    "parameter.RazorRuntimeCompilation.name": "Activer la compilation de runtime _Razor"
-  }
-}

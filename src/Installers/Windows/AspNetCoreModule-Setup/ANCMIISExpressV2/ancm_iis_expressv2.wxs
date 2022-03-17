@@ -31,15 +31,15 @@
 <?define AspNetCoreTraceProviderValue = "65536" ?>
 <?define AspNetCoreModuleName = "AspNetCoreModuleV2" ?>
 
-<?if $(var.Platform) = "x64" ?>
+<?if $(var.Platform) = "x86" ?>
+    <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
+<?else?>
     <?define SchemaGuid = "ab582af2-d6c0-43f7-8412-76a19c65d7f2" ?>
     <?define SchemaGuid32 = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
-<?else ?>
-    <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2WoW64.TargetPath)" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerWoW64.TargetPath)" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\$(var.Platform)\$(var.Configuration)\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\$(var.Platform)\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
@@ -56,7 +56,7 @@
                  Manufacturer="!(loc.Manufacturer)"
                  Compressed="yes"
                  InstallPrivileges="elevated"
-                 InstallerVersion="400"
+                 InstallerVersion="$(var.ANCMInstallerVersion)"
                  Platform="$(var.PlatformValue)" />
 
         <Media Id="1" Cabinet="aspnetcoremodule.cab" EmbedCab="yes" CompressionLevel="high"/>
@@ -177,7 +177,7 @@
                 <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
               </RegistryKey>
             </Component>
-            <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)" >
+              <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)" >
               <Component Id="AspNetCoreModuleHandler" Guid="559EF726-B25C-480F-AFA4-32D0BA8B2376" Win64="$(var.IsWin64)">
                     <File Id="AspNetCoreModuleHandlerDll"
                         Name="aspnetcorev2_outofprocess.dll"
@@ -211,7 +211,7 @@
                 <Component Id="AspNetCoreModule.wow" Guid="45ba5011-a619-4d06-8a8d-155b1f9732b3" Win64="no">
                   <File Id="AspNetCoreModuleDll.wow"
                         Name="aspnetcorev2.dll"
-                        Source="$(var.AspNetCoreV2WoW64.TargetPath)"
+                        Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll"
                         DiskId="1"
                         Vital="yes">
                   </File>
@@ -224,7 +224,7 @@
                   <Component Id="AspNetCoreModuleHandler.wow" Guid="0A8EDB50-7D85-4825-8010-D27EFAF061B6" Win64="no">
                     <File Id="AspNetCoreModuleHandlerDll.wow"
                           Name="aspnetcorev2_outofprocess.dll"
-                          Source="$(var.AspNetCoreV2HandlerWoW64.TargetPath)"
+                          Source="$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll"
                           DiskId="1"
                           Vital="yes">
                     </File>

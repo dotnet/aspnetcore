@@ -1,59 +1,56 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using HtmlGenerationWebSite.Models;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace HtmlGenerationWebSite
+namespace HtmlGenerationWebSite;
+
+public class ProductsService
 {
-    public class ProductsService
+    private readonly IMemoryCache _memoryCache;
+    private readonly ISignalTokenProviderService<Product> _tokenProviderService;
+    private readonly Dictionary<string, Product[]> _products = new Dictionary<string, Product[]>
     {
-        private readonly IMemoryCache _memoryCache;
-        private readonly ISignalTokenProviderService<Product> _tokenProviderService;
-        private readonly Dictionary<string, Product[]> _products = new Dictionary<string, Product[]>
+        ["Books"] = new[]
         {
-            ["Books"] = new[]
-            {
                 new Product { ProductName = "Book1" },
                 new Product { ProductName = "Book2" }
             },
-            ["Electronics"] = new[]
-            {
+        ["Electronics"] = new[]
+        {
                 new Product { ProductName = "Laptops" }
             }
-        };
+    };
 
-        public ProductsService(
-            IMemoryCache memoryCache,
-            ISignalTokenProviderService<Product> tokenProviderService)
+    public ProductsService(
+        IMemoryCache memoryCache,
+        ISignalTokenProviderService<Product> tokenProviderService)
+    {
+        _memoryCache = memoryCache;
+        _tokenProviderService = tokenProviderService;
+    }
+
+    public IEnumerable<string> GetProductNames(string category)
+    {
+        IEnumerable<Product> products;
+        var key = typeof(ProductsService).FullName;
+        if (!_memoryCache.TryGetValue(key, out products))
         {
-            _memoryCache = memoryCache;
-            _tokenProviderService = tokenProviderService;
+            var changeToken = _tokenProviderService.GetToken(key);
+            products = _memoryCache.Set<IEnumerable<Product>>(
+                key,
+                _products[category],
+                new MemoryCacheEntryOptions().AddExpirationToken(changeToken));
         }
 
-        public IEnumerable<string> GetProductNames(string category)
-        {
-            IEnumerable<Product> products;
-            var key = typeof(ProductsService).FullName;
-            if (!_memoryCache.TryGetValue(key, out products))
-            {
-                var changeToken = _tokenProviderService.GetToken(key);
-                products = _memoryCache.Set<IEnumerable<Product>>(
-                    key,
-                    _products[category],
-                    new MemoryCacheEntryOptions().AddExpirationToken(changeToken));
-            }
+        return products.Select(p => p.ProductName);
+    }
 
-            return products.Select(p => p.ProductName);
-        }
-
-        public void UpdateProducts(string category, IEnumerable<Product> products)
-        {
-            _products[category] = products.ToArray();
-            var key = typeof(ProductsService).FullName;
-            _tokenProviderService.SignalToken(key);
-        }
+    public void UpdateProducts(string category, IEnumerable<Product> products)
+    {
+        _products[category] = products.ToArray();
+        var key = typeof(ProductsService).FullName;
+        _tokenProviderService.SignalToken(key);
     }
 }

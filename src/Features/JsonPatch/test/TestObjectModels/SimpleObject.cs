@@ -1,23 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.JsonPatch
+namespace Microsoft.AspNetCore.JsonPatch;
+
+public class SimpleObject
 {
-    public class SimpleObject
-    {
-        public List<SimpleObject> SimpleObjectList { get; set; }
-        public List<int> IntegerList { get; set; }
-        public IList<int> IntegerIList { get; set; }
-        public int IntegerValue { get; set; }
-        public int AnotherIntegerValue { get; set; }
-        public string StringProperty { get; set; }
-        public string AnotherStringProperty { get; set; }
-        public decimal DecimalValue { get; set; }
-        public double DoubleValue { get; set; }
-        public float FloatValue { get; set; }
-        public Guid GuidValue { get; set; }
-    }
+    public List<SimpleObject> SimpleObjectList { get; set; }
+    public List<int> IntegerList { get; set; }
+    public IList<int> IntegerIList { get; set; }
+    public int IntegerValue { get; set; }
+    public int AnotherIntegerValue { get; set; }
+    public string StringProperty { get; set; }
+    public string AnotherStringProperty { get; set; }
+    public decimal DecimalValue { get; set; }
+    public double DoubleValue { get; set; }
+    public float FloatValue { get; set; }
+    public Guid GuidValue { get; set; }
 }

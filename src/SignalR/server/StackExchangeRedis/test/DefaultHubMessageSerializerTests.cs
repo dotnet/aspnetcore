@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -11,44 +11,44 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace Microsoft.AspNetCore.SignalR.Tests.Internal
+namespace Microsoft.AspNetCore.SignalR.Tests.Internal;
+
+public class DefaultHubMessageSerializerTests
 {
-    public class DefaultHubMessageSerializerTests
+    [Theory]
+    [MemberData(nameof(InvocationTestData))]
+    public void SerializeMessages(string testName)
     {
-        [Theory]
-        [MemberData(nameof(InvocationTestData))]
-        public void SerializeMessages(string testName)
+        var testData = _invocationTestData[testName];
+
+        var resolver = CreateHubProtocolResolver(new List<IHubProtocol> { new MessagePackHubProtocol(), new JsonHubProtocol() });
+        var protocolNames = testData.SupportedHubProtocols.ConvertAll(p => p.Name);
+        var serializer = new DefaultHubMessageSerializer(resolver, protocolNames, hubSupportedProtocols: null);
+        var serializedHubMessage = serializer.SerializeMessage(_testMessage);
+
+        var allBytes = new List<byte>();
+        Assert.Equal(testData.SerializedCount, serializedHubMessage.Count);
+        foreach (var message in serializedHubMessage)
         {
-            var testData = _invocationTestData[testName];
-
-            var resolver = CreateHubProtocolResolver(new List<IHubProtocol> { new MessagePackHubProtocol(), new JsonHubProtocol() });
-            var protocolNames = testData.SupportedHubProtocols.ConvertAll(p => p.Name);
-            var serializer = new DefaultHubMessageSerializer(resolver, protocolNames, hubSupportedProtocols: null);
-            var serializedHubMessage = serializer.SerializeMessage(_testMessage);
-
-            var allBytes = new List<byte>();
-            Assert.Equal(testData.SerializedCount, serializedHubMessage.Count);
-            foreach (var message in serializedHubMessage)
-            {
-                allBytes.AddRange(message.Serialized.ToArray());
-            }
-
-            Assert.Equal(testData.Encoded, allBytes);
+            allBytes.AddRange(message.Serialized.ToArray());
         }
 
-        [Fact]
-        public void GlobalSupportedProtocolsOverriddenByHubSupportedProtocols()
-        {
-            var testData = _invocationTestData["Single supported protocol"];
+        Assert.Equal(testData.Encoded, allBytes);
+    }
 
-            var resolver = CreateHubProtocolResolver(new List<IHubProtocol> { new MessagePackHubProtocol(), new JsonHubProtocol() });
+    [Fact]
+    public void GlobalSupportedProtocolsOverriddenByHubSupportedProtocols()
+    {
+        var testData = _invocationTestData["Single supported protocol"];
 
-            var serializer = new DefaultHubMessageSerializer(resolver, new List<string>() { "json" }, new List<string>() { "messagepack" });
-            var serializedHubMessage = serializer.SerializeMessage(_testMessage);
+        var resolver = CreateHubProtocolResolver(new List<IHubProtocol> { new MessagePackHubProtocol(), new JsonHubProtocol() });
 
-            Assert.Equal(1, serializedHubMessage.Count);
+        var serializer = new DefaultHubMessageSerializer(resolver, new List<string>() { "json" }, new List<string>() { "messagepack" });
+        var serializedHubMessage = serializer.SerializeMessage(_testMessage);
 
-            Assert.Equal(new List<byte>() { 0x0D,
+        Assert.Equal(1, serializedHubMessage.Count);
+
+        Assert.Equal(new List<byte>() { 0x0D,
                   0x96,
                     0x01,
                     0x80,
@@ -56,16 +56,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                     0xA6, (byte)'t', (byte)'a', (byte)'r', (byte)'g', (byte)'e', (byte)'t',
                     0x90,
                     0x90 },
-                    serializedHubMessage[0].Serialized.ToArray());
-        }
+                serializedHubMessage[0].Serialized.ToArray());
+    }
 
-        private IHubProtocolResolver CreateHubProtocolResolver(List<IHubProtocol> hubProtocols)
-        {
-            return new DefaultHubProtocolResolver(hubProtocols, NullLogger<DefaultHubProtocolResolver>.Instance);
-        }
+    private IHubProtocolResolver CreateHubProtocolResolver(List<IHubProtocol> hubProtocols)
+    {
+        return new DefaultHubProtocolResolver(hubProtocols, NullLogger<DefaultHubProtocolResolver>.Instance);
+    }
 
-        private static Dictionary<string, ProtocolTestData> _invocationTestData = new[]
-        {
+    private static readonly Dictionary<string, ProtocolTestData> _invocationTestData = new[]
+    {
             new ProtocolTestData(
                 "Single supported protocol",
                 new List<IHubProtocol>() { new MessagePackHubProtocol() },
@@ -113,54 +113,53 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                 0)
         }.ToDictionary(t => t.Name);
 
-        public static IEnumerable<object[]> InvocationTestData = _invocationTestData.Keys.Select(k => new object[] { k });
+    public static IEnumerable<object[]> InvocationTestData = _invocationTestData.Keys.Select(k => new object[] { k });
 
-        public class ProtocolTestData
+    public class ProtocolTestData
+    {
+        public string Name { get; }
+        public byte[] Encoded { get; }
+        public int SerializedCount { get; }
+        public List<IHubProtocol> SupportedHubProtocols { get; }
+
+        public ProtocolTestData(string name, List<IHubProtocol> supportedHubProtocols, int serializedCount, params byte[] encoded)
         {
-            public string Name { get; }
-            public byte[] Encoded { get; }
-            public int SerializedCount { get; }
-            public List<IHubProtocol> SupportedHubProtocols { get; }
+            Name = name;
+            Encoded = encoded;
+            SerializedCount = serializedCount;
+            SupportedHubProtocols = supportedHubProtocols;
+        }
+    }
 
-            public ProtocolTestData(string name, List<IHubProtocol> supportedHubProtocols, int serializedCount, params byte[] encoded)
-            {
-                Name = name;
-                Encoded = encoded;
-                SerializedCount = serializedCount;
-                SupportedHubProtocols = supportedHubProtocols;
-            }
+    // The actual invocation message doesn't matter
+    private static readonly InvocationMessage _testMessage = new InvocationMessage("target", Array.Empty<object>());
+
+    internal class TestHubProtocol : IHubProtocol
+    {
+        public string Name => "test";
+
+        public int Version => throw new NotImplementedException();
+
+        public TransferFormat TransferFormat => throw new NotImplementedException();
+
+        public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
+        {
+            throw new NotImplementedException();
         }
 
-        // The actual invocation message doesn't matter
-        private static InvocationMessage _testMessage = new InvocationMessage("target", Array.Empty<object>());
-
-        internal class TestHubProtocol : IHubProtocol
+        public bool IsVersionSupported(int version)
         {
-            public string Name => "test";
+            throw new NotImplementedException();
+        }
 
-            public int Version => throw new NotImplementedException();
+        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
+        {
+            throw new NotImplementedException();
+        }
 
-            public TransferFormat TransferFormat => throw new NotImplementedException();
-
-            public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsVersionSupported(int version)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
-            {
-                throw new NotImplementedException();
-            }
+        public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
+        {
+            throw new NotImplementedException();
         }
     }
 }

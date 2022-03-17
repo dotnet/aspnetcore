@@ -1,22 +1,21 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace System.Buffers
+namespace System.Buffers;
+
+internal static class PinnedBlockMemoryPoolFactory
 {
-    internal static class SlabMemoryPoolFactory
+    public static MemoryPool<byte> Create()
     {
-        public static MemoryPool<byte> Create()
-        {
 #if DEBUG
-            return new DiagnosticMemoryPool(CreateSlabMemoryPool());
+        return new DiagnosticMemoryPool(CreatePinnedBlockMemoryPool());
 #else
-            return CreateSlabMemoryPool();
+        return CreatePinnedBlockMemoryPool();
 #endif
-        }
+    }
 
-        public static MemoryPool<byte> CreateSlabMemoryPool()
-        {
-            return new SlabMemoryPool();
-        }
+    public static MemoryPool<byte> CreatePinnedBlockMemoryPool()
+    {
+        return new PinnedBlockMemoryPool();
     }
 }

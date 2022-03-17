@@ -1,18 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.EntityFrameworkCore;
 
-namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
+namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+
+/// <summary>
+/// Interface used to store instances of <see cref="DataProtectionKey"/> in a <see cref="DbContext"/>
+/// </summary>
+public interface IDataProtectionKeyContext
 {
     /// <summary>
-    /// Interface used to store instances of <see cref="DataProtectionKey"/> in a <see cref="DbContext"/>
+    /// A collection of <see cref="DataProtectionKey"/>
     /// </summary>
-    public interface IDataProtectionKeyContext
-    {
-        /// <summary>
-        /// A collection of <see cref="DataProtectionKey"/>
-        /// </summary>
-        DbSet<DataProtectionKey> DataProtectionKeys { get; }
-    }
+    DbSet<DataProtectionKey> DataProtectionKeys { get; }
 }

@@ -1,19 +1,18 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+#nullable enable
 
-namespace Microsoft.AspNetCore.Mvc.ViewEngines
+namespace Microsoft.AspNetCore.Mvc.ViewEngines;
+
+/// <summary>
+/// Represents an <see cref="IViewEngine"/> that delegates to one of a collection of view engines.
+/// </summary>
+public interface ICompositeViewEngine : IViewEngine
 {
     /// <summary>
-    /// Represents an <see cref="IViewEngine"/> that delegates to one of a collection of view engines.
+    /// Gets the list of <see cref="IViewEngine"/> this instance of <see cref="ICompositeViewEngine"/> delegates
+    /// to.
     /// </summary>
-    public interface ICompositeViewEngine : IViewEngine
-    {
-        /// <summary>
-        /// Gets the list of <see cref="IViewEngine"/> this instance of <see cref="ICompositeViewEngine"/> delegates
-        /// to.
-        /// </summary>
-        IReadOnlyList<IViewEngine> ViewEngines { get; }
-    }
+    IReadOnlyList<IViewEngine> ViewEngines { get; }
 }

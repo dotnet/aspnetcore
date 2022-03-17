@@ -10,13 +10,13 @@ force=false
 download_retries=5
 retry_wait_time_seconds=30
 global_json_file="$(dirname "$(dirname "${scriptroot}")")/global.json"
-declare -A native_assets
+declare -a native_assets
 
 . $scriptroot/pipeline-logging-functions.sh
 . $scriptroot/native/common-library.sh
 
 while (($# > 0)); do
-  lowerI="$(echo $1 | awk '{print tolower($0)}')"
+  lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
   case $lowerI in
     --baseuri)
       base_uri=$2
@@ -76,24 +76,89 @@ while (($# > 0)); do
 done
 
 function ReadGlobalJsonNativeTools {
-  # Get the native-tools section from the global.json.
-  local native_tools_section=$(cat $global_json_file | awk '/"native-tools"/,/}/')
-  # Only extract the contents of the object.
-  local native_tools_list=$(echo $native_tools_section | awk -F"[{}]" '{print $2}')
-  native_tools_list=${native_tools_list//[\" ]/}
-  native_tools_list=$( echo "$native_tools_list" | sed 's/\s//g' | sed 's/,/\n/g' )
+  # happy path: we have a proper JSON parsing tool `jq(1)` in PATH!
+  if command -v jq &> /dev/null; then
 
-  local old_IFS=$IFS
-  while read -r line; do
-    # Lines are of the form: 'tool:version'
-    IFS=:
-    while read -r key value; do
-     native_assets[$key]=$value
-    done <<< "$line"
-  done <<< "$native_tools_list"
-  IFS=$old_IFS
+    # jq: read each key/value pair under "native-tools" entry and emit:
+    #   KEY="<entry-key>" VALUE="<entry-value>"
+    # followed by a null byte.
+    #
+    # bash: read line with null byte delimeter and push to array (for later `eval`uation).
 
-  return 0;
+    while IFS= read -rd '' line; do
+      native_assets+=("$line")
+    done < <(jq -r '. |
+        select(has("native-tools")) |
+        ."native-tools" |
+        keys[] as $k |
+        @sh "KEY=\($k) VALUE=\(.[$k])\u0000"' "$global_json_file")
+
+    return
+  fi
+
+  # Warning: falling back to manually parsing JSON, which is not recommended.
+
+  # Following routine matches the output and escaping logic of jq(1)'s @sh formatter used above.
+  # It has been tested with several weird strings with escaped characters in entries (key and value)
+  # and results were compared with the output of jq(1) in binary representation using xxd(1);
+  # just before the assignment to 'native_assets' array (above and below).
+
+  # try to capture the section under "native-tools".
+  if [[ ! "$(cat "$global_json_file")" =~ \"native-tools\"[[:space:]\:\{]*([^\}]+) ]]; then
+    return
+  fi
+
+  section="${BASH_REMATCH[1]}"
+
+  parseStarted=0
+  possibleEnd=0
+  escaping=0
+  escaped=0
+  isKey=1
+
+  for (( i=0; i<${#section}; i++ )); do
+    char="${section:$i:1}"
+    if ! ((parseStarted)) && [[ "$char" =~ [[:space:],:] ]]; then continue; fi
+
+    if ! ((escaping)) && [[ "$char" == "\\" ]]; then
+      escaping=1
+    elif ((escaping)) && ! ((escaped)); then
+      escaped=1
+    fi
+
+    if ! ((parseStarted)) && [[ "$char" == "\"" ]]; then
+      parseStarted=1
+      possibleEnd=0
+    elif [[ "$char" == "'" ]]; then
+      token="$token'\\\''"
+      possibleEnd=0
+    elif ((escaping)) || [[ "$char" != "\"" ]]; then
+      token="$token$char"
+      possibleEnd=1
+    fi
+
+    if ((possibleEnd)) && ! ((escaping)) && [[ "$char" == "\"" ]]; then
+      # Use printf to unescape token to match jq(1)'s @sh formatting rules.
+      # do not use 'token="$(printf "$token")"' syntax, as $() eats the trailing linefeed.
+      printf -v token "'$token'"
+
+      if ((isKey)); then
+        KEY="$token"
+        isKey=0
+      else
+        line="KEY=$KEY VALUE=$token"
+        native_assets+=("$line")
+        isKey=1
+      fi
+
+      # reset for next token
+      parseStarted=0
+      token=
+    elif ((escaping)) && ((escaped)); then
+      escaping=0
+      escaped=0
+    fi
+  done
 }
 
 native_base_dir=$install_directory
@@ -111,14 +176,14 @@ if [[ ${#native_assets[@]} -eq 0 ]]; then
   exit 0;
 else
   native_installer_dir="$scriptroot/native"
-  for tool in "${!native_assets[@]}"
-  do
-    tool_version=${native_assets[$tool]}
-    installer_path="$native_installer_dir/install-$tool.sh"
+  for index in "${!native_assets[@]}"; do
+    eval "${native_assets["$index"]}"
+
+    installer_path="$native_installer_dir/install-$KEY.sh"
     installer_command="$installer_path"
     installer_command+=" --baseuri $base_uri"
     installer_command+=" --installpath $install_bin"
-    installer_command+=" --version $tool_version"
+    installer_command+=" --version $VALUE"
     echo $installer_command
 
     if [[ $force = true ]]; then

@@ -7,8 +7,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\TypeHelper.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />

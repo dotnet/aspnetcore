@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 

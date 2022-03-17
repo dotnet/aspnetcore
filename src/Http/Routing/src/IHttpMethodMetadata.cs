@@ -1,24 +1,21 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+namespace Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Routing
+/// <summary>
+/// Represents HTTP method metadata used during routing.
+/// </summary>
+public interface IHttpMethodMetadata
 {
     /// <summary>
-    /// Represents HTTP method metadata used during routing.
+    /// Returns a value indicating whether the associated endpoint should accept CORS preflight requests.
     /// </summary>
-    public interface IHttpMethodMetadata
-    {
-        /// <summary>
-        /// Returns a value indicating whether the associated endpoint should accept CORS preflight requests.
-        /// </summary>
-        bool AcceptCorsPreflight { get; }
+    bool AcceptCorsPreflight { get; }
 
-        /// <summary>
-        /// Returns a read-only collection of HTTP methods used during routing.
-        /// An empty collection means any HTTP method will be accepted.
-        /// </summary>
-        IReadOnlyList<string> HttpMethods { get; }
-    }
+    /// <summary>
+    /// Returns a read-only collection of HTTP methods used during routing.
+    /// An empty collection means any HTTP method will be accepted.
+    /// </summary>
+    IReadOnlyList<string> HttpMethods { get; }
 }

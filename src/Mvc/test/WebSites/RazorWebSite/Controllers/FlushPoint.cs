@@ -1,46 +1,45 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite
+namespace RazorWebSite;
+
+public class FlushPoint : Controller
 {
-    public class FlushPoint : Controller
+    public IActionResult PageWithLayout()
     {
-        public IActionResult PageWithLayout()
-        {
-            return View();
-        }
+        return View();
+    }
 
-        public IActionResult FlushFollowedByLargeContent() => View();
+    public IActionResult FlushFollowedByLargeContent() => View();
 
-        public IActionResult FlushInvokedInComponent() => View();
+    public IActionResult FlushInvokedInComponent() => View();
 
-        public IActionResult PageWithoutLayout()
-        {
-            return View();
-        }
+    public IActionResult PageWithoutLayout()
+    {
+        return View();
+    }
 
-        // This uses RenderSection to render the section that contains a FlushAsync call
-        public IActionResult PageWithPartialsAndViewComponents()
-        {
-            return View();
-        }
+    // This uses RenderSection to render the section that contains a FlushAsync call
+    public IActionResult PageWithPartialsAndViewComponents()
+    {
+        return View();
+    }
 
-        // This uses RenderSectionAsync to render the section that contains a FlushAsync call
-        public IActionResult PageWithRenderSectionAsync()
-        {
-            return View("PageWithSectionInvokedViaRenderSectionAsync");
-        }
+    // This uses RenderSectionAsync to render the section that contains a FlushAsync call
+    public IActionResult PageWithRenderSectionAsync()
+    {
+        return View("PageWithSectionInvokedViaRenderSectionAsync");
+    }
 
-        public IActionResult PageWithNestedLayout()
-        {
-            return View();
-        }
+    public IActionResult PageWithNestedLayout()
+    {
+        return View();
+    }
 
-        public IActionResult PageWithFlushBeforeLayout()
-        {
-            return View();
-        }
+    public IActionResult PageWithFlushBeforeLayout()
+    {
+        return View();
     }
 }

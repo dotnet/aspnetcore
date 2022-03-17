@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -7,16 +7,16 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Xunit;
 
-namespace Microsoft.Extensions.Internal
+namespace Microsoft.Extensions.Internal;
+
+public class ClosedGenericMatcherTest
 {
-    public class ClosedGenericMatcherTest
+    // queryType, interfaceType, expectedResult
+    public static TheoryData<Type, Type, Type> ExtractGenericInterfaceDataSet
     {
-        // queryType, interfaceType, expectedResult
-        public static TheoryData<Type, Type, Type> ExtractGenericInterfaceDataSet
+        get
         {
-            get
-            {
-                return new TheoryData<Type, Type, Type>
+            return new TheoryData<Type, Type, Type>
                 {
                     // Closed generic types that match given open generic type.
                     {
@@ -157,204 +157,203 @@ namespace Microsoft.Extensions.Internal
                         null
                     },
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(ExtractGenericInterfaceDataSet))]
-        public void ExtractGenericInterface_ReturnsExpectedType(
-            Type queryType,
-            Type interfaceType,
-            Type expectedResult)
+    [Theory]
+    [MemberData(nameof(ExtractGenericInterfaceDataSet))]
+    public void ExtractGenericInterface_ReturnsExpectedType(
+        Type queryType,
+        Type interfaceType,
+        Type expectedResult)
+    {
+        // Arrange & Act
+        var result = ClosedGenericMatcher.ExtractGenericInterface(queryType, interfaceType);
+
+        // Assert
+        Assert.Equal(expectedResult, result);
+    }
+
+    // IEnumerable<int> is preferred because it is defined on the more-derived type.
+    [Fact]
+    public void ExtractGenericInterface_MultipleDefinitionsInherited()
+    {
+        // Arrange
+        var type = typeof(TwoIEnumerableImplementationsInherited);
+
+        // Act
+        var result = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
+
+        // Sort
+        Assert.Equal(typeof(IEnumerable<int>), result);
+    }
+
+    // IEnumerable<int> is preferred because we sort by Ordinal on the full name.
+    [Fact]
+    public void ExtractGenericInterface_MultipleDefinitionsOnSameType()
+    {
+        // Arrange
+        var type = typeof(TwoIEnumerableImplementationsOnSameClass);
+
+        // Act
+        var result = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
+
+        // Sort
+        Assert.Equal(typeof(IEnumerable<int>), result);
+    }
+
+    private class TwoIEnumerableImplementationsOnSameClass : IEnumerable<string>, IEnumerable<int>
+    {
+        IEnumerator<int> IEnumerable<int>.GetEnumerator()
         {
-            // Arrange & Act
-            var result = ClosedGenericMatcher.ExtractGenericInterface(queryType, interfaceType);
-
-            // Assert
-            Assert.Equal(expectedResult, result);
+            throw new NotImplementedException();
         }
 
-        // IEnumerable<int> is preferred because it is defined on the more-derived type.
-        [Fact]
-        public void ExtractGenericInterface_MultipleDefinitionsInherited()
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            // Arrange
-            var type = typeof(TwoIEnumerableImplementationsInherited);
-
-            // Act
-            var result = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
-
-            // Sort
-            Assert.Equal(typeof(IEnumerable<int>), result);
+            throw new NotImplementedException();
         }
 
-        // IEnumerable<int> is preferred because we sort by Ordinal on the full name.
-        [Fact]
-        public void ExtractGenericInterface_MultipleDefinitionsOnSameType()
+        IEnumerator<string> IEnumerable<string>.GetEnumerator()
         {
-            // Arrange
-            var type = typeof(TwoIEnumerableImplementationsOnSameClass);
-
-            // Act
-            var result = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
-
-            // Sort
-            Assert.Equal(typeof(IEnumerable<int>), result); 
+            throw new NotImplementedException();
         }
+    }
 
-        private class TwoIEnumerableImplementationsOnSameClass : IEnumerable<string>, IEnumerable<int>
+    private class TwoIEnumerableImplementationsInherited : List<int>, IEnumerable<string>
+    {
+        IEnumerator<string> IEnumerable<string>.GetEnumerator()
         {
-            IEnumerator<int> IEnumerable<int>.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
-
-            IEnumerator<string> IEnumerable<string>.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
 
-        private class TwoIEnumerableImplementationsInherited : List<int>, IEnumerable<string>
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            IEnumerator<string> IEnumerable<string>.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
+    }
 
-        private class BaseClass : IDictionary<string, object>, IEquatable<BaseClass>
+    private class BaseClass : IDictionary<string, object>, IEquatable<BaseClass>
+    {
+        object IDictionary<string, object>.this[string key]
         {
-            object IDictionary<string, object>.this[string key]
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-
-                set
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            int ICollection<KeyValuePair<string, object>>.Count
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            bool ICollection<KeyValuePair<string, object>>.IsReadOnly
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            ICollection<string> IDictionary<string, object>.Keys
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            ICollection<object> IDictionary<string, object>.Values
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public bool Equals(BaseClass other)
+            get
             {
                 throw new NotImplementedException();
             }
 
-            void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
-            {
-                throw new NotImplementedException();
-            }
-
-            void IDictionary<string, object>.Add(string key, object value)
-            {
-                throw new NotImplementedException();
-            }
-
-            void ICollection<KeyValuePair<string, object>>.Clear()
-            {
-                throw new NotImplementedException();
-            }
-
-            bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
-            {
-                throw new NotImplementedException();
-            }
-
-            bool IDictionary<string, object>.ContainsKey(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
-            {
-                throw new NotImplementedException();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
-
-            IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
-
-            bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
-            {
-                throw new NotImplementedException();
-            }
-
-            bool IDictionary<string, object>.Remove(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            bool IDictionary<string, object>.TryGetValue(string key, out object value)
+            set
             {
                 throw new NotImplementedException();
             }
         }
 
-        private class DerivedClass : BaseClass
+        int ICollection<KeyValuePair<string, object>>.Count
         {
-        }
-
-        private class DerivedClassWithComparable : DerivedClass, IComparable<DerivedClassWithComparable>
-        {
-            public int CompareTo(DerivedClassWithComparable other)
+            get
             {
                 throw new NotImplementedException();
             }
         }
 
-        private class DerivedClassFromSystemImplementation : Collection<BaseClass>
+        bool ICollection<KeyValuePair<string, object>>.IsReadOnly
         {
+            get
+            {
+                throw new NotImplementedException();
+            }
         }
+
+        ICollection<string> IDictionary<string, object>.Keys
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        ICollection<object> IDictionary<string, object>.Values
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public bool Equals(BaseClass other)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IDictionary<string, object>.Add(string key, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ICollection<KeyValuePair<string, object>>.Clear()
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IDictionary<string, object>.ContainsKey(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IDictionary<string, object>.Remove(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IDictionary<string, object>.TryGetValue(string key, out object value)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private class DerivedClass : BaseClass
+    {
+    }
+
+    private class DerivedClassWithComparable : DerivedClass, IComparable<DerivedClassWithComparable>
+    {
+        public int CompareTo(DerivedClassWithComparable other)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private class DerivedClassFromSystemImplementation : Collection<BaseClass>
+    {
     }
 }

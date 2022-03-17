@@ -27,12 +27,15 @@
     <OutputName Condition="'$(OutputNamePrefix)' != '' AND '$(OutputNameSuffix)' != ''">$(OutputNamePrefix)$(_GeneratedPackageVersion)$(OutputNameSuffix)</OutputName>
 
     <EmbedCab Condition="'$(EmbedCab)' == ''">yes</EmbedCab>
-    <Cabinet Condition="'$(Cabinet)' == ''">$(OutputName.Replace('-', '_')).cab</Cabinet>
     <InstallDir>$(ProductName)</InstallDir>
 
     <DefineConstants Condition="'$(Configuration)' == 'Debug'">$(DefineConstants);Debug</DefineConstants>
     <DefineConstants>$(DefineConstants);EmbedCab=$(EmbedCab)</DefineConstants>
-    <DefineConstants>$(DefineConstants);Cabinet=$(Cabinet)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(OutputType)' == 'package' AND '$(Cabinet)' == '' ">
+    <Cabinet>$(OutputName.Replace('-', '_')).cab</Cabinet>
+    <Cabinet Condition=" '$(EmbedCab)' != 'yes' ">$(OutputName.Replace('_win', '')).cab</Cabinet>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -40,6 +43,8 @@
     <Cultures Condition=" '$(Cultures)' == '' ">$(Culture)</Cultures>
     <InstallerPlatform>$(Platform)</InstallerPlatform>
     <OutDir Condition=" '$(OutDir)' == '' ">$(OutputPath)</OutDir>
+
+    <DefineConstants>$(DefineConstants);Cabinet=$(Cabinet)</DefineConstants>
     <DefineConstants>$(DefineConstants);BinPath=$(OutputPath)$(Culture)\</DefineConstants>
     <DefineConstants>$(WixVariables);$(DefineConstants)</DefineConstants>
   </PropertyGroup>

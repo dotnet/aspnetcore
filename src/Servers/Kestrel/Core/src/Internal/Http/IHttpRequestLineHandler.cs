@@ -1,86 +1,131 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+
+/// <summary>
+/// This API supports framework infrastructure and is not intended to be used
+/// directly from application code.
+/// </summary>
+public interface IHttpRequestLineHandler
 {
-    public interface IHttpRequestLineHandler
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    void OnStartLine(
+        HttpVersionAndMethod versionAndMethod,
+        TargetOffsetPathLength targetPath,
+        Span<byte> startLine);
+}
+
+/// <summary>
+/// This API supports framework infrastructure and is not intended to be used
+/// directly from application code.
+/// </summary>
+public struct HttpVersionAndMethod
+{
+    private ulong _versionAndMethod;
+
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    public HttpVersionAndMethod(HttpMethod method, int methodEnd)
     {
-        void OnStartLine(
-            HttpVersionAndMethod versionAndMethod,
-            TargetOffsetPathLength targetPath,
-            Span<byte> startLine);
+        _versionAndMethod = ((ulong)(uint)methodEnd << 32) | ((ulong)method << 8);
     }
 
-    public struct HttpVersionAndMethod
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    public HttpVersion Version
     {
-        private ulong _versionAndMethod;
-
-        public HttpVersionAndMethod(HttpMethod method, int methodEnd)
-        {
-            _versionAndMethod = ((ulong)(uint)methodEnd << 32) | ((ulong)method << 8);
-        }
-
-        public HttpVersion Version
-        {
-            get => (HttpVersion)(sbyte)(byte)_versionAndMethod;
-            set => _versionAndMethod = (_versionAndMethod & ~0xFFul) | (byte)value;
-        }
-
-        public HttpMethod Method => (HttpMethod)(byte)(_versionAndMethod >> 8);
-
-        public int MethodEnd => (int)(uint)(_versionAndMethod >> 32);
+        get => (HttpVersion)(sbyte)(byte)_versionAndMethod;
+        set => _versionAndMethod = (_versionAndMethod & ~0xFFul) | (byte)value;
     }
 
-    public readonly struct TargetOffsetPathLength
-    {
-        private readonly ulong _targetOffsetPathLength;
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    public HttpMethod Method => (HttpMethod)(byte)(_versionAndMethod >> 8);
 
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    public int MethodEnd => (int)(uint)(_versionAndMethod >> 32);
+}
+
+/// <summary>
+/// This API supports framework infrastructure and is not intended to be used
+/// directly from application code.
+/// </summary>
+public readonly struct TargetOffsetPathLength
+{
+    private readonly ulong _targetOffsetPathLength;
+
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public TargetOffsetPathLength(int offset, int length, bool isEncoded)
+    {
+        if (isEncoded)
+        {
+            length = -length;
+        }
+
+        _targetOffsetPathLength = ((ulong)offset << 32) | (uint)length;
+    }
+
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    public int Offset
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TargetOffsetPathLength(int offset, int length, bool isEncoded)
+        get
         {
-            if (isEncoded)
+            return (int)(_targetOffsetPathLength >> 32);
+        }
+    }
+
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    public int Length
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            var length = (int)_targetOffsetPathLength;
+            if (length < 0)
             {
                 length = -length;
             }
 
-            _targetOffsetPathLength = ((ulong)offset << 32) | (uint)length;
+            return length;
         }
+    }
 
-        public int Offset
+    /// <summary>
+    /// This API supports framework infrastructure and is not intended to be used
+    /// directly from application code.
+    /// </summary>
+    public bool IsEncoded
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return (int)(_targetOffsetPathLength >> 32);
-            }
-        }
-
-        public int Length
-        {
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                var length = (int)_targetOffsetPathLength;
-                if (length < 0)
-                {
-                    length = -length;
-                }
-
-                return length;
-            }
-        }
-
-        public bool IsEncoded
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return (int)_targetOffsetPathLength < 0 ? true : false;
-            }
+            return (int)_targetOffsetPathLength < 0 ? true : false;
         }
     }
 }

@@ -1,69 +1,66 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering;
+
+public class HtmlHelperTextBoxTest
 {
-    public class HtmlHelperTextBoxTest
+    [Theory]
+    [InlineData("text")]
+    [InlineData("search")]
+    [InlineData("url")]
+    [InlineData("tel")]
+    [InlineData("email")]
+    [InlineData("number")]
+    public void TextBoxFor_GeneratesPlaceholderAttribute_WhenDisplayAttributePromptIsSetAndTypeIsValid(string type)
     {
-        [Theory]
-        [InlineData("text")]
-        [InlineData("search")]
-        [InlineData("url")]
-        [InlineData("tel")]
-        [InlineData("email")]
-        [InlineData("number")]
-        public void TextBoxFor_GeneratesPlaceholderAttribute_WhenDisplayAttributePromptIsSetAndTypeIsValid(string type)
+        // Arrange
+        var model = new TextBoxModel();
+        var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+
+        // Act
+        var textBox = helper.TextBoxFor(m => m.Property1, new { type });
+
+        // Assert
+        var result = HtmlContentUtilities.HtmlContentToString(textBox);
+        Assert.Contains(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("hidden")]
+    [InlineData("date")]
+    [InlineData("time")]
+    [InlineData("range")]
+    [InlineData("color")]
+    [InlineData("checkbox")]
+    [InlineData("radio")]
+    [InlineData("submit")]
+    [InlineData("reset")]
+    [InlineData("button")]
+    [InlineData("image")]
+    [InlineData("file")]
+    public void TextBoxFor_DoesNotGeneratePlaceholderAttribute_WhenDisplayAttributePromptIsSetAndTypeIsInvalid(string type)
+    {
+        // Arrange
+        var model = new TextBoxModel();
+        var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+
+        // Act
+        var textBox = helper.TextBoxFor(m => m.Property1, new { type });
+
+        // Assert
+        var result = HtmlContentUtilities.HtmlContentToString(textBox);
+        Assert.DoesNotContain(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
+    }
+
+    public static TheoryData TextBoxFor_UsesModelValueForComplexExpressionsData
+    {
+        get
         {
-            // Arrange
-            var model = new TextBoxModel();
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
-
-            // Act
-            var textBox = helper.TextBoxFor(m => m.Property1, new { type });
-
-            // Assert
-            var result = HtmlContentUtilities.HtmlContentToString(textBox);
-            Assert.Contains(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
-        }
-
-        [Theory]
-        [InlineData("hidden")]
-        [InlineData("date")]
-        [InlineData("time")]
-        [InlineData("range")]
-        [InlineData("color")]
-        [InlineData("checkbox")]
-        [InlineData("radio")]
-        [InlineData("submit")]
-        [InlineData("reset")]
-        [InlineData("button")]
-        [InlineData("image")]
-        [InlineData("file")]
-        public void TextBoxFor_DoesNotGeneratePlaceholderAttribute_WhenDisplayAttributePromptIsSetAndTypeIsInvalid(string type)
-        {
-            // Arrange
-            var model = new TextBoxModel();
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
-
-            // Act
-            var textBox = helper.TextBoxFor(m => m.Property1, new { type });
-
-            // Assert
-            var result = HtmlContentUtilities.HtmlContentToString(textBox);
-            Assert.DoesNotContain(@"placeholder=""HtmlEncode[[placeholder]]""", result, StringComparison.Ordinal);
-        }
-
-        public static TheoryData TextBoxFor_UsesModelValueForComplexExpressionsData
-        {
-            get
-            {
-                return new TheoryData<Expression<Func<ComplexModel, string>>, string>
+            return new TheoryData<Expression<Func<ComplexModel, string>>, string>
                 {
                     {
                         model => model.Property3["key"],
@@ -81,36 +78,36 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                         @"name=""HtmlEncode[[pre.Property4.Property6[0]]]"" type=""HtmlEncode[[text]]"" value=""HtmlEncode[[Prop6Val]]"" />"
                     }
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(TextBoxFor_UsesModelValueForComplexExpressionsData))]
-        public void TextBoxFor_ComplexExpressions_UsesModelValueForComplexExpressions(
-            Expression<Func<ComplexModel, string>> expression,
-            string expected)
+    [Theory]
+    [MemberData(nameof(TextBoxFor_UsesModelValueForComplexExpressionsData))]
+    public void TextBoxFor_ComplexExpressions_UsesModelValueForComplexExpressions(
+        Expression<Func<ComplexModel, string>> expression,
+        string expected)
+    {
+        // Arrange
+        var model = new ComplexModel();
+        var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+        helper.ViewData.TemplateInfo.HtmlFieldPrefix = "pre";
+
+        helper.ViewData.Model.Property3["key"] = "Prop3Val";
+        helper.ViewData.Model.Property4.Property5 = "Prop5Val";
+        helper.ViewData.Model.Property4.Property6.Add("Prop6Val");
+
+        // Act
+        var result = helper.TextBoxFor(expression);
+
+        // Assert
+        Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
+    }
+
+    public static TheoryData TextBoxFor_UsesModelStateValueForComplexExpressionsData
+    {
+        get
         {
-            // Arrange
-            var model = new ComplexModel();
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "pre";
-
-            helper.ViewData.Model.Property3["key"] = "Prop3Val";
-            helper.ViewData.Model.Property4.Property5 = "Prop5Val";
-            helper.ViewData.Model.Property4.Property6.Add("Prop6Val");
-
-            // Act
-            var result = helper.TextBoxFor(expression);
-
-            // Assert
-            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
-        }
-
-        public static TheoryData TextBoxFor_UsesModelStateValueForComplexExpressionsData
-        {
-            get
-            {
-                return new TheoryData<Expression<Func<ComplexModel, string>>, string>
+            return new TheoryData<Expression<Func<ComplexModel, string>>, string>
                 {
                     {
                         model => model.Property3["key"],
@@ -128,60 +125,59 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                         @"name=""HtmlEncode[[pre.Property4.Property6[0]]]"" type=""HtmlEncode[[text]]"" value=""HtmlEncode[[MProp6Val]]"" />"
                     }
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(TextBoxFor_UsesModelStateValueForComplexExpressionsData))]
-        public void TextBoxFor_ComplexExpressions_UsesModelStateValueForComplexExpressions(
-            Expression<Func<ComplexModel, string>> expression,
-            string expected)
-        {
-            // Arrange
-            var model = new ComplexModel();
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
-            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "pre";
+    [Theory]
+    [MemberData(nameof(TextBoxFor_UsesModelStateValueForComplexExpressionsData))]
+    public void TextBoxFor_ComplexExpressions_UsesModelStateValueForComplexExpressions(
+        Expression<Func<ComplexModel, string>> expression,
+        string expected)
+    {
+        // Arrange
+        var model = new ComplexModel();
+        var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+        helper.ViewData.TemplateInfo.HtmlFieldPrefix = "pre";
 
-            helper.ViewData.ModelState.SetModelValue("pre.Property3[key]", "MProp3Val", "MProp3Val");
-            helper.ViewData.ModelState.SetModelValue("pre.Property4.Property5", "MProp5Val", "MProp5Val");
-            helper.ViewData.ModelState.SetModelValue("pre.Property4.Property6[0]", "MProp6Val", "MProp6Val");
+        helper.ViewData.ModelState.SetModelValue("pre.Property3[key]", "MProp3Val", "MProp3Val");
+        helper.ViewData.ModelState.SetModelValue("pre.Property4.Property5", "MProp5Val", "MProp5Val");
+        helper.ViewData.ModelState.SetModelValue("pre.Property4.Property6[0]", "MProp6Val", "MProp6Val");
 
-            helper.ViewData.Model.Property3["key"] = "Prop3Val";
-            helper.ViewData.Model.Property4.Property5 = "Prop5Val";
-            helper.ViewData.Model.Property4.Property6.Add("Prop6Val");
+        helper.ViewData.Model.Property3["key"] = "Prop3Val";
+        helper.ViewData.Model.Property4.Property5 = "Prop5Val";
+        helper.ViewData.Model.Property4.Property6.Add("Prop6Val");
 
-            // Act
-            var result = helper.TextBoxFor(expression);
+        // Act
+        var result = helper.TextBoxFor(expression);
 
-            // Assert
-            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
-        }
+        // Assert
+        Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
+    }
 
-        public class ComplexModel
-        {
-            public string Property1 { get; set; }
+    public class ComplexModel
+    {
+        public string Property1 { get; set; }
 
-            public byte[] Bytes { get; set; }
+        public byte[] Bytes { get; set; }
 
-            [Required]
-            public string Property2 { get; set; }
+        [Required]
+        public string Property2 { get; set; }
 
-            public Dictionary<string, string> Property3 { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Property3 { get; } = new Dictionary<string, string>();
 
-            public NestedClass Property4 { get; } = new NestedClass();
-        }
+        public NestedClass Property4 { get; } = new NestedClass();
+    }
 
-        public class NestedClass
-        {
-            public string Property5 { get; set; }
+    public class NestedClass
+    {
+        public string Property5 { get; set; }
 
-            public List<string> Property6 { get; } = new List<string>();
-        }
+        public List<string> Property6 { get; } = new List<string>();
+    }
 
-        private class TextBoxModel
-        {
-            [Display(Prompt = "placeholder")]
-            public string Property1 { get; set; }
-        }
+    private class TextBoxModel
+    {
+        [Display(Prompt = "placeholder")]
+        public string Property1 { get; set; }
     }
 }

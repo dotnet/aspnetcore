@@ -11,6 +11,10 @@
     </DebBuildDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" AllowExplicitReference="true" PrivateAssets="All" IsImplicitlyDefined="true" />
+  </ItemGroup>
+
   <Target Name="PrepareForBuild">
     <MakeDir Directories="$(IntermediateOutputPath);$(OutputPath)" />
 
@@ -23,8 +27,7 @@
   <Target Name="Build" DependsOnTargets="DebBuild" />
   <Target Name="Pack" />
 
-  <Target Name="DebBuild" DependsOnTargets="$(DebBuildDependsOn)"
-      Condition="!( '$(IsTargetingPackBuilding)' == 'false' AND '$(MSBuildProjectName)' == 'Debian.TargetingPack' )">
+  <Target Name="DebBuild" DependsOnTargets="$(DebBuildDependsOn)">
     <!-- Generate debian_config.json. We can't simply use WriteLinesToFile because of https://github.com/Microsoft/msbuild/issues/1622. Use our custom GenerateFileFromTemplate task instead -->
     <PropertyGroup>
       <DebianConfigProperties>

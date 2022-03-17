@@ -1,16 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Cryptography
+namespace Microsoft.AspNetCore.Cryptography;
+
+// http://msdn.microsoft.com/en-us/library/windows/desktop/aa381414(v=vs.85).aspx
+[StructLayout(LayoutKind.Sequential)]
+internal unsafe struct DATA_BLOB
 {
-    // http://msdn.microsoft.com/en-us/library/windows/desktop/aa381414(v=vs.85).aspx
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct DATA_BLOB
-    {
-        public uint cbData;
-        public byte* pbData;
-    }
+    public uint cbData;
+    public byte* pbData;
 }

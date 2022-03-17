@@ -1,35 +1,32 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
+public class ModelBindingResultTest
 {
-    public class ModelBindingResultTest
+    [Fact]
+    public void Success_SetsProperties()
     {
-        [Fact]
-        public void Success_SetsProperties()
-        {
-            // Arrange
-            var model = "some model";
+        // Arrange
+        var model = "some model";
 
-            // Act
-            var result = ModelBindingResult.Success(model);
+        // Act
+        var result = ModelBindingResult.Success(model);
 
-            // Assert
-            Assert.True(result.IsModelSet);
-            Assert.Same(model, result.Model);
-        }
-        
-        [Fact]
-        public void Failed_SetsProperties()
-        {
-            // Arrange & Act
-            var result = ModelBindingResult.Failed();
+        // Assert
+        Assert.True(result.IsModelSet);
+        Assert.Same(model, result.Model);
+    }
 
-            // Assert
-            Assert.False(result.IsModelSet);
-            Assert.Null(result.Model);
-        }
+    [Fact]
+    public void Failed_SetsProperties()
+    {
+        // Arrange & Act
+        var result = ModelBindingResult.Failed();
+
+        // Assert
+        Assert.False(result.IsModelSet);
+        Assert.Null(result.Model);
     }
 }

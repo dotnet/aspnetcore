@@ -3,42 +3,52 @@
 namespace Microsoft.AspNetCore.Diagnostics.RazorViews
 {
     #line hidden
+    using System.Threading.Tasks;
+#nullable restore
 #line 1 "WelcomePage.cshtml"
 using System;
 
 #line default
 #line hidden
-    using System.Threading.Tasks;
+#nullable disable
+#nullable restore
 #line 2 "WelcomePage.cshtml"
 using Microsoft.AspNetCore.Diagnostics;
 
 #line default
 #line hidden
+#nullable disable
     internal class WelcomePage : Microsoft.Extensions.RazorViews.BaseView
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 3 "WelcomePage.cshtml"
   
     Response.ContentType = "text/html; charset=utf-8";
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("<!DOCTYPE html>\r\n<html");
             BeginWriteAttribute("lang", " lang=\"", 141, "\"", 223, 1);
+#nullable restore
 #line 7 "WelcomePage.cshtml"
 WriteAttributeValue("", 148, System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 148, 75, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <title>");
+#nullable restore
 #line 10 "WelcomePage.cshtml"
       Write(Resources.WelcomeTitle);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</title>\r\n    <style type=\"text/css\">\r\n        ");
             WriteLiteral(@"@font-face {
             font-family: 'SegoeLight', helvetica, sans-serif;
@@ -205,18 +215,22 @@ WriteAttributeValue("", 148, System.Globalization.CultureInfo.CurrentUICulture.T
             WriteLiteral(@"L3KzWlTiTrdwifwWEXLkt6skWFJN7t6tZ5tm2ayw9fCcnzMQl7Jb6OkW0JE+9VaU96r9AX+9L5zpZclXC5V0iqnxuvPofDps1L2mA1kTwIG69L5z4bXNJclPrkiw1JHD/Pnf9syEWuX1okJC/HZFEVdNMQWzPL+btGhOR1MQlXcdw+z1stS17SCMmvzis3qtHcj+VxiVdphOT/p5JwIpw5EjR0FZfHxROSx5gsjKg0MC31Uq+QvByTcGI4OXhJuF/Em46Q/DEm4QSx+cpzwuTqtgEheZXzyudx+J3NVSFpNJWsN1/FhKcROSv5pjMheXtMvlYuC/MYEW8sQvKmmCziZCImZRMRIRETWrkQkVf8f+IQvM79/f1+/edL/Rg6GsUsZ85L+6YzIdldTE7rx8jRyD4iljNCstWYDONksu9oiAhC0jYmYTIZOxpZWcTljEu8QrLToJzUfw4diSzMKzebCUmHMZnUfz47Ekmb+uyMkPQhJuO41HFFJy0/fjrCp3iFpE8xsQmblmVcythUFZJeBuVT/efIkei18P2qF/ZDhCSFpU7YiHW/iaWMkNB6qRMmk4mj0QvzqvCfjBAS0wmmECERkx/TyaSyd7Jr06rQ3+IVkryDMorTiTtitytcibn0gTshKWG5c1y5VLxpYf/j2jJGSEoLymFc7tg/aScsXW7jryYiJILiaDQPSP24sQ8iJPwalPCwh/KKJUz18OPdAiIkPBOUcQyKTxb/ah6nj5lDISS8PijDGJO/Cl72hOkjhOPWzWRCQvuo7MeoHBQQlVWMx8z0ISSIingICYlEZRSDMo6PlL4TZR4f//g4v5DQv2nlQ/Vws9v7qj83vYX9jUUMx527ToWE9OIyjkugUfV4aXlbl5gXcZkyj3/vwj9zmVZIyH+CWS+H3jdYGq0j8XAimTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHL0rwADANq3ok68n5URAAAAAElFTkSuQm");
             WriteLiteral("CC\"");
             BeginWriteAttribute("alt", "\r\n                    alt=\"", 7518, "\"", 7586, 1);
+#nullable restore
 #line 169 "WelcomePage.cshtml"
 WriteAttributeValue("", 7545, Resources.WelcomePageImageText_LightBulb, 7545, 41, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 7587, "\"", 7636, 1);
+#nullable restore
 #line 169 "WelcomePage.cshtml"
 WriteAttributeValue("", 7595, Resources.WelcomePageImageText_LightBulb, 7595, 41, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(@" width=""274"" height=""274"" /></div>
             <div class=""browser"" style=""opacity: 1; visible: true;"">
@@ -230,18 +244,22 @@ WriteAttributeValue("", 7595, Resources.WelcomePageImageText_LightBulb, 7595, 41
             WriteLiteral(@"g0xIC8IPsnajIvmMU/0y6LvQD8EgAjO8HGLS7Thdxzi2hJDFrMC8Tx2RlT/AG8FgAjO6EreUHhltXmYmDFIqogBjbygmprFOLiH87UnNQXAAEw7QrMxYC8oKm8oIpFNJrOubMXAAJgVwzIC7qfF8jNXVjsBYAAWBcD8oJu5wWLJPRlsRcAAmBJDMgLTF6LmUW0dJ4t5AVyvT+2PwAC4KwrMBcDD/KCAosot7vK6goynpz3qf0pi70AEICOiAF5gbu8QHb3ZLEXAALQGTEgL3CTF8wJfQEQgC6Igcu8wIZFtCwGgcZsfvkDbecF8tfjuPjj+wMgAJ3vCszFoNktq5cFpfjVt5EXlAmBFP85vj8AAtBnMSAvMN+yejJfsNgLAAHovxiQF5jlBXK9/wjfHwAB6KsYkBcYCFOqVZJ/7oVs8gaAAAy4KzAXAz/ygn1CXwAEwFcx8DkvEN+fxV4ACIC3YuBrXiCFf8JiLwAEwDcx8D0vkEk/oS8AAkBXYEUM+pMXyJw/8f35NQBAABADfTEYQl4gts+C1BcAAQAzMeh7XiC+/3SB7w+AAICWGAwlL5BZ/2SG7w+AAIC1rsBcDNznBfJf2d4Z4wcAAQAHYmAlL7BhEamD6/3x/QEQAHAkBlbyAgu3uJSburPYCwABgIbFoGt5gcz6Q3b4BEAAoP2uwFwMqucFyVYPrPQFQACg22LQRF4wIfQFQACg+2Jg2yKSa/0JfQEQAOioGDRlEc0jQl8ABAB63RVUEQN5Prd1BEAAYKBiUCQEYv0w9wdAAKDnYmDaFcj1/jg/AAgAeNYViO8/p/oDIADglxiICBD6AiAA4JkYCGzvDOCeU5wCaBuZ+TP3B0AAwDPE92exFwACAJ6xIPQFQADAP6TsE/oCIADgITNCXwAEAHws/pHC9gdAAMAzFoS+AAgA+AeLvQAQAPCUWYTvD4AAgH/FH98fAAEA/2CxFwACAB4idZ/FXgAIAHgIm7wBIADgIVzxA4AAgIfMF/j+AAgAeEeyyRvFHw");
             WriteLiteral(@"ABAL9gkzcABAA8hU3eABAA8LL4s9gLAAEA72CTNwAEADyETd4AEADwFHx/AAQAvCz+kWLuD4AAgGewyRsAAgAewiZvAAgA+Fj8FZu8ASAA4CWEvgAIAHjInMVeAAgA+AebvAEgAOAhLPYCQADAU2YRvj8AAgD+FX98fwAEAPyDxV4ACAB4CIu9ABAA8BQWewEgAOAhXPEDgACAh+D7AyAA4CHJYi9m/wAIAPiFlH2sHwAEADyETd4AEADwsviz2AsAAQDvWBD6AiAA4B9s8gaAAICn4PsDIADgZfGPFHN/AAQAPIPFXgCAAHgIm7wBAALgKWzyBgAIAMUfABAA8IE5i70AAAHwj2STN6o/ACAAfsFiLwBAADxlFuH7AwAC4F/xx/cHAATAP9jkDQAQAA/B9wcABMBT2OQNABAAL4s/m7wBAALgHWzyBgAIgIewyRsAIAA+Fn/FPj8AgAB4CaEvACAAHsImbwCAAHgIm7wBAALgISz2AgAEwFPY5A0AEAAfiz++PwAgAP7BYi8AQAA8hMVeAIAAeAqLvQAAAfAQrvgBAATAQ8T2wfcHAATAM1jsBQAIgIdI2cf6AQAEwEPY5A0AEAAviz+LvQAAAfCOBYu9AKBh1nSe9Ol7b6jZqTOcLQCAHvBkuG1PAH5T82AAANAfsIAAADwWgGucBgAA77hJBwAA4CdbIgD/wnkAAPCL77726jURgJucCgAAr0jq/lEGsMX5AADwhr9PBCBuA6T4X+V8AAB4w9WjDkB4hS4AAMALXokn/reOBeCwC/ij+HGLcwMAMFj+Kq73f3n0P6eP/nHj+k831tdf+F78z0n8uBI/znGuAAAGwbX48c24+P9N+oP/L8AAx5G6SMzC+fMAAAAASUVORK5CYII=""");
             BeginWriteAttribute("alt", "\r\n                     alt=\"", 16724, "\"", 16791, 1);
+#nullable restore
 #line 172 "WelcomePage.cshtml"
 WriteAttributeValue("", 16752, Resources.WelcomePageImageText_Browser, 16752, 39, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 16792, "\"", 16839, 1);
+#nullable restore
 #line 172 "WelcomePage.cshtml"
 WriteAttributeValue("", 16800, Resources.WelcomePageImageText_Browser, 16800, 39, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(@" width=""384"" height=""305"" /><div>:-)</div>
             </div>
@@ -254,18 +272,22 @@ WriteAttributeValue("", 16800, Resources.WelcomePageImageText_Browser, 16800, 39
             WriteLiteral(@"rE9ksaKTOn5Qq4m9o19SiFWVyV7CZc+1iuPMMZlsUQZa0tTy3FtTIqFfUo4tlcpOAlK5UXm8J30Uppa+SOMiUZlsuq/9EuaXIBXk4ZdjX8sDBC8SlQnzS/zwQIUi5eK2lkOxID2PnoqDJRiWx+tTvVGIRGUiz+I84vx7Tyvb+vmDC2fSm/Q3Pqo48k/wRy+TSCOr9bVC2PtMJgd6R4XqkLSyruklb3RXNcR8pXV6T8uVj/r/GKatjlqbq6GKRPok0i/Z5HpoLMHk5dAPBUqjXBLf7ogcykYQebxsSiLBiGRMJozkABSXSK0jNJNoh3I01KbHLs31XgHKcty0RIISicrkts5DJgALcVLVsgBRi2RMJrwnBmC+RIKZa9MO8QipZU+4VgAmchqSRIIVicrkEpkAfIc8iBfcS+haoR81Zr8C3JFIkDfXVgxHD5kAhCuRaESCTACJhCuRqESCTCBRTkPsiUQtEpVJV2XC8gNgnZPQRmfMiERlwlomgEQQCTIBmMLtoyKhzFg1LxKVCU8NgzWJHIXw7ExSIhmTyYFjMWmIm0bXE0leJGNCYaU1iBVZx+UkVomYEonKhOFhiI1G1lhFJPNlQhMWYmCkKcTEqnIti2dI+ybyEq4O1ysEiPRD3sbYVE1KJGNC4fWgEBoyN+Q05n5IciJRmXQ0nVDqQNOlzGlMk8wQCaUOUMogkgqFIsPDu6QTqJGLTCCn1neyldpZ1VGdfcdsWKiWoQtocWZEUp1QaMRCZSkk295Za6gikukykZdxHTh6J0AKQSQehELvBJbFxAxVRLK8TEQi8rwOLzOHIvQ1hQxTPgiI5HuhSJnzk6MZC/PLmFMrU9wRSXVC2dFyh5eawzjSQL1IuYxBJOXKncfu6/IE9E/A5PR2RFKvUHYd652kLJB3qfdBEIk/oaypUGjIIhBAJN6E0qXkQSCASHyUPPRQEAgi4RB4E0rXMcoTI7ejMNl2ThMVkYQkFRHKjmNV+9CRR/ovrK4PgkjsCGVNy54uKSWo9NFT");
             WriteLiteral(@"gQw4HIiElAJFkGnskjx6lC+IxIJQ8l5KF6nUUrrk8qB5ikiQCiAPRAJFpNJxzE0pSk+3PvJAJHBXLJsqlC3HokuTUseVpo4+hwORwOJi6ahQRCybiSWWvopjoKmDZikiAY+JZUOlsmEotYg0hnnqYIgWkUD9cpG5KusqlTXdQkwvIxXFcEwaQ6SBSCCOBLOiclnX/70xJpl1t/ykOZHC57E/X+nnTbZ9EoEgC4DE044mHoCJ/F+AAQAgl3zNeDGxuQAAAABJRU5ErkJggg==""");
             BeginWriteAttribute("alt", "\r\n                    alt=\"", 23261, "\"", 23329, 1);
+#nullable restore
 #line 176 "WelcomePage.cshtml"
 WriteAttributeValue("", 23288, Resources.WelcomePageImageText_LightBulb, 23288, 41, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 23330, "\"", 23379, 1);
+#nullable restore
 #line 176 "WelcomePage.cshtml"
 WriteAttributeValue("", 23338, Resources.WelcomePageImageText_LightBulb, 23338, 41, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(@" width=""274"" height=""274"" /></div>
             <div class=""bulb"">
@@ -278,18 +300,22 @@ WriteAttributeValue("", 23338, Resources.WelcomePageImageText_LightBulb, 23338, 
             WriteLiteral(@"BJYO6F5k46FL8dCtNaPRCNPQifuGwYyWbmn6yV36ZuB8uIsTWpo6m/VUtXmGhmAxDu+ijpAOsvM3DsTDqgYX/vhldn5qP7PZ5nGfCC0tCWx8R9fIrKmV3jMEQkuzIxvjumtWZEYrtJAmso6Fpde8GEbqyO6IbGe49I3Q0sDIDrPzNVm64b+GQGhpHpHtlokhWIx3hpFyNntoJDoZ2ngI3p5zH9z6Z0FoSbZzeQGs++IVdLevu/Q5QkvanSuep2BgJDovRnYzNMQLZUJLDTtXYRR6Iy4hbJjZXh1aL4YBy4rPXHYNw9XMaDGjZVWcHNyMFkhsyxBcTmhJxcymf941BEJLtSaGoHecGFxoqdgLQ9A7jjoQWqqU53k8mH1qJHrllSEQWqq3bQh65cAQCC3Vz2on4ea5keiFiXeHXfOz4DhaUnPeg17YENor938zWiqZ2W6b2XbatshaOqAZsX0SbjYzh311STzK4GG4b/cMhaUDmvdUKh5v+WF2ftxl3Fz0r13i7DUevvfciWRut3QgtDTeb3/3+3gC8eGF/735pz/+YbLkD8AgcyrHOwVWWBcLravg0t+nc+cnQJkaCVKzRgsgtABCC4DQAggtgNACILQAQgsgtAAILYDQAiC0AEILILQACC2A0AIILQBCCyC0AEJrCACEFkBoARBaAKEFEFoAhBZAaAGEFgChBRBaAIQWQGgBhBYAoQUQWgChBUBoAYQWQGgBEFoAoQVAaAGEFkBoARBaAKEFEFoAhBZAaAEQWgChBRBaAIQWQGgBhBYAoQUQWgChBUBoAYQWAKEFEFoAoQVAaAGEFkBoARBaAKEFQGgBhBZAaAEQWgChBRBaAIQWQGgBhBYAoQUQWgCEFkBoAYQWAKEFEFoAoQVAaAGEFgChBRBaAKEFQGgBhBZAaAEQWgChBRBaAIQWQGgBEFoAoQUQWgCEFkBoAYQWAKEFEFoAhBZAaAGEFgChBRBaAKEFQGgBhBZAaAEQWgChBUBoAYQWQGgBEFoAoQUQWgCE");
             WriteLiteral(@"FkBoARBaAKEFEFoAhBZAaAGEFgChBRBaAKEFQGgBhBYAoQUQWgChBUBoAYQWQGgBEFoAoQVAaAGEFkBoARBaAKEFEFoAhBZAaAGEFgChBRBaAIQWQGgBhBYAoQUQWgChBUBoAYQWAKEFEFoAoQVAaAGEFkBoARBaAKEFEFoAhBZAaAEQWgChBRBaAIQWQGgBhBYAoQUQWgCEFkBoAYQWAKEFEFoAoQVAaAGEFkBoARBaAKEFQGgBhBZAaAEQWgChBRBaAIQWQGgBEFoAoQUQWgCEFkBoAYQWAKEFEFoAoQVAaAGEFgChBRBaAKEFQGgBhBZAaAEQWgChBUBoAYQWQGgBEFoAoQUQWgCEFkBoAYQWAKEFEFoAhBZAaAGEFgChBRBaAKEFQGgBhBYAoQUQWgChBUBoAYQWQGgBEFoAoQUQWgCEFkBoARBaAKEFEFoAhBZAaAGEFgChBRBaAIQWQGgBhBYAoQUQWgChBUBoAYQWQGgBEFoAoQVAaAGEFkBoARBaAKEFEFoAhBZAaAGE1hAACC2A0AIgtABCCyC0AAgtgNACCC0AQgsgtAAILYDQAggtAEILILQAQguA0AIILYDQAiC0AEILgNACCC2A0AIgtABCCyC0AAgtgNACMCcvisIoACT0fwEGAL+BBlr+j4JHAAAAAElFTkSuQmCC""");
             BeginWriteAttribute("alt", "\r\n                     alt=\"", 31229, "\"", 31298, 1);
+#nullable restore
 #line 179 "WelcomePage.cshtml"
 WriteAttributeValue("", 31257, Resources.WelcomePageImageText_LightBulb, 31257, 41, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 31299, "\"", 31348, 1);
+#nullable restore
 #line 179 "WelcomePage.cshtml"
 WriteAttributeValue("", 31307, Resources.WelcomePageImageText_LightBulb, 31307, 41, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(@" width=""346"" height=""658"" /></div>
             <div class=""bottom"">
@@ -309,54 +335,68 @@ WriteAttributeValue("", 31307, Resources.WelcomePageImageText_LightBulb, 31307, 
             WriteLiteral(@"Uu/VbV98PRqR6oN513sDigTHx2kWAXAAAA5BGZXi+/+ifKQRfHVgV+h45NrUboEplZ324W7Orxc/ePLWiFHYuWC7heq4AX9bskW9kaGiqUNVsLE0W1StPi9ZFQ9XSvy3dj8frz0W2pyyvXg4M71dCQwy/LdeejGEHxyd8/oSSaBKlEBtjRqaKe7P4qRmIUXRgnPnucml0AAACwxsuvvqEcjGLeLEg1eWxqlBQgBoISWV3f0qfbFm2nyP56R/JSXzdGrwR8p2ENr2w+lWxykqMHHzxIjNq9TlHHa7sU3mj0t0gXozMet1YIK2eG91zVzjJGZzzufjF2YXCg/FsHX5YIeL3rtmM6VA0p59eSytnNMWUztqWsDWy07eooglwio2t4d1iJ7w1zYQAAAID1Xn71IGC1MC+ynZ5VPq+71Yq4sTgIQh0Eo+wguh7Kqj32ZpeZaEBf0FrcXEOyO5vDtge8omq1aUQhrFbP9rp8Ubjebc6GC9KXuVUNi770Tga8XD2AhAh8ndk+vT/tfzKIFJT3zv/mkXlGdk7tZ3OJeQEAAABHHGQ7vWFMom6WCHr992NziSDRa0aQzP7tk1Nw/2f6sl5nh8PPmnVpJOAl2epuNLpRjDjSLW4wVD4R9AqrteFAoO0onR1xU9BLdGcUNbxk266Exks1NezgS4stLk945rwUGVwnjrlqmGAXAAAA3OXlVxuNXvipI8Guz7dpe7/rpKL8tMFfxT3JuSPTyW1XlO8T7AIaBLyy+ZToypikaeRa2jg14tS6RbfG47+LhnrP7jq0Xgi7pp3HIruWLXu1HD3n8MtjIAkAAADAL15+VQS8MorI1vq86H6zgJcopi+6a37bxu6XgKtp3FTbY2k9PurUusNq9US6TVirjslavpsK11tRv+vQWjky/lhk5yMHX57I8PobziYAAADAJw4yzV7fnxbmxb26qD/23SNzfF+fbjuakQa4VLDJTTUku7s95FjASw3UQxG1+nAIvGCgrqnBurRq4cWKqhRKmuNtPB");
             WriteLiteral(@"IqKoNq2bLlFyohpzO8EovLE2RfAgAAAH50MDrkrWO/yxPsAhoj4GWD9+6Pjjq9DUe7NcYkdmc85IY6XmPhXUuXX64HB9fLEadHL53kjAIAAAAAoLVHAl7ZfIpglwVur59yPOAV1SoPC+aHQ/K6Mx5a33G+jtelgU3L1/FZKTbu8Mu8yhkFAAAAAEBrxzO8CHhZ4F5hYMTpbQgFa1EtWAsZP5+WvXzRpbFUUZ18fftdGq22WQk7HfBKLi5PxDirAAAAAABo7njAi4L1kq1sDQ0VylrUDdsS1SoDkVA1EQgolhTccrJ4/fnoti3rKdbURKmmOp3ORmAaAAAAAIAWHga8svmUKIadoEnk+uBBYtQt2yLqeEU1+fW7Dq0VnIsDWTk643H3SgNOZ3kR8AIAAAAAoIWjGV7UBrLAnc1h1wS8omp1OKzVxqxavihcX60FHHltZ8MF29a16fxojRSuBwAAAACghf8vwABfcA5F9k0oGQAAAABJRU5ErkJggg==""");
             BeginWriteAttribute("alt", "\r\n                    alt=\"", 46196, "\"", 46262, 1);
+#nullable restore
 #line 182 "WelcomePage.cshtml"
 WriteAttributeValue("", 46223, Resources.WelcomePageImageText_Skyline, 46223, 39, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 46263, "\"", 46310, 1);
+#nullable restore
 #line 182 "WelcomePage.cshtml"
 WriteAttributeValue("", 46271, Resources.WelcomePageImageText_Skyline, 46271, 39, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(" width=\"1212\" height=\"202\" /></div>\r\n        </div>\r\n    </div>\r\n\r\n    <div class=\"content\">\r\n        <div class=\"bodyHeadline\">");
+#nullable restore
 #line 187 "WelcomePage.cshtml"
                              Write(Resources.WelcomeHeader);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</div>\r\n        <div class=\"bodyContent\">");
+#nullable restore
 #line 188 "WelcomePage.cshtml"
                             Write(Resources.WelcomeStarted);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</div>\r\n        <a class=\"bodyCTA longer\" href=\"http://go.microsoft.com/fwlink/?LinkID=398596&amp;clcid=0x409\">");
+#nullable restore
 #line 189 "WelcomePage.cshtml"
                                                                                                   Write(Resources.WelcomeLearnMicrosoftAspNet);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral(@"<div>
             <img src=""data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADoAAAAdCAYAAAD7En+mAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyRpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoTWFjaW50b3NoKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozMjVCMDEwM0FBQkExMUUyQjdGNEEwODg0RjhFODY4OCIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozMjVCMDEwNEFBQkExMUUyQjdGNEEwODg0RjhFODY4OCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjMyNUIwM");
             WriteLiteral(@"TAxQUFCQTExRTJCN0Y0QTA4ODRGOEU4Njg4IiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjMyNUIwMTAyQUFCQTExRTJCN0Y0QTA4ODRGOEU4Njg4Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+I1MZRAAAA4FJREFUeNq8md1x2kAQx3UaCoAKAg0YkgYQHTgV2KoAeMqjncfkBbsCSAd0AK5AOA1Y6YAOyJ7mf5rV6T4l8M3c2ALd/fZ/u/exh0gCy+VyyeiPrHPtqzPVd6p7IcTJ0rbxTO8FMe++/vIy/xY/TiF9CY+4If1ZUV1SHQb0V1L9Q/WFxJy7CCVxnZkk+hwtlIyTsCcGk53sMZJ8FGcY8Ux7NydB+xihJLI3k8Tug4TCi1uq92zEfpJxu4DwfoShY3y0o3a5Tyi82GKS0buA8G4xqV3uFAqRB4xYAoHPSURBH08IvwosR9omFCIbTDI0iok+GkxdrC5UjuqjHnpdCry7xaOcs2uLkQ2mLfQCBTeY1Ne6JRRzcoPH731EWsQuqM+jYU7WzD4iLWIX1GfFTLVwU+HaG4gQ3WExSRhcDzcVrldhYl63mAJCnwEtybiJx0tjNvETtCk9c/YDq2OuFjUSWjPJuInHSy0mtSk9c7ZmSvEpvntQIxswaGeE2wG1IDEzh1fl+694XLKvejFJzMzh1RZTwMhCdkZGjSJWVr5SnjEHT44o+MDjaPrt91gxyahRxMraYtpORoiCmpmyvesYMfcqCNvEKyNsnkVoq3ezLkx4qcW0eRahXTOl0C94eI9caGxiM0uTEzvVdGI6xHqZAzbJT4aQO8ADoUWJzQ0nqX/sfyuTjO7EpHa54SRVM1Ntwl+rbALf+zTmwDDKJtf7SqYZvwhs92nMATrOTFDbsY2F9gwrITdywVM0Vqbae0YmP7ZZVlMj05KiTXnoqjieRx7vFHAYIDJh28KxK5OJH");
             WriteLiteral(@"AaIbDCFvsc5DO0sku3VMkqEvse5EuauIvF+gSgRqbbHrW7gSX4i2hn2uNUNPNliCi3LkA0nIV6NDPFCz2BYllExQ7waGeIFz2BSlmWUGLHtFUXy/o48TcOed3Umu62omI00DUVl5PdIwK+1t81UUm34vmYiAb8ZUzgS5eq+p4cnN7g5cCbyWqJsvO+J8GSDyXNc0+XYlr18RA5ZRt7/btjSnqsFwXE51mK68k3L/W+DqR8HRcAViFq5Xm1pGBP4wAyu751Crjs1z9ZM1wU1BLaYptsK4VktN9pRq0R9Y5/NMZL8slmC1ioSIu51ezNtkSACQ3HJckjXAX1v8nzsTxLwVBTT99OEiFxkMsNIVpu/J6yjhBpEG5mhv7vI8l+AAQB7WiwH/DuungAAAABJRU5ErkJggg==""");
             BeginWriteAttribute("alt", "\r\n                alt=\"", 49142, "\"", 49206, 1);
+#nullable restore
 #line 191 "WelcomePage.cshtml"
 WriteAttributeValue("", 49165, Resources.WelcomePageImageText_LearnMore, 49165, 41, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             BeginWriteAttribute("title", " title=\"", 49207, "\"", 49256, 1);
+#nullable restore
 #line 191 "WelcomePage.cshtml"
 WriteAttributeValue("", 49215, Resources.WelcomePageImageText_LearnMore, 49215, 41, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(" width=\"58\" height=\"29\" /></div>\r\n        </a>\r\n    </div>\r\n\r\n</body>\r\n</html>\r\n");
         }

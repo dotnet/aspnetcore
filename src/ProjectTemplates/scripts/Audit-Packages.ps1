@@ -8,7 +8,7 @@ param(
 
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
-$contentDir = "$PSScriptRoot/../Web.Spa.ProjectTemplates/content"
+$contentDir = "$PSScriptRoot/../../submodules/spa-templates/src/content"
 foreach ($package in $contentDir) {
     $spaFrameworks = Get-ChildItem -Path $package -Directory
 

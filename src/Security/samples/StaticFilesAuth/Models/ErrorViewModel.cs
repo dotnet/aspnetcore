@@ -1,11 +1,13 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 
-namespace StaticFilesAuth.Models
-{
-    public class ErrorViewModel
-    {
-        public string RequestId { get; set; }
+namespace StaticFilesAuth.Models;
 
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
-    }
+public class ErrorViewModel
+{
+    public string RequestId { get; set; }
+
+    public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 }

@@ -5,6 +5,12 @@
       "longName": "no-restore",
       "shortName": ""
     },
+    "kestrelHttpPort": {
+      "isHidden": true
+    },
+    "kestrelHttpsPort": {
+      "isHidden": true
+    },
     "ExcludeLaunchSettings": {
       "longName": "exclude-launch-settings",
       "shortName": ""

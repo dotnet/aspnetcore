@@ -1,50 +1,38 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO.Pipelines;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+
+internal class LoggingConnectionMiddleware
 {
-    internal class LoggingConnectionMiddleware
+    private readonly ConnectionDelegate _next;
+    private readonly ILogger _logger;
+
+    public LoggingConnectionMiddleware(ConnectionDelegate next, ILogger logger)
     {
-        private readonly ConnectionDelegate _next;
-        private readonly ILogger _logger;
+        _next = next ?? throw new ArgumentNullException(nameof(next));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
-        public LoggingConnectionMiddleware(ConnectionDelegate next, ILogger logger)
+    public async Task OnConnectionAsync(ConnectionContext context)
+    {
+        var oldTransport = context.Transport;
+
+        try
         {
-            _next = next ?? throw new ArgumentNullException(nameof(next));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        public async Task OnConnectionAsync(ConnectionContext context)
-        {
-            var oldTransport = context.Transport;
-
-            try
+            await using (var loggingDuplexPipe = new LoggingDuplexPipe(context.Transport, _logger))
             {
-                await using (var loggingDuplexPipe = new LoggingDuplexPipe(context.Transport, _logger))
-                {
-                    context.Transport = loggingDuplexPipe;
+                context.Transport = loggingDuplexPipe;
 
-                    await _next(context);
-                }
-            }
-            finally
-            {
-                context.Transport = oldTransport;
+                await _next(context);
             }
         }
-
-        private class LoggingDuplexPipe : DuplexPipeStreamAdapter<LoggingStream>
+        finally
         {
-            public LoggingDuplexPipe(IDuplexPipe transport, ILogger logger) :
-                base(transport, stream => new LoggingStream(stream, logger))
-            {
-            }
+            context.Transport = oldTransport;
         }
     }
 }

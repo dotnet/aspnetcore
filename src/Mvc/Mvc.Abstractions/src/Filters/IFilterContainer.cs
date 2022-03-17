@@ -1,16 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters;
+
+/// <summary>
+/// A filter that requires a reference back to the <see cref="IFilterFactory"/> that created it.
+/// </summary>
+public interface IFilterContainer
 {
     /// <summary>
-    /// A filter that requires a reference back to the <see cref="IFilterFactory"/> that created it.
+    /// The <see cref="IFilterFactory"/> that created this filter instance.
     /// </summary>
-    public interface IFilterContainer
-    {
-        /// <summary>
-        /// The <see cref="IFilterFactory"/> that created this filter instance.
-        /// </summary>
-        IFilterMetadata FilterDefinition { get; set; }
-    }
+    IFilterMetadata FilterDefinition { get; set; }
 }

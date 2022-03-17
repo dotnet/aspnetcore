@@ -1,23 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication;
+
+/// <summary>
+/// Used to capture path info so redirects can be computed properly within an app.Map().
+/// </summary>
+public class AuthenticationFeature : IAuthenticationFeature
 {
     /// <summary>
-    /// Used to capture path info so redirects can be computed properly within an app.Map().
+    /// The original path base.
     /// </summary>
-    public class AuthenticationFeature : IAuthenticationFeature
-    {
-        /// <summary>
-        /// The original path base.
-        /// </summary>
-        public PathString OriginalPathBase { get; set; }
+    public PathString OriginalPathBase { get; set; }
 
-        /// <summary>
-        /// The original path.
-        /// </summary>
-        public PathString OriginalPath { get; set; }
-    }
+    /// <summary>
+    /// The original path.
+    /// </summary>
+    public PathString OriginalPath { get; set; }
 }

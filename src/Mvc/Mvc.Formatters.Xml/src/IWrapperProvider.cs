@@ -1,25 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
+/// <summary>
+/// Defines an interface for wrapping objects for serialization or deserialization into xml.
+/// </summary>
+public interface IWrapperProvider
 {
     /// <summary>
-    /// Defines an interface for wrapping objects for serialization or deserialization into xml.
+    /// Gets the wrapping type.
     /// </summary>
-    public interface IWrapperProvider
-    {
-        /// <summary>
-        /// Gets the wrapping type.
-        /// </summary>
-        Type WrappingType { get; }
+    Type WrappingType { get; }
 
-        /// <summary>
-        /// Wraps the given object to the wrapping type provided by <see cref="WrappingType"/>.
-        /// </summary>
-        /// <param name="original">The original non-wrapped object.</param>
-        /// <returns>Returns a wrapped object.</returns>
-        object Wrap(object original);
-    }
+    /// <summary>
+    /// Wraps the given object to the wrapping type provided by <see cref="WrappingType"/>.
+    /// </summary>
+    /// <param name="original">The original non-wrapped object.</param>
+    /// <returns>Returns a wrapped object.</returns>
+    object? Wrap(object? original);
 }

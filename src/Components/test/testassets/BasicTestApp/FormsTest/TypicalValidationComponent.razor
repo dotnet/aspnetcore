@@ -2,14 +2,17 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 <EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
-    <DataAnnotationsValidator />
+    @if (enableDataAnnotationsSupport)
+    {
+        <DataAnnotationsValidator />
+    }
 
     <p class="name">
         Name: <InputText @bind-Value="person.Name" placeholder="Enter your name" />
     </p>
     <p class="email">
         Email: <InputText @bind-Value="person.Email" />
-        <ValidationMessage For="@(() => person.Email)" />
+        <ValidationMessage For="@(() => person.Email)" class="special-email-css-class-override" />
     </p>
     <p class="confirm-email">
         Email: <InputText @bind-Value="person.ConfirmEmail" />
@@ -30,15 +33,64 @@
     <p class="expiry-date">
         Expiry date (optional): <InputDate @bind-Value="person.OptionalExpiryDate" />
     </p>
+    <p class="departure-time">
+        Departure time:<br>
+        <input id="time-seconds-checkbox" type="checkbox" @bind-value="includeTimeSeconds" />Include seconds<br>
+        <InputDate
+            id="time-input"
+            Type="InputDateType.Time"
+            @bind-Value="person.DepartureTime"
+            placeholder="Enter the time"
+            step="@(includeTimeSeconds ? 1 : 60)" />
+    </p>
+    <p class="visit-month">
+        Month of visit: <InputDate Type="InputDateType.Month" @bind-Value="person.VisitMonth" placeholder="Enter the month of your visit" />
+    </p>
+    <p class="appointment-date-time">
+        Appointment date and time:<br>
+        <input id="datetime-local-seconds-checkbox" type="checkbox" @bind-value="includeDateTimeLocalSeconds" />Include seconds<br>
+        <InputDate
+            id="datetime-local-input"
+            Type="InputDateType.DateTimeLocal"
+            @bind-Value="person.AppointmentDateAndTime"
+            placeholder="Enter the appointment date and time"
+            step="@(includeDateTimeLocalSeconds ? 1 : 60)" />
+    </p>
     <p class="ticket-class">
         Ticket class:
-        <InputSelect @bind-Value="person.TicketClass" size="4">
+        @*We specify 'multiple' here, but it has no effect since we are not binding to an array type.*@
+        <InputSelect @bind-Value="person.TicketClass" size="4" multiple>
             <option>(select)</option>
             <option value="@TicketClass.Economy">Economy class</option>
             <option value="@TicketClass.Premium">Premium class</option>
             <option value="@TicketClass.First">First class</option>
         </InputSelect>
         <span id="selected-ticket-class">@person.TicketClass</span>
+    </p>
+    <p class="cities">
+        @*Here, the 'multiple' attribute is inferred because we are binding to an array type.*@
+        <InputSelect @bind-Value="person.SelectedCities">
+            <option value="@City.SanFrancisco">San Francisco</option>
+            <option value="@City.Tokyo">Tokyo</option>
+            <option value="@City.London">London</option>
+            <option value="@City.Madrid">Madrid</option>
+        </InputSelect>
+    </p>
+    <p class="select-multiple-hostile">
+        <InputSelect @bind-Value="person.HostileStrings">
+            <option value="@("\"")">@("\"")</option>
+            <option value="{">{</option>
+            <option value="@("")">Empty string</option>
+        </InputSelect>
+        <span>@string.Join(", ", person.HostileStrings)</span>
+    </p>
+    <p class="select-bool-values">
+        T/F: 77 + 33 = 100<br>
+        <InputSelect @bind-Value="person.IsSelectMathStatementTrue">
+            <option>(select)</option>
+            <option value="true">true</option>
+            <option value="false">false</option>
+        </InputSelect>
     </p>
     <p class="airline">
         <InputRadioGroup @bind-Value="person.Airline">
@@ -66,6 +118,13 @@
             </InputRadioGroup>
         </InputRadioGroup>
     </p>
+    <p class="radio-group-bool-values">
+        T/F: 7 * 3 = 21<br>
+        <InputRadioGroup @bind-Value="person.IsRadioMathStatementTrue">
+            <InputRadio Value="true" />true<br>
+            <InputRadio Value="false" />false<br>
+        </InputRadioGroup>
+    </p>
     <p class="socks">
         Socks color: <InputText @bind-Value="person.SocksColor" />
     </p>
@@ -82,14 +141,14 @@
 
     <button type="submit">Submit</button>
 
-    <p class="model-errors">
-        <ValidationSummary Model="person" />
+    <p class="all-errors">
+        <ValidationSummary />
     </p>
-
-    <ValidationSummary />
 </EditForm>
 
-<ul>@foreach (var entry in submissionLog) { <li>@entry</li> }</ul>
+<ul>@foreach (var entry in submissionLog) { <li class="submission-log-entry">@entry</li> }</ul>
+
+<button id="toggle-dataannotations" @onclick="ToggleDataAnnotations">Toggle DataAnnotations support</button>
 
 @code {
     protected virtual bool UseExperimentalValidator => false;
@@ -97,6 +156,9 @@
     Person person = new Person();
     EditContext editContext;
     ValidationMessageStore customValidationMessageStore;
+    bool enableDataAnnotationsSupport = true;
+    bool includeTimeSeconds;
+    bool includeDateTimeLocalSeconds;
 
     protected override void OnInitialized()
     {
@@ -127,6 +189,12 @@
 
         public DateTimeOffset? OptionalExpiryDate { get; set; }
 
+        public TimeOnly DepartureTime { get; set; } = TimeOnly.MinValue;
+
+        public DateOnly VisitMonth { get; set; } = new DateOnly(DateTime.Now.Year, 1, 1);
+
+        public DateTime AppointmentDateAndTime { get; set; } = DateTime.Today;
+
         [Required, Range(typeof(bool), "true", "true", ErrorMessage = "Must accept terms")]
         public bool AcceptsTerms { get; set; }
 
@@ -149,8 +217,20 @@
         [Required, EnumDataType(typeof(Country))]
         public Country? Country { get; set; } = null;
 
+        [Required, Range(typeof(bool), "false", "false", ErrorMessage = "77 + 33 = 100 is a false statement, unfortunately.")]
+        public bool? IsSelectMathStatementTrue { get; set; } = null;
+
+        [Required, Range(typeof(bool), "true", "true", ErrorMessage = "7 * 3 = 21 is a true statement.")]
+        public bool IsRadioMathStatementTrue { get; set; } = false;
+
         [Required, StringLength(10), CustomValidationClassName(Valid = "valid-socks", Invalid = "invalid-socks")]
         public string SocksColor { get; set; }
+
+        [Required, MinLength(2), MaxLength(3)]
+        public City[] SelectedCities { get; set; } = new[] { City.SanFrancisco };
+
+        [Required]
+        public string[] HostileStrings { get; set; } = new string[] { "\"", "{" };
 
         public string Username { get; set; }
     }
@@ -162,6 +242,8 @@
     enum Color { Red, Green, Blue, Orange }
 
     enum Country { Japan, Yemen, Latvia }
+
+    enum City { SanFrancisco, Tokyo, London, Madrid }
 
     List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
 
@@ -186,5 +268,11 @@
             customValidationMessageStore.Add(editContext.Field(nameof(Person.Username)), "This is invalid, asynchronously");
             _ = InvokeAsync(editContext.NotifyValidationStateChanged);
         });
+    }
+
+    void ToggleDataAnnotations()
+    {
+        enableDataAnnotationsSupport = !enableDataAnnotationsSupport;
+        submissionLog.Add($"DataAnnotations support is now {(enableDataAnnotationsSupport ? "enabled" : "disabled")}");
     }
 }

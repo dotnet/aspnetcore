@@ -1,3 +1,0 @@
-(1,2): Error RZ1035: Missing close angle for tag helper 'p'.
-(1,2): Error RZ1034: Found a malformed 'p' tag helper. Tag helpers must have a start and end tag or be self closing.
-(1,15): Error RZ1030: TagHelper attributes must be well-formed.

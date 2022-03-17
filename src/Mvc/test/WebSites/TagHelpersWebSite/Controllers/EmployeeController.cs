@@ -1,41 +1,39 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using TagHelpersWebSite.Models;
 
-namespace TagHelpersWebSite.Controllers
+namespace TagHelpersWebSite.Controllers;
+
+public class EmployeeController : Controller
 {
-    public class EmployeeController : Controller
+    // GET: Employee
+    public string Index()
     {
-        // GET: Employee
-        public string Index()
-        {
-            return "Index Page";
-        }
+        return "Index Page";
+    }
 
-        // GET: Employee/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+    // GET: Employee/Create
+    public IActionResult Create()
+    {
+        return View();
+    }
 
-        // POST: Employee/Create
-        [HttpPost]
-        public IActionResult Create(Employee employee)
+    // POST: Employee/Create
+    [HttpPost]
+    public IActionResult Create(Employee employee)
+    {
+        if (ModelState.IsValid)
         {
-            if (ModelState.IsValid)
-            {
-                return View("Details", employee);
-            }
-            return View(employee);
+            return View("Details", employee);
         }
+        return View(employee);
+    }
 
-        // GET: Employee/DuplicateAntiforgeryTokenRegistration
-        public IActionResult DuplicateAntiforgeryTokenRegistration()
-        {
-            return View();
-        }
+    // GET: Employee/DuplicateAntiforgeryTokenRegistration
+    public IActionResult DuplicateAntiforgeryTokenRegistration()
+    {
+        return View();
     }
 }

@@ -8,8 +8,8 @@
     <ProductNameFolder>Microsoft ASP.NET Core Targeting Pack</ProductNameFolder>
     <ProductNameShort>AspNetCore.TargetingPack</ProductNameShort>
     <OutputType>Package</OutputType>
+    <Cabinet>targeting_pack_$(Platform).cab</Cabinet>
     <IsShipping>true</IsShipping>
-    <SkipCopyToArtifactsDirectory Condition="'$(IsTargetingPackBuilding)' == 'false'">true</SkipCopyToArtifactsDirectory>
     <ProjectGuid>0AC34F1B-8056-4FFB-A398-E6BB7D67B48D</ProjectGuid>
     <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
     <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
@@ -21,6 +21,8 @@
     <NamespaceGuid>DDBB771F-963F-47D3-8510-9ABD04DBE1D1</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\TargetingPack\TargetingPackPackage.nuspec</ToolsetInstallerNuspecFile>
+    <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
+    <BundleVersion>$(TargetingPackVersionPrefix)</BundleVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,6 +47,7 @@
   <ItemGroup>
     <Compile Include="DependencyProvider.wxs" />
     <Compile Include="Product.wxs" />
+    <Compile Include="..\Common\dotnethome_x64.wxs" Link="dotnethome_x64.wxs" />
     <EmbeddedResource Include="Strings.wxl" />
   </ItemGroup>
 
@@ -61,7 +64,9 @@
   <Target Name="ExtractIntermediateTargetingPack" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <TargetingPackHarvestRoot Condition="'$(TargetingPackHarvestRoot)' == ''">$(InstallersOutputPath)</TargetingPackHarvestRoot>
-      <IntermediateTargetingPackZip>$(TargetingPackHarvestRoot)aspnetcore-targeting-pack-$(PackageVersion).zip</IntermediateTargetingPackZip>
+      <TargetingPackZipVersion>$(TargetingPackVersionPrefix)</TargetingPackZipVersion>
+      <TargetingPackZipVersion Condition="'$(VersionSuffix)' != ''">$(TargetingPackZipVersion)-$(VersionSuffix)</TargetingPackZipVersion>
+      <IntermediateTargetingPackZip>$(TargetingPackHarvestRoot)aspnetcore-targeting-pack-$(TargetingPackZipVersion)-$(TargetRuntimeIdentifier).zip</IntermediateTargetingPackZip>
     </PropertyGroup>
 
     <Unzip SourceFiles="$(IntermediateTargetingPackZip)" DestinationFolder="$(HarvestSource)" />
@@ -73,13 +78,9 @@
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Targeting Pack ($(Platform))</ProductName>
     <PackageFileName>$(OutputName)$(TargetExt)</PackageFileName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
-
-    <!-- Suppresses building this project completely during servicing builds. -->
-    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
   </PropertyGroup>
 
-   <Target Name="CreateTargetingPackNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build"
-      Condition="'$(IsTargetingPackBuilding)' != 'false'">
+   <Target Name="CreateTargetingPackNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
     </PropertyGroup>

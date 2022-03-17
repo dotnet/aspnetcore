@@ -2,29 +2,30 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <PackageId>Microsoft.DotNet.Web.ProjectTemplates.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
+    <PackageId>Microsoft.DotNet.Web.ProjectTemplates.$(AspNetCoreMajorMinorVersion)</PackageId>
     <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
     <ComponentsWebAssemblyProjectsRoot>$(RepoRoot)src\Components\WebAssembly\</ComponentsWebAssemblyProjectsRoot>
+    <UsingToolTemplateLocalizer>true</UsingToolTemplateLocalizer>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
     <GeneratedContentProperties>
       DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
-      GrpcAspNetCorePackageVersion=$(GrpcAspNetCorePackageVersion);
-      MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion);
-      MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
-      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
-      MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
-      MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
-      MicrosoftExtensionsHttpPackageVersion=$(MicrosoftExtensionsHttpPackageVersion);
-      MicrosoftIdentityWebPackageVersion=$(MicrosoftIdentityWebPackageVersion);
-      MicrosoftIdentityWebMicrosoftGraphPackageVersion=$(MicrosoftIdentityWebMicrosoftGraphPackageVersion);
-      MicrosoftIdentityWebUIPackageVersion=$(MicrosoftIdentityWebUIPackageVersion);
+      GrpcAspNetCoreVersion=$(GrpcAspNetCoreVersion);
+      MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion);
+      MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
+      MicrosoftEntityFrameworkCoreSqlServerVersion=$(MicrosoftEntityFrameworkCoreSqlServerVersion);
+      MicrosoftEntityFrameworkCoreToolsVersion=$(MicrosoftEntityFrameworkCoreToolsVersion);
+      MicrosoftExtensionsHostingVersion=$(MicrosoftExtensionsHostingVersion);
+      MicrosoftExtensionsHttpVersion=$(MicrosoftExtensionsHttpVersion);
+      MicrosoftIdentityWebVersion=$(MicrosoftIdentityWebVersion);
+      MicrosoftIdentityWebMicrosoftGraphVersion=$(MicrosoftIdentityWebMicrosoftGraphVersion);
+      MicrosoftIdentityWebUIVersion=$(MicrosoftIdentityWebUIVersion);
       MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
-      SystemNetHttpJsonPackageVersion=$(SystemNetHttpJsonPackageVersion);
-      MicrosoftGraphPackageVersion=$(MicrosoftGraphPackageVersion);
-      SwashbuckleAspNetCorePackageVersion=$(SwashbuckleAspNetCorePackageVersion);
+      SystemNetHttpJsonVersion=$(SystemNetHttpJsonVersion);
+      MicrosoftGraphVersion=$(MicrosoftGraphVersion);
+      SwashbuckleAspNetCoreVersion=$(SwashbuckleAspNetCoreVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
@@ -40,6 +41,7 @@
     <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Mvc\Mvc.Razor.RuntimeCompilation\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Security\Authentication\JwtBearer\src\Microsoft.AspNetCore.Authentication.JwtBearer.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Security\Authentication\Negotiate\src\Microsoft.AspNetCore.Authentication.Negotiate.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Security\Authentication\OpenIdConnect\src\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />

@@ -1,40 +1,38 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+public class BindAttributeTest
 {
-    public class BindAttributeTest
+    [Theory]
+    [InlineData("UserName", true)]
+    [InlineData("Username", false)]
+    [InlineData("Password", false)]
+    [InlineData("LastName", true)]
+    [InlineData("MiddleName", true)]
+    [InlineData(" ", false)]
+    [InlineData("foo", true)]
+    [InlineData("bar", true)]
+    public void BindAttribute_Include(string property, bool isIncluded)
     {
-        [Theory]
-        [InlineData("UserName", true)]
-        [InlineData("Username", false)]
-        [InlineData("Password", false)]
-        [InlineData("LastName", true)]
-        [InlineData("MiddleName", true)]
-        [InlineData(" ", false)]
-        [InlineData("foo", true)]
-        [InlineData("bar", true)]
-        public void BindAttribute_Include(string property, bool isIncluded)
-        {
-            // Arrange
-            var bind = new BindAttribute(new string[] { "UserName", "FirstName", "LastName, MiddleName,  ,foo,bar " });
+        // Arrange
+        var bind = new BindAttribute(new string[] { "UserName", "FirstName", "LastName, MiddleName,  ,foo,bar " });
 
-            var context = new DefaultModelBindingContext();
+        var context = new DefaultModelBindingContext();
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            var identity = ModelMetadataIdentity.ForProperty(typeof(int), property, typeof(string));
+        var identity = ModelMetadataIdentity.ForProperty(typeof(int), property, typeof(string));
 #pragma warning restore CS0618 // Type or member is obsolete
-            context.ModelMetadata = new Mock<ModelMetadata>(identity).Object;
+        context.ModelMetadata = new Mock<ModelMetadata>(identity).Object;
 
-            // Act
-            var propertyFilter = bind.PropertyFilter;
+        // Act
+        var propertyFilter = bind.PropertyFilter;
 
-            // Assert
-            Assert.Equal(isIncluded, propertyFilter(context.ModelMetadata));
-        }
+        // Assert
+        Assert.Equal(isIncluded, propertyFilter(context.ModelMetadata));
     }
 }

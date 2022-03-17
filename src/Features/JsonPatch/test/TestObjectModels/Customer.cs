@@ -1,17 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.JsonPatch.Internal
+namespace Microsoft.AspNetCore.JsonPatch.Internal;
+
+internal class Customer
 {
-    internal class Customer
-    {
-        private string _name;
-        private int _age;
+    private string _name;
+    private int _age;
 
-        public Customer(string name, int age)
-        {
-            _name = name;
-            _age = age;
-        }
+    public Customer(string name, int age)
+    {
+        _name = name;
+        _age = age;
     }
 }

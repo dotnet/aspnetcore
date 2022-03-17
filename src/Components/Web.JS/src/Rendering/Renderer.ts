@@ -1,9 +1,12 @@
-/* eslint-disable @typescript-eslint/camelcase */
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import '../Platform/Platform';
 import '../Environment';
 import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 import { toLogicalElement, LogicalElement } from './LogicalElements';
+import { getAndRemovePendingRootComponentContainer } from './JSRootComponents';
 
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
@@ -11,27 +14,40 @@ interface BrowserRendererRegistry {
 const browserRenderers: BrowserRendererRegistry = {};
 let shouldResetScrollAfterNextBatch = false;
 
-export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number): void {
+export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number, appendContent: boolean): void {
   let browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
-    browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
+    browserRenderer = new BrowserRenderer(browserRendererId);
+    browserRenderers[browserRendererId] = browserRenderer;
   }
 
-  browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement);
+  browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement, appendContent);
 }
 
 export function attachRootComponentToElement(elementSelector: string, componentId: number, browserRendererId?: number): void {
-  const element = document.querySelector(elementSelector);
+  const afterElementSelector = '::after';
+  const beforeElementSelector = '::before';
+  let appendContent = false;
+
+  if (elementSelector.endsWith(afterElementSelector)) {
+    elementSelector = elementSelector.slice(0, -afterElementSelector.length);
+    appendContent = true;
+  } else if (elementSelector.endsWith(beforeElementSelector)) {
+    throw new Error(`The '${beforeElementSelector}' selector is not supported.`);
+  }
+
+  const element = getAndRemovePendingRootComponentContainer(elementSelector)
+    || document.querySelector(elementSelector);
   if (!element) {
     throw new Error(`Could not find any element matching selector '${elementSelector}'.`);
   }
 
   // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
   // Only client-side Blazor supplies a browser renderer ID
-  attachRootComponentToLogicalElement(browserRendererId || 0, toLogicalElement(element, /* allow existing contents */ true), componentId);
+  attachRootComponentToLogicalElement(browserRendererId || 0, toLogicalElement(element, /* allow existing contents */ true), componentId, appendContent);
 }
 
-export function getRendererer(browserRendererId: number) {
+export function getRendererer(browserRendererId: number): BrowserRenderer {
   return browserRenderers[browserRendererId];
 }
 
@@ -75,7 +91,7 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
   resetScrollIfNeeded();
 }
 
-export function resetScrollAfterNextBatch() {
+export function resetScrollAfterNextBatch(): void {
   shouldResetScrollAfterNextBatch = true;
 }
 

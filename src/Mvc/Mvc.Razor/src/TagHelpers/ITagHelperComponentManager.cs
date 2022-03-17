@@ -1,21 +1,19 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
+
+/// <summary>
+/// An implementation of this interface provides the collection of <see cref="ITagHelperComponent"/>s
+/// that will be used by <see cref="TagHelperComponentTagHelper"/>s.
+/// </summary>
+public interface ITagHelperComponentManager
 {
     /// <summary>
-    /// An implementation of this interface provides the collection of <see cref="ITagHelperComponent"/>s
-    /// that will be used by <see cref="TagHelperComponentTagHelper"/>s.
+    /// Gets the collection of <see cref="ITagHelperComponent"/>s that will be used by
+    /// <see cref="TagHelperComponentTagHelper"/>s.
     /// </summary>
-    public interface ITagHelperComponentManager
-    {
-        /// <summary>
-        /// Gets the collection of <see cref="ITagHelperComponent"/>s that will be used by
-        /// <see cref="TagHelperComponentTagHelper"/>s.
-        /// </summary>
-        ICollection<ITagHelperComponent> Components { get; }
-    }
+    ICollection<ITagHelperComponent> Components { get; }
 }

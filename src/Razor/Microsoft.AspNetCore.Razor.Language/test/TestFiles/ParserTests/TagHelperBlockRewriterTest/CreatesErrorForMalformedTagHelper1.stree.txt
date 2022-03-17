@@ -1,7 +1,0 @@
-RazorDocument - [0..2)::2 - [<p]
-    MarkupBlock - [0..2)::2
-        MarkupTagHelperElement - [0..2)::2 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                Text;[p];
-                CloseAngle;[<Missing>];

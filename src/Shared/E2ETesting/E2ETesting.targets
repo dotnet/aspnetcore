@@ -18,9 +18,9 @@
 
     <Message Condition="'$(EnforceE2ETestPrerequisites)' != 'true'"
       Importance="High"
-      Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result. Check /src/Shared/E2ETesting/Readme.md for instructions." />
+      Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result." />
 
-    <Yarn Command="install --mutex network" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"/>
+    <Yarn Command="install --mutex network --frozen-lockfile" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"/>
   </Target>
 
   <Target
@@ -51,7 +51,7 @@
 
     <PropertyGroup>
       <_PackageJsonLinesContent>@(_PackageJsonLines)</_PackageJsonLinesContent>
-      <_PackageJsonSeleniumPackage>&quot;selenium-standalone&quot;: &quot;^6.17.0&quot;</_PackageJsonSeleniumPackage>
+      <_PackageJsonSeleniumPackage>&quot;selenium-standalone&quot;: &quot;^7.1.0&quot;</_PackageJsonSeleniumPackage>
     </PropertyGroup>
 
     <Error

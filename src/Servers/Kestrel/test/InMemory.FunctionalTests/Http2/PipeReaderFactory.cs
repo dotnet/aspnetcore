@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -8,45 +8,44 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2;
+
+internal class PipeReaderFactory
 {
-    internal class PipeReaderFactory
+    private static readonly Action<object> _cancelReader = state => ((PipeReader)state).CancelPendingRead();
+
+    public static PipeReader CreateFromStream(PipeOptions options, Stream stream, CancellationToken cancellationToken)
     {
-        private static readonly Action<object> _cancelReader = state => ((PipeReader)state).CancelPendingRead();
-
-        public static PipeReader CreateFromStream(PipeOptions options, Stream stream, CancellationToken cancellationToken)
+        if (!stream.CanRead)
         {
-            if (!stream.CanRead)
-            {
-                throw new NotSupportedException();
-            }
-
-            var pipe = new Pipe(options);
-            _ = CopyToAsync(stream, pipe, cancellationToken);
-
-            return pipe.Reader;
+            throw new NotSupportedException();
         }
 
-        private static async Task CopyToAsync(Stream stream, Pipe pipe, CancellationToken cancellationToken)
+        var pipe = new Pipe(options);
+        _ = CopyToAsync(stream, pipe, cancellationToken);
+
+        return pipe.Reader;
+    }
+
+    private static async Task CopyToAsync(Stream stream, Pipe pipe, CancellationToken cancellationToken)
+    {
+        // We manually register for cancellation here in case the Stream implementation ignores it
+        using (var registration = cancellationToken.Register(_cancelReader, pipe.Reader))
         {
-            // We manually register for cancellation here in case the Stream implementation ignores it
-            using (var registration = cancellationToken.Register(_cancelReader, pipe.Reader))
+            try
             {
-                try
-                {
-                    await stream.CopyToAsync(new DuplexPipeStream(null, pipe.Writer), bufferSize: 4096, cancellationToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    // Ignore the cancellation signal (the pipe reader is already wired up for cancellation when the token trips)
-                }
-                catch (Exception ex)
-                {
-                    pipe.Writer.Complete(ex);
-                    return;
-                }
-                pipe.Writer.Complete();
+                await stream.CopyToAsync(new DuplexPipeStream(null, pipe.Writer), bufferSize: 4096, cancellationToken);
             }
+            catch (OperationCanceledException)
+            {
+                // Ignore the cancellation signal (the pipe reader is already wired up for cancellation when the token trips)
+            }
+            catch (Exception ex)
+            {
+                pipe.Writer.Complete(ex);
+                return;
+            }
+            pipe.Writer.Complete();
         }
     }
 }

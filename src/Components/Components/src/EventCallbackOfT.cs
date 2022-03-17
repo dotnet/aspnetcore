@@ -1,76 +1,72 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
+namespace Microsoft.AspNetCore.Components;
 
-namespace Microsoft.AspNetCore.Components
+/// <summary>
+/// A bound event handler delegate.
+/// </summary>
+public readonly struct EventCallback<TValue> : IEventCallback
 {
     /// <summary>
-    /// A bound event handler delegate.
+    /// Gets an empty <see cref="EventCallback{TValue}"/>.
     /// </summary>
-    public readonly struct EventCallback<TValue> : IEventCallback
+    public static readonly EventCallback<TValue> Empty = new EventCallback<TValue>(null, (Action)(() => { }));
+
+    internal readonly MulticastDelegate? Delegate;
+    internal readonly IHandleEvent? Receiver;
+
+    /// <summary>
+    /// Creates the new <see cref="EventCallback{TValue}"/>.
+    /// </summary>
+    /// <param name="receiver">The event receiver.</param>
+    /// <param name="delegate">The delegate to bind.</param>
+    public EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate)
     {
-        /// <summary>
-        /// Gets an empty <see cref="EventCallback{TValue}"/>.
-        /// </summary>
-        public static readonly EventCallback<TValue> Empty = new EventCallback<TValue>(null, (Action)(() => { }));
+        Receiver = receiver;
+        Delegate = @delegate;
+    }
 
-        internal readonly MulticastDelegate? Delegate;
-        internal readonly IHandleEvent? Receiver;
+    /// <summary>
+    /// Gets a value that indicates whether the delegate associated with this event dispatcher is non-null.
+    /// </summary>
+    public bool HasDelegate => Delegate != null;
 
-        /// <summary>
-        /// Creates the new <see cref="EventCallback{TValue}"/>.
-        /// </summary>
-        /// <param name="receiver">The event receiver.</param>
-        /// <param name="delegate">The delegate to bind.</param>
-        public EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate)
+    // This is a hint to the runtime that Receiver is a different object than what
+    // Delegate.Target points to. This allows us to avoid boxing the command object
+    // when building the render tree. See logic where this is used.
+    internal bool RequiresExplicitReceiver => Receiver != null && !object.ReferenceEquals(Receiver, Delegate?.Target);
+
+    /// <summary>
+    /// Invokes the delegate associated with this binding and dispatches an event notification to the
+    /// appropriate component.
+    /// </summary>
+    /// <param name="arg">The argument.</param>
+    /// <returns>A <see cref="Task"/> which completes asynchronously once event processing has completed.</returns>
+    public Task InvokeAsync(TValue? arg)
+    {
+        if (Receiver == null)
         {
-            Receiver = receiver;
-            Delegate = @delegate;
+            return EventCallbackWorkItem.InvokeAsync<TValue?>(Delegate, arg);
         }
 
-        /// <summary>
-        /// Gets a value that indicates whether the delegate associated with this event dispatcher is non-null.
-        /// </summary>
-        public bool HasDelegate => Delegate != null;
+        return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg);
+    }
 
-        // This is a hint to the runtime that Receiver is a different object than what
-        // Delegate.Target points to. This allows us to avoid boxing the command object
-        // when building the render tree. See logic where this is used.
-        internal bool RequiresExplicitReceiver => Receiver != null && !object.ReferenceEquals(Receiver, Delegate?.Target);
+    /// <summary>
+    /// Invokes the delegate associated with this binding and dispatches an event notification to the
+    /// appropriate component.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> which completes asynchronously once event processing has completed.</returns>
+    public Task InvokeAsync() => InvokeAsync(default!);
 
-        /// <summary>
-        /// Invokes the delegate associated with this binding and dispatches an event notification to the
-        /// appropriate component.
-        /// </summary>
-        /// <param name="arg">The argument.</param>
-        /// <returns>A <see cref="Task"/> which completes asynchronously once event processing has completed.</returns>
-        public Task InvokeAsync(TValue? arg)
-        {
-            if (Receiver == null)
-            {
-                return EventCallbackWorkItem.InvokeAsync<TValue?>(Delegate, arg);
-            }
+    internal EventCallback AsUntyped()
+    {
+        return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate);
+    }
 
-            return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg);
-        }
-
-        /// <summary>
-        /// Invokes the delegate associated with this binding and dispatches an event notification to the
-        /// appropriate component.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> which completes asynchronously once event processing has completed.</returns>
-        public Task InvokeAsync() => InvokeAsync(default!);
-
-        internal EventCallback AsUntyped()
-        {
-            return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate);
-        }
-
-        object? IEventCallback.UnpackForRenderTree()
-        {
-            return RequiresExplicitReceiver ? (object)AsUntyped() : Delegate;
-        }
+    object? IEventCallback.UnpackForRenderTree()
+    {
+        return RequiresExplicitReceiver ? (object)AsUntyped() : Delegate;
     }
 }

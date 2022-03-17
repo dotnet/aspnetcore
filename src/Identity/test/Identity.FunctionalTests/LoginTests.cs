@@ -1,416 +1,411 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Identity.DefaultUI.WebSite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Identity.FunctionalTests
+namespace Microsoft.AspNetCore.Identity.FunctionalTests;
+
+public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFactory<TStartup, TContext>>
+    where TStartup : class
+    where TContext : DbContext
 {
-    public abstract class LoginTests<TStartup, TContext> : IClassFixture<ServerFactory<TStartup, TContext>>
-        where TStartup : class
-        where TContext : DbContext
+    protected LoginTests(ServerFactory<TStartup, TContext> serverFactory)
     {
-        protected LoginTests(ServerFactory<TStartup, TContext> serverFactory)
-        {
-            ServerFactory = serverFactory;
-        }
+        ServerFactory = serverFactory;
+    }
 
-        public ServerFactory<TStartup, TContext> ServerFactory { get; }
+    public ServerFactory<TStartup, TContext> ServerFactory { get; }
 
-        [Fact]
-        public async Task CanLogInWithAPreviouslyRegisteredUser()
-        {
-            // Arrange
-            var client = ServerFactory.CreateClient();
-            var newClient = ServerFactory.CreateClient();
+    [Fact]
+    public async Task CanLogInWithAPreviouslyRegisteredUser()
+    {
+        // Arrange
+        var client = ServerFactory.CreateClient();
+        var newClient = ServerFactory.CreateClient();
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-            // Act & Assert
-            await UserStories.RegisterNewUserAsync(client, userName, password);
+        // Act & Assert
+        await UserStories.RegisterNewUserAsync(client, userName, password);
 
-            // Use a new client to simulate a new browser session.
-            await UserStories.LoginExistingUserAsync(newClient, userName, password);
-        }
+        // Use a new client to simulate a new browser session.
+        await UserStories.LoginExistingUserAsync(newClient, userName, password);
+    }
 
-        [Fact]
-        public async Task CanLogInWithAPreviouslyRegisteredUser_WithGlobalAuthorizeFilter()
-        {
-            // Arrange
-            void ConfigureTestServices(IServiceCollection services) =>
-                services.SetupGlobalAuthorizeFilter();
+    [Fact]
+    public async Task CanLogInWithAPreviouslyRegisteredUser_WithGlobalAuthorizeFilter()
+    {
+        // Arrange
+        void ConfigureTestServices(IServiceCollection services) =>
+            services.SetupGlobalAuthorizeFilter();
 
-            var server = ServerFactory
-                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+        var server = ServerFactory
+            .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-            // Act & Assert
-            await UserStories.RegisterNewUserAsync(client, userName, password);
+        // Act & Assert
+        await UserStories.RegisterNewUserAsync(client, userName, password);
 
-            // Use a new client to simulate a new browser session.
-            await UserStories.LoginExistingUserAsync(newClient, userName, password);
-        }
+        // Use a new client to simulate a new browser session.
+        await UserStories.LoginExistingUserAsync(newClient, userName, password);
+    }
 
-        [Fact]
-        public async Task CanLogInWithTwoFactorAuthentication()
-        {
-            // Arrange
-            var client = ServerFactory.CreateClient();
-            var newClient = ServerFactory.CreateClient();
+    [Fact]
+    public async Task CanLogInWithTwoFactorAuthentication()
+    {
+        // Arrange
+        var client = ServerFactory.CreateClient();
+        var newClient = ServerFactory.CreateClient();
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
-            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
+        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
 
-            var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
+        var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
 
-            // Act & Assert
-            // Use a new client to simulate a new browser session.
-            await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
-        }
+        // Act & Assert
+        // Use a new client to simulate a new browser session.
+        await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
+    }
 
-        [Fact]
-        public async Task CanLogInWithTwoFactorAuthentication_WithGlobalAuthorizeFilter()
-        {
-            // Arrange
-            void ConfigureTestServices(IServiceCollection services) =>
-                services.SetupGlobalAuthorizeFilter();
+    [Fact]
+    public async Task CanLogInWithTwoFactorAuthentication_WithGlobalAuthorizeFilter()
+    {
+        // Arrange
+        void ConfigureTestServices(IServiceCollection services) =>
+            services.SetupGlobalAuthorizeFilter();
 
-            var server = ServerFactory
-                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+        var server = ServerFactory
+            .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
-            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
+        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
 
-            var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
+        var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
 
-            // Act & Assert
-            // Use a new client to simulate a new browser session.
-            await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
-        }
+        // Act & Assert
+        // Use a new client to simulate a new browser session.
+        await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
+    }
 
-        [Fact]
-        public async Task CanLogInWithRecoveryCode()
-        {
-            // Arrange
-            var client = ServerFactory.CreateClient();
-            var newClient = ServerFactory.CreateClient();
+    [Fact]
+    public async Task CanLogInWithRecoveryCode()
+    {
+        // Arrange
+        var client = ServerFactory.CreateClient();
+        var newClient = ServerFactory.CreateClient();
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
-            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
+        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
 
-            var recoveryCode = showRecoveryCodes.Context.RecoveryCodes.First();
+        var recoveryCode = showRecoveryCodes.Context.RecoveryCodes.First();
 
-            // Act & Assert
-            // Use a new client to simulate a new browser session.
-            await UserStories.LoginExistingUserRecoveryCodeAsync(newClient, userName, password, recoveryCode);
-        }
+        // Act & Assert
+        // Use a new client to simulate a new browser session.
+        await UserStories.LoginExistingUserRecoveryCodeAsync(newClient, userName, password, recoveryCode);
+    }
 
-        [Fact]
-        public async Task CanLogInWithRecoveryCode_WithGlobalAuthorizeFilter()
-        {
-            // Arrange
-            void ConfigureTestServices(IServiceCollection services) =>
-                services.SetupGlobalAuthorizeFilter();
+    [Fact]
+    public async Task CanLogInWithRecoveryCode_WithGlobalAuthorizeFilter()
+    {
+        // Arrange
+        void ConfigureTestServices(IServiceCollection services) =>
+            services.SetupGlobalAuthorizeFilter();
 
-            var server = ServerFactory
-                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
+        var server = ServerFactory
+            .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
-            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
+        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
 
-            var recoveryCode = showRecoveryCodes.Context.RecoveryCodes.First();
+        var recoveryCode = showRecoveryCodes.Context.RecoveryCodes.First();
 
-            // Act & Assert
-            // Use a new client to simulate a new browser session.
-            await UserStories.LoginExistingUserRecoveryCodeAsync(newClient, userName, password, recoveryCode);
-        }
+        // Act & Assert
+        // Use a new client to simulate a new browser session.
+        await UserStories.LoginExistingUserRecoveryCodeAsync(newClient, userName, password, recoveryCode);
+    }
 
-        [Fact]
-        public async Task CannotLogInWithoutRequiredEmailConfirmation()
-        {
-            // Arrange
-            var emailSender = new ContosoEmailSender();
-            void ConfigureTestServices(IServiceCollection services) => services
-                    .SetupTestEmailSender(emailSender)
-                    .SetupEmailRequired();
-
-            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
-
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
-
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
-
-            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
-
-            // Act & Assert
-            // Use a new client to simulate a new browser session.
-            await Assert.ThrowsAnyAsync<XunitException>(() => UserStories.LoginExistingUserAsync(newClient, userName, password));
-        }
-
-        [Fact]
-        public async Task CannotLogInWithoutRequiredEmailConfirmation_WithGlobalAuthorizeFilter()
-        {
-            // Arrange
-            var emailSender = new ContosoEmailSender();
-            void ConfigureTestServices(IServiceCollection services) => services
-                    .SetupTestEmailSender(emailSender)
-                    .SetupEmailRequired()
-                    .SetupGlobalAuthorizeFilter();
-
-            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
-
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
-
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
-
-            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
-
-            // Act & Assert
-            // Use a new client to simulate a new browser session.
-            await Assert.ThrowsAnyAsync<XunitException>(() => UserStories.LoginExistingUserAsync(newClient, userName, password));
-        }
-
-        [Fact]
-        public async Task CanLogInAfterConfirmingEmail()
-        {
-            // Arrange
-            var emailSender = new ContosoEmailSender();
-            void ConfigureTestServices(IServiceCollection services) => services
+    [Fact]
+    public async Task CannotLogInWithoutRequiredEmailConfirmation()
+    {
+        // Arrange
+        var emailSender = new ContosoEmailSender();
+        void ConfigureTestServices(IServiceCollection services) => services
                 .SetupTestEmailSender(emailSender)
                 .SetupEmailRequired();
 
-            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
 
-            // Act & Assert
-            // Use a new client to simulate a new browser session.
-            var email = Assert.Single(emailSender.SentEmails);
-            await UserStories.ConfirmEmailAsync(email, newClient);
+        // Act & Assert
+        // Use a new client to simulate a new browser session.
+        await Assert.ThrowsAnyAsync<XunitException>(() => UserStories.LoginExistingUserAsync(newClient, userName, password));
+    }
 
-            await UserStories.LoginExistingUserAsync(newClient, userName, password);
-        }
-
-        [Fact]
-        public async Task CanResendConfirmingEmail()
-        {
-            // Arrange
-            var emailSender = new ContosoEmailSender();
-            void ConfigureTestServices(IServiceCollection services) => services
-                .SetupTestEmailSender(emailSender)
-                .SetupEmailRequired();
-
-            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
-
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
-
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
-
-            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
-
-            // Act & Assert
-            // Use a new client to simulate a new browser session.
-            await UserStories.ResendConfirmEmailAsync(server.CreateClient(), userName);
-            Assert.Equal(2, emailSender.SentEmails.Count);
-            var email = emailSender.SentEmails.Last();
-            await UserStories.ConfirmEmailAsync(email, newClient);
-        }
-
-        [Fact]
-        public async Task CanLogInAfterConfirmingEmail_WithGlobalAuthorizeFilter()
-        {
-            // Arrange
-            var emailSender = new ContosoEmailSender();
-            void ConfigureTestServices(IServiceCollection services) => services
+    [Fact]
+    public async Task CannotLogInWithoutRequiredEmailConfirmation_WithGlobalAuthorizeFilter()
+    {
+        // Arrange
+        var emailSender = new ContosoEmailSender();
+        void ConfigureTestServices(IServiceCollection services) => services
                 .SetupTestEmailSender(emailSender)
                 .SetupEmailRequired()
                 .SetupGlobalAuthorizeFilter();
 
-            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
 
-            // Act & Assert
-            // Use a new client to simulate a new browser session.
-            var email = Assert.Single(emailSender.SentEmails);
-            await UserStories.ConfirmEmailAsync(email, newClient);
+        // Act & Assert
+        // Use a new client to simulate a new browser session.
+        await Assert.ThrowsAnyAsync<XunitException>(() => UserStories.LoginExistingUserAsync(newClient, userName, password));
+    }
 
-            await UserStories.LoginExistingUserAsync(newClient, userName, password);
-        }
+    [Fact]
+    public async Task CanLogInAfterConfirmingEmail()
+    {
+        // Arrange
+        var emailSender = new ContosoEmailSender();
+        void ConfigureTestServices(IServiceCollection services) => services
+            .SetupTestEmailSender(emailSender)
+            .SetupEmailRequired();
 
-        [Fact]
-        public async Task CanLoginWithASocialLoginProvider()
-        {
-            // Arrange
-            void ConfigureTestServices(IServiceCollection services) =>
-                services.SetupTestThirdPartyLogin();
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
-            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
 
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-            var guid = Guid.NewGuid();
-            var userName = $"{guid}";
-            var email = $"{guid}@example.com";
+        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
 
-            // Act & Assert
-            await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
-            await UserStories.LoginWithSocialLoginAsync(newClient, userName);
-        }
+        // Act & Assert
+        // Use a new client to simulate a new browser session.
+        var email = Assert.Single(emailSender.SentEmails);
+        await UserStories.ConfirmEmailAsync(email, newClient);
 
-        [Fact]
-        public async Task CanLoginWithASocialLoginProvider_WithGlobalAuthorizeFilter()
-        {
-            // Arrange
-            void ConfigureTestServices(IServiceCollection services) => services
-                .SetupTestThirdPartyLogin()
-                .SetupGlobalAuthorizeFilter();
+        await UserStories.LoginExistingUserAsync(newClient, userName, password);
+    }
 
-            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+    [Fact]
+    public async Task CanResendConfirmingEmail()
+    {
+        // Arrange
+        var emailSender = new ContosoEmailSender();
+        void ConfigureTestServices(IServiceCollection services) => services
+            .SetupTestEmailSender(emailSender)
+            .SetupEmailRequired();
 
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
-            var guid = Guid.NewGuid();
-            var userName = $"{guid}";
-            var email = $"{guid}@example.com";
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
 
-            // Act & Assert
-            await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
-            await UserStories.LoginWithSocialLoginAsync(newClient, userName);
-        }
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-        [Fact]
-        public async Task CanLogInAfterResettingThePassword()
-        {
-            // Arrange
-            var emailSender = new ContosoEmailSender();
-            void ConfigureTestServices(IServiceCollection services) => services
-                .SetupTestEmailSender(emailSender);
+        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
 
-            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+        // Act & Assert
+        // Use a new client to simulate a new browser session.
+        await UserStories.ResendConfirmEmailAsync(server.CreateClient(), userName);
+        Assert.Equal(2, emailSender.SentEmails.Count);
+        var email = emailSender.SentEmails.Last();
+        await UserStories.ConfirmEmailAsync(email, newClient);
+    }
 
-            var client = server.CreateClient();
-            var resetPasswordClient = server.CreateClient();
-            var newClient = server.CreateClient();
+    [Fact]
+    public async Task CanLogInAfterConfirmingEmail_WithGlobalAuthorizeFilter()
+    {
+        // Arrange
+        var emailSender = new ContosoEmailSender();
+        void ConfigureTestServices(IServiceCollection services) => services
+            .SetupTestEmailSender(emailSender)
+            .SetupEmailRequired()
+            .SetupGlobalAuthorizeFilter();
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
-            var newPassword = $"!New.Password1$";
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
-            await UserStories.RegisterNewUserAsync(client, userName, password);
-            var registrationEmail = Assert.Single(emailSender.SentEmails);
-            await UserStories.ConfirmEmailAsync(registrationEmail, client);
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
 
-            // Act & Assert
-            await UserStories.ForgotPasswordAsync(resetPasswordClient, userName);
-            Assert.Equal(2, emailSender.SentEmails.Count);
-            var email = emailSender.SentEmails[1];
-            await UserStories.ResetPasswordAsync(resetPasswordClient, email, userName, newPassword);
-            await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
-        }
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
 
-        [Fact]
-        public async Task CanResetPassword_WithGlobalAuthorizeFilter()
-        {
-            // Arrange
-            var emailSender = new ContosoEmailSender();
-            void ConfigureTestServices(IServiceCollection services) =>
-                services.SetupGlobalAuthorizeFilter().SetupTestEmailSender(emailSender);
+        var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
 
-            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+        // Act & Assert
+        // Use a new client to simulate a new browser session.
+        var email = Assert.Single(emailSender.SentEmails);
+        await UserStories.ConfirmEmailAsync(email, newClient);
 
-            var client = server.CreateClient();
-            var resetPasswordClient = server.CreateClient();
-            var newClient = server.CreateClient();
+        await UserStories.LoginExistingUserAsync(newClient, userName, password);
+    }
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
-            var newPassword = $"!New.Password1$";
+    [Fact]
+    public async Task CanLoginWithASocialLoginProvider()
+    {
+        // Arrange
+        void ConfigureTestServices(IServiceCollection services) =>
+            services.SetupTestThirdPartyLogin();
 
-            await UserStories.RegisterNewUserAsync(client, userName, password);
-            var registrationEmail = Assert.Single(emailSender.SentEmails);
-            await UserStories.ConfirmEmailAsync(registrationEmail, client);
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
-            // Act & Assert
-            await UserStories.ForgotPasswordAsync(resetPasswordClient, userName);
-            Assert.Equal(2, emailSender.SentEmails.Count);
-            var email = emailSender.SentEmails[1];
-            await UserStories.ResetPasswordAsync(resetPasswordClient, email, userName, newPassword);
-            await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
-        }
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
 
-        [Fact]
-        public async Task UserNotLockedOut_AfterMaxFailedAccessAttempts_WithGlobalAuthorizeFilter()
-        {
-            // Arrange
-            var emailSender = new ContosoEmailSender();
-            void ConfigureTestServices(IServiceCollection services) =>
-                services.SetupGlobalAuthorizeFilter().SetupMaxFailedAccessAttempts().SetupTestEmailSender(emailSender);
+        var guid = Guid.NewGuid();
+        var userName = $"{guid}";
+        var email = $"{guid}@example.com";
 
-            var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+        // Act & Assert
+        await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+        await UserStories.LoginWithSocialLoginAsync(newClient, userName);
+    }
 
-            var client = server.CreateClient();
-            var newClient = server.CreateClient();
+    [Fact]
+    public async Task CanLoginWithASocialLoginProvider_WithGlobalAuthorizeFilter()
+    {
+        // Arrange
+        void ConfigureTestServices(IServiceCollection services) => services
+            .SetupTestThirdPartyLogin()
+            .SetupGlobalAuthorizeFilter();
 
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = $"!Test.Password1$";
-            var wrongPassword = $"!Wrong.Password1$";
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
-            await UserStories.RegisterNewUserAsync(client, userName, password);
-            var registrationEmail = Assert.Single(emailSender.SentEmails);
-            await UserStories.ConfirmEmailAsync(registrationEmail, client);
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
 
-            // Act & Assert
-            await UserStories.LoginFailsWithWrongPasswordAsync(newClient, userName, wrongPassword);
-        }
+        var guid = Guid.NewGuid();
+        var userName = $"{guid}";
+        var email = $"{guid}@example.com";
+
+        // Act & Assert
+        await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+        await UserStories.LoginWithSocialLoginAsync(newClient, userName);
+    }
+
+    [Fact]
+    public async Task CanLogInAfterResettingThePassword()
+    {
+        // Arrange
+        var emailSender = new ContosoEmailSender();
+        void ConfigureTestServices(IServiceCollection services) => services
+            .SetupTestEmailSender(emailSender);
+
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+        var client = server.CreateClient();
+        var resetPasswordClient = server.CreateClient();
+        var newClient = server.CreateClient();
+
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
+        var newPassword = $"[PLACEHOLDER]-1a-updated";
+
+        await UserStories.RegisterNewUserAsync(client, userName, password);
+        var registrationEmail = Assert.Single(emailSender.SentEmails);
+        await UserStories.ConfirmEmailAsync(registrationEmail, client);
+
+        // Act & Assert
+        await UserStories.ForgotPasswordAsync(resetPasswordClient, userName);
+        Assert.Equal(2, emailSender.SentEmails.Count);
+        var email = emailSender.SentEmails[1];
+        await UserStories.ResetPasswordAsync(resetPasswordClient, email, userName, newPassword);
+        await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
+    }
+
+    [Fact]
+    public async Task CanResetPassword_WithGlobalAuthorizeFilter()
+    {
+        // Arrange
+        var emailSender = new ContosoEmailSender();
+        void ConfigureTestServices(IServiceCollection services) =>
+            services.SetupGlobalAuthorizeFilter().SetupTestEmailSender(emailSender);
+
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+        var client = server.CreateClient();
+        var resetPasswordClient = server.CreateClient();
+        var newClient = server.CreateClient();
+
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
+        var newPassword = $"[PLACEHOLDER]-1a-updated";
+
+        await UserStories.RegisterNewUserAsync(client, userName, password);
+        var registrationEmail = Assert.Single(emailSender.SentEmails);
+        await UserStories.ConfirmEmailAsync(registrationEmail, client);
+
+        // Act & Assert
+        await UserStories.ForgotPasswordAsync(resetPasswordClient, userName);
+        Assert.Equal(2, emailSender.SentEmails.Count);
+        var email = emailSender.SentEmails[1];
+        await UserStories.ResetPasswordAsync(resetPasswordClient, email, userName, newPassword);
+        await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
+    }
+
+    [Fact]
+    public async Task UserNotLockedOut_AfterMaxFailedAccessAttempts_WithGlobalAuthorizeFilter()
+    {
+        // Arrange
+        var emailSender = new ContosoEmailSender();
+        void ConfigureTestServices(IServiceCollection services) =>
+            services.SetupGlobalAuthorizeFilter().SetupMaxFailedAccessAttempts().SetupTestEmailSender(emailSender);
+
+        var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+        var client = server.CreateClient();
+        var newClient = server.CreateClient();
+
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
+        var wrongPassword = $"[PLACEHOLDER]-1a-wrong";
+
+        await UserStories.RegisterNewUserAsync(client, userName, password);
+        var registrationEmail = Assert.Single(emailSender.SentEmails);
+        await UserStories.ConfirmEmailAsync(registrationEmail, client);
+
+        // Act & Assert
+        await UserStories.LoginFailsWithWrongPasswordAsync(newClient, userName, wrongPassword);
     }
 }

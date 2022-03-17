@@ -1,32 +1,29 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters;
+
+public class PageViewDataAttributeFilterFactoryTest
 {
-    public class PageViewDataAttributeFilterFactoryTest
+    [Fact]
+    public void CreateInstance_CreatesFilter()
     {
-        [Fact]
-        public void CreateInstance_CreatesFilter()
+        // Arrange
+        var properties = new LifecycleProperty[]
         {
-            // Arrange
-            var properties = new LifecycleProperty[]
-            {
                 new LifecycleProperty(),
                 new LifecycleProperty(),
-            };
-            var filterFactory = new PageViewDataAttributeFilterFactory(properties);
+        };
+        var filterFactory = new PageViewDataAttributeFilterFactory(properties);
 
-            // Act
-            var result = filterFactory.CreateInstance(Mock.Of<IServiceProvider>());
+        // Act
+        var result = filterFactory.CreateInstance(Mock.Of<IServiceProvider>());
 
-            // Assert
-            var filter = Assert.IsType<PageViewDataAttributeFilter>(result);
-            Assert.Same(properties, filter.Properties);
-        }
+        // Assert
+        var filter = Assert.IsType<PageViewDataAttributeFilter>(result);
+        Assert.Same(properties, filter.Properties);
     }
 }

@@ -1,28 +1,27 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Features
+namespace Microsoft.AspNetCore.Http.Features;
+
+/// <summary>
+/// Use to dynamically control response compression for HTTPS requests.
+/// </summary>
+public enum HttpsCompressionMode
 {
     /// <summary>
-    /// Use to dynamically control response compression for HTTPS requests.
+    /// No value has been specified, use the configured defaults.
     /// </summary>
-    public enum HttpsCompressionMode
-    {
-        /// <summary>
-        /// No value has been specified, use the configured defaults.
-        /// </summary>
-        Default = 0,
+    Default = 0,
 
-        /// <summary>
-        /// Opts out of compression over HTTPS. Enabling compression on HTTPS requests for remotely manipulable content
-        /// may expose security problems.
-        /// </summary>
-        DoNotCompress,
+    /// <summary>
+    /// Opts out of compression over HTTPS. Enabling compression on HTTPS requests for remotely manipulable content
+    /// may expose security problems.
+    /// </summary>
+    DoNotCompress,
 
-        /// <summary>
-        /// Opts into compression over HTTPS. Enabling compression on HTTPS requests for remotely manipulable content
-        /// may expose security problems.
-        /// </summary>
-        Compress,
-    }
+    /// <summary>
+    /// Opts into compression over HTTPS. Enabling compression on HTTPS requests for remotely manipulable content
+    /// may expose security problems.
+    /// </summary>
+    Compress,
 }

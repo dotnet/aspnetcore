@@ -1,13 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// A marker class used to determine if all the MVC services were added
+/// to the <see cref="IServiceCollection"/> before MVC is configured.
+/// </summary>
+internal class MvcMarkerService
 {
-    /// <summary>
-    /// A marker class used to determine if all the MVC services were added
-    /// to the <see cref="IServiceCollection"/> before MVC is configured.
-    /// </summary>
-    internal class MvcMarkerService
-    {
-    }
 }

@@ -8,11 +8,12 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     </Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
+    <!-- workaround https://github.com/dotnet/roslyn/issues/52527 -->
+    <NoWarn>$(NoWarn);SYSLIB1006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

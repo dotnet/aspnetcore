@@ -1,23 +1,78 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 /**
  * MessagePack Options per:
- * {@link https://github.com/mcollina/msgpack5#msgpackoptionsobj Msgpack5 Options Object}
+ * {@link https://github.com/msgpack/msgpack-javascript#api msgpack-javascript Options}
  */
 export interface MessagePackOptions {
+
   /**
-   * @name sortKeys Force a determinate key order
+   * @name extensionCodec encoding, decoding extensions: default ExtensionCodec.defaultCodec
+   */
+  extensionCodec?: any;
+
+  /**
+   * @name context user-defined context
+   */
+  context?: any;
+
+  // encode options
+
+  /**
+   * @name maxDepth maximum object depth for encoding
+   */
+  maxDepth?: number;
+
+  /**
+   * @name initialBufferSize starting encode buffer size
+   */
+  initialBufferSize?: number;
+
+  /**
+   * @name sortKeys Force a determinate key order for encoding
    */
   sortKeys?: boolean;
 
   /**
-   * @name disableTimestampEncoding Disable the encoding of Dates into the timestamp extension type
+   * @name forceFloat32 Force floats to be encoded as 32-bit floats
    */
-  disableTimestampEncoding?: boolean;
+  forceFloat32?: boolean;
 
   /**
-   * @name forceFloat64 Force floats to be encoded as 64-bit floats
+   * @name forceIntegerToFloat Force integers to be encoded as floats
    */
-  forceFloat64?: boolean;
+  forceIntegerToFloat?: boolean;
+
+  /**
+   * @name ignoreUndefined ignore undefined values when encoding
+   */
+  ignoreUndefined?: boolean;
+
+  // decode options
+
+  /**
+   * @name maxStrLength maximum string decoding length
+   */
+  maxStrLength?: number;
+
+  /**
+   * @name maxBinLength maximum binary decoding length
+   */
+  maxBinLength?: number;
+
+  /**
+   * @name maxArrayLength maximum array decoding length
+   */
+  maxArrayLength?: number;
+
+  /**
+   * @name maxMapLength maximum map decoding length
+   */
+  maxMapLength?: number;
+
+  /**
+   * @name maxExtLength maximum decoding length
+   */
+  maxExtLength?: number;
 }

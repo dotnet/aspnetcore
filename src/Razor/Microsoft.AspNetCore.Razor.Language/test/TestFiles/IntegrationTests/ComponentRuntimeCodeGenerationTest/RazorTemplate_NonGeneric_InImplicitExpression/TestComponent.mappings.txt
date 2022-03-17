@@ -1,9 +1,0 @@
-Source Location: (38:1,7 [54] x:\dir\subdir\Test\TestComponent.cshtml)
-|
-    object RenderPerson(RenderFragment p) => null;
-|
-Generated Location: (1093:38,7 [54] )
-|
-    object RenderPerson(RenderFragment p) => null;
-|
-

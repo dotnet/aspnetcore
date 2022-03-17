@@ -1,18 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
-{
-    internal class OrderedEndpointsSequenceProviderCache
-    {
-        private readonly ConcurrentDictionary<IEndpointRouteBuilder, OrderedEndpointsSequenceProvider> _sequenceProviderCache = new();
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-        public OrderedEndpointsSequenceProvider GetOrCreateOrderedEndpointsSequenceProvider(IEndpointRouteBuilder endpoints)
-        {
-            return _sequenceProviderCache.GetOrAdd(endpoints, new OrderedEndpointsSequenceProvider());
-        }
+internal class OrderedEndpointsSequenceProviderCache
+{
+    private readonly ConcurrentDictionary<IEndpointRouteBuilder, OrderedEndpointsSequenceProvider> _sequenceProviderCache = new();
+
+    public OrderedEndpointsSequenceProvider GetOrCreateOrderedEndpointsSequenceProvider(IEndpointRouteBuilder endpoints)
+    {
+        return _sequenceProviderCache.GetOrAdd(endpoints, new OrderedEndpointsSequenceProvider());
     }
 }

@@ -4,7 +4,6 @@
 #include "precomp.h"
 
 STRA::STRA(
-    VOID
 ) : m_cchLen( 0 )
 {
     *( QueryStr() ) = '\0';
@@ -105,7 +104,6 @@ STRA::QueryCCH(
 
 DWORD
 STRA::QuerySizeCCH(
-    VOID
 ) const
 //
 // Returns size of the underlying storage buffer, in characters
@@ -116,7 +114,6 @@ STRA::QuerySizeCCH(
 
 DWORD
 STRA::QuerySize(
-    VOID
 ) const
 //
 //  Returns the size of the storage buffer in bytes
@@ -140,7 +137,6 @@ STRA::QueryStr(
 
 VOID
 STRA::Reset(
-    VOID
 )
 //
 // Resets the internal string to be NULL string. Buffer remains cached.
@@ -166,18 +162,16 @@ STRA::Resize(
 
 HRESULT
 STRA::SyncWithBuffer(
-    VOID
 )
 //
 // Recalculate the length of the string, etc. because we've modified
 // the buffer directly.
 //
 {
-    HRESULT hr;
     size_t size;
-    hr = StringCchLengthA( QueryStr(),
-                           QuerySizeCCH(),
-                           &size );
+    HRESULT hr = StringCchLengthA(QueryStr(),
+                                  QuerySizeCCH(),
+                                  &size);
     if ( SUCCEEDED( hr ) )
     {
         m_cchLen = static_cast<DWORD>(size);
@@ -190,11 +184,10 @@ STRA::Copy(
     __in PCSTR   pszCopy
 )
 {
-    HRESULT     hr;
     size_t      cbLen;
-    hr = StringCbLengthA( pszCopy,
-                          STRSAFE_MAX_CCH,
-                          &cbLen );
+    HRESULT hr = StringCbLengthA(pszCopy,
+                                 STRSAFE_MAX_CCH,
+                                 &cbLen);
     if ( FAILED( hr ) )
     {
         return hr;
@@ -244,11 +237,10 @@ STRA::CopyW(
     __in PCWSTR  pszCopyW
 )
 {
-    HRESULT     hr;
     size_t      cchLen;
-    hr = StringCchLengthW( pszCopyW,
-                           STRSAFE_MAX_CCH,
-                           &cchLen );
+    HRESULT hr = StringCchLengthW(pszCopyW,
+                                  STRSAFE_MAX_CCH,
+                                  &cchLen);
     if ( FAILED( hr ) )
     {
         return hr;
@@ -261,11 +253,10 @@ STRA::CopyWTruncate(
     __in PCWSTR pszCopyWTruncate
 )
 {
-    HRESULT     hr;
     size_t      cchLen;
-    hr = StringCchLengthW( pszCopyWTruncate,
-                           STRSAFE_MAX_CCH,
-                           &cchLen );
+    HRESULT hr = StringCchLengthW(pszCopyWTruncate,
+                                  STRSAFE_MAX_CCH,
+                                  &cchLen);
     if ( FAILED( hr ) )
     {
         return hr;
@@ -297,11 +288,10 @@ STRA::Append(
     __in PCSTR pszAppend
 )
 {
-    HRESULT     hr;
     size_t      cbLen;
-    hr = StringCbLengthA( pszAppend,
-                          STRSAFE_MAX_CCH,
-                          &cbLen );
+    HRESULT hr = StringCbLengthA(pszAppend,
+                                 STRSAFE_MAX_CCH,
+                                 &cbLen);
     if ( FAILED( hr ) )
     {
         return hr;
@@ -350,11 +340,10 @@ STRA::AppendWTruncate(
     __in PCWSTR pszAppendWTruncate
 )
 {
-    HRESULT     hr;
     size_t      cchLen;
-    hr = StringCchLengthW( pszAppendWTruncate,
-                           STRSAFE_MAX_CCH,
-                           &cchLen );
+    HRESULT hr = StringCchLengthW(pszAppendWTruncate,
+                                  STRSAFE_MAX_CCH,
+                                  &cchLen);
     if ( FAILED( hr ) )
     {
         return hr;
@@ -470,11 +459,10 @@ Return Value:
 
 --*/
 {
-    HRESULT     hr          = S_OK;
     va_list     argsList;
     va_start(   argsList, pszFormatString );
 
-    hr = SafeVsnprintf(pszFormatString, argsList);
+    HRESULT hr = SafeVsnprintf(pszFormatString, argsList);
 
     va_end( argsList );
     return hr;
@@ -504,27 +492,25 @@ Return Value:
 --*/
 {
     HRESULT     hr          = S_OK;
-    int         cchOutput;
-    int         cchNeeded;
 
     //
     // Format the incoming message using vsnprintf()
     // so that the overflows are captured
     //
-    cchOutput = _vsnprintf_s(
-            QueryStr(),
-            QuerySizeCCH(),
-            QuerySizeCCH() - 1,
-            pszFormatString,
-            argsList
-        );
+    int cchOutput = _vsnprintf_s(
+        QueryStr(),
+        QuerySizeCCH(),
+        QuerySizeCCH() - 1,
+        pszFormatString,
+        argsList
+    );
 
     if( cchOutput == -1 )
     {
         //
         // Couldn't fit this in the original STRU size.
         //
-        cchNeeded = _vscprintf( pszFormatString, argsList );
+        int cchNeeded = _vscprintf(pszFormatString, argsList);
         if( cchNeeded > 64 * 1024 )
         {
             //
@@ -647,7 +633,6 @@ Return Value:
 
 HRESULT
 STRA::EscapeUtf8(
-    VOID
 )
 /*++
 
@@ -694,7 +679,6 @@ Return Value:
     int     i      = 0;
     BYTE    ch;
     HRESULT hr      = S_OK;
-    BOOL    fRet    = FALSE;
     SIZE_T  NewSize = 0;
 
     // Set to true if any % escaping occurs
@@ -763,7 +747,7 @@ Return Value:
                 return hr;
             }
 
-            fRet = straTemp.m_Buff.Resize( NewSize );
+            BOOL fRet = straTemp.m_Buff.Resize(NewSize);
             if ( !fRet )
             {
                 hr = HRESULT_FROM_WIN32(GetLastError());
@@ -781,12 +765,12 @@ Return Value:
             //  Convert the low then the high character to hex
             //
 
-            UINT nLowDigit = (UINT)(ch % 16);
+            UINT nLowDigit = static_cast<UINT>(ch % 16);
             chHex[2] = TODIGIT( nLowDigit );
 
             ch /= 16;
 
-            UINT nHighDigit = (UINT)(ch % 16);
+            UINT nHighDigit = static_cast<UINT>(ch % 16);
 
             chHex[1] = TODIGIT( nHighDigit );
 
@@ -825,7 +809,6 @@ Return Value:
 
 VOID
 STRA::Unescape(
-    VOID
 )
 /*++
 
@@ -849,8 +832,6 @@ Return Value:
 --*/
 {
     CHAR   *pScan;
-    CHAR   *pDest;
-    CHAR   *pNextScan;
     WCHAR   wch;
     DWORD   dwLen;
     BOOL    fChanged = FALSE;
@@ -858,7 +839,7 @@ Return Value:
     //
     // Now take care of any escape characters
     //
-    pDest = pScan = strchr(QueryStr(), '%');
+    CHAR* pDest = pScan = strchr(QueryStr(), '%');
 
     while (pScan)
     {
@@ -875,7 +856,7 @@ Return Value:
                                         WC_NO_BEST_FIT_CHARS,
                                         &wch,
                                         1,
-                                        (LPSTR) pDest,
+                                        static_cast<LPSTR>(pDest),
                                         6,
                                         NULL,
                                         NULL);
@@ -906,7 +887,7 @@ Return Value:
         //
         // Copy all the information between this and the next escaped char
         //
-        pNextScan = strchr(pScan, '%');
+        CHAR* pNextScan = strchr(pScan, '%');
 
         if (fChanged)   // pScan!=pDest, so we have to copy the char's
         {
@@ -919,7 +900,7 @@ Return Value:
             else
             {
                 // There is another '%', move intermediate chars
-                if ((dwLen = (DWORD)DIFF(pNextScan - pScan)) != 0)
+                if ((dwLen = static_cast<DWORD>(DIFF(pNextScan - pScan))) != 0)
                 {
                     memmove(pDest,
                             pScan,
@@ -934,10 +915,8 @@ Return Value:
 
     if (fChanged)
     {
-        m_cchLen = (DWORD)strlen(QueryStr());  // for safety recalc the length
+        m_cchLen = static_cast<DWORD>(strlen(QueryStr()));  // for safety recalc the length
     }
-
-    return;
 }
 
 HRESULT
@@ -945,7 +924,7 @@ STRA::CopyWToUTF8Unescaped(
     __in LPCWSTR cpchStr
 )
 {
-    return STRA::CopyWToUTF8Unescaped(cpchStr, (DWORD) wcslen(cpchStr));
+    return STRA::CopyWToUTF8Unescaped(cpchStr, static_cast<DWORD>(wcslen(cpchStr)));
 }
 
 HRESULT
@@ -956,7 +935,6 @@ STRA::CopyWToUTF8Unescaped(
 )
 {
     HRESULT hr = S_OK;
-    int iRet;
 
     if (cch == 0)
     {
@@ -964,9 +942,9 @@ STRA::CopyWToUTF8Unescaped(
         return S_OK;
     }
 
-    iRet = ConvertUnicodeToUTF8(cpchStr,
-                                &m_Buff,
-                                cch);
+    int iRet = ConvertUnicodeToUTF8(cpchStr,
+                                    &m_Buff,
+                                    cch);
     if (-1 == iRet)
     {
         // could not convert
@@ -986,7 +964,7 @@ STRA::CopyWToUTF8Escaped(
     __in LPCWSTR cpchStr
 )
 {
-    return STRA::CopyWToUTF8Escaped(cpchStr, (DWORD) wcslen(cpchStr));
+    return STRA::CopyWToUTF8Escaped(cpchStr, static_cast<DWORD>(wcslen(cpchStr)));
 }
 
 HRESULT
@@ -996,9 +974,7 @@ STRA::CopyWToUTF8Escaped(
     __in DWORD      cch
 )
 {
-    HRESULT hr = S_OK;
-
-    hr = CopyWToUTF8Unescaped(cpchStr, cch);
+    HRESULT hr = CopyWToUTF8Unescaped(cpchStr, cch);
     if (FAILED(hr))
     {
         goto Finished;
@@ -1026,7 +1002,7 @@ STRA::AuxAppend(
     _ASSERTE( NULL != pStr );
     _ASSERTE( cbOffset <= QueryCB() );
 
-    ULONGLONG cb64NewSize = (ULONGLONG)cbOffset + cbLen + sizeof( CHAR );
+    ULONGLONG cb64NewSize = static_cast<ULONGLONG>(cbOffset) + cbLen + sizeof( CHAR );
     if( cb64NewSize > MAXDWORD )
     {
         return HRESULT_FROM_WIN32( ERROR_ARITHMETIC_OVERFLOW );
@@ -1061,7 +1037,6 @@ STRA::AuxAppendW(
 )
 {
     HRESULT hr          = S_OK;
-    DWORD   cbAvailable = 0;
     DWORD   cbRet       = 0;
 
     //
@@ -1083,7 +1058,7 @@ STRA::AuxAppendW(
         goto Finished;
     }
 
-    cbAvailable = m_Buff.QuerySize() - cbOffset;
+    DWORD cbAvailable = m_Buff.QuerySize() - cbOffset;
 
     cbRet = WideCharToMultiByte(
         CodePage,
@@ -1192,7 +1167,6 @@ STRA::AuxAppendWTruncate(
 //
 {
     HRESULT hr = S_OK;
-    CHAR*   pszBuffer;
 
     _ASSERTE( NULL != pszAppendW );
     _ASSERTE( 0 == cbOffset || cbOffset == QueryCB() );
@@ -1203,7 +1177,7 @@ STRA::AuxAppendWTruncate(
         goto Finished;
     }
 
-    ULONGLONG cbNeeded = (ULONGLONG)cbOffset + cchAppendW + sizeof( CHAR );
+    ULONGLONG cbNeeded = static_cast<ULONGLONG>(cbOffset) + cchAppendW + sizeof( CHAR );
     if( cbNeeded > MAXDWORD )
     {
         hr = HRESULT_FROM_WIN32( ERROR_ARITHMETIC_OVERFLOW );
@@ -1219,7 +1193,7 @@ STRA::AuxAppendWTruncate(
     //
     // Copy/convert the UNICODE string over (by making two bytes into one)
     //
-    pszBuffer = QueryStr() + cbOffset;
+    CHAR* pszBuffer = QueryStr() + cbOffset;
     for( DWORD i = 0; i < cchAppendW; i++ )
     {
         pszBuffer[i] = static_cast<CHAR>(pszAppendW[i]);
@@ -1246,8 +1220,6 @@ STRA::ConvertUnicodeToCodePage(
     _ASSERTE(NULL != pszSrcUnicodeString);
     _ASSERTE(NULL != pbufDstAnsiString);
 
-    BOOL bTemp;
-    int iStrLen = 0;
     DWORD dwFlags;
 
     if (uCodePage == CP_ACP)
@@ -1259,14 +1231,14 @@ STRA::ConvertUnicodeToCodePage(
         dwFlags = 0;
     }
 
-    iStrLen = WideCharToMultiByte(uCodePage,
-                                  dwFlags,
-                                  pszSrcUnicodeString,
-                                  dwStringLen,
-                                  (LPSTR)pbufDstAnsiString->QueryPtr(),
-                                  (int)pbufDstAnsiString->QuerySize(),
-                                  NULL,
-                                  NULL);
+    int iStrLen = WideCharToMultiByte(uCodePage,
+                                      dwFlags,
+                                      pszSrcUnicodeString,
+                                      dwStringLen,
+                                      static_cast<LPSTR>(pbufDstAnsiString->QueryPtr()),
+                                      static_cast<int>(pbufDstAnsiString->QuerySize()),
+                                      NULL,
+                                      NULL);
     if ((iStrLen == 0) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER)) {
         iStrLen = WideCharToMultiByte(uCodePage,
                                       dwFlags,
@@ -1278,7 +1250,7 @@ STRA::ConvertUnicodeToCodePage(
                                       NULL);
         if (iStrLen != 0) {
             // add one just for the extra NULL
-            bTemp = pbufDstAnsiString->Resize(iStrLen + 1);
+            BOOL bTemp = pbufDstAnsiString->Resize(iStrLen + 1);
             if (!bTemp)
             {
                 iStrLen = 0;
@@ -1289,8 +1261,8 @@ STRA::ConvertUnicodeToCodePage(
                                               dwFlags,
                                               pszSrcUnicodeString,
                                               dwStringLen,
-                                              (LPSTR)pbufDstAnsiString->QueryPtr(),
-                                              (int)pbufDstAnsiString->QuerySize(),
+                                              static_cast<LPSTR>(pbufDstAnsiString->QueryPtr()),
+                                              static_cast<int>(pbufDstAnsiString->QuerySize()),
                                               NULL,
                                               NULL);
             }
@@ -1302,7 +1274,7 @@ STRA::ConvertUnicodeToCodePage(
         pbufDstAnsiString->Resize(iStrLen + 1))
     {
         // insert a terminating NULL into buffer for the dwStringLen+1 in the case that the dwStringLen+1 was not a NULL.
-        ((CHAR*)pbufDstAnsiString->QueryPtr())[iStrLen] = '\0';
+        static_cast<CHAR*>(pbufDstAnsiString->QueryPtr())[iStrLen] = '\0';
     }
     else
     {
@@ -1356,11 +1328,10 @@ STRA::Trim()
     PSTR    pszString               = QueryStr();
     DWORD   cchNewLength            = m_cchLen;
     DWORD   cchLeadingWhitespace    = 0;
-    DWORD   cchTempLength           = 0;
 
     for (LONG ixString = m_cchLen - 1; ixString >= 0; ixString--)
     {
-        if (isspace((unsigned char) pszString[ixString]) != 0)
+        if (isspace(static_cast<unsigned char>(pszString[ixString])) != 0)
         {
             pszString[ixString] = '\0';
             cchNewLength--;
@@ -1371,10 +1342,10 @@ STRA::Trim()
         }
     }
 
-    cchTempLength = cchNewLength;
+    DWORD cchTempLength = cchNewLength;
     for (DWORD ixString = 0; ixString < cchTempLength; ixString++)
     {
-        if (isspace((unsigned char) pszString[ixString]) != 0)
+        if (isspace(static_cast<unsigned char>(pszString[ixString])) != 0)
         {
             cchLeadingWhitespace++;
             cchNewLength--;
@@ -1469,7 +1440,6 @@ STRA::StartsWith(
     __in PCSTR          pszPrefix,
     __in bool           fIgnoreCase) const
 {
-    HRESULT hr          = S_OK;
     BOOL    fMatch      = FALSE;
     size_t  cchPrefix   = 0;
 
@@ -1478,9 +1448,9 @@ STRA::StartsWith(
         goto Finished;
     }
 
-    hr = StringCchLengthA( pszPrefix,
-                           STRSAFE_MAX_CCH,
-                           &cchPrefix );
+    HRESULT hr = StringCchLengthA(pszPrefix,
+                                  STRSAFE_MAX_CCH,
+                                  &cchPrefix);
     if (FAILED(hr))
     {
         goto Finished;
@@ -1580,20 +1550,18 @@ STRA::EndsWith(
     __in PCSTR          pszSuffix,
     __in bool           fIgnoreCase) const
 {
-    HRESULT   hr          = S_OK;
     PSTR      pszString   = QueryStr();
     BOOL      fMatch      = FALSE;
     size_t    cchSuffix   = 0;
-    ptrdiff_t ixOffset    = 0;
 
     if (pszSuffix == NULL)
     {
         goto Finished;
     }
 
-    hr = StringCchLengthA( pszSuffix,
-                           STRSAFE_MAX_CCH,
-                           &cchSuffix );
+    HRESULT hr = StringCchLengthA(pszSuffix,
+                                  STRSAFE_MAX_CCH,
+                                  &cchSuffix);
     if (FAILED(hr))
     {
         goto Finished;
@@ -1606,7 +1574,7 @@ STRA::EndsWith(
         goto Finished;
     }
 
-    ixOffset = m_cchLen - cchSuffix;
+    ptrdiff_t ixOffset = m_cchLen - cchSuffix;
     _ASSERTE(ixOffset >= 0 && ixOffset <= MAXDWORD);
 
     if( fIgnoreCase )

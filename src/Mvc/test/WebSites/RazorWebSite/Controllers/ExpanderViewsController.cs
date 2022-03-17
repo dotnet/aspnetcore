@@ -1,21 +1,20 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite.Controllers
-{
-    public class ExpanderViewsController : Controller
-    {
-        // This result discovers the Index.cshtml from /View but the partial is executed from /Shared-Views
-        public IActionResult Index()
-        {
-            return View();
-        }
+namespace RazorWebSite.Controllers;
 
-        public IActionResult Partial()
-        {
-            return PartialView("_ExpanderPartial");
-        }
+public class ExpanderViewsController : Controller
+{
+    // This result discovers the Index.cshtml from /View but the partial is executed from /Shared-Views
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    public IActionResult Partial()
+    {
+        return PartialView("_ExpanderPartial");
     }
 }

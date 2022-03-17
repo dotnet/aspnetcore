@@ -1,32 +1,28 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Benchmarks
+namespace Benchmarks;
+
+public class StartupUsingEndpointRouting
 {
-    public class StartupUsingEndpointRouting
+    private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
+
+    public void ConfigureServices(IServiceCollection services)
     {
-        private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
+        services.AddRouting();
+    }
 
-        public void ConfigureServices(IServiceCollection services)
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+
+        app.UseEndpoints(endpoints =>
         {
-            services.AddRouting();
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
+            var endpointDataSource = new DefaultEndpointDataSource(new[]
             {
-                var endpointDataSource = new DefaultEndpointDataSource(new[]
-                {
                     new RouteEndpoint(
                         requestDelegate: (httpContext) =>
                         {
@@ -41,10 +37,9 @@ namespace Benchmarks
                         order: 0,
                         metadata: EndpointMetadataCollection.Empty,
                         displayName: "Plaintext"),
-                });
-
-                endpoints.DataSources.Add(endpointDataSource);
             });
-        }
+
+            endpoints.DataSources.Add(endpointDataSource);
+        });
     }
 }

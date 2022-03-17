@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 // Not exported from index.
 /** @private */
@@ -9,8 +9,6 @@ export class BinaryMessageFormat {
     // the BinaryMessageParser.TryParseMessage for details.
 
     public static write(output: Uint8Array): ArrayBuffer {
-        // msgpack5 uses returns Buffer instead of Uint8Array on IE10 and some other browser
-        //  in which case .byteLength does will be undefined
         let size = output.byteLength || output.length;
         const lenBuffer = [];
         do {
@@ -23,8 +21,6 @@ export class BinaryMessageFormat {
         }
         while (size > 0);
 
-        // msgpack5 uses returns Buffer instead of Uint8Array on IE10 and some other browser
-        //  in which case .byteLength does will be undefined
         size = output.byteLength || output.length;
 
         const buffer = new Uint8Array(lenBuffer.length + size);

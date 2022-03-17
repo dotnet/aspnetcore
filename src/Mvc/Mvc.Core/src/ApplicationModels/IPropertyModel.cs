@@ -1,18 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace Microsoft.AspNetCore.Mvc.ApplicationModels
+/// <summary>
+/// An interface which is used to represent something with properties.
+/// </summary>
+public interface IPropertyModel
 {
     /// <summary>
-    /// An interface which is used to represent something with properties.
+    /// The properties.
     /// </summary>
-    public interface IPropertyModel
-    {
-        /// <summary>
-        /// The properties.
-        /// </summary>
-        IDictionary<object, object> Properties { get; }
-    }
+    IDictionary<object, object?> Properties { get; }
 }

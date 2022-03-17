@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DebugType>portable</DebugType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>CS0649;CS0436</NoWarn><!-- Not all APIs are called in the shared test project --><!-- Conflicts between internal and public Quic APIs -->
+    <NoWarn>$(NoWarn);CS0649;CS0436</NoWarn><!-- Not all APIs are called in the shared test project --><!-- Conflicts between internal and public Quic APIs -->
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 
@@ -13,7 +13,6 @@
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" Link="Shared\CommandLineUtils\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" Link="Shared\ClosedGenericMatcher\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" Link="Shared\CopyOnWriteDictionary\%(Filename)%(Extension)"/>
-    <Compile Include="$(SharedSourceRoot)HashCodeCombiner\**\*.cs" Link="Shared\HashCodeCombiner\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)runtime\*.cs" Link="Shared\runtime\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" Link="Shared\runtime\Http2\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)runtime\Http3\**\*.cs" Link="Shared\runtime\Http3\%(Filename)%(Extension)"/>
@@ -25,10 +24,14 @@
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" Link="Shared\PropertyHelper\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" Link="Shared\SecurityHelper\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" Link="Shared\ServerInfrastructure\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" Link="Shared\ValueTaskExtensions\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)StackTrace\StackFrame\**\*.cs" Link="Shared\StackTrace\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)Dictionary\**\*.cs" Link="Shared\Dictionary\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\StackFrame\**\*.cs" Link="Shared\TypeNameHelper\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" Link="Shared\ValueStopwatch\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" Link="Shared\WebEncoders\%(Filename)%(Extension)"/>
+    <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" />
+    <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" Link="Shared\UrlDecoder\%(Filename)%(Extension)"/>
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" />
   </ItemGroup>
@@ -37,11 +40,9 @@
     <Reference Include="FSharp.Core" />
     <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Reflection.Metadata" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
-    <Reference Include="System.Security.Cryptography.Cng" />
-    <Reference Include="System.Security.Principal.Windows" />
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 

@@ -69,9 +69,9 @@ function Trigger-Subscription([string]$SubscriptionId) {
 
 function Validate-MaestroVars {
   try {
-    Get-Variable MaestroApiEndPoint -Scope Global | Out-Null
-    Get-Variable MaestroApiVersion -Scope Global | Out-Null
-    Get-Variable MaestroApiAccessToken -Scope Global | Out-Null
+    Get-Variable MaestroApiEndPoint | Out-Null
+    Get-Variable MaestroApiVersion | Out-Null
+    Get-Variable MaestroApiAccessToken | Out-Null
 
     if (!($MaestroApiEndPoint -Match '^http[s]?://maestro-(int|prod).westus2.cloudapp.azure.com$')) {
       Write-PipelineTelemetryError -Category 'MaestroVars' -Message "MaestroApiEndPoint is not a valid Maestro URL. '$MaestroApiEndPoint'"

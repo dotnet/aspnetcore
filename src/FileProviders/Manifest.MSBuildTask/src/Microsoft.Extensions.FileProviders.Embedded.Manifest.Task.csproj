@@ -9,6 +9,7 @@
     <IsPackable>false</IsPackable>
     <IsImplementationProject>false</IsImplementationProject>
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

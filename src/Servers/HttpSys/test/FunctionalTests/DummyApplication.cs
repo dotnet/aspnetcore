@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
@@ -7,32 +7,31 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Server.HttpSys;
+
+internal class DummyApplication : IHttpApplication<HttpContext>
 {
-    internal class DummyApplication : IHttpApplication<HttpContext>
+    private readonly RequestDelegate _requestDelegate;
+
+    public DummyApplication() : this(context => Task.CompletedTask) { }
+
+    public DummyApplication(RequestDelegate requestDelegate)
     {
-        private readonly RequestDelegate _requestDelegate;
+        _requestDelegate = requestDelegate;
+    }
 
-        public DummyApplication() : this(context => Task.CompletedTask) { }
+    public HttpContext CreateContext(IFeatureCollection contextFeatures)
+    {
+        return new DefaultHttpContext(contextFeatures);
+    }
 
-        public DummyApplication(RequestDelegate requestDelegate)
-        {
-            _requestDelegate = requestDelegate;
-        }
+    public void DisposeContext(HttpContext httpContext, Exception exception)
+    {
 
-        public HttpContext CreateContext(IFeatureCollection contextFeatures)
-        {
-            return new DefaultHttpContext(contextFeatures);
-        }
+    }
 
-        public void DisposeContext(HttpContext httpContext, Exception exception)
-        {
-
-        }
-
-        public async Task ProcessRequestAsync(HttpContext httpContext)
-        {
-            await _requestDelegate(httpContext);
-        }
+    public async Task ProcessRequestAsync(HttpContext httpContext)
+    {
+        await _requestDelegate(httpContext);
     }
 }

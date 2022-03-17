@@ -12,6 +12,7 @@
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>$MAJOR$.$MINOR$ ASP.NET Core TargetingPack ($ARCH$) Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</description>
         <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+        <serviceable>true</serviceable>
     </metadata>
     <files>
         <file src="$ASPNETCORE_RUNTIME_MSI$" />

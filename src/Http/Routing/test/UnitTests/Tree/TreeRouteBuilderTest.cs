@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Testing;
@@ -8,257 +8,255 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Tree
+namespace Microsoft.AspNetCore.Routing.Tree;
+
+public class TreeRouteBuilderTest
 {
-    public class TreeRouteBuilderTest
+    [Fact]
+    public void TreeRouter_BuildThrows_RoutesWithTheSameNameAndDifferentTemplates()
     {
-        [Fact]
-        public void TreeRouter_BuildThrows_RoutesWithTheSameNameAndDifferentTemplates()
+        // Arrange
+        var builder = CreateBuilder();
+
+        var message = "Two or more routes named 'Get_Products' have different templates.";
+
+        builder.MapOutbound(
+            Mock.Of<IRouter>(),
+            TemplateParser.Parse("api/Products"),
+            new RouteValueDictionary(),
+            "Get_Products",
+            order: 0);
+
+        builder.MapOutbound(
+            Mock.Of<IRouter>(),
+            TemplateParser.Parse("Products/Index"),
+            new RouteValueDictionary(),
+            "Get_Products",
+            order: 0);
+
+        // Act & Assert
+        ExceptionAssert.ThrowsArgument(() =>
         {
-            // Arrange
-            var builder = CreateBuilder();
-
-            var message = "Two or more routes named 'Get_Products' have different templates.";
-
-            builder.MapOutbound(
-                Mock.Of<IRouter>(),
-                TemplateParser.Parse("api/Products"),
-                new RouteValueDictionary(),
-                "Get_Products",
-                order: 0);
-
-            builder.MapOutbound(
-                Mock.Of<IRouter>(),
-                TemplateParser.Parse("Products/Index"),
-                new RouteValueDictionary(),
-                "Get_Products",
-                order: 0);
-
-            // Act & Assert
-            ExceptionAssert.ThrowsArgument(() =>
-            {
-                builder.Build();
-            }, "linkGenerationEntries", message);
-        }
-
-        [Fact]
-        public void TreeRouter_BuildDoesNotThrow_RoutesWithTheSameNameAndSameTemplates()
-        {
-            // Arrange
-            var builder = CreateBuilder();
-
-            builder.MapOutbound(
-                Mock.Of<IRouter>(),
-                TemplateParser.Parse("api/Products"),
-                new RouteValueDictionary(),
-                "Get_Products",
-                order: 0);
-
-            builder.MapOutbound(
-                Mock.Of<IRouter>(),
-                TemplateParser.Parse("api/products"),
-                new RouteValueDictionary(),
-                "Get_Products",
-                order: 0);
-
-            // Act & Assert (does not throw)
             builder.Build();
-        }
+        }, "linkGenerationEntries", message);
+    }
 
-        [Fact]
-        public void TreeRouter_BuildDoesNotAddIntermediateMatchingNodes_ForRoutesWithIntermediateParametersWithDefaultValues()
-        {
-            // Arrange
-            var builder = CreateBuilder();
+    [Fact]
+    public void TreeRouter_BuildDoesNotThrow_RoutesWithTheSameNameAndSameTemplates()
+    {
+        // Arrange
+        var builder = CreateBuilder();
 
-            builder.MapInbound(
-                Mock.Of<IRouter>(),
-                TemplateParser.Parse("a/{b=3}/c"),
-                "Intermediate",
-                order: 0);
+        builder.MapOutbound(
+            Mock.Of<IRouter>(),
+            TemplateParser.Parse("api/Products"),
+            new RouteValueDictionary(),
+            "Get_Products",
+            order: 0);
 
-            // Act
-            var tree = builder.Build();
+        builder.MapOutbound(
+            Mock.Of<IRouter>(),
+            TemplateParser.Parse("api/products"),
+            new RouteValueDictionary(),
+            "Get_Products",
+            order: 0);
 
-            // Assert
-            Assert.NotNull(tree);
-            Assert.NotNull(tree.MatchingTrees);
-            var matchingTree = Assert.Single(tree.MatchingTrees);
+        // Act & Assert (does not throw)
+        builder.Build();
+    }
 
-            var firstSegment = Assert.Single(matchingTree.Root.Literals);
-            Assert.Equal("a", firstSegment.Key);
-            Assert.NotNull(firstSegment.Value.Parameters);
+    [Fact]
+    public void TreeRouter_BuildDoesNotAddIntermediateMatchingNodes_ForRoutesWithIntermediateParametersWithDefaultValues()
+    {
+        // Arrange
+        var builder = CreateBuilder();
 
-            var secondSegment = firstSegment.Value.Parameters;
-            Assert.Empty(secondSegment.Matches);
+        builder.MapInbound(
+            Mock.Of<IRouter>(),
+            TemplateParser.Parse("a/{b=3}/c"),
+            "Intermediate",
+            order: 0);
 
-            var thirdSegment = Assert.Single(secondSegment.Literals);
-            Assert.Equal("c", thirdSegment.Key);
-            Assert.Single(thirdSegment.Value.Matches);
-        }
+        // Act
+        var tree = builder.Build();
 
-        [Fact]
-        public void TreeRouter_BuildDoesNotAddIntermediateMatchingNodes_ForRoutesWithMultipleIntermediateParametersWithDefaultOrOptionalValues()
-        {
-            // Arrange
-            var builder = CreateBuilder();
+        // Assert
+        Assert.NotNull(tree);
+        Assert.NotNull(tree.MatchingTrees);
+        var matchingTree = Assert.Single(tree.MatchingTrees);
 
-            builder.MapInbound(
-                Mock.Of<IRouter>(),
-                TemplateParser.Parse("a/{b=3}/c/{d?}/e/{*f}"),
-                "Intermediate",
-                order: 0);
+        var firstSegment = Assert.Single(matchingTree.Root.Literals);
+        Assert.Equal("a", firstSegment.Key);
+        Assert.NotNull(firstSegment.Value.Parameters);
 
-            // Act
-            var tree = builder.Build();
+        var secondSegment = firstSegment.Value.Parameters;
+        Assert.Empty(secondSegment.Matches);
 
-            // Assert
-            Assert.NotNull(tree);
-            Assert.NotNull(tree.MatchingTrees);
-            var matchingTree = Assert.Single(tree.MatchingTrees);
+        var thirdSegment = Assert.Single(secondSegment.Literals);
+        Assert.Equal("c", thirdSegment.Key);
+        Assert.Single(thirdSegment.Value.Matches);
+    }
 
-            var firstSegment = Assert.Single(matchingTree.Root.Literals);
-            Assert.Equal("a", firstSegment.Key);
-            Assert.NotNull(firstSegment.Value.Parameters);
+    [Fact]
+    public void TreeRouter_BuildDoesNotAddIntermediateMatchingNodes_ForRoutesWithMultipleIntermediateParametersWithDefaultOrOptionalValues()
+    {
+        // Arrange
+        var builder = CreateBuilder();
 
-            var secondSegment = firstSegment.Value.Parameters;
-            Assert.Empty(secondSegment.Matches);
+        builder.MapInbound(
+            Mock.Of<IRouter>(),
+            TemplateParser.Parse("a/{b=3}/c/{d?}/e/{*f}"),
+            "Intermediate",
+            order: 0);
 
-            var thirdSegment = Assert.Single(secondSegment.Literals);
-            Assert.Equal("c", thirdSegment.Key);
-            Assert.Empty(thirdSegment.Value.Matches);
+        // Act
+        var tree = builder.Build();
 
-            var fourthSegment = thirdSegment.Value.Parameters;
-            Assert.NotNull(fourthSegment);
-            Assert.Empty(fourthSegment.Matches);
+        // Assert
+        Assert.NotNull(tree);
+        Assert.NotNull(tree.MatchingTrees);
+        var matchingTree = Assert.Single(tree.MatchingTrees);
 
-            var fifthSegment = Assert.Single(fourthSegment.Literals);
-            Assert.Equal("e", fifthSegment.Key);
-            Assert.Single(fifthSegment.Value.Matches);
+        var firstSegment = Assert.Single(matchingTree.Root.Literals);
+        Assert.Equal("a", firstSegment.Key);
+        Assert.NotNull(firstSegment.Value.Parameters);
 
-            var sixthSegment = fifthSegment.Value.CatchAlls;
-            Assert.NotNull(sixthSegment);
-            Assert.Single(sixthSegment.Matches);
-        }
+        var secondSegment = firstSegment.Value.Parameters;
+        Assert.Empty(secondSegment.Matches);
 
-        [Fact]
-        public void TreeRouter_BuildDoesNotAddIntermediateMatchingNodes_ForRoutesWithIntermediateParametersWithOptionalValues()
-        {
-            // Arrange
-            var builder = CreateBuilder();
+        var thirdSegment = Assert.Single(secondSegment.Literals);
+        Assert.Equal("c", thirdSegment.Key);
+        Assert.Empty(thirdSegment.Value.Matches);
 
-            builder.MapInbound(
-                Mock.Of<IRouter>(),
-                TemplateParser.Parse("a/{b?}/c"),
-                "Intermediate",
-                order: 0);
+        var fourthSegment = thirdSegment.Value.Parameters;
+        Assert.NotNull(fourthSegment);
+        Assert.Empty(fourthSegment.Matches);
 
-            // Act
-            var tree = builder.Build();
+        var fifthSegment = Assert.Single(fourthSegment.Literals);
+        Assert.Equal("e", fifthSegment.Key);
+        Assert.Single(fifthSegment.Value.Matches);
 
-            // Assert
-            Assert.NotNull(tree);
-            Assert.NotNull(tree.MatchingTrees);
-            var matchingTree = Assert.Single(tree.MatchingTrees);
+        var sixthSegment = fifthSegment.Value.CatchAlls;
+        Assert.NotNull(sixthSegment);
+        Assert.Single(sixthSegment.Matches);
+    }
 
-            var firstSegment = Assert.Single(matchingTree.Root.Literals);
-            Assert.Equal("a", firstSegment.Key);
-            Assert.NotNull(firstSegment.Value.Parameters);
+    [Fact]
+    public void TreeRouter_BuildDoesNotAddIntermediateMatchingNodes_ForRoutesWithIntermediateParametersWithOptionalValues()
+    {
+        // Arrange
+        var builder = CreateBuilder();
 
-            var secondSegment = firstSegment.Value.Parameters;
-            Assert.Empty(secondSegment.Matches);
+        builder.MapInbound(
+            Mock.Of<IRouter>(),
+            TemplateParser.Parse("a/{b?}/c"),
+            "Intermediate",
+            order: 0);
 
-            var thirdSegment = Assert.Single(secondSegment.Literals);
-            Assert.Equal("c", thirdSegment.Key);
-            Assert.Single(thirdSegment.Value.Matches);
-        }
+        // Act
+        var tree = builder.Build();
 
-        [Fact]
-        public void TreeRouter_BuildDoesNotAddIntermediateMatchingNodes_ForRoutesWithIntermediateParametersWithConstrainedDefaultValues()
-        {
-            // Arrange
-            var builder = CreateBuilder();
+        // Assert
+        Assert.NotNull(tree);
+        Assert.NotNull(tree.MatchingTrees);
+        var matchingTree = Assert.Single(tree.MatchingTrees);
 
-            builder.MapInbound(
-                Mock.Of<IRouter>(),
-                TemplateParser.Parse("a/{b:int=3}/c"),
-                "Intermediate",
-                order: 0);
+        var firstSegment = Assert.Single(matchingTree.Root.Literals);
+        Assert.Equal("a", firstSegment.Key);
+        Assert.NotNull(firstSegment.Value.Parameters);
 
-            // Act
-            var tree = builder.Build();
+        var secondSegment = firstSegment.Value.Parameters;
+        Assert.Empty(secondSegment.Matches);
 
-            // Assert
-            Assert.NotNull(tree);
-            Assert.NotNull(tree.MatchingTrees);
-            var matchingTree = Assert.Single(tree.MatchingTrees);
+        var thirdSegment = Assert.Single(secondSegment.Literals);
+        Assert.Equal("c", thirdSegment.Key);
+        Assert.Single(thirdSegment.Value.Matches);
+    }
 
-            var firstSegment = Assert.Single(matchingTree.Root.Literals);
-            Assert.Equal("a", firstSegment.Key);
-            Assert.NotNull(firstSegment.Value.ConstrainedParameters);
+    [Fact]
+    public void TreeRouter_BuildDoesNotAddIntermediateMatchingNodes_ForRoutesWithIntermediateParametersWithConstrainedDefaultValues()
+    {
+        // Arrange
+        var builder = CreateBuilder();
 
-            var secondSegment = firstSegment.Value.ConstrainedParameters;
-            Assert.Empty(secondSegment.Matches);
+        builder.MapInbound(
+            Mock.Of<IRouter>(),
+            TemplateParser.Parse("a/{b:int=3}/c"),
+            "Intermediate",
+            order: 0);
 
-            var thirdSegment = Assert.Single(secondSegment.Literals);
-            Assert.Equal("c", thirdSegment.Key);
-            Assert.Single(thirdSegment.Value.Matches);
-        }
+        // Act
+        var tree = builder.Build();
 
-        [Fact]
-        public void TreeRouter_BuildDoesNotAddIntermediateMatchingNodes_ForRoutesWithIntermediateParametersWithConstrainedOptionalValues()
-        {
-            // Arrange
-            var builder = CreateBuilder();
+        // Assert
+        Assert.NotNull(tree);
+        Assert.NotNull(tree.MatchingTrees);
+        var matchingTree = Assert.Single(tree.MatchingTrees);
 
-            builder.MapInbound(
-                Mock.Of<IRouter>(),
-                TemplateParser.Parse("a/{b:int?}/c"),
-                "Intermediate",
-                order: 0);
+        var firstSegment = Assert.Single(matchingTree.Root.Literals);
+        Assert.Equal("a", firstSegment.Key);
+        Assert.NotNull(firstSegment.Value.ConstrainedParameters);
 
-            // Act
-            var tree = builder.Build();
+        var secondSegment = firstSegment.Value.ConstrainedParameters;
+        Assert.Empty(secondSegment.Matches);
 
-            // Assert
-            Assert.NotNull(tree);
-            Assert.NotNull(tree.MatchingTrees);
-            var matchingTree = Assert.Single(tree.MatchingTrees);
+        var thirdSegment = Assert.Single(secondSegment.Literals);
+        Assert.Equal("c", thirdSegment.Key);
+        Assert.Single(thirdSegment.Value.Matches);
+    }
 
-            var firstSegment = Assert.Single(matchingTree.Root.Literals);
-            Assert.Equal("a", firstSegment.Key);
-            Assert.NotNull(firstSegment.Value.ConstrainedParameters);
+    [Fact]
+    public void TreeRouter_BuildDoesNotAddIntermediateMatchingNodes_ForRoutesWithIntermediateParametersWithConstrainedOptionalValues()
+    {
+        // Arrange
+        var builder = CreateBuilder();
 
-            var secondSegment = firstSegment.Value.ConstrainedParameters;
-            Assert.Empty(secondSegment.Matches);
+        builder.MapInbound(
+            Mock.Of<IRouter>(),
+            TemplateParser.Parse("a/{b:int?}/c"),
+            "Intermediate",
+            order: 0);
 
-            var thirdSegment = Assert.Single(secondSegment.Literals);
-            Assert.Equal("c", thirdSegment.Key);
-            Assert.Single(thirdSegment.Value.Matches);
-        }
+        // Act
+        var tree = builder.Build();
 
-        private static TreeRouteBuilder CreateBuilder()
-        {
-            var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPolicy = new UriBuilderContextPooledObjectPolicy();
-            var objectPool = objectPoolProvider.Create(objectPolicy);
+        // Assert
+        Assert.NotNull(tree);
+        Assert.NotNull(tree.MatchingTrees);
+        var matchingTree = Assert.Single(tree.MatchingTrees);
 
-            var constraintResolver = GetInlineConstraintResolver();
-            var builder = new TreeRouteBuilder(
-                NullLoggerFactory.Instance,
-                objectPool,
-                constraintResolver);
-            return builder;
-        }
+        var firstSegment = Assert.Single(matchingTree.Root.Literals);
+        Assert.Equal("a", firstSegment.Key);
+        Assert.NotNull(firstSegment.Value.ConstrainedParameters);
 
-        private static IInlineConstraintResolver GetInlineConstraintResolver()
-        {
-            var services = new ServiceCollection().AddOptions();
-            var serviceProvider = services.BuildServiceProvider();
-            var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(accessor, serviceProvider);
-        }
+        var secondSegment = firstSegment.Value.ConstrainedParameters;
+        Assert.Empty(secondSegment.Matches);
+
+        var thirdSegment = Assert.Single(secondSegment.Literals);
+        Assert.Equal("c", thirdSegment.Key);
+        Assert.Single(thirdSegment.Value.Matches);
+    }
+
+    private static TreeRouteBuilder CreateBuilder()
+    {
+        var objectPoolProvider = new DefaultObjectPoolProvider();
+        var objectPolicy = new UriBuilderContextPooledObjectPolicy();
+        var objectPool = objectPoolProvider.Create(objectPolicy);
+
+        var constraintResolver = GetInlineConstraintResolver();
+        var builder = new TreeRouteBuilder(
+            NullLoggerFactory.Instance,
+            objectPool,
+            constraintResolver);
+        return builder;
+    }
+
+    private static IInlineConstraintResolver GetInlineConstraintResolver()
+    {
+        var services = new ServiceCollection().AddOptions();
+        var serviceProvider = services.BuildServiceProvider();
+        var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
+        return new DefaultInlineConstraintResolver(accessor, serviceProvider);
     }
 }

@@ -1,0 +1,67 @@
+﻿@page "/fetchdata"
+@implements IDisposable
+@using HostedBlazorWebassemblyApp.Shared
+@inject IWeatherForecastService WeatherForecastService
+@inject PersistentComponentState ApplicationState
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private WeatherForecast[] forecasts = Array.Empty<WeatherForecast>();
+    private PersistingComponentStateSubscription _persistingSubscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _persistingSubscription = ApplicationState.RegisterOnPersisting(PersistForecasts);
+        if (!ApplicationState.TryTakeFromJson<WeatherForecast[]>("fetchdata", out var restored))
+        {
+            forecasts = await WeatherForecastService.GetForecastAsync(DateTime.Now);
+        }
+        else
+        {
+            forecasts = restored!;
+        }
+    }
+
+    private Task PersistForecasts()
+    {
+        ApplicationState.PersistAsJson("fetchdata", forecasts);
+        return Task.CompletedTask;
+    }
+
+    void IDisposable.Dispose()
+    {
+        _persistingSubscription.Dispose();
+    }
+}

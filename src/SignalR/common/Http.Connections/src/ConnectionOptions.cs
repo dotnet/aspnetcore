@@ -1,18 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Http.Connections;
 
-namespace Microsoft.AspNetCore.Http.Connections
+/// <summary>
+/// Options used to change behavior of how connections are handled.
+/// </summary>
+public class ConnectionOptions
 {
     /// <summary>
-    /// Options used to change behavior of how connections are handled.
+    /// Gets or sets the interval used by the server to timeout idle connections.
     /// </summary>
-    public class ConnectionOptions
-    {
-        /// <summary>
-        /// Gets or sets the interval used by the server to timeout idle connections.
-        /// </summary>
-        public TimeSpan? DisconnectTimeout { get; set; }
-    }
+    public TimeSpan? DisconnectTimeout { get; set; }
 }

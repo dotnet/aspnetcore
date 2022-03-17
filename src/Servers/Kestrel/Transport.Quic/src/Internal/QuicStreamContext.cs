@@ -1,165 +1,204 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Quic;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
+
+internal partial class QuicStreamContext : TransportConnection, IPooledStream, IDisposable
 {
-    internal class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature
+    // Internal for testing.
+    internal Task _processingTask = Task.CompletedTask;
+
+    private QuicStream? _stream;
+    private readonly QuicConnectionContext _connection;
+    private readonly QuicTransportContext _context;
+    private readonly Pipe _inputPipe;
+    private readonly Pipe _outputPipe;
+    private readonly IDuplexPipe _originalTransport;
+    private readonly IDuplexPipe _originalApplication;
+    private readonly CompletionPipeReader _transportPipeReader;
+    private readonly CompletionPipeWriter _transportPipeWriter;
+    private readonly ILogger _log;
+    private CancellationTokenSource _streamClosedTokenSource = default!;
+    private string? _connectionId;
+    private const int MinAllocBufferSize = 4096;
+    private volatile Exception? _shutdownReadReason;
+    private volatile Exception? _shutdownWriteReason;
+    private volatile Exception? _shutdownReason;
+    private volatile Exception? _writeAbortException;
+    private bool _streamClosed;
+    private bool _serverAborted;
+    private bool _clientAbort;
+    private TaskCompletionSource _waitForConnectionClosedTcs = default!;
+    private readonly object _shutdownLock = new object();
+
+    public QuicStreamContext(QuicConnectionContext connection, QuicTransportContext context)
     {
-        private readonly Task _processingTask;
-        private readonly QuicStream _stream;
-        private readonly QuicConnectionContext _connection;
-        private readonly QuicTransportContext _context;
-        private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
-        private readonly IQuicTrace _log;
-        private string _connectionId;
-        private const int MinAllocBufferSize = 4096;
-        private volatile Exception _shutdownReason;
-        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly object _shutdownLock = new object();
+        _connection = connection;
+        _context = context;
+        _log = context.Log;
+        MemoryPool = connection.MemoryPool;
+        MultiplexedConnectionFeatures = connection.Features;
 
-        public QuicStreamContext(QuicStream stream, QuicConnectionContext connection, QuicTransportContext context)
+        RemoteEndPoint = connection.RemoteEndPoint;
+        LocalEndPoint = connection.LocalEndPoint;
+
+        var maxReadBufferSize = context.Options.MaxReadBufferSize ?? 0;
+        var maxWriteBufferSize = context.Options.MaxWriteBufferSize ?? 0;
+
+        // TODO should we allow these PipeScheduler to be configurable here?
+        var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
+        var outputOptions = new PipeOptions(MemoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
+
+        _inputPipe = new Pipe(inputOptions);
+        _outputPipe = new Pipe(outputOptions);
+
+        _transportPipeReader = new CompletionPipeReader(_inputPipe.Reader);
+        _transportPipeWriter = new CompletionPipeWriter(_outputPipe.Writer);
+
+        _originalApplication = new DuplexPipe(_outputPipe.Reader, _inputPipe.Writer);
+        _originalTransport = new DuplexPipe(_transportPipeReader, _transportPipeWriter);
+    }
+
+    public override MemoryPool<byte> MemoryPool { get; }
+    private PipeWriter Input => Application.Output;
+    private PipeReader Output => Application.Input;
+
+    public bool CanReuse { get; private set; }
+
+    public void Initialize(QuicStream stream)
+    {
+        Debug.Assert(_stream == null);
+
+        _stream = stream;
+
+        if (!(_streamClosedTokenSource?.TryReset() ?? false))
         {
-            _stream = stream;
-            _connection = connection;
-            _context = context;
-            _log = context.Log;
-
-            ConnectionClosed = _streamClosedTokenSource.Token;
-
-            var maxReadBufferSize = context.Options.MaxReadBufferSize.Value;
-            var maxWriteBufferSize = context.Options.MaxWriteBufferSize.Value;
-
-            // TODO should we allow these PipeScheduler to be configurable here?
-            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
-            var outputOptions = new PipeOptions(MemoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
-
-            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
-
-            Features.Set<IStreamDirectionFeature>(this);
-            Features.Set<IProtocolErrorCodeFeature>(this);
-            Features.Set<IStreamIdFeature>(this);
-
-            // TODO populate the ITlsConnectionFeature (requires client certs).
-            Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
-            CanRead = stream.CanRead;
-            CanWrite = stream.CanWrite;
-
-            Transport = pair.Transport;
-            Application = pair.Application;
-
-            _processingTask = StartAsync();
+            _streamClosedTokenSource = new CancellationTokenSource();
         }
 
-        public override MemoryPool<byte> MemoryPool { get; }
-        public PipeWriter Input => Application.Output;
-        public PipeReader Output => Application.Input;
+        ConnectionClosed = _streamClosedTokenSource.Token;
 
-        public bool CanRead { get; }
-        public bool CanWrite { get; }
+        InitializeFeatures();
 
-        public long StreamId
+        CanRead = _stream.CanRead;
+        CanWrite = _stream.CanWrite;
+        _error = null;
+        StreamId = _stream.StreamId;
+        PoolExpirationTicks = 0;
+
+        Transport = _originalTransport;
+        Application = _originalApplication;
+
+        _transportPipeReader.Reset();
+        _transportPipeWriter.Reset();
+
+        _connectionId = null;
+        _shutdownReason = null;
+        _writeAbortException = null;
+        _streamClosed = false;
+        _serverAborted = false;
+        _clientAbort = false;
+        // TODO - resetable TCS
+        _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Only reset pipes if the stream has been reused.
+        if (CanReuse)
         {
-            get
-            {
-                return _stream.StreamId;
-            }
+            _inputPipe.Reset();
+            _outputPipe.Reset();
         }
 
-        public override string ConnectionId
+        CanReuse = false;
+    }
+
+    public override string ConnectionId
+    {
+        get => _connectionId ??= StringUtilities.ConcatAsHexSuffix(_connection.ConnectionId, ':', (uint)StreamId);
+        set => _connectionId = value;
+    }
+
+    public long PoolExpirationTicks { get; set; }
+
+    public void Start()
+    {
+        Debug.Assert(_processingTask.IsCompletedSuccessfully);
+
+        _processingTask = StartAsync();
+    }
+
+    private async Task StartAsync()
+    {
+        Debug.Assert(_stream != null);
+
+        try
         {
-            get
+            // Spawn send and receive logic
+            // Streams may or may not have reading/writing, so only start tasks accordingly
+            var receiveTask = Task.CompletedTask;
+            var sendTask = Task.CompletedTask;
+
+            if (_stream.CanRead)
             {
-                if (_connectionId == null)
-                {
-                    _connectionId = $"{_connection.ConnectionId}:{StreamId}";
-                }
-                return _connectionId;
+                receiveTask = DoReceive();
             }
-            set
+
+            if (_stream.CanWrite)
             {
-                _connectionId = value;
+                sendTask = DoSend();
             }
+
+            // Now wait for both to complete
+            await receiveTask;
+            await sendTask;
+
+            await FireStreamClosedAsync();
         }
-
-        public long Error { get; set; }
-
-        private async Task StartAsync()
+        catch (Exception ex)
         {
-            try
-            {
-                // Spawn send and receive logic
-                // Streams may or may not have reading/writing, so only start tasks accordingly
-                var receiveTask = Task.CompletedTask;
-                var sendTask = Task.CompletedTask;
-
-                if (_stream.CanRead)
-                {
-                    receiveTask = DoReceive();
-                }
-
-                if (_stream.CanWrite)
-                {
-                    sendTask = DoSend();
-                }
-
-                // Now wait for both to complete
-                await receiveTask;
-                await sendTask;
-
-            }
-            catch (Exception ex)
-            {
-                _log.LogError(0, ex, $"Unexpected exception in {nameof(QuicStreamContext)}.{nameof(StartAsync)}.");
-            }
+            _log.LogError(0, ex, $"Unexpected exception in {nameof(QuicStreamContext)}.{nameof(StartAsync)}.");
         }
+    }
 
-        private async Task DoReceive()
+    private async Task WaitForWritesCompleted()
+    {
+        Debug.Assert(_stream != null);
+
+        try
         {
-            Exception error = null;
-
-            try
-            {
-                await ProcessReceives();
-            }
-            catch (QuicException ex)
-            {
-                // This could be ignored if _shutdownReason is already set.
-                error = new ConnectionResetException(ex.Message, ex);
-            }
-            catch (Exception ex)
-            {
-                // This is unexpected.
-                error = ex;
-                _log.StreamError(ConnectionId, error);
-            }
-            finally
-            {
-                // If Shutdown() has already bee called, assume that was the reason ProcessReceives() exited.
-                Input.Complete(_shutdownReason ?? error);
-
-                FireStreamClosed();
-
-                await _waitForConnectionClosedTcs.Task;
-            }
+            await _stream.WaitForWriteCompletionAsync();
         }
+        catch (Exception ex)
+        {
+            // Send error to DoSend loop.
+            _writeAbortException = ex;
+        }
+        finally
+        {
+            Output.CancelPendingRead();
+        }
+    }
 
-        private async Task ProcessReceives()
+    private async Task DoReceive()
+    {
+        Debug.Assert(_stream != null);
+
+        Exception? error = null;
+
+        try
         {
             var input = Input;
             while (true)
             {
-                var buffer = Input.GetMemory(MinAllocBufferSize);
+                var buffer = input.GetMemory(MinAllocBufferSize);
                 var bytesReceived = await _stream.ReadAsync(buffer);
 
                 if (bytesReceived == 0)
@@ -170,20 +209,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
                 input.Advance(bytesReceived);
 
-                var flushTask = input.FlushAsync();
+                ValueTask<FlushResult> flushTask;
+
+                if (_stream.ReadsCompleted)
+                {
+                    // If the data returned from ReadAsync is the final chunk on the stream then
+                    // flush data and end pipe together with CompleteAsync.
+                    //
+                    // Getting data and complete together is important for HTTP/3 when parsing headers.
+                    // It is important that it knows that there is no body after the headers.
+                    var completeTask = input.CompleteAsync();
+                    if (completeTask.IsCompletedSuccessfully)
+                    {
+                        // Fast path. CompleteAsync completed immediately.
+                        // Most implementations of ValueTask reset state in GetResult.
+                        completeTask.GetAwaiter().GetResult();
+
+                        flushTask = ValueTask.FromResult(new FlushResult(isCanceled: false, isCompleted: true));
+                    }
+                    else
+                    {
+                        flushTask = AwaitCompleteTaskAsync(completeTask);
+                    }
+                }
+                else
+                {
+                    flushTask = input.FlushAsync();
+                }
 
                 var paused = !flushTask.IsCompleted;
 
                 if (paused)
                 {
-                    _log.StreamPause(ConnectionId);
+                    QuicLog.StreamPause(_log, this);
                 }
 
                 var result = await flushTask;
 
                 if (paused)
                 {
-                    _log.StreamResume(ConnectionId);
+                    QuicLog.StreamResume(_log, this);
                 }
 
                 if (result.IsCompleted || result.IsCanceled)
@@ -193,64 +258,101 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
                 }
             }
         }
-
-        private void FireStreamClosed()
+        catch (QuicStreamAbortedException ex)
         {
-            ThreadPool.UnsafeQueueUserWorkItem(state =>
-            {
-                state.CancelConnectionClosedToken();
+            // Abort from peer.
+            _error = ex.ErrorCode;
+            QuicLog.StreamAbortedRead(_log, this, ex.ErrorCode);
 
-                state._waitForConnectionClosedTcs.TrySetResult();
-            },
-            this,
-            preferLocal: false);
+            // This could be ignored if _shutdownReason is already set.
+            error = new ConnectionResetException(ex.Message, ex);
+
+            _clientAbort = true;
+        }
+        catch (QuicConnectionAbortedException ex)
+        {
+            // Abort from peer.
+            _error = ex.ErrorCode;
+            QuicLog.StreamAbortedRead(_log, this, ex.ErrorCode);
+
+            // This could be ignored if _shutdownReason is already set.
+            error = new ConnectionResetException(ex.Message, ex);
+
+            _clientAbort = true;
+        }
+        catch (QuicOperationAbortedException ex)
+        {
+            // AbortRead has been called for the stream.
+            error = new ConnectionAbortedException(ex.Message, ex);
+        }
+        catch (Exception ex)
+        {
+            // This is unexpected.
+            error = ex;
+            QuicLog.StreamError(_log, this, error);
+        }
+        finally
+        {
+            // If Shutdown() has already bee called, assume that was the reason ProcessReceives() exited.
+            Input.Complete(ResolveCompleteReceiveException(error));
         }
 
-        private void CancelConnectionClosedToken()
+        async static ValueTask<FlushResult> AwaitCompleteTaskAsync(ValueTask completeTask)
         {
-            try
-            {
-                _streamClosedTokenSource.Cancel();
-            }
-            catch (Exception ex)
-            {
-                _log.LogError(0, ex, $"Unexpected exception in {nameof(QuicStreamContext)}.{nameof(CancelConnectionClosedToken)}.");
-            }
+            await completeTask;
+            return new FlushResult(isCanceled: false, isCompleted: true);
+        }
+    }
+
+    private Exception? ResolveCompleteReceiveException(Exception? error)
+    {
+        return _shutdownReadReason ?? _shutdownReason ?? error;
+    }
+
+    private Task FireStreamClosedAsync()
+    {
+        // Guard against scheduling this multiple times
+        if (_streamClosed)
+        {
+            return Task.CompletedTask;
         }
 
+        _streamClosed = true;
 
-        private async Task DoSend()
+        ThreadPool.UnsafeQueueUserWorkItem(state =>
         {
-            Exception shutdownReason = null;
-            Exception unexpectedError = null;
+            state.CancelConnectionClosedToken();
 
-            try
-            {
-                await ProcessSends();
-            }
-            catch (QuicException ex)
-            {
-                shutdownReason = new ConnectionResetException(ex.Message, ex);
-            }
-            catch (Exception ex)
-            {
-                shutdownReason = ex;
-                unexpectedError = ex;
-                _log.ConnectionError(ConnectionId, unexpectedError);
-            }
-            finally
-            {
-                await ShutdownWrite(shutdownReason);
+            state._waitForConnectionClosedTcs.TrySetResult();
+        },
+        this,
+        preferLocal: false);
 
-                // Complete the output after disposing the stream
-                Output.Complete(unexpectedError);
+        return _waitForConnectionClosedTcs.Task;
+    }
 
-                // Cancel any pending flushes so that the input loop is un-paused
-                Input.CancelPendingFlush();
-            }
+    private void CancelConnectionClosedToken()
+    {
+        try
+        {
+            _streamClosedTokenSource.Cancel();
         }
+        catch (Exception ex)
+        {
+            _log.LogError(0, ex, $"Unexpected exception in {nameof(QuicStreamContext)}.{nameof(CancelConnectionClosedToken)}.");
+        }
+    }
 
-        private async Task ProcessSends()
+    private async Task DoSend()
+    {
+        Debug.Assert(_stream != null);
+
+        Exception? shutdownReason = null;
+        Exception? unexpectedError = null;
+
+        var sendCompletedTask = WaitForWritesCompleted();
+
+        try
         {
             // Resolve `output` PipeReader via the IDuplexPipe interface prior to loop start for performance.
             var output = Output;
@@ -260,6 +362,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
 
                 if (result.IsCanceled)
                 {
+                    // WaitForWritesCompleted provides immediate notification that write-side of stream has completed.
+                    // If the stream or connection is aborted then exception will be available to rethrow.
+                    if (_writeAbortException != null)
+                    {
+                        ExceptionDispatchInfo.Throw(_writeAbortException);
+                    }
+
                     break;
                 }
 
@@ -281,53 +390,163 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Intern
                 }
             }
         }
-
-        public override void Abort(ConnectionAbortedException abortReason)
+        catch (QuicStreamAbortedException ex)
         {
-            // Don't call _stream.Shutdown and _stream.Abort at the same time.
-            _log.StreamAbort(ConnectionId, abortReason);
+            // Abort from peer.
+            _error = ex.ErrorCode;
+            QuicLog.StreamAbortedWrite(_log, this, ex.ErrorCode);
 
+            // This could be ignored if _shutdownReason is already set.
+            shutdownReason = new ConnectionResetException(ex.Message, ex);
+
+            _clientAbort = true;
+        }
+        catch (QuicConnectionAbortedException ex)
+        {
+            // Abort from peer.
+            _error = ex.ErrorCode;
+            QuicLog.StreamAbortedWrite(_log, this, ex.ErrorCode);
+
+            // This could be ignored if _shutdownReason is already set.
+            shutdownReason = new ConnectionResetException(ex.Message, ex);
+
+            _clientAbort = true;
+        }
+        catch (QuicOperationAbortedException ex)
+        {
+            // AbortWrite has been called for the stream.
+            // Possibily might also get here from connection closing.
+            // System.Net.Quic exception handling not finalized.
+            shutdownReason = new ConnectionResetException(ex.Message, ex);
+        }
+        catch (Exception ex)
+        {
+            shutdownReason = ex;
+            unexpectedError = ex;
+            QuicLog.StreamError(_log, this, unexpectedError);
+        }
+        finally
+        {
+            ShutdownWrite(_shutdownWriteReason ?? _shutdownReason ?? shutdownReason);
+            await sendCompletedTask;
+
+            // Complete the output after completing stream sends
+            Output.Complete(unexpectedError);
+
+            // Cancel any pending flushes so that the input loop is un-paused
+            Input.CancelPendingFlush();
+        }
+    }
+
+    public override void Abort(ConnectionAbortedException abortReason)
+    {
+        // This abort is called twice, make sure that doesn't happen.
+        // Don't call _stream.Shutdown and _stream.Abort at the same time.
+        if (_serverAborted)
+        {
+            return;
+        }
+
+        _serverAborted = true;
+        _shutdownReason = abortReason;
+
+        var resolvedErrorCode = _error ?? 0;
+        QuicLog.StreamAbort(_log, this, resolvedErrorCode, abortReason.Message);
+
+        lock (_shutdownLock)
+        {
+            if (_stream != null)
+            {
+                if (_stream.CanRead)
+                {
+                    _stream.AbortRead(resolvedErrorCode);
+                }
+                if (_stream.CanWrite)
+                {
+                    _stream.AbortWrite(resolvedErrorCode);
+                }
+            }
+        }
+
+        // Cancel ProcessSends loop after calling shutdown to ensure the correct _shutdownReason gets set.
+        Output.CancelPendingRead();
+    }
+
+    private void ShutdownWrite(Exception? shutdownReason)
+    {
+        Debug.Assert(_stream != null);
+
+        try
+        {
             lock (_shutdownLock)
             {
-                _stream.AbortRead(Error);
-                _stream.AbortWrite(Error);
-            }
+                // TODO: Exception is always allocated. Consider only allocating if receive hasn't completed.
+                _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The QUIC transport's send loop completed gracefully.");
+                QuicLog.StreamShutdownWrite(_log, this, _shutdownReason.Message);
 
-            // Cancel ProcessSends loop after calling shutdown to ensure the correct _shutdownReason gets set.
-            Output.CancelPendingRead();
-        }
-
-        private async ValueTask ShutdownWrite(Exception shutdownReason)
-        {
-            try
-            {
-                lock (_shutdownLock)
-                {
-                    _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Quic transport's send loop completed gracefully.");
-
-                    _log.StreamShutdownWrite(ConnectionId, _shutdownReason);
-                    _stream.Shutdown();
-                }
-
-                await _stream.ShutdownWriteCompleted();
-            }
-            catch (Exception ex)
-            {
-                _log.LogWarning(ex, "Stream failed to gracefully shutdown.");
-                // Ignore any errors from Shutdown() since we're tearing down the stream anyway.
+                _stream.Shutdown();
             }
         }
-
-        public override async ValueTask DisposeAsync()
+        catch (Exception ex)
         {
-            Transport.Input.Complete();
-            Transport.Output.Complete();
+            _log.LogWarning(ex, "Stream failed to gracefully shutdown.");
+            // Ignore any errors from Shutdown() since we're tearing down the stream anyway.
+        }
+    }
 
-            await _processingTask;
+    public override async ValueTask DisposeAsync()
+    {
+        if (_stream == null)
+        {
+            return;
+        }
+
+        _originalTransport.Input.Complete();
+        _originalTransport.Output.Complete();
+
+        await _processingTask;
+
+        lock (_shutdownLock)
+        {
+            // CanReuse must not be calculated while draining stream. It is possible for
+            // an abort to be received while any methods are still running.
+            // It is safe to calculate CanReuse after processing is completed.
+            //
+            // Be conservative about what can be pooled.
+            // Only pool bidirectional streams whose pipes have completed successfully and haven't been aborted.
+            CanReuse = _stream.CanRead && _stream.CanWrite
+                && _transportPipeReader.IsCompletedSuccessfully
+                && _transportPipeWriter.IsCompletedSuccessfully
+                && !_clientAbort
+                && !_serverAborted
+                && _shutdownReadReason == null
+                && _shutdownWriteReason == null;
+
+            if (!CanReuse)
+            {
+                DisposeCore();
+            }
 
             _stream.Dispose();
-
-            _streamClosedTokenSource.Dispose();
+            _stream = null!;
         }
+    }
+
+    public void Dispose()
+    {
+        if (!_connection.TryReturnStream(this))
+        {
+            // Dispose when one of:
+            // - Stream is not bidirection
+            // - Stream didn't complete gracefully
+            // - Pool is full
+            DisposeCore();
+        }
+    }
+
+    // Called when the stream is no longer reused.
+    public void DisposeCore()
+    {
+        _streamClosedTokenSource.Dispose();
     }
 }

@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ActualApiResponseMetadataFactoryTest
@@ -32,6 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.ActualApiResponseMeta
 
             /*MM2*/return new TryGetActualResponseMetadataModel();
         }
+
+        public IActionResult ActionWithActionResultOfTReturningOkResultExpression() => Ok();
     }
 
     public class TryGetActualResponseMetadataModel { }

@@ -3,18 +3,20 @@
 ## Objectives
 
 We want to consolidate dotnet/aspnetcore-tooling into dotnet/aspnetcore to achieve 3 goals
+
 1. Reduce overall build time end to end for the .NET Core SDK
 2. Reduce the complexity of maintaining multiple repositories.
 3. Maintain, or if possible, improve, developer productivity
 
-We are prioritizing the first objective since it is part of a cross-team efforct to reduce the SDK build time. To ensure we are able to achieve this goal quickly and with minimal risk, we plan to take a multi-phase approach. The first phase will involve moving the language components from aspnetcore-tooling to aspnetcore which is required for the SDK build. The second phase will involve a more gradual migration for the remaining tooling components with an emphasis on maintaining developer productivity.
+We are prioritizing the first objective since it is part of a cross-team effort to reduce the SDK build time. To ensure we are able to achieve this goal quickly and with minimal risk, we plan to take a multi-phase approach. The first phase will involve moving the language components from aspnetcore-tooling to aspnetcore which is required for the SDK build. The second phase will involve a more gradual migration for the remaining tooling components with an emphasis on maintaining developer productivity.
 
 ## Phase one: Migration of language components
 
 In this phase, we are primarily concerned with the overall goals of repo consolidation to reduce the number of repository required to build the SDK while keeping the build in aspnetcore as simple as possible without needing to support build/test for tooling scenarios such as testing on VSCode. As such, we will not require all of aspnetcore-tooling to be merged into aspnetcore. For example, tooling for VSMac and VSCode will remain in aspnetcore-tooling. There is also an added benefit of maintaining the current development and release workflow for aspnetcore-tooling which is more "agile" than aspnetcore (e.g. faster PR builds, release cycles that synchronize with VS releases).
 
 To achieve this we will be migrating the following (and associated tests) from aspnetcore-tooling to aspnetcore:
-```
+
+```text
 Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 Microsoft.AspNetCore.Mvc.Razor.Extensions
@@ -22,9 +24,11 @@ Microsoft.AspNetCore.Razor.Language
 Microsoft.AspNetCore.Razor.Tools
 Microsoft.CodeAnalysis.Razor
 Microsoft.NET.Sdk.Razor
-````
-The following (and associated tests) will remain in aspnetcore-tooling:
 ```
+
+The following (and associated tests) will remain in aspnetcore-tooling:
+
+```text
 Microsoft.AspNetCore.Razor.LanguageServer.Common
 Microsoft.AspNetCore.Razor.LanguageServer
 Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed
@@ -42,19 +46,22 @@ Microsoft.VisualStudio.Mac.RazorAddin
 Microsoft.VisualStudio.RazorExtension
 RazorDeveloperTools
 rzls
-````
-THe following will be deleted:
 ```
+
+THe following will be deleted:
+
+```text
 RazorPageGenerator
 ```
 
 Due to the separation of tooling projects, the new dependency flow will be:
 
-```
+```text
 runtime +--> aspnetcore +--> SDK
         \               \
          +-> extensions -+-> aspnetcore-tooling
 ```
+
 ### Known action items
 
 1. Migrate source with `git filter-branch`, preserving commit history
@@ -75,17 +82,17 @@ Due to runtime and tooling divergence of Roslyn packages, we may need to pin mul
 
 ### Assets
 
-The migrated projects are C# only in phase one so we will use existing infrastructure in aspnetcore to handle signing and publishing of these packages. Phase two will involve additional asset types including vsix, zips, npm packages and mpacks. We have asset publishing mechanisms for most of these asset types but may need to add addtional asset publishing mechanisms and/or release management for some assets (mpacks for example). We will evaluate the additional requirements when phase two is discussed.
+The migrated projects are C# only in phase one so we will use existing infrastructure in aspnetcore to handle signing and publishing of these packages. Phase two will involve additional asset types including vsix, zips, npm packages and mpacks. We have asset publishing mechanisms for most of these asset types but may need to add additional asset publishing mechanisms and/or release management for some assets (mpacks for example). We will evaluate the additional requirements when phase two is discussed.
 
 ### Developer efficiency (PR builds)
 
 A concern that has been voiced is that working in aspnetcore would be significantly slower than in aspnetcore-tooling given that the PR validation in aspnetcore takes longer. For comparison, it takes about 30 mins to run builds and tests in aspnetcore-tooling whereas builds and tests in aspnetcore takes about 1.5 - 2 hours. We are making efforts in improving this experience but it will be out of scope of aspnetcore-tooling consolidation.
 
- Note that this will only apply to the migrated language projects in phase one. In phase two, we will explore several approaches to improve this area. We are considering adopting additiona logic (from dotnet/runtime) that will allow us to run only portions of tests based on what source changes were detected. However, we will always build the entire repository regardless of what source changes were made.
+ Note that this will only apply to the migrated language projects in phase one. In phase two, we will explore several approaches to improve this area. We are considering adopting additional logic (from dotnet/runtime) that will allow us to run only portions of tests based on what source changes were detected. However, we will always build the entire repository regardless of what source changes were made.
 
 ### Testing
 
-In phase one, the migrated projects are C# only so there are no test infrasture changes needed in aspnetcore. The existing vscode jest, and node tests will remain in aspnetcore-tooling during phase one and will be migrated in phase two.
+In phase one, the migrated projects are C# only so there are no test infrastructure changes needed in aspnetcore. The existing vscode jest, and node tests will remain in aspnetcore-tooling during phase one and will be migrated in phase two.
 
 ### Reliability
 

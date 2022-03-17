@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PackageId>Microsoft.DotNet.Web.ItemTemplates.$(AspNetCoreMajorMinorVersion)</PackageId>
     <Description>Web File Templates for Microsoft Template Engine.</Description>
+    <UsingToolTemplateLocalizer>true</UsingToolTemplateLocalizer>
   </PropertyGroup>
 
 </Project>

@@ -1,229 +1,348 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+#nullable enable
+
+using System.Collections;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Globalization;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents;
+
+/// <summary>
+/// Default implementation for <see cref="IViewComponentInvoker"/>.
+/// </summary>
+internal partial class DefaultViewComponentInvoker : IViewComponentInvoker
 {
+    private readonly IViewComponentFactory _viewComponentFactory;
+    private readonly ViewComponentInvokerCache _viewComponentInvokerCache;
+    private readonly DiagnosticListener _diagnosticListener;
+    private readonly ILogger _logger;
+
     /// <summary>
-    /// Default implementation for <see cref="IViewComponentInvoker"/>.
+    /// Initializes a new instance of <see cref="DefaultViewComponentInvoker"/>.
     /// </summary>
-    internal class DefaultViewComponentInvoker : IViewComponentInvoker
+    /// <param name="viewComponentFactory">The <see cref="IViewComponentFactory"/>.</param>
+    /// <param name="viewComponentInvokerCache">The <see cref="ViewComponentInvokerCache"/>.</param>
+    /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
+    /// <param name="logger">The <see cref="ILogger"/>.</param>
+    public DefaultViewComponentInvoker(
+        IViewComponentFactory viewComponentFactory,
+        ViewComponentInvokerCache viewComponentInvokerCache,
+        DiagnosticListener diagnosticListener,
+        ILogger logger)
     {
-        private readonly IViewComponentFactory _viewComponentFactory;
-        private readonly ViewComponentInvokerCache _viewComponentInvokerCache;
-        private readonly DiagnosticListener _diagnosticListener;
-        private readonly ILogger _logger;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="DefaultViewComponentInvoker"/>.
-        /// </summary>
-        /// <param name="viewComponentFactory">The <see cref="IViewComponentFactory"/>.</param>
-        /// <param name="viewComponentInvokerCache">The <see cref="ViewComponentInvokerCache"/>.</param>
-        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        public DefaultViewComponentInvoker(
-            IViewComponentFactory viewComponentFactory,
-            ViewComponentInvokerCache viewComponentInvokerCache,
-            DiagnosticListener diagnosticListener,
-            ILogger logger)
+        if (viewComponentFactory == null)
         {
-            if (viewComponentFactory == null)
-            {
-                throw new ArgumentNullException(nameof(viewComponentFactory));
-            }
-
-            if (viewComponentInvokerCache == null)
-            {
-                throw new ArgumentNullException(nameof(viewComponentInvokerCache));
-            }
-
-            if (diagnosticListener == null)
-            {
-                throw new ArgumentNullException(nameof(diagnosticListener));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _viewComponentFactory = viewComponentFactory;
-            _viewComponentInvokerCache = viewComponentInvokerCache;
-            _diagnosticListener = diagnosticListener;
-            _logger = logger;
+            throw new ArgumentNullException(nameof(viewComponentFactory));
         }
 
-        /// <inheritdoc />
-        public async Task InvokeAsync(ViewComponentContext context)
+        if (viewComponentInvokerCache == null)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            throw new ArgumentNullException(nameof(viewComponentInvokerCache));
+        }
 
-            var executor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
+        if (diagnosticListener == null)
+        {
+            throw new ArgumentNullException(nameof(diagnosticListener));
+        }
 
-            var returnType = executor.MethodReturnType;
+        if (logger == null)
+        {
+            throw new ArgumentNullException(nameof(logger));
+        }
 
-            if (returnType == typeof(void) || returnType == typeof(Task))
-            {
-                throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
-            }
+        _viewComponentFactory = viewComponentFactory;
+        _viewComponentInvokerCache = viewComponentInvokerCache;
+        _diagnosticListener = diagnosticListener;
+        _logger = logger;
+    }
 
-            IViewComponentResult result;
+    /// <inheritdoc />
+    public async Task InvokeAsync(ViewComponentContext context)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
+        var executor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
+
+        var returnType = executor.MethodReturnType;
+
+        if (returnType == typeof(void) || returnType == typeof(Task))
+        {
+            throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+        }
+
+        IViewComponentResult result;
+        object? component = null;
+        try
+        {
+            component = _viewComponentFactory.CreateViewComponent(context);
             if (executor.IsMethodAsync)
             {
-                result = await InvokeAsyncCore(executor, context);
+                result = await InvokeAsyncCore(executor, component, context);
             }
             else
             {
                 // We support falling back to synchronous if there is no InvokeAsync method, in this case we'll still
                 // execute the IViewResult asynchronously.
-                result = InvokeSyncCore(executor, context);
+                result = InvokeSyncCore(executor, component, context);
             }
-
-            await result.ExecuteAsync(context);
         }
-
-#nullable enable
-        private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
+        finally
         {
-            var component = _viewComponentFactory.CreateViewComponent(context);
-
-            using (_logger.ViewComponentScope(context))
+            if (component != null)
             {
-                var arguments = PrepareArguments(context.Arguments, executor);
-
-                _diagnosticListener.BeforeViewComponent(context, component);
-                _logger.ViewComponentExecuting(context, arguments);
-
-                var stopwatch = ValueStopwatch.StartNew();
-
-                object resultAsObject;
-                var returnType = executor.MethodReturnType;
-
-                if (returnType == typeof(Task<IViewComponentResult>))
-                {
-                    resultAsObject = await (Task<IViewComponentResult>)executor.Execute(component, arguments);
-                }
-                else if (returnType == typeof(Task<string>))
-                {
-                    resultAsObject = await (Task<string>)executor.Execute(component, arguments);
-                }
-                else if (returnType == typeof(Task<IHtmlContent>))
-                {
-                    resultAsObject = await (Task<IHtmlContent>)executor.Execute(component, arguments);
-                }
-                else
-                {
-                    resultAsObject = await executor.ExecuteAsync(component, arguments);
-                }
-
-                var viewComponentResult = CoerceToViewComponentResult(resultAsObject);
-                _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
-                _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
-
-                _viewComponentFactory.ReleaseViewComponent(context, component);
-
-                return viewComponentResult;
+                await _viewComponentFactory.ReleaseViewComponentAsync(context, executor);
             }
         }
 
-        private IViewComponentResult InvokeSyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
+        await result.ExecuteAsync(context);
+    }
+
+    private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, object component, ViewComponentContext context)
+    {
+        using (Log.ViewComponentScope(_logger, context))
         {
-            var component = _viewComponentFactory.CreateViewComponent(context);
+            var arguments = PrepareArguments(context.Arguments, executor);
 
-            using (_logger.ViewComponentScope(context))
+            _diagnosticListener.BeforeViewComponent(context, component);
+            Log.ViewComponentExecuting(_logger, context, arguments);
+
+            var stopwatch = ValueStopwatch.StartNew();
+
+            object resultAsObject;
+            var returnType = executor.MethodReturnType;
+
+            if (returnType == typeof(Task<IViewComponentResult>))
             {
-                var arguments = PrepareArguments(context.Arguments, executor);
-
-                _diagnosticListener.BeforeViewComponent(context, component);
-                _logger.ViewComponentExecuting(context, arguments);
-
-                var stopwatch = ValueStopwatch.StartNew();
-                object result;
-
-                try
+                var task = executor.Execute(component, arguments);
+                if (task is null)
                 {
-                    result = executor.Execute(component, arguments);
-                }
-                finally
-                {
-                    _viewComponentFactory.ReleaseViewComponent(context, component);
+                    throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
                 }
 
-                var viewComponentResult = CoerceToViewComponentResult(result);
-                _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
-                _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
-
-                _viewComponentFactory.ReleaseViewComponent(context, component);
-
-                return viewComponentResult;
+                resultAsObject = await (Task<IViewComponentResult>)task;
             }
+            else if (returnType == typeof(Task<string>))
+            {
+                var task = executor.Execute(component, arguments);
+                if (task is null)
+                {
+                    throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+                }
+
+                resultAsObject = await (Task<string>)task;
+            }
+            else if (returnType == typeof(Task<IHtmlContent>))
+            {
+                var task = executor.Execute(component, arguments);
+                if (task is null)
+                {
+                    throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+                }
+
+                resultAsObject = await (Task<IHtmlContent>)task;
+            }
+            else
+            {
+                resultAsObject = await executor.ExecuteAsync(component, arguments);
+            }
+
+            var viewComponentResult = CoerceToViewComponentResult(resultAsObject);
+            Log.ViewComponentExecuted(_logger, context, stopwatch.GetElapsedTime(), viewComponentResult);
+            _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
+
+            return viewComponentResult;
         }
+    }
+
+    private IViewComponentResult InvokeSyncCore(ObjectMethodExecutor executor, object component, ViewComponentContext context)
+    {
+        using (Log.ViewComponentScope(_logger, context))
+        {
+            var arguments = PrepareArguments(context.Arguments, executor);
+
+            _diagnosticListener.BeforeViewComponent(context, component);
+            Log.ViewComponentExecuting(_logger, context, arguments);
+
+            var stopwatch = ValueStopwatch.StartNew();
+            object? result;
+
+            result = executor.Execute(component, arguments);
+
+            var viewComponentResult = CoerceToViewComponentResult(result);
+            Log.ViewComponentExecuted(_logger, context, stopwatch.GetElapsedTime(), viewComponentResult);
+            _diagnosticListener.AfterViewComponent(context, viewComponentResult, component);
+
+            return viewComponentResult;
+        }
+    }
+
+    private static IViewComponentResult CoerceToViewComponentResult(object? value)
+    {
+        if (value == null)
+        {
+            throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+        }
+
+        if (value is IViewComponentResult componentResult)
+        {
+            return componentResult;
+        }
+
+        if (value is string stringResult)
+        {
+            return new ContentViewComponentResult(stringResult);
+        }
+
+        if (value is IHtmlContent htmlContent)
+        {
+            return new HtmlContentViewComponentResult(htmlContent);
+        }
+
+        throw new InvalidOperationException(Resources.FormatViewComponent_InvalidReturnValue(
+            typeof(string).Name,
+            typeof(IHtmlContent).Name,
+            typeof(IViewComponentResult).Name));
+    }
+
+    private static object?[]? PrepareArguments(
+        IDictionary<string, object?> parameters,
+        ObjectMethodExecutor objectMethodExecutor)
+    {
+        var declaredParameterInfos = objectMethodExecutor.MethodParameters;
+        var count = declaredParameterInfos.Length;
+        if (count == 0)
+        {
+            return null;
+        }
+
+        var arguments = new object?[count];
+        for (var index = 0; index < count; index++)
+        {
+            var parameterInfo = declaredParameterInfos[index];
+
+            if (!parameters.TryGetValue(parameterInfo.Name!, out var value))
+            {
+                value = objectMethodExecutor.GetDefaultValueForParameter(index);
+            }
+
+            arguments[index] = value;
+        }
+
+        return arguments;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "Executing view component {ViewComponentName} with arguments ({Arguments}).", EventName = "ViewComponentExecuting", SkipEnabledCheck = true)]
+        private static partial void ViewComponentExecuting(ILogger logger, string viewComponentName, string[] arguments);
+
+        [LoggerMessage(2, LogLevel.Debug, "Executed view component {ViewComponentName} in {ElapsedMilliseconds}ms and returned {ViewComponentResult}", EventName = "ViewComponentExecuted", SkipEnabledCheck = true)]
+        private static partial void ViewComponentExecuted(ILogger logger, string viewComponentName, double elapsedMilliseconds, string? viewComponentResult);
+
+        public static IDisposable? ViewComponentScope(ILogger logger, ViewComponentContext context)
+        {
+            return logger.BeginScope(new ViewComponentLogScope(context.ViewComponentDescriptor));
+        }
+
 #nullable restore
-
-        private static IViewComponentResult CoerceToViewComponentResult(object value)
+        public static void ViewComponentExecuting(
+            ILogger logger,
+            ViewComponentContext context,
+            object[] arguments)
         {
-            if (value == null)
+            if (logger.IsEnabled(LogLevel.Debug))
             {
-                throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
+                var formattedArguments = GetFormattedArguments(arguments);
+                ViewComponentExecuting(logger, context.ViewComponentDescriptor.DisplayName, formattedArguments);
             }
-
-            if (value is IViewComponentResult componentResult)
-            {
-                return componentResult;
-            }
-
-            if (value is string stringResult)
-            {
-                return new ContentViewComponentResult(stringResult);
-            }
-
-            if (value is IHtmlContent htmlContent)
-            {
-                return new HtmlContentViewComponentResult(htmlContent);
-            }
-
-            throw new InvalidOperationException(Resources.FormatViewComponent_InvalidReturnValue(
-                typeof(string).Name,
-                typeof(IHtmlContent).Name,
-                typeof(IViewComponentResult).Name));
         }
 
-        private static object[] PrepareArguments(
-            IDictionary<string, object> parameters,
-            ObjectMethodExecutor objectMethodExecutor)
+        public static void ViewComponentExecuted(
+            ILogger logger,
+            ViewComponentContext context,
+            TimeSpan timespan,
+            object result)
         {
-            var declaredParameterInfos = objectMethodExecutor.MethodParameters;
-            var count = declaredParameterInfos.Length;
-            if (count == 0)
+            // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
+            if (logger.IsEnabled(LogLevel.Debug))
             {
-                return null;
+                ViewComponentExecuted(
+                    logger,
+                    context.ViewComponentDescriptor.DisplayName,
+                    timespan.TotalMilliseconds,
+                    Convert.ToString(result, CultureInfo.InvariantCulture));
+            }
+        }
+
+        private static string[] GetFormattedArguments(object[] arguments)
+        {
+            if (arguments == null || arguments.Length == 0)
+            {
+                return Array.Empty<string>();
             }
 
-            var arguments = new object[count];
-            for (var index = 0; index < count; index++)
+            var formattedArguments = new string[arguments.Length];
+            for (var i = 0; i < formattedArguments.Length; i++)
             {
-                var parameterInfo = declaredParameterInfos[index];
+                formattedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
+            }
 
-                if (!parameters.TryGetValue(parameterInfo.Name, out var value))
+            return formattedArguments;
+        }
+
+        private sealed class ViewComponentLogScope : IReadOnlyList<KeyValuePair<string, object>>
+        {
+            private readonly ViewComponentDescriptor _descriptor;
+
+            public ViewComponentLogScope(ViewComponentDescriptor descriptor)
+            {
+                _descriptor = descriptor;
+            }
+
+            public KeyValuePair<string, object> this[int index]
+            {
+                get
                 {
-                    value = objectMethodExecutor.GetDefaultValueForParameter(index);
+                    if (index == 0)
+                    {
+                        return new KeyValuePair<string, object>("ViewComponentName", _descriptor.DisplayName);
+                    }
+                    else if (index == 1)
+                    {
+                        return new KeyValuePair<string, object>("ViewComponentId", _descriptor.Id);
+                    }
+                    throw new IndexOutOfRangeException(nameof(index));
                 }
-
-                arguments[index] = value;
             }
 
-            return arguments;
+            public int Count => 2;
+
+            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+            {
+                for (var i = 0; i < Count; ++i)
+                {
+                    yield return this[i];
+                }
+            }
+
+            public override string ToString()
+            {
+                return _descriptor.DisplayName;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
         }
     }
 }

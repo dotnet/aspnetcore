@@ -8,7 +8,6 @@ Microsoft.Extensions.Localization.IStringLocalizer
 Microsoft.Extensions.Localization.IStringLocalizer&lt;T&gt;</Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>localization</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>

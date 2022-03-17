@@ -1,38 +1,36 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CorsWebSite
+namespace CorsWebSite;
+
+[Route("Cors/[action]")]
+[EnableCors("AllowAnySimpleRequest")]
+public class BlogController : Controller
 {
-    [Route("Cors/[action]")]
-    [EnableCors("AllowAnySimpleRequest")]
-    public class BlogController : Controller
+    public IEnumerable<string> GetBlogComments(int id)
     {
-        public IEnumerable<string> GetBlogComments(int id)
-        {
-            return new[] { "comment1", "comment2", "comment3" };
-        }
+        return new[] { "comment1", "comment2", "comment3" };
+    }
 
-        [EnableCors("AllowSpecificOrigin")]
-        public IEnumerable<string> GetUserComments(int id)
-        {
-            return new[] { "usercomment1", "usercomment2", "usercomment3" };
-        }
+    [EnableCors("AllowSpecificOrigin")]
+    public IEnumerable<string> GetUserComments(int id)
+    {
+        return new[] { "usercomment1", "usercomment2", "usercomment3" };
+    }
 
-        [DisableCors]
-        [AcceptVerbs("HEAD", "GET", "POST")]
-        public string GetExclusiveContent()
-        {
-            return "exclusive";
-        }
+    [DisableCors]
+    [AcceptVerbs("HEAD", "GET", "POST")]
+    public string GetExclusiveContent()
+    {
+        return "exclusive";
+    }
 
-        [EnableCors("WithCredentialsAndOtherSettings")]
-        public string EditUserComment(int id, string userComment)
-        {
-            return userComment;
-        }
+    [EnableCors("WithCredentialsAndOtherSettings")]
+    public string EditUserComment(int id, string userComment)
+    {
+        return userComment;
     }
 }

@@ -1,0 +1,5 @@
+<UsageData>
+  <IgnorePatterns>
+    <UsagePattern IdentityGlob="*/*" />
+  </IgnorePatterns>
+</UsageData>

@@ -1,28 +1,27 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Configuration;
 using System;
+using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNetCore.DataProtection
+namespace Microsoft.AspNetCore.DataProtection;
+
+internal class TestRedisServer
 {
-    internal class TestRedisServer
+    public const string ConnectionStringKeyName = "Test:Redis:Server";
+    private static readonly IConfigurationRoot _config;
+
+    static TestRedisServer()
     {
-        public const string ConnectionStringKeyName = "Test:Redis:Server";
-        private static readonly IConfigurationRoot _config;
+        _config = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("testconfig.json")
+            .AddEnvironmentVariables()
+            .Build();
+    }
 
-        static TestRedisServer()
-        {
-            _config = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("testconfig.json")
-                .AddEnvironmentVariables()
-                .Build();
-        }
-
-        internal static string GetConnectionString()
-        {
-            return _config[ConnectionStringKeyName];
-        }
+    internal static string GetConnectionString()
+    {
+        return _config[ConnectionStringKeyName];
     }
 }

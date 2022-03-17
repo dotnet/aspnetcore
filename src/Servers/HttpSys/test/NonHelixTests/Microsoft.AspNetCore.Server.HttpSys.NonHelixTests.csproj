@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TestGroupName>HttpSys.NonHelixTests</TestGroupName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
+    <!-- https://github.com/dotnet/aspnetcore/issues/8247 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <BaseOutputPath />
+    <OutputPath />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!--Imitate IIS Express so we can use it's cert bindings-->
+    <PackageTags>214124cd-d05b-4309-9af9-9caa44b2b74a</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\HttpSys\test\testassets\DelegationSite\DelegationSite.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+</Project>

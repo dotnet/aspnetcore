@@ -1,48 +1,48 @@
 #nullable enable
+~override Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+abstract Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>!
+abstract Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.GetAuthorizeData() -> Microsoft.AspNetCore.Authorization.IAuthorizeData![]?
 Microsoft.AspNetCore.Components.Authorization.AuthenticationState
+Microsoft.AspNetCore.Components.Authorization.AuthenticationState.AuthenticationState(System.Security.Claims.ClaimsPrincipal! user) -> void
+Microsoft.AspNetCore.Components.Authorization.AuthenticationState.User.get -> System.Security.Claims.ClaimsPrincipal!
 Microsoft.AspNetCore.Components.Authorization.AuthenticationStateChangedHandler
 Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider
-Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider.AuthenticationStateChanged -> Microsoft.AspNetCore.Components.Authorization.AuthenticationStateChangedHandler
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider.AuthenticationStateChanged -> Microsoft.AspNetCore.Components.Authorization.AuthenticationStateChangedHandler?
 Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider.AuthenticationStateProvider() -> void
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider.NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! task) -> void
 Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView
 Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.AuthorizeRouteView() -> void
+Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.Authorizing.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.Authorizing.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.NotAuthorized.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.NotAuthorized.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.Resource.get -> object?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.Resource.set -> void
 Microsoft.AspNetCore.Components.Authorization.AuthorizeView
 Microsoft.AspNetCore.Components.Authorization.AuthorizeView.AuthorizeView() -> void
+Microsoft.AspNetCore.Components.Authorization.AuthorizeView.Policy.get -> string?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeView.Policy.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthorizeView.Roles.get -> string?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeView.Roles.set -> void
 Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Authorized.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Authorized.set -> void
 Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.AuthorizeViewCore() -> void
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Authorizing.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Authorizing.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.NotAuthorized.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.NotAuthorized.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Resource.get -> object?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Resource.set -> void
 Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
 Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.CascadingAuthenticationState() -> void
+Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Authorization.IHostEnvironmentAuthenticationStateProvider
+Microsoft.AspNetCore.Components.Authorization.IHostEnvironmentAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void
+override Microsoft.AspNetCore.Components.Authorization.AuthorizeView.GetAuthorizeData() -> Microsoft.AspNetCore.Authorization.IAuthorizeData![]!
+override Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+override Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.OnInitialized() -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthenticationState.AuthenticationState(System.Security.Claims.ClaimsPrincipal user) -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthenticationState.User.get -> System.Security.Claims.ClaimsPrincipal
-~Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider.NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState> task) -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.Authorizing.get -> Microsoft.AspNetCore.Components.RenderFragment
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.Authorizing.set -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.NotAuthorized.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState>
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.NotAuthorized.set -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.Resource.get -> object
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.Resource.set -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeView.Policy.get -> string
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeView.Policy.set -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeView.Roles.get -> string
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeView.Roles.set -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Authorized.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState>
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Authorized.set -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Authorizing.get -> Microsoft.AspNetCore.Components.RenderFragment
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Authorizing.set -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState>
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.ChildContent.set -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.NotAuthorized.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState>
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.NotAuthorized.set -> void
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Resource.get -> object
-~Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.Resource.set -> void
-~Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment
-~Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.ChildContent.set -> void
-~Microsoft.AspNetCore.Components.Authorization.IHostEnvironmentAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState> authenticationStateTask) -> void
-~abstract Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState>
-~abstract Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.GetAuthorizeData() -> Microsoft.AspNetCore.Authorization.IAuthorizeData[]
-~override Microsoft.AspNetCore.Components.Authorization.AuthorizeView.GetAuthorizeData() -> Microsoft.AspNetCore.Authorization.IAuthorizeData[]
-~override Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) -> void
-~override Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.OnParametersSetAsync() -> System.Threading.Tasks.Task
-~override Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

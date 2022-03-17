@@ -1,27 +1,23 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
+namespace Microsoft.AspNetCore.Identity;
 
-namespace Microsoft.AspNetCore.Identity
+/// <summary>
+/// Options for <see cref="ISecurityStampValidator"/>.
+/// </summary>
+public class SecurityStampValidatorOptions
 {
     /// <summary>
-    /// Options for <see cref="ISecurityStampValidator"/>.
+    /// Gets or sets the <see cref="TimeSpan"/> after which security stamps are re-validated. Defaults to 30 minutes.
     /// </summary>
-    public class SecurityStampValidatorOptions
-    {
-        /// <summary>
-        /// Gets or sets the <see cref="TimeSpan"/> after which security stamps are re-validated. Defaults to 30 minutes.
-        /// </summary>
-        /// <value>
-        /// The <see cref="TimeSpan"/> after which security stamps are re-validated.
-        /// </value>
-        public TimeSpan ValidationInterval { get; set; } = TimeSpan.FromMinutes(30);
+    /// <value>
+    /// The <see cref="TimeSpan"/> after which security stamps are re-validated.
+    /// </value>
+    public TimeSpan ValidationInterval { get; set; } = TimeSpan.FromMinutes(30);
 
-        /// <summary>
-        /// Invoked when the default security stamp validator replaces the user's ClaimsPrincipal in the cookie.
-        /// </summary>
-        public Func<SecurityStampRefreshingPrincipalContext, Task> OnRefreshingPrincipal { get; set; }
-    }
+    /// <summary>
+    /// Invoked when the default security stamp validator replaces the user's ClaimsPrincipal in the cookie.
+    /// </summary>
+    public Func<SecurityStampRefreshingPrincipalContext, Task>? OnRefreshingPrincipal { get; set; }
 }

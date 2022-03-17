@@ -1,16 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FormatterWebSite.Controllers
+namespace FormatterWebSite.Controllers;
+
+[ApiController]
+[Route("[controller]/[action]")]
+public class TestApiController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]/[action]")]
-    public class TestApiController : ControllerBase
-    {
-        [HttpPost]
-        public IActionResult PostBookWithNoValidation(BookModelWithNoValidation bookModel) => Ok();
-    }
+    [HttpPost]
+    public IActionResult PostBookWithNoValidation(BookModelWithNoValidation bookModel) => Ok();
 }

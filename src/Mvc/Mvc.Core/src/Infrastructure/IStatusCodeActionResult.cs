@@ -1,17 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+#nullable enable
+
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+/// <summary>
+/// Represents an <see cref="IActionResult"/> that when executed will
+/// produce an HTTP response with the specified <see cref="StatusCode"/>.
+/// </summary>
+public interface IStatusCodeActionResult : IActionResult
 {
     /// <summary>
-    /// Represents an <see cref="IActionResult"/> that when executed will
-    /// produce an HTTP response with the specified <see cref="StatusCode"/>.
+    /// Gets the HTTP status code.
     /// </summary>
-    public interface IStatusCodeActionResult : IActionResult
-    {
-        /// <summary>
-        /// Gets or sets the HTTP status code.
-        /// </summary>
-        int? StatusCode { get; }
-    }
+    int? StatusCode { get; }
 }

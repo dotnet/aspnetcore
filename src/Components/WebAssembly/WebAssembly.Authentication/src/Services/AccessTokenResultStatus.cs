@@ -1,21 +1,20 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
+namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+
+/// <summary>
+/// Represents the possible results from trying to acquire an access token.
+/// </summary>
+public enum AccessTokenResultStatus
 {
     /// <summary>
-    /// Represents the possible results from trying to acquire an access token.
+    /// The token was successfully acquired.
     /// </summary>
-    public enum AccessTokenResultStatus
-    {
-        /// <summary>
-        /// The token was successfully acquired.
-        /// </summary>
-        Success,
+    Success,
 
-        /// <summary>
-        /// A redirect is needed in order to provision the token.
-        /// </summary>
-        RequiresRedirect,
-    }
+    /// <summary>
+    /// A redirect is needed in order to provision the token.
+    /// </summary>
+    RequiresRedirect,
 }

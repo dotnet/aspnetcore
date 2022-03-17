@@ -4,8 +4,7 @@
   <PropertyGroup>
     <Description>$(Description)
 
-To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.
-    </Description>
+To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
   </PropertyGroup>
 
   <Import Project="GenerateContent.targets" />

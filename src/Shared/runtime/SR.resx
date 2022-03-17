@@ -160,7 +160,7 @@
     <value>Connection aborted by peer ({0}).</value>
   </data>
   <data name="net_quic_notsupported" xml:space="preserve">
-    <value>QUIC is not supported on this platform. See http://aka.ms/dotnetquic</value>
+    <value>QUIC is not supported on this platform. See https://aka.ms/dotnetquic</value>
   </data>
   <data name="net_quic_operationaborted" xml:space="preserve">
     <value>Operation aborted.</value>

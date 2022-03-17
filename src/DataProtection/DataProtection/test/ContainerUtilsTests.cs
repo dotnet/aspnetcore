@@ -1,18 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.Test
+namespace Microsoft.AspNetCore.DataProtection.Test;
+
+public class ContainerUtilsTests
 {
-    public class ContainerUtilsTests
+    // example of content from /proc/self/mounts
+    private static readonly string[] fstab = new[]
     {
-        // example of content from /proc/self/mounts
-        private static readonly string[] fstab = new []
-        {
             "none / aufs rw,relatime,si=f9bfcf896de3f6c2,dio,dirperm1 0 0",
             "# comments",
             "",
@@ -27,30 +25,29 @@ namespace Microsoft.AspNetCore.DataProtection.Test
             "osxfs /app fuse.osxfs rw,nosuid,nodev,relatime,user_id=0,group_id=0,allow_other,max_read=1048576 0 0",
         };
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData("/")]
-        [InlineData("/home")]
-        [InlineData("/home/")]
-        [InlineData("/home/root")]
-        [InlineData("./dir")]
-        [InlineData("../dir")]
-        public void DeterminesFolderIsNotMounted(string directory)
-        {
-            Assert.False(ContainerUtils.IsDirectoryMounted(new DirectoryInfo(directory), fstab));
-        }
+    [ConditionalTheory]
+    [OSSkipCondition(OperatingSystems.Windows)]
+    [InlineData("/")]
+    [InlineData("/home")]
+    [InlineData("/home/")]
+    [InlineData("/home/root")]
+    [InlineData("./dir")]
+    [InlineData("../dir")]
+    public void DeterminesFolderIsNotMounted(string directory)
+    {
+        Assert.False(ContainerUtils.IsDirectoryMounted(new DirectoryInfo(directory), fstab));
+    }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData("/app")]
-        [InlineData("/app/")]
-        [InlineData("/app/subdir")]
-        [InlineData("/app/subdir/")]
-        [InlineData("/app/subdir/two")]
-        [InlineData("/app/subdir/two/")]
-        public void DeterminesFolderIsMounted(string directory)
-        {
-            Assert.True(ContainerUtils.IsDirectoryMounted(new DirectoryInfo(directory), fstab));
-        }
+    [ConditionalTheory]
+    [OSSkipCondition(OperatingSystems.Windows)]
+    [InlineData("/app")]
+    [InlineData("/app/")]
+    [InlineData("/app/subdir")]
+    [InlineData("/app/subdir/")]
+    [InlineData("/app/subdir/two")]
+    [InlineData("/app/subdir/two/")]
+    public void DeterminesFolderIsMounted(string directory)
+    {
+        Assert.True(ContainerUtils.IsDirectoryMounted(new DirectoryInfo(directory), fstab));
     }
 }

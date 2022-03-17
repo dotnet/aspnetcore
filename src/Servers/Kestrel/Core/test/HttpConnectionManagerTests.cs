@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Runtime.CompilerServices;
@@ -11,51 +11,51 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
+
+public class HttpConnectionManagerTests : LoggedTest
 {
-    public class HttpConnectionManagerTests
+    [Fact]
+    public void UnrootedConnectionsGetRemovedFromHeartbeat()
     {
-        [Fact]
-        public void UnrootedConnectionsGetRemovedFromHeartbeat()
-        {
-            var connectionId = "0";
-            var trace = new Mock<IKestrelTrace>();
-            var httpConnectionManager = new ConnectionManager(trace.Object, ResourceCounter.Unlimited);
+        var trace = new KestrelTrace(LoggerFactory);
+        var connectionId = "0";
+        var httpConnectionManager = new ConnectionManager(trace, ResourceCounter.Unlimited);
 
-            // Create HttpConnection in inner scope so it doesn't get rooted by the current frame.
-            UnrootedConnectionsGetRemovedFromHeartbeatInnerScope(connectionId, httpConnectionManager, trace);
+        // Create HttpConnection in inner scope so it doesn't get rooted by the current frame.
+        UnrootedConnectionsGetRemovedFromHeartbeatInnerScope(connectionId, httpConnectionManager, trace);
 
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
 
-            var connectionCount = 0;
-            httpConnectionManager.Walk(_ => connectionCount++);
+        var connectionCount = 0;
+        httpConnectionManager.Walk(_ => connectionCount++);
 
-            Assert.Equal(0, connectionCount);
-            trace.Verify(t => t.ApplicationNeverCompleted(connectionId), Times.Once());
-        }
+        Assert.Equal(0, connectionCount);
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void UnrootedConnectionsGetRemovedFromHeartbeatInnerScope(
-            string connectionId,
-            ConnectionManager httpConnectionManager,
-            Mock<IKestrelTrace> trace)
-        {
-            var serviceContext = new TestServiceContext();
-            var mock = new Mock<DefaultConnectionContext>() { CallBase = true };
-            mock.Setup(m => m.ConnectionId).Returns(connectionId);
-            var transportConnectionManager = new TransportConnectionManager(httpConnectionManager);
-            var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, transportConnectionManager, _ => Task.CompletedTask, mock.Object, Mock.Of<IKestrelTrace>());
-            transportConnectionManager.AddConnection(0, httpConnection);
+        Assert.Single(TestSink.Writes.Where(c => c.EventId.Name == "ApplicationNeverCompleted"));
+    }
 
-            var connectionCount = 0;
-            httpConnectionManager.Walk(_ => connectionCount++);
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void UnrootedConnectionsGetRemovedFromHeartbeatInnerScope(
+        string connectionId,
+        ConnectionManager httpConnectionManager,
+        KestrelTrace trace)
+    {
+        var serviceContext = new TestServiceContext();
+        var mock = new Mock<DefaultConnectionContext>() { CallBase = true };
+        mock.Setup(m => m.ConnectionId).Returns(connectionId);
+        var transportConnectionManager = new TransportConnectionManager(httpConnectionManager);
+        var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, transportConnectionManager, _ => Task.CompletedTask, mock.Object, trace);
+        transportConnectionManager.AddConnection(0, httpConnection);
 
-            Assert.Equal(1, connectionCount);
-            trace.Verify(t => t.ApplicationNeverCompleted(connectionId), Times.Never());
+        var connectionCount = 0;
+        httpConnectionManager.Walk(_ => connectionCount++);
 
-            // Ensure httpConnection doesn't get GC'd before this point.
-            GC.KeepAlive(httpConnection);
-        }
+        Assert.Equal(1, connectionCount);
+        Assert.Empty(TestSink.Writes.Where(c => c.EventId.Name == "ApplicationNeverCompleted"));
+
+        // Ensure httpConnection doesn't get GC'd before this point.
+        GC.KeepAlive(httpConnection);
     }
 }

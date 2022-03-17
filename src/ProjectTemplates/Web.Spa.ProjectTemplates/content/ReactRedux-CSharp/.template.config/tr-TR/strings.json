@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "React.js ve Redux ile ASP.NET Core",
-    "description": "React.js ve Redux ile bir ASP.NET Core uygulaması oluşturmaya yönelik bir proje şablonu"
-  }
-}

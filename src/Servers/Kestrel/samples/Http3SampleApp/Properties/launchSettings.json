@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Http3SampleApp": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

@@ -1,41 +1,39 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Internal;
 
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR;
+
+/// <summary>
+/// Options used to configure <see cref="HubConnectionContext"/>.
+/// </summary>
+public class HubConnectionContextOptions
 {
     /// <summary>
-    /// Options used to configure <see cref="HubConnectionContext"/>.
+    /// Gets or sets the interval used to send keep alive pings to connected clients.
     /// </summary>
-    public class HubConnectionContextOptions
-    {
-        /// <summary>
-        /// Gets or sets the interval used to send keep alive pings to connected clients.
-        /// </summary>
-        public TimeSpan KeepAliveInterval { get; set; }
+    public TimeSpan KeepAliveInterval { get; set; }
 
-        /// <summary>
-        /// Gets or sets the time window clients have to send a message before the server closes the connection.
-        /// </summary>
-        public TimeSpan ClientTimeoutInterval { get; set; }
+    /// <summary>
+    /// Gets or sets the time window clients have to send a message before the server closes the connection.
+    /// </summary>
+    public TimeSpan ClientTimeoutInterval { get; set; }
 
-        /// <summary>
-        /// Gets or sets the max buffer size for client upload streams.
-        /// </summary>
-        public int StreamBufferCapacity { get; set; }
+    /// <summary>
+    /// Gets or sets the max buffer size for client upload streams.
+    /// </summary>
+    public int StreamBufferCapacity { get; set; }
 
-        /// <summary>
-        /// Gets or sets the maximum message size the client can send.
-        /// </summary>
-        public long? MaximumReceiveMessageSize { get; set; }
+    /// <summary>
+    /// Gets or sets the maximum message size the client can send.
+    /// </summary>
+    public long? MaximumReceiveMessageSize { get; set; }
 
-        internal ISystemClock SystemClock { get; set; } = default!;
+    internal ISystemClock SystemClock { get; set; } = default!;
 
-        /// <summary>
-        /// Gets or sets the maximum parallel hub method invocations.
-        /// </summary>
-        public int MaximumParallelInvocations { get; set; } = 1;
-    }
+    /// <summary>
+    /// Gets or sets the maximum parallel hub method invocations.
+    /// </summary>
+    public int MaximumParallelInvocations { get; set; } = 1;
 }

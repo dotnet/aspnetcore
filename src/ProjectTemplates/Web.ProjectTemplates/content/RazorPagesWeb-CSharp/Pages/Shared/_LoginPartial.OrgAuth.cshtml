@@ -1,31 +1,30 @@
-﻿@*#if (IndividualB2CAuth)
+﻿@using System.Security.Principal
+@*#if (IndividualB2CAuth)
+@using Microsoft.AspNetCore.Authentication.OpenIdConnect
 @using Microsoft.Extensions.Options
 @using Microsoft.Identity.Web
-@inject IOptions<MicrosoftIdentityOptions> AzureADB2COptions
+
+@inject IOptionsMonitor<MicrosoftIdentityOptions> AzureADB2COptions
 
 @{
-    var options = AzureADB2COptions.Value;
+    var options = AzureADB2COptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
 }
 
 #endif *@
 
 <ul class="navbar-nav">
 @*#if (IndividualB2CAuth)
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity?.IsAuthenticated == true)
 {
         @if (!string.IsNullOrEmpty(options.EditProfilePolicyId))
         {
             <li class="nav-item">
-                <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="EditProfile">
-                    <span class="text-dark">Hello @User.Identity.Name!</span>
-                </a>
+                <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="EditProfile">Hello @User.Identity?.Name!</a>
             </li>
         }
         else
         {
-            <li class="nav-item">
-                <span class="navbar-text text-dark">Hello @User.Identity.Name!</span>
-            </li>
+            <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
         }
         <li class="nav-item">
             <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
@@ -38,11 +37,9 @@ else
         </li>
 }
 #else
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity?.IsAuthenticated == true)
 {
-        <li class="nav-item">
-            <span class="navbar-text text-dark">Hello @User.Identity.Name!</span>
-        </li>
+        <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
         <li class="nav-item">
             <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
         </li>

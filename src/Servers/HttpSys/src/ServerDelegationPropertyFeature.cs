@@ -1,29 +1,30 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server.Features;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Server.HttpSys;
+
+internal class ServerDelegationPropertyFeature : IServerDelegationFeature
 {
-    internal class ServerDelegationPropertyFeature : IServerDelegationFeature
+    private readonly ILogger _logger;
+    private readonly UrlGroup _urlGroup;
+
+    public ServerDelegationPropertyFeature(RequestQueue queue, ILogger logger)
     {
-        private readonly ILogger _logger;
-        private readonly RequestQueue _queue;
-
-        public ServerDelegationPropertyFeature(RequestQueue queue, ILogger logger)
+        if (queue.UrlGroup == null)
         {
-            _queue = queue;
-            _logger = logger;
+            throw new ArgumentException($"{nameof(queue)}.UrlGroup can't be null");
         }
 
-        public DelegationRule CreateDelegationRule(string queueName, string uri)
-        {
-            var rule = new DelegationRule(_queue.UrlGroup, queueName, uri, _logger);
-            _queue.UrlGroup.SetDelegationProperty(rule.Queue);
-            return rule;
-        }
+        _urlGroup = queue.UrlGroup;
+        _logger = logger;
+    }
+
+    public DelegationRule CreateDelegationRule(string queueName, string uri)
+    {
+        var rule = new DelegationRule(_urlGroup, queueName, uri, _logger);
+        _urlGroup.SetDelegationProperty(rule.Queue);
+        return rule;
     }
 }

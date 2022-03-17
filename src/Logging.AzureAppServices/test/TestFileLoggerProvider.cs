@@ -1,23 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Test
-{
-    internal class TestFileLoggerProvider : FileLoggerProvider
-    {
-        internal ManualIntervalControl IntervalControl { get; } = new ManualIntervalControl();
+namespace Microsoft.Extensions.Logging.AzureAppServices.Test;
 
-        public TestFileLoggerProvider(
-            string path,
-            string fileName = "LogFile.",
-            int maxFileSize = 32_000,
-            int maxRetainedFiles = 100)
-            : base(new OptionsWrapperMonitor<AzureFileLoggerOptions>(new AzureFileLoggerOptions()
+internal class TestFileLoggerProvider : FileLoggerProvider
+{
+    internal ManualIntervalControl IntervalControl { get; } = new ManualIntervalControl();
+
+    public TestFileLoggerProvider(
+        string path,
+        string fileName = "LogFile.",
+        int maxFileSize = 32_000,
+        int maxRetainedFiles = 100)
+        : base(new OptionsWrapperMonitor<AzureFileLoggerOptions>(new AzureFileLoggerOptions()
         {
             LogDirectory = path,
             FileName = fileName,
@@ -25,12 +24,11 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             RetainedFileCountLimit = maxRetainedFiles,
             IsEnabled = true
         }))
-        {
-        }
+    {
+    }
 
-        protected override Task IntervalAsync(TimeSpan interval, CancellationToken cancellationToken)
-        {
-            return IntervalControl.IntervalAsync();
-        }
+    protected override Task IntervalAsync(TimeSpan interval, CancellationToken cancellationToken)
+    {
+        return IntervalControl.IntervalAsync();
     }
 }

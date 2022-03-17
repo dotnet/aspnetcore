@@ -1,30 +1,29 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Fakes
+namespace Microsoft.AspNetCore.Hosting.Fakes;
+
+public class StartupTwoConfigureServices
 {
-    public class StartupTwoConfigureServices
+    public StartupTwoConfigureServices()
     {
-        public StartupTwoConfigureServices()
-        {
-        }
+    }
 
-        public void ConfigureServices(IServiceCollection services)
-        {
+    public void ConfigureServices(IServiceCollection services)
+    {
 
-        }
+    }
 
-        public void ConfigureServices(IServiceCollection services, object service)
-        {
+    public void ConfigureServices(IServiceCollection services, object service)
+    {
 
-        }
+    }
 
-        public void Configure(IApplicationBuilder builder)
-        {
+    public void Configure(IApplicationBuilder builder)
+    {
 
-        }
     }
 }

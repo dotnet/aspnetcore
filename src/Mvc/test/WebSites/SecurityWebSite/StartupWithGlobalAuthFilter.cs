@@ -1,56 +1,51 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace SecurityWebSite
+namespace SecurityWebSite;
+
+public class StartupWithGlobalAuthFilter
 {
-    public class StartupWithGlobalAuthFilter
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie()
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = BearerAuth.CreateTokenValidationParameters();
-                });
-
-            services.AddAuthorization(options =>
+        services
+            .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie()
+            .AddJwtBearer(options =>
             {
-                options.AddPolicy("RequireClaimA", policy => policy.RequireClaim("ClaimA"));
-                options.AddPolicy("RequireClaimB", policy => policy.RequireClaim("ClaimB"));
+                options.TokenValidationParameters = BearerAuth.CreateTokenValidationParameters();
             });
 
-            services.AddMvc(o =>
-            {
-                o.Filters.Add(new AuthorizeFilter("RequireClaimA"));
-            })
-            .AddRazorPagesOptions(options =>
-            {
-                options.Conventions.AllowAnonymousToPage("/AllowAnonymousPageViaConvention");
-                options.Conventions.AuthorizePage("/AuthorizePageViaConvention", "RequireClaimB");
-            })
-            .SetCompatibilityVersion(CompatibilityVersion.Latest);
-        }
-
-        public void Configure(IApplicationBuilder app)
+        services.AddAuthorization(options =>
         {
-            app.UseRouting();
+            options.AddPolicy("RequireClaimA", policy => policy.RequireClaim("ClaimA"));
+            options.AddPolicy("RequireClaimB", policy => policy.RequireClaim("ClaimB"));
+        });
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+        services.AddMvc(o =>
+        {
+            o.Filters.Add(new AuthorizeFilter("RequireClaimA"));
+        })
+        .AddRazorPagesOptions(options =>
+        {
+            options.Conventions.AllowAnonymousToPage("/AllowAnonymousPageViaConvention");
+            options.Conventions.AuthorizePage("/AuthorizePageViaConvention", "RequireClaimB");
+        });
+    }
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-                endpoints.MapRazorPages();
-            });
-        }
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapDefaultControllerRoute();
+            endpoints.MapRazorPages();
+        });
     }
 }

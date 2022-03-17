@@ -1,29 +1,26 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Identity;
 
-namespace Microsoft.AspNetCore.Identity
+/// <summary>
+/// Contains options for the <see cref="DataProtectorTokenProvider{TUser}"/>.
+/// </summary>
+public class DataProtectionTokenProviderOptions
 {
     /// <summary>
-    /// Contains options for the <see cref="DataProtectorTokenProvider{TUser}"/>.
+    /// Gets or sets the name of the <see cref="DataProtectorTokenProvider{TUser}"/>. Defaults to DataProtectorTokenProvider.
     /// </summary>
-    public class DataProtectionTokenProviderOptions
-    {
-        /// <summary>
-        /// Gets or sets the name of the <see cref="DataProtectorTokenProvider{TUser}"/>. Defaults to DataProtectorTokenProvider.
-        /// </summary>
-        /// <value>
-        /// The name of the <see cref="DataProtectorTokenProvider{TUser}"/>.
-        /// </value>
-        public string Name { get; set; } = "DataProtectorTokenProvider";
+    /// <value>
+    /// The name of the <see cref="DataProtectorTokenProvider{TUser}"/>.
+    /// </value>
+    public string Name { get; set; } = "DataProtectorTokenProvider";
 
-        /// <summary>
-        /// Gets or sets the amount of time a generated token remains valid. Defaults to 1 day.
-        /// </summary>
-        /// <value>
-        /// The amount of time a generated token remains valid.
-        /// </value>
-        public TimeSpan TokenLifespan { get; set; } = TimeSpan.FromDays(1);
-    }
+    /// <summary>
+    /// Gets or sets the amount of time a generated token remains valid. Defaults to 1 day.
+    /// </summary>
+    /// <value>
+    /// The amount of time a generated token remains valid.
+    /// </value>
+    public TimeSpan TokenLifespan { get; set; } = TimeSpan.FromDays(1);
 }

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { ECHOENDPOINT_URL } from "./Common";
 import "./LogBannerReporter";
@@ -18,6 +18,7 @@ describe("WebSockets", () => {
                 return;
             }
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const websocketModule = require("ws");
             if (websocketModule) {
                 webSocket = new websocketModule(ECHOENDPOINT_URL.replace(/^http/, "ws"));

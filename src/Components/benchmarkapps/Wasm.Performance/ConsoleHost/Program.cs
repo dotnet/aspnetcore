@@ -1,27 +1,26 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.CommandLineUtils;
 using Wasm.Performance.ConsoleHost.Scenarios;
 
-namespace Wasm.Performance.ConsoleHost
+namespace Wasm.Performance.ConsoleHost;
+
+internal class Program : CommandLineApplication
 {
-    internal class Program : CommandLineApplication
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            new Program().Execute(args);
-        }
+        new Program().Execute(args);
+    }
 
-        public Program()
+    public Program()
+    {
+        OnExecute(() =>
         {
-            OnExecute(() =>
-            {
-                ShowHelp();
-                return 1;
-            });
+            ShowHelp();
+            return 1;
+        });
 
-            Commands.Add(new GridScenario());
-        }
+        Commands.Add(new GridScenario());
     }
 }

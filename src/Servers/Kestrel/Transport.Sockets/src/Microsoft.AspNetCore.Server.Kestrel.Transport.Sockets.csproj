@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Managed socket transport for the ASP.NET Core Kestrel cross-platform web server.</Description>
@@ -7,8 +7,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>CS1591;$(NoWarn)</NoWarn>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

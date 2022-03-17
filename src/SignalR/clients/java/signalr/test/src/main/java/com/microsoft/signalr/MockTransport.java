@@ -1,14 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 package com.microsoft.signalr;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-import io.reactivex.Completable;
-import io.reactivex.subjects.CompletableSubject;
-import io.reactivex.subjects.SingleSubject;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.subjects.CompletableSubject;
+import io.reactivex.rxjava3.subjects.SingleSubject;
 
 class MockTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
@@ -89,7 +89,7 @@ class MockTransport implements Transport {
     public void receiveMessage(String message) {
         this.onReceive(TestUtils.stringToByteBuffer(message));
     }
-    
+
     public void receiveMessage(ByteBuffer message) {
         this.onReceive(message);
     }
@@ -113,7 +113,7 @@ class MockTransport implements Transport {
     public Completable getStopTask() {
         return stopSubject;
     }
-    
+
     private boolean isPing(ByteBuffer message) {
     	return (TestUtils.byteBufferToString(message).equals("{\"type\":6}" + RECORD_SEPARATOR) ||
     	       (message.array()[0] == 2 && message.array()[1] == -111 && message.array()[2] == 6));

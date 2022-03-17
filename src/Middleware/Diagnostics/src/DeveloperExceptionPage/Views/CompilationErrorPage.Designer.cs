@@ -4,42 +4,55 @@ namespace Microsoft.AspNetCore.Diagnostics.RazorViews
 {
     #line hidden
     using System.Threading.Tasks;
+#nullable restore
 #line 1 "CompilationErrorPage.cshtml"
 using System;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 2 "CompilationErrorPage.cshtml"
 using System.Globalization;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 3 "CompilationErrorPage.cshtml"
 using System.Linq;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 4 "CompilationErrorPage.cshtml"
 using System.Net;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 5 "CompilationErrorPage.cshtml"
 using Microsoft.AspNetCore.Diagnostics;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 6 "CompilationErrorPage.cshtml"
 using Microsoft.AspNetCore.Diagnostics.RazorViews;
 
 #line default
 #line hidden
+#nullable disable
     internal class CompilationErrorPage : Microsoft.Extensions.RazorViews.BaseView
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-#line 11 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 16 "CompilationErrorPage.cshtml"
   
     Response.StatusCode = 500;
     Response.ContentType = "text/html; charset=utf-8";
@@ -47,12 +60,15 @@ using Microsoft.AspNetCore.Diagnostics.RazorViews;
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("<!DOCTYPE html>\r\n<html>\r\n    <head>\r\n        <meta charset=\"utf-8\" />\r\n        <title>");
-#line 20 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 25 "CompilationErrorPage.cshtml"
           Write(Resources.ErrorPageHtml_Title);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral(@"</title>
         <style>
             body {
@@ -154,6 +170,12 @@ body .location {
         background-color: #fbfbfb;
     }
 
+#stackpage .frame .source .highlight {
+    border-left: 3px solid red;
+    margin-left: -3px;
+    font-weight: bold;
+}
+
 #stackpage .frame .source .highlight li span {
     color: #FF0000;
 }
@@ -164,7 +186,8 @@ body .location {
 
     #stackpage .source ol.collapsible li span {
         color: #606060;
-    }
+    ");
+            WriteLiteral(@"}
 
 #routingpage .subheader {
     padding: 5px;
@@ -172,8 +195,7 @@ body .location {
 }
 
 .page table {
-    border-collapse");
-            WriteLiteral(@": separate;
+    border-collapse: separate;
     border-spacing: 0;
     margin: 0 0 20px;
 }
@@ -221,7 +243,8 @@ a {
     color: #44c5f2;
     background-color: transparent;
     font-size: 1.2em;
-    text-align: left;
+    text-align: left;");
+            WriteLiteral(@"
     text-decoration: none;
     display: inline-block;
     border: 0;
@@ -229,8 +252,7 @@ a {
 }
 
 .rawExceptionStackTrace {
-    ");
-            WriteLiteral(@"font-size: 1.2em;
+    font-size: 1.2em;
 }
 
 .rawExceptionBlock {
@@ -257,24 +279,85 @@ a {
     margin: 0;
 }
 
-        </style>
-    </head>
-    <body>
-        <h1>");
-#line 224 "CompilationErrorPage.cshtml"
+/* Intentional double at-signs here to escape properly when included in cshtml */
+");
+            WriteLiteral(@"@media (prefers-color-scheme: dark) {
+    body {
+        color: #dcdcdc;
+        background-color: #222;
+    }
+
+    h1 {
+        color: #9dacb8;
+    }
+
+    h3 {
+        color: #c7c7c7;
+    }
+
+    #header {
+        border-top-color: #444;
+        border-bottom-color: #444;
+    }
+
+    #header .selected {
+        color: #222;
+    }
+
+    #stackpage .details {
+        color: #000;
+    }
+
+    #stackpage .stackerror {
+        border-bottom-color: #444;
+    }
+
+    #stackpage .source ol li {
+        background-color: #1c1c1c;
+    }
+
+    #stackpage .frame .source .highlight {
+        border-left-color: #C53731;
+    }
+
+    #stackpage .frame .source .highlight li span {
+        color: #C53731;
+    }
+
+    #stackpage .source ol.collapsible li span {
+        color: #9B9B9B;
+    }
+
+    #routingpage .subheader {
+        border-bottom-color: #444;
+    }
+
+    .page th, .page td {
+        border-right-color: #444;
+        border-bottom-color: #444;
+    }
+
+    .rawExceptionB");
+            WriteLiteral("lock {\r\n        border-top-color: #444;\r\n        border-bottom-color: #444;\r\n    }\r\n\r\n    .expandCollapseButton {\r\n        background-color: #444;\r\n        color: inherit;\r\n    }\r\n}\r\n\r\n        </style>\r\n    </head>\r\n    <body>\r\n        <h1>");
+#nullable restore
+#line 303 "CompilationErrorPage.cshtml"
        Write(Resources.ErrorPageHtml_CompilationException);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</h1>\r\n");
-#line 225 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 304 "CompilationErrorPage.cshtml"
           
             var exceptionDetailId = "";
         
 
 #line default
 #line hidden
-#line 228 "CompilationErrorPage.cshtml"
+#nullable disable
+#nullable restore
+#line 307 "CompilationErrorPage.cshtml"
          for (var i = 0; i < Model.ErrorDetails.Count; i++)
         {
             var errorDetail = Model.ErrorDetails[i];
@@ -283,8 +366,10 @@ a {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("            <div id=\"stackpage\" class=\"page\">\r\n");
-#line 234 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 313 "CompilationErrorPage.cshtml"
                   
                     var stackFrameCount = 0;
                     var frameId = "";
@@ -294,39 +379,51 @@ a {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                        <div class=\"titleerror\">");
-#line 240 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 319 "CompilationErrorPage.cshtml"
                                            Write(fileName);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</div>\r\n");
-#line 241 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 320 "CompilationErrorPage.cshtml"
                     }
                 
 
 #line default
 #line hidden
-#line 243 "CompilationErrorPage.cshtml"
+#nullable disable
+#nullable restore
+#line 322 "CompilationErrorPage.cshtml"
                  if (!string.IsNullOrEmpty(errorDetail.ErrorMessage))
                 {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                    <div class=\"details\">");
-#line 245 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 324 "CompilationErrorPage.cshtml"
                                     Write(errorDetail.ErrorMessage);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</div>\r\n");
-#line 246 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 325 "CompilationErrorPage.cshtml"
                 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                <br />\r\n                <ul>\r\n");
-#line 249 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 328 "CompilationErrorPage.cshtml"
                  foreach (var frame in errorDetail.StackFrames)
                 {
                     stackFrameCount++;
@@ -335,204 +432,265 @@ a {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                    <li class=\"frame\"");
-            BeginWriteAttribute("id", " id=\"", 5287, "\"", 5300, 1);
-#line 254 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 5292, frameId, 5292, 8, false);
+            BeginWriteAttribute("id", " id=\"", 6812, "\"", 6825, 1);
+#nullable restore
+#line 333 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 6817, frameId, 6817, 8, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(">\r\n");
-#line 255 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 334 "CompilationErrorPage.cshtml"
                          if (!string.IsNullOrEmpty(frame.ErrorDetails))
                         {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                            <h3>");
-#line 257 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 336 "CompilationErrorPage.cshtml"
                            Write(frame.ErrorDetails);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</h3>\r\n");
-#line 258 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 337 "CompilationErrorPage.cshtml"
                         }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n");
-#line 260 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 339 "CompilationErrorPage.cshtml"
                          if (frame.Line != 0 && frame.ContextCode.Any())
                         {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                            <button class=\"expandCollapseButton\" data-frameId=\"");
-#line 262 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 341 "CompilationErrorPage.cshtml"
                                                                           Write(frameId);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\">+</button>\r\n                            <div class=\"source\">\r\n");
-#line 264 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 343 "CompilationErrorPage.cshtml"
                                  if (frame.PreContextCode.Any())
                                 {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                                    <ol");
-            BeginWriteAttribute("start", " start=\"", 5883, "\"", 5912, 1);
-#line 266 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 5891, frame.PreContextLine, 5891, 21, false);
+            BeginWriteAttribute("start", " start=\"", 7408, "\"", 7437, 1);
+#nullable restore
+#line 345 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 7416, frame.PreContextLine, 7416, 21, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(" class=\"collapsible\">\r\n");
-#line 267 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 346 "CompilationErrorPage.cshtml"
                                          foreach (var line in frame.PreContextCode)
                                         {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                                            <li><span>");
-#line 269 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 348 "CompilationErrorPage.cshtml"
                                                  Write(line);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</span></li>\r\n");
-#line 270 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 349 "CompilationErrorPage.cshtml"
                                         }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                                    </ol>\r\n");
-#line 272 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 351 "CompilationErrorPage.cshtml"
                                 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                                <ol");
-            BeginWriteAttribute("start", " start=\"", 6293, "\"", 6312, 1);
-#line 273 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 6301, frame.Line, 6301, 11, false);
+            BeginWriteAttribute("start", " start=\"", 7818, "\"", 7837, 1);
+#nullable restore
+#line 352 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 7826, frame.Line, 7826, 11, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(" class=\"highlight\">\r\n");
-#line 274 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 353 "CompilationErrorPage.cshtml"
                                      foreach (var line in frame.ContextCode)
                                     {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                                        <li><span>");
-#line 276 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 355 "CompilationErrorPage.cshtml"
                                              Write(line);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</span></li>\r\n");
-#line 277 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 356 "CompilationErrorPage.cshtml"
                                     }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                                </ol>\r\n");
-#line 279 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 358 "CompilationErrorPage.cshtml"
                                  if (frame.PostContextCode.Any())
                                 {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                                    <ol");
-            BeginWriteAttribute("start", " start=\'", 6739, "\'", 6764, 1);
-#line 281 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 6747, frame.Line + 1, 6747, 17, false);
+            BeginWriteAttribute("start", " start=\'", 8264, "\'", 8289, 1);
+#nullable restore
+#line 360 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 8272, frame.Line + 1, 8272, 17, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(" class=\"collapsible\">\r\n");
-#line 282 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 361 "CompilationErrorPage.cshtml"
                                          foreach (var line in frame.PostContextCode)
                                         {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                                            <li><span>");
-#line 284 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 363 "CompilationErrorPage.cshtml"
                                                  Write(line);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</span></li>\r\n");
-#line 285 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 364 "CompilationErrorPage.cshtml"
                                         }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                                    </ol>\r\n");
-#line 287 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 366 "CompilationErrorPage.cshtml"
                                 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                            </div>\r\n");
-#line 289 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 368 "CompilationErrorPage.cshtml"
                         }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                    </li>\r\n");
-#line 291 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 370 "CompilationErrorPage.cshtml"
                 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                </ul>\r\n                <br />\r\n            </div>\r\n");
-#line 295 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 374 "CompilationErrorPage.cshtml"
              if (!string.IsNullOrEmpty(Model.CompiledContent[i]))
             {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("                <div class=\"rawExceptionBlock\">\r\n                    <div class=\"showRawExceptionContainer\">\r\n                        <button class=\"showRawException\" data-exceptionDetailId=\"");
-#line 299 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 378 "CompilationErrorPage.cshtml"
                                                                             Write(exceptionDetailId);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\">Show compilation source</button>\r\n                    </div>\r\n                    <div");
-            BeginWriteAttribute("id", " id=\"", 7666, "\"", 7689, 1);
-#line 301 "CompilationErrorPage.cshtml"
-WriteAttributeValue("", 7671, exceptionDetailId, 7671, 18, false);
+            BeginWriteAttribute("id", " id=\"", 9191, "\"", 9214, 1);
+#nullable restore
+#line 380 "CompilationErrorPage.cshtml"
+WriteAttributeValue("", 9196, exceptionDetailId, 9196, 18, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(" class=\"rawExceptionDetails\">\r\n                        <pre class=\"rawExceptionStackTrace\">");
-#line 302 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 381 "CompilationErrorPage.cshtml"
                                                        Write(Model.CompiledContent[i]);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</pre>\r\n                    </div>\r\n                </div>\r\n");
-#line 305 "CompilationErrorPage.cshtml"
+#nullable restore
+#line 384 "CompilationErrorPage.cshtml"
             }
 
 #line default
 #line hidden
-#line 305 "CompilationErrorPage.cshtml"
+#nullable disable
+#nullable restore
+#line 384 "CompilationErrorPage.cshtml"
              
         }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral(@"
         <script>
             //<!--
@@ -740,12 +898,19 @@ WriteAttributeValue("", 7671, exceptionDetailId, 7671, 18, false);
 ");
         }
         #pragma warning restore 1998
+#nullable restore
 #line 8 "CompilationErrorPage.cshtml"
  
+    public CompilationErrorPage(CompilationErrorPageModel model)
+    {
+        Model = model;
+    }
+
     public CompilationErrorPageModel Model { get; set; }
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

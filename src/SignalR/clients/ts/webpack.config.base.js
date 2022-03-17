@@ -1,21 +1,21 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 const path = require("path");
 const webpack = require("./common/node_modules/webpack");
+const TerserJsPlugin = require("./common/node_modules/terser-webpack-plugin");
+const { DuplicatesPlugin } = require("./common/node_modules/inspectpack/plugin");
 
 module.exports = function (modulePath, browserBaseName, options) {
     const pkg = require(path.resolve(modulePath, "package.json"));
 
     options = options || {};
 
-    return {
-        entry: path.resolve(modulePath, "src", "browser-index.ts"),
+    const webpackOptions = {
+        entry: {},
         mode: "none",
         node: {
-            global: true,
-            process: false,
-            Buffer: false,
+            global: true
         },
         target: options.target,
         resolveLoader: {
@@ -45,7 +45,7 @@ module.exports = function (modulePath, browserBaseName, options) {
             }
         },
         output: {
-            filename: `${browserBaseName}.js`,
+            filename: '[name].js',
             path: path.resolve(modulePath, "dist", options.platformDist || "browser"),
             library: {
                 root: pkg.umd_name.split("."),
@@ -55,7 +55,7 @@ module.exports = function (modulePath, browserBaseName, options) {
         },
         plugins: [
             new webpack.SourceMapDevToolPlugin({
-                filename: `${browserBaseName}.js.map`,
+                filename: '[name].js.map',
                 moduleFilenameTemplate(info) {
                     let resourcePath = info.resourcePath;
 
@@ -73,10 +73,50 @@ module.exports = function (modulePath, browserBaseName, options) {
                     return `webpack://${pkg.umd_name}/${resourcePath}`;
                 }
             }),
-            // ES6 Promise uses this module in certain circumstances but we don't need it.
-            new webpack.IgnorePlugin(/vertx/),
-            new webpack.IgnorePlugin(/eventsource/),
+            new DuplicatesPlugin({
+                emitErrors: false,
+                emitHandler: undefined,
+                ignoredPackages: undefined,
+                verbose: false
+            })
         ],
+        optimization: {
+          sideEffects: true,
+          concatenateModules: true,
+          providedExports: true,
+          usedExports: true,
+          innerGraph: true,
+          minimize: true,
+          minimizer: [new TerserJsPlugin({
+              include: /\.min\.js$/,
+              terserOptions: {
+                  ecma: 2019,
+                  compress: {},
+                  mangle: {
+                    properties: {
+                        regex: /^_/
+                    }
+                  },
+                  module: true,
+                  format: {
+                      ecma: 2019
+                  },
+                  toplevel: false,
+                  keep_classnames: false,
+                  keep_fnames: false,
+            }
+          })]
+        },
+        stats: {
+            warnings: true,
+            errors: true,
+            performance: true,
+            optimizationBailout: true
+        },
         externals: options.externals,
     };
+
+    webpackOptions.entry[browserBaseName] = path.resolve(modulePath, "src", "browser-index.ts");
+    webpackOptions.entry[`${browserBaseName}.min`] = path.resolve(modulePath, "src", "browser-index.ts");
+    return webpackOptions;
 }

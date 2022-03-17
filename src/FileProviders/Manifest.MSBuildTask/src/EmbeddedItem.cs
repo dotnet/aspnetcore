@@ -1,21 +1,20 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
-namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task
+namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task;
+
+public class EmbeddedItem : IEquatable<EmbeddedItem>
 {
-    public class EmbeddedItem : IEquatable<EmbeddedItem>
-    {
-        public string ManifestFilePath { get; set; }
+    public string ManifestFilePath { get; set; }
 
-        public string AssemblyResourceName { get; set; }
+    public string AssemblyResourceName { get; set; }
 
-        public bool Equals(EmbeddedItem other) =>
-            string.Equals(ManifestFilePath, other?.ManifestFilePath, StringComparison.Ordinal) &&
-            string.Equals(AssemblyResourceName, other?.AssemblyResourceName, StringComparison.Ordinal);
+    public bool Equals(EmbeddedItem other) =>
+        string.Equals(ManifestFilePath, other?.ManifestFilePath, StringComparison.Ordinal) &&
+        string.Equals(AssemblyResourceName, other?.AssemblyResourceName, StringComparison.Ordinal);
 
-        public override bool Equals(object obj) => Equals(obj as EmbeddedItem);
-        public override int GetHashCode() => ManifestFilePath.GetHashCode() ^ AssemblyResourceName.GetHashCode();
-    }
+    public override bool Equals(object obj) => Equals(obj as EmbeddedItem);
+    public override int GetHashCode() => ManifestFilePath.GetHashCode() ^ AssemblyResourceName.GetHashCode();
 }

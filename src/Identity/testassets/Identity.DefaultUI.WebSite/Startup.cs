@@ -1,16 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
-namespace Identity.DefaultUI.WebSite
+namespace Identity.DefaultUI.WebSite;
+
+public class Startup : StartupBase<IdentityUser, IdentityDbContext>
 {
-    public class Startup : StartupBase<IdentityUser, IdentityDbContext>
+    public Startup(IConfiguration configuration) : base(configuration)
     {
-        public Startup(IConfiguration configuration) : base(configuration)
-        {
-        }
     }
 }

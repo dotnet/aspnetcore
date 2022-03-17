@@ -1,22 +1,20 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.UrlActions;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions
+namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions;
+
+public class AbortActionTests
 {
-    public class AbortActionTests
+    public void AbortAction_VerifyEndResponseResult()
     {
-        public void AbortAction_VerifyEndResponseResult()
-        {
-            var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
-            var action = new AbortAction();
+        var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
+        var action = new AbortAction();
 
-            action.ApplyAction(context, null, null);
+        action.ApplyAction(context, null, null);
 
-            Assert.Equal(RuleResult.EndResponse, context.Result);
-        }
+        Assert.Equal(RuleResult.EndResponse, context.Result);
     }
 }

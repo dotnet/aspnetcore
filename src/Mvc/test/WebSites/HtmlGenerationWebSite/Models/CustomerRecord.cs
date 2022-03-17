@@ -1,33 +1,31 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
 
-namespace HtmlGenerationWebSite.Models
-{
-    public record CustomerRecord
-    (
-        [Range(1, 100)]
+namespace HtmlGenerationWebSite.Models;
+
+public record CustomerRecord
+(
+    [Range(1, 100)]
         int Number,
 
-        string Name,
+    string Name,
 
-        [Required]
+    [Required]
         string Password,
 
-        [EnumDataType(typeof(Gender))]
+    [EnumDataType(typeof(Gender))]
         Gender Gender,
 
-        string PhoneNumber,
+    string PhoneNumber,
 
-        [DataType(DataType.EmailAddress)]
+    [DataType(DataType.EmailAddress)]
         string Email,
 
-        string Key
-    )
-    {
-        [Required]
-        public string Address { get; set; }
-    }
+    string Key
+)
+{
+    [Required]
+    public string Address { get; set; }
 }

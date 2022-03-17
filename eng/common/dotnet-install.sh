@@ -19,7 +19,7 @@ runtime='dotnet'
 runtimeSourceFeed=''
 runtimeSourceFeedKey=''
 while [[ $# > 0 ]]; do
-  opt="$(echo "$1" | awk '{print tolower($0)}')"
+  opt="$(echo "$1" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
     -version|-v)
       shift
@@ -49,16 +49,14 @@ while [[ $# > 0 ]]; do
   shift
 done
 
-# Use uname to determine what the CPU is.
-cpuname=$(uname -p)
-# Some Linux platforms report unknown for platform, but the arch for machine.
-if [[ "$cpuname" == "unknown" ]]; then
-  cpuname=$(uname -m)
-fi
-
+# Use uname to determine what the CPU is, see https://en.wikipedia.org/wiki/Uname#Examples
+cpuname=$(uname -m)
 case $cpuname in
   aarch64)
     buildarch=arm64
+    ;;
+  loongarch64)
+    buildarch=loongarch64
     ;;
   amd64|x86_64)
     buildarch=x64
@@ -75,7 +73,7 @@ case $cpuname in
     ;;
 esac
 
-dotnetRoot="$repo_root/.dotnet"
+dotnetRoot="${repo_root}.dotnet"
 if [[ $architecture != "" ]] && [[ $architecture != $buildarch ]]; then
   dotnetRoot="$dotnetRoot/$architecture"
 fi

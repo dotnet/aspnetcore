@@ -1,65 +1,59 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+public class SystemTextJsonResultExecutorTest : JsonResultExecutorTestBase
 {
-    public class SystemTextJsonResultExecutorTest : JsonResultExecutorTestBase
+    protected override IActionResultExecutor<JsonResult> CreateExecutor(ILoggerFactory loggerFactory)
     {
-        protected override IActionResultExecutor<JsonResult> CreateExecutor(ILoggerFactory loggerFactory)
+        return new SystemTextJsonResultExecutor(
+            Options.Create(new JsonOptions()),
+            loggerFactory.CreateLogger<SystemTextJsonResultExecutor>());
+    }
+
+    [Fact]
+    public async Task WriteResponseBodyAsync_WithNonUtf8Encoding_FormattingErrorsAreThrown()
+    {
+        // Arrange
+        var context = GetActionContext();
+
+        var result = new JsonResult(new ThrowingFormatterModel())
         {
-            return new SystemTextJsonResultExecutor(
-                Options.Create(new JsonOptions()), 
-                loggerFactory.CreateLogger<SystemTextJsonResultExecutor>(),
-                Options.Create(new MvcOptions()));
+            ContentType = "application/json; charset=utf-16",
+        };
+        var executor = CreateExecutor();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => executor.ExecuteAsync(context, result));
+    }
+
+    protected override object GetIndentedSettings()
+    {
+        return new JsonSerializerOptions { WriteIndented = true };
+    }
+
+    [JsonConverter(typeof(ThrowingFormatterPersonConverter))]
+    private class ThrowingFormatterModel
+    {
+
+    }
+
+    private class ThrowingFormatterPersonConverter : JsonConverter<ThrowingFormatterModel>
+    {
+        public override ThrowingFormatterModel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            throw new NotImplementedException();
         }
 
-        [Fact]
-        public async Task WriteResponseBodyAsync_WithNonUtf8Encoding_FormattingErrorsAreThrown()
+        public override void Write(Utf8JsonWriter writer, ThrowingFormatterModel value, JsonSerializerOptions options)
         {
-            // Arrange
-            var context = GetActionContext();
-
-            var result = new JsonResult(new ThrowingFormatterModel())
-            {
-                ContentType = "application/json; charset=utf-16",
-            };
-            var executor = CreateExecutor();
-
-            // Act & Assert
-            await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => executor.ExecuteAsync(context, result));
-        }
-
-        protected override object GetIndentedSettings()
-        {
-            return new JsonSerializerOptions { WriteIndented = true };
-        }
-
-        [JsonConverter(typeof(ThrowingFormatterPersonConverter))]
-        private class ThrowingFormatterModel
-        {
-
-        }
-
-        private class ThrowingFormatterPersonConverter : JsonConverter<ThrowingFormatterModel>
-        {
-            public override ThrowingFormatterModel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void Write(Utf8JsonWriter writer, ThrowingFormatterModel value, JsonSerializerOptions options)
-            {
-                throw new TimeZoneNotFoundException();
-            }
+            throw new TimeZoneNotFoundException();
         }
     }
 }

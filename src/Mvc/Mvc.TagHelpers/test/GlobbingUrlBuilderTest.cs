@@ -1,9 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
@@ -11,51 +8,50 @@ using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Moq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.TagHelpers
+namespace Microsoft.AspNetCore.Mvc.TagHelpers;
+
+public class GlobbingUrlBuilderTest
 {
-    public class GlobbingUrlBuilderTest
+    [Fact]
+    public void ReturnsOnlyStaticUrlWhenPatternDoesntFindAnyMatches()
     {
-        [Fact]
-        public void ReturnsOnlyStaticUrlWhenPatternDoesntFindAnyMatches()
+        // Arrange
+        var fileProvider = MakeFileProvider();
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var requestPathBase = PathString.Empty;
+        var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+
+        // Act
+        var urlList = globbingUrlBuilder.BuildUrlList("/site.css", "**/*.css", excludePattern: null);
+
+        // Assert
+        Assert.Collection(urlList, url => Assert.Equal("/site.css", url));
+    }
+
+    [Fact]
+    public void DedupesStaticUrlAndPatternMatches()
+    {
+        // Arrange
+        var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var requestPathBase = PathString.Empty;
+        var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+
+        // Act
+        var urlList = globbingUrlBuilder.BuildUrlList("/site.css", "**/*.css", excludePattern: null);
+
+        // Assert
+        Assert.Collection(urlList,
+            url => Assert.Equal("/site.css", url),
+            url => Assert.Equal("/blank.css", url));
+    }
+
+    public static TheoryData OrdersGlobbedMatchResultsCorrectly_Data
+    {
+        get
         {
-            // Arrange
-            var fileProvider = MakeFileProvider();
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var requestPathBase = PathString.Empty;
-            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
-
-            // Act
-            var urlList = globbingUrlBuilder.BuildUrlList("/site.css", "**/*.css", excludePattern: null);
-
-            // Assert
-            Assert.Collection(urlList, url => Assert.Equal("/site.css", url));
-        }
-
-        [Fact]
-        public void DedupesStaticUrlAndPatternMatches()
-        {
-            // Arrange
-            var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var requestPathBase = PathString.Empty;
-            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
-
-            // Act
-            var urlList = globbingUrlBuilder.BuildUrlList("/site.css", "**/*.css", excludePattern: null);
-
-            // Assert
-            Assert.Collection(urlList,
-                url => Assert.Equal("/site.css", url),
-                url => Assert.Equal("/blank.css", url));
-        }
-
-        public static TheoryData OrdersGlobbedMatchResultsCorrectly_Data
-        {
-            get
-            {
-                return new TheoryData<string, FileNode, string[]>
+            return new TheoryData<string, FileNode, string[]>
                 {
                     {
                         /* staticUrl */ "/site.css",
@@ -201,110 +197,110 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         }
                     }
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(OrdersGlobbedMatchResultsCorrectly_Data))]
-        public void OrdersGlobbedMatchResultsCorrectly(string staticUrl, FileNode dirStructure, string[] expectedPaths)
+    [Theory]
+    [MemberData(nameof(OrdersGlobbedMatchResultsCorrectly_Data))]
+    public void OrdersGlobbedMatchResultsCorrectly(string staticUrl, FileNode dirStructure, string[] expectedPaths)
+    {
+        // Arrange
+        var fileProvider = MakeFileProvider(dirStructure);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var requestPathBase = PathString.Empty;
+        var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+
+        // Act
+        var urlList = globbingUrlBuilder.BuildUrlList(staticUrl, "**/*.*", excludePattern: null);
+
+        // Assert
+        var collectionAssertions = expectedPaths.Select<string, Action<string>>(expected =>
+            actual => Assert.Equal(expected, actual));
+        Assert.Collection(urlList, collectionAssertions.ToArray());
+    }
+
+    [Theory]
+    [InlineData("/sub")]
+    [InlineData("/sub/again")]
+    public void ResolvesMatchedUrlsAgainstPathBase(string pathBase)
+    {
+        // Arrange
+        var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var requestPathBase = new PathString(pathBase);
+        var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+
+        // Act
+        var urlList = globbingUrlBuilder.BuildUrlList(
+            staticUrl: null,
+            includePattern: "**/*.css",
+            excludePattern: null);
+
+        // Assert
+        Assert.Collection(urlList,
+            url => Assert.Equal($"{pathBase}/blank.css", url),
+            url => Assert.Equal($"{pathBase}/site.css", url));
+    }
+
+    [Fact]
+    public void UsesCachedMatchResults()
+    {
+        // Arrange
+        var fileProvider = MakeFileProvider();
+        var expected = new List<string> { "/blank.css", "/site.css" };
+        var cache = MakeCache(result: expected);
+        var requestPathBase = PathString.Empty;
+        var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+
+        // Act
+        var actual = globbingUrlBuilder.BuildUrlList(
+            staticUrl: null,
+            includePattern: "**/*.css",
+            excludePattern: null);
+
+        // Assert
+        Assert.Collection(actual,
+            url => Assert.Equal("/blank.css", url),
+            url => Assert.Equal("/site.css", url));
+    }
+
+    [Fact]
+    public void CachesMatchResults()
+    {
+        // Arrange
+        var changeToken = new Mock<IChangeToken>();
+        var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
+        Mock.Get(fileProvider).Setup(f => f.Watch(It.IsAny<string>())).Returns(changeToken.Object);
+        var value = new Mock<ICacheEntry>();
+        value.Setup(c => c.Value).Returns(null);
+        value.Setup(c => c.ExpirationTokens).Returns(new List<IChangeToken>());
+        var cache = MakeCache();
+        Mock.Get(cache).Setup(c => c.CreateEntry(
+            /*key*/ It.IsAny<object>()))
+            .Returns((object key) => value.Object)
+            .Verifiable();
+        var requestPathBase = PathString.Empty;
+        var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+
+        // Act
+        var urlList = globbingUrlBuilder.BuildUrlList(
+            staticUrl: null,
+            includePattern: "**/*.css",
+            excludePattern: null);
+
+        // Assert
+        Assert.Collection(urlList,
+            url => Assert.Equal("/blank.css", url),
+            url => Assert.Equal("/site.css", url));
+        Mock.Get(cache).VerifyAll();
+    }
+
+    public static TheoryData CommaSeparatedPatternData
+    {
+        get
         {
-            // Arrange
-            var fileProvider = MakeFileProvider(dirStructure);
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var requestPathBase = PathString.Empty;
-            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
-
-            // Act
-            var urlList = globbingUrlBuilder.BuildUrlList(staticUrl, "**/*.*", excludePattern: null);
-
-            // Assert
-            var collectionAssertions = expectedPaths.Select<string, Action<string>>(expected =>
-                actual => Assert.Equal(expected, actual));
-            Assert.Collection(urlList, collectionAssertions.ToArray());
-        }
-
-        [Theory]
-        [InlineData("/sub")]
-        [InlineData("/sub/again")]
-        public void ResolvesMatchedUrlsAgainstPathBase(string pathBase)
-        {
-            // Arrange
-            var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var requestPathBase = new PathString(pathBase);
-            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
-
-            // Act
-            var urlList = globbingUrlBuilder.BuildUrlList(
-                staticUrl: null,
-                includePattern: "**/*.css",
-                excludePattern: null);
-
-            // Assert
-            Assert.Collection(urlList,
-                url => Assert.Equal($"{pathBase}/blank.css", url),
-                url => Assert.Equal($"{pathBase}/site.css", url));
-        }
-
-        [Fact]
-        public void UsesCachedMatchResults()
-        {
-            // Arrange
-            var fileProvider = MakeFileProvider();
-            var expected = new List<string> { "/blank.css", "/site.css" };
-            var cache = MakeCache(result: expected);
-            var requestPathBase = PathString.Empty;
-            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
-
-            // Act
-            var actual = globbingUrlBuilder.BuildUrlList(
-                staticUrl: null,
-                includePattern: "**/*.css",
-                excludePattern: null);
-
-            // Assert
-            Assert.Collection(actual,
-                url => Assert.Equal("/blank.css", url),
-                url => Assert.Equal("/site.css", url));
-        }
-
-        [Fact]
-        public void CachesMatchResults()
-        {
-            // Arrange
-            var changeToken = new Mock<IChangeToken>();
-            var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
-            Mock.Get(fileProvider).Setup(f => f.Watch(It.IsAny<string>())).Returns(changeToken.Object);
-            var value = new Mock<ICacheEntry>();
-            value.Setup(c => c.Value).Returns(null);
-            value.Setup(c => c.ExpirationTokens).Returns(new List<IChangeToken>());
-            var cache = MakeCache();
-            Mock.Get(cache).Setup(c => c.CreateEntry(
-                /*key*/ It.IsAny<object>()))
-                .Returns((object key) => value.Object)
-                .Verifiable();
-            var requestPathBase = PathString.Empty;
-            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
-
-            // Act
-            var urlList = globbingUrlBuilder.BuildUrlList(
-                staticUrl: null,
-                includePattern: "**/*.css",
-                excludePattern: null);
-
-            // Assert
-            Assert.Collection(urlList,
-                url => Assert.Equal("/blank.css", url),
-                url => Assert.Equal("/site.css", url));
-            Mock.Get(cache).VerifyAll();
-        }
-
-        public static TheoryData CommaSeparatedPatternData
-        {
-            get
-            {
-                // Include pattern, expected output
-                return new TheoryData<string, string[]>
+            // Include pattern, expected output
+            return new TheoryData<string, string[]>
                 {
                     {
                         "~/*.css, ~/*.txt",
@@ -331,221 +327,220 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         new[] { "/blank.js" }
                     },
                 };
-            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(CommaSeparatedPatternData))]
+    public void HandlesCommaSeparatedPatterns(string includePattern, string[] expectedOutput)
+    {
+        // Arrange
+        var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.js", "site2.txt", "site.js"));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var requestPathBase = PathString.Empty;
+        var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+
+        // Act
+        var urlList = globbingUrlBuilder.BuildUrlList(
+            staticUrl: null,
+            includePattern: includePattern,
+            excludePattern: null);
+
+        // Assert
+        Assert.Equal(expectedOutput, urlList, StringComparer.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("/")]
+    [InlineData(" \\")]
+    [InlineData("~/")]
+    [InlineData("  ~/")]
+    public void TrimsLeadingTildeAndSlashFromPatterns(string prefix)
+    {
+        // Arrange
+        var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var requestPathBase = PathString.Empty;
+        var includePatterns = new List<string>();
+        var excludePatterns = new List<string>();
+        var matcher = MakeMatcher(includePatterns, excludePatterns);
+        var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+        globbingUrlBuilder.MatcherBuilder = () => matcher;
+
+        // Act
+        var urlList = globbingUrlBuilder.BuildUrlList(
+            staticUrl: null,
+            includePattern: $"{prefix}**/*.css",
+            excludePattern: $"{prefix}**/*.min.css");
+
+        // Assert
+        Assert.Collection(includePatterns, pattern => Assert.Equal("**/*.css", pattern));
+        Assert.Collection(excludePatterns, pattern => Assert.Equal("**/*.min.css", pattern));
+    }
+
+    [Theory]
+    [InlineData("~/")]
+    [InlineData("/")]
+    [InlineData("\\")]
+    public void TrimsOnlySingleLeadingSlashOrTildeSlashFromPatterns(string prefix)
+    {
+        // Arrange
+        var leadingSlashes = $"{prefix}{prefix}";
+        var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var requestPathBase = PathString.Empty;
+        var includePatterns = new List<string>();
+        var excludePatterns = new List<string>();
+        var matcher = MakeMatcher(includePatterns, excludePatterns);
+        var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+        globbingUrlBuilder.MatcherBuilder = () => matcher;
+
+        // Act
+        var urlList = globbingUrlBuilder.BuildUrlList(
+            staticUrl: null,
+            includePattern: $"{leadingSlashes}**/*.css",
+            excludePattern: $"{leadingSlashes}**/*.min.css");
+
+        // Assert
+        Assert.Collection(includePatterns, pattern => Assert.Equal($"{prefix}**/*.css", pattern));
+        Assert.Collection(excludePatterns, pattern => Assert.Equal($"{prefix}**/*.min.css", pattern));
+    }
+
+    [Fact]
+    public void BuildUrlList_AddsToMemoryCache_WithSizeLimit()
+    {
+        // Arrange
+        var cacheEntry = Mock.Of<ICacheEntry>(m => m.ExpirationTokens == new List<IChangeToken>());
+        var cache = Mock.Of<IMemoryCache>(m => m.CreateEntry(It.IsAny<object>()) == cacheEntry);
+
+        var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
+        var requestPathBase = PathString.Empty;
+        var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+
+        // Act
+        var urlList = globbingUrlBuilder.BuildUrlList("/site.css", "**/*.css", excludePattern: null);
+
+        // Assert
+        Assert.Equal(38, cacheEntry.Size);
+    }
+
+    public class FileNode
+    {
+        public FileNode(string name)
+        {
+            Name = name;
         }
 
-        [Theory]
-        [MemberData(nameof(CommaSeparatedPatternData))]
-        public void HandlesCommaSeparatedPatterns(string includePattern, string[] expectedOutput)
+        public FileNode(string name, IList<FileNode> children)
         {
-            // Arrange
-            var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.js", "site2.txt", "site.js"));
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var requestPathBase = PathString.Empty;
-            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
-
-            // Act
-            var urlList = globbingUrlBuilder.BuildUrlList(
-                staticUrl: null,
-                includePattern: includePattern,
-                excludePattern: null);
-
-            // Assert
-            Assert.Equal(expectedOutput, urlList, StringComparer.Ordinal);
+            Name = name;
+            Children = children;
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("/")]
-        [InlineData(" \\")]
-        [InlineData("~/")]
-        [InlineData("  ~/")]
-        public void TrimsLeadingTildeAndSlashFromPatterns(string prefix)
+        public string Name { get; }
+
+        public IList<FileNode> Children { get; }
+
+        public bool IsDirectory => Children != null && Children.Any();
+    }
+
+    private static IFileInfo MakeFileInfo(string name, bool isDirectory = false)
+    {
+        var fileInfo = new Mock<IFileInfo>();
+        fileInfo.Setup(f => f.Name).Returns(name);
+        fileInfo.Setup(f => f.IsDirectory).Returns(isDirectory);
+        return fileInfo.Object;
+    }
+
+    private static IFileProvider MakeFileProvider(FileNode rootNode)
+    {
+        if (rootNode.Children == null || !rootNode.Children.Any())
         {
-            // Arrange
-            var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var requestPathBase = PathString.Empty;
-            var includePatterns = new List<string>();
-            var excludePatterns = new List<string>();
-            var matcher = MakeMatcher(includePatterns, excludePatterns);
-            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
-            globbingUrlBuilder.MatcherBuilder = () => matcher;
-
-            // Act
-            var urlList = globbingUrlBuilder.BuildUrlList(
-                staticUrl: null,
-                includePattern: $"{prefix}**/*.css",
-                excludePattern: $"{prefix}**/*.min.css");
-
-            // Assert
-            Assert.Collection(includePatterns, pattern => Assert.Equal("**/*.css", pattern));
-            Assert.Collection(excludePatterns, pattern => Assert.Equal("**/*.min.css", pattern));
+            throw new ArgumentNullException(nameof(rootNode));
         }
 
-        [Theory]
-        [InlineData("~/")]
-        [InlineData("/")]
-        [InlineData("\\")]
-        public void TrimsOnlySingleLeadingSlashOrTildeSlashFromPatterns(string prefix)
+        var fileProvider = new Mock<IFileProvider>(MockBehavior.Strict);
+        fileProvider.Setup(fp => fp.GetDirectoryContents(string.Empty))
+            .Returns(MakeDirectoryContents(rootNode, fileProvider));
+        fileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
+            .Returns(new TestFileChangeToken());
+
+        return fileProvider.Object;
+    }
+
+    private static IDirectoryContents MakeDirectoryContents(FileNode fileNode, Mock<IFileProvider> fileProviderMock)
+    {
+        var children = new List<IFileInfo>();
+
+        foreach (var node in fileNode.Children)
         {
-            // Arrange
-            var leadingSlashes = $"{prefix}{prefix}";
-            var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var requestPathBase = PathString.Empty;
-            var includePatterns = new List<string>();
-            var excludePatterns = new List<string>();
-            var matcher = MakeMatcher(includePatterns, excludePatterns);
-            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
-            globbingUrlBuilder.MatcherBuilder = () => matcher;
-
-            // Act
-            var urlList = globbingUrlBuilder.BuildUrlList(
-                staticUrl: null,
-                includePattern: $"{leadingSlashes}**/*.css",
-                excludePattern: $"{leadingSlashes}**/*.min.css");
-
-            // Assert
-            Assert.Collection(includePatterns, pattern => Assert.Equal($"{prefix}**/*.css", pattern));
-            Assert.Collection(excludePatterns, pattern => Assert.Equal($"{prefix}**/*.min.css", pattern));
-        }
-
-        [Fact]
-        public void BuildUrlList_AddsToMemoryCache_WithSizeLimit()
-        {
-            // Arrange
-            var cacheEntry = Mock.Of<ICacheEntry>(m => m.ExpirationTokens == new List<IChangeToken>());
-            var cache = Mock.Of<IMemoryCache>(m => m.CreateEntry(It.IsAny<object>()) == cacheEntry);
-
-            var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
-            var requestPathBase = PathString.Empty;
-            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
-
-            // Act
-            var urlList = globbingUrlBuilder.BuildUrlList("/site.css", "**/*.css", excludePattern: null);
-
-            // Assert
-            Assert.Equal(38, cacheEntry.Size);
-        }
-
-        public class FileNode
-        {
-            public FileNode(string name)
+            children.Add(MakeFileInfo(node.Name, node.IsDirectory));
+            if (node.IsDirectory)
             {
-                Name = name;
+                var subPath = fileNode.Name != null
+                    ? (fileNode.Name + "/" + node.Name)
+                    : node.Name;
+                fileProviderMock.Setup(fp => fp.GetDirectoryContents(subPath))
+                    .Returns(MakeDirectoryContents(node, fileProviderMock));
             }
+        }
 
-            public FileNode(string name, IList<FileNode> children)
+        var directoryContents = new Mock<IDirectoryContents>();
+        directoryContents.Setup(dc => dc.GetEnumerator()).Returns(children.GetEnumerator());
+
+        return directoryContents.Object;
+    }
+
+    private static IDirectoryContents MakeDirectoryContents(params string[] fileNames)
+    {
+        var files = fileNames.Select(name => MakeFileInfo(name));
+        var directoryContents = new Mock<IDirectoryContents>();
+        directoryContents.Setup(dc => dc.GetEnumerator()).Returns(files.GetEnumerator());
+
+        return directoryContents.Object;
+    }
+
+    private static IFileProvider MakeFileProvider(IDirectoryContents directoryContents = null)
+    {
+        if (directoryContents == null)
+        {
+            directoryContents = MakeDirectoryContents();
+        }
+
+        var fileProvider = new Mock<IFileProvider>();
+        fileProvider.Setup(fp => fp.GetDirectoryContents(It.IsAny<string>()))
+            .Returns(directoryContents);
+        fileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
+            .Returns(new TestFileChangeToken());
+        return fileProvider.Object;
+    }
+
+    private static IMemoryCache MakeCache(object result = null)
+    {
+        var cache = new Mock<IMemoryCache>();
+        cache.Setup(c => c.TryGetValue(It.IsAny<object>(), out result))
+            .Returns(result != null);
+        return cache.Object;
+    }
+
+    private static Matcher MakeMatcher(List<string> includePatterns, List<string> excludePatterns)
+    {
+        var matcher = new Mock<Matcher>();
+        matcher.Setup(m => m.AddInclude(It.IsAny<string>()))
+            .Returns<string>(pattern =>
             {
-                Name = name;
-                Children = children;
-            }
-
-            public string Name { get; }
-
-            public IList<FileNode> Children { get; }
-
-            public bool IsDirectory => Children != null && Children.Any();
-        }
-
-        private static IFileInfo MakeFileInfo(string name, bool isDirectory = false)
-        {
-            var fileInfo = new Mock<IFileInfo>();
-            fileInfo.Setup(f => f.Name).Returns(name);
-            fileInfo.Setup(f => f.IsDirectory).Returns(isDirectory);
-            return fileInfo.Object;
-        }
-
-        private static IFileProvider MakeFileProvider(FileNode rootNode)
-        {
-            if (rootNode.Children == null || !rootNode.Children.Any())
+                includePatterns.Add(pattern);
+                return matcher.Object;
+            });
+        matcher.Setup(m => m.AddExclude(It.IsAny<string>()))
+            .Returns<string>(pattern =>
             {
-                throw new ArgumentException(nameof(rootNode));
-            }
-
-            var fileProvider = new Mock<IFileProvider>(MockBehavior.Strict);
-            fileProvider.Setup(fp => fp.GetDirectoryContents(string.Empty))
-                .Returns(MakeDirectoryContents(rootNode, fileProvider));
-            fileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
-                .Returns(new TestFileChangeToken());
-
-            return fileProvider.Object;
-        }
-
-        private static IDirectoryContents MakeDirectoryContents(FileNode fileNode, Mock<IFileProvider> fileProviderMock)
-        {
-            var children = new List<IFileInfo>();
-
-            foreach (var node in fileNode.Children)
-            {
-                children.Add(MakeFileInfo(node.Name, node.IsDirectory));
-                if (node.IsDirectory)
-                {
-                    var subPath = fileNode.Name != null
-                        ? (fileNode.Name + "/" + node.Name)
-                        : node.Name;
-                    fileProviderMock.Setup(fp => fp.GetDirectoryContents(subPath))
-                        .Returns(MakeDirectoryContents(node, fileProviderMock));
-                }
-            }
-
-            var directoryContents = new Mock<IDirectoryContents>();
-            directoryContents.Setup(dc => dc.GetEnumerator()).Returns(children.GetEnumerator());
-
-            return directoryContents.Object;
-        }
-
-        private static IDirectoryContents MakeDirectoryContents(params string[] fileNames)
-        {
-            var files = fileNames.Select(name => MakeFileInfo(name));
-            var directoryContents = new Mock<IDirectoryContents>();
-            directoryContents.Setup(dc => dc.GetEnumerator()).Returns(files.GetEnumerator());
-
-            return directoryContents.Object;
-        }
-
-        private static IFileProvider MakeFileProvider(IDirectoryContents directoryContents = null)
-        {
-            if (directoryContents == null)
-            {
-                directoryContents = MakeDirectoryContents();
-            }
-
-            var fileProvider = new Mock<IFileProvider>();
-            fileProvider.Setup(fp => fp.GetDirectoryContents(It.IsAny<string>()))
-                .Returns(directoryContents);
-            fileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
-                .Returns(new TestFileChangeToken());
-            return fileProvider.Object;
-        }
-
-        private static IMemoryCache MakeCache(object result = null)
-        {
-            var cache = new Mock<IMemoryCache>();
-            cache.Setup(c => c.TryGetValue(It.IsAny<object>(), out result))
-                .Returns(result != null);
-            return cache.Object;
-        }
-
-        private static Matcher MakeMatcher(List<string> includePatterns, List<string> excludePatterns)
-        {
-            var matcher = new Mock<Matcher>();
-            matcher.Setup(m => m.AddInclude(It.IsAny<string>()))
-                .Returns<string>(pattern =>
-                {
-                    includePatterns.Add(pattern);
-                    return matcher.Object;
-                });
-            matcher.Setup(m => m.AddExclude(It.IsAny<string>()))
-                .Returns<string>(pattern =>
-                {
-                    excludePatterns.Add(pattern);
-                    return matcher.Object;
-                });
-            var patternMatchingResult = new PatternMatchingResult(Enumerable.Empty<FilePatternMatch>());
-            matcher.Setup(m => m.Execute(It.IsAny<DirectoryInfoBase>())).Returns(patternMatchingResult);
-            return matcher.Object;
-        }
+                excludePatterns.Add(pattern);
+                return matcher.Object;
+            });
+        var patternMatchingResult = new PatternMatchingResult(Enumerable.Empty<FilePatternMatch>());
+        matcher.Setup(m => m.Execute(It.IsAny<DirectoryInfoBase>())).Returns(patternMatchingResult);
+        return matcher.Object;
     }
 }

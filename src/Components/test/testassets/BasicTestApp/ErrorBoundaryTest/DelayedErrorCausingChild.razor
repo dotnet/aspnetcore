@@ -1,0 +1,14 @@
+﻿<p>This is a child component</p>
+
+@code {
+    [Parameter] public bool ThrowOnParametersSetAsync { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ThrowOnParametersSetAsync)
+        {
+            await Task.Delay(500);
+            throw new InvalidTimeZoneException("Delayed asynchronous exception in OnParametersSetAsync");
+        }
+    }
+}

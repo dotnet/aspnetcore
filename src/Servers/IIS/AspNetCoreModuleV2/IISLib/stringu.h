@@ -16,7 +16,6 @@ class STRU
 public:
 
     STRU(
-        VOID
     );
 
     STRU(
@@ -26,7 +25,6 @@ public:
 
     BOOL
     IsEmpty(
-        VOID
     ) const;
 
     BOOL
@@ -206,12 +204,10 @@ public:
     __ecount(this->m_cchLen)
     WCHAR*
     QueryStr(
-        VOID
     ) const;
 
     VOID
     Reset(
-        VOID
     );
 
     HRESULT
@@ -221,7 +217,6 @@ public:
 
     HRESULT
     SyncWithBuffer(
-        VOID
     );
 
     template<size_t size>

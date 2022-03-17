@@ -1,0 +1,93 @@
+﻿@using Microsoft.JSInterop
+@implements IAsyncDisposable
+
+<div class="dynamic-root-component" style="border: 1px dashed purple">
+    <p>
+        This is a Razor component.
+    </p>
+    <p>
+        Click count: <strong class="click-count">@clicks</strong>
+        (will increment in steps of <strong class="increment-amount-value">@IncrementAmount</strong>)
+    </p>
+
+    <button class="increment" @onclick="Increment">Increment</button>
+    <button class="js-callback" @onclick="OnJSCallbackButtonClick">JavaScript callback</button>
+    <button class="js-callback-with-params" @onclick="OnJSCallbackWithParamsButtonClick">JavaScript callback with params</button>
+
+    @if (ShowComplexParameters)
+    {
+        <p class="person-info">Person is @SomePerson.Name, age @SomePerson.Age</p>
+        <p class="value-from-js">Value from JS object reference: @valueFromJS</p>
+        <p class="value-from-dotnetobject">Value from .NET object reference: @SomeDotNetObject?.Value.Property</p>
+        <p class="value-from-bytearray">Byte array value: @(string.Join(',', ByteArray))</p>
+    }
+
+    @if (UnmatchedValues is not null)
+    {
+        <p>
+            Unmatched values:
+            <ul>
+                @foreach (var (name, value) in UnmatchedValues)
+                {
+                    <li class="unmatched-value">
+                        Name: <strong class="unmatched-value-name">@name</strong>;
+                        @if (value is not null)
+                        {
+                            <text>
+                                Type: <strong class="unmatched-value-type">@value.GetType().Name</strong>;
+                                Value: <strong class="unmatched-value-value">@value</strong>;
+                            </text>
+                        }
+                        else
+                        {
+                            <text>Type: <strong class="unmatched-value-type">null</strong>;</text>
+                        }
+                    </li>
+                }
+            </ul>
+        </p>
+    }
+</div>
+
+@code {
+    int clicks;
+    string valueFromJS;
+
+    [Parameter] public int IncrementAmount { get; set; }
+    [Parameter] public bool ShowComplexParameters { get; set; }
+    [Parameter] public Person SomePerson { get; set; }
+    [Parameter] public IJSObjectReference SomeJSObject { get; set; }
+    [Parameter] public DotNetObjectReference<JavaScriptRootComponents.DotNetType> SomeDotNetObject { get; set; }
+    [Parameter] public byte[] ByteArray { get; set; }
+    [Parameter] public EventCallback OnJSCallbackButtonClick { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnJSCallbackWithParamsButtonClick { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> UnmatchedValues { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (SomeJSObject is not null)
+        {
+            valueFromJS = await SomeJSObject.InvokeAsync<string>("getValue", null);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (SomeJSObject is not null)
+        {
+            await SomeJSObject.InvokeVoidAsync("willDispose", null);
+        }
+    }
+
+    void Increment()
+    {
+        clicks += IncrementAmount;
+    }
+
+    public class Person
+    {
+        public string Name { get; set; }
+        public decimal Age { get; set; }
+    }
+}

@@ -6,11 +6,11 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <Description>Roslyn analyzers for ASP.NET Core Components.</Description>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+    <!-- This analyzer is supported in VS 2019 and must use a compatible Microsoft.CodeAnalysis version -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
     <PackageReference Update="NETStandard.Library" PrivateAssets="all" />
   </ItemGroup>
 

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Builder;
@@ -8,47 +8,46 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
+namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests;
+
+public class Startup
 {
-    public class Startup
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
+        services.AddSignalR(options =>
         {
-            services.AddSignalR(options =>
+            options.EnableDetailedErrors = true;
+        })
+            .AddMessagePackProtocol()
+            .AddStackExchangeRedis(options =>
             {
-                options.EnableDetailedErrors = true;
-            })
-                .AddMessagePackProtocol()
-                .AddStackExchangeRedis(options =>
-                {
-                    options.Configuration.EndPoints.Add(Environment.GetEnvironmentVariable("REDIS_CONNECTION"));
-                });
-
-            services.AddSingleton<IUserIdProvider, UserNameIdProvider>();
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapHub<EchoHub>("/echo");
+                options.Configuration.EndPoints.Add(Environment.GetEnvironmentVariable("REDIS_CONNECTION"));
             });
-        }
 
-        private class UserNameIdProvider : IUserIdProvider
+        services.AddSingleton<IUserIdProvider, UserNameIdProvider>();
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
         {
-            public string GetUserId(HubConnectionContext connection)
-            {
-                // This is an AWFUL way to authenticate users! We're just using it for test purposes.
-                var userNameHeader = connection.GetHttpContext().Request.Headers["UserName"];
-                if (!StringValues.IsNullOrEmpty(userNameHeader))
-                {
-                    return userNameHeader;
-                }
+            endpoints.MapHub<EchoHub>("/echo");
+        });
+    }
 
-                return null;
+    private class UserNameIdProvider : IUserIdProvider
+    {
+        public string GetUserId(HubConnectionContext connection)
+        {
+            // This is an AWFUL way to authenticate users! We're just using it for test purposes.
+            var userNameHeader = connection.GetHttpContext().Request.Headers["UserName"];
+            if (!StringValues.IsNullOrEmpty(userNameHeader))
+            {
+                return userNameHeader;
             }
+
+            return null;
         }
     }
 }

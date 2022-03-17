@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.AspNetCore.Authentication;
@@ -9,68 +9,67 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace ServerComparison.TestSites
+namespace ServerComparison.TestSites;
+
+public class StartupNtlmAuthentication
 {
-    public class StartupNtlmAuthentication
+    public void ConfigureServices(IServiceCollection services)
     {
-        public void ConfigureServices(IServiceCollection services)
+        services.AddHttpContextAccessor();
+        // https://github.com/dotnet/aspnetcore/issues/11462
+        // services.AddSingleton<IClaimsTransformation, OneTransformPerRequest>();
+
+        // This will deffer to the server implementations when available.
+        services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+            .AddNegotiate();
+    }
+
+    public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+    {
+        app.Use(async (context, next) =>
         {
-            services.AddHttpContextAccessor();
-            // https://github.com/dotnet/aspnetcore/issues/11462
-            // services.AddSingleton<IClaimsTransformation, OneTransformPerRequest>();
+            try
+            {
+                await next(context);
+            }
+            catch (Exception ex)
+            {
+                if (context.Response.HasStarted)
+                {
+                    throw;
+                }
+                context.Response.Clear();
+                context.Response.StatusCode = 500;
+                await context.Response.WriteAsync(ex.ToString());
+            }
+        });
 
-            // This will deffer to the server implementations when available.
-            services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
-                .AddNegotiate();
-        }
-
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+        app.UseAuthentication();
+        app.Run((context) =>
         {
-            app.Use(async (context, next) =>
+            if (context.Request.Path.Equals("/Anonymous"))
             {
-                try
-                {
-                    await next();
-                }
-                catch (Exception ex)
-                {
-                    if (context.Response.HasStarted)
-                    {
-                        throw;
-                    }
-                    context.Response.Clear();
-                    context.Response.StatusCode = 500;
-                    await context.Response.WriteAsync(ex.ToString());
-                }
-            });
+                return context.Response.WriteAsync("Anonymous?" + !context.User.Identity.IsAuthenticated);
+            }
 
-            app.UseAuthentication();
-            app.Use((context, next) =>
+            if (context.Request.Path.Equals("/Restricted"))
             {
-                if (context.Request.Path.Equals("/Anonymous"))
+                if (context.User.Identity.IsAuthenticated)
                 {
-                    return context.Response.WriteAsync("Anonymous?" + !context.User.Identity.IsAuthenticated);
+                    return context.Response.WriteAsync("Authenticated");
                 }
-
-                if (context.Request.Path.Equals("/Restricted"))
+                else
                 {
-                    if (context.User.Identity.IsAuthenticated)
-                    {
-                        return context.Response.WriteAsync("Authenticated");
-                    }
-                    else
-                    {
-                        return context.ChallengeAsync();
-                    }
+                    return context.ChallengeAsync();
                 }
+            }
 
-                if (context.Request.Path.Equals("/Forbidden"))
-                {
-                    return context.ForbidAsync();
-                }
+            if (context.Request.Path.Equals("/Forbidden"))
+            {
+                return context.ForbidAsync();
+            }
 
-                return context.Response.WriteAsync("Hello World");
-            });
-        }
+            return context.Response.WriteAsync("Hello World");
+        });
     }
 }

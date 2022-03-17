@@ -31,10 +31,11 @@ namespace System.Net.Http
         private const uint FourByteLengthMask = 0x80000000;
         private const ulong EightByteLengthMask = 0xC000000000000000;
 
+        // public for internal use in aspnetcore
         public const uint OneByteLimit = (1U << 6) - 1;
-        private const uint TwoByteLimit = (1U << 16) - 1;
-        private const uint FourByteLimit = (1U << 30) - 1;
-        private const long EightByteLimit = (1L << 62) - 1;
+        public const uint TwoByteLimit = (1U << 14) - 1;
+        public const uint FourByteLimit = (1U << 30) - 1;
+        public const long EightByteLimit = (1L << 62) - 1;
 
         public static bool TryRead(ReadOnlySpan<byte> buffer, out long value, out int bytesRead)
         {
@@ -108,7 +109,7 @@ namespace System.Net.Http
                             InitialTwoByteLengthMask => 2,
                             InitialFourByteLengthMask => 4,
                             _ => 8 // LengthEightByte
-                    };
+                        };
 
                     Span<byte> temp = (stackalloc byte[8])[..length];
                     if (reader.TryCopyTo(temp))
@@ -148,7 +149,7 @@ namespace System.Net.Http
             Debug.Assert(longToEncode >= 0);
             Debug.Assert(longToEncode <= EightByteLimit);
 
-            if (longToEncode < OneByteLimit)
+            if (longToEncode <= OneByteLimit)
             {
                 if (buffer.Length != 0)
                 {
@@ -157,7 +158,7 @@ namespace System.Net.Http
                     return true;
                 }
             }
-            else if (longToEncode < TwoByteLimit)
+            else if (longToEncode <= TwoByteLimit)
             {
                 if (BinaryPrimitives.TryWriteUInt16BigEndian(buffer, (ushort)((uint)longToEncode | TwoByteLengthMask)))
                 {
@@ -165,7 +166,7 @@ namespace System.Net.Http
                     return true;
                 }
             }
-            else if (longToEncode < FourByteLimit)
+            else if (longToEncode <= FourByteLimit)
             {
                 if (BinaryPrimitives.TryWriteUInt32BigEndian(buffer, (uint)longToEncode | FourByteLengthMask))
                 {
@@ -199,9 +200,9 @@ namespace System.Net.Http
             Debug.Assert(value <= EightByteLimit);
 
             return
-                value < OneByteLimit ? 1 :
-                value < TwoByteLimit ? 2 :
-                value < FourByteLimit ? 4 :
+                value <= OneByteLimit ? 1 :
+                value <= TwoByteLimit ? 2 :
+                value <= FourByteLimit ? 4 :
                 8; // EightByteLimit
         }
     }

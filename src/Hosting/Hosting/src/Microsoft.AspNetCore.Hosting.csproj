@@ -4,16 +4,17 @@
     <Description>ASP.NET Core hosting infrastructure and startup logic for web applications.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting</PackageTags>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" />
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ErrorPage\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)StaticWebAssets\**\*.cs" LinkBase="StaticWebAssets" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +32,10 @@
     <Reference Include="Microsoft.Extensions.Options" />
 
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Identity.DefaultUI.WebSite" />
   </ItemGroup>
 
 </Project>

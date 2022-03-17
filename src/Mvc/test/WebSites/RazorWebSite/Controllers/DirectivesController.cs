@@ -1,35 +1,34 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite
+namespace RazorWebSite;
+
+public class DirectivesController : Controller
 {
-    public class DirectivesController : Controller
+    public IActionResult ViewInheritsInjectAndUsingsFromViewImports()
     {
-        public IActionResult ViewInheritsInjectAndUsingsFromViewImports()
-        {
-            return View(new Person { Name = "Person1" });
-        }
+        return View(new Person { Name = "Person1" });
+    }
 
-        public IActionResult ViewInheritsBasePageFromViewImports()
-        {
-            return View("/Views/Directives/Scoped/ViewInheritsBasePageFromViewImports.cshtml",
-                        new Person { Name = "Person2" });
-        }
+    public IActionResult ViewInheritsBasePageFromViewImports()
+    {
+        return View("/Views/Directives/Scoped/ViewInheritsBasePageFromViewImports.cshtml",
+                    new Person { Name = "Person2" });
+    }
 
-        public IActionResult ViewReplacesTModelTokenFromInheritedBasePages()
+    public IActionResult ViewReplacesTModelTokenFromInheritedBasePages()
+    {
+        var model = new Person
         {
-            var model = new Person
+            Name = "Bob",
+            Address = new Address
             {
-                Name = "Bob",
-                Address = new Address
-                {
-                    ZipCode = "98052"
-                }
-            };
+                ZipCode = "98052"
+            }
+        };
 
-            return View("/Views/InheritingInherits/Index.cshtml", model);
-        }
+        return View("/Views/InheritingInherits/Index.cshtml", model);
     }
 }

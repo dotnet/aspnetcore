@@ -1,20 +1,18 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.AspNetCore.Hosting.Fakes
-{
-    public class StartupStaticCtorThrows
-    {
-        static StartupStaticCtorThrows()
-        {
-            throw new Exception("Exception from static constructor");
-        }
+namespace Microsoft.AspNetCore.Hosting.Fakes;
 
-        public void Configure(IApplicationBuilder app)
-        {
-        }
+public class StartupStaticCtorThrows
+{
+    static StartupStaticCtorThrows()
+    {
+        throw new Exception("Exception from static constructor");
+    }
+
+    public void Configure(IApplicationBuilder app)
+    {
     }
 }

@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+  
+  <PropertyGroup>
+    <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)..\Kestrel\shared\</KestrelSharedSourceRoot>
+    <HostArch>$(Platform)</HostArch>
+    <HostArch Condition="'$(Platform)' == 'Win32'">x86</HostArch>
+    <HostArch Condition="'$(Platform)' == 'AnyCPU'">x64</HostArch>
+    <LibNetHostPath>$(NetCoreTargetingPackRoot)Microsoft.NETCore.App.Host.win-$(HostArch)\$(LibNetHostAppPackVersion)\runtimes\win-$(HostArch)\native</LibNetHostPath>
+    <!-- This tools version MUST match the same version as runtime uses to compile libnethost.lib -->
+    <PlatformToolsetVersion>v142</PlatformToolsetVersion>
+  </PropertyGroup>
+</Project>

@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Api.Analyzers;
@@ -14,13 +17,12 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             if (id < 0)
             {
-                /*MM*/return BadRequest();
+                return /*MM*/BadRequest();
             }
 
             try
             {
                 await product.Update();
-
             }
             catch
             {
@@ -39,7 +41,6 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public static void Update(int id, Product product)
         {
-
         }
     }
 

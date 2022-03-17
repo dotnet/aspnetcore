@@ -1,32 +1,24 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Microsoft.AspNetCore.Rewrite.UrlActions;
-using Microsoft.AspNetCore.Rewrite.UrlMatches;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Net.Http.Headers;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
+namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite;
+
+public class MiddlewareTests
 {
-    public class MiddlewareTests
+    [Fact]
+    public async Task Invoke_RedirectPathToPathAndQuery()
     {
-        [Fact]
-        public async Task Invoke_RedirectPathToPathAndQuery()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Rewrite to article.aspx"">
                 <match url = ""^article/([0-9]+)/([_0-9a-z-]+)"" />
@@ -34,31 +26,31 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                 .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+             .ConfigureWebHost(webHostBuilder =>
+             {
+                 webHostBuilder
+                 .UseTestServer()
+                 .Configure(app =>
                  {
-                     webHostBuilder
-                     .UseTestServer()
-                     .Configure(app =>
-                     {
-                         app.UseRewriter(options);
-                         app.Run(context => context.Response.WriteAsync(context.Response.Headers[HeaderNames.Location]));
-                     });
-                 }).Build();
+                     app.UseRewriter(options);
+                     app.Run(context => context.Response.WriteAsync(context.Response.Headers.Location));
+                 });
+             }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetAsync("article/10/hey");
+        var response = await server.CreateClient().GetAsync("article/10/hey");
 
-            Assert.Equal("/article.aspx?id=10&title=hey", response.Headers.Location.OriginalString);
-        }
+        Assert.Equal("/article.aspx?id=10&title=hey", response.Headers.Location.OriginalString);
+    }
 
-        [Fact]
-        public async Task Invoke_RewritePathToPathAndQuery()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_RewritePathToPathAndQuery()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Rewrite to article.aspx"">
                 <match url = ""^article/([0-9]+)/([_0-9a-z-]+)"" />
@@ -66,31 +58,31 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetStringAsync("/article/10/hey");
+        var response = await server.CreateClient().GetStringAsync("/article/10/hey");
 
-            Assert.Equal("/article.aspx?id=10&title=hey", response);
-        }
+        Assert.Equal("/article.aspx?id=10&title=hey", response);
+    }
 
-        [Fact]
-        public async Task Invoke_RewriteBasedOnQueryStringParameters()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_RewriteBasedOnQueryStringParameters()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Query String Rewrite"">
                 <match url=""page\.asp$"" />
@@ -102,31 +94,31 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetStringAsync("page.asp?p2=321&p1=123");
+        var response = await server.CreateClient().GetStringAsync("page.asp?p2=321&p1=123");
 
-            Assert.Equal("/newpage.aspx?param1=123&param2=321", response);
-        }
+        Assert.Equal("/newpage.aspx?param1=123&param2=321", response);
+    }
 
-        [Fact]
-        public async Task Invoke_RedirectToLowerCase()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_RedirectToLowerCase()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Convert to lower case"" stopProcessing=""true"">
                 <match url="".*[A-Z].*"" ignoreCase=""false"" />
@@ -134,31 +126,31 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(context.Response.Headers[HeaderNames.Location]));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Response.Headers.Location));
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetAsync("HElLo");
+        var response = await server.CreateClient().GetAsync("HElLo");
 
-            Assert.Equal("/hello", response.Headers.Location.OriginalString);
-        }
+        Assert.Equal("/hello", response.Headers.Location.OriginalString);
+    }
 
-        [Fact]
-        public async Task Invoke_RedirectRemoveTrailingSlash()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_RedirectRemoveTrailingSlash()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Remove trailing slash"" stopProcessing=""true"">
                 <match url=""(.*)/$"" />
@@ -170,30 +162,30 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetAsync("hey/hello/");
+        var response = await server.CreateClient().GetAsync("hey/hello/");
 
-            Assert.Equal("/hey/hello", response.Headers.Location.OriginalString);
-        }
+        Assert.Equal("/hey/hello", response.Headers.Location.OriginalString);
+    }
 
-        [Fact]
-        public async Task Invoke_RedirectAddTrailingSlash()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_RedirectAddTrailingSlash()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Add trailing slash"" stopProcessing=""true"">
                 <match url=""(.*[^/])$"" />
@@ -205,30 +197,30 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetAsync("hey/hello");
+        var response = await server.CreateClient().GetAsync("hey/hello");
 
-            Assert.Equal("/hey/hello/", response.Headers.Location.OriginalString);
-        }
+        Assert.Equal("/hey/hello/", response.Headers.Location.OriginalString);
+    }
 
-        [Fact]
-        public async Task Invoke_RedirectToHttps()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_RedirectToHttps()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Redirect to HTTPS"" stopProcessing=""true"">
                 <match url=""(.*)"" />
@@ -239,30 +231,30 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
+        var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
 
-            Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
-        }
+        Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
+    }
 
-        [Fact]
-        public async Task Invoke_RewriteToHttps()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_RewriteToHttps()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Rewrite to HTTPS"" stopProcessing=""true"">
                 <match url=""(.*)"" />
@@ -273,36 +265,36 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(
-                            context.Request.Scheme +
-                            "://" +
-                            context.Request.Host +
-                            context.Request.Path +
-                            context.Request.QueryString));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(
+                        context.Request.Scheme +
+                        "://" +
+                        context.Request.Host +
+                        context.Request.Path +
+                        context.Request.QueryString));
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com"));
+        var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com"));
 
-            Assert.Equal("https://example.com/", response);
-        }
+        Assert.Equal("https://example.com/", response);
+    }
 
-        [Fact]
-        public async Task Invoke_ReverseProxyToAnotherSite()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_ReverseProxyToAnotherSite()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Proxy"">
                 <match url=""(.*)"" />
@@ -310,36 +302,36 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(
-                            context.Request.Scheme +
-                            "://" +
-                            context.Request.Host +
-                            context.Request.Path +
-                            context.Request.QueryString));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(
+                        context.Request.Scheme +
+                        "://" +
+                        context.Request.Host +
+                        context.Request.Path +
+                        context.Request.QueryString));
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
+        var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
 
-            Assert.Equal("http://internalserver/", response);
-        }
+        Assert.Equal("http://internalserver/", response);
+    }
 
-        [Fact]
-        public async Task Invoke_CaptureEmptyStringInRegexAssertRedirectLocationHasForwardSlash()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_CaptureEmptyStringInRegexAssertRedirectLocationHasForwardSlash()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Test"">
                 <match url=""(.*)"" />
@@ -347,36 +339,36 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(
-                            context.Request.Scheme +
-                            "://" +
-                            context.Request.Host +
-                            context.Request.Path +
-                            context.Request.QueryString));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(
+                        context.Request.Scheme +
+                        "://" +
+                        context.Request.Host +
+                        context.Request.Path +
+                        context.Request.QueryString));
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetAsync(new Uri("http://example.com/"));
+        var response = await server.CreateClient().GetAsync(new Uri("http://example.com/"));
 
-            Assert.Equal("/", response.Headers.Location.OriginalString);
-        }
+        Assert.Equal("/", response.Headers.Location.OriginalString);
+    }
 
-        [Fact]
-        public async Task Invoke_CaptureEmptyStringInRegexAssertRewriteLocationHasForwardSlash()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_CaptureEmptyStringInRegexAssertRewriteLocationHasForwardSlash()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Test"">
                 <match url=""(.*)"" />
@@ -384,33 +376,33 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(
-                            context.Request.Path +
-                            context.Request.QueryString));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(
+                        context.Request.Path +
+                        context.Request.QueryString));
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
+        var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
 
-            Assert.Equal("/", response);
-        }
+        Assert.Equal("/", response);
+    }
 
-        [Fact]
-        public async Task Invoke_CaptureEmptyStringInRegexAssertLocationHeaderContainsPathBase()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_CaptureEmptyStringInRegexAssertLocationHeaderContainsPathBase()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Test"">
                 <match url=""(.*)"" />
@@ -418,38 +410,38 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(
-                                context.Request.Path +
-                                context.Request.QueryString));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(
+                            context.Request.Path +
+                            context.Request.QueryString));
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
-            server.BaseAddress = new Uri("http://localhost:5000/foo");
+        var server = host.GetTestServer();
+        server.BaseAddress = new Uri("http://localhost:5000/foo");
 
-            var response = await server.CreateClient().GetAsync("");
+        var response = await server.CreateClient().GetAsync("");
 
-            Assert.Equal("/foo", response.Headers.Location.OriginalString);
-        }
+        Assert.Equal("/foo", response.Headers.Location.OriginalString);
+    }
 
-        [Theory]
-        [InlineData("IsFile")]
-        [InlineData("isfile")]
-        [InlineData("IsDirectory")]
-        [InlineData("isdirectory")]
-        public async Task VerifyIsFileAndIsDirectoryParsing(string matchType)
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader($@"<rewrite>
+    [Theory]
+    [InlineData("IsFile")]
+    [InlineData("isfile")]
+    [InlineData("IsDirectory")]
+    [InlineData("isdirectory")]
+    public async Task VerifyIsFileAndIsDirectoryParsing(string matchType)
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader($@"<rewrite>
                 <rules>
                 <rule name=""Test"">
                 <match url=""(.*[^/])$"" />
@@ -460,30 +452,30 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetAsync("hey/hello");
+        var response = await server.CreateClient().GetAsync("hey/hello");
 
-            Assert.Equal("/hey/hello/", response.Headers.Location.OriginalString);
-        }
+        Assert.Equal("/hey/hello/", response.Headers.Location.OriginalString);
+    }
 
-        [Fact]
-        public async Task VerifyTrackAllCaptures()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task VerifyTrackAllCaptures()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Test"">
                 <match url=""(.*)"" ignoreCase=""false"" />
@@ -496,30 +488,30 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
+        var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
 
-            Assert.Equal("/blogposts/article/abc?p1=123&p2=abc", response.Headers.Location.OriginalString);
-        }
+        Assert.Equal("/blogposts/article/abc?p1=123&p2=abc", response.Headers.Location.OriginalString);
+    }
 
-        [Fact]
-        public async Task VerifyTrackAllCapturesRuleAndConditionCapture()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task VerifyTrackAllCapturesRuleAndConditionCapture()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Test"">
                 <match url=""(.*)"" ignoreCase=""false"" />
@@ -532,31 +524,31 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
+        var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
 
-            Assert.Equal("/blog/article/23/abc?p1=123&p2=abc", response.Headers.Location.OriginalString);
-        }
+        Assert.Equal("/blog/article/23/abc?p1=123&p2=abc", response.Headers.Location.OriginalString);
+    }
 
-        [Fact]
-        public async Task ThrowIndexOutOfRangeExceptionWithCorrectMessage()
-        {
-            // Arrange, Act, Assert
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task ThrowIndexOutOfRangeExceptionWithCorrectMessage()
+    {
+        // Arrange, Act, Assert
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Test"">
                 <match url=""(.*)"" ignoreCase=""false"" />
@@ -569,31 +561,31 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var ex = await Assert.ThrowsAsync<IndexOutOfRangeException>(() => server.CreateClient().GetAsync("article/23?p1=123&p2=abc"));
+        var ex = await Assert.ThrowsAsync<IndexOutOfRangeException>(() => server.CreateClient().GetAsync("article/23?p1=123&p2=abc"));
 
-            Assert.Equal("Cannot access back reference at index 9. Only 5 back references were captured.", ex.Message);
-        }
+        Assert.Equal("Cannot access back reference at index 9. Only 5 back references were captured.", ex.Message);
+    }
 
-        [Fact]
-        public async Task Invoke_GlobalRuleConditionMatchesAgainstFullUri_ParsedRule()
-        {
-            // arrange
-            var xml = @"<rewrite>
+    [Fact]
+    public async Task Invoke_GlobalRuleConditionMatchesAgainstFullUri_ParsedRule()
+    {
+        // arrange
+        var xml = @"<rewrite>
                             <globalRules>
                                 <rule name=""Test"" patternSyntax=""ECMAScript"" stopProcessing=""true"">
                                     <match url="".*"" />
@@ -604,36 +596,36 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                                 </rule>
                             </globalRules>
                         </rewrite>";
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(xml));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(xml));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            // act
-            var response = await server.CreateClient().GetStringAsync($"http://localhost/{Guid.NewGuid()}/foo/bar");
+        // act
+        var response = await server.CreateClient().GetStringAsync($"http://localhost/{Guid.NewGuid()}/foo/bar");
 
-            // assert
-            Assert.Equal("http://www.test.com/foo/bar", response);
-        }
+        // assert
+        Assert.Equal("http://www.test.com/foo/bar", response);
+    }
 
-        [Theory]
-        [InlineData("http://fetch.environment.local/dev/path", "http://1.1.1.1/path")]
-        [InlineData("http://fetch.environment.local/qa/path", "http://fetch.environment.local/qa/path")]
-        public async Task Invoke_ReverseProxyToAnotherSiteUsingXmlConfiguredRewriteMap(string requestUri, string expectedRewrittenUri)
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"
+    [Theory]
+    [InlineData("http://fetch.environment.local/dev/path", "http://1.1.1.1/path")]
+    [InlineData("http://fetch.environment.local/qa/path", "http://fetch.environment.local/qa/path")]
+    public async Task Invoke_ReverseProxyToAnotherSiteUsingXmlConfiguredRewriteMap(string requestUri, string expectedRewrittenUri)
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"
                 <rewrite>
                     <rules>
                         <rule name=""Proxy"">
@@ -650,31 +642,31 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                         </rewriteMap>
                     </rewriteMaps>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            var response = await server.CreateClient().GetStringAsync(new Uri(requestUri));
+        var response = await server.CreateClient().GetStringAsync(new Uri(requestUri));
 
-            Assert.Equal(expectedRewrittenUri, response);
-        }
+        Assert.Equal(expectedRewrittenUri, response);
+    }
 
-        [Fact]
-        public async Task Invoke_CustomResponse()
-        {
-            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+    [Fact]
+    public async Task Invoke_CustomResponse()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
                 <rule name=""Forbidden"">
                 <match url = "".*"" />
@@ -682,82 +674,81 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
-                {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                    });
-                }).Build();
-
-            await host.StartAsync();
-
-            var server = host.GetTestServer();
-
-            var response = await server.CreateClient().GetAsync("article/10/hey");
-            var content = await response.Content.ReadAsStringAsync();
-
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-            Assert.Equal("reason", response.ReasonPhrase);
-            Assert.Equal("description", content);
-        }
-
-        [Theory]
-        [InlineData(@"^http://localhost(/.*)", "http://localhost/foo/bar", (int)UriMatchPart.Path)]
-        [InlineData(@"^http://localhost(/.*)", "http://www.test.com/foo/bar", (int)UriMatchPart.Full)]
-        public async Task Invoke_GlobalRuleConditionMatchesAgainstFullUri_CodedRule(string conditionInputPattern, string expectedResult, int uriMatchPart)
-        {
-            // arrange
-            var inputParser = new InputParser();
-
-            var ruleBuilder = new UrlRewriteRuleBuilder
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                Name = "test",
-                Global = false
-            };
-            ruleBuilder.AddUrlMatch(".*");
-
-            var condition = new UriMatchCondition(
-                inputParser,
-                "{REQUEST_URI}",
-                conditionInputPattern,
-                (UriMatchPart)uriMatchPart,
-                ignoreCase: true,
-                negate: false);
-            ruleBuilder.ConfigureConditionBehavior(LogicalGrouping.MatchAll, trackAllCaptures: true);
-            ruleBuilder.AddUrlCondition(condition);
-
-            var action = new RewriteAction(
-                RuleResult.SkipRemainingRules,
-                inputParser.ParseInputString(@"http://www.test.com{C:1}", (UriMatchPart)uriMatchPart),
-                queryStringAppend: false);
-            ruleBuilder.AddUrlAction(action);
-
-            var options = new RewriteOptions().Add(ruleBuilder.Build());
-            using var host = new HostBuilder()
-                .ConfigureWebHost(webHostBuilder =>
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
                 {
-                    webHostBuilder
-                    .UseTestServer()
-                    .Configure(app =>
-                    {
-                        app.UseRewriter(options);
-                        app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
-                    });
-                }).Build();
+                    app.UseRewriter(options);
+                });
+            }).Build();
 
-            await host.StartAsync();
+        await host.StartAsync();
 
-            var server = host.GetTestServer();
+        var server = host.GetTestServer();
 
-            // act
-            var response = await server.CreateClient().GetStringAsync("http://localhost/foo/bar");
+        var response = await server.CreateClient().GetAsync("article/10/hey");
+        var content = await response.Content.ReadAsStringAsync();
 
-            // assert
-            Assert.Equal(expectedResult, response);
-        }
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("reason", response.ReasonPhrase);
+        Assert.Equal("description", content);
+    }
+
+    [Theory]
+    [InlineData(@"^http://localhost(/.*)", "http://localhost/foo/bar", (int)UriMatchPart.Path)]
+    [InlineData(@"^http://localhost(/.*)", "http://www.test.com/foo/bar", (int)UriMatchPart.Full)]
+    public async Task Invoke_GlobalRuleConditionMatchesAgainstFullUri_CodedRule(string conditionInputPattern, string expectedResult, int uriMatchPart)
+    {
+        // arrange
+        var inputParser = new InputParser();
+
+        var ruleBuilder = new UrlRewriteRuleBuilder
+        {
+            Name = "test",
+            Global = false
+        };
+        ruleBuilder.AddUrlMatch(".*");
+
+        var condition = new UriMatchCondition(
+            inputParser,
+            "{REQUEST_URI}",
+            conditionInputPattern,
+            (UriMatchPart)uriMatchPart,
+            ignoreCase: true,
+            negate: false);
+        ruleBuilder.ConfigureConditionBehavior(LogicalGrouping.MatchAll, trackAllCaptures: true);
+        ruleBuilder.AddUrlCondition(condition);
+
+        var action = new RewriteAction(
+            RuleResult.SkipRemainingRules,
+            inputParser.ParseInputString(@"http://www.test.com{C:1}", (UriMatchPart)uriMatchPart),
+            queryStringAppend: false);
+        ruleBuilder.AddUrlAction(action);
+
+        var options = new RewriteOptions().Add(ruleBuilder.Build());
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        // act
+        var response = await server.CreateClient().GetStringAsync("http://localhost/foo/bar");
+
+        // assert
+        Assert.Equal(expectedResult, response);
     }
 }

@@ -1,8 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Razor Class Library",
-    "description": "Plantilla de proyecto para crear una biblioteca de clases de Razor.",
-    "parameter.SupportPagesAndViews.name": "_Páginas y vistas de soporte técnico"
-  }
-}

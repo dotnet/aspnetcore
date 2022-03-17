@@ -1,14 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+namespace Microsoft.AspNetCore.Routing.DecisionTree;
 
-namespace Microsoft.AspNetCore.Routing.DecisionTree
+internal interface IClassifier<TItem>
 {
-    internal interface IClassifier<TItem>
-    {
-        IDictionary<string, DecisionCriterionValue> GetCriteria(TItem item);
+    IDictionary<string, DecisionCriterionValue> GetCriteria(TItem item);
 
-        IEqualityComparer<object> ValueComparer { get; }
-    }
+    IEqualityComparer<object> ValueComparer { get; }
 }

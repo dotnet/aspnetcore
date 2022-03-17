@@ -1,37 +1,33 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System;
 using System.Text;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
+namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+
+public class RootComponentMappingTest
 {
-    public class RootComponentMappingTest
+    [Fact]
+    public void Constructor_ValidatesComponentType_Success()
     {
-        [Fact]
-        public void Constructor_ValidatesComponentType_Success()
-        {
-            // Arrange
-            // Act
-            var mapping = new RootComponentMapping(typeof(Router), "test");
+        // Arrange
+        // Act
+        var mapping = new RootComponentMapping(typeof(Router), "test");
 
-            // Assert (does not throw)
-            GC.KeepAlive(mapping);
-        }
+        // Assert (does not throw)
+        GC.KeepAlive(mapping);
+    }
 
-        [Fact]
-        public void Constructor_ValidatesComponentType_Failure()
-        {
-            // Arrange
-            // Act & Assert
-            ExceptionAssert.ThrowsArgument(
-                () => new RootComponentMapping(typeof(StringBuilder), "test"),
-                "componentType",
-                $"The type '{nameof(StringBuilder)}' must implement IComponent to be used as a root component.");
-        }
+    [Fact]
+    public void Constructor_ValidatesComponentType_Failure()
+    {
+        // Arrange
+        // Act & Assert
+        ExceptionAssert.ThrowsArgument(
+            () => new RootComponentMapping(typeof(StringBuilder), "test"),
+            "componentType",
+            $"The type '{nameof(StringBuilder)}' must implement IComponent to be used as a root component.");
     }
 }

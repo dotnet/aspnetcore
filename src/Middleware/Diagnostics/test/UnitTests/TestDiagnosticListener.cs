@@ -1,83 +1,82 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DiagnosticAdapter;
 
-namespace Microsoft.AspNetCore.Diagnostics
+namespace Microsoft.AspNetCore.Diagnostics;
+
+public class TestDiagnosticListener
 {
-    public class TestDiagnosticListener
+    public class OnRequestEventData
     {
-        public class OnRequestEventData
-        {
-            public IProxyHttpContext HttpContext { get; set; }
-        }
+        public IProxyHttpContext HttpContext { get; set; }
+    }
 
-        public class OnExceptionEventData
-        {
-            public IProxyHttpContext HttpContext { get; set; }
-            public IProxyException Exception { get; set; }
-        }
+    public class OnExceptionEventData
+    {
+        public IProxyHttpContext HttpContext { get; set; }
+        public IProxyException Exception { get; set; }
+    }
 
-        public OnRequestEventData BeginRequest { get; set; }
-        public OnRequestEventData EndRequest { get; set; }
-        public OnExceptionEventData HostingUnhandledException { get; set; }
-        public OnExceptionEventData DiagnosticUnhandledException { get; set; }
-        public OnExceptionEventData DiagnosticHandledException { get; set; }
+    public OnRequestEventData BeginRequest { get; set; }
+    public OnRequestEventData EndRequest { get; set; }
+    public OnExceptionEventData HostingUnhandledException { get; set; }
+    public OnExceptionEventData DiagnosticUnhandledException { get; set; }
+    public OnExceptionEventData DiagnosticHandledException { get; set; }
 
-        [DiagnosticName("Microsoft.AspNetCore.Hosting.BeginRequest")]
-        public virtual void OnBeginRequest(IProxyHttpContext httpContext)
+    [DiagnosticName("Microsoft.AspNetCore.Hosting.BeginRequest")]
+    public virtual void OnBeginRequest(IProxyHttpContext httpContext)
+    {
+        BeginRequest = new OnRequestEventData()
         {
-            BeginRequest = new OnRequestEventData()
-            {
-                HttpContext = httpContext
-            };
-        }
+            HttpContext = httpContext
+        };
+    }
 
-        [DiagnosticName("Microsoft.AspNetCore.Hosting.EndRequest")]
-        public virtual void OnEndRequest(IProxyHttpContext httpContext)
+    [DiagnosticName("Microsoft.AspNetCore.Hosting.EndRequest")]
+    public virtual void OnEndRequest(IProxyHttpContext httpContext)
+    {
+        EndRequest = new OnRequestEventData()
         {
-            EndRequest = new OnRequestEventData()
-            {
-                HttpContext = httpContext
-            };
-        }
+            HttpContext = httpContext
+        };
+    }
 
-        [DiagnosticName("Microsoft.AspNetCore.Hosting.UnhandledException")]
-        public virtual void OnHostingUnhandledException(IProxyHttpContext httpContext, IProxyException exception)
+    [DiagnosticName("Microsoft.AspNetCore.Hosting.UnhandledException")]
+    public virtual void OnHostingUnhandledException(IProxyHttpContext httpContext, IProxyException exception)
+    {
+        HostingUnhandledException = new OnExceptionEventData()
         {
-            HostingUnhandledException = new OnExceptionEventData()
-            {
-                HttpContext = httpContext,
-                Exception = exception
-            };
-        }
+            HttpContext = httpContext,
+            Exception = exception
+        };
+    }
 
-        [DiagnosticName("Microsoft.AspNetCore.Diagnostics.UnhandledException")]
-        public virtual void OnDiagnosticUnhandledException(IProxyHttpContext httpContext, IProxyException exception)
+    [DiagnosticName("Microsoft.AspNetCore.Diagnostics.UnhandledException")]
+    public virtual void OnDiagnosticUnhandledException(IProxyHttpContext httpContext, IProxyException exception)
+    {
+        DiagnosticUnhandledException = new OnExceptionEventData()
         {
-            DiagnosticUnhandledException = new OnExceptionEventData()
-            {
-                HttpContext = httpContext,
-                Exception = exception
-            };
-        }
+            HttpContext = httpContext,
+            Exception = exception
+        };
+    }
 
-        [DiagnosticName("Microsoft.AspNetCore.Diagnostics.HandledException")]
-        public virtual void OnDiagnosticHandledException(IProxyHttpContext httpContext, IProxyException exception)
+    [DiagnosticName("Microsoft.AspNetCore.Diagnostics.HandledException")]
+    public virtual void OnDiagnosticHandledException(IProxyHttpContext httpContext, IProxyException exception)
+    {
+        DiagnosticHandledException = new OnExceptionEventData()
         {
-            DiagnosticHandledException = new OnExceptionEventData()
-            {
-                HttpContext = httpContext,
-                Exception = exception
-            };
-        }
+            HttpContext = httpContext,
+            Exception = exception
+        };
+    }
 
-        public interface IProxyHttpContext
-        {
-        }
+    public interface IProxyHttpContext
+    {
+    }
 
-        public interface IProxyException
-        {
-        }
+    public interface IProxyException
+    {
     }
 }

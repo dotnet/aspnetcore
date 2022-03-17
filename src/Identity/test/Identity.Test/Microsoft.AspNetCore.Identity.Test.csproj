@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Reference Include="AngleSharp" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
@@ -21,20 +22,22 @@
 
   <Target Name="AddProjectReferenceAssemblyInfo" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveAssemblyReferences">
     <ItemGroup>
-      <_IdentitUIDefaultUI Include="@(ReferencePath)" Condition="'%(ReferencePath.FileName)' == 'Microsoft.AspNetCore.Identity.UI'" />
+      <_IdentityUIDefaultUI Include="@(ReferencePath)" Condition="'%(ReferencePath.FileName)' == 'Microsoft.AspNetCore.Identity.UI'" />
+    </ItemGroup>
+    <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>Microsoft.AspNetCore.Testing.DefaultUIProjectPath</_Parameter1>
-        <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIDefaultUI.MSBuildSourceProjectFile)'))</_Parameter2>
+        <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentityUIDefaultUI.MSBuildSourceProjectFile)'))</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
   </Target>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
-      <_IdentityUIContent Include="$(MSBuildThisFileDirectory)..\..\UI\src\wwwroot\**\*" />
+      <_IdentityUIContent Include="$(MSBuildThisFileDirectory)..\..\UI\src\assets\**\*" />
       <_IdentityUIPages Include="$(MSBuildThisFileDirectory)..\..\UI\src\Areas\Identity\Pages\**\*" />
     </ItemGroup>
-    <Copy SourceFiles="@(_IdentityUIContent)" DestinationFiles="$(PublishDir)\UI\wwwroot\%(_IdentityUIContent.RecursiveDir)\%(_IdentityUIContent.FileName)%(_IdentityUIContent.Extension)" />
+    <Copy SourceFiles="@(_IdentityUIContent)" DestinationFiles="$(PublishDir)\UI\assets\%(_IdentityUIContent.RecursiveDir)\%(_IdentityUIContent.FileName)%(_IdentityUIContent.Extension)" />
     <Copy SourceFiles="@(_IdentityUIPages)" DestinationFiles="$(PublishDir)UI\Areas\Identity\Pages\%(_IdentityUIPages.RecursiveDir)\%(_IdentityUIPages.FileName)%(_IdentityUIPages.Extension)" />
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile File="$(PublishDir)\contentroot.sln" Lines="Ignored" Overwrite="true" Encoding="Unicode" />

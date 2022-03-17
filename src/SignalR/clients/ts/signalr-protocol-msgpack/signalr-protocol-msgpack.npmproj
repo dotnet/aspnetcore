@@ -4,7 +4,6 @@
   <PropertyGroup>
     <PackageId>@microsoft/signalr-protocol-msgpack</PackageId>
     <IsPackable>true</IsPackable>
-    <IsTestProject>false</IsTestProject>
     <PackOnBuild>true</PackOnBuild>
   </PropertyGroup>
 

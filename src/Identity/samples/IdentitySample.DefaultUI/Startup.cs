@@ -1,84 +1,78 @@
-using System.Threading.Tasks;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using IdentitySample.DefaultUI.Data;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
-namespace IdentitySample.DefaultUI
+namespace IdentitySample.DefaultUI;
+
+public class BadDude : IUserConfirmation<ApplicationUser>
 {
-    public class BadDude : IUserConfirmation<ApplicationUser>
+    public Task<bool> IsConfirmedAsync(UserManager<ApplicationUser> manager, ApplicationUser user)
     {
-        public Task<bool> IsConfirmedAsync(UserManager<ApplicationUser> manager, ApplicationUser user)
-        {
-            return Task.FromResult(false);
-        }
+        return Task.FromResult(false);
+    }
+}
+
+public class Startup
+{
+    public Startup(IWebHostEnvironment env)
+    {
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(env.ContentRootPath)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+
+        builder.AddEnvironmentVariables();
+        Configuration = builder.Build();
     }
 
-    public class Startup
+    public IConfigurationRoot Configuration { get; set; }
+
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
     {
-        public Startup(IWebHostEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+        // Add framework services.
+        services.AddDbContext<ApplicationDbContext>(
+            options => options.ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
+                .UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+            x => x.MigrationsAssembly("IdentitySample.DefaultUI")));
 
-            builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
+        services.AddMvc().AddNewtonsoftJson();
+
+        services.AddDefaultIdentity<ApplicationUser>(o => o.SignIn.RequireConfirmedAccount = true)
+             .AddRoles<IdentityRole>()
+             .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        services.AddDatabaseDeveloperPageExceptionFilter();
+    }
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+            app.UseMigrationsEndPoint();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Home/Error");
         }
 
-        public IConfigurationRoot Configuration { get; set; }
+        app.UseStaticFiles();
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        app.UseRouting();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
         {
-            // Add framework services.
-            services.AddDbContext<ApplicationDbContext>(
-                options => options.ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
-                    .UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-                x => x.MigrationsAssembly("IdentitySample.DefaultUI")));
-
-            services.AddMvc().AddNewtonsoftJson();
-
-            services.AddDefaultIdentity<ApplicationUser>(o => o.SignIn.RequireConfirmedAccount = true)
-                 .AddRoles<IdentityRole>()
-                 .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            services.AddDatabaseDeveloperPageExceptionFilter();
-        }
-
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseMigrationsEndPoint();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
-
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-                endpoints.MapRazorPages();
-            });
-        }
+            endpoints.MapDefaultControllerRoute();
+            endpoints.MapRazorPages();
+        });
     }
 }

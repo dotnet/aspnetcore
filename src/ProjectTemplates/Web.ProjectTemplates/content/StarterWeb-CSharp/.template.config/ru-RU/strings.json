@@ -1,8 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Веб-приложение ASP.NET Core (модель-представление-контроллер)",
-    "description": "Шаблон проекта для создания приложения ASP.NET Core с образцом представлений MVC и контроллеров ASP.NET Core. Этот шаблон можно также использовать для служб HTTP RESTful.",
-    "parameter.RazorRuntimeCompilation.name": "Включить компиляцию в среде выполнения _Razor"
-  }
-}

@@ -1,165 +1,160 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
+
+public class RequestFormLimitsTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupRequestLimitSize>>
 {
-    public class RequestFormLimitsTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupRequestLimitSize>>
+    public RequestFormLimitsTest(MvcTestFixture<BasicWebSite.StartupRequestLimitSize> fixture)
     {
-        public RequestFormLimitsTest(MvcTestFixture<BasicWebSite.StartupRequestLimitSize> fixture)
+        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = factory.CreateDefaultClient();
+    }
+
+    private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
+        builder.UseStartup<BasicWebSite.StartupRequestLimitSize>();
+
+    public HttpClient Client { get; }
+
+    [Fact]
+    public async Task RequestFormLimitCheckHappens_WithAntiforgeryValidation()
+    {
+        // Arrange
+        var request = new HttpRequestMessage();
+        var kvps = new List<KeyValuePair<string, string>>();
+        // Controller has value count limit of 2
+        kvps.Add(new KeyValuePair<string, string>("key1", "value1"));
+        kvps.Add(new KeyValuePair<string, string>("key2", "value2"));
+        kvps.Add(new KeyValuePair<string, string>("key3", "value3"));
+        kvps.Add(new KeyValuePair<string, string>("RequestVerificationToken", "invalid-data"));
+
+        // Act
+        var response = await Client.PostAsync(
+            "RequestFormLimits/RequestFormLimitsBeforeAntiforgeryValidation",
+            new FormUrlEncodedContent(kvps));
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task OverridesControllerLevelLimits()
+    {
+        // Arrange
+        var expected = "{\"sampleInt\":10,\"sampleString\":null}";
+        var request = new HttpRequestMessage();
+        var kvps = new List<KeyValuePair<string, string>>();
+        // Controller has a value count limit of 2, but the action has a limit of 5
+        kvps.Add(new KeyValuePair<string, string>("key1", "value1"));
+        kvps.Add(new KeyValuePair<string, string>("key2", "value2"));
+        kvps.Add(new KeyValuePair<string, string>("SampleInt", "10"));
+
+        // Act
+        var response = await Client.PostAsync(
+            "RequestFormLimits/OverrideControllerLevelLimits",
+            new FormUrlEncodedContent(kvps));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadAsStringAsync();
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public async Task OverrideControllerLevelLimits_UsingDefaultLimits()
+    {
+        // Arrange
+        var expected = "{\"sampleInt\":50,\"sampleString\":null}";
+        var request = new HttpRequestMessage();
+        var kvps = new List<KeyValuePair<string, string>>();
+        // Controller has a key limit of 2, but the action has default limits
+        for (var i = 0; i < 10; i++)
         {
-            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-            Client = factory.CreateDefaultClient();
+            kvps.Add(new KeyValuePair<string, string>($"key{i}", $"value{i}"));
         }
+        kvps.Add(new KeyValuePair<string, string>("SampleInt", "50"));
+        kvps.Add(new KeyValuePair<string, string>("RequestVerificationToken", "invalid-data"));
 
-        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
-            builder.UseStartup<BasicWebSite.StartupRequestLimitSize>();
+        // Act
+        var response = await Client.PostAsync(
+            "RequestFormLimits/OverrideControllerLevelLimitsUsingDefaultLimits",
+            new FormUrlEncodedContent(kvps));
 
-        public HttpClient Client { get; }
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadAsStringAsync();
+        Assert.Equal(expected, result);
+    }
 
-        [Fact]
-        public async Task RequestFormLimitCheckHappens_WithAntiforgeryValidation()
-        {
-            // Arrange
-            var request = new HttpRequestMessage();
-            var kvps = new List<KeyValuePair<string, string>>();
-            // Controller has value count limit of 2
-            kvps.Add(new KeyValuePair<string, string>("key1", "value1"));
-            kvps.Add(new KeyValuePair<string, string>("key2", "value2"));
-            kvps.Add(new KeyValuePair<string, string>("key3", "value3"));
-            kvps.Add(new KeyValuePair<string, string>("RequestVerificationToken", "invalid-data"));
+    [Fact]
+    public async Task RequestSizeLimitCheckHappens_BeforeRequestFormLimits()
+    {
+        // Arrange
+        var kvps = new List<KeyValuePair<string, string>>();
+        // Request size has a limit of 100 bytes
+        // Request form limits has a value count limit of 2
+        // Antiforgery validation is also present
+        kvps.Add(new KeyValuePair<string, string>("key1", new string('a', 1024)));
+        kvps.Add(new KeyValuePair<string, string>("key2", "value2"));
+        kvps.Add(new KeyValuePair<string, string>("RequestVerificationToken", "invalid-data"));
 
-            // Act
-            var response = await Client.PostAsync(
-                "RequestFormLimits/RequestFormLimitsBeforeAntiforgeryValidation",
-                new FormUrlEncodedContent(kvps));
+        // Act
+        var response = await Client.PostAsync(
+            "RequestFormLimits/RequestSizeLimitBeforeRequestFormLimits",
+            new FormUrlEncodedContent(kvps));
 
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
-        }
+        // Assert
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        var result = await response.Content.ReadAsStringAsync();
+        Assert.Contains(
+            "InvalidOperationException: Request content size is greater than the limit size",
+            result);
+    }
 
-        [Fact]
-        public async Task OverridesControllerLevelLimits()
-        {
-            // Arrange
-            var expected = "{\"sampleInt\":10,\"sampleString\":null}";
-            var request = new HttpRequestMessage();
-            var kvps = new List<KeyValuePair<string, string>>();
-            // Controller has a value count limit of 2, but the action has a limit of 5
-            kvps.Add(new KeyValuePair<string, string>("key1", "value1"));
-            kvps.Add(new KeyValuePair<string, string>("key2", "value2"));
-            kvps.Add(new KeyValuePair<string, string>("SampleInt", "10"));
+    [Fact]
+    public async Task RequestFormLimitsCheckHappens_AfterRequestSizeLimit()
+    {
+        // Arrange
+        var kvps = new List<KeyValuePair<string, string>>();
+        // Request size has a limit of 100 bytes
+        // Request form limits has a value count limit of 2
+        // Antiforgery validation is also present
+        kvps.Add(new KeyValuePair<string, string>("key1", "value1"));
+        kvps.Add(new KeyValuePair<string, string>("key1", "value2"));
+        kvps.Add(new KeyValuePair<string, string>("key1", "value3"));
+        kvps.Add(new KeyValuePair<string, string>("RequestVerificationToken", "invalid-data"));
 
-            // Act
-            var response = await Client.PostAsync(
-                "RequestFormLimits/OverrideControllerLevelLimits",
-                new FormUrlEncodedContent(kvps));
+        // Act
+        var response = await Client.PostAsync(
+            "RequestFormLimits/RequestSizeLimitBeforeRequestFormLimits",
+            new FormUrlEncodedContent(kvps));
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var result = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expected, result);
-        }
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+    }
 
-        [Fact]
-        public async Task OverrideControllerLevelLimits_UsingDefaultLimits()
-        {
-            // Arrange
-            var expected = "{\"sampleInt\":50,\"sampleString\":null}";
-            var request = new HttpRequestMessage();
-            var kvps = new List<KeyValuePair<string, string>>();
-            // Controller has a key limit of 2, but the action has default limits
-            for (var i = 0; i < 10; i++)
-            {
-                kvps.Add(new KeyValuePair<string, string>($"key{i}", $"value{i}"));
-            }
-            kvps.Add(new KeyValuePair<string, string>("SampleInt", "50"));
-            kvps.Add(new KeyValuePair<string, string>("RequestVerificationToken", "invalid-data"));
+    [Fact]
+    public async Task AntiforgeryValidationHappens_AfterRequestFormAndSizeLimitCheck()
+    {
+        // Arrange
+        var request = new HttpRequestMessage();
+        var kvps = new List<KeyValuePair<string, string>>();
+        // Request size has a limit of 100 bytes
+        // Request form limits has a value count limit of 2
+        // Antiforgery validation is also present
+        kvps.Add(new KeyValuePair<string, string>("key1", "value1"));
+        kvps.Add(new KeyValuePair<string, string>("RequestVerificationToken", "invalid-data"));
 
-            // Act
-            var response = await Client.PostAsync(
-                "RequestFormLimits/OverrideControllerLevelLimitsUsingDefaultLimits",
-                new FormUrlEncodedContent(kvps));
+        // Act
+        var response = await Client.PostAsync(
+            "RequestFormLimits/RequestSizeLimitBeforeRequestFormLimits",
+            new FormUrlEncodedContent(kvps));
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var result = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expected, result);
-        }
-
-        [Fact]
-        public async Task RequestSizeLimitCheckHappens_BeforeRequestFormLimits()
-        {
-            // Arrange
-            var kvps = new List<KeyValuePair<string, string>>();
-            // Request size has a limit of 100 bytes
-            // Request form limits has a value count limit of 2
-            // Antiforgery validation is also present
-            kvps.Add(new KeyValuePair<string, string>("key1", new string('a', 1024)));
-            kvps.Add(new KeyValuePair<string, string>("key2", "value2"));
-            kvps.Add(new KeyValuePair<string, string>("RequestVerificationToken", "invalid-data"));
-
-            // Act
-            var response = await Client.PostAsync(
-                "RequestFormLimits/RequestSizeLimitBeforeRequestFormLimits",
-                new FormUrlEncodedContent(kvps));
-
-            // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            var result = await response.Content.ReadAsStringAsync();
-            Assert.Contains(
-                "InvalidOperationException: Request content size is greater than the limit size",
-                result);
-        }
-
-        [Fact]
-        public async Task RequestFormLimitsCheckHappens_AfterRequestSizeLimit()
-        {
-            // Arrange
-            var kvps = new List<KeyValuePair<string, string>>();
-            // Request size has a limit of 100 bytes
-            // Request form limits has a value count limit of 2
-            // Antiforgery validation is also present
-            kvps.Add(new KeyValuePair<string, string>("key1", "value1"));
-            kvps.Add(new KeyValuePair<string, string>("key1", "value2"));
-            kvps.Add(new KeyValuePair<string, string>("key1", "value3"));
-            kvps.Add(new KeyValuePair<string, string>("RequestVerificationToken", "invalid-data"));
-
-            // Act
-            var response = await Client.PostAsync(
-                "RequestFormLimits/RequestSizeLimitBeforeRequestFormLimits",
-                new FormUrlEncodedContent(kvps));
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
-        }
-
-        [Fact]
-        public async Task AntiforgeryValidationHappens_AfterRequestFormAndSizeLimitCheck()
-        {
-            // Arrange
-            var request = new HttpRequestMessage();
-            var kvps = new List<KeyValuePair<string, string>>();
-            // Request size has a limit of 100 bytes
-            // Request form limits has a value count limit of 2
-            // Antiforgery validation is also present
-            kvps.Add(new KeyValuePair<string, string>("key1", "value1"));
-            kvps.Add(new KeyValuePair<string, string>("RequestVerificationToken", "invalid-data"));
-
-            // Act
-            var response = await Client.PostAsync(
-                "RequestFormLimits/RequestSizeLimitBeforeRequestFormLimits",
-                new FormUrlEncodedContent(kvps));
-
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        }
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

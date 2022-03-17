@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 import { ILogger } from "./ILogger";
 import { TransferFormat } from "./ITransport";
@@ -157,10 +157,10 @@ export interface IHubProtocol {
      *
      * If {@link @microsoft/signalr.IHubProtocol.transferFormat} is 'Text', the `input` parameter must be a string, otherwise it must be an ArrayBuffer.
      *
-     * @param {string | ArrayBuffer | Buffer} input A string, ArrayBuffer, or Buffer containing the serialized representation.
+     * @param {string | ArrayBuffer} input A string or ArrayBuffer containing the serialized representation.
      * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
      */
-    parseMessages(input: string | ArrayBuffer | Buffer, logger: ILogger): HubMessage[];
+    parseMessages(input: string | ArrayBuffer, logger: ILogger): HubMessage[];
 
     /** Writes the specified {@link @microsoft/signalr.HubMessage} to a string or ArrayBuffer and returns it.
      *

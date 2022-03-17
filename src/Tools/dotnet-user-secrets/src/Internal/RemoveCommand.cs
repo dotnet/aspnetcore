@@ -1,48 +1,46 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace Microsoft.Extensions.SecretManager.Tools.Internal
+namespace Microsoft.Extensions.SecretManager.Tools.Internal;
+
+internal class RemoveCommand : ICommand
 {
-    internal class RemoveCommand : ICommand
+    private readonly string _keyName;
+
+    public static void Configure(CommandLineApplication command, CommandLineOptions options)
     {
-        private readonly string _keyName;
+        command.Description = "Removes the specified user secret";
+        command.HelpOption();
 
-        public static void Configure(CommandLineApplication command, CommandLineOptions options)
+        var keyArg = command.Argument("[name]", "Name of the secret");
+        command.OnExecute(() =>
         {
-            command.Description = "Removes the specified user secret";
-            command.HelpOption();
-
-            var keyArg = command.Argument("[name]", "Name of the secret");
-            command.OnExecute(() =>
+            if (keyArg.Value == null)
             {
-                if (keyArg.Value == null)
-                {
-                    throw new CommandParsingException(command, Resources.FormatError_MissingArgument("name"));
-                }
-
-                options.Command = new RemoveCommand(keyArg.Value);
-            });
-        }
-
-
-        public RemoveCommand(string keyName)
-        {
-            _keyName = keyName;
-        }
-
-        public void Execute(CommandContext context)
-        {
-            if (!context.SecretStore.ContainsKey(_keyName))
-            {
-                context.Reporter.Warn(Resources.FormatError_Missing_Secret(_keyName));
+                throw new CommandParsingException(command, Resources.FormatError_MissingArgument("name"));
             }
-            else
-            {
-                context.SecretStore.Remove(_keyName);
-                context.SecretStore.Save();
-            }
+
+            options.Command = new RemoveCommand(keyArg.Value);
+        });
+    }
+
+    public RemoveCommand(string keyName)
+    {
+        _keyName = keyName;
+    }
+
+    public void Execute(CommandContext context)
+    {
+        if (!context.SecretStore.ContainsKey(_keyName))
+        {
+            context.Reporter.Warn(Resources.FormatError_Missing_Secret(_keyName));
+        }
+        else
+        {
+            context.SecretStore.Remove(_keyName);
+            context.SecretStore.Save();
         }
     }
 }

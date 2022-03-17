@@ -1,38 +1,35 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
+
+public class ClientErrorResultFilterConventionTest
 {
-    public class ClientErrorResultFilterConventionTest
+    [Fact]
+    public void Apply_AddsFilter()
     {
-        [Fact]
-        public void Apply_AddsFilter()
-        {
-            // Arrange
-            var action = GetActionModel();
-            var convention = GetConvention();
+        // Arrange
+        var action = GetActionModel();
+        var convention = GetConvention();
 
-            // Act
-            convention.Apply(action);
+        // Act
+        convention.Apply(action);
 
-            // Assert
-            Assert.Single(action.Filters.OfType<ClientErrorResultFilterFactory>());
-        }
+        // Assert
+        Assert.Single(action.Filters.OfType<ClientErrorResultFilterFactory>());
+    }
 
-        private ClientErrorResultFilterConvention GetConvention()
-        {
-            return new ClientErrorResultFilterConvention();
-        }
+    private ClientErrorResultFilterConvention GetConvention()
+    {
+        return new ClientErrorResultFilterConvention();
+    }
 
-        private static ActionModel GetActionModel()
-        {
-            var action = new ActionModel(typeof(object).GetMethods()[0], new object[0]);
+    private static ActionModel GetActionModel()
+    {
+        var action = new ActionModel(typeof(object).GetMethods()[0], new object[0]);
 
-            return action;
-        }
+        return action;
     }
 }

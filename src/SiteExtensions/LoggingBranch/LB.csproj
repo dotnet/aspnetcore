@@ -25,23 +25,16 @@
     <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="$(TargetRuntimeIdentifier)" />
 
     <ProjectReference Include="..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
-        Condition=" $(IsTargetingPackBuilding) ">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-        Condition=" !$(IsTargetingPackBuilding) ">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <!-- Cannot assume this project and Microsoft.AspNetCore.AzureAppServices.HostingStartup have the same package version. -->
   <Target Name="_GetHostingStartupPackageReference" BeforeTargets="GenerateHostingStartupDeps">
     <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
     <MSBuild Projects="$(RepoRoot)src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj"
-        Targets="_GetPackageVersionInfo"
-        SkipNonexistentProjects="false">
+        Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
     </MSBuild>
 

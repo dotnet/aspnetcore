@@ -1,67 +1,61 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+public class ValueProviderFactoryExtensionsTest
 {
-    public class ValueProviderFactoryExtensionsTest
+    [Fact]
+    public void RemoveType_RemovesAllOfType()
     {
-        [Fact]
-        public void RemoveType_RemovesAllOfType()
-        {
-            // Arrange
-            var list = new List<IValueProviderFactory>
+        // Arrange
+        var list = new List<IValueProviderFactory>
             {
                 new FooValueProviderFactory(),
                 new BarValueProviderFactory(),
                 new FooValueProviderFactory()
             };
 
-            // Act
-            list.RemoveType(typeof(FooValueProviderFactory));
+        // Act
+        list.RemoveType(typeof(FooValueProviderFactory));
 
-            // Assert
-            var factory = Assert.Single(list);
-            Assert.IsType<BarValueProviderFactory>(factory);
-        }
+        // Assert
+        var factory = Assert.Single(list);
+        Assert.IsType<BarValueProviderFactory>(factory);
+    }
 
-        [Fact]
-        public void GenericRemoveType_RemovesAllOfType()
-        {
-            // Arrange
-            var list = new List<IValueProviderFactory>
+    [Fact]
+    public void GenericRemoveType_RemovesAllOfType()
+    {
+        // Arrange
+        var list = new List<IValueProviderFactory>
             {
                 new FooValueProviderFactory(),
                 new BarValueProviderFactory(),
                 new FooValueProviderFactory()
             };
 
-            // Act
-            list.RemoveType<FooValueProviderFactory>();
+        // Act
+        list.RemoveType<FooValueProviderFactory>();
 
-            // Assert
-            var factory = Assert.Single(list);
-            Assert.IsType<BarValueProviderFactory>(factory);
-        }
+        // Assert
+        var factory = Assert.Single(list);
+        Assert.IsType<BarValueProviderFactory>(factory);
+    }
 
-        private class FooValueProviderFactory : IValueProviderFactory
+    private class FooValueProviderFactory : IValueProviderFactory
+    {
+        public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
         {
-            public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
+    }
 
-        private class BarValueProviderFactory : IValueProviderFactory
+    private class BarValueProviderFactory : IValueProviderFactory
+    {
+        public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
         {
-            public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
     }
 }

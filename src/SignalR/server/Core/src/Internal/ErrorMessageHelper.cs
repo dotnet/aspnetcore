@@ -1,21 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.SignalR.Internal;
 
-namespace Microsoft.AspNetCore.SignalR.Internal
+internal static class ErrorMessageHelper
 {
-    internal static class ErrorMessageHelper
+    internal static string BuildErrorMessage(string message, Exception exception, bool includeExceptionDetails)
     {
-        internal static string BuildErrorMessage(string message, Exception exception, bool includeExceptionDetails)
+        if (exception is HubException || includeExceptionDetails)
         {
-            if (exception is HubException || includeExceptionDetails)
-            {
-                return $"{message} {exception.GetType().Name}: {exception.Message}";
-
-            }
-
-            return message;
+            return $"{message} {exception.GetType().Name}: {exception.Message}";
         }
+
+        return message;
     }
 }

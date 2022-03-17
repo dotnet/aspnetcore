@@ -1,36 +1,34 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace HtmlGenerationWebSite.Models
+namespace HtmlGenerationWebSite.Models;
+
+public class Product
 {
-    public class Product
+    [Required]
+    public string ProductName
     {
-        [Required]
-        public string ProductName
-        {
-            get;
-            set;
-        }
+        get;
+        set;
+    }
 
-        public int Number
-        {
-            get;
-            set;
-        }
+    public int Number
+    {
+        get;
+        set;
+    }
 
-        public string Description
-        {
-            get;
-            set;
-        }
+    public string Description
+    {
+        get;
+        set;
+    }
 
-        public Uri HomePage
-        {
-            get;
-            set;
-        }
+    public Uri HomePage
+    {
+        get;
+        set;
     }
 }

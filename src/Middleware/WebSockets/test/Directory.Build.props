@@ -13,15 +13,15 @@
 
   <!-- Temporarary until all of aspnet/WebSocket's dependencies have been merged into this repo -->
   <PropertyGroup>
-    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.2.0</MicrosoftAspNetCoreDiagnosticsPackageVersion>
-    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.2.0</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
-    <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.2.0</MicrosoftAspNetCoreServerHttpSysPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-rtm-final</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.2.0</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModuleVersion>
+    <MicrosoftAspNetCoreDiagnosticsVersion>2.2.0</MicrosoftAspNetCoreDiagnosticsVersion>
+    <MicrosoftAspNetCoreHttpExtensionsVersion>2.2.0</MicrosoftAspNetCoreHttpExtensionsVersion>
+    <MicrosoftAspNetCoreServerHttpSysVersion>2.2.0</MicrosoftAspNetCoreServerHttpSysVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationVersion>2.2.0</MicrosoftAspNetCoreServerIISIntegrationVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingVersion>0.6.0-rtm-final</MicrosoftAspNetCoreServerIntegrationTestingVersion>
+    <MicrosoftAspNetCoreServerKestrelHttpsVersion>2.2.0</MicrosoftAspNetCoreServerKestrelHttpsVersion>
+    <MicrosoftAspNetCoreServerKestrelVersion>2.2.0</MicrosoftAspNetCoreServerKestrelVersion>
+    <MicrosoftAspNetCoreStaticFilesVersion>2.2.0</MicrosoftAspNetCoreStaticFilesVersion>
   </PropertyGroup>
 
 </Project>

@@ -1,51 +1,47 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Xunit;
+namespace Microsoft.AspNetCore.Routing.Matching;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+public class ILEmitTrieFactoryTest
 {
-    public class ILEmitTrieFactoryTest
+    // We never vectorize on 32bit, so that's part of the test.
+    [Fact]
+    public void ShouldVectorize_ReturnsTrue_ForLargeEnoughStrings()
     {
-        // We never vectorize on 32bit, so that's part of the test.
-        [Fact] 
-        public void ShouldVectorize_ReturnsTrue_ForLargeEnoughStrings()
-        {
-            // Arrange
-            var is64Bit = IntPtr.Size == 8;
-            var expected = is64Bit;
+        // Arrange
+        var is64Bit = IntPtr.Size == 8;
+        var expected = is64Bit;
 
-            var entries = new[]
-            {
+        var entries = new[]
+        {
                 ("foo", 0),
                 ("badr", 0),
                 ("", 0),
             };
 
-            // Act
-            var actual = ILEmitTrieFactory.ShouldVectorize(entries);
+        // Act
+        var actual = ILEmitTrieFactory.ShouldVectorize(entries);
 
-            // Assert
-            Assert.Equal(expected, actual);
-        }
+        // Assert
+        Assert.Equal(expected, actual);
+    }
 
-        [Fact]
-        public void ShouldVectorize_ReturnsFalseForSmallStrings()
+    [Fact]
+    public void ShouldVectorize_ReturnsFalseForSmallStrings()
+    {
+        // Arrange
+        var entries = new[]
         {
-            // Arrange
-            var entries = new[]
-            {
                 ("foo", 0),
                 ("sma", 0),
                 ("", 0),
             };
 
-            // Act
-            var actual = ILEmitTrieFactory.ShouldVectorize(entries);
+        // Act
+        var actual = ILEmitTrieFactory.ShouldVectorize(entries);
 
-            // Assert
-            Assert.False(actual);
-        }
+        // Assert
+        Assert.False(actual);
     }
 }

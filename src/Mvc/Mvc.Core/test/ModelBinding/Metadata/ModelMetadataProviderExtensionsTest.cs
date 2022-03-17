@@ -1,24 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+public class ModelMetadataProviderExtensionsTest
 {
-    public class ModelMetadataProviderExtensionsTest
+    [Fact]
+    public void GetMetadataForPropertyInvalidPropertyNameThrows()
     {
-        [Fact]
-        public void GetMetadataForPropertyInvalidPropertyNameThrows()
-        {
-            // Arrange
-            var provider = (IModelMetadataProvider)new EmptyModelMetadataProvider();
+        // Arrange
+        var provider = (IModelMetadataProvider)new EmptyModelMetadataProvider();
 
-            // Act & Assert
-            ExceptionAssert.ThrowsArgument(
-                () => provider.GetMetadataForProperty(typeof(object), propertyName: "BadPropertyName"),
-                "propertyName",
-                "The property System.Object.BadPropertyName could not be found.");
-        }
+        // Act & Assert
+        ExceptionAssert.ThrowsArgument(
+            () => provider.GetMetadataForProperty(typeof(object), propertyName: "BadPropertyName"),
+            "propertyName",
+            "The property System.Object.BadPropertyName could not be found.");
     }
 }

@@ -1,9 +1,0 @@
-Source Location: (106:2,7 [93] x:\dir\subdir\Test\TestComponent.cshtml)
-|
-    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();
-|
-Generated Location: (1318:32,7 [93] )
-|
-    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();
-|
-

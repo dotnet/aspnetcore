@@ -1,105 +1,102 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using Microsoft.JSInterop.Infrastructure;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop;
+
+/// <summary>
+/// Wraps a JS interop argument, indicating that the value should not be serialized as JSON
+/// but instead should be passed as a reference.
+///
+/// To avoid leaking memory, the reference must later be disposed by JS code or by .NET code.
+/// </summary>
+/// <typeparam name="TValue">The type of the value to wrap.</typeparam>
+public sealed class DotNetObjectReference<TValue> : IDotNetObjectReference, IDisposable where TValue : class
 {
+    private readonly TValue _value;
+    private long _objectId;
+    private JSRuntime? _jsRuntime;
+
     /// <summary>
-    /// Wraps a JS interop argument, indicating that the value should not be serialized as JSON
-    /// but instead should be passed as a reference.
-    ///
-    /// To avoid leaking memory, the reference must later be disposed by JS code or by .NET code.
+    /// Initializes a new instance of <see cref="DotNetObjectReference{TValue}" />.
     /// </summary>
-    /// <typeparam name="TValue">The type of the value to wrap.</typeparam>
-    public sealed class DotNetObjectReference<TValue> : IDotNetObjectReference, IDisposable where TValue : class
+    /// <param name="value">The value to pass by reference.</param>
+    internal DotNetObjectReference(TValue value)
     {
-        private readonly TValue _value;
-        private long _objectId;
-        private JSRuntime? _jsRuntime;
+        _value = value;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="DotNetObjectReference{TValue}" />.
-        /// </summary>
-        /// <param name="value">The value to pass by reference.</param>
-        internal DotNetObjectReference(TValue value)
+    /// <summary>
+    /// Gets the object instance represented by this wrapper.
+    /// </summary>
+    public TValue Value
+    {
+        get
         {
-            _value = value;
+            ThrowIfDisposed();
+            return _value;
         }
+    }
 
-        /// <summary>
-        /// Gets the object instance represented by this wrapper.
-        /// </summary>
-        public TValue Value
+    internal long ObjectId
+    {
+        get
         {
-            get
-            {
-                ThrowIfDisposed();
-                return _value;
-            }
+            ThrowIfDisposed();
+            Debug.Assert(_objectId != 0, "Accessing ObjectId without tracking is always incorrect.");
+
+            return _objectId;
         }
-
-        internal long ObjectId
+        set
         {
-            get
-            {
-                ThrowIfDisposed();
-                Debug.Assert(_objectId != 0, "Accessing ObjectId without tracking is always incorrect.");
-
-                return _objectId;
-            }
-            set
-            {
-                ThrowIfDisposed();
-                _objectId = value;
-            }
+            ThrowIfDisposed();
+            _objectId = value;
         }
+    }
 
-        internal JSRuntime? JSRuntime
+    internal JSRuntime? JSRuntime
+    {
+        get
         {
-            get
-            {
-                ThrowIfDisposed();
-                return _jsRuntime;
-            }
-            set
-            {
-                ThrowIfDisposed();
-                _jsRuntime = value;
-            }
-
+            ThrowIfDisposed();
+            return _jsRuntime;
         }
-
-        object IDotNetObjectReference.Value => Value;
-
-        internal bool Disposed { get; private set; }
-
-        /// <summary>
-        /// Stops tracking this object reference, allowing it to be garbage collected
-        /// (if there are no other references to it). Once the instance is disposed, it
-        /// can no longer be used in interop calls from JavaScript code.
-        /// </summary>
-        public void Dispose()
+        set
         {
-            if (!Disposed)
-            {
-                Disposed = true;
+            ThrowIfDisposed();
+            _jsRuntime = value;
+        }
+    }
 
-                if (_jsRuntime != null)
-                {
-                    _jsRuntime.ReleaseObjectReference(_objectId);
-                }
+    object IDotNetObjectReference.Value => Value;
+
+    internal bool Disposed { get; private set; }
+
+    /// <summary>
+    /// Stops tracking this object reference, allowing it to be garbage collected
+    /// (if there are no other references to it). Once the instance is disposed, it
+    /// can no longer be used in interop calls from JavaScript code.
+    /// </summary>
+    public void Dispose()
+    {
+        if (!Disposed)
+        {
+            Disposed = true;
+
+            if (_jsRuntime != null)
+            {
+                _jsRuntime.ReleaseObjectReference(_objectId);
             }
         }
+    }
 
-        internal void ThrowIfDisposed()
+    internal void ThrowIfDisposed()
+    {
+        if (Disposed)
         {
-            if (Disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+            throw new ObjectDisposedException(GetType().Name);
         }
     }
 }

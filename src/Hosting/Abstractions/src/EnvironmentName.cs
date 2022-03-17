@@ -1,27 +1,26 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Hosting
+namespace Microsoft.AspNetCore.Hosting;
+
+/// <summary>
+/// Commonly used environment names.
+/// </summary>
+[System.Obsolete("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Hosting.Environments.", error: false)]
+public static class EnvironmentName
 {
     /// <summary>
-    /// Commonly used environment names.
+    /// A string constant for Development environments.
     /// </summary>
-    [System.Obsolete("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Hosting.Environments.", error: false)]
-    public static class EnvironmentName
-    {
-        /// <summary>
-        /// A string constant for Development environments.
-        /// </summary>
-        public static readonly string Development = "Development";
+    public static readonly string Development = "Development";
 
-        /// <summary>
-        /// A string constant for Staging environments.
-        /// </summary>
-        public static readonly string Staging = "Staging";
+    /// <summary>
+    /// A string constant for Staging environments.
+    /// </summary>
+    public static readonly string Staging = "Staging";
 
-        /// <summary>
-        /// A string constant for Production environments.
-        /// </summary>
-        public static readonly string Production = "Production";
-    }
+    /// <summary>
+    /// A string constant for Production environments.
+    /// </summary>
+    public static readonly string Production = "Production";
 }

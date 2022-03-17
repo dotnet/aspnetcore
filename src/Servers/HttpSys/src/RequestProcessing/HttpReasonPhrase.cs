@@ -1,22 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.Server.HttpSys;
+
+internal static class HttpReasonPhrase
 {
-    internal static class HttpReasonPhrase
+    private static readonly string?[]?[] HttpReasonPhrases = new string?[]?[]
     {
-        private static readonly string[][] HttpReasonPhrases = new string[][]
-        {
             null,
 
-            new string[]
+            new string?[]
             {
                 /* 100 */ "Continue",
                 /* 101 */ "Switching Protocols",
                 /* 102 */ "Processing"
             },
 
-            new string[]
+            new string?[]
             {
                 /* 200 */ "OK",
                 /* 201 */ "Created",
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 /* 207 */ "Multi-Status"
             },
 
-            new string[]
+            new string?[]
             {
                 /* 300 */ "Multiple Choices",
                 /* 301 */ "Moved Permanently",
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 /* 307 */ "Temporary Redirect"
             },
 
-            new string[]
+            new string?[]
             {
                 /* 400 */ "Bad Request",
                 /* 401 */ "Unauthorized",
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 /* 426 */ "Upgrade Required", // RFC 2817
             },
 
-            new string[]
+            new string?[]
             {
                 /* 500 */ "Internal Server Error",
                 /* 501 */ "Not Implemented",
@@ -82,20 +82,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 /* 506 */ null,
                 /* 507 */ "Insufficient Storage"
             }
-        };
+    };
 
-        internal static string Get(int code)
+    internal static string? Get(int code)
+    {
+        if (code >= 100 && code < 600)
         {
-            if (code >= 100 && code < 600)
+            int i = code / 100;
+            int j = code % 100;
+            if (j < HttpReasonPhrases[i]!.Length)
             {
-                int i = code / 100;
-                int j = code % 100;
-                if (j < HttpReasonPhrases[i].Length)
-                {
-                    return HttpReasonPhrases[i][j];
-                }
+                return HttpReasonPhrases[i]![j];
             }
-            return null;
         }
+        return null;
     }
 }

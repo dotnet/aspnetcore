@@ -1,7 +1,8 @@
 {
   "recommendations": [
     "ms-dotnettools.csharp",
-    "ms-vscode.PowerShell",
-    "EditorConfig.EditorConfig"
+    "EditorConfig.EditorConfig",
+    "k--kato.docomment",
+    "dbaeumer.vscode-eslint"
   ]
 }

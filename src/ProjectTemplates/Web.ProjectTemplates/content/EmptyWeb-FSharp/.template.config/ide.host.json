@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json.schemastore.org/vs-2017.3.host",
+  "order": 101,
+  "icon": "ide/Empty.png",
+  "supportedAuthentications": [
+    {
+      "auth": "None",
+      "authenticationType": "NoAuth",
+      "allowUnsecured": true
+    }
+  ],
+  "supportsDocker": true,
+  "ports": [
+    {
+      "name": "HttpPort",
+      "useHttps": false
+    },
+    {
+      "name": "HttpsPort",
+      "useHttps": true
+    }
+  ],
+  "disableHttpsSymbol": "NoHttps"
+}

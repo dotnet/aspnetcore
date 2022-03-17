@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 /*
   A LogicalElement plays the same role as an Element instance from the point of view of the
   API consumer. Inserting and removing logical elements updates the browser DOM just the same.
@@ -7,7 +10,7 @@
   LogicalElement APIs take care of tracking hierarchical relationships separately. The point
   of this is to permit a logical tree structure in which parent/child relationships don't
   have to be materialized in terms of DOM element parent/child relationships. And the reason
-  why we want that is so that hierarchies of Blazor components can be tracked even when those
+  why we want that is so that hierarchies of Razor components can be tracked even when those
   components' render output need not be a single literal DOM element.
 
   Consumers of the API don't need to know about the implementation, but how it's done is:
@@ -79,14 +82,21 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
   return element as unknown as LogicalElement;
 }
 
+export function emptyLogicalElement(element: LogicalElement): void {
+  const childrenArray = getLogicalChildrenArray(element);
+  while (childrenArray.length) {
+    removeLogicalChild(element, 0);
+  }
+}
+
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {
   const containerElement = document.createComment('!');
   insertLogicalChild(containerElement, parent, childIndex);
-  return containerElement as any as LogicalElement;
+  return containerElement as unknown as LogicalElement;
 }
 
-export function insertLogicalChild(child: Node, parent: LogicalElement, childIndex: number) {
-  const childAsLogicalElement = child as any as LogicalElement;
+export function insertLogicalChild(child: Node, parent: LogicalElement, childIndex: number): void {
+  const childAsLogicalElement = child as unknown as LogicalElement;
   if (child instanceof Comment) {
     const existingGrandchildren = getLogicalChildrenArray(childAsLogicalElement);
     if (existingGrandchildren && getLogicalChildrenArray(childAsLogicalElement).length > 0) {
@@ -125,7 +135,7 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
   }
 }
 
-export function removeLogicalChild(parent: LogicalElement, childIndex: number) {
+export function removeLogicalChild(parent: LogicalElement, childIndex: number): void {
   const childrenArray = getLogicalChildrenArray(parent);
   const childToRemove = childrenArray.splice(childIndex, 1)[0];
 
@@ -156,15 +166,25 @@ export function getLogicalChild(parent: LogicalElement, childIndex: number): Log
   return getLogicalChildrenArray(parent)[childIndex];
 }
 
-export function isSvgElement(element: LogicalElement) {
-  return getClosestDomElement(element).namespaceURI === 'http://www.w3.org/2000/svg';
+// SVG elements support `foreignObject` children that can hold arbitrary HTML.
+// For these scenarios, the parent SVG and `foreignObject` elements should
+// be rendered under the SVG namespace, while the HTML content should be rendered
+// under the XHTML namespace. If the correct namespaces are not provided, most
+// browsers will fail to render the foreign object content. Here, we ensure that if
+// we encounter a `foreignObject` in the SVG, then all its children will be placed
+// under the XHTML namespace.
+export function isSvgElement(element: LogicalElement): boolean {
+  // Note: This check is intentionally case-sensitive since we expect this element
+  // to appear as a child of an SVG element and SVGs are case-sensitive.
+  const closestElement = getClosestDomElement(element) as any;
+  return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement['tagName'] !== 'foreignObject';
 }
 
-export function getLogicalChildrenArray(element: LogicalElement) {
+export function getLogicalChildrenArray(element: LogicalElement): LogicalElement[] {
   return element[logicalChildrenPropname] as LogicalElement[];
 }
 
-export function permuteLogicalChildren(parent: LogicalElement, permutationList: PermutationListEntry[]) {
+export function permuteLogicalChildren(parent: LogicalElement, permutationList: PermutationListEntry[]): void {
   // The permutationList must represent a valid permutation, i.e., the list of 'from' indices
   // is distinct, and the list of 'to' indices is a permutation of it. The algorithm here
   // relies on that assumption.
@@ -181,7 +201,8 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
 
   // Phase 2: insert markers
   permutationList.forEach((listEntry: PermutationListEntryWithTrackingData) => {
-    const marker = listEntry.moveToBeforeMarker = document.createComment('marker');
+    const marker = document.createComment('marker');
+    listEntry.moveToBeforeMarker = marker;
     const insertBeforeNode = siblings[listEntry.toSiblingIndex + 1] as any as Node;
     if (insertBeforeNode) {
       insertBeforeNode.parentNode!.insertBefore(marker, insertBeforeNode);
@@ -196,7 +217,7 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
     const parentDomNode = insertBefore.parentNode!;
     const elementToMove = listEntry.moveRangeStart!;
     const moveEndNode = listEntry.moveRangeEnd!;
-    let nextToMove = elementToMove as any as Node | null;
+    let nextToMove = elementToMove as unknown as Node | null;
     while (nextToMove) {
       const nextNext = nextToMove.nextSibling;
       parentDomNode.insertBefore(nextToMove, insertBefore);
@@ -217,8 +238,8 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
   });
 }
 
-export function getClosestDomElement(logicalElement: LogicalElement) {
-  if (logicalElement instanceof Element) {
+export function getClosestDomElement(logicalElement: LogicalElement): Element | (LogicalElement & DocumentFragment) {
+  if (logicalElement instanceof Element || logicalElement instanceof DocumentFragment) {
     return logicalElement;
   } else if (logicalElement instanceof Comment) {
     return logicalElement.parentNode! as Element;
@@ -248,7 +269,7 @@ function getLogicalNextSibling(element: LogicalElement): LogicalElement | null {
 function appendDomNode(child: Node, parent: LogicalElement) {
   // This function only puts 'child' into the DOM in the right place relative to 'parent'
   // It does not update the logical children array of anything
-  if (parent instanceof Element) {
+  if (parent instanceof Element || parent instanceof DocumentFragment) {
     parent.appendChild(child);
   } else if (parent instanceof Comment) {
     const parentLogicalNextSibling = getLogicalNextSibling(parent) as any as Node;
@@ -269,7 +290,7 @@ function appendDomNode(child: Node, parent: LogicalElement) {
 // Returns the final node (in depth-first evaluation order) that is a descendant of the logical element.
 // As such, the entire subtree is between 'element' and 'findLastDomNodeInRange(element)' inclusive.
 function findLastDomNodeInRange(element: LogicalElement) {
-  if (element instanceof Element) {
+  if (element instanceof Element || element instanceof DocumentFragment) {
     return element;
   }
 
@@ -281,7 +302,7 @@ function findLastDomNodeInRange(element: LogicalElement) {
     // Harder case: there's no logical next-sibling, so recurse upwards until we find
     // a logical ancestor that does have one, or a physical element
     const logicalParent = getLogicalParent(element)!;
-    return logicalParent instanceof Element
+    return logicalParent instanceof Element || logicalParent instanceof DocumentFragment
       ? logicalParent.lastChild
       : findLastDomNodeInRange(logicalParent);
   }

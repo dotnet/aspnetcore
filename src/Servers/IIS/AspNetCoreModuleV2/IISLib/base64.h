@@ -3,6 +3,8 @@
 
 #ifndef _BASE64_H_
 #define _BASE64_H_
+#include <ahadmin.h>
+#include <intsafe.h>
 
 DWORD
 Base64Encode(

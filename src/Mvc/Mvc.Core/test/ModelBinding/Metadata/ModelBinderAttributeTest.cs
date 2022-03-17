@@ -1,74 +1,72 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding;
+
+public class ModelBinderAttributeTest
 {
-    public class ModelBinderAttributeTest
+    [Fact]
+    public void NoBinderType_NoBindingSource()
     {
-        [Fact]
-        public void NoBinderType_NoBindingSource()
+        // Arrange
+        var attribute = new ModelBinderAttribute();
+
+        // Act
+        var source = attribute.BindingSource;
+
+        // Assert
+        Assert.Null(source);
+    }
+
+    [Fact]
+    public void BinderType_DefaultCustomBindingSource()
+    {
+        // Arrange
+        var attribute = new ModelBinderAttribute
         {
-            // Arrange
-            var attribute = new ModelBinderAttribute();
+            BinderType = typeof(ByteArrayModelBinder),
+        };
 
-            // Act
-            var source = attribute.BindingSource;
+        // Act
+        var source = attribute.BindingSource;
 
-            // Assert
-            Assert.Null(source);
-        }
+        // Assert
+        Assert.Same(BindingSource.Custom, source);
+    }
 
-        [Fact]
-        public void BinderType_DefaultCustomBindingSource()
+    [Fact]
+    public void BinderTypePassedToConstructor_DefaultCustomBindingSource()
+    {
+        // Arrange
+        var attribute = new ModelBinderAttribute(typeof(ByteArrayModelBinder));
+
+        // Act
+        var source = attribute.BindingSource;
+
+        // Assert
+        Assert.Same(BindingSource.Custom, source);
+    }
+
+    [Fact]
+    public void BinderType_SettingBindingSource_OverridesDefaultCustomBindingSource()
+    {
+        // Arrange
+        var attribute = new FromQueryModelBinderAttribute
         {
-            // Arrange
-            var attribute = new ModelBinderAttribute
-            {
-                BinderType = typeof(ByteArrayModelBinder),
-            };
+            BinderType = typeof(ByteArrayModelBinder)
+        };
 
-            // Act
-            var source = attribute.BindingSource;
+        // Act
+        var source = attribute.BindingSource;
 
-            // Assert
-            Assert.Same(BindingSource.Custom, source);
-        }
+        // Assert
+        Assert.Equal(BindingSource.Query, source);
+    }
 
-        [Fact]
-        public void BinderTypePassedToConstructor_DefaultCustomBindingSource()
-        {
-            // Arrange
-            var attribute = new ModelBinderAttribute(typeof(ByteArrayModelBinder));
-
-            // Act
-            var source = attribute.BindingSource;
-
-            // Assert
-            Assert.Same(BindingSource.Custom, source);
-        }
-
-        [Fact]
-        public void BinderType_SettingBindingSource_OverridesDefaultCustomBindingSource()
-        {
-            // Arrange
-            var attribute = new FromQueryModelBinderAttribute
-            {
-                BinderType = typeof(ByteArrayModelBinder)
-            };
-
-            // Act
-            var source = attribute.BindingSource;
-
-            // Assert
-            Assert.Equal(BindingSource.Query, source);
-        }
-
-        private class FromQueryModelBinderAttribute : ModelBinderAttribute
-        {
-            public override BindingSource BindingSource => BindingSource.Query;
-        }
+    private class FromQueryModelBinderAttribute : ModelBinderAttribute
+    {
+        public override BindingSource BindingSource => BindingSource.Query;
     }
 }

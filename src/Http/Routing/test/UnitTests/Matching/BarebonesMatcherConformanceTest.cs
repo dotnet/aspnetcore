@@ -1,59 +1,54 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
-using Xunit;
+namespace Microsoft.AspNetCore.Routing.Matching;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+public class BarebonesMatcherConformanceTest : MatcherConformanceTest
 {
-    public class BarebonesMatcherConformanceTest : MatcherConformanceTest
+    // Route values not supported
+    [Fact]
+    public override Task Match_SingleParameter()
     {
-        // Route values not supported
-        [Fact]
-        public override Task Match_SingleParameter()
-        {
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
+    }
 
-        // Route values not supported
-        [Fact]
-        public override Task Match_SingleParameter_TrailingSlash()
-        {
-            return Task.CompletedTask;
-        }
+    // Route values not supported
+    [Fact]
+    public override Task Match_SingleParameter_TrailingSlash()
+    {
+        return Task.CompletedTask;
+    }
 
-        // Route values not supported
-        [Fact]
-        public override Task Match_SingleParameter_WeirdNames()
-        {
-            return Task.CompletedTask;
-        }
+    // Route values not supported
+    [Fact]
+    public override Task Match_SingleParameter_WeirdNames()
+    {
+        return Task.CompletedTask;
+    }
 
-        // Route values not supported
-        [Theory]
-        [InlineData(null, null, null, null)]
-        public override Task Match_MultipleParameters(string template, string path, string[] keys, string[] values)
-        {
-            GC.KeepAlive(new object[] { template, path, keys, values });
-            return Task.CompletedTask;
-        }
+    // Route values not supported
+    [Theory]
+    [InlineData(null, null, null, null)]
+    public override Task Match_MultipleParameters(string template, string path, string[] keys, string[] values)
+    {
+        GC.KeepAlive(new object[] { template, path, keys, values });
+        return Task.CompletedTask;
+    }
 
-        // Route constraints not supported
-        [Fact]
-        public override Task Match_Constraint()
-        {
-            return Task.CompletedTask;
-        }
+    // Route constraints not supported
+    [Fact]
+    public override Task Match_Constraint()
+    {
+        return Task.CompletedTask;
+    }
 
-        internal override Matcher CreateMatcher(params RouteEndpoint[] endpoints)
+    internal override Matcher CreateMatcher(params RouteEndpoint[] endpoints)
+    {
+        var builder = new BarebonesMatcherBuilder();
+        for (var i = 0; i < endpoints.Length; i++)
         {
-            var builder = new BarebonesMatcherBuilder();
-            for (var i = 0; i < endpoints.Length; i++)
-            {
-                builder.AddEndpoint(endpoints[i]);
-            }
-            return builder.Build();
+            builder.AddEndpoint(endpoints[i]);
         }
+        return builder.Build();
     }
 }

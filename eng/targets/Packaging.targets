@@ -19,17 +19,17 @@
         <PackageId>$(PackageId)</PackageId>
         <PackageVersion>$(PackageVersionForPackageVersionInfo)</PackageVersion>
         <VersionSuffix>$(VersionSuffix)</VersionSuffix>
-        <VersionVariableName>$(PackageId.Replace('.',''))PackageVersion</VersionVariableName>
+        <VersionVariableName>$(PackageId.Replace('.',''))Version</VersionVariableName>
       </_ProjectPathWithVersion>
     </ItemGroup>
   </Target>
 
   <PropertyGroup>
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_AppendRepostoryUrlToPackageDescription</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_AppendRepositoryUrlToPackageDescription</GenerateNuspecDependsOn>
   </PropertyGroup>
 
-  <Target Name="_AppendRepostoryUrlToPackageDescription"
-    DependsOnTargets="InitializeSourceControlInformation">
+  <Target Name="_AppendRepositoryUrlToPackageDescription"
+      DependsOnTargets="InitializeSourceControlInformation">
     <PropertyGroup Condition="'$(RepositoryUrl)' != '' AND '$(SourceRevisionId)' != ''">
       <PackageDescription>$(PackageDescription)
 

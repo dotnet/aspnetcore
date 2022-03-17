@@ -1,41 +1,39 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace ApplicationModelWebSite
+namespace ApplicationModelWebSite;
+
+// This controller uses an reflected model attribute to change an action name, and thus
+// the URL.
+public class ActionModelController : Controller
 {
-    // This controller uses an reflected model attribute to change an action name, and thus
-    // the URL.
-    public class ActionModelController : Controller
+    [ActionName2("ActionName")]
+    public string GetActionName()
     {
-        [ActionName2("ActionName")]
-        public string GetActionName()
+        return ControllerContext.ActionDescriptor.ActionName;
+    }
+
+    [CloneAction("MoreHelp")]
+    public IActionResult Help()
+    {
+        return View();
+    }
+
+    private class ActionName2Attribute : Attribute, IActionModelConvention
+    {
+        private readonly string _actionName;
+
+        public ActionName2Attribute(string actionName)
         {
-            return ControllerContext.ActionDescriptor.ActionName;
+            _actionName = actionName;
         }
 
-        [CloneAction("MoreHelp")]
-        public IActionResult Help()
+        public void Apply(ActionModel model)
         {
-            return View();
-        }
-
-        private class ActionName2Attribute : Attribute, IActionModelConvention
-        {
-            private readonly string _actionName;
-
-            public ActionName2Attribute(string actionName)
-            {
-                _actionName = actionName;
-            }
-
-            public void Apply(ActionModel model)
-            {
-                model.ActionName = _actionName;
-            }
+            model.ActionName = _actionName;
         }
     }
 }

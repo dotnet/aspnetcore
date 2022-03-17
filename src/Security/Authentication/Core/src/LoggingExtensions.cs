@@ -1,155 +1,49 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Logging
+internal static partial class LoggingExtensions
 {
-    internal static class LoggingExtensions
-    {
-        private static readonly Action<ILogger, string, Exception?> _authenticationSchemeAuthenticated;
-        private static readonly Action<ILogger, string, Exception?> _authenticationSchemeNotAuthenticated;
-        private static readonly Action<ILogger, string, string, Exception?> _authenticationSchemeNotAuthenticatedWithFailure;
-        private static readonly Action<ILogger, string, Exception?> _authenticationSchemeChallenged;
-        private static readonly Action<ILogger, string, Exception?> _authenticationSchemeForbidden;
-        private static readonly Action<ILogger, string, Exception?> _remoteAuthenticationError;
-        private static readonly Action<ILogger, Exception?> _signInHandled;
-        private static readonly Action<ILogger, Exception?> _signInSkipped;
-        private static readonly Action<ILogger, string, Exception?> _correlationPropertyNotFound;
-        private static readonly Action<ILogger, string, Exception?> _correlationCookieNotFound;
-        private static readonly Action<ILogger, string, string, Exception?> _unexpectedCorrelationCookieValue;
-        private static readonly Action<ILogger, Exception?> _accessDeniedError;
-        private static readonly Action<ILogger, Exception?> _accessDeniedContextHandled;
-        private static readonly Action<ILogger, Exception?> _accessDeniedContextSkipped;
+    [LoggerMessage(4, LogLevel.Information, "Error from RemoteAuthentication: {ErrorMessage}.", EventName = "RemoteAuthenticationFailed")]
+    public static partial void RemoteAuthenticationError(this ILogger logger, string errorMessage);
 
-        static LoggingExtensions()
-        {
-            _remoteAuthenticationError = LoggerMessage.Define<string>(
-                eventId: new EventId(4, "RemoteAuthenticationFailed"),
-                logLevel: LogLevel.Information,
-                formatString: "Error from RemoteAuthentication: {ErrorMessage}.");
-            _signInHandled = LoggerMessage.Define(
-                eventId: new EventId(5, "SignInHandled"),
-                logLevel: LogLevel.Debug,
-                formatString: "The SigningIn event returned Handled.");
-            _signInSkipped = LoggerMessage.Define(
-                eventId: new EventId(6, "SignInSkipped"),
-                logLevel: LogLevel.Debug,
-                formatString: "The SigningIn event returned Skipped.");
-            _authenticationSchemeNotAuthenticatedWithFailure = LoggerMessage.Define<string, string>(
-                eventId: new EventId(7, "AuthenticationSchemeNotAuthenticatedWithFailure"),
-                logLevel: LogLevel.Information,
-                formatString: "{AuthenticationScheme} was not authenticated. Failure message: {FailureMessage}");
-            _authenticationSchemeAuthenticated = LoggerMessage.Define<string>(
-                eventId: new EventId(8, "AuthenticationSchemeAuthenticated"),
-                logLevel: LogLevel.Debug,
-                formatString: "AuthenticationScheme: {AuthenticationScheme} was successfully authenticated.");
-            _authenticationSchemeNotAuthenticated = LoggerMessage.Define<string>(
-                eventId: new EventId(9, "AuthenticationSchemeNotAuthenticated"),
-                logLevel: LogLevel.Debug,
-                formatString: "AuthenticationScheme: {AuthenticationScheme} was not authenticated.");
-            _authenticationSchemeChallenged = LoggerMessage.Define<string>(
-                eventId: new EventId(12, "AuthenticationSchemeChallenged"),
-                logLevel: LogLevel.Information,
-                formatString: "AuthenticationScheme: {AuthenticationScheme} was challenged.");
-            _authenticationSchemeForbidden = LoggerMessage.Define<string>(
-                eventId: new EventId(13, "AuthenticationSchemeForbidden"),
-                logLevel: LogLevel.Information,
-                formatString: "AuthenticationScheme: {AuthenticationScheme} was forbidden.");
-            _correlationPropertyNotFound = LoggerMessage.Define<string>(
-                eventId: new EventId(14, "CorrelationPropertyNotFound"),
-                logLevel: LogLevel.Warning,
-                formatString: "{CorrelationProperty} state property not found.");
-            _correlationCookieNotFound = LoggerMessage.Define<string>(
-                eventId: new EventId(15, "CorrelationCookieNotFound"),
-                logLevel: LogLevel.Warning,
-                formatString: "'{CorrelationCookieName}' cookie not found.");
-            _unexpectedCorrelationCookieValue = LoggerMessage.Define<string, string>(
-                eventId: new EventId(16, "UnexpectedCorrelationCookieValue"),
-               logLevel: LogLevel.Warning,
-               formatString: "The correlation cookie value '{CorrelationCookieName}' did not match the expected value '{CorrelationCookieValue}'.");
-            _accessDeniedError = LoggerMessage.Define(
-                eventId: new EventId(17, "AccessDenied"),
-                logLevel: LogLevel.Information,
-                formatString: "Access was denied by the resource owner or by the remote server.");
-            _accessDeniedContextHandled = LoggerMessage.Define(
-                eventId: new EventId(18, "AccessDeniedContextHandled"),
-                logLevel: LogLevel.Debug,
-                formatString: "The AccessDenied event returned Handled.");
-            _accessDeniedContextSkipped = LoggerMessage.Define(
-                eventId: new EventId(19, "AccessDeniedContextSkipped"),
-                logLevel: LogLevel.Debug,
-                formatString: "The AccessDenied event returned Skipped.");
-        }
+    [LoggerMessage(5, LogLevel.Debug, "The SigningIn event returned Handled.", EventName = "SignInHandled")]
+    public static partial void SignInHandled(this ILogger logger);
 
-        public static void AuthenticationSchemeAuthenticated(this ILogger logger, string authenticationScheme)
-        {
-            _authenticationSchemeAuthenticated(logger, authenticationScheme, null);
-        }
+    [LoggerMessage(6, LogLevel.Debug, "The SigningIn event returned Skipped.", EventName = "SignInSkipped")]
+    public static partial void SignInSkipped(this ILogger logger);
 
-        public static void AuthenticationSchemeNotAuthenticated(this ILogger logger, string authenticationScheme)
-        {
-            _authenticationSchemeNotAuthenticated(logger, authenticationScheme, null);
-        }
+    [LoggerMessage(7, LogLevel.Information, "{AuthenticationScheme} was not authenticated. Failure message: {FailureMessage}", EventName = "AuthenticationSchemeNotAuthenticatedWithFailure")]
+    public static partial void AuthenticationSchemeNotAuthenticatedWithFailure(this ILogger logger, string authenticationScheme, string failureMessage);
 
-        public static void AuthenticationSchemeNotAuthenticatedWithFailure(this ILogger logger, string authenticationScheme, string failureMessage)
-        {
-            _authenticationSchemeNotAuthenticatedWithFailure(logger, authenticationScheme, failureMessage, null);
-        }
+    [LoggerMessage(8, LogLevel.Debug, "AuthenticationScheme: {AuthenticationScheme} was successfully authenticated.", EventName = "AuthenticationSchemeAuthenticated")]
+    public static partial void AuthenticationSchemeAuthenticated(this ILogger logger, string authenticationScheme);
 
-        public static void AuthenticationSchemeChallenged(this ILogger logger, string authenticationScheme)
-        {
-            _authenticationSchemeChallenged(logger, authenticationScheme, null);
-        }
+    [LoggerMessage(9, LogLevel.Debug, "AuthenticationScheme: {AuthenticationScheme} was not authenticated.", EventName = "AuthenticationSchemeNotAuthenticated")]
+    public static partial void AuthenticationSchemeNotAuthenticated(this ILogger logger, string authenticationScheme);
 
-        public static void AuthenticationSchemeForbidden(this ILogger logger, string authenticationScheme)
-        {
-            _authenticationSchemeForbidden(logger, authenticationScheme, null);
-        }
+    [LoggerMessage(12, LogLevel.Information, "AuthenticationScheme: {AuthenticationScheme} was challenged.", EventName = "AuthenticationSchemeChallenged")]
+    public static partial void AuthenticationSchemeChallenged(this ILogger logger, string authenticationScheme);
 
-        public static void RemoteAuthenticationError(this ILogger logger, string errorMessage)
-        {
-            _remoteAuthenticationError(logger, errorMessage, null);
-        }
+    [LoggerMessage(13, LogLevel.Information, "AuthenticationScheme: {AuthenticationScheme} was forbidden.", EventName = "AuthenticationSchemeForbidden")]
+    public static partial void AuthenticationSchemeForbidden(this ILogger logger, string authenticationScheme);
 
-        public static void SignInHandled(this ILogger logger)
-        {
-            _signInHandled(logger, null);
-        }
+    [LoggerMessage(14, LogLevel.Warning, "{CorrelationProperty} state property not found.", EventName = "CorrelationPropertyNotFound")]
+    public static partial void CorrelationPropertyNotFound(this ILogger logger, string correlationProperty);
 
-        public static void SignInSkipped(this ILogger logger)
-        {
-            _signInSkipped(logger, null);
-        }
+    [LoggerMessage(15, LogLevel.Warning, "'{CorrelationCookieName}' cookie not found.", EventName = "CorrelationCookieNotFound")]
+    public static partial void CorrelationCookieNotFound(this ILogger logger, string correlationCookieName);
 
-        public static void CorrelationPropertyNotFound(this ILogger logger, string correlationPrefix)
-        {
-            _correlationPropertyNotFound(logger, correlationPrefix, null);
-        }
+    [LoggerMessage(16, LogLevel.Warning, "The correlation cookie value '{CorrelationCookieName}' did not match the expected value '{CorrelationCookieValue}'.", EventName = "UnexpectedCorrelationCookieValue")]
+    public static partial void UnexpectedCorrelationCookieValue(this ILogger logger, string correlationCookieName, string correlationCookieValue);
 
-        public static void CorrelationCookieNotFound(this ILogger logger, string cookieName)
-        {
-            _correlationCookieNotFound(logger, cookieName, null);
-        }
+    [LoggerMessage(17, LogLevel.Information, "Access was denied by the resource owner or by the remote server.", EventName = "AccessDenied")]
+    public static partial void AccessDeniedError(this ILogger logger);
 
-        public static void UnexpectedCorrelationCookieValue(this ILogger logger, string cookieName, string cookieValue)
-        {
-            _unexpectedCorrelationCookieValue(logger, cookieName, cookieValue, null);
-        }
+    [LoggerMessage(18, LogLevel.Debug, "The AccessDenied event returned Handled.", EventName = "AccessDeniedContextHandled")]
+    public static partial void AccessDeniedContextHandled(this ILogger logger);
 
-        public static void AccessDeniedError(this ILogger logger)
-        {
-            _accessDeniedError(logger, null);
-        }
-
-        public static void AccessDeniedContextHandled(this ILogger logger)
-        {
-            _accessDeniedContextHandled(logger, null);
-        }
-
-        public static void AccessDeniedContextSkipped(this ILogger logger)
-        {
-            _accessDeniedContextSkipped(logger, null);
-        }
-    }
+    [LoggerMessage(19, LogLevel.Debug, "The AccessDenied event returned Skipped.", EventName = "AccessDeniedContextSkipped")]
+    public static partial void AccessDeniedContextSkipped(this ILogger logger);
 }

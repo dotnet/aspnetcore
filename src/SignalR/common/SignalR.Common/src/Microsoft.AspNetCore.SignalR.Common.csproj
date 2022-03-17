@@ -1,14 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Common serialiation primitives for SignalR Clients Servers</Description>
+    <Description>Common serialization primitives for SignalR Clients Servers</Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,17 +25,22 @@
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
+  <ItemGroup
+       Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
     <Reference Include="System.Text.Json" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
     <Reference Include="System.Net.Sockets" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Common.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
   </ItemGroup>
 
 </Project>

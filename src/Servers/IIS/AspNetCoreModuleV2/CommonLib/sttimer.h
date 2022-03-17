@@ -118,13 +118,11 @@ public:
     VOID
     CALLBACK
     TimerCallback(
-        _In_ PTP_CALLBACK_INSTANCE Instance,
+        _In_ PTP_CALLBACK_INSTANCE ,
         _In_ PVOID Context,
-        _In_ PTP_TIMER Timer
+        _In_ PTP_TIMER 
     )
     {
-        Instance;
-        Timer;
         STRU*                   pstruLogFilePath = (STRU*)Context;
         HANDLE                  hStdoutHandle = NULL;
         SECURITY_ATTRIBUTES     saAttr = { 0 };

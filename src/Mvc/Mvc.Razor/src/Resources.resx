@@ -200,4 +200,7 @@
   <data name="CompiledViewDescriptor_NoData" xml:space="preserve">
     <value>At least one of the '{0}' or '{1}' values must be non-null.</value>
   </data>
+  <data name="AsyncDisposableViewsNotSupported" xml:space="preserve">
+    <value>Views implementing '{0}' are not supported.</value>
+  </data>
 </root>

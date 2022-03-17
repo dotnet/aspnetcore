@@ -1,11 +1,10 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Routing.Matching
+namespace Microsoft.AspNetCore.Routing.Matching;
+
+// End-to-end tests for the host matching functionality
+public class HostMatcherPolicyIEndpointSelectorPolicyIntegrationTest : HostMatcherPolicyIntegrationTestBase
 {
-    // End-to-end tests for the host matching functionality
-    public class HostMatcherPolicyIEndpointSelectorPolicyIntegrationTest : HostMatcherPolicyIntegrationTestBase
-    {
-        protected override bool HasDynamicMetadata => true;
-    }
+    protected override bool HasDynamicMetadata => true;
 }

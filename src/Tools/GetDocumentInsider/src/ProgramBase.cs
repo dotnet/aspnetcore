@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Text;
@@ -7,62 +7,61 @@ using Microsoft.Extensions.ApiDescription.Tool.Commands;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.Extensions.ApiDescription.Tool
+namespace Microsoft.Extensions.ApiDescription.Tool;
+
+internal abstract class ProgramBase
 {
-    internal abstract class ProgramBase
+    private readonly IConsole _console;
+    private readonly IReporter _reporter;
+
+    public ProgramBase(IConsole console)
     {
-        private readonly IConsole _console;
-        private readonly IReporter _reporter;
+        _console = console ?? throw new ArgumentNullException(nameof(console));
+        _reporter = new ConsoleReporter(_console, verbose: false, quiet: false);
+    }
 
-        public ProgramBase(IConsole console)
+    protected static IConsole GetConsole()
+    {
+        var console = PhysicalConsole.Singleton;
+        if (console.IsOutputRedirected)
         {
-            _console = console ?? throw new ArgumentNullException(nameof(console));
-            _reporter = new ConsoleReporter(_console, verbose: false, quiet: false);
+            Console.OutputEncoding = Encoding.UTF8;
         }
 
-        protected static IConsole GetConsole()
-        {
-            var console = PhysicalConsole.Singleton;
-            if (console.IsOutputRedirected)
-            {
-                Console.OutputEncoding = Encoding.UTF8;
-            }
+        return console;
+    }
 
-            return console;
+    protected int Run(string[] args, CommandBase command, bool throwOnUnexpectedArg)
+    {
+        try
+        {
+            // AllowArgumentSeparator and continueAfterUnexpectedArg are ignored when !throwOnUnexpectedArg _except_
+            // AllowArgumentSeparator=true changes the help text (ignoring throwOnUnexpectedArg).
+            var app = new CommandLineApplication(throwOnUnexpectedArg, continueAfterUnexpectedArg: true)
+            {
+                AllowArgumentSeparator = !throwOnUnexpectedArg,
+                Error = _console.Error,
+                FullName = Resources.CommandFullName,
+                Name = Resources.CommandFullName,
+                Out = _console.Out,
+            };
+
+            command.Configure(app);
+
+            return app.Execute(args);
         }
-
-        protected int Run(string[] args, CommandBase command, bool throwOnUnexpectedArg)
+        catch (Exception ex)
         {
-            try
+            if (ex is CommandException || ex is CommandParsingException)
             {
-                // AllowArgumentSeparator and continueAfterUnexpectedArg are ignored when !throwOnUnexpectedArg _except_
-                // AllowArgumentSeparator=true changes the help text (ignoring throwOnUnexpectedArg).
-                var app = new CommandLineApplication(throwOnUnexpectedArg, continueAfterUnexpectedArg: true)
-                {
-                    AllowArgumentSeparator = !throwOnUnexpectedArg,
-                    Error = _console.Error,
-                    FullName = Resources.CommandFullName,
-                    Name = Resources.CommandFullName,
-                    Out = _console.Out,
-                };
-
-                command.Configure(app);
-
-                return app.Execute(args);
+                _reporter.WriteError(ex.Message);
             }
-            catch (Exception ex)
+            else
             {
-                if (ex is CommandException || ex is CommandParsingException)
-                {
-                    _reporter.WriteError(ex.Message);
-                }
-                else
-                {
-                    _reporter.WriteError(ex.ToString());
-                }
-
-                return 1;
+                _reporter.WriteError(ex.ToString());
             }
+
+            return 1;
         }
     }
 }

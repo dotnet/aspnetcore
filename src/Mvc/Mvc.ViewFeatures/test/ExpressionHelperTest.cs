@@ -1,32 +1,28 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+public class ExpressionHelperTest
 {
-    public class ExpressionHelperTest
+    private readonly ConcurrentDictionary<LambdaExpression, string> _expressionTextCache = new ConcurrentDictionary<LambdaExpression, string>(LambdaExpressionComparer.Instance);
+
+    public static TheoryData<Expression, string> ExpressionAndTexts
     {
-        private readonly ConcurrentDictionary<LambdaExpression, string> _expressionTextCache = new ConcurrentDictionary<LambdaExpression, string>(LambdaExpressionComparer.Instance);
-
-        public static TheoryData<Expression, string> ExpressionAndTexts
+        get
         {
-            get
-            {
-                var i = 3;
-                var value = "Test";
-                var key = "TestModel";
-                var myModels = new List<TestModel>();
-                var models = new List<TestModel>();
-                var modelTest = new TestModel();
-                var modelType = typeof(TestModel);
+            var i = 3;
+            var value = "Test";
+            var key = "TestModel";
+            var myModels = new List<TestModel>();
+            var models = new List<TestModel>();
+            var modelTest = new TestModel();
+            var modelType = typeof(TestModel);
 
-                var data = new TheoryData<Expression, string>
+            var data = new TheoryData<Expression, string>
                 {
                     {
                         (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory),
@@ -164,32 +160,32 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     },
                 };
 
-                {
-                    // Nearly impossible in a .cshtml file because model is a keyword.
-                    var model = "Some string";
-                    data.Add((Expression<Func<TestModel, string>>)(m => model), string.Empty);
-                }
-
-                {
-                    // Model property in RazorPage is "special" (in a good way).
-                    var Model = new TestModel();
-                    data.Add((Expression<Func<TestModel, TestModel>>)(m => Model), string.Empty);
-                    data.Add((Expression<Func<TestModel, TestModel>>)(model => Model), string.Empty);
-                    data.Add((Expression<Func<TestModel, Category>>)(m => Model.SelectedCategory), "SelectedCategory");
-                }
-
-                return data;
-            }
-        }
-
-        public static TheoryData<Expression> CachedExpressions
-        {
-            get
             {
-                var key = "TestModel";
-                var myModel = new TestModel();
+                // Nearly impossible in a .cshtml file because model is a keyword.
+                var model = "Some string";
+                data.Add((Expression<Func<TestModel, string>>)(m => model), string.Empty);
+            }
 
-                return new TheoryData<Expression>
+            {
+                // Model property in RazorPage is "special" (in a good way).
+                var Model = new TestModel();
+                data.Add((Expression<Func<TestModel, TestModel>>)(m => Model), string.Empty);
+                data.Add((Expression<Func<TestModel, TestModel>>)(model => Model), string.Empty);
+                data.Add((Expression<Func<TestModel, Category>>)(m => Model.SelectedCategory), "SelectedCategory");
+            }
+
+            return data;
+        }
+    }
+
+    public static TheoryData<Expression> CachedExpressions
+    {
+        get
+        {
+            var key = "TestModel";
+            var myModel = new TestModel();
+
+            return new TheoryData<Expression>
                 {
                     (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory),
                     (Expression<Func<TestModel, CategoryName>>)(model => model.SelectedCategory.CategoryName),
@@ -199,18 +195,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     (Expression<Func<TestModel, TestModel>>)(m => m),
                     (Expression<Func<TestModel, Category>>)(m => myModel.SelectedCategory),
                 };
-            }
         }
+    }
 
-        public static TheoryData<Expression> IndexerExpressions
+    public static TheoryData<Expression> IndexerExpressions
+    {
+        get
         {
-            get
-            {
-                var i = 3;
-                var key = "TestModel";
-                var myModels = new List<TestModel>();
+            var i = 3;
+            var key = "TestModel";
+            var myModels = new List<TestModel>();
 
-                return new TheoryData<Expression>
+            return new TheoryData<Expression>
                 {
                     (Expression<Func<IList<TestModel>, Category>>)(model => model[2].SelectedCategory),
                     (Expression<Func<IList<TestModel>, Category>>)(model => myModels[i].SelectedCategory),
@@ -218,17 +214,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     (Expression<Func<TestModel, int>>)(model => model.PreferredCategories[i].CategoryId),
                     (Expression<Func<IDictionary<string, TestModel>, string>>)(model => model[key].SelectedCategory.CategoryName.MainCategory),
                 };
-            }
         }
+    }
 
-        public static TheoryData<Expression> UnsupportedExpressions
+    public static TheoryData<Expression> UnsupportedExpressions
+    {
+        get
         {
-            get
-            {
-                var i = 2;
-                var j = 3;
+            var i = 2;
+            var j = 3;
 
-                return new TheoryData<Expression>
+            return new TheoryData<Expression>
                 {
                     // Indexers that have multiple arguments.
                     (Expression<Func<TestModel[][], string>>)(model => model[23][3].Name),
@@ -240,17 +236,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     (Expression<Func<IList<TestModel>, string>>)(model => model.FirstOrDefault().SelectedCategory.CategoryName.MainCategory),
                     (Expression<Func<IList<TestModel>, int>>)(model => model.FirstOrDefault().PreferredCategories.FirstOrDefault().CategoryId),
                 };
-            }
         }
+    }
 
-        public static TheoryData<Expression, Expression> EquivalentExpressions
+    public static TheoryData<Expression, Expression> EquivalentExpressions
+    {
+        get
         {
-            get
-            {
-                var value = "Test";
-                var Model = "Test";
+            var value = "Test";
+            var Model = "Test";
 
-                return new TheoryData<Expression, Expression>
+            return new TheoryData<Expression, Expression>
                 {
                     {
                         (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory),
@@ -284,19 +280,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                         (Expression<Func<TestModel, TestModel>>)(m => m)
                     },
                 };
-            }
         }
+    }
 
-        public static TheoryData<Expression, Expression> NonEquivalentExpressions
+    public static TheoryData<Expression, Expression> NonEquivalentExpressions
+    {
+        get
         {
-            get
-            {
-                var value = "test";
-                var key = "TestModel";
-                var Model = "Test";
-                var myModel = new TestModel();
+            var value = "test";
+            var key = "TestModel";
+            var Model = "Test";
+            var myModel = new TestModel();
 
-                return new TheoryData<Expression, Expression>
+            return new TheoryData<Expression, Expression>
                 {
                     {
                         (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory),
@@ -363,142 +359,141 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                         (Expression<Func<TestModel, string>>)(m => value)
                     },
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(ExpressionAndTexts))]
-        public void GetExpressionText_ReturnsExpectedExpressionText(LambdaExpression expression, string expressionText)
+    [Theory]
+    [MemberData(nameof(ExpressionAndTexts))]
+    public void GetExpressionText_ReturnsExpectedExpressionText(LambdaExpression expression, string expressionText)
+    {
+        // Act
+        var text = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+
+        // Assert
+        Assert.Equal(expressionText, text);
+    }
+
+    [Theory]
+    [MemberData(nameof(CachedExpressions))]
+    public void GetExpressionText_CachesExpression(LambdaExpression expression)
+    {
+        // Act - 1
+        var text1 = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+
+        // Act - 2
+        var text2 = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+
+        // Assert
+        Assert.Same(text1, text2); // cached
+    }
+
+    [Theory]
+    [MemberData(nameof(IndexerExpressions))]
+    [MemberData(nameof(UnsupportedExpressions))]
+    public void GetExpressionText_DoesNotCacheIndexerOrUnsupportedExpression(LambdaExpression expression)
+    {
+        // Act - 1
+        var text1 = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+
+        // Act - 2
+        var text2 = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+
+        // Assert
+        Assert.Equal(text1, text2, StringComparer.Ordinal);
+        Assert.NotSame(text1, text2); // not cached
+    }
+
+    [Theory]
+    [MemberData(nameof(EquivalentExpressions))]
+    public void GetExpressionText_CacheEquivalentExpressions(LambdaExpression expression1, LambdaExpression expression2)
+    {
+        // Act - 1
+        var text1 = ExpressionHelper.GetExpressionText(expression1, _expressionTextCache);
+
+        // Act - 2
+        var text2 = ExpressionHelper.GetExpressionText(expression2, _expressionTextCache);
+
+        // Assert
+        Assert.Same(text1, text2); // cached
+    }
+
+    [Theory]
+    [MemberData(nameof(NonEquivalentExpressions))]
+    public void GetExpressionText_CheckNonEquivalentExpressions(LambdaExpression expression1, LambdaExpression expression2)
+    {
+        // Act - 1
+        var text1 = ExpressionHelper.GetExpressionText(expression1, _expressionTextCache);
+
+        // Act - 2
+        var text2 = ExpressionHelper.GetExpressionText(expression2, _expressionTextCache);
+
+        // Assert
+        Assert.NotEqual(text1, text2, StringComparer.Ordinal);
+        Assert.NotSame(text1, text2);
+    }
+
+    [Fact]
+    public void GetExpressionText_WithinALoop_ReturnsExpectedText()
+    {
+        // Arrange 0
+        var collection = new List<TestModel>();
+
+        for (var i = 0; i < 2; i++)
         {
-            // Act
-            var text = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+            // Arrange i
+            var expectedText = $"collection[{i}].SelectedCategory.CategoryId";
 
-            // Assert
-            Assert.Equal(expressionText, text);
+            // Act i
+            var result = ExpressionHelper.GetExpressionText(
+                (Expression<Func<List<TestModel>, int>>)(m => collection[i].SelectedCategory.CategoryId),
+                _expressionTextCache);
+
+            // Assert i
+            Assert.Equal(expectedText, result);
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(CachedExpressions))]
-        public void GetExpressionText_CachesExpression(LambdaExpression expression)
-        {
-            // Act - 1
-            var text1 = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+    private class TestModel
+    {
+        public string Name { get; set; }
+        public string Model { get; set; }
+        public Category SelectedCategory { get; set; }
 
-            // Act - 2
-            var text2 = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+        public IList<Category> PreferredCategories { get; set; }
+    }
 
-            // Assert
-            Assert.Same(text1, text2); // cached
-        }
+    private class LowerModel
+    {
+        public string name { get; set; }
 
-        [Theory]
-        [MemberData(nameof(IndexerExpressions))]
-        [MemberData(nameof(UnsupportedExpressions))]
-        public void GetExpressionText_DoesNotCacheIndexerOrUnsupportedExpression(LambdaExpression expression)
-        {
-            // Act - 1
-            var text1 = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+        public string model { get; set; }
 
-            // Act - 2
-            var text2 = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+        public Category selectedcategory { get; set; }
 
-            // Assert
-            Assert.Equal(text1, text2, StringComparer.Ordinal);
-            Assert.NotSame(text1, text2); // not cached
-        }
+        public IList<Category> preferredcategories { get; set; }
+    }
 
-        [Theory]
-        [MemberData(nameof(EquivalentExpressions))]
-        public void GetExpressionText_CacheEquivalentExpressions(LambdaExpression expression1, LambdaExpression expression2)
-        {
-            // Act - 1
-            var text1 = ExpressionHelper.GetExpressionText(expression1, _expressionTextCache);
+    private class Category
+    {
+        public int CategoryId { get; set; }
+        public CategoryName CategoryName { get; set; }
+    }
 
-            // Act - 2
-            var text2 = ExpressionHelper.GetExpressionText(expression2, _expressionTextCache);
+    private class CategoryName
+    {
+        public string MainCategory { get; set; }
+        public string SubCategory { get; set; }
+    }
 
-            // Assert
-            Assert.Same(text1, text2); // cached
-        }
+    private static class AStaticClass
+    {
+        public static string Model { get; set; }
+        public static string Test { get; set; }
+    }
 
-        [Theory]
-        [MemberData(nameof(NonEquivalentExpressions))]
-        public void GetExpressionText_CheckNonEquivalentExpressions(LambdaExpression expression1, LambdaExpression expression2)
-        {
-            // Act - 1
-            var text1 = ExpressionHelper.GetExpressionText(expression1, _expressionTextCache);
-
-            // Act - 2
-            var text2 = ExpressionHelper.GetExpressionText(expression2, _expressionTextCache);
-
-            // Assert
-            Assert.NotEqual(text1, text2, StringComparer.Ordinal);
-            Assert.NotSame(text1, text2);
-        }
-
-        [Fact]
-        public void GetExpressionText_WithinALoop_ReturnsExpectedText()
-        {
-            // Arrange 0
-            var collection = new List<TestModel>();
-
-            for (var i = 0; i < 2; i++)
-            {
-                // Arrange i
-                var expectedText = $"collection[{i}].SelectedCategory.CategoryId";
-
-                // Act i
-                var result = ExpressionHelper.GetExpressionText(
-                    (Expression<Func<List<TestModel>, int>>)(m => collection[i].SelectedCategory.CategoryId),
-                    _expressionTextCache);
-
-                // Assert i
-                Assert.Equal(expectedText, result);
-            }
-        }
-
-        private class TestModel
-        {
-            public string Name { get; set; }
-            public string Model { get; set; }
-            public Category SelectedCategory { get; set; }
-
-            public IList<Category> PreferredCategories { get; set; }
-        }
-
-        private class LowerModel
-        {
-            public string name { get; set; }
-
-            public string model { get; set; }
-
-            public Category selectedcategory { get; set; }
-
-            public IList<Category> preferredcategories { get; set; }
-        }
-
-        private class Category
-        {
-            public int CategoryId { get; set; }
-            public CategoryName CategoryName { get; set; }
-        }
-
-        private class CategoryName
-        {
-            public string MainCategory { get; set; }
-            public string SubCategory { get; set; }
-        }
-
-        private static class AStaticClass
-        {
-            public static string Model { get; set; }
-            public static string Test { get; set; }
-        }
-
-        private static class AnotherStaticClass
-        {
-            public static Model.Model Model { get; set; }
-            public static Model.Model Test { get; set; }
-        }
+    private static class AnotherStaticClass
+    {
+        public static Model.Model Model { get; set; }
+        public static Model.Model Test { get; set; }
     }
 }

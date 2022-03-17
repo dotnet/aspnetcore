@@ -1,30 +1,24 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+
+// The ActionSelectionTable has different code paths for ActionDescriptor and
+// RouteEndpoint for creating a table. We're trying to test both code paths
+// for creation, but selection works the same for both cases.
+public class ActionSelectionTableTest
 {
-    // The ActionSelectionTable has different code paths for ActionDescriptor and
-    // RouteEndpoint for creating a table. We're trying to test both code paths 
-    // for creation, but selection works the same for both cases.
-    public class ActionSelectionTableTest
+    [Fact]
+    public void Select_SingleMatch()
     {
-        [Fact]
-        public void Select_SingleMatch()
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -43,24 +37,24 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "About" }
                     },
                 },
-            };
+        };
 
-            var table = CreateTableWithActionDescriptors(actions);
-            var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
+        var table = CreateTableWithActionDescriptors(actions);
+        var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            Assert.Collection(matches, (a) => Assert.Same(actions[0], a));
-        }
+        // Assert
+        Assert.Collection(matches, (a) => Assert.Same(actions[0], a));
+    }
 
-        [Fact]
-        [ReplaceCulture("de-CH", "de-CH")]
-        public void Select_ActionDescriptor_SingleMatch_UsesInvariantCulture()
+    [Fact]
+    [ReplaceCulture("de-CH", "de-CH")]
+    public void Select_ActionDescriptor_SingleMatch_UsesInvariantCulture()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -80,27 +74,27 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "About" }
                     },
                 },
-            };
+        };
 
-            var table = CreateTableWithActionDescriptors(actions);
-            var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
-            values.Add(
-                "date",
-                new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7)));
+        var table = CreateTableWithActionDescriptors(actions);
+        var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
+        values.Add(
+            "date",
+            new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7)));
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            Assert.Collection(matches, (a) => Assert.Same(actions[0], a));
-        }
+        // Assert
+        Assert.Collection(matches, (a) => Assert.Same(actions[0], a));
+    }
 
-        [Fact]
-        [ReplaceCulture("de-CH", "de-CH")]
-        public void Select_Endpoint_SingleMatch_UsesInvariantCulture()
+    [Fact]
+    [ReplaceCulture("de-CH", "de-CH")]
+    public void Select_Endpoint_SingleMatch_UsesInvariantCulture()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -120,26 +114,26 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "About" }
                     },
                 },
-            };
+        };
 
-            var table = CreateTableWithEndpoints(actions);
-            var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
-            values.Add(
-                "date",
-                new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7)));
+        var table = CreateTableWithEndpoints(actions);
+        var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
+        values.Add(
+            "date",
+            new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7)));
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            Assert.Collection(matches, (e) => Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>()));
-        }
+        // Assert
+        Assert.Collection(matches, (e) => Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>()));
+    }
 
-        [Fact]
-        public void Select_ActionDescriptor_MultipleMatches()
+    [Fact]
+    public void Select_ActionDescriptor_MultipleMatches()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -158,23 +152,23 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "Index" }
                     },
                 },
-            };
+        };
 
-            var table = CreateTableWithActionDescriptors(actions);
-            var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
+        var table = CreateTableWithActionDescriptors(actions);
+        var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            Assert.Equal(actions.ToArray(), matches.ToArray());
-        }
+        // Assert
+        Assert.Equal(actions.ToArray(), matches.ToArray());
+    }
 
-        [Fact]
-        public void Select_Endpoint_MultipleMatches()
+    [Fact]
+    public void Select_Endpoint_MultipleMatches()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -193,23 +187,23 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "Index" }
                     },
                 },
-            };
+        };
 
-            var table = CreateTableWithEndpoints(actions);
-            var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
+        var table = CreateTableWithEndpoints(actions);
+        var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            Assert.Equal(actions.ToArray(), matches.Select(e => e.Metadata.GetMetadata<ActionDescriptor>()).ToArray());
-        }
+        // Assert
+        Assert.Equal(actions.ToArray(), matches.Select(e => e.Metadata.GetMetadata<ActionDescriptor>()).ToArray());
+    }
 
-        [Fact]
-        public void Select_NoMatch()
+    [Fact]
+    public void Select_NoMatch()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -228,23 +222,23 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "About" }
                     },
                 },
-            };
+        };
 
-            var table = CreateTableWithActionDescriptors(actions);
-            var values = new RouteValueDictionary(new { controller = "Foo", action = "Index", });
+        var table = CreateTableWithActionDescriptors(actions);
+        var values = new RouteValueDictionary(new { controller = "Foo", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            Assert.Empty(matches);
-        }
+        // Assert
+        Assert.Empty(matches);
+    }
 
-        [Fact]
-        public void Select_ActionDescriptors_NoMatch_ExcludesAttributeRoutedActions()
+    [Fact]
+    public void Select_ActionDescriptors_NoMatch_ExcludesAttributeRoutedActions()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -258,23 +252,23 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         Template = "/Home",
                     }
                 },
-            };
+        };
 
-            var table = CreateTableWithActionDescriptors(actions);
-            var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
+        var table = CreateTableWithActionDescriptors(actions);
+        var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            Assert.Empty(matches);
-        }
+        // Assert
+        Assert.Empty(matches);
+    }
 
-        [Fact]
-        public void Select_Endpoint_Match_IncludesAttributeRoutedActions()
+    [Fact]
+    public void Select_Endpoint_Match_IncludesAttributeRoutedActions()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -288,26 +282,26 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         Template = "/Home",
                     }
                 },
-            };
+        };
 
-            var table = CreateTableWithEndpoints(actions);
-            var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
+        var table = CreateTableWithEndpoints(actions);
+        var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            Assert.Single(matches);
-        }
+        // Assert
+        Assert.Single(matches);
+    }
 
-        // In this context `CaseSensitiveMatch` means that the input route values exactly match one of the action
-        // descriptor's route values in terms of casing. This is important because we optimize for this case
-        // in the implementation.
-        [Fact]
-        public void Select_Match_CaseSensitiveMatch_IncludesAllCaseInsensitiveMatches()
+    // In this context `CaseSensitiveMatch` means that the input route values exactly match one of the action
+    // descriptor's route values in terms of casing. This is important because we optimize for this case
+    // in the implementation.
+    [Fact]
+    public void Select_Match_CaseSensitiveMatch_IncludesAllCaseInsensitiveMatches()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -335,28 +329,28 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "About" }
                     },
                 },
-            };
+        };
 
-            var expected = actions.Take(2).ToArray();
+        var expected = actions.Take(2).ToArray();
 
-            var table = CreateTableWithActionDescriptors(actions);
-            var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
+        var table = CreateTableWithActionDescriptors(actions);
+        var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            Assert.Equal(expected, matches);
-        }
+        // Assert
+        Assert.Equal(expected, matches);
+    }
 
-        // In this context `CaseInsensitiveMatch` means that the input route values do not match any action
-        // descriptor's route values in terms of casing. This is important because we optimize for the case
-        // where the casing matches - the non-matching-casing path is handled a bit differently.
-        [Fact]
-        public void Select_Match_CaseInsensitiveMatch_IncludesAllCaseInsensitiveMatches()
+    // In this context `CaseInsensitiveMatch` means that the input route values do not match any action
+    // descriptor's route values in terms of casing. This is important because we optimize for the case
+    // where the casing matches - the non-matching-casing path is handled a bit differently.
+    [Fact]
+    public void Select_Match_CaseInsensitiveMatch_IncludesAllCaseInsensitiveMatches()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -384,25 +378,25 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "About" }
                     },
                 },
-            };
+        };
 
-            var expected = actions.Take(2).ToArray();
+        var expected = actions.Take(2).ToArray();
 
-            var table = CreateTableWithActionDescriptors(actions);
-            var values = new RouteValueDictionary(new { controller = "HOME", action = "iNDex", });
+        var table = CreateTableWithActionDescriptors(actions);
+        var values = new RouteValueDictionary(new { controller = "HOME", action = "iNDex", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            Assert.Equal(expected, matches);
-        }
+        // Assert
+        Assert.Equal(expected, matches);
+    }
 
-        [Fact]
-        public void Select_Match_CaseSensitiveMatch_MatchesOnEmptyString()
+    [Fact]
+    public void Select_Match_CaseSensitiveMatch_MatchesOnEmptyString()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -413,27 +407,27 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "Index" }
                     },
                 }
-            };
+        };
 
-            var table = CreateTableWithActionDescriptors(actions);
+        var table = CreateTableWithActionDescriptors(actions);
 
-            // Example: In conventional route, one could set non-inline defaults
-            // new { area = "", controller = "Home", action = "Index" }
-            var values = new RouteValueDictionary(new { area = "", controller = "Home", action = "Index", });
+        // Example: In conventional route, one could set non-inline defaults
+        // new { area = "", controller = "Home", action = "Index" }
+        var values = new RouteValueDictionary(new { area = "", controller = "Home", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            var action = Assert.Single(matches);
-            Assert.Same(actions[0], action);
-        }
+        // Assert
+        var action = Assert.Single(matches);
+        Assert.Same(actions[0], action);
+    }
 
-        [Fact]
-        public void Select_Match_CaseInsensitiveMatch_MatchesOnEmptyString()
+    [Fact]
+    public void Select_Match_CaseInsensitiveMatch_MatchesOnEmptyString()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -444,27 +438,27 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "Index" }
                     },
                 }
-            };
+        };
 
-            var table = CreateTableWithActionDescriptors(actions);
+        var table = CreateTableWithActionDescriptors(actions);
 
-            // Example: In conventional route, one could set non-inline defaults
-            // new { area = "", controller = "Home", action = "Index" }
-            var values = new RouteValueDictionary(new { area = "", controller = "HoMe", action = "InDeX", });
+        // Example: In conventional route, one could set non-inline defaults
+        // new { area = "", controller = "Home", action = "Index" }
+        var values = new RouteValueDictionary(new { area = "", controller = "HoMe", action = "InDeX", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            var action = Assert.Single(matches);
-            Assert.Same(actions[0], action);
-        }
+        // Assert
+        var action = Assert.Single(matches);
+        Assert.Same(actions[0], action);
+    }
 
-        [Fact]
-        public void Select_Match_MatchesOnNull()
+    [Fact]
+    public void Select_Match_MatchesOnNull()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -475,27 +469,27 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "Index" }
                     },
                 }
-            };
+        };
 
-            var table = CreateTableWithActionDescriptors(actions);
+        var table = CreateTableWithActionDescriptors(actions);
 
-            // Example: In conventional route, one could set non-inline defaults
-            // new { area = (string)null, controller = "Foo", action = "Index" }
-            var values = new RouteValueDictionary(new { area = (string)null, controller = "Home", action = "Index", });
+        // Example: In conventional route, one could set non-inline defaults
+        // new { area = (string)null, controller = "Foo", action = "Index" }
+        var values = new RouteValueDictionary(new { area = (string)null, controller = "Home", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            var action = Assert.Single(matches);
-            Assert.Same(actions[0], action);
-        }
+        // Assert
+        var action = Assert.Single(matches);
+        Assert.Same(actions[0], action);
+    }
 
-        [Fact]
-        public void Select_Match_ActionDescriptorWithEmptyRouteValues_MatchesOnEmptyString()
+    [Fact]
+    public void Select_Match_ActionDescriptorWithEmptyRouteValues_MatchesOnEmptyString()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -506,25 +500,25 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "Index" }
                     },
                 }
-            };
+        };
 
-            var table = CreateTableWithActionDescriptors(actions);
+        var table = CreateTableWithActionDescriptors(actions);
 
-            var values = new RouteValueDictionary(new { foo = "", controller = "Home", action = "Index", });
+        var values = new RouteValueDictionary(new { foo = "", controller = "Home", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            var action = Assert.Single(matches);
-            Assert.Same(actions[0], action);
-        }
+        // Assert
+        var action = Assert.Single(matches);
+        Assert.Same(actions[0], action);
+    }
 
-        [Fact]
-        public void Select_Match_ActionDescriptorWithEmptyRouteValues_MatchesOnNull()
+    [Fact]
+    public void Select_Match_ActionDescriptorWithEmptyRouteValues_MatchesOnNull()
+    {
+        var actions = new ActionDescriptor[]
         {
-            var actions = new ActionDescriptor[]
-            {
                 new ActionDescriptor()
                 {
                     DisplayName = "A1",
@@ -535,38 +529,37 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         { "action", "Index" }
                     },
                 }
-            };
+        };
 
-            var table = CreateTableWithActionDescriptors(actions);
+        var table = CreateTableWithActionDescriptors(actions);
 
-            var values = new RouteValueDictionary(new { foo = (string)null, controller = "Home", action = "Index", });
+        var values = new RouteValueDictionary(new { foo = (string)null, controller = "Home", action = "Index", });
 
-            // Act
-            var matches = table.Select(values);
+        // Act
+        var matches = table.Select(values);
 
-            // Assert
-            var action = Assert.Single(matches);
-            Assert.Same(actions[0], action);
-        }
+        // Assert
+        var action = Assert.Single(matches);
+        Assert.Same(actions[0], action);
+    }
 
-        private static ActionSelectionTable<ActionDescriptor> CreateTableWithActionDescriptors(IReadOnlyList<ActionDescriptor> actions)
+    private static ActionSelectionTable<ActionDescriptor> CreateTableWithActionDescriptors(IReadOnlyList<ActionDescriptor> actions)
+    {
+        return ActionSelectionTable<ActionDescriptor>.Create(new ActionDescriptorCollection(actions, 0));
+    }
+
+    private static ActionSelectionTable<Endpoint> CreateTableWithEndpoints(IReadOnlyList<ActionDescriptor> actions)
+    {
+        var endpoints = actions.Select(a =>
         {
-            return ActionSelectionTable<ActionDescriptor>.Create(new ActionDescriptorCollection(actions, 0));
-        }
+            var metadata = new List<object>(a.EndpointMetadata ?? Array.Empty<object>());
+            metadata.Add(a);
+            return new Endpoint(
+                requestDelegate: context => Task.CompletedTask,
+                metadata: new EndpointMetadataCollection(metadata),
+                displayName: a.DisplayName);
+        });
 
-        private static ActionSelectionTable<Endpoint> CreateTableWithEndpoints(IReadOnlyList<ActionDescriptor> actions)
-        {
-            var endpoints = actions.Select(a =>
-            {
-                var metadata = new List<object>(a.EndpointMetadata ?? Array.Empty<object>());
-                metadata.Add(a);
-                return new Endpoint(
-                    requestDelegate: context => Task.CompletedTask, 
-                    metadata: new EndpointMetadataCollection(metadata),
-                    displayName: a.DisplayName);
-            });
-
-            return ActionSelectionTable<ActionDescriptor>.Create(endpoints);
-        }
+        return ActionSelectionTable<ActionDescriptor>.Create(endpoints);
     }
 }

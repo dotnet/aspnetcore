@@ -1,0 +1,7 @@
+{
+  "BrowserOptions": {
+    "Chromium": {
+      "IsEnabled": false
+    }
+  }
+}

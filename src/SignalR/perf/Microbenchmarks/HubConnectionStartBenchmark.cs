@@ -1,75 +1,74 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.SignalR.Microbenchmarks.Shared;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
+namespace Microsoft.AspNetCore.SignalR.Microbenchmarks;
+
+public class HubConnectionStartBenchmark
 {
-    public class HubConnectionStartBenchmark
+    private HubConnection _hubConnection;
+    private TestDuplexPipe _pipe;
+    private ReadResult _handshakeResponseResult;
+
+    [GlobalSetup]
+    public void GlobalSetup()
     {
-        private HubConnection _hubConnection;
-        private TestDuplexPipe _pipe;
-        private ReadResult _handshakeResponseResult;
-
-        [GlobalSetup]
-        public void GlobalSetup()
+        var writer = MemoryBufferWriter.Get();
+        try
         {
-            var writer = MemoryBufferWriter.Get();
-            try
-            {
-                HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, writer);
-                _handshakeResponseResult = new ReadResult(new ReadOnlySequence<byte>(writer.ToArray()), false, false);
-            }
-            finally
-            {
-                MemoryBufferWriter.Return(writer);
-            }
-
-            _pipe = new TestDuplexPipe();
-
-            var hubConnectionBuilder = new HubConnectionBuilder();
-            var delegateConnectionFactory = new DelegateConnectionFactory(endPoint =>
-            {
-                var connection = new DefaultConnectionContext();
-                // prevents keep alive time being activated
-                connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
-                connection.Transport = _pipe;
-                return new ValueTask<ConnectionContext>(connection);
-            });
-            hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
-
-            _hubConnection = hubConnectionBuilder.Build();
+            HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, writer);
+            _handshakeResponseResult = new ReadResult(new ReadOnlySequence<byte>(writer.ToArray()), false, false);
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(writer);
         }
 
-        private void AddHandshakeResponse()
-        {
-            _pipe.AddReadResult(new ValueTask<ReadResult>(_handshakeResponseResult));
-        }
+        _pipe = new TestDuplexPipe();
 
-        [Benchmark]
-        public async Task StartAsync()
-        {
-            AddHandshakeResponse();
+        var hubConnectionBuilder = new HubConnectionBuilder();
+        hubConnectionBuilder.WithUrl("http://doesntmatter");
 
-            await _hubConnection.StartAsync();
-            await _hubConnection.StopAsync();
-        }
+        var delegateConnectionFactory = new DelegateConnectionFactory(endPoint =>
+        {
+            var connection = new DefaultConnectionContext();
+            // prevents keep alive time being activated
+            connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
+            connection.Transport = _pipe;
+            return new ValueTask<ConnectionContext>(connection);
+        });
+        hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
+        _hubConnection = hubConnectionBuilder.Build();
     }
 
-    public class TestConnectionInherentKeepAliveFeature : IConnectionInherentKeepAliveFeature
+    private void AddHandshakeResponse()
     {
-        public bool HasInherentKeepAlive { get; } = true;
+        _pipe.AddReadResult(new ValueTask<ReadResult>(_handshakeResponseResult));
     }
+
+    [Benchmark]
+    public async Task StartAsync()
+    {
+        AddHandshakeResponse();
+
+        await _hubConnection.StartAsync();
+        await _hubConnection.StopAsync();
+    }
+}
+
+public class TestConnectionInherentKeepAliveFeature : IConnectionInherentKeepAliveFeature
+{
+    public bool HasInherentKeepAlive { get; } = true;
 }

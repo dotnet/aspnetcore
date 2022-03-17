@@ -40,7 +40,6 @@ ASPNET_CORE_PROXY_MODULE_FACTORY::GetHttpModule(
 __override
 VOID
 ASPNET_CORE_PROXY_MODULE_FACTORY::Terminate(
-    VOID
 ) noexcept
 /*++
 
@@ -101,7 +100,12 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
             *pHttpContext,
             m_pApplicationInfo));
 
-        FINISHED_IF_FAILED(m_pApplicationInfo->CreateHandler(*pHttpContext, m_pHandler));
+        FINISHED_IF_FAILED(hr = m_pApplicationInfo->CreateHandler(*pHttpContext, m_pHandler));
+
+        if (m_pHandler == nullptr)
+        {
+            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
+        }
 
         SetupDisconnectHandler(pHttpContext);
 
@@ -168,7 +172,7 @@ REQUEST_NOTIFICATION_STATUS ASPNET_CORE_PROXY_MODULE::HandleNotificationStatus(R
 
 void ASPNET_CORE_PROXY_MODULE::SetupDisconnectHandler(IHttpContext * pHttpContext)
 {
-    auto connection = pHttpContext
+    auto* connection = pHttpContext
         ->GetConnection();
 
     // connection might be null in when applicationInitialization is running
@@ -177,11 +181,11 @@ void ASPNET_CORE_PROXY_MODULE::SetupDisconnectHandler(IHttpContext * pHttpContex
         return;
     }
 
-    auto moduleContainer = connection->GetModuleContextContainer();
+    auto* moduleContainer = connection->GetModuleContextContainer();
 
     #pragma warning( push )
     #pragma warning ( disable : 26466 ) // Disable "Don't use static_cast downcasts". We build without RTTI support so dynamic_cast is not available
-    auto pDisconnectHandler = static_cast<DisconnectHandler*>(moduleContainer->GetConnectionModuleContext(m_moduleId));
+    auto* pDisconnectHandler = static_cast<DisconnectHandler*>(moduleContainer->GetConnectionModuleContext(m_moduleId));
     #pragma warning( push )
 
     if (pDisconnectHandler == nullptr)
@@ -203,7 +207,7 @@ void ASPNET_CORE_PROXY_MODULE::SetupDisconnectHandler(IHttpContext * pHttpContex
 
 void ASPNET_CORE_PROXY_MODULE::RemoveDisconnectHandler() noexcept
 {
-    auto handler = m_pDisconnectHandler;
+    auto* handler = m_pDisconnectHandler;
     m_pDisconnectHandler = nullptr;
 
     if (handler != nullptr)

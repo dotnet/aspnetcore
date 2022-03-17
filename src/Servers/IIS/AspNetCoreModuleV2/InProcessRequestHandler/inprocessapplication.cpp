@@ -14,7 +14,7 @@
 #include "Environment.h"
 #include "HostFxr.h"
 
-IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
+IN_PROCESS_APPLICATION* IN_PROCESS_APPLICATION::s_Application = NULL;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
@@ -22,7 +22,8 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     std::unique_ptr<InProcessOptions> pConfig,
     APPLICATION_PARAMETER* pParameters,
     DWORD                  nParameters) :
-    InProcessApplicationBase(pHttpServer, pApplication),
+    InProcessApplicationBase(pHttpServer,
+        pApplication),
     m_Initialized(false),
     m_blockManagedCallbacks(true),
     m_waitForShutdown(true),
@@ -37,6 +38,14 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
         m_dotnetExeKnownLocation = knownLocation;
     }
 
+    const auto shadowCopyDirectory = FindParameter<PCWSTR>(s_shadowCopyDirectoryName, pParameters, nParameters);
+    if (shadowCopyDirectory != nullptr)
+    {
+        m_shadowCopyDirectory = shadowCopyDirectory;
+    }
+
+    m_shutdownTimeout = m_pConfig.get()->QueryShutdownTimeLimitInMS();
+
     m_stringRedirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
 }
 
@@ -48,6 +57,9 @@ IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 VOID
 IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 {
+    // Stop app offline tracking before shutting down CLR.
+    // This is to help with shadow copy scenario where the app is shutting down.
+    AppOfflineTrackingApplication::StopInternal(fServerInitiated);
     StopClr();
     InProcessApplicationBase::StopInternal(fServerInitiated);
 }
@@ -58,7 +70,19 @@ IN_PROCESS_APPLICATION::StopClr()
     // This has the state lock around it.
     LOG_INFO(L"Stopping CLR");
 
-    if (!m_blockManagedCallbacks)
+    // Signal shutdown
+    if (m_pShutdownEvent != nullptr)
+    {
+        LOG_IF_FAILED(SetEvent(m_pShutdownEvent));
+    }
+
+    // Need to wait for either the app to be initialized, the worker thread to exit, or the shutdown timeout.
+    const HANDLE waitHandles[2] = { m_pInitializeEvent, m_workerThread.native_handle() };
+
+    const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, m_pConfig->QueryShutdownTimeLimitInMS());
+
+    // If waitResults != WAIT_OBJECT_0 + 1, it means main hasn't returned, so okay to call into it.
+    if (!m_blockManagedCallbacks && waitResult != WAIT_OBJECT_0 + 1)
     {
         // We cannot call into managed if the dll is detaching from the process.
         // Calling into managed code when the dll is detaching is strictly a bad idea,
@@ -80,16 +104,15 @@ IN_PROCESS_APPLICATION::StopClr()
         }
     }
 
-    // Signal shutdown
-    if (m_pShutdownEvent != nullptr)
-    {
-        LOG_IF_FAILED(SetEvent(m_pShutdownEvent));
-    }
-
     if (m_workerThread.joinable())
     {
         // Worker thread would wait for clr to finish and log error if required
         m_workerThread.join();
+    }
+
+    if (m_folderCleanupThread.joinable())
+    {
+        m_folderCleanupThread.join();
     }
 
     s_Application = nullptr;
@@ -146,12 +169,43 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
 
     LOG_INFO(L"Waiting for initialization");
 
-    m_workerThread = std::thread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)
+    THROW_IF_FAILED(StartMonitoringAppOffline());
+
+    if (!m_shadowCopyDirectory.empty())
     {
-        LOG_INFO(L"Starting in-process worker thread");
-        application->ExecuteApplication();
-        LOG_INFO(L"Stopping in-process worker thread");
-    }, ::ReferenceApplication(this));
+        if (!Environment::CheckUpToDate(QueryApplicationPhysicalPath(), m_shadowCopyDirectory, L".dll", std::filesystem::path(m_shadowCopyDirectory).parent_path()))
+        {
+            Stop(/* fServerInitiated */false);
+            throw InvalidOperationException(L"File changed between copy and start of application, restarting.");
+        }
+        // Cleanup other directories that haven't been removed.
+        m_folderCleanupThread = std::thread([](std::wstring shadowCopyDir)
+            {
+                auto parentDir = std::filesystem::path(shadowCopyDir).parent_path();
+                for (auto& p : std::filesystem::directory_iterator(parentDir))
+                {
+                    if (p.path() != shadowCopyDir)
+                    {
+                        try
+                        {
+                            std::filesystem::remove_all(p.path());
+                        }
+                        catch (...)
+                        {
+                            OBSERVE_CAUGHT_EXCEPTION();
+                        }
+                    }
+                }
+
+            }, m_shadowCopyDirectory);
+    }
+
+    m_workerThread = std::thread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)
+        {
+            LOG_INFO(L"Starting in-process worker thread");
+            application->ExecuteApplication();
+            LOG_INFO(L"Stopping in-process worker thread");
+        }, ::ReferenceApplication(this));
 
     const HANDLE waitHandles[2] = { m_pInitializeEvent, m_workerThread.native_handle() };
 
@@ -188,8 +242,6 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
         throw InvalidOperationException(format(L"CLR worker thread exited prematurely"));
     }
 
-    THROW_IF_FAILED(StartMonitoringAppOffline());
-
     return S_OK;
 }
 
@@ -209,11 +261,11 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             THROW_IF_FAILED(HostFxrResolutionResult::Create(
                 m_dotnetExeKnownLocation,
                 m_pConfig->QueryProcessPath(),
-                QueryApplicationPhysicalPath(),
+                m_shadowCopyDirectory.empty() ? QueryApplicationPhysicalPath() : m_shadowCopyDirectory,
                 m_pConfig->QueryArguments(),
                 errorContext,
                 hostFxrResolutionResult
-                ));
+            ));
 
             hostFxrResolutionResult->GetArguments(context->m_argc, context->m_argv);
             THROW_IF_FAILED(SetEnvironmentVariablesOnWorkerProcess());
@@ -293,6 +345,11 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1"));
         RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STACK_SIZE, m_pConfig->QueryStackSize().c_str()));
+
+        if (!m_shadowCopyDirectory.empty())
+        {
+            RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(APP_CONTEXT_BASE_DIRECTORY, Environment::GetCurrentDirectoryValue().c_str()));
+        }
 
         bool clrThreadExited;
         {
@@ -393,11 +450,11 @@ void IN_PROCESS_APPLICATION::QueueStop()
     LOG_INFO(L"Queueing in-process stop thread");
 
     std::thread stoppingThread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)
-    {
-        LOG_INFO(L"Starting in-process stop thread");
-        application->Stop(false);
-        LOG_INFO(L"Stopping in-process stop thread");
-    }, ::ReferenceApplication(this));
+        {
+            LOG_INFO(L"Starting in-process stop thread");
+            application->Stop(false);
+            LOG_INFO(L"Stopping in-process stop thread");
+        }, ::ReferenceApplication(this));
 
     stoppingThread.detach();
 }
@@ -458,7 +515,7 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
         context->m_exitCode = exitCode;
         context->m_hostFxr.Close();
     }
-    __except(GetExceptionCode() != 0)
+    __except (GetExceptionCode() != 0)
     {
         LOG_INFOF(L"Managed threw an exception %d", GetExceptionCode());
 
@@ -472,7 +529,7 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
 // in case of startup timeout
 //
 VOID
-IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrContext> &context)
+IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrContext>& context)
 {
     HandleWrapper<ModuleHandleTraits> moduleHandle;
 
@@ -503,7 +560,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
         QueryApplicationPhysicalPath().c_str(),
         nullptr);
 
-    for (const auto & variable : variables)
+    for (const auto& variable : variables)
     {
         LOG_INFOF(L"Setting environment variable %ls=%ls", variable.first.c_str(), variable.second.c_str());
         SetEnvironmentVariable(variable.first.c_str(), variable.second.c_str());
@@ -537,7 +594,7 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
                 QueryApplicationId().c_str(),
                 QueryApplicationPhysicalPath().c_str(),
                 context.m_exceptionCode
-                );
+            );
         }
         return;
     }
@@ -571,13 +628,12 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
 
 HRESULT
 IN_PROCESS_APPLICATION::CreateHandler(
-    _In_  IHttpContext       *pHttpContext,
-    _Out_ IREQUEST_HANDLER  **pRequestHandler)
+    _In_  IHttpContext* pHttpContext,
+    _Out_ IREQUEST_HANDLER** pRequestHandler)
 {
     try
     {
         SRWSharedLock dataLock(m_dataLock);
-
         DBG_ASSERT(!m_fStopCalled);
         m_requestCount++;
 

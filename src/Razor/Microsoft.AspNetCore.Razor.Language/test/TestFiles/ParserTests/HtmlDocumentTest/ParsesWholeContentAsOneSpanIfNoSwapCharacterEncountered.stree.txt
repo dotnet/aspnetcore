@@ -1,6 +1,0 @@
-RazorDocument - [0..7)::7 - [foo baz]
-    MarkupBlock - [0..7)::7
-        MarkupTextLiteral - [0..7)::7 - [foo baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
-            Text;[foo];
-            Whitespace;[ ];
-            Text;[baz];

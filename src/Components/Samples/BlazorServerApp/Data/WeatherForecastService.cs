@@ -1,25 +1,22 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace BlazorServerApp.Data
+namespace BlazorServerApp.Data;
+
+public class WeatherForecastService
 {
-    public class WeatherForecastService
+    private static readonly string[] Summaries = new[]
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
 
-        public Task<WeatherForecast[]> GetForecastAsync(DateTime startDate)
+    public Task<WeatherForecast[]> GetForecastAsync(DateTime startDate)
+    {
+        return Task.FromResult(Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
-            var rng = new Random();
-            return Task.FromResult(Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = startDate.AddDays(index),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            }).ToArray());
-        }
+            Date = startDate.AddDays(index),
+            TemperatureC = Random.Shared.Next(-20, 55),
+            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+        }).ToArray());
     }
 }

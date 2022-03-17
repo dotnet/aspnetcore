@@ -6,7 +6,7 @@ function Write-PipelineTelemetryError {
   local function_args=()
   local message=''
   while [[ $# -gt 0 ]]; do
-    opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
+    opt="$(echo "${1/#--/-}" | tr "[:upper:]" "[:lower:]")"
     case "$opt" in
       -category|-c)
         telemetry_category=$2
@@ -48,7 +48,7 @@ function Write-PipelineTaskError {
   local force=false
 
   while [[ $# -gt 0 ]]; do
-    opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
+    opt="$(echo "${1/#--/-}" | tr "[:upper:]" "[:lower:]")"
     case "$opt" in
       -type|-t)
         message_type=$2
@@ -122,7 +122,7 @@ function Write-PipelineSetVariable {
   local is_multi_job_variable=true
 
   while [[ $# -gt 0 ]]; do
-    opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
+    opt="$(echo "${1/#--/-}" | tr "[:upper:]" "[:lower:]")"
     case "$opt" in
       -name|-n)
         name=$2
@@ -164,7 +164,7 @@ function Write-PipelinePrependPath {
   local prepend_path=''
 
   while [[ $# -gt 0 ]]; do
-    opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
+    opt="$(echo "${1/#--/-}" | tr "[:upper:]" "[:lower:]")"
     case "$opt" in
       -path|-p)
         prepend_path=$2
@@ -178,5 +178,29 @@ function Write-PipelinePrependPath {
 
   if [[ "$ci" == true ]]; then
     echo "##vso[task.prependpath]$prepend_path"
+  fi
+}
+
+function Write-PipelineSetResult {
+  local result=''
+  local message=''
+
+  while [[ $# -gt 0 ]]; do
+    opt="$(echo "${1/#--/-}" | tr "[:upper:]" "[:lower:]")"
+    case "$opt" in
+      -result|-r)
+        result=$2
+        shift
+        ;;
+      -message|-m)
+        message=$2
+        shift
+        ;;
+    esac
+    shift
+  done
+
+  if [[ "$ci" == true ]]; then
+    echo "##vso[task.complete result=$result;]$message"
   fi
 }

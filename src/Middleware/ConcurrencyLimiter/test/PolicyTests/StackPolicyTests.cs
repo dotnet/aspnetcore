@@ -1,132 +1,151 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Xunit;
 
-namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
+namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests;
+
+public class StackPolicyTests
 {
-    public static class StackPolicyTests
+    [Fact]
+    public async Task BaseFunctionality()
     {
-        [Fact]
-        public static void BaseFunctionality()
+        var stack = new StackPolicy(Options.Create(new QueuePolicyOptions
         {
-            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions {
-                MaxConcurrentRequests = 0,
-                RequestQueueLimit = 2,
-            }));
+            MaxConcurrentRequests = 1,
+            RequestQueueLimit = 2,
+        }));
 
-            var task1 = stack.TryEnterAsync();
+        var task1 = stack.TryEnterAsync();
 
-            Assert.False(task1.IsCompleted);
+        Assert.True(task1.IsCompleted);
+        Assert.True(await task1);
 
-            stack.OnExit();
+        var task2 = stack.TryEnterAsync();
 
-            Assert.True(task1.IsCompleted && task1.Result);
-        }
- 
-        [Fact]
-        public static void OldestRequestOverwritten()
+        Assert.False(task2.IsCompleted);
+
+        stack.OnExit();
+
+        Assert.True(await task2);
+
+        stack.OnExit();
+    }
+
+    [Fact]
+    public async Task OldestRequestOverwritten()
+    {
+        var stack = new StackPolicy(Options.Create(new QueuePolicyOptions
         {
-            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions {
-                MaxConcurrentRequests = 0,
-                RequestQueueLimit = 3,
-            }));
+            MaxConcurrentRequests = 1,
+            RequestQueueLimit = 3,
+        }));
 
-            var task1 = stack.TryEnterAsync();
-            Assert.False(task1.IsCompleted);
-            var task2 = stack.TryEnterAsync();
-            Assert.False(task2.IsCompleted);
-            var task3 = stack.TryEnterAsync();
-            Assert.False(task3.IsCompleted);
+        var task1 = stack.TryEnterAsync();
+        Assert.True(task1.IsCompleted);
 
-            var task4 = stack.TryEnterAsync();
-            
-            Assert.True(task1.IsCompleted);
-            Assert.False(task1.Result);
+        var task2 = stack.TryEnterAsync();
+        Assert.False(task2.IsCompleted);
+        var task3 = stack.TryEnterAsync();
+        Assert.False(task3.IsCompleted);
+        var task4 = stack.TryEnterAsync();
+        Assert.False(task4.IsCompleted);
 
-            Assert.False(task2.IsCompleted);
-            Assert.False(task3.IsCompleted);
-            Assert.False(task4.IsCompleted);
-        }
+        var task5 = stack.TryEnterAsync();
+        Assert.False(task5.IsCompleted);
 
-        [Fact]
-        public static void RespectsMaxConcurrency()
+        // Should have been pushed out of the stack
+        Assert.False(await task2);
+
+        Assert.False(task3.IsCompleted);
+        Assert.False(task4.IsCompleted);
+    }
+
+    [Fact]
+    public void RespectsMaxConcurrency()
+    {
+        var stack = new StackPolicy(Options.Create(new QueuePolicyOptions
         {
-            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions {
-                MaxConcurrentRequests = 2,
-                RequestQueueLimit = 2,
-            }));
+            MaxConcurrentRequests = 2,
+            RequestQueueLimit = 2,
+        }));
 
-            var task1 = stack.TryEnterAsync();
-            Assert.True(task1.IsCompleted);
+        var task1 = stack.TryEnterAsync();
+        Assert.True(task1.IsCompleted);
 
-            var task2 = stack.TryEnterAsync();
-            Assert.True(task2.IsCompleted);
+        var task2 = stack.TryEnterAsync();
+        Assert.True(task2.IsCompleted);
 
-            var task3 = stack.TryEnterAsync();
-            Assert.False(task3.IsCompleted);
-        }
+        var task3 = stack.TryEnterAsync();
+        Assert.False(task3.IsCompleted);
+    }
 
-        [Fact]
-        public static void ExitRequestsPreserveSemaphoreState()
+    [Fact]
+    public async Task ExitRequestsPreserveSemaphoreState()
+    {
+        var stack = new StackPolicy(Options.Create(new QueuePolicyOptions
         {
-            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions {
-                MaxConcurrentRequests = 1,
-                RequestQueueLimit = 2,
-            }));
+            MaxConcurrentRequests = 1,
+            RequestQueueLimit = 2,
+        }));
 
-            var task1 = stack.TryEnterAsync();
-            Assert.True(task1.IsCompleted && task1.Result);
+        var task1 = stack.TryEnterAsync();
+        Assert.True(task1.IsCompleted && await task1);
 
-            var task2 = stack.TryEnterAsync();
-            Assert.False(task2.IsCompleted);
+        var task2 = stack.TryEnterAsync();
+        Assert.False(task2.IsCompleted);
 
-            stack.OnExit();  // t1 exits, should free t2 to return
-            Assert.True(task2.IsCompleted && task2.Result);
+        stack.OnExit();  // t1 exits, should free t2 to return
+        Assert.True(await task2);
 
-            stack.OnExit();  // t2 exists, there's now a free spot in server
+        stack.OnExit();  // t2 exists, there's now a free spot in server
 
-            var task3 = stack.TryEnterAsync();
-            Assert.True(task3.IsCompleted && task3.Result);
-        }
+        var task3 = stack.TryEnterAsync();
+        Assert.True(task3.IsCompleted && await task3);
+    }
 
-        [Fact]
-        public static void StaleRequestsAreProperlyOverwritten()
+    [Fact]
+    public async Task StaleRequestsAreProperlyOverwritten()
+    {
+        var stack = new StackPolicy(Options.Create(new QueuePolicyOptions
         {
-            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions
-            {
-                MaxConcurrentRequests = 0,
-                RequestQueueLimit = 4,
-            }));
+            MaxConcurrentRequests = 1,
+            RequestQueueLimit = 4,
+        }));
 
-            var task1 = stack.TryEnterAsync();
-            stack.OnExit();
-            Assert.True(task1.IsCompleted);
+        var task0 = stack.TryEnterAsync();
+        Assert.True(task0.IsCompleted && await task0);
 
-            var task2 = stack.TryEnterAsync();
-            stack.OnExit();
-            Assert.True(task2.IsCompleted);
-        }
+        var task1 = stack.TryEnterAsync();
+        Assert.False(task1.IsCompleted);
 
-        [Fact]
-        public static async Task OneTryEnterAsyncOneOnExit()
+        stack.OnExit();
+        Assert.True(await task1);
+
+        var task2 = stack.TryEnterAsync();
+        Assert.False(task2.IsCompleted);
+
+        stack.OnExit();
+        Assert.True(await task2);
+
+        stack.OnExit();
+    }
+
+    [Fact]
+    public async Task OneTryEnterAsyncOneOnExit()
+    {
+        var stack = new StackPolicy(Options.Create(new QueuePolicyOptions
         {
-            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions
-            {
-                MaxConcurrentRequests = 1,
-                RequestQueueLimit = 4,
-            }));
+            MaxConcurrentRequests = 1,
+            RequestQueueLimit = 4,
+        }));
 
-            Assert.Throws<InvalidOperationException>(() => stack.OnExit());
+        Assert.Throws<InvalidOperationException>(() => stack.OnExit());
 
-            await stack.TryEnterAsync();
+        await stack.TryEnterAsync();
 
-            stack.OnExit();
+        stack.OnExit();
 
-            Assert.Throws<InvalidOperationException>(() => stack.OnExit());
-        }
-    } 
+        Assert.Throws<InvalidOperationException>(() => stack.OnExit());
+    }
 }

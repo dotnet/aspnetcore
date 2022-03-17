@@ -1,36 +1,33 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Controllers;
 
-namespace ApplicationModelWebSite
+namespace ApplicationModelWebSite;
+
+// This controller uses an reflected model attribute to change the controller name, and thus
+// the URL.
+[ControllerName("CoolController")]
+public class ControllerModelController : Controller
 {
-    // This controller uses an reflected model attribute to change the controller name, and thus
-    // the URL.
-    [ControllerName("CoolController")]
-    public class ControllerModelController : Controller
+    public string GetControllerName()
     {
-        public string GetControllerName()
+        return ControllerContext.ActionDescriptor.ControllerName;
+    }
+
+    private class ControllerNameAttribute : Attribute, IControllerModelConvention
+    {
+        private readonly string _controllerName;
+
+        public ControllerNameAttribute(string controllerName)
         {
-            return ControllerContext.ActionDescriptor.ControllerName;
+            _controllerName = controllerName;
         }
 
-        private class ControllerNameAttribute : Attribute, IControllerModelConvention
+        public void Apply(ControllerModel model)
         {
-            private readonly string _controllerName;
-
-            public ControllerNameAttribute(string controllerName)
-            {
-                _controllerName = controllerName;
-            }
-
-            public void Apply(ControllerModel model)
-            {
-                model.ControllerName = _controllerName;
-            }
+            model.ControllerName = _controllerName;
         }
     }
 }

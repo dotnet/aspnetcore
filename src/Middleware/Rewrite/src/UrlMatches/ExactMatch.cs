@@ -1,32 +1,31 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Rewrite.UrlMatches
+namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
+
+internal class ExactMatch : UrlMatch
 {
-    internal class ExactMatch : UrlMatch
+    private readonly bool _ignoreCase;
+    private readonly string _stringMatch;
+
+    public ExactMatch(bool ignoreCase, string input, bool negate)
     {
-        private readonly bool _ignoreCase;
-        private readonly string _stringMatch;
+        _ignoreCase = ignoreCase;
+        _stringMatch = input;
+        Negate = negate;
+    }
 
-        public ExactMatch(bool ignoreCase, string input, bool negate)
+    public override MatchResults Evaluate(string pattern, RewriteContext context)
+    {
+        var pathMatch = string.Equals(pattern, _stringMatch, _ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        var success = pathMatch != Negate;
+        if (success)
         {
-            _ignoreCase = ignoreCase;
-            _stringMatch = input;
-            Negate = negate;
+            return new MatchResults(success, new BackReferenceCollection(pattern));
         }
-
-        public override MatchResults Evaluate(string pattern, RewriteContext context)
+        else
         {
-            var pathMatch = string.Compare(pattern, _stringMatch, _ignoreCase);
-            var success = ((pathMatch == 0) != Negate);
-            if (success)
-            {
-                return new MatchResults { Success = success, BackReferences = new BackReferenceCollection(pattern) };
-            }
-            else
-            {
-                return MatchResults.EmptyFailure;
-            }
+            return MatchResults.EmptyFailure;
         }
     }
 }

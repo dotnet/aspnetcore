@@ -1,50 +1,125 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTest;
 using Microsoft.CodeAnalysis;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Analyzers
+namespace Microsoft.AspNetCore.Analyzers;
+
+public class CompilationFeatureDetectorTest
 {
-    public class CompilationFeatureDetectorTest : AnalyzerTestBase
+    [Fact]
+    public async Task DetectFeaturesAsync_FindsNoFeatures()
     {
-        [Fact]
-        public async Task DetectFeaturesAsync_FindsNoFeatures()
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTest
+{
+    public class StartupWithNoFeatures
+    {
+        public void Configure(IApplicationBuilder app)
         {
-            // Arrange
-            var compilation = await CreateCompilationAsync(nameof(StartupWithNoFeatures));
-            var symbols = new StartupSymbols(compilation);
+            app.UseRouting();
 
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(nameof(StartupWithNoFeatures)).Single();
-            Assert.True(StartupFacts.IsStartupClass(symbols, type));
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapFallbackToFile(""index.html"");
+            });
+        }
+    }
+}";
+        var compilation = TestCompilation.Create(source);
+        var symbols = new StartupSymbols(compilation);
 
-            // Act
-            var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName("StartupWithNoFeatures").Single();
+        Assert.True(StartupFacts.IsStartupClass(symbols, type));
 
-            // Assert
-            Assert.Empty(features);
+        // Act
+        var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
+
+        // Assert
+        Assert.Empty(features);
+    }
+
+    [Fact]
+    public async Task DetectFeatureAsync_StartupWithMapHub_FindsSignalR()
+    {
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.SignalR;
+
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTest
+{
+    public class StartupWithMapHub
+    {
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<MyHub>("" / test"");
+            });
+        }
+    }
+
+    public class MyHub : Hub
+    {
+    }
+}
+";
+        var compilation = TestCompilation.Create(source);
+        var symbols = new StartupSymbols(compilation);
+
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName("StartupWithMapHub").Single();
+        Assert.True(StartupFacts.IsStartupClass(symbols, type));
+
+        // Act
+        var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
+
+        // Assert
+        Assert.Collection(features, f => Assert.Equal(WellKnownFeatures.SignalR, f));
+
+    }
+
+    [Fact]
+    public async Task DetectFeatureAsync_StartupWithMapBlazorHub_FindsSignalR()
+    {
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTest
+{
+    public class StartupWithMapBlazorHub
+    {
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapBlazorHub();
+            });
         }
 
-        [Theory]
-        [InlineData(nameof(StartupWithMapHub))]
-        [InlineData(nameof(StartupWithMapBlazorHub))]
-        public async Task DetectFeaturesAsync_FindsSignalR(string source)
+        public class App : Microsoft.AspNetCore.Components.ComponentBase
         {
-            // Arrange
-            var compilation = await CreateCompilationAsync(source);
-            var symbols = new StartupSymbols(compilation);
-
-            var type = (INamedTypeSymbol)compilation.GetSymbolsWithName(source).Single();
-            Assert.True(StartupFacts.IsStartupClass(symbols, type));
-
-            // Act
-            var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
-
-            // Assert
-            Assert.Collection(features, f => Assert.Equal(WellKnownFeatures.SignalR, f));
         }
+    }
+}
+";
+        var compilation = TestCompilation.Create(source);
+        var symbols = new StartupSymbols(compilation);
+
+        var type = (INamedTypeSymbol)compilation.GetSymbolsWithName("StartupWithMapBlazorHub").Single();
+        Assert.True(StartupFacts.IsStartupClass(symbols, type));
+
+        // Act
+        var features = await CompilationFeatureDetector.DetectFeaturesAsync(compilation);
+
+        // Assert
+        Assert.Collection(features, f => Assert.Equal(WellKnownFeatures.SignalR, f));
+
     }
 }

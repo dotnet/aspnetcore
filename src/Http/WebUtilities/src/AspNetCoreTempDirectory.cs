@@ -1,39 +1,35 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
-using System;
-using System.IO;
+namespace Microsoft.AspNetCore.Internal;
 
-namespace Microsoft.AspNetCore.Internal
+internal static class AspNetCoreTempDirectory
 {
-    internal static class AspNetCoreTempDirectory
+    private static string? _tempDirectory;
+
+    public static string TempDirectory
     {
-        private static string? _tempDirectory;
-
-        public static string TempDirectory
+        get
         {
-            get
+            if (_tempDirectory == null)
             {
-                if (_tempDirectory == null)
+                // Look for folders in the following order.
+                var temp = Environment.GetEnvironmentVariable("ASPNETCORE_TEMP") ?? // ASPNETCORE_TEMP - User set temporary location.
+                           Path.GetTempPath();                                      // Fall back.
+
+                if (!Directory.Exists(temp))
                 {
-                    // Look for folders in the following order.
-                    var temp = Environment.GetEnvironmentVariable("ASPNETCORE_TEMP") ?? // ASPNETCORE_TEMP - User set temporary location.
-                               Path.GetTempPath();                                      // Fall back.
-
-                    if (!Directory.Exists(temp))
-                    {
-                        throw new DirectoryNotFoundException(temp);
-                    }
-
-                    _tempDirectory = temp;
+                    throw new DirectoryNotFoundException(temp);
                 }
 
-                return _tempDirectory;
+                _tempDirectory = temp;
             }
-        }
 
-        public static Func<string> TempDirectoryFactory => () => TempDirectory;
+            return _tempDirectory;
+        }
     }
+
+    public static Func<string> TempDirectoryFactory => () => TempDirectory;
 }

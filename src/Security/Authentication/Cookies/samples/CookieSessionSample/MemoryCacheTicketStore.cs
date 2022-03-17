@@ -1,55 +1,55 @@
-using System;
-using System.Threading.Tasks;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace CookieSessionSample
+namespace CookieSessionSample;
+
+public class MemoryCacheTicketStore : ITicketStore
 {
-    public class MemoryCacheTicketStore : ITicketStore
+    private const string KeyPrefix = "AuthSessionStore-";
+    private readonly IMemoryCache _cache;
+
+    public MemoryCacheTicketStore()
     {
-        private const string KeyPrefix = "AuthSessionStore-";
-        private IMemoryCache _cache;
+        _cache = new MemoryCache(new MemoryCacheOptions());
+    }
 
-        public MemoryCacheTicketStore()
+    public async Task<string> StoreAsync(AuthenticationTicket ticket)
+    {
+        var guid = Guid.NewGuid();
+        var key = KeyPrefix + guid.ToString();
+        await RenewAsync(key, ticket);
+        return key;
+    }
+
+    public Task RenewAsync(string key, AuthenticationTicket ticket)
+    {
+        var options = new MemoryCacheEntryOptions();
+        var expiresUtc = ticket.Properties.ExpiresUtc;
+        if (expiresUtc.HasValue)
         {
-            _cache = new MemoryCache(new MemoryCacheOptions());
+            options.SetAbsoluteExpiration(expiresUtc.Value);
         }
+        options.SetSlidingExpiration(TimeSpan.FromHours(1)); // TODO: configurable.
 
-        public async Task<string> StoreAsync(AuthenticationTicket ticket)
-        {
-            var guid = Guid.NewGuid();
-            var key = KeyPrefix + guid.ToString();
-            await RenewAsync(key, ticket);
-            return key;
-        }
+        _cache.Set(key, ticket, options);
 
-        public Task RenewAsync(string key, AuthenticationTicket ticket)
-        {
-            var options = new MemoryCacheEntryOptions();
-            var expiresUtc = ticket.Properties.ExpiresUtc;
-            if (expiresUtc.HasValue)
-            {
-                options.SetAbsoluteExpiration(expiresUtc.Value);
-            }
-            options.SetSlidingExpiration(TimeSpan.FromHours(1)); // TODO: configurable.
+        return Task.FromResult(0);
+    }
 
-            _cache.Set(key, ticket, options);
+    public Task<AuthenticationTicket> RetrieveAsync(string key)
+    {
+        AuthenticationTicket ticket;
+        _cache.TryGetValue(key, out ticket);
+        return Task.FromResult(ticket);
+    }
 
-            return Task.FromResult(0);
-        }
-
-        public Task<AuthenticationTicket> RetrieveAsync(string key)
-        {
-            AuthenticationTicket ticket;
-            _cache.TryGetValue(key, out ticket);
-            return Task.FromResult(ticket);
-        }
-
-        public Task RemoveAsync(string key)
-        {
-            _cache.Remove(key);
-            return Task.FromResult(0);
-        }
+    public Task RemoveAsync(string key)
+    {
+        _cache.Remove(key);
+        return Task.FromResult(0);
     }
 }

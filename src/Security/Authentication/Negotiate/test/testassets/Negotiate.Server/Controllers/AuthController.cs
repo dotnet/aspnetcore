@@ -1,46 +1,45 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Negotiate.Server.Controllers
+namespace Negotiate.Server.Controllers;
+
+[Route("auth")]
+[ApiController]
+public class AuthController : ControllerBase
 {
-    [Route("auth")]
-    [ApiController]
-    public class AuthController : ControllerBase
+    [HttpGet]
+    [Route("Unrestricted")]
+    public ObjectResult GetUnrestricted()
     {
-        [HttpGet]
-        [Route("Unrestricted")]
-        public ObjectResult GetUnrestricted()
+        var user = HttpContext.User.Identity;
+        return new ObjectResult(new
         {
-            var user = HttpContext.User.Identity;
-            return new ObjectResult(new
-            {
-                user.Name,
-                user.AuthenticationType,
-            });
-        }
+            user.Name,
+            user.AuthenticationType,
+        });
+    }
 
-        [HttpGet]
-        [Authorize]
-        [Route("Authorized")]
-        public ObjectResult GetAuthorized()
+    [HttpGet]
+    [Authorize]
+    [Route("Authorized")]
+    public ObjectResult GetAuthorized()
+    {
+        var user = HttpContext.User.Identity;
+        return new ObjectResult(new
         {
-            var user = HttpContext.User.Identity;
-            return new ObjectResult(new
-            {
-                user.Name,
-                user.AuthenticationType,
-            });
-        }
+            user.Name,
+            user.AuthenticationType,
+        });
+    }
 
-        [HttpGet]
-        [Authorize]
-        [Route("Unauthorized")]
-        public ChallengeResult GetUnauthorized()
-        {
-            return Challenge();
-        }
+    [HttpGet]
+    [Authorize]
+    [Route("Unauthorized")]
+    public ChallengeResult GetUnauthorized()
+    {
+        return Challenge();
     }
 }

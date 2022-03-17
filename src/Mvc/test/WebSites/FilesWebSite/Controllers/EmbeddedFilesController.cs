@@ -1,44 +1,43 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 
-namespace FilesWebSite
+namespace FilesWebSite;
+
+public class EmbeddedFilesController : Controller
 {
-    public class EmbeddedFilesController : Controller
+    public IActionResult DownloadFileWithFileName()
     {
-        public IActionResult DownloadFileWithFileName()
+        return new VirtualFileResult("/Greetings.txt", "text/plain")
         {
-            return new VirtualFileResult("/Greetings.txt", "text/plain")
-            {
-                FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
-                FileDownloadName = "downloadName.txt",
-                EnableRangeProcessing = true,
-            };
-        }
+            FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
+            FileDownloadName = "downloadName.txt",
+            EnableRangeProcessing = true,
+        };
+    }
 
-        public IActionResult DownloadFileWithFileName_RangeProcessingNotEnabled()
+    public IActionResult DownloadFileWithFileName_RangeProcessingNotEnabled()
+    {
+        return new VirtualFileResult("/Greetings.txt", "text/plain")
         {
-            return new VirtualFileResult("/Greetings.txt", "text/plain")
-            {
-                FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
-                FileDownloadName = "downloadName.txt",
-            };
-        }
+            FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
+            FileDownloadName = "downloadName.txt",
+        };
+    }
 
-        public IActionResult DownloadFileWithFileName_WithEtag()
+    public IActionResult DownloadFileWithFileName_WithEtag()
+    {
+        var file = new VirtualFileResult("/Greetings.txt", "text/plain")
         {
-            var file = new VirtualFileResult("/Greetings.txt", "text/plain")
-            {
-                FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
-                FileDownloadName = "downloadName.txt",
-                EnableRangeProcessing = true,
-            };
+            FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
+            FileDownloadName = "downloadName.txt",
+            EnableRangeProcessing = true,
+        };
 
-            file.EntityTag = new Microsoft.Net.Http.Headers.EntityTagHeaderValue("\"Etag\"");
-            return file;
-        }
+        file.EntityTag = new Microsoft.Net.Http.Headers.EntityTagHeaderValue("\"Etag\"");
+        return file;
     }
 }

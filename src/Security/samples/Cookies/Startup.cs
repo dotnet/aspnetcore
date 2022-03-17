@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,59 +14,58 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace AuthSamples.Cookies
+namespace AuthSamples.Cookies;
+
+public class Startup
 {
-    public class Startup
+    public const string CookieScheme = "YourSchemeName";
+
+    public Startup(IConfiguration configuration)
     {
-        public const string CookieScheme = "YourSchemeName";
+        Configuration = configuration;
+    }
 
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+    public IConfiguration Configuration { get; }
 
-        public IConfiguration Configuration { get; }
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddMvc();
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddMvc();
-
-            services.AddAuthentication(CookieScheme) // Sets the default scheme to cookies
-                .AddCookie(CookieScheme, options =>
-                {
-                    options.AccessDeniedPath = "/account/denied";
-                    options.LoginPath = "/account/login";
-                });
-
-            // Example of how to customize a particular instance of cookie options and
-            // is able to also use other services.
-            services.AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, ConfigureMyCookie>();
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
+        services.AddAuthentication(CookieScheme) // Sets the default scheme to cookies
+            .AddCookie(CookieScheme, options =>
             {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
-
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
+                options.AccessDeniedPath = "/account/denied";
+                options.LoginPath = "/account/login";
             });
+
+        // Example of how to customize a particular instance of cookie options and
+        // is able to also use other services.
+        services.AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, ConfigureMyCookie>();
+    }
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
         }
+        else
+        {
+            app.UseExceptionHandler("/Home/Error");
+        }
+
+        app.UseStaticFiles();
+
+        app.UseRouting();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapDefaultControllerRoute();
+        });
     }
 }

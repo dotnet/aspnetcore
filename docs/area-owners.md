@@ -1,23 +1,18 @@
+# Area Owners
+
 The below table lists all the `area-`labels used in the `aspnetcore` repository and their owners:
 
 | Area label | Owner | Description|
 |--- | ---| --- |
-| area-azure | anurse | |
 | area-blazor | mkArtakMSFT | Blazor server and Blazor WASM related |
-| area-commandlinetools | anurse, mkArtakMSFT | dev certs, dotnet watch,  |
-| area-dataprotection | anurse | |
+| area-commandlinetools |  mkArtakMSFT | dev certs, dotnet watch,  |
+| area-dataprotection | Pilchie | |
 | area-grpc | shirhatti | |
-| area-healthchecks | rynowak | |
-| area-hosting | anurse | |
-| area-httpclientfactory | anurse | |
+| area-healthchecks | mkArtakMSFT | |
 | area-identity | blowdart | |
 | area-infrastructure | dougbu | |
-| area-installers | anurse | |
-| area-middleware | anurse | |
 | area-mvc | mkArtakMSFT | |
-| area-perf | anurse | |
-| area-platform | anurse | |
+| area-perf | sebastienros | |
 | area-security | blowdart | |
-| area-servers | anurse | |
-| area-signalr | anurse | |
-| area-websockets | anurse | |
+| area-runtime | BrennanConroy | |
+| area-signalr | BrennanConroy | |

@@ -1,30 +1,27 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.JSInterop;
 
-namespace Microsoft.JSInterop
+/// <summary>
+/// Represents errors that occur during an interop call from .NET to JavaScript.
+/// </summary>
+public class JSException : Exception
 {
     /// <summary>
-    /// Represents errors that occur during an interop call from .NET to JavaScript.
+    /// Constructs an instance of <see cref="JSException"/>.
     /// </summary>
-    public class JSException : Exception
+    /// <param name="message">The exception message.</param>
+    public JSException(string message) : base(message)
     {
-        /// <summary>
-        /// Constructs an instance of <see cref="JSException"/>.
-        /// </summary>
-        /// <param name="message">The exception message.</param>
-        public JSException(string message) : base(message)
-        {
-        }
+    }
 
-        /// <summary>
-        /// Constructs an instance of <see cref="JSException"/>.
-        /// </summary>
-        /// <param name="message">The exception message.</param>
-        /// <param name="innerException">The inner exception.</param>
-        public JSException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    /// <summary>
+    /// Constructs an instance of <see cref="JSException"/>.
+    /// </summary>
+    /// <param name="message">The exception message.</param>
+    /// <param name="innerException">The inner exception.</param>
+    public JSException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

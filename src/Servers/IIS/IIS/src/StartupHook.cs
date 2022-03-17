@@ -1,23 +1,9 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Security.Claims;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Views;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.StackTrace.Sources;
-
 
 /// <summary>
 /// Startup hooks are pieces of code that will run before a users program main executes
@@ -63,31 +49,11 @@ internal class StartupHook
             var iisConfigData = NativeMethods.HttpGetApplicationProperties();
             var contentRoot = iisConfigData.pwzFullApplicationPath.TrimEnd(Path.DirectorySeparatorChar);
 
-            var model = new ErrorPageModel
-            {
-                RuntimeDisplayName = RuntimeInformation.FrameworkDescription
-            };
-
-            var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
-            var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
-            var clrVersion = assemblyVersion;
-            model.RuntimeArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
-            var currentAssembly = typeof(ErrorPage).GetTypeInfo().Assembly;
-            model.CurrentAssemblyVesion = currentAssembly
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                .InformationalVersion;
-            model.ClrVersion = clrVersion;
-            model.OperatingSystemDescription = RuntimeInformation.OSDescription;
-
-            var exceptionDetailProvider = new ExceptionDetailsProvider(
+            var model = ErrorPageModelBuilder.CreateErrorPageModel(
                 new PhysicalFileProvider(contentRoot),
                 logger: null,
-                sourceCodeLineCount: 6);
-
-            // The startup hook is only present when detailed errors are allowed, so
-            // we can turn on all the details.
-            model.ErrorDetails = exceptionDetailProvider.GetDetails(exception);
-            model.ShowRuntimeDetails = true;
+                showDetailedErrors: true,
+                exception);
 
             var errorPage = new ErrorPage(model);
 

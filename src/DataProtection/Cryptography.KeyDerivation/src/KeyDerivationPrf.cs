@@ -1,26 +1,25 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Cryptography.KeyDerivation
+namespace Microsoft.AspNetCore.Cryptography.KeyDerivation;
+
+/// <summary>
+/// Specifies the PRF which should be used for the key derivation algorithm.
+/// </summary>
+public enum KeyDerivationPrf
 {
     /// <summary>
-    /// Specifies the PRF which should be used for the key derivation algorithm.
+    /// The HMAC algorithm (RFC 2104) using the SHA-1 hash function (FIPS 180-4).
     /// </summary>
-    public enum KeyDerivationPrf
-    {
-        /// <summary>
-        /// The HMAC algorithm (RFC 2104) using the SHA-1 hash function (FIPS 180-4).
-        /// </summary>
-        HMACSHA1,
+    HMACSHA1,
 
-        /// <summary>
-        /// The HMAC algorithm (RFC 2104) using the SHA-256 hash function (FIPS 180-4).
-        /// </summary>
-        HMACSHA256,
+    /// <summary>
+    /// The HMAC algorithm (RFC 2104) using the SHA-256 hash function (FIPS 180-4).
+    /// </summary>
+    HMACSHA256,
 
-        /// <summary>
-        /// The HMAC algorithm (RFC 2104) using the SHA-512 hash function (FIPS 180-4).
-        /// </summary>
-        HMACSHA512,
-    }
+    /// <summary>
+    /// The HMAC algorithm (RFC 2104) using the SHA-512 hash function (FIPS 180-4).
+    /// </summary>
+    HMACSHA512,
 }

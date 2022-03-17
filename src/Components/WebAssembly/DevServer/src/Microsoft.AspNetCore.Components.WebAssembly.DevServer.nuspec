@@ -8,5 +8,6 @@
     <file src="build\**" target="build" />
     <file src="$publishDir$**\*" target="tools" />
     <file src="$PackageThirdPartyNoticesFile$" target=".\THIRD-PARTY-NOTICES.txt" />
+    <file src="$binDir$blazor-devserver.runtimeconfig.json" target="tools\blazor-devserver.runtimeconfig.json" />
   </files>
 </package>

@@ -1,135 +1,131 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
 
-namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
+namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+
+public class ConfigureApiResourcesTests
 {
-    public class ConfigureApiResourcesTests
+    [Fact]
+    public void GetApiResources_ReadsApisFromConfiguration()
     {
-        [Fact]
-        public void GetApiResources_ReadsApisFromConfiguration()
+        // Arrange
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
         {
-            // Arrange
-            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
-            {
-                ["MyAPI:Profile"] = "API"
-            }).Build();
-            var localApiDescriptor = new TestLocalApiDescriptor();
-            var configurationLoader = new ConfigureApiResources(
-                configuration,
-                localApiDescriptor,
-                new TestLogger<ConfigureApiResources>());
+            ["MyAPI:Profile"] = "API"
+        }).Build();
+        var localApiDescriptor = new TestLocalApiDescriptor();
+        var configurationLoader = new ConfigureApiResources(
+            configuration,
+            localApiDescriptor,
+            new TestLogger<ConfigureApiResources>());
 
-            // Act
-            var resources = configurationLoader.GetApiResources();
+        // Act
+        var resources = configurationLoader.GetApiResources();
 
-            // Assert
-            var resource = Assert.Single(resources);
-            var scope = Assert.Single(resource.Scopes);
-            Assert.Equal("MyAPI", resource.Name);
-            Assert.Equal("MyAPI", scope);
+        // Assert
+        var resource = Assert.Single(resources);
+        var scope = Assert.Single(resource.Scopes);
+        Assert.Equal("MyAPI", resource.Name);
+        Assert.Equal("MyAPI", scope);
+    }
+
+    [Fact]
+    public void GetApiResources_ReadsApiScopesFromConfiguration()
+    {
+        // Arrange
+        var expectedScopes = new[] { "First", "Second", "Third" };
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+        {
+            ["MyAPI:Profile"] = "API",
+            ["MyAPI:Scopes"] = "First Second Third"
+        }).Build();
+        var localApiDescriptor = new TestLocalApiDescriptor();
+        var configurationLoader = new ConfigureApiResources(
+            configuration,
+            localApiDescriptor,
+            new TestLogger<ConfigureApiResources>());
+        // Act
+        var resources = configurationLoader.GetApiResources();
+
+        // Assert
+        var resource = Assert.Single(resources);
+        Assert.Equal("MyAPI", resource.Name);
+        Assert.NotNull(resource.Scopes);
+        Assert.Equal(3, resource.Scopes.Count);
+        Assert.Equal(expectedScopes, resource.Scopes.Select(s => s).ToArray());
+    }
+
+    [Fact]
+    public void GetApiResources_DetectsLocallyRegisteredApis()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder().Build();
+        var localApiDescriptor = new TestLocalApiDescriptor(new Dictionary<string, ResourceDefinition>
+        {
+            ["MyAPI"] = new ResourceDefinition { Profile = ApplicationProfiles.IdentityServerJwt }
+        });
+        var configurationLoader = new ConfigureApiResources(
+            configuration,
+            localApiDescriptor,
+            new TestLogger<ConfigureApiResources>());
+
+        // Act
+        var resources = configurationLoader.GetApiResources();
+
+        // Assert
+        var resource = Assert.Single(resources);
+        var scope = Assert.Single(resource.Scopes);
+        Assert.Equal("MyAPI", resource.Name);
+        Assert.Equal("MyAPI", scope);
+    }
+
+    [Fact]
+    public void Configure_AddsResourcesToExistingResourceList()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+        {
+            ["MyAPI:Profile"] = "API"
+        }).Build();
+        var localApiDescriptor = new TestLocalApiDescriptor();
+        var configurationLoader = new ConfigureApiResources(
+            configuration,
+            localApiDescriptor,
+            new TestLogger<ConfigureApiResources>());
+
+        var options = new ApiAuthorizationOptions();
+
+        // Act
+        configurationLoader.Configure(options);
+
+        // Assert
+        var resource = Assert.Single(options.ApiResources);
+        var scope = Assert.Single(resource.Scopes);
+        Assert.Equal("MyAPI", resource.Name);
+        Assert.Equal("MyAPI", scope);
+    }
+
+    private class TestLocalApiDescriptor : IIdentityServerJwtDescriptor
+    {
+        private readonly IDictionary<string, ResourceDefinition> _definitions;
+
+        public TestLocalApiDescriptor()
+            : this(new Dictionary<string, ResourceDefinition>())
+        {
         }
 
-        [Fact]
-        public void GetApiResources_ReadsApiScopesFromConfiguration()
+        public TestLocalApiDescriptor(IDictionary<string, ResourceDefinition> definitions)
         {
-            // Arrange
-            var expectedScopes = new[] { "First", "Second", "Third" };
-            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
-            {
-                ["MyAPI:Profile"] = "API",
-                ["MyAPI:Scopes"] = "First Second Third"
-            }).Build();
-            var localApiDescriptor = new TestLocalApiDescriptor();
-            var configurationLoader = new ConfigureApiResources(
-                configuration,
-                localApiDescriptor,
-                new TestLogger<ConfigureApiResources>());
-            // Act
-            var resources = configurationLoader.GetApiResources();
-
-            // Assert
-            var resource = Assert.Single(resources);
-            Assert.Equal("MyAPI", resource.Name);
-            Assert.NotNull(resource.Scopes);
-            Assert.Equal(3, resource.Scopes.Count);
-            Assert.Equal(expectedScopes, resource.Scopes.Select(s => s).ToArray());
+            _definitions = definitions;
         }
 
-        [Fact]
-        public void GetApiResources_DetectsLocallyRegisteredApis()
+        public IDictionary<string, ResourceDefinition> GetResourceDefinitions()
         {
-            // Arrange
-            var configuration = new ConfigurationBuilder().Build();
-            var localApiDescriptor = new TestLocalApiDescriptor(new Dictionary<string, ResourceDefinition>
-            {
-                ["MyAPI"] = new ResourceDefinition { Profile = ApplicationProfiles.IdentityServerJwt }
-            });
-            var configurationLoader = new ConfigureApiResources(
-                configuration,
-                localApiDescriptor,
-                new TestLogger<ConfigureApiResources>());
-
-            // Act
-            var resources = configurationLoader.GetApiResources();
-
-            // Assert
-            var resource = Assert.Single(resources);
-            var scope = Assert.Single(resource.Scopes);
-            Assert.Equal("MyAPI", resource.Name);
-            Assert.Equal("MyAPI", scope);
-        }
-
-        [Fact]
-        public void Configure_AddsResourcesToExistingResourceList()
-        {
-            // Arrange
-            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
-            {
-                ["MyAPI:Profile"] = "API"
-            }).Build();
-            var localApiDescriptor = new TestLocalApiDescriptor();
-            var configurationLoader = new ConfigureApiResources(
-                configuration,
-                localApiDescriptor,
-                new TestLogger<ConfigureApiResources>());
-
-            var options = new ApiAuthorizationOptions();
-
-            // Act
-            configurationLoader.Configure(options);
-
-            // Assert
-            var resource = Assert.Single(options.ApiResources);
-            var scope = Assert.Single(resource.Scopes);
-            Assert.Equal("MyAPI", resource.Name);
-            Assert.Equal("MyAPI", scope);
-        }
-
-        private class TestLocalApiDescriptor : IIdentityServerJwtDescriptor
-        {
-            private readonly IDictionary<string, ResourceDefinition> _definitions;
-
-            public TestLocalApiDescriptor()
-                : this(new Dictionary<string, ResourceDefinition>())
-            {
-            }
-
-            public TestLocalApiDescriptor(IDictionary<string, ResourceDefinition> definitions)
-            {
-                _definitions = definitions;
-            }
-
-            public IDictionary<string, ResourceDefinition> GetResourceDefinitions()
-            {
-                return _definitions;
-            }
+            return _definitions;
         }
     }
 }

@@ -1,53 +1,52 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery;
+
+internal sealed class AntiforgeryToken
 {
-    internal sealed class AntiforgeryToken
+    internal const int SecurityTokenBitLength = 128;
+    internal const int ClaimUidBitLength = 256;
+
+    private string _additionalData = string.Empty;
+    private string _username = string.Empty;
+    private BinaryBlob? _securityToken;
+
+    public string AdditionalData
     {
-        internal const int SecurityTokenBitLength = 128;
-        internal const int ClaimUidBitLength = 256;
-
-        private string _additionalData = string.Empty;
-        private string _username = string.Empty;
-        private BinaryBlob? _securityToken;
-
-        public string AdditionalData
+        get { return _additionalData; }
+        set
         {
-            get { return _additionalData; }
-            set
-            {
-                _additionalData = value ?? string.Empty;
-            }
+            _additionalData = value ?? string.Empty;
         }
+    }
 
-        public BinaryBlob? ClaimUid { get; set; }
+    public BinaryBlob? ClaimUid { get; set; }
 
-        public bool IsCookieToken { get; set; }
+    public bool IsCookieToken { get; set; }
 
-        public BinaryBlob? SecurityToken
+    public BinaryBlob? SecurityToken
+    {
+        get
         {
-            get
+            if (_securityToken == null)
             {
-                if (_securityToken == null)
-                {
-                    _securityToken = new BinaryBlob(SecurityTokenBitLength);
-                }
-                return _securityToken;
+                _securityToken = new BinaryBlob(SecurityTokenBitLength);
             }
-            set
-            {
-                _securityToken = value;
-            }
+            return _securityToken;
         }
-
-        public string? Username
+        set
         {
-            get { return _username; }
-            set
-            {
-                _username = value ?? string.Empty;
-            }
+            _securityToken = value;
+        }
+    }
+
+    public string? Username
+    {
+        get { return _username; }
+        set
+        {
+            _username = value ?? string.Empty;
         }
     }
 }

@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-  </PropertyGroup>
-
-</Project>

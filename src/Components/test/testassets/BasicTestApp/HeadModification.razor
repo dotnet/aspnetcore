@@ -1,0 +1,61 @@
+﻿<h3>Head modification</h3>
+
+<p>
+	Title modification
+
+	@for (var i = 0; i < _titleEntries.Length; i++)
+	{
+		var index = i;
+		var titleEntry = _titleEntries[index];
+
+		<br />
+		<input id="title-checkbox-@(index + 1)" type="checkbox" @bind="titleEntry.Enabled" />
+		<input id="title-text-@(index + 1)" type="text" @bind="titleEntry.Content" />
+
+		@if (titleEntry.Enabled)
+		{
+			<PageTitle>@titleEntry.Content</PageTitle>
+		}
+	}
+</p>
+
+<p>
+	Description modification
+
+	@for (var i = 0; i < _descriptionEntries.Length; i++)
+	{
+		var index = i;
+		var descriptionEntry = _descriptionEntries[index];
+
+		<br />
+		<input id="description-checkbox-@(index + 1)" type="checkbox" @bind="descriptionEntry.Enabled" />
+		<input id="description-text-@(index + 1)" type="text" @bind="descriptionEntry.Content" />
+
+		@if (descriptionEntry.Enabled)
+		{
+			<HeadContent>
+				<meta id="meta-description" name="description" content="@descriptionEntry.Content">
+			</HeadContent>
+		}
+	}
+</p>
+
+@code {
+	private class CheckboxEntry
+	{
+		public string Content { get; set; }
+		public bool Enabled { get; set; }
+	}
+
+	private readonly CheckboxEntry[] _titleEntries = new CheckboxEntry[]
+	{
+		new() { Content = "Title 1", Enabled = true },
+		new() { Content = "Title 2", Enabled = false }
+	};
+
+	private readonly CheckboxEntry[] _descriptionEntries = new CheckboxEntry[]
+	{
+		new() { Content = "Description 1", Enabled = true },
+		new() { Content = "Description 2", Enabled = false }
+	};
+}

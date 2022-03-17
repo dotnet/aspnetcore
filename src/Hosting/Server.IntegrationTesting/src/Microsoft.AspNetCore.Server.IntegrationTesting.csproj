@@ -3,13 +3,12 @@
   <PropertyGroup>
     <Description>ASP.NET Core helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;testing</PackageTags>
     <IsTestAssetProject>true</IsTestAssetProject>
-    <!-- This is used as a package by aspnet benchmarking infrastructure. It is meant for internal-use only. -->
-    <IsShippingPackage>false</IsShippingPackage>
+    <!-- This is used as a package by ASP.NET benchmarking infrastructure. It is meant for internal use only. -->
     <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

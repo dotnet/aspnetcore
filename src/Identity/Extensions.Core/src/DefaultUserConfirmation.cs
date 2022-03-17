@@ -1,29 +1,24 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Identity
+namespace Microsoft.AspNetCore.Identity;
+
+/// <summary>
+/// Default implementation of <see cref="IUserConfirmation{TUser}"/>.
+/// </summary>
+/// <typeparam name="TUser">The type encapsulating a user.</typeparam>
+public class DefaultUserConfirmation<TUser> : IUserConfirmation<TUser> where TUser : class
 {
     /// <summary>
-    /// Default implementation of <see cref="IUserConfirmation{TUser}"/>.
+    /// Determines whether the specified <paramref name="user"/> is confirmed.
     /// </summary>
-    /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
-    public class DefaultUserConfirmation<TUser> : IUserConfirmation<TUser> where TUser : class
+    /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
+    /// <param name="user">The user.</param>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the confirmation operation.</returns>
+    public virtual async Task<bool> IsConfirmedAsync(UserManager<TUser> manager, TUser user)
     {
-        /// <summary>
-        /// Determines whether the specified <paramref name="user"/> is confirmed.
-        /// </summary>
-        /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the confirmation operation.</returns>
-        public async virtual Task<bool> IsConfirmedAsync(UserManager<TUser> manager, TUser user)
-        {
-            if (!await manager.IsEmailConfirmedAsync(user))
-            {
-                return false;
-            }
-            return true;
-        }
+        return await manager.IsEmailConfirmedAsync(user).ConfigureAwait(false);
     }
 }

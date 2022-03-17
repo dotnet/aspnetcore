@@ -1,29 +1,27 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using System;
 
-namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
+namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+
+internal class TestLogger<TCategory> : ILogger<TCategory>, IDisposable
 {
-    internal class TestLogger<TCategory> : ILogger<TCategory>, IDisposable
+    public IDisposable BeginScope<TState>(TState state)
     {
-        public IDisposable BeginScope<TState>(TState state)
-        {
-            return this;
-        }
+        return this;
+    }
 
-        public void Dispose()
-        {
-        }
+    public void Dispose()
+    {
+    }
 
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        return true;
+    }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
-        }
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    {
     }
 }

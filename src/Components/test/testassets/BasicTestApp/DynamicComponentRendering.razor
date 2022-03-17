@@ -1,0 +1,80 @@
+﻿<h3 class="dynamic-component">DynamicComponent</h3>
+
+<p>
+    Select case:
+    <select id="dynamic-component-case-picker" @bind="currentCaseName">
+        <option value="">Choose...</option>
+        @foreach (var kvp in cases)
+        {
+            <option value="@kvp.Key">@kvp.Key</option>
+        }
+    </select>
+</p>
+
+<p>
+    Outer component render count: <span id="outer-rendercount">@(++renderCount)</span>
+    <button id="re-render-host" @onclick="NoOpEventHandler">Re-render host component</button>
+</p>
+
+<hr />
+
+@if (!string.IsNullOrEmpty(currentCaseName))
+{
+    var currentCase = cases[currentCaseName];
+    <div id="dynamic-child">
+        <DynamicComponent Type="@currentCase.ComponentType" Parameters="@currentCase.ComponentParameters" />
+    </div>
+}
+
+@code {
+    private int renderCount;
+    private string currentCaseName;
+
+    private Dictionary<string, TestCase> cases = new Dictionary<string, TestCase>
+    {
+        {
+            "Counter",
+            new TestCase { ComponentType = typeof(CounterComponent) }
+        },
+        {
+            "Component with parameters",
+            new TestCase
+            {
+                ComponentType = typeof(ComponentWithParameters),
+                ComponentParameters = new Dictionary<string, object>
+                {
+                    // Known parameters
+                    {
+                        nameof(ComponentWithParameters.Param1),
+                        new List<ComponentWithParameters.TestModel>
+                        {
+                            new ComponentWithParameters.TestModel { IntProperty = 123, StringProperty = "Hello" }
+                        }
+                    },
+                    {
+                        nameof(ComponentWithParameters.Param2),
+                        new ComponentWithParameters.DerivedModel { IntProperty = 456, StringProperty = "Goodbye", DerivedProperty = "Derived" }
+                    },
+
+                    // An unmatched parameter
+                    {
+                        "unmatchedParam",
+                        "This is the unmatched param value"
+                    }
+                }
+            }
+        },
+    };
+
+    void NoOpEventHandler()
+    {
+        // The purpose of this is just to make the host component re-render so the test
+        // can verify that no state was lost
+    }
+
+    class TestCase
+    {
+        public Type ComponentType { get; set; }
+        public Dictionary<string, object> ComponentParameters { get; set; }
+    }
+}

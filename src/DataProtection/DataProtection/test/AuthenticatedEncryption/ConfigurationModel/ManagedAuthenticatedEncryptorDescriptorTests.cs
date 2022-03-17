@@ -1,115 +1,111 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography;
-using Xunit;
+using System.Text;
 
-namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+
+public class ManagedAuthenticatedEncryptorDescriptorTests
 {
-    public class ManagedAuthenticatedEncryptorDescriptorTests
+    [Fact]
+    public void ExportToXml_CustomTypes_ProducesCorrectPayload()
     {
-        [Fact]
-        public void ExportToXml_CustomTypes_ProducesCorrectPayload()
+        // Arrange
+        var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
+        var descriptor = new ManagedAuthenticatedEncryptorDescriptor(new ManagedAuthenticatedEncryptorConfiguration()
         {
-            // Arrange
-            var masterKey = "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret();
-            var descriptor = new ManagedAuthenticatedEncryptorDescriptor(new ManagedAuthenticatedEncryptorConfiguration()
-            {
-                EncryptionAlgorithmType = typeof(MySymmetricAlgorithm),
-                EncryptionAlgorithmKeySize = 2048,
-                ValidationAlgorithmType = typeof(MyKeyedHashAlgorithm)
-            }, masterKey);
+            EncryptionAlgorithmType = typeof(MySymmetricAlgorithm),
+            EncryptionAlgorithmKeySize = 2048,
+            ValidationAlgorithmType = typeof(MyKeyedHashAlgorithm)
+        }, masterKey.ToSecret());
 
-            // Act
-            var retVal = descriptor.ExportToXml();
+        // Act
+        var retVal = descriptor.ExportToXml();
 
-            // Assert
-            Assert.Equal(typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            string expectedXml = string.Format(@"
+        // Assert
+        Assert.Equal(typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
+        var expectedXml = $@"
                 <descriptor>
-                  <encryption algorithm='{0}' keyLength='2048' />
-                  <validation algorithm='{1}' />
+                  <encryption algorithm='{typeof(MySymmetricAlgorithm).AssemblyQualifiedName}' keyLength='2048' />
+                  <validation algorithm='{typeof(MyKeyedHashAlgorithm).AssemblyQualifiedName}' />
                   <masterKey enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                    <value>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</value>
+                    <value>{masterKey}</value>
                   </masterKey>
-                </descriptor>",
-                typeof(MySymmetricAlgorithm).AssemblyQualifiedName, typeof(MyKeyedHashAlgorithm).AssemblyQualifiedName);
-            XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
-        }
+                </descriptor>";
+        XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
+    }
 
-        [Theory]
-        [InlineData(typeof(Aes), typeof(HMACSHA1))]
-        [InlineData(typeof(Aes), typeof(HMACSHA256))]
-        [InlineData(typeof(Aes), typeof(HMACSHA384))]
-        [InlineData(typeof(Aes), typeof(HMACSHA512))]
-        public void ExportToXml_BuiltInTypes_ProducesCorrectPayload(Type encryptionAlgorithmType, Type validationAlgorithmType)
+    [Theory]
+    [InlineData(typeof(Aes), typeof(HMACSHA1))]
+    [InlineData(typeof(Aes), typeof(HMACSHA256))]
+    [InlineData(typeof(Aes), typeof(HMACSHA384))]
+    [InlineData(typeof(Aes), typeof(HMACSHA512))]
+    public void ExportToXml_BuiltInTypes_ProducesCorrectPayload(Type encryptionAlgorithmType, Type validationAlgorithmType)
+    {
+        // Arrange
+        var masterKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("[PLACEHOLDER]"));
+        var descriptor = new ManagedAuthenticatedEncryptorDescriptor(new ManagedAuthenticatedEncryptorConfiguration()
         {
-            // Arrange
-            var masterKey = "k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==".ToSecret();
-            var descriptor = new ManagedAuthenticatedEncryptorDescriptor(new ManagedAuthenticatedEncryptorConfiguration()
-            {
-                EncryptionAlgorithmType = encryptionAlgorithmType,
-                EncryptionAlgorithmKeySize = 2048,
-                ValidationAlgorithmType = validationAlgorithmType
-            }, masterKey);
+            EncryptionAlgorithmType = encryptionAlgorithmType,
+            EncryptionAlgorithmKeySize = 2048,
+            ValidationAlgorithmType = validationAlgorithmType
+        }, masterKey.ToSecret());
 
-            // Act
-            var retVal = descriptor.ExportToXml();
+        // Act
+        var retVal = descriptor.ExportToXml();
 
-            // Assert
-            Assert.Equal(typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
-            string expectedXml = string.Format(@"
+        // Assert
+        Assert.Equal(typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer), retVal.DeserializerType);
+        var expectedXml = $@"
                 <descriptor>
-                  <encryption algorithm='{0}' keyLength='2048' />
-                  <validation algorithm='{1}' />
+                  <encryption algorithm='{encryptionAlgorithmType.Name}' keyLength='2048' />
+                  <validation algorithm='{validationAlgorithmType.Name}' />
                   <masterKey enc:requiresEncryption='true' xmlns:enc='http://schemas.asp.net/2015/03/dataProtection'>
-                    <value>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</value>
+                    <value>{masterKey}</value>
                   </masterKey>
-                </descriptor>",
-                encryptionAlgorithmType.Name, validationAlgorithmType.Name);
-            XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
+                </descriptor>";
+        XmlAssert.Equal(expectedXml, retVal.SerializedDescriptorElement);
+    }
+
+    private sealed class MySymmetricAlgorithm : SymmetricAlgorithm
+    {
+        public override ICryptoTransform CreateDecryptor(byte[] rgbKey, byte[] rgbIV)
+        {
+            throw new NotImplementedException();
         }
 
-        private sealed class MySymmetricAlgorithm : SymmetricAlgorithm
+        public override ICryptoTransform CreateEncryptor(byte[] rgbKey, byte[] rgbIV)
         {
-            public override ICryptoTransform CreateDecryptor(byte[] rgbKey, byte[] rgbIV)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override ICryptoTransform CreateEncryptor(byte[] rgbKey, byte[] rgbIV)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void GenerateIV()
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void GenerateKey()
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
         }
 
-        private sealed class MyKeyedHashAlgorithm : KeyedHashAlgorithm
+        public override void GenerateIV()
         {
-            public override void Initialize()
-            {
-                throw new NotImplementedException();
-            }
+            throw new NotImplementedException();
+        }
 
-            protected override void HashCore(byte[] array, int ibStart, int cbSize)
-            {
-                throw new NotImplementedException();
-            }
+        public override void GenerateKey()
+        {
+            throw new NotImplementedException();
+        }
+    }
 
-            protected override byte[] HashFinal()
-            {
-                throw new NotImplementedException();
-            }
+    private sealed class MyKeyedHashAlgorithm : KeyedHashAlgorithm
+    {
+        public override void Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void HashCore(byte[] array, int ibStart, int cbSize)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override byte[] HashFinal()
+        {
+            throw new NotImplementedException();
         }
     }
 }

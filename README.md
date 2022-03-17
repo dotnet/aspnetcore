@@ -1,3 +1,7 @@
+[![.NET Foundation](https://img.shields.io/badge/.NET%20Foundation-blueviolet.svg)](https://www.dotnetfoundation.org/)
+[![MIT License](https://img.shields.io/github/license/dotnet/aspnetcore?color=%230b0&style=flat-square)](https://github.com/dotnet/aspnetcore/blob/main/LICENSE.txt) [![Help Wanted](https://img.shields.io/github/issues/dotnet/aspnetcore/help%20wanted?color=%232EA043&label=help%20wanted&style=flat-square)](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) [![Good First Issues](https://img.shields.io/github/issues/dotnet/aspnetcore/good%20first%20issue?color=%23512BD4&label=good%20first%20issue&style=flat-square)](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+[![Discord](https://img.shields.io/discord/732297728826277939?style=flat-square&label=Discord&logo=discord&logoColor=white&color=7289DA)](https://aka.ms/dotnet-discord)
+
 ASP.NET Core
 ============
 
@@ -9,7 +13,7 @@ Follow the [Getting Started](https://docs.microsoft.com/aspnet/core/getting-star
 
 Also check out the [.NET Homepage](https://www.microsoft.com/net) for released versions of .NET, getting started guides, and learning resources.
 
-See the [Triage Process](https://github.com/dotnet/aspnetcore/blob/master/docs/TriageProcess.md) document for more information on how we handle incoming issues.
+See the [Triage Process](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md) document for more information on how we handle incoming issues.
 
 ## How to Engage, Contribute, and Give Feedback
 
@@ -19,7 +23,7 @@ and make pull-requests.
 * [Download our latest daily builds](./docs/DailyBuilds.md)
 * Follow along with the development of ASP.NET Core:
     * [Community Standup](https://live.asp.net): The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist.
-    * [Roadmap](https://github.com/dotnet/aspnetcore/wiki/Roadmap): The schedule and milestone themes for ASP.NET Core.
+    * [Roadmap](https://aka.ms/aspnet/roadmap): The schedule and milestone themes for ASP.NET Core.
 * [Build ASP.NET Core source code](./docs/BuildFromSource.md)
 * Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
@@ -33,7 +37,9 @@ These are some other repos for related projects:
 
 * [Documentation](https://github.com/aspnet/Docs) - documentation sources for https://docs.microsoft.com/aspnet/core/
 * [Entity Framework Core](https://github.com/dotnet/efcore) - data access technology
-* [Extensions](https://github.com/dotnet/extensions) - Logging, configuration, dependency injection, and more.
+* [Runtime](https://github.com/dotnet/runtime) - cross-platform runtime for cloud, mobile, desktop, and IoT apps
+* [Razor Compiler](https://github.com/dotnet/razor-compiler) - the parser and the C# code generator for the Razor syntax
+* [Razor Tooling](https://github.com/dotnet/razor-tooling) - tools for working on Razor ASP.NET Core apps using [Visual Studio](https://visualstudio.com), [Visual Studio for Mac](https://visualstudio.microsoft.com/vs/mac/), and [Visual Studio Code](https://code.visualstudio.com/).
 
 ## Code of conduct
 

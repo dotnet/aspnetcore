@@ -1,97 +1,42 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.SignalR
+namespace Microsoft.AspNetCore.SignalR;
+
+public partial class HubConnectionContext
 {
-    public partial class HubConnectionContext
+    private static partial class Log
     {
-        private static class Log
-        {
-            // Category: HubConnectionContext
-            private static readonly Action<ILogger, string, Exception> _handshakeComplete =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "HandshakeComplete"), "Completed connection handshake. Using HubProtocol '{Protocol}'.");
+        [LoggerMessage(1, LogLevel.Debug, "Completed connection handshake. Using HubProtocol '{Protocol}'.", EventName = "HandshakeComplete")]
+        public static partial void HandshakeComplete(ILogger logger, string protocol);
 
-            private static readonly Action<ILogger, Exception> _handshakeCanceled =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "HandshakeCanceled"), "Handshake was canceled.");
+        [LoggerMessage(2, LogLevel.Debug, "Handshake was canceled.", EventName = "HandshakeCanceled")]
+        public static partial void HandshakeCanceled(ILogger logger);
 
-            private static readonly Action<ILogger, Exception> _sentPing =
-                LoggerMessage.Define(LogLevel.Trace, new EventId(3, "SentPing"), "Sent a ping message to the client.");
+        [LoggerMessage(3, LogLevel.Trace, "Sent a ping message to the client.", EventName = "SentPing")]
+        public static partial void SentPing(ILogger logger);
 
-            private static readonly Action<ILogger, Exception> _transportBufferFull =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "TransportBufferFull"), "Unable to send Ping message to client, the transport buffer is full.");
+        [LoggerMessage(4, LogLevel.Debug, "Unable to send Ping message to client, the transport buffer is full.", EventName = "TransportBufferFull")]
+        public static partial void TransportBufferFull(ILogger logger);
 
-            private static readonly Action<ILogger, Exception> _handshakeFailed =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(5, "HandshakeFailed"), "Failed connection handshake.");
+        [LoggerMessage(5, LogLevel.Debug, "Failed connection handshake.", EventName = "HandshakeFailed")]
+        public static partial void HandshakeFailed(ILogger logger, Exception? exception);
 
-            private static readonly Action<ILogger, Exception> _failedWritingMessage =
-                LoggerMessage.Define(LogLevel.Error, new EventId(6, "FailedWritingMessage"), "Failed writing message. Aborting connection.");
+        [LoggerMessage(6, LogLevel.Error, "Failed writing message. Aborting connection.", EventName = "FailedWritingMessage")]
+        public static partial void FailedWritingMessage(ILogger logger, Exception exception);
 
-            private static readonly Action<ILogger, string, int, Exception> _protocolVersionFailed =
-                LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(7, "ProtocolVersionFailed"), "Server does not support version {Version} of the {Protocol} protocol.");
+        [LoggerMessage(7, LogLevel.Debug, "Server does not support version {Version} of the {Protocol} protocol.", EventName = "ProtocolVersionFailed")]
+        public static partial void ProtocolVersionFailed(ILogger logger, string protocol, int version);
 
-            private static readonly Action<ILogger, Exception> _abortFailed =
-                LoggerMessage.Define(LogLevel.Trace, new EventId(8, "AbortFailed"), "Abort callback failed.");
+        [LoggerMessage(8, LogLevel.Trace, "Abort callback failed.", EventName = "AbortFailed")]
+        public static partial void AbortFailed(ILogger logger, Exception exception);
 
-            private static readonly Action<ILogger, int, Exception> _clientTimeout =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(9, "ClientTimeout"), "Client timeout ({ClientTimeout}ms) elapsed without receiving a message from the client. Closing connection.");
+        [LoggerMessage(9, LogLevel.Debug, "Client timeout ({ClientTimeout}ms) elapsed without receiving a message from the client. Closing connection.", EventName = "ClientTimeout")]
+        public static partial void ClientTimeout(ILogger logger, TimeSpan clientTimeout);
 
-            private static readonly Action<ILogger, long, Exception> _handshakeSizeLimitExceeded =
-                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(10, "HandshakeSizeLimitExceeded"), "The maximum message size of {MaxMessageSize}B was exceeded while parsing the Handshake. The message size can be configured in AddHubOptions.");
-
-            public static void HandshakeComplete(ILogger logger, string hubProtocol)
-            {
-                _handshakeComplete(logger, hubProtocol, null);
-            }
-
-            public static void HandshakeCanceled(ILogger logger)
-            {
-                _handshakeCanceled(logger, null);
-            }
-
-            public static void SentPing(ILogger logger)
-            {
-                _sentPing(logger, null);
-            }
-
-            public static void TransportBufferFull(ILogger logger)
-            {
-                _transportBufferFull(logger, null);
-            }
-
-            public static void HandshakeFailed(ILogger logger, Exception exception)
-            {
-                _handshakeFailed(logger, exception);
-            }
-
-            public static void FailedWritingMessage(ILogger logger, Exception exception)
-            {
-                _failedWritingMessage(logger, exception);
-            }
-
-            public static void ProtocolVersionFailed(ILogger logger, string protocolName, int version)
-            {
-                _protocolVersionFailed(logger, protocolName, version, null);
-            }
-
-            public static void AbortFailed(ILogger logger, Exception exception)
-            {
-                _abortFailed(logger, exception);
-            }
-
-            public static void ClientTimeout(ILogger logger, TimeSpan timeout)
-            {
-                _clientTimeout(logger, (int)timeout.TotalMilliseconds, null);
-            }
-
-            public static void HandshakeSizeLimitExceeded(ILogger logger, long maxMessageSize)
-            {
-                _handshakeSizeLimitExceeded(logger, maxMessageSize, null);
-            }
-        }
+        [LoggerMessage(10, LogLevel.Debug, "The maximum message size of {MaxMessageSize}B was exceeded while parsing the Handshake. The message size can be configured in AddHubOptions.", EventName = "HandshakeSizeLimitExceeded")]
+        public static partial void HandshakeSizeLimitExceeded(ILogger logger, long maxMessageSize);
     }
 }

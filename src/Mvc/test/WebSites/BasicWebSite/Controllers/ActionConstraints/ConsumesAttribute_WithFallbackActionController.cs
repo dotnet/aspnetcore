@@ -1,31 +1,29 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers.ActionConstraints
+namespace BasicWebSite.Controllers.ActionConstraints;
+
+[Route("ConsumesAttribute_WithFallbackActionController/[action]")]
+public class ConsumesAttribute_WithFallbackActionController : Controller
 {
-    [Route("ConsumesAttribute_WithFallbackActionController/[action]")]
-    public class ConsumesAttribute_WithFallbackActionController : Controller
+    [Consumes("application/json")]
+    [ActionName("CreateProduct")]
+    public IActionResult CreateProductJson()
     {
-        [Consumes("application/json")]
-        [ActionName("CreateProduct")]
-        public IActionResult CreateProductJson()
-        {
-            return Content("CreateProduct_Product_Json");
-        }
+        return Content("CreateProduct_Product_Json");
+    }
 
-        [Consumes("application/xml")]
-        [ActionName("CreateProduct")]
-        public IActionResult CreateProductXml()
-        {
-            return Content("CreateProduct_Product_Xml");
-        }
+    [Consumes("application/xml")]
+    [ActionName("CreateProduct")]
+    public IActionResult CreateProductXml()
+    {
+        return Content("CreateProduct_Product_Xml");
+    }
 
-        public IActionResult CreateProduct()
-        {
-            return Content("CreateProduct_Product_Text");
-        }
+    public IActionResult CreateProduct()
+    {
+        return Content("CreateProduct_Product_Text");
     }
 }

@@ -5,6 +5,13 @@ angular/
 blazorserver/
 blazorwasm/
 mvc/
+mvcorgauth/
 razor/
 react/
 reactredux/
+web/
+webapp/
+webapi/
+webapimin/
+worker/
+grpc/

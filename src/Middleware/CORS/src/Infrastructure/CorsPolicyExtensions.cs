@@ -1,36 +1,34 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure;
+
+internal static class CorsPolicyExtensions
 {
-    internal static class CorsPolicyExtensions
+    private const string _WildcardSubdomain = "*.";
+
+    public static bool IsOriginAnAllowedSubdomain(this CorsPolicy policy, string origin)
     {
-        private const string _WildcardSubdomain = "*.";
-
-        public static bool IsOriginAnAllowedSubdomain(this CorsPolicy policy, string origin)
+        if (policy.Origins.Contains(origin))
         {
-            if (policy.Origins.Contains(origin))
-            {
-                return true;
-            }
-
-            if (Uri.TryCreate(origin, UriKind.Absolute, out var originUri))
-            {
-                return policy.Origins
-                    .Where(o => o.Contains($"://{_WildcardSubdomain}"))
-                    .Select(CreateDomainUri)
-                    .Any(domain => UriHelpers.IsSubdomainOf(originUri, domain));
-            }
-
-            return false;
+            return true;
         }
 
-        private static Uri CreateDomainUri(string origin)
+        if (Uri.TryCreate(origin, UriKind.Absolute, out var originUri))
         {
-            return new Uri(origin.Replace(_WildcardSubdomain, string.Empty), UriKind.Absolute);
+            return policy.Origins
+                .Where(o => o.Contains($"://{_WildcardSubdomain}"))
+                .Select(CreateDomainUri)
+                .Any(domain => UriHelpers.IsSubdomainOf(originUri, domain));
         }
+
+        return false;
+    }
+
+    private static Uri CreateDomainUri(string origin)
+    {
+        return new Uri(origin.Replace(_WildcardSubdomain, string.Empty), UriKind.Absolute);
     }
 }

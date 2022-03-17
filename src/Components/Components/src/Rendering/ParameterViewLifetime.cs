@@ -1,31 +1,28 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Components.Rendering
+internal readonly struct ParameterViewLifetime
 {
-    internal readonly struct ParameterViewLifetime
+    private readonly RenderBatchBuilder _owner;
+    private readonly int _stamp;
+
+    public static readonly ParameterViewLifetime Unbound;
+
+    public ParameterViewLifetime(RenderBatchBuilder owner)
     {
-        private readonly RenderBatchBuilder _owner;
-        private readonly int _stamp;
+        _owner = owner;
+        _stamp = owner.ParameterViewValidityStamp;
+    }
 
-        public static readonly ParameterViewLifetime Unbound = default;
-
-        public ParameterViewLifetime(RenderBatchBuilder owner)
+    public void AssertNotExpired()
+    {
+        // If _owner is null, this instance is default(ParameterViewLifetime), which is
+        // the same as ParameterViewLifetime.Unbound. That means it never expires.
+        if (_owner != null && _owner.ParameterViewValidityStamp != _stamp)
         {
-            _owner = owner;
-            _stamp = owner.ParameterViewValidityStamp;
-        }
-
-        public void AssertNotExpired()
-        {
-            // If _owner is null, this instance is default(ParameterViewLifetime), which is
-            // the same as ParameterViewLifetime.Unbound. That means it never expires.
-            if (_owner != null && _owner.ParameterViewValidityStamp != _stamp)
-            {
-                throw new InvalidOperationException($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.");
-            }
+            throw new InvalidOperationException($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.");
         }
     }
 }

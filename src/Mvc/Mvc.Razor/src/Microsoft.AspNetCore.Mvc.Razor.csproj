@@ -4,11 +4,10 @@
     <Description>ASP.NET Core MVC Razor view engine for CSHTML files.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;cshtml;razor</PackageTags>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn.Replace('1591', ''))</NoWarn>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

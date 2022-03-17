@@ -1,59 +1,58 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BasicWebSite.Controllers
+namespace BasicWebSite.Controllers;
+
+[RequestFormLimits(ValueCountLimit = 2)]
+public class RequestFormLimitsController : Controller
 {
-    [RequestFormLimits(ValueCountLimit = 2)]
-    public class RequestFormLimitsController : Controller
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public ActionResult<Product> RequestFormLimitsBeforeAntiforgeryValidation(Product product)
     {
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult<Product> RequestFormLimitsBeforeAntiforgeryValidation(Product product)
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            return product;
+            return BadRequest(ModelState);
         }
 
-        [HttpPost]
-        [RequestFormLimits(ValueCountLimit = 5)]
-        public ActionResult<Product> OverrideControllerLevelLimits(Product product)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            return product;
-        }
+        return product;
+    }
 
-        [HttpPost]
-        [RequestFormLimits]
-        public ActionResult<Product> OverrideControllerLevelLimitsUsingDefaultLimits(Product product)
+    [HttpPost]
+    [RequestFormLimits(ValueCountLimit = 5)]
+    public ActionResult<Product> OverrideControllerLevelLimits(Product product)
+    {
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            return product;
+            return BadRequest(ModelState);
         }
+        return product;
+    }
 
-        [HttpPost]
-        [RequestFormLimits(ValueCountLimit = 2)]
-        [RequestSizeLimit(100)]
-        [ValidateAntiForgeryToken]
-        public ActionResult<Product> RequestSizeLimitBeforeRequestFormLimits(Product product)
+    [HttpPost]
+    [RequestFormLimits]
+    public ActionResult<Product> OverrideControllerLevelLimitsUsingDefaultLimits(Product product)
+    {
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            return product;
+            return BadRequest(ModelState);
         }
+        return product;
+    }
+
+    [HttpPost]
+    [RequestFormLimits(ValueCountLimit = 2)]
+    [RequestSizeLimit(100)]
+    [ValidateAntiForgeryToken]
+    public ActionResult<Product> RequestSizeLimitBeforeRequestFormLimits(Product product)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+        return product;
     }
 }

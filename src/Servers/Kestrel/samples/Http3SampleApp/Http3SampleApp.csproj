@@ -2,18 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Turn on preview features so we can use Http3 -->
+    <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(KestrelSharedSourceRoot)test\HttpEventSourceListener.cs" LinkBase="shared" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="msquic.dll" Condition="Exists('msquic.dll')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
   </ItemGroup>
 </Project>

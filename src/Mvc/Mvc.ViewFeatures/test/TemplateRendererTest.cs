@@ -1,23 +1,19 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+public class TemplateRendererTest
 {
-    public class TemplateRendererTest
+    public static TheoryData<Type, string[]> TypeNameData
     {
-        public static TheoryData<Type, string[]> TypeNameData
+        get
         {
-            get
-            {
-                return new TheoryData<Type, string[]>
+            return new TheoryData<Type, string[]>
                 {
                     { typeof(string), new string[] { "String" } },
                     { typeof(bool), new string[] { "Boolean", "String" } },
@@ -42,24 +38,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     { typeof(IEnumerable<IFormFile>), new string[] { TemplateRenderer.IEnumerableOfIFormFileName,
                         typeof(IEnumerable<IFormFile>).Name, "Collection", "Object" } },
                 };
-            }
         }
+    }
 
-        [Theory]
-        [MemberData(nameof(TypeNameData))]
-        public void GetTypeNames_ReturnsExpectedResults(Type fieldType, string[] expectedResult)
-        {
-            // Arrange
-            var metadataProvider = new TestModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForType(fieldType);
+    [Theory]
+    [MemberData(nameof(TypeNameData))]
+    public void GetTypeNames_ReturnsExpectedResults(Type fieldType, string[] expectedResult)
+    {
+        // Arrange
+        var metadataProvider = new TestModelMetadataProvider();
+        var metadata = metadataProvider.GetMetadataForType(fieldType);
 
-            // Act
-            var typeNames = TemplateRenderer.GetTypeNames(metadata, fieldType);
+        // Act
+        var typeNames = TemplateRenderer.GetTypeNames(metadata, fieldType);
 
-            // Assert
-            var collectionAssertions = expectedResult.Select<string, Action<string>>(expected =>
-                actual => Assert.Equal(expected, actual));
-            Assert.Collection(typeNames, collectionAssertions.ToArray());
-        }
+        // Assert
+        var collectionAssertions = expectedResult.Select<string, Action<string>>(expected =>
+            actual => Assert.Equal(expected, actual));
+        Assert.Collection(typeNames, collectionAssertions.ToArray());
     }
 }

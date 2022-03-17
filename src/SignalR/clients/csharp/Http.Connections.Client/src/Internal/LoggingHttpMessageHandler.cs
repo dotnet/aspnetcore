@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Net;
@@ -8,52 +8,42 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
+namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
+
+internal sealed partial class LoggingHttpMessageHandler : DelegatingHandler
 {
-    internal class LoggingHttpMessageHandler : DelegatingHandler
+    private readonly ILogger<LoggingHttpMessageHandler> _logger;
+
+    public LoggingHttpMessageHandler(HttpMessageHandler inner, ILoggerFactory loggerFactory) : base(inner)
     {
-        private readonly ILogger<LoggingHttpMessageHandler> _logger;
-
-        public LoggingHttpMessageHandler(HttpMessageHandler inner, ILoggerFactory loggerFactory) : base(inner)
+        if (loggerFactory == null)
         {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _logger = loggerFactory.CreateLogger<LoggingHttpMessageHandler>();
+            throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        _logger = loggerFactory.CreateLogger<LoggingHttpMessageHandler>();
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        Log.SendingHttpRequest(_logger, request.Method, request.RequestUri!);
+
+        var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
         {
-            Log.SendingHttpRequest(_logger, request.Method, request.RequestUri);
-
-            var response = await base.SendAsync(request, cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                Log.UnsuccessfulHttpResponse(_logger, response.StatusCode, request.Method, request.RequestUri);
-            }
-
-            return response;
+            Log.UnsuccessfulHttpResponse(_logger, response.StatusCode, request.Method, request.RequestUri!);
         }
 
-        private static class Log
-        {
-            private static readonly Action<ILogger, HttpMethod, Uri, Exception> _sendingHttpRequest =
-                LoggerMessage.Define<HttpMethod, Uri>(LogLevel.Trace, new EventId(1, "SendingHttpRequest"), "Sending HTTP request {RequestMethod} '{RequestUrl}'.");
+        return response;
+    }
 
-            private static readonly Action<ILogger, int, HttpMethod, Uri, Exception> _unsuccessfulHttpResponse =
-                LoggerMessage.Define<int, HttpMethod, Uri>(LogLevel.Warning, new EventId(2, "UnsuccessfulHttpResponse"), "Unsuccessful HTTP response {StatusCode} return from {RequestMethod} '{RequestUrl}'.");
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Trace, "Sending HTTP request {RequestMethod} '{RequestUrl}'.", EventName = "SendingHttpRequest")]
+        public static partial void SendingHttpRequest(ILogger logger, HttpMethod requestMethod, Uri requestUrl);
 
-            public static void SendingHttpRequest(ILogger logger, HttpMethod requestMethod, Uri requestUrl)
-            {
-                _sendingHttpRequest(logger, requestMethod, requestUrl, null);
-            }
-            public static void UnsuccessfulHttpResponse(ILogger logger, HttpStatusCode statusCode, HttpMethod requestMethod, Uri requestUrl)
-            {
-                _unsuccessfulHttpResponse(logger, (int)statusCode, requestMethod, requestUrl, null);
-            }
-        }
+        [LoggerMessage(2, LogLevel.Warning, "Unsuccessful HTTP response {StatusCode} return from {RequestMethod} '{RequestUrl}'.", EventName = "UnsuccessfulHttpResponse")]
+        public static partial void UnsuccessfulHttpResponse(ILogger logger, HttpStatusCode statusCode, HttpMethod requestMethod, Uri requestUrl);
     }
 }

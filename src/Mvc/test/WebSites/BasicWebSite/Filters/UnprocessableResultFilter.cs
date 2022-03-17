@@ -1,29 +1,26 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace BasicWebSite
-{
-    public class UnprocessableResultFilter : Attribute, IAlwaysRunResultFilter
-    {
-        public void OnResultExecuted(ResultExecutedContext context)
-        {
-        }
+namespace BasicWebSite;
 
-        public void OnResultExecuting(ResultExecutingContext context)
+public class UnprocessableResultFilter : Attribute, IAlwaysRunResultFilter
+{
+    public void OnResultExecuted(ResultExecutedContext context)
+    {
+    }
+
+    public void OnResultExecuting(ResultExecutingContext context)
+    {
+        if (context.Result is StatusCodeResult statusCodeResult &&
+            statusCodeResult.StatusCode == 415)
         {
-            if (context.Result is StatusCodeResult statusCodeResult &&
-                statusCodeResult.StatusCode == 415)
+            context.Result = new ObjectResult("Can't process this!")
             {
-                context.Result = new ObjectResult("Can't process this!")
-                {
-                    StatusCode = 422,
-                };
-            }
+                StatusCode = 422,
+            };
         }
     }
 }

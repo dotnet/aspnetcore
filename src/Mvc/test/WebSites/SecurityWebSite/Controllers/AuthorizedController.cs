@@ -1,20 +1,19 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SecurityWebSite.Controllers
+namespace SecurityWebSite.Controllers;
+
+[Authorize] // requires any authenticated user (aka the application cookie typically)
+public class AuthorizedController : ControllerBase
 {
-    [Authorize] // requires any authenticated user (aka the application cookie typically)
-    public class AuthorizedController : ControllerBase
-    {
-        [Authorize(AuthenticationSchemes = "Bearer")]
-        public IActionResult Api() => Ok();
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    public IActionResult Api() => Ok();
 
-        public IActionResult Cookie() => Ok();
+    public IActionResult Cookie() => Ok();
 
-        [AllowAnonymous]
-        public IActionResult AllowAnonymous() => Ok();
-    }
+    [AllowAnonymous]
+    public IActionResult AllowAnonymous() => Ok();
 }

@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "웹 응용 프로그램",
-    "description": "예제 ASP.NET Core Razor 페이지 콘텐츠를 사용하여 ASP.NET Core 응용 프로그램을 만드는 데 사용되는 프로젝트 템플릿입니다."
-  }
-}

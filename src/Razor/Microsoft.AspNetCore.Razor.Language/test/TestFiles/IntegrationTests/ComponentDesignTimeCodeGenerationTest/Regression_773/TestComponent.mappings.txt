@@ -1,5 +1,0 @@
-Source Location: (6:0,6 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-|"/"|
-Generated Location: (639:18,37 [3] )
-|"/"|
-

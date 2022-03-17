@@ -1,28 +1,26 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.DataAnnotations
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
+
+public class ValidatableObjectAdapterTest
 {
-    public class ValidatableObjectAdapterTest
-    {
-        private static readonly ModelMetadataProvider _metadataProvider
-            = TestModelMetadataProvider.CreateDefaultProvider();
+    private static readonly ModelMetadataProvider _metadataProvider
+        = TestModelMetadataProvider.CreateDefaultProvider();
 
-        // Inspired by DataAnnotationsModelValidatorTest.Validate_SetsMemberName_AsExpectedData but using a type that
-        // implements IValidatableObject. Values are metadata, expected DisplayName, and expected MemberName.
-        public static TheoryData<ModelMetadata, string, string> Validate_PassesExpectedNamesData
+    // Inspired by DataAnnotationsModelValidatorTest.Validate_SetsMemberName_AsExpectedData but using a type that
+    // implements IValidatableObject. Values are metadata, expected DisplayName, and expected MemberName.
+    public static TheoryData<ModelMetadata, string, string> Validate_PassesExpectedNamesData
+    {
+        get
         {
-            get
-            {
-                var method = typeof(SampleModel).GetMethod(nameof(SampleModel.IsLovely));
-                var parameter = method.GetParameters()[0]; // IsLovely(SampleModel other)
-                return new TheoryData<ModelMetadata, string, string>
+            var method = typeof(SampleModel).GetMethod(nameof(SampleModel.IsLovely));
+            var parameter = method.GetParameters()[0]; // IsLovely(SampleModel other)
+            return new TheoryData<ModelMetadata, string, string>
                 {
                     {
                         // Validating a property.
@@ -54,14 +52,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                         null
                     },
                 };
-            }
         }
+    }
 
-        public static TheoryData<ValidationResult[], ModelValidationResult[]> Validate_ReturnsExpectedResultsData
+    public static TheoryData<ValidationResult[], ModelValidationResult[]> Validate_ReturnsExpectedResultsData
+    {
+        get
         {
-            get
-            {
-                return new TheoryData<ValidationResult[], ModelValidationResult[]>
+            return new TheoryData<ValidationResult[], ModelValidationResult[]>
                 {
                     {
                         new[] { new ValidationResult("Error message") },
@@ -106,116 +104,114 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                         }
                     },
                 };
-            }
         }
+    }
 
+    [Theory]
+    [MemberData(nameof(Validate_PassesExpectedNamesData))]
+    public void Validate_PassesExpectedNames(
+        ModelMetadata metadata,
+        string expectedDisplayName,
+        string expectedMemberName)
+    {
+        // Arrange
+        var adapter = new ValidatableObjectAdapter();
+        var model = new SampleModel();
+        var validationContext = new ModelValidationContext(
+            new ActionContext(),
+            metadata,
+            _metadataProvider,
+            container: new SampleModelContainer(),
+            model: model);
 
-        [Theory]
-        [MemberData(nameof(Validate_PassesExpectedNamesData))]
-        public void Validate_PassesExpectedNames(
-            ModelMetadata metadata,
-            string expectedDisplayName,
-            string expectedMemberName)
+        // Act
+        var results = adapter.Validate(validationContext);
+
+        // Assert
+        Assert.NotNull(results);
+        Assert.Empty(results);
+
+        Assert.Equal(expectedDisplayName, model.DisplayName);
+        Assert.Equal(expectedMemberName, model.MemberName);
+        Assert.Equal(model, model.ObjectInstance);
+    }
+
+    [Theory]
+    [MemberData(nameof(Validate_ReturnsExpectedResultsData))]
+    public void Validate_ReturnsExpectedResults(
+        ValidationResult[] innerResults,
+        ModelValidationResult[] expectedResults)
+    {
+        // Arrange
+        var adapter = new ValidatableObjectAdapter();
+        var model = new SampleModel();
+        foreach (var result in innerResults)
         {
-            // Arrange
-            var adapter = new ValidatableObjectAdapter();
-            var model = new SampleModel();
-            var validationContext = new ModelValidationContext(
-                new ActionContext(),
-                metadata,
-                _metadataProvider,
-                container: new SampleModelContainer(),
-                model: model);
-
-            // Act
-            var results = adapter.Validate(validationContext);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.Empty(results);
-
-            Assert.Equal(expectedDisplayName, model.DisplayName);
-            Assert.Equal(expectedMemberName, model.MemberName);
-            Assert.Equal(model, model.ObjectInstance);
+            model.ValidationResults.Add(result);
         }
 
-        [Theory]
-        [MemberData(nameof(Validate_ReturnsExpectedResultsData))]
-        public void Validate_ReturnsExpectedResults(
-            ValidationResult[] innerResults,
-            ModelValidationResult[] expectedResults)
+        var metadata = _metadataProvider.GetMetadataForProperty(
+            typeof(SampleModelContainer),
+            nameof(SampleModelContainer.SampleModel));
+        var validationContext = new ModelValidationContext(
+            new ActionContext(),
+            metadata,
+            _metadataProvider,
+            container: null,
+            model: model);
+
+        // Act
+        var results = adapter.Validate(validationContext);
+
+        // Assert
+        Assert.NotNull(results);
+        Assert.Equal(expectedResults, results, ModelValidationResultComparer.Instance);
+    }
+
+    private class SampleModel : IValidatableObject
+    {
+        // "Real" properties.
+
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
+
+        // ValidationContext members passed to Validate(...)
+
+        public string DisplayName { get; private set; }
+
+        public string MemberName { get; private set; }
+
+        public object ObjectInstance { get; private set; }
+
+        // What Validate(...) should return.
+
+        public IList<ValidationResult> ValidationResults { get; } = new List<ValidationResult>();
+
+        // Test method.
+
+        public bool IsLovely(SampleModel other)
         {
-            // Arrange
-            var adapter = new ValidatableObjectAdapter();
-            var model = new SampleModel();
-            foreach (var result in innerResults)
-            {
-                model.ValidationResults.Add(result);
-            }
-
-            var metadata = _metadataProvider.GetMetadataForProperty(
-                typeof(SampleModelContainer),
-                nameof(SampleModelContainer.SampleModel));
-            var validationContext = new ModelValidationContext(
-                new ActionContext(),
-                metadata,
-                _metadataProvider,
-                container: null,
-                model: model);
-
-            // Act
-            var results = adapter.Validate(validationContext);
-
-            // Assert
-            Assert.NotNull(results);
-            Assert.Equal(expectedResults, results, ModelValidationResultComparer.Instance);
+            return true;
         }
 
-        private class SampleModel : IValidatableObject
+        // IValidatableObject for realz.
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            // "Real" properties.
+            DisplayName = validationContext.DisplayName;
+            MemberName = validationContext.MemberName;
+            ObjectInstance = validationContext.ObjectInstance;
 
-            public string FirstName { get; set; }
-
-            public string LastName { get; set; }
-
-            // ValidationContext members passed to Validate(...)
-
-            public string DisplayName { get; private set; }
-
-            public string MemberName { get; private set; }
-
-            public object ObjectInstance { get; private set; }
-
-            // What Validate(...) should return.
-
-            public IList<ValidationResult> ValidationResults { get; } = new List<ValidationResult>();
-
-            // Test method.
-
-            public bool IsLovely(SampleModel other)
-            {
-                return true;
-            }
-
-            // IValidatableObject for realz.
-
-            public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-            {
-                DisplayName = validationContext.DisplayName;
-                MemberName = validationContext.MemberName;
-                ObjectInstance = validationContext.ObjectInstance;
-
-                return ValidationResults;
-            }
+            return ValidationResults;
         }
+    }
 
-        private class SampleModelContainer
-        {
-            [Display(Name = "sample model")]
-            public SampleModel SampleModelWithDisplay { get; set; }
+    private class SampleModelContainer
+    {
+        [Display(Name = "sample model")]
+        public SampleModel SampleModelWithDisplay { get; set; }
 
-            public SampleModel SampleModel { get; set; }
-        }
+        public SampleModel SampleModel { get; set; }
     }
 }

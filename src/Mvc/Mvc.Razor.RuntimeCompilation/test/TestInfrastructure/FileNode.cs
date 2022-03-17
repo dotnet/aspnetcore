@@ -1,24 +1,23 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language;
+
+// Internal for testing
+[DebuggerDisplay("{Path}")]
+internal class FileNode
 {
-    // Internal for testing
-    [DebuggerDisplay("{Path}")]
-    internal class FileNode
+    public FileNode(string path, RazorProjectItem projectItem)
     {
-        public FileNode(string path, RazorProjectItem projectItem)
-        {
-            Path = path;
-            ProjectItem = projectItem;
-        }
-
-        public DirectoryNode Directory { get; set; }
-
-        public string Path { get; }
-
-        public RazorProjectItem ProjectItem { get; set; }
+        Path = path;
+        ProjectItem = projectItem;
     }
+
+    public DirectoryNode Directory { get; set; }
+
+    public string Path { get; }
+
+    public RazorProjectItem ProjectItem { get; set; }
 }

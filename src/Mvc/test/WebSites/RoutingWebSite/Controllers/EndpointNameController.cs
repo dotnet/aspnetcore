@@ -1,33 +1,31 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 
-namespace RoutingWebSite.Controllers
+namespace RoutingWebSite.Controllers;
+
+public class EndpointNameController : ControllerBase
 {
-    public class EndpointNameController : ControllerBase
+    private readonly LinkGenerator _generator;
+
+    public EndpointNameController(LinkGenerator generator)
     {
-        private readonly LinkGenerator _generator;
+        _generator = generator;
+    }
 
-        public EndpointNameController(LinkGenerator generator)
-        {
-            _generator = generator;
-        }
+    // This is a special case that leads to multiple endpoints with the same route name. IRouter-based routing
+    // supports this.
+    [HttpGet]
+    [HttpPost]
+    [Route("/[controller]/[action]/{path?}", Name = "EndpointNameController_LinkToAttributeRouted")]
+    public string LinkToAttributeRouted()
+    {
+        return _generator.GetPathByName(HttpContext, "EndpointNameController_LinkToAttributeRouted", values: null);
+    }
 
-        // This is a special case that leads to multiple endpoints with the same route name. IRouter-based routing
-        // supports this.
-        [HttpGet]
-        [HttpPost]
-        [Route("/[controller]/[action]/{path?}", Name = "EndpointNameController_LinkToAttributeRouted")]
-        public string LinkToAttributeRouted()
-        {
-            return _generator.GetPathByName(HttpContext, "EndpointNameController_LinkToAttributeRouted", values: null);
-        }
-
-        public string LinkToConventionalRouted()
-        {
-            return _generator.GetPathByName(HttpContext, "RouteWithOptionalSegment", new { controller = "EndpointName", action = nameof(LinkToConventionalRouted), });
-        }
+    public string LinkToConventionalRouted()
+    {
+        return _generator.GetPathByName(HttpContext, "RouteWithOptionalSegment", new { controller = "EndpointName", action = nameof(LinkToConventionalRouted), });
     }
 }

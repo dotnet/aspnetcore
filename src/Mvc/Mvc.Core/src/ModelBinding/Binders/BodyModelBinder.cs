@@ -1,202 +1,257 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
+#nullable enable
+
 using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+
+/// <summary>
+/// An <see cref="IModelBinder"/> which binds models from the request body using an <see cref="IInputFormatter"/>
+/// when a model has the binding source <see cref="BindingSource.Body"/>.
+/// </summary>
+public partial class BodyModelBinder : IModelBinder
 {
+    private readonly IList<IInputFormatter> _formatters;
+    private readonly Func<Stream, Encoding, TextReader> _readerFactory;
+    private readonly ILogger _logger;
+    private readonly MvcOptions? _options;
+
     /// <summary>
-    /// An <see cref="IModelBinder"/> which binds models from the request body using an <see cref="IInputFormatter"/>
-    /// when a model has the binding source <see cref="BindingSource.Body"/>.
+    /// Creates a new <see cref="BodyModelBinder"/>.
     /// </summary>
-    public class BodyModelBinder : IModelBinder
+    /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
+    /// <param name="readerFactory">
+    /// The <see cref="IHttpRequestStreamReaderFactory"/>, used to create <see cref="System.IO.TextReader"/>
+    /// instances for reading the request body.
+    /// </param>
+    public BodyModelBinder(IList<IInputFormatter> formatters, IHttpRequestStreamReaderFactory readerFactory)
+        : this(formatters, readerFactory, loggerFactory: null)
     {
-        private readonly IList<IInputFormatter> _formatters;
-        private readonly Func<Stream, Encoding, TextReader> _readerFactory;
-        private readonly ILogger _logger;
-        private readonly MvcOptions _options;
+    }
 
-        /// <summary>
-        /// Creates a new <see cref="BodyModelBinder"/>.
-        /// </summary>
-        /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
-        /// <param name="readerFactory">
-        /// The <see cref="IHttpRequestStreamReaderFactory"/>, used to create <see cref="System.IO.TextReader"/>
-        /// instances for reading the request body.
-        /// </param>
-        public BodyModelBinder(IList<IInputFormatter> formatters, IHttpRequestStreamReaderFactory readerFactory)
-            : this(formatters, readerFactory, loggerFactory: null)
+    /// <summary>
+    /// Creates a new <see cref="BodyModelBinder"/>.
+    /// </summary>
+    /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
+    /// <param name="readerFactory">
+    /// The <see cref="IHttpRequestStreamReaderFactory"/>, used to create <see cref="System.IO.TextReader"/>
+    /// instances for reading the request body.
+    /// </param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+    public BodyModelBinder(
+        IList<IInputFormatter> formatters,
+        IHttpRequestStreamReaderFactory readerFactory,
+        ILoggerFactory? loggerFactory)
+        : this(formatters, readerFactory, loggerFactory, options: null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="BodyModelBinder"/>.
+    /// </summary>
+    /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
+    /// <param name="readerFactory">
+    /// The <see cref="IHttpRequestStreamReaderFactory"/>, used to create <see cref="System.IO.TextReader"/>
+    /// instances for reading the request body.
+    /// </param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="options">The <see cref="MvcOptions"/>.</param>
+    public BodyModelBinder(
+        IList<IInputFormatter> formatters,
+        IHttpRequestStreamReaderFactory readerFactory,
+        ILoggerFactory? loggerFactory,
+        MvcOptions? options)
+    {
+        if (formatters == null)
         {
+            throw new ArgumentNullException(nameof(formatters));
         }
 
-        /// <summary>
-        /// Creates a new <see cref="BodyModelBinder"/>.
-        /// </summary>
-        /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
-        /// <param name="readerFactory">
-        /// The <see cref="IHttpRequestStreamReaderFactory"/>, used to create <see cref="System.IO.TextReader"/>
-        /// instances for reading the request body.
-        /// </param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public BodyModelBinder(
-            IList<IInputFormatter> formatters,
-            IHttpRequestStreamReaderFactory readerFactory,
-            ILoggerFactory loggerFactory)
-            : this(formatters, readerFactory, loggerFactory, options: null)
+        if (readerFactory == null)
         {
+            throw new ArgumentNullException(nameof(readerFactory));
         }
 
-        /// <summary>
-        /// Creates a new <see cref="BodyModelBinder"/>.
-        /// </summary>
-        /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
-        /// <param name="readerFactory">
-        /// The <see cref="IHttpRequestStreamReaderFactory"/>, used to create <see cref="System.IO.TextReader"/>
-        /// instances for reading the request body.
-        /// </param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="options">The <see cref="MvcOptions"/>.</param>
-        public BodyModelBinder(
-            IList<IInputFormatter> formatters,
-            IHttpRequestStreamReaderFactory readerFactory,
-            ILoggerFactory loggerFactory,
-            MvcOptions options)
+        _formatters = formatters;
+        _readerFactory = readerFactory.CreateReader;
+
+        _logger = loggerFactory?.CreateLogger<BodyModelBinder>() ?? NullLogger<BodyModelBinder>.Instance;
+
+        _options = options;
+    }
+
+    internal bool AllowEmptyBody { get; set; }
+
+    /// <inheritdoc />
+    public async Task BindModelAsync(ModelBindingContext bindingContext)
+    {
+        if (bindingContext == null)
         {
-            if (formatters == null)
-            {
-                throw new ArgumentNullException(nameof(formatters));
-            }
-
-            if (readerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(readerFactory));
-            }
-
-            _formatters = formatters;
-            _readerFactory = readerFactory.CreateReader;
-
-            if (loggerFactory != null)
-            {
-                _logger = loggerFactory.CreateLogger<BodyModelBinder>();
-            }
-
-            _options = options;
+            throw new ArgumentNullException(nameof(bindingContext));
         }
 
-        internal bool AllowEmptyBody { get; set; }
+        _logger.AttemptingToBindModel(bindingContext);
 
-        /// <inheritdoc />
-        public async Task BindModelAsync(ModelBindingContext bindingContext)
+        // Special logic for body, treat the model name as string.Empty for the top level
+        // object, but allow an override via BinderModelName. The purpose of this is to try
+        // and be similar to the behavior for POCOs bound via traditional model binding.
+        string modelBindingKey;
+        if (bindingContext.IsTopLevelObject)
         {
-            if (bindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContext));
-            }
+            modelBindingKey = bindingContext.BinderModelName ?? string.Empty;
+        }
+        else
+        {
+            modelBindingKey = bindingContext.ModelName;
+        }
 
-            _logger?.AttemptingToBindModel(bindingContext);
+        var httpContext = bindingContext.HttpContext;
 
-            // Special logic for body, treat the model name as string.Empty for the top level
-            // object, but allow an override via BinderModelName. The purpose of this is to try
-            // and be similar to the behavior for POCOs bound via traditional model binding.
-            string modelBindingKey;
-            if (bindingContext.IsTopLevelObject)
+        var formatterContext = new InputFormatterContext(
+            httpContext,
+            modelBindingKey,
+            bindingContext.ModelState,
+            bindingContext.ModelMetadata,
+            _readerFactory,
+            AllowEmptyBody);
+
+        var formatter = (IInputFormatter?)null;
+        for (var i = 0; i < _formatters.Count; i++)
+        {
+            if (_formatters[i].CanRead(formatterContext))
             {
-                modelBindingKey = bindingContext.BinderModelName ?? string.Empty;
+                formatter = _formatters[i];
+                Log.InputFormatterSelected(_logger, formatter, formatterContext);
+                break;
             }
             else
             {
-                modelBindingKey = bindingContext.ModelName;
+                Log.InputFormatterRejected(_logger, _formatters[i], formatterContext);
             }
+        }
 
-            var httpContext = bindingContext.HttpContext;
-
-            var formatterContext = new InputFormatterContext(
-                httpContext,
-                modelBindingKey,
-                bindingContext.ModelState,
-                bindingContext.ModelMetadata,
-                _readerFactory,
-                AllowEmptyBody);
-
-            var formatter = (IInputFormatter)null;
-            for (var i = 0; i < _formatters.Count; i++)
+        if (formatter == null)
+        {
+            if (AllowEmptyBody)
             {
-                if (_formatters[i].CanRead(formatterContext))
+                var hasBody = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody;
+                hasBody ??= httpContext.Request.ContentLength is not null && httpContext.Request.ContentLength == 0;
+                if (hasBody == false)
                 {
-                    formatter = _formatters[i];
-                    _logger?.InputFormatterSelected(formatter, formatterContext);
-                    break;
-                }
-                else
-                {
-                    _logger?.InputFormatterRejected(_formatters[i], formatterContext);
+                    bindingContext.Result = ModelBindingResult.Success(model: null);
+                    return;
                 }
             }
 
-            if (formatter == null)
-            {
-                _logger?.NoInputFormatterSelected(formatterContext);
+            Log.NoInputFormatterSelected(_logger, formatterContext);
 
-                var message = Resources.FormatUnsupportedContentType(httpContext.Request.ContentType);
-                var exception = new UnsupportedContentTypeException(message);
-                bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
-                _logger?.DoneAttemptingToBindModel(bindingContext);
+            var message = Resources.FormatUnsupportedContentType(httpContext.Request.ContentType);
+            var exception = new UnsupportedContentTypeException(message);
+            bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
+            _logger.DoneAttemptingToBindModel(bindingContext);
+            return;
+        }
+
+        try
+        {
+            var result = await formatter.ReadAsync(formatterContext);
+
+            if (result.HasError)
+            {
+                // Formatter encountered an error. Do not use the model it returned.
+                _logger.DoneAttemptingToBindModel(bindingContext);
                 return;
             }
 
-            try
+            if (result.IsModelSet)
             {
-                var result = await formatter.ReadAsync(formatterContext);
-
-                if (result.HasError)
-                {
-                    // Formatter encountered an error. Do not use the model it returned.
-                    _logger?.DoneAttemptingToBindModel(bindingContext);
-                    return;
-                }
-
-                if (result.IsModelSet)
-                {
-                    var model = result.Model;
-                    bindingContext.Result = ModelBindingResult.Success(model);
-                }
-                else
-                {
-                    // If the input formatter gives a "no value" result, that's always a model state error,
-                    // because BodyModelBinder implicitly regards input as being required for model binding.
-                    // If instead the input formatter wants to treat the input as optional, it must do so by
-                    // returning InputFormatterResult.Success(defaultForModelType), because input formatters
-                    // are responsible for choosing a default value for the model type.
-                    var message = bindingContext
-                        .ModelMetadata
-                        .ModelBindingMessageProvider
-                        .MissingRequestBodyRequiredValueAccessor();
-                    bindingContext.ModelState.AddModelError(modelBindingKey, message);
-                }
+                var model = result.Model;
+                bindingContext.Result = ModelBindingResult.Success(model);
             }
-            catch (Exception exception) when (exception is InputFormatterException || ShouldHandleException(formatter))
+            else
             {
-                bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
+                // If the input formatter gives a "no value" result, that's always a model state error,
+                // because BodyModelBinder implicitly regards input as being required for model binding.
+                // If instead the input formatter wants to treat the input as optional, it must do so by
+                // returning InputFormatterResult.Success(defaultForModelType), because input formatters
+                // are responsible for choosing a default value for the model type.
+                var message = bindingContext
+                    .ModelMetadata
+                    .ModelBindingMessageProvider
+                    .MissingRequestBodyRequiredValueAccessor();
+                bindingContext.ModelState.AddModelError(modelBindingKey, message);
             }
-
-            _logger?.DoneAttemptingToBindModel(bindingContext);
         }
-
-        private bool ShouldHandleException(IInputFormatter formatter)
+        catch (Exception exception) when (exception is InputFormatterException || ShouldHandleException(formatter))
         {
-            // Any explicit policy on the formatters overrides the default.
-            var policy = (formatter as IInputFormatterExceptionPolicy)?.ExceptionPolicy ??
-                InputFormatterExceptionPolicy.MalformedInputExceptions;
-
-            return policy == InputFormatterExceptionPolicy.AllExceptions;
+            bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
         }
+
+        _logger.DoneAttemptingToBindModel(bindingContext);
+    }
+
+    private static bool ShouldHandleException(IInputFormatter formatter)
+    {
+        // Any explicit policy on the formatters overrides the default.
+        var policy = (formatter as IInputFormatterExceptionPolicy)?.ExceptionPolicy ??
+            InputFormatterExceptionPolicy.MalformedInputExceptions;
+
+        return policy == InputFormatterExceptionPolicy.AllExceptions;
+    }
+
+    private partial class Log
+    {
+        public static void InputFormatterSelected(ILogger logger, IInputFormatter inputFormatter, InputFormatterContext formatterContext)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = formatterContext.HttpContext.Request.ContentType;
+                InputFormatterSelected(logger, inputFormatter, contentType);
+            }
+        }
+
+        [LoggerMessage(1, LogLevel.Debug, "Selected input formatter '{InputFormatter}' for content type '{ContentType}'.", EventName = "InputFormatterSelected", SkipEnabledCheck = true)]
+        private static partial void InputFormatterSelected(ILogger logger, IInputFormatter inputFormatter, string? contentType);
+
+        public static void InputFormatterRejected(ILogger logger, IInputFormatter inputFormatter, InputFormatterContext formatterContext)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = formatterContext.HttpContext.Request.ContentType;
+                InputFormatterRejected(logger, inputFormatter, contentType);
+            }
+        }
+
+        [LoggerMessage(2, LogLevel.Debug, "Rejected input formatter '{InputFormatter}' for content type '{ContentType}'.", EventName = "InputFormatterRejected", SkipEnabledCheck = true)]
+        private static partial void InputFormatterRejected(ILogger logger, IInputFormatter inputFormatter, string? contentType);
+
+        public static void NoInputFormatterSelected(ILogger logger, InputFormatterContext formatterContext)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = formatterContext.HttpContext.Request.ContentType;
+                NoInputFormatterSelected(logger, contentType);
+                if (formatterContext.HttpContext.Request.HasFormContentType)
+                {
+                    var modelType = formatterContext.ModelType.FullName;
+                    var modelName = formatterContext.ModelName;
+                    RemoveFromBodyAttribute(logger, modelName, modelType);
+                }
+            }
+        }
+
+        [LoggerMessage(3, LogLevel.Debug, "No input formatter was found to support the content type '{ContentType}' for use with the [FromBody] attribute.", EventName = "NoInputFormatterSelected", SkipEnabledCheck = true)]
+        private static partial void NoInputFormatterSelected(ILogger logger, string? contentType);
+
+        [LoggerMessage(4, LogLevel.Debug, "To use model binding, remove the [FromBody] attribute from the property or parameter named '{ModelName}' with model type '{ModelType}'.", EventName = "RemoveFromBodyAttribute", SkipEnabledCheck = true)]
+        private static partial void RemoveFromBodyAttribute(ILogger logger, string modelName, string? modelType);
     }
 }

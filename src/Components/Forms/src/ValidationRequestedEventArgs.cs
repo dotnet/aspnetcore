@@ -1,25 +1,22 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+namespace Microsoft.AspNetCore.Components.Forms;
 
-namespace Microsoft.AspNetCore.Components.Forms
+/// <summary>
+/// Provides information about the <see cref="EditContext.OnValidationRequested"/> event.
+/// </summary>
+public sealed class ValidationRequestedEventArgs : EventArgs
 {
     /// <summary>
-    /// Provides information about the <see cref="EditContext.OnValidationRequested"/> event.
+    /// Gets a shared empty instance of <see cref="ValidationRequestedEventArgs"/>.
     /// </summary>
-    public sealed class ValidationRequestedEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Gets a shared empty instance of <see cref="ValidationRequestedEventArgs"/>.
-        /// </summary>
-        public static new readonly ValidationRequestedEventArgs Empty = new ValidationRequestedEventArgs();
+    public static new readonly ValidationRequestedEventArgs Empty = new ValidationRequestedEventArgs();
 
-        /// <summary>
-        /// Creates a new instance of <see cref="ValidationRequestedEventArgs"/>.
-        /// </summary>
-        public ValidationRequestedEventArgs()
-        {
-        }
+    /// <summary>
+    /// Creates a new instance of <see cref="ValidationRequestedEventArgs"/>.
+    /// </summary>
+    public ValidationRequestedEventArgs()
+    {
     }
 }

@@ -1,33 +1,30 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 
-namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
+namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage;
+
+public class ChangePassword : DefaultUIPage
 {
-    public class ChangePassword : DefaultUIPage
+    private readonly IHtmlFormElement _changePasswordForm;
+
+    public ChangePassword(HttpClient client, IHtmlDocument changePassword, DefaultUIContext context)
+        : base(client, changePassword, context)
     {
-        private readonly IHtmlFormElement _changePasswordForm;
+        _changePasswordForm = HtmlAssert.HasForm("#change-password-form", changePassword);
+    }
 
-        public ChangePassword(HttpClient client, IHtmlDocument changePassword, DefaultUIContext context)
-            : base(client, changePassword, context)
+    public async Task<ChangePassword> ChangePasswordAsync(string oldPassword, string newPassword)
+    {
+        await Client.SendAsync(_changePasswordForm, new Dictionary<string, string>
         {
-            _changePasswordForm = HtmlAssert.HasForm("#change-password-form", changePassword);
-        }
+            ["Input_OldPassword"] = oldPassword,
+            ["Input_NewPassword"] = newPassword,
+            ["Input_ConfirmPassword"] = newPassword
+        });
 
-        public async Task<ChangePassword> ChangePasswordAsync(string oldPassword, string newPassword)
-        {
-            await Client.SendAsync(_changePasswordForm, new Dictionary<string, string>
-            {
-                ["Input_OldPassword"] = oldPassword,
-                ["Input_NewPassword"] = newPassword,
-                ["Input_ConfirmPassword"] = newPassword
-            });
-
-            return this;
-        }
+        return this;
     }
 }

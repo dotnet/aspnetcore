@@ -5,6 +5,7 @@
 
     <!-- Resx files are embedded data -->
     <GenerateResxSource>false</GenerateResxSource>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
   <ItemGroup>
