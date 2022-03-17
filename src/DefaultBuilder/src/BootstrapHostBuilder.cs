@@ -154,7 +154,7 @@ internal sealed class BootstrapHostBuilder : IHostBuilder
     private class HostingEnvironment : IHostEnvironment
     {
         public string EnvironmentName { get; set; } = default!;
-        public string ApplicationName { get; set; } = default!;
+        public string? ApplicationName { get; set; }
         public string ContentRootPath { get; set; } = default!;
         public IFileProvider ContentRootFileProvider { get; set; } = default!;
     }
