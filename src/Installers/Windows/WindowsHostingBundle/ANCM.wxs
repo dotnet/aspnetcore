@@ -20,11 +20,30 @@
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
-                        InstallCondition="VersionNT64 AND (VersionNT64 &gt;= v6.1) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)">
+                        InstallCondition="(ProcessorArchitecture!=&quot;ARM64&quot;) AND VersionNT64 AND (VersionNT64 &gt;= v6.1) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)">
                 <MsiProperty Name="OPT_NO_SHARED_CONFIG_CHECK" Value="[OPT_NO_SHARED_CONFIG_CHECK]" />
             </MsiPackage>
+            
+            <!-- OPT_NO_SHARED_CONFIG_CHECK could be unset at this point, which we explicitly treat as 'false' -->
+            <MsiPackage Id="AspNetCoreModuleV2_arm64" SourceFile="$(var.AspNetCoreModuleV2_arm64.TargetPath)"
+                        Name="$(var.AspNetCoreModuleV2_arm64.TargetFileName)"
+                        Compressed="yes"
+                        Vital="yes"
+                        Visible="no"
+                        InstallCondition="(ProcessorArchitecture=&quot;ARM64&quot;) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM OR OPT_NO_ANCM=&quot;0&quot;)">
+                <MsiProperty Name="OPT_NO_SHARED_CONFIG_CHECK" Value="[OPT_NO_SHARED_CONFIG_CHECK]" />
+            </MsiPackage>
+            
         </PackageGroup>
 
+        <util:RegistrySearch Id="Arm64_Reg_Check"
+                             Variable="ProcessorArchitecture"
+                             Root="HKLM"
+                             Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+                             Value="PROCESSOR_ARCHITECTURE"
+                             Result="value"
+                             Format="raw" />
+        
         <util:RegistrySearch Id="IISCoreWebEngineInstalledSearch_x86"
                              Variable="IISCoreWebEngineInstalled_x86"
                              Root="HKLM"
