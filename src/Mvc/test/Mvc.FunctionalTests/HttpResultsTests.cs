@@ -3,8 +3,8 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using BasicWebSite.Models;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -27,7 +27,7 @@ public class HttpResultsTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-        var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
+        var result = await response.Content.ReadFromJsonAsync<Contact>();
         Assert.NotNull(result);
         Assert.Equal(id, result.ContactId);
     }
@@ -42,7 +42,7 @@ public class HttpResultsTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-        var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
+        var result = await response.Content.ReadFromJsonAsync<Contact>();
         Assert.NotNull(result);
         Assert.Equal(id, result.ContactId);
     }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 
 namespace Microsoft.AspNetCore.Mvc;
 
@@ -32,13 +33,18 @@ public class HttpResultsResultTest
         };
 
         var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-        var result = new HttpResultsActionResult(Results.StatusCode(StatusCodes.Status400BadRequest));
+
+        var httpResult = new Mock<IResult>();
+        httpResult.Setup(s => s.ExecuteAsync(httpContext))
+            .Returns(() => Task.CompletedTask)
+            .Verifiable();
+        var result = new HttpResultsActionResult(httpResult.Object);
 
         // Act
         await result.ExecuteResultAsync(context);
 
         // Assert
-        Assert.Equal(StatusCodes.Status400BadRequest, context.HttpContext.Response.StatusCode);
+        httpResult.Verify();
     }
 
     private static IServiceCollection CreateServices()
