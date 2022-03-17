@@ -865,8 +865,6 @@ public class WebApplicationTests
         {
             hostBuilder.ConfigureHostConfiguration(config =>
             {
-
-
                 config.Sources.Clear();
                 config.AddInMemoryCollection(new Dictionary<string, string>()
                 {
