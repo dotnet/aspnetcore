@@ -152,7 +152,7 @@ public sealed class ConfigureHostBuilder : IHostBuilder, ISupportsConfigureWebHo
 
     private sealed class ServiceProviderFactoryAdapter<TContainerBuilder> : IServiceProviderFactory<object> where TContainerBuilder : notnull
     {
-        private IServiceProviderFactory<TContainerBuilder> _serviceProviderFactory;
+        private readonly IServiceProviderFactory<TContainerBuilder> _serviceProviderFactory;
 
         public ServiceProviderFactoryAdapter(IServiceProviderFactory<TContainerBuilder> serviceProviderFactory)
         {
