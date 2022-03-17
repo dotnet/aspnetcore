@@ -81,5 +81,4 @@ public class HttpResultsTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         Assert.Single(response.Headers.GetValues("X-HttpResultType"));
     }
-
 }
