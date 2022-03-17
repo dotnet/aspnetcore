@@ -130,7 +130,7 @@ internal sealed class ParameterBindingMethodCache
                     expression);
             }
 
-            methodInfo = GetStaticMethodFromHierarchy(type, "TryParse", new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() }, ValidateReturnType, _throwOnInvalidMethod);
+            methodInfo = GetStaticMethodFromHierarchy(type, "TryParse", new[] { typeof(string), typeof(IFormatProvider), type.MakeByRefType() }, ValidateReturnType);
 
             if (methodInfo is not null)
             {
@@ -141,7 +141,7 @@ internal sealed class ParameterBindingMethodCache
                     expression);
             }
 
-            methodInfo = GetStaticMethodFromHierarchy(type, "TryParse", new[] { typeof(string), type.MakeByRefType() }, ValidateReturnType, _throwOnInvalidMethod);
+            methodInfo = GetStaticMethodFromHierarchy(type, "TryParse", new[] { typeof(string), type.MakeByRefType() }, ValidateReturnType);
 
             if (methodInfo is not null)
             {
@@ -178,11 +178,11 @@ internal sealed class ParameterBindingMethodCache
         {
             var hasParameterInfo = true;
             // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
-            var methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) }, ValidateReturnType, _throwOnInvalidMethod);
+            var methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) }, ValidateReturnType);
             if (methodInfo is null)
             {
                 hasParameterInfo = false;
-                methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) }, ValidateReturnType, _throwOnInvalidMethod);
+                methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) }, ValidateReturnType);
             }
 
             // We're looking for a method with the following signatures:
@@ -263,7 +263,7 @@ internal sealed class ParameterBindingMethodCache
         }
     }
 
-    private static MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType, bool throwOnInvalidMethod)
+    private MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
     {
         bool IsMatch(MethodInfo? method) => method is not null && !method.IsAbstract && validateReturnType(method);
 
@@ -285,7 +285,7 @@ internal sealed class ParameterBindingMethodCache
             {
                 if (candidateInterfaceMethodInfo is not null)
                 {
-                    return !throwOnInvalidMethod ? null :
+                    return !_throwOnInvalidMethod ? null :
                         throw new InvalidOperationException($"{TypeNameHelper.GetTypeDisplayName(type, fullName: false)} implements multiple interfaces defining a static {interfaceMethod} method causing ambiguity.");
                 }
 
