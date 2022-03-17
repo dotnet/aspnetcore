@@ -96,7 +96,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         {
             // If the declaring type is null or compiler-generated (e.g. lambdas),
             // group the methods under the application name.
-            controllerName = _environment.ApplicationName;
+            controllerName = _environment.ApplicationName ?? string.Empty;
         }
 
         var apiDescription = new ApiDescription

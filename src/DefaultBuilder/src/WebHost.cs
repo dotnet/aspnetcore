@@ -172,10 +172,13 @@ public static class WebHost
 
             if (env.IsDevelopment())
             {
-                var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
-                if (appAssembly != null)
+                if (!string.IsNullOrEmpty(env.ApplicationName))
                 {
-                    config.AddUserSecrets(appAssembly, optional: true);
+                    var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+                    if (appAssembly != null)
+                    {
+                        config.AddUserSecrets(appAssembly, optional: true);
+                    }
                 }
             }
 
