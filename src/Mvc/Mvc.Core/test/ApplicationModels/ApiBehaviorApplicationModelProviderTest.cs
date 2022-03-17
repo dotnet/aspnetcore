@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -47,12 +49,18 @@ public class ApiBehaviorApplicationModelProviderTest
         };
 
         var method = typeof(TestApiController).GetMethod(nameof(TestApiController.TestAction));
+        var methodWithIResult = typeof(TestApiController).GetMethod(nameof(TestApiController.TestActionWithIResult));
 
         var actionModel = new ActionModel(method, Array.Empty<object>())
         {
             Controller = controllerModel,
         };
+        var actionWitIResultModel = new ActionModel(methodWithIResult, Array.Empty<object>())
+        {
+            Controller = controllerModel,
+        };
         controllerModel.Actions.Add(actionModel);
+        controllerModel.Actions.Add(actionWitIResultModel);
 
         var parameter = method.GetParameters()[0];
         var parameterModel = new ParameterModel(parameter, Array.Empty<object>())
@@ -75,6 +83,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.NotEmpty(actionModel.Filters.OfType<ModelStateInvalidFilterFactory>());
         Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
         Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
+        Assert.NotEmpty(actionWitIResultModel.Filters.OfType<IApiResponseMetadataProvider>());
     }
 
     [Fact]
@@ -95,7 +104,8 @@ public class ApiBehaviorApplicationModelProviderTest
                 var convention = Assert.IsType<ApiConventionApplicationModelConvention>(c);
                 Assert.Equal(typeof(ProblemDetails), convention.DefaultErrorResponseType.Type);
             },
-            c => Assert.IsType<InferParameterBindingInfoConvention>(c));
+            c => Assert.IsType<InferParameterBindingInfoConvention>(c),
+            c => Assert.IsType<HttpResultMetadataConvention>(c));
     }
 
     [Fact]
@@ -178,5 +188,6 @@ public class ApiBehaviorApplicationModelProviderTest
     private class TestApiController : ControllerBase
     {
         public IActionResult TestAction(object value) => null;
+        public IResult TestActionWithIResult() => null;
     }
 }
