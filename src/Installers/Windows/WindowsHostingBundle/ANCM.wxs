@@ -36,14 +36,6 @@
             </MsiPackage>
             
         </PackageGroup>
-
-        <util:RegistrySearch Id="Arm64_Reg_Check"
-                             Variable="ProcessorArchitecture"
-                             Root="HKLM"
-                             Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
-                             Value="PROCESSOR_ARCHITECTURE"
-                             Result="value"
-                             Format="raw" />
         
         <util:RegistrySearch Id="IISCoreWebEngineInstalledSearch_x86"
                              Variable="IISCoreWebEngineInstalled_x86"
