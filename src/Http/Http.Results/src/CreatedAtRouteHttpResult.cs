@@ -63,17 +63,10 @@ public sealed class CreatedAtRouteHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJsonAsync(
-            httpContext,
-            Value,
-            StatusCode,
-            configureResponseHeader: ConfigureResponseHeaders);
-
-    private void ConfigureResponseHeaders(HttpContext context)
     {
-        var linkGenerator = context.RequestServices.GetRequiredService<LinkGenerator>();
+        var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
         var url = linkGenerator.GetUriByRouteValues(
-            context,
+            httpContext,
             RouteName,
             RouteValues,
             fragment: FragmentString.Empty);
@@ -83,6 +76,10 @@ public sealed class CreatedAtRouteHttpResult : IResult
             throw new InvalidOperationException("No route matches the supplied values.");
         }
 
-        context.Response.Headers.Location = url;
+        httpContext.Response.Headers.Location = url;
+        return HttpResultsWriter.WriteResultAsJsonAsync(
+                httpContext,
+                Value,
+                StatusCode);
     }
 }

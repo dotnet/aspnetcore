@@ -62,16 +62,14 @@ public sealed class CreatedHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        if (!string.IsNullOrEmpty(Location))
+        {
+            httpContext.Response.Headers.Location = Location;
+        }
+
         return HttpResultsWriter.WriteResultAsJsonAsync(
                 httpContext,
                 Value,
-                StatusCode,
-                configureResponseHeader: (context) =>
-                {
-                    if (!string.IsNullOrEmpty(Location))
-                    {
-                        context.Response.Headers.Location = Location;
-                    }
-                });
+                StatusCode);
     }
 }

@@ -22,8 +22,7 @@ internal static partial class HttpResultsWriter
         object? value,
         int? statusCode,
         string? contentType = null,
-        JsonSerializerOptions? jsonSerializerOptions = null,
-        Action<HttpContext>? configureResponseHeader = null)
+        JsonSerializerOptions? jsonSerializerOptions = null)
     {
         Log.WritingResultAsJson(GetLogger(httpContext), value, statusCode);
 
@@ -37,8 +36,6 @@ internal static partial class HttpResultsWriter
         {
             httpContext.Response.StatusCode = code;
         }
-
-        configureResponseHeader?.Invoke(httpContext);
 
         if (value is null)
         {
