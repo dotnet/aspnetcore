@@ -78,12 +78,12 @@ public sealed partial class ForbidHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets or sets the authentication schemes that are challenged.
+    /// Gets the authentication schemes that are challenged.
     /// </summary>
     public IReadOnlyList<string> AuthenticationSchemes { get; internal init; }
 
     /// <summary>
-    /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the authentication challenge.
+    /// Gets the <see cref="AuthenticationProperties"/> used to perform the authentication challenge.
     /// </summary>
     public AuthenticationProperties? Properties { get; internal init; }
 
