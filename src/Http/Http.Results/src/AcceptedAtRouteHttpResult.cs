@@ -40,6 +40,7 @@ public sealed class AcceptedAtRouteHttpResult : IResult
         Value = value;
         RouteName = routeName;
         RouteValues = new RouteValueDictionary(routeValues);
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -55,7 +56,7 @@ public sealed class AcceptedAtRouteHttpResult : IResult
     /// <summary>
     /// Gets the route data to use for generating the URL.
     /// </summary>
-    public RouteValueDictionary? RouteValues { get; }
+    public RouteValueDictionary RouteValues { get; }
 
     /// <summary>
     /// Gets the HTTP status code.
@@ -66,7 +67,7 @@ public sealed class AcceptedAtRouteHttpResult : IResult
     public Task ExecuteAsync(HttpContext httpContext)
     {
         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
-        var url = linkGenerator.GetUriByRouteValues(
+        var url = linkGenerator.GetUriByAddress(
             httpContext,
             RouteName,
             RouteValues,
@@ -78,6 +79,6 @@ public sealed class AcceptedAtRouteHttpResult : IResult
         }
 
         httpContext.Response.Headers.Location = url;
-        return HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
+        return HttpResultsHelper.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
     }
 }

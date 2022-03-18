@@ -6,6 +6,19 @@ namespace Microsoft.AspNetCore.Http.Result;
 public class UnprocessableEntityObjectResultTests
 {
     [Fact]
+    public void NotFoundObjectResult_ProblemDetails_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var obj = new HttpValidationProblemDetails();
+        var result = new UnprocessableEntityObjectHttpResult(obj);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, obj.Status);
+        Assert.Equal(obj, result.Value);
+    }
+
+    [Fact]
     public void UnprocessableEntityObjectResult_SetsStatusCodeAndValue()
     {
         // Arrange & Act

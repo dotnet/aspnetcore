@@ -28,7 +28,7 @@ public class NoContentHttpResult : IResult
     public Task ExecuteAsync(HttpContext httpContext)
     {
         var logger = httpContext.RequestServices.GetRequiredService<ILogger<NoContentHttpResult>>();
-        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
 
         httpContext.Response.StatusCode = StatusCode;
 

@@ -11,6 +11,24 @@ namespace Microsoft.AspNetCore.Http.Result;
 public class AcceptedAtRouteResultTests
 {
     [Fact]
+    public void AcceptedAtRouteResult_ProblemDetails_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
+        {
+            { "test", "case" },
+            { "sample", "route" }
+        });
+        var obj = new HttpValidationProblemDetails();
+        var result = new AcceptedAtRouteHttpResult(routeValues, obj);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(StatusCodes.Status202Accepted, obj.Status);
+        Assert.Equal(obj, result.Value);
+    }
+
+    [Fact]
     public async Task ExecuteResultAsync_FormatsData()
     {
         // Arrange

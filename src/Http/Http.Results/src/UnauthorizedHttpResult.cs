@@ -28,7 +28,7 @@ public sealed class UnauthorizedHttpResult : IResult
     public Task ExecuteAsync(HttpContext httpContext)
     {
         var logger = httpContext.RequestServices.GetRequiredService<ILogger<UnauthorizedHttpResult>>();
-        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
 
         httpContext.Response.StatusCode = StatusCode;
 

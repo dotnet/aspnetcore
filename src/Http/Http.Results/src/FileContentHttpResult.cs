@@ -103,7 +103,7 @@ public sealed partial class FileContentHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext) =>
-        HttpResultsWriter.WriteResultAsFileAsync(
+        HttpResultsHelper.WriteResultAsFileAsync(
             httpContext,
             FileDownloadName,
             FileLength,

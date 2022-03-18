@@ -115,7 +115,7 @@ public sealed class FileStreamHttpResult : IResult
     {
         await using (FileStream)
         {
-            await HttpResultsWriter.WriteResultAsFileAsync(
+            await HttpResultsHelper.WriteResultAsFileAsync(
                 httpContext,
                 FileDownloadName,
                 FileLength,

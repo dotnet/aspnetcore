@@ -18,6 +18,7 @@ public sealed class OkObjectHttpResult : IResult
     public OkObjectHttpResult(object? value)
     {
         Value = value;
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -32,5 +33,5 @@ public sealed class OkObjectHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
+        => HttpResultsHelper.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
 }

@@ -53,5 +53,5 @@ public sealed partial class ContentHttpResult : IResult
     /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
     /// <returns>A task that represents the asynchronous execute operation.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsContentAsync(httpContext, Content, StatusCode, ContentType);
+        => HttpResultsHelper.WriteResultAsContentAsync(httpContext, Content, StatusCode, ContentType);
 }

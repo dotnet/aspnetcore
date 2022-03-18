@@ -19,6 +19,7 @@ public sealed class ProblemHttpResult : IResult
     public ProblemHttpResult(ProblemDetails problemDetails)
     {
         ProblemDetails = problemDetails;
+        HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: null);
     }
 
     /// <summary>
@@ -38,7 +39,7 @@ public sealed class ProblemHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJsonAsync(
+        => HttpResultsHelper.WriteResultAsJsonAsync(
             httpContext,
             value: ProblemDetails,
             StatusCode,

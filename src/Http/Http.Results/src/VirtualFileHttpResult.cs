@@ -113,7 +113,7 @@ public sealed class VirtualFileHttpResult : IResult
         LastModified = LastModified ?? fileInfo.LastModified;
         FileLength = fileInfo.Length;
 
-        return HttpResultsWriter.WriteResultAsFileAsync(
+        return HttpResultsHelper.WriteResultAsFileAsync(
             httpContext,
             FileDownloadName,
             FileLength,

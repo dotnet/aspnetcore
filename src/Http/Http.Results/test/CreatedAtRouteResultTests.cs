@@ -11,6 +11,23 @@ namespace Microsoft.AspNetCore.Http.Result;
 
 public partial class CreatedAtRouteResultTests
 {
+    [Fact]
+    public void CreatedAtRouteResult_ProblemDetails_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
+        {
+            { "test", "case" },
+            { "sample", "route" }
+        });
+        var obj = new HttpValidationProblemDetails();
+        var result = new CreatedAtRouteHttpResult(routeValues, obj);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(StatusCodes.Status201Created, obj.Status);
+        Assert.Equal(obj, result.Value);
+    }
     public static IEnumerable<object[]> CreatedAtRouteData
     {
         get

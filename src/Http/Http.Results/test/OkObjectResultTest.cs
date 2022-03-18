@@ -23,6 +23,19 @@ public class OkObjectResultTest
         Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
     }
 
+    [Fact]
+    public void OkObjectResult_ProblemDetails_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var obj = new HttpValidationProblemDetails();
+        var result = new OkObjectHttpResult(obj);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, obj.Status);
+        Assert.Equal(obj, result.Value);
+    }
+
     private static HttpContext GetHttpContext()
     {
         var httpContext = new DefaultHttpContext();

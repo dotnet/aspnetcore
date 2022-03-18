@@ -4,7 +4,7 @@ Microsoft.AspNetCore.Http.AcceptedAtRouteHttpResult.AcceptedAtRouteHttpResult(ob
 Microsoft.AspNetCore.Http.AcceptedAtRouteHttpResult.AcceptedAtRouteHttpResult(string? routeName, object? routeValues, object? value) -> void
 Microsoft.AspNetCore.Http.AcceptedAtRouteHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.AcceptedAtRouteHttpResult.RouteName.get -> string?
-Microsoft.AspNetCore.Http.AcceptedAtRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
+Microsoft.AspNetCore.Http.AcceptedAtRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
 Microsoft.AspNetCore.Http.AcceptedAtRouteHttpResult.StatusCode.get -> int
 Microsoft.AspNetCore.Http.AcceptedAtRouteHttpResult.Value.get -> object?
 Microsoft.AspNetCore.Http.AcceptedHttpResult

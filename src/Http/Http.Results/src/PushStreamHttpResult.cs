@@ -97,7 +97,7 @@ public sealed class PushStreamHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext) =>
-        HttpResultsWriter.WriteResultAsFileAsync(
+        HttpResultsHelper.WriteResultAsFileAsync(
             httpContext,
             FileDownloadName,
             FileLength,

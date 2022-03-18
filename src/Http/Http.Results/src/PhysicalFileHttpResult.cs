@@ -114,7 +114,7 @@ public sealed partial class PhysicalFileHttpResult : IResult
         LastModified ??= fileInfo.LastWriteTimeUtc;
         FileLength = fileInfo.Length;
 
-        return HttpResultsWriter.WriteResultAsFileAsync(
+        return HttpResultsHelper.WriteResultAsFileAsync(
             httpContext,
             FileDownloadName,
             FileLength,

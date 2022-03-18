@@ -39,6 +39,7 @@ public sealed class CreatedAtRouteHttpResult : IResult
         Value = value;
         RouteName = routeName;
         RouteValues = new RouteValueDictionary(routeValues);
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -77,7 +78,7 @@ public sealed class CreatedAtRouteHttpResult : IResult
         }
 
         httpContext.Response.Headers.Location = url;
-        return HttpResultsWriter.WriteResultAsJsonAsync(
+        return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 Value,
                 StatusCode);

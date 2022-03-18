@@ -22,6 +22,7 @@ public sealed class AcceptedHttpResult : IResult
     {
         Value = value;
         Location = location;
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -33,6 +34,7 @@ public sealed class AcceptedHttpResult : IResult
     public AcceptedHttpResult(Uri locationUri, object? value)
     {
         Value = value;
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
 
         if (locationUri == null)
         {
@@ -72,7 +74,7 @@ public sealed class AcceptedHttpResult : IResult
             httpContext.Response.Headers.Location = Location;
         }
 
-        return HttpResultsWriter.WriteResultAsJsonAsync(
+        return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 Value,
                 StatusCode);

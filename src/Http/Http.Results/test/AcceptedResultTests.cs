@@ -40,6 +40,20 @@ public class AcceptedResultTests
         Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
     }
 
+    [Fact]
+    public void AcceptedResult_ProblemDetails_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var expectedUrl = "testAction";
+        var obj = new HttpValidationProblemDetails();
+        var result = new AcceptedHttpResult(expectedUrl, obj);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(StatusCodes.Status202Accepted, obj.Status);
+        Assert.Equal(obj, result.Value);
+    }
+
     private static HttpContext GetHttpContext()
     {
         var httpContext = new DefaultHttpContext();

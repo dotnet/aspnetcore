@@ -17,6 +17,7 @@ public sealed class ConflictObjectHttpResult : IResult
     public ConflictObjectHttpResult(object? error)
     {
         Value = error;
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -31,5 +32,5 @@ public sealed class ConflictObjectHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
+        => HttpResultsHelper.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
 }

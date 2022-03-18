@@ -10,6 +10,20 @@ namespace Microsoft.AspNetCore.Http.Result;
 public class CreatedResultTests
 {
     [Fact]
+    public void CreatedResult_ProblemDetails_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var expectedUrl = "testAction";
+        var obj = new HttpValidationProblemDetails();
+        var result = new CreatedHttpResult(expectedUrl, obj);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(StatusCodes.Status201Created, obj.Status);
+        Assert.Equal(obj, result.Value);
+    }
+
+    [Fact]
     public void CreatedResult_SetsLocation()
     {
         // Arrange

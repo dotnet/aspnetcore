@@ -35,7 +35,7 @@ public sealed partial class StatusCodeHttpResult : IResult
     public Task ExecuteAsync(HttpContext httpContext)
     {
         var logger = httpContext.RequestServices.GetRequiredService<ILogger<StatusCodeHttpResult>>();
-        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+        HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
 
         httpContext.Response.StatusCode = StatusCode;
 

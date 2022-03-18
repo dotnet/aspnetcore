@@ -10,6 +10,19 @@ namespace Microsoft.AspNetCore.Http.Result;
 public class NotFoundObjectResultTest
 {
     [Fact]
+    public void NotFoundObjectResult_ProblemDetails_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var obj = new HttpValidationProblemDetails();
+        var result = new NotFoundObjectHttpResult(obj);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+        Assert.Equal(StatusCodes.Status404NotFound, obj.Status);
+        Assert.Equal(obj, result.Value);
+    }
+
+    [Fact]
     public void NotFoundObjectResult_InitializesStatusCode()
     {
         // Arrange & act

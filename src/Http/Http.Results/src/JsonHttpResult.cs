@@ -56,6 +56,7 @@ public sealed class JsonHttpResult : IResult
         StatusCode = statusCode;
         JsonSerializerOptions = jsonSerializerOptions;
         ContentType = contentType;
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -80,7 +81,7 @@ public sealed class JsonHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJsonAsync(
+        => HttpResultsHelper.WriteResultAsJsonAsync(
             httpContext,
             Value,
             StatusCode,

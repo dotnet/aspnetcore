@@ -17,6 +17,7 @@ public sealed class UnprocessableEntityObjectHttpResult : IResult
     public UnprocessableEntityObjectHttpResult(object? error)
     {
         Value = error;
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <inheritdoc />
@@ -27,5 +28,5 @@ public sealed class UnprocessableEntityObjectHttpResult : IResult
 
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
+        => HttpResultsHelper.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
 }

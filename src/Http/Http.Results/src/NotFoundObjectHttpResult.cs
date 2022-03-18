@@ -16,6 +16,7 @@ public sealed class NotFoundObjectHttpResult : IResult
     public NotFoundObjectHttpResult(object? value)
     {
         Value = value;
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
@@ -30,5 +31,5 @@ public sealed class NotFoundObjectHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
+        => HttpResultsHelper.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
 }

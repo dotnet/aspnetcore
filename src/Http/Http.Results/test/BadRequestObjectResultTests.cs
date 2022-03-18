@@ -16,4 +16,17 @@ public class BadRequestObjectResultTests
         Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
         Assert.Equal(obj, badRequestObjectResult.Value);
     }
+
+    [Fact]
+    public void BadRequestObjectResult_ProblemDetails_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var obj = new HttpValidationProblemDetails();
+        var result = new BadRequestObjectHttpResult(obj);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, obj.Status);
+        Assert.Equal(obj, result.Value);
+    }
 }

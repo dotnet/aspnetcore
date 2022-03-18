@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-internal static partial class HttpResultsWriter
+internal static partial class HttpResultsHelper
 {
     private const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
@@ -25,12 +25,6 @@ internal static partial class HttpResultsWriter
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
         Log.WritingResultAsJson(GetLogger(httpContext), value, statusCode);
-
-        if (value is ProblemDetails problemDetails)
-        {
-            ApplyProblemDetailsDefaults(problemDetails, statusCode);
-            statusCode ??= problemDetails.Status;
-        }
 
         if (statusCode is { } code)
         {
@@ -131,6 +125,14 @@ internal static partial class HttpResultsWriter
         return writeOperation(httpContext, range, rangeLength);
     }
 
+    public static void ApplyProblemDetailsDefaultsIfNeeded(object? value, int? statusCode)
+    {
+        if (value is ProblemDetails problemDetails)
+        {
+            ApplyProblemDetailsDefaults(problemDetails, statusCode);
+        }
+    }
+
     public static void ApplyProblemDetailsDefaults(ProblemDetails problemDetails, int? statusCode)
     {
         // We allow StatusCode to be specified either on ProblemDetails or on the ObjectResult and use it to configure the other.
@@ -160,7 +162,7 @@ internal static partial class HttpResultsWriter
     private static ILogger GetLogger(HttpContext httpContext)
     {
         var factory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = factory.CreateLogger(typeof(HttpResultsWriter));
+        var logger = factory.CreateLogger(typeof(HttpResultsHelper));
         return logger;
     }
 
@@ -199,7 +201,7 @@ internal static partial class HttpResultsWriter
             EventName = "WritingResultAsContent")]
         public static partial void WritingResultAsContent(ILogger logger, string contentType);
 
-        [LoggerMessage(3, LogLevel.Information, "Writing value of type '{Type}'as Json with status code '{StatusCode}'.",
+        [LoggerMessage(3, LogLevel.Information, "Writing value of type '{Type}' as Json with status code '{StatusCode}'.",
             EventName = "WritingResultAsJson",
             SkipEnabledCheck = true)]
         private static partial void WritingResultAsJson(ILogger logger, string type, int statusCode);

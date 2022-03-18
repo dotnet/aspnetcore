@@ -38,7 +38,7 @@ internal sealed class ObjectHttpResult : IResult
 
         if (value is ProblemDetails problemDetails)
         {
-            HttpResultsWriter.ApplyProblemDetailsDefaults(problemDetails, statusCode);
+            HttpResultsHelper.ApplyProblemDetailsDefaults(problemDetails, statusCode);
             statusCode ??= problemDetails.Status;
         }
 
@@ -63,5 +63,5 @@ internal sealed class ObjectHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode, ContentType);
+        => HttpResultsHelper.WriteResultAsJsonAsync(httpContext, Value, StatusCode, ContentType);
 }
