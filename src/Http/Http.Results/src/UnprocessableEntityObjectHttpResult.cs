@@ -13,13 +13,13 @@ using Microsoft.Extensions.Logging;
 public sealed class UnprocessableEntityObjectHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ConflictObjectHttpResult"/> class with the values
+    /// Initializes a new instance of the <see cref="UnprocessableEntityObjectHttpResult"/> class with the values
     /// provided.
     /// </summary>
-    /// <param name="error">The error content to format in the entity body.</param>
-    internal UnprocessableEntityObjectHttpResult(object? error)
+    /// <param name="value">The value to format in the entity body.</param>
+    internal UnprocessableEntityObjectHttpResult(object? value)
     {
-        Value = error;
+        Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 

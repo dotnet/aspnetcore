@@ -106,7 +106,7 @@ Microsoft.AspNetCore.Http.RedirectHttpResult.AcceptLocalUrlOnly.get -> bool
 Microsoft.AspNetCore.Http.RedirectHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.RedirectHttpResult.Permanent.get -> bool
 Microsoft.AspNetCore.Http.RedirectHttpResult.PreserveMethod.get -> bool
-Microsoft.AspNetCore.Http.RedirectHttpResult.Url.get -> string?
+Microsoft.AspNetCore.Http.RedirectHttpResult.Url.get -> string!
 Microsoft.AspNetCore.Http.RedirectToRouteHttpResult
 Microsoft.AspNetCore.Http.RedirectToRouteHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.RedirectToRouteHttpResult.Fragment.get -> string?

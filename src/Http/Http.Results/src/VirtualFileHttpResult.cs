@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Http;
 public sealed class VirtualFileHttpResult : IResult
 {
     private string _fileName;
-    private IFileInfo? _fileInfo;
 
     /// <summary>
     /// Creates a new <see cref="VirtualFileHttpResult"/> instance with
@@ -109,8 +108,6 @@ public sealed class VirtualFileHttpResult : IResult
         {
             throw new FileNotFoundException($"Could not find file: {FileName}.", FileName);
         }
-
-        _fileInfo = fileInfo;
         LastModified = LastModified ?? fileInfo.LastModified;
         FileLength = fileInfo.Length;
 
@@ -118,7 +115,7 @@ public sealed class VirtualFileHttpResult : IResult
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.VirtualFileResult");
 
-        return HttpResultsHelper.WriteResultAsFileAsync(
+        var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
             httpContext,
             logger,
             FileDownloadName,
@@ -126,11 +123,14 @@ public sealed class VirtualFileHttpResult : IResult
             ContentType,
             EnableRangeProcessing,
             LastModified,
-            EntityTag,
-            ExecuteCoreAsync);
+            EntityTag);
+
+        return completed ?
+            Task.CompletedTask :
+            ExecuteCoreAsync(httpContext, range, rangeLength, fileInfo);
     }
 
-    private Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    private static Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength, IFileInfo fileInfo)
     {
         var response = httpContext.Response;
         var offset = 0L;
@@ -142,7 +142,7 @@ public sealed class VirtualFileHttpResult : IResult
         }
 
         return response.SendFileAsync(
-            _fileInfo!,
+            fileInfo!,
             offset,
             count);
     }

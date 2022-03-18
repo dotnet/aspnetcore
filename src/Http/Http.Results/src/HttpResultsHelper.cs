@@ -42,7 +42,7 @@ internal static partial class HttpResultsHelper
             contentType: contentType);
     }
 
-    public static async Task WriteResultAsContentAsync(
+    public static Task WriteResultAsContentAsync(
         HttpContext httpContext,
         ILogger logger,
         string? content,
@@ -70,11 +70,13 @@ internal static partial class HttpResultsHelper
         if (content != null)
         {
             response.ContentLength = resolvedContentTypeEncoding.GetByteCount(content);
-            await response.WriteAsync(content, resolvedContentTypeEncoding);
+            return response.WriteAsync(content, resolvedContentTypeEncoding);
         }
+
+        return Task.CompletedTask;
     }
 
-    public static Task WriteResultAsFileAsync(
+    public static (RangeItemHeaderValue? range, long rangeLength, bool completed) WriteResultAsFileCore(
         HttpContext httpContext,
         ILogger logger,
         string? fileDownloadName,
@@ -82,9 +84,9 @@ internal static partial class HttpResultsHelper
         string contentType,
         bool enableRangeProcessing,
         DateTimeOffset? lastModified,
-        EntityTagHeaderValue? entityTag,
-        Func<HttpContext, RangeItemHeaderValue?, long, Task> writeOperation)
+        EntityTagHeaderValue? entityTag)
     {
+        var completed = false;
         fileDownloadName ??= string.Empty;
 
         Log.WritingResultAsFile(logger, fileDownloadName);
@@ -107,22 +109,22 @@ internal static partial class HttpResultsHelper
             entityTag,
             logger);
 
-        if (!serveBody)
-        {
-            return Task.CompletedTask;
-        }
-
-        if (range != null && rangeLength == 0)
-        {
-            return Task.CompletedTask;
-        }
-
         if (range != null)
         {
             FileResultHelper.Log.WritingRangeToBody(logger);
         }
 
-        return writeOperation(httpContext, range, rangeLength);
+        if (!serveBody)
+        {
+            completed = true;
+        }
+
+        if (range != null && rangeLength == 0)
+        {
+            completed = true;
+        }
+
+        return (range, rangeLength, completed);
     }
 
     public static void ApplyProblemDetailsDefaultsIfNeeded(object? value, int? statusCode)

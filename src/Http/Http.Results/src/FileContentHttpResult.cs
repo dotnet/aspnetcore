@@ -110,7 +110,7 @@ public sealed partial class FileContentHttpResult : IResult
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.FileContentResult");
 
-        return HttpResultsHelper.WriteResultAsFileAsync(
+        var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
             httpContext,
             logger,
             FileDownloadName,
@@ -118,7 +118,10 @@ public sealed partial class FileContentHttpResult : IResult
             ContentType,
             EnableRangeProcessing,
             LastModified,
-            EntityTag,
-            (context, range, rangeLength) => FileResultHelper.WriteFileAsync(httpContext, FileContents, range, rangeLength));
+            EntityTag);
+
+        return completed ?
+            Task.CompletedTask :
+            FileResultHelper.WriteFileAsync(httpContext, FileContents, range, rangeLength);
     }
 }

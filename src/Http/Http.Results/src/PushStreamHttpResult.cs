@@ -104,7 +104,7 @@ public sealed class PushStreamHttpResult : IResult
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.PushStreamResult");
 
-        return HttpResultsHelper.WriteResultAsFileAsync(
+        var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
             httpContext,
             logger,
             FileDownloadName,
@@ -112,7 +112,10 @@ public sealed class PushStreamHttpResult : IResult
             ContentType,
             EnableRangeProcessing,
             LastModified,
-            EntityTag,
-            (context, _, _) => _streamWriterCallback(context.Response.Body));
+            EntityTag);
+
+        return completed ?
+            Task.CompletedTask :
+            _streamWriterCallback(httpContext.Response.Body);
     }
 }

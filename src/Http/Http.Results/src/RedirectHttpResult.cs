@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed partial class RedirectHttpResult : IResult
 {
-    private readonly string _url;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
     /// provided.
@@ -70,11 +68,10 @@ public sealed partial class RedirectHttpResult : IResult
             throw new ArgumentException("Argument cannot be null or empty", nameof(url));
         }
 
+        Url = url;
         Permanent = permanent;
         PreserveMethod = preserveMethod;
         AcceptLocalUrlOnly = acceptLocalUrlOnly;
-
-        _url = url;
     }
 
     /// <summary>
@@ -90,7 +87,7 @@ public sealed partial class RedirectHttpResult : IResult
     /// <summary>
     /// Gets the URL to redirect to.
     /// </summary>
-    public string? Url => _url;
+    public string Url { get; }
 
     /// <summary>
     /// Gets an indication that only local URLs are accepted.
@@ -112,7 +109,7 @@ public sealed partial class RedirectHttpResult : IResult
         }
 
         // IsLocalUrl is called to handle URLs starting with '~/'.
-        var destinationUrl = isLocalUrl ? SharedUrlHelper.Content(httpContext, contentPath: _url) : _url;
+        var destinationUrl = isLocalUrl ? SharedUrlHelper.Content(httpContext, contentPath: Url) : Url;
 
         Log.RedirectResultExecuting(logger, destinationUrl);
 

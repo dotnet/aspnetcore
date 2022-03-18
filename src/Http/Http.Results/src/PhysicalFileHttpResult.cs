@@ -120,7 +120,7 @@ public sealed partial class PhysicalFileHttpResult : IResult
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.PhysicalFileResult");
 
-        return HttpResultsHelper.WriteResultAsFileAsync(
+        var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
             httpContext,
             logger,
             FileDownloadName,
@@ -128,16 +128,19 @@ public sealed partial class PhysicalFileHttpResult : IResult
             ContentType,
             EnableRangeProcessing,
             LastModified,
-            EntityTag,
-            writeOperation: ExecuteCoreAsync);
+            EntityTag);
+
+        return completed ?
+            Task.CompletedTask :
+            ExecuteCoreAsync(httpContext, range, rangeLength, FileName);
     }
 
-    private Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength)
+    private static Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength, string fileName)
     {
         var response = httpContext.Response;
-        if (!Path.IsPathRooted(FileName))
+        if (!Path.IsPathRooted(fileName))
         {
-            throw new NotSupportedException($"Path '{FileName}' was not rooted.");
+            throw new NotSupportedException($"Path '{fileName}' was not rooted.");
         }
 
         var offset = 0L;
@@ -149,7 +152,7 @@ public sealed partial class PhysicalFileHttpResult : IResult
         }
 
         return response.SendFileAsync(
-            FileName,
+            fileName,
             offset: offset,
             count: count);
     }

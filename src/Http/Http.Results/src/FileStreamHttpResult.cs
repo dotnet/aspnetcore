@@ -121,7 +121,7 @@ public sealed class FileStreamHttpResult : IResult
 
         await using (FileStream)
         {
-            await HttpResultsHelper.WriteResultAsFileAsync(
+            var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
                 httpContext,
                 logger,
                 FileDownloadName,
@@ -129,8 +129,12 @@ public sealed class FileStreamHttpResult : IResult
                 ContentType,
                 EnableRangeProcessing,
                 LastModified,
-                EntityTag,
-                (context, range, rangeLength) => FileResultHelper.WriteFileAsync(context, FileStream, range, rangeLength));
+                EntityTag);
+
+            if (!completed)
+            {
+                await FileResultHelper.WriteFileAsync(httpContext, FileStream, range, rangeLength);
+            }
         }
     }
 }
