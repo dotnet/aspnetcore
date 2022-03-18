@@ -65,7 +65,7 @@ internal class WindowsCertificateManager : CertificateManager
             store.Open(OpenFlags.ReadWrite);
             store.Add(certificate);
             store.Close();
-        };
+        }
 
         return certificate;
     }

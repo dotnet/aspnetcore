@@ -17,8 +17,8 @@ public class WebAssemblyConfigurationHostedTest : ServerTestBase<BasicTestAppSer
     public WebAssemblyConfigurationHostedTest(
          BrowserFixture browserFixture,
          BasicTestAppServerSiteFixture<TestServer.ClientStartup> serverFixture,
-         ITestOutputHelper output) :
-         base(browserFixture, serverFixture, output)
+         ITestOutputHelper output)
+        : base(browserFixture, serverFixture, output)
     {
     }
 

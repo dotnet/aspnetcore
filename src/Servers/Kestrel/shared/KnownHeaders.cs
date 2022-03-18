@@ -514,7 +514,6 @@ public class KnownHeaders
                     return $"(ReadUnalignedLittleEndian_{type}(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)({offset / count} * sizeof({type})))) & 0x{mask:x}{suffix})";
                 }
             }
-
         }
 
         private static string EqualityTerm(string name, int offset, int count, string suffix)

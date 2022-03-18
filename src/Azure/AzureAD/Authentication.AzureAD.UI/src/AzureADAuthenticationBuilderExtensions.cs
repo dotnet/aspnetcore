@@ -155,7 +155,7 @@ public static class AzureADAuthenticationBuilderExtensions
             {
                 JwtBearerScheme = jwtBearerScheme
             });
-        };
+        }
     }
 
     private static Action<AzureADSchemeOptions> TryAddOpenIDCookieSchemeMappings(string scheme, string openIdConnectScheme, string cookieScheme)
@@ -189,7 +189,7 @@ public static class AzureADAuthenticationBuilderExtensions
                 OpenIdConnectScheme = openIdConnectScheme,
                 CookieScheme = cookieScheme
             });
-        };
+        }
     }
 
     private static void AddAdditionalMvcApplicationParts(IServiceCollection services)

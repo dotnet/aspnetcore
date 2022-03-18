@@ -242,7 +242,6 @@ public class RoleStoreWithGenerics : RoleStore<MyIdentityRole, InMemoryContextWi
     {
         _loginContext = loginContext;
     }
-
 }
 
 public class IdentityUserClaimWithIssuer : IdentityUserClaim<string>
@@ -295,7 +294,6 @@ public class MyIdentityRole : IdentityRole<string>
     {
         Name = roleName;
     }
-
 }
 
 public class IdentityUserTokenWithStuff : IdentityUserToken<string>

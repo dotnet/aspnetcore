@@ -275,5 +275,4 @@ public class UserStories
     {
         var goToPrivacy = await client.GetAsync("/Privacy");
     }
-
 }

@@ -21,7 +21,6 @@ public class CustomPocoTest
         { }
 
         public DbSet<User<TKey>> Users { get; set; }
-
     }
 
     [ConditionalFact]

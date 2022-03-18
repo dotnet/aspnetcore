@@ -76,5 +76,4 @@ public static class TestExtensions
         var xmlBytes = Encoding.UTF8.GetBytes(xml.ToString());
         return res.Body.WriteAsync(xmlBytes, 0, xmlBytes.Length);
     }
-
 }

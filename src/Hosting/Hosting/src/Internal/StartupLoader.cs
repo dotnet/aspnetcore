@@ -190,7 +190,7 @@ internal class StartupLoader
                             $"Use a void returning ConfigureServices method instead or a ConfigureContainer method.";
 #pragma warning restore CS0612 // Type or member is obsolete
                         throw new InvalidOperationException(message);
-                    };
+                    }
                 }
             }
         }

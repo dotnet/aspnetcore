@@ -365,7 +365,6 @@ public class UpgradeTests : LoggedTest
                 appCompletedTcs.SetException(ex);
                 throw;
             }
-
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())

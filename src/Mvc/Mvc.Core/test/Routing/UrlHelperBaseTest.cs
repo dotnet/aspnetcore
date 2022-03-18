@@ -135,8 +135,8 @@ public class UrlHelperBaseTest
 
     private class TestUrlHelper : UrlHelperBase
     {
-        public TestUrlHelper(ActionContext actionContext) :
-            base(actionContext)
+        public TestUrlHelper(ActionContext actionContext)
+            : base(actionContext)
         {
         }
 

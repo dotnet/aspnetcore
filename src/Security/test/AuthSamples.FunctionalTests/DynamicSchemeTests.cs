@@ -24,7 +24,6 @@ public class DynamicSchemeTests : IClassFixture<WebApplicationFactory<DynamicSch
     {
         // Arrange & Act
         var response = await Client.GetAsync("/");
-        var content = await response.Content.ReadAsStringAsync();
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -88,7 +87,5 @@ public class DynamicSchemeTests : IClassFixture<WebApplicationFactory<DynamicSch
             ["scheme"] = name,
             ["OptionsMessage"] = message,
         });
-
     }
-
 }

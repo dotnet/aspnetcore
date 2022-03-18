@@ -36,7 +36,6 @@ public class KeyPerFileConfigurationProvider : ConfigurationProvider, IDisposabl
                     Load(reload: true);
                 });
         }
-
     }
 
     private string NormalizeKey(string key)
@@ -98,7 +97,6 @@ public class KeyPerFileConfigurationProvider : ConfigurationProvider, IDisposabl
                 {
                     data.Add(NormalizeKey(file.Name), TrimNewLine(streamReader.ReadToEnd()));
                 }
-
             }
         }
 

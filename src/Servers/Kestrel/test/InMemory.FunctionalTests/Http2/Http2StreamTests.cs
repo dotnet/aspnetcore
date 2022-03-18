@@ -1136,7 +1136,9 @@ public class Http2StreamTests : Http2TestBase
             thrownEx = await Assert.ThrowsAsync<IOException>(async () =>
             {
                 var buffer = new byte[100];
-                while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
+                while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0)
+                {
+                }
             });
         });
 

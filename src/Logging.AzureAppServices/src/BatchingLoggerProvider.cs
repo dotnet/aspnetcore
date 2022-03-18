@@ -76,7 +76,6 @@ public abstract class BatchingLoggerProvider : ILoggerProvider, ISupportExternal
                 Stop();
             }
         }
-
     }
 
     internal abstract Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken token);

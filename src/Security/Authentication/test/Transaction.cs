@@ -55,5 +55,4 @@ public class Transaction
         }
         return claim.Attribute("value").Value;
     }
-
 }

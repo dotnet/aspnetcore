@@ -635,7 +635,7 @@ public class Http2HPackEncoderTests
         {
             entry = entry.Before;
             headers.Add(entry);
-        };
+        }
 
         return headers;
     }

@@ -17,13 +17,13 @@ internal class DuplexPipeStreamAdapter<TStream> : DuplexPipeStream, IDuplexPipe 
     private bool _disposed;
     private readonly object _disposeLock = new object();
 
-    public DuplexPipeStreamAdapter(IDuplexPipe duplexPipe, Func<Stream, TStream> createStream) :
-        this(duplexPipe, new StreamPipeReaderOptions(leaveOpen: true), new StreamPipeWriterOptions(leaveOpen: true), createStream)
+    public DuplexPipeStreamAdapter(IDuplexPipe duplexPipe, Func<Stream, TStream> createStream)
+        : this(duplexPipe, new StreamPipeReaderOptions(leaveOpen: true), new StreamPipeWriterOptions(leaveOpen: true), createStream)
     {
     }
 
-    public DuplexPipeStreamAdapter(IDuplexPipe duplexPipe, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions, Func<Stream, TStream> createStream) :
-        base(duplexPipe.Input, duplexPipe.Output)
+    public DuplexPipeStreamAdapter(IDuplexPipe duplexPipe, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions, Func<Stream, TStream> createStream)
+        : base(duplexPipe.Input, duplexPipe.Output)
     {
         var stream = createStream(this);
         Stream = stream;

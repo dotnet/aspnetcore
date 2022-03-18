@@ -191,5 +191,4 @@ public class PasswordHasherTest
     {
         public PasswordHasherOptions Value { get; } = new PasswordHasherOptions();
     }
-
 }

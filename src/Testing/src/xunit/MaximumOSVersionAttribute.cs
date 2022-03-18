@@ -19,8 +19,8 @@ public class MaximumOSVersionAttribute : Attribute, ITestCondition
     private readonly Version _currentVersion;
     private readonly bool _skip;
 
-    public MaximumOSVersionAttribute(OperatingSystems operatingSystem, string maxVersion) :
-        this(operatingSystem, Version.Parse(maxVersion), GetCurrentOS(), GetCurrentOSVersion())
+    public MaximumOSVersionAttribute(OperatingSystems operatingSystem, string maxVersion)
+        : this(operatingSystem, Version.Parse(maxVersion), GetCurrentOS(), GetCurrentOSVersion())
     {
     }
 

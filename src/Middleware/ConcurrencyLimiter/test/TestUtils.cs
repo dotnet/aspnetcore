@@ -79,8 +79,8 @@ internal class TestQueue : IQueuePolicy
         _onExit = onExit ?? (() => { });
     }
 
-    public TestQueue(Func<TestQueue, bool> onTryEnter, Action onExit = null) :
-        this(state => Task.FromResult(onTryEnter(state))
+    public TestQueue(Func<TestQueue, bool> onTryEnter, Action onExit = null)
+        : this(state => Task.FromResult(onTryEnter(state))
         , onExit)
     { }
 

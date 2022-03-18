@@ -32,8 +32,8 @@ internal class RewriteAction : UrlAction
     public RewriteAction(
         RuleResult result,
         Pattern pattern,
-        bool queryStringAppend) :
-        this(result,
+        bool queryStringAppend)
+        : this(result,
             pattern,
             queryStringAppend,
             queryStringDelete: false,

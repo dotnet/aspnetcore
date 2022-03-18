@@ -70,7 +70,7 @@ public class LayoutView : IComponent
             builder.OpenComponent(0, layoutType);
             builder.AddAttribute(1, LayoutComponentBase.BodyPropertyName, bodyParam);
             builder.CloseComponent();
-        };
+        }
 
         return Render;
     }

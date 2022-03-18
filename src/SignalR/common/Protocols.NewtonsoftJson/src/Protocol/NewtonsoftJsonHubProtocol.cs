@@ -374,7 +374,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                         {
                             message = new StreamBindingFailureMessage(invocationId, ExceptionDispatchInfo.Capture(ex));
                             break;
-                        };
+                        }
                     }
 
                     message = BindStreamItemMessage(invocationId, item, hasItem);

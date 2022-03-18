@@ -359,7 +359,7 @@ internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
                 examined = buffer.End;
                 AddAndCheckObservedBytes(buffer.Length);
                 return;
-            };
+            }
 
             var extensionCursor = extensionCursorPosition.Value;
             var charsToByteCRExclusive = buffer.Slice(0, extensionCursor).Length;

@@ -12,7 +12,7 @@ internal sealed class CircuitHandleRegistry : ICircuitHandleRegistry
             return (CircuitHandle)circuitHandle;
         }
 
-        return null; ;
+        return null;
     }
 
     public CircuitHost GetCircuit(IDictionary<object, object?> circuitHandles, object circuitKey)

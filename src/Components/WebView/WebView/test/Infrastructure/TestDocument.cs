@@ -244,7 +244,6 @@ public class TestDocument
                     InsertMarkup(parent, childIndex, frame);
                     return 1;
                 }
-
         }
 
         throw new Exception($"Unknown frame type: {frame.FrameType}");

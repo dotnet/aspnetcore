@@ -118,7 +118,6 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                 context.Response.ContentLength = 14;
                 await context.Response.WriteAsync("Read cancelled");
             }
-
         }, new TestServiceContext(LoggerFactory)))
         {
             using (var connection = server.CreateConnection())

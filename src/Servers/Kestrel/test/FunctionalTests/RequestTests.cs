@@ -821,7 +821,7 @@ public class RequestTests : LoggedTest
 
             try
             {
-                await context.Request.Body.CopyToAsync(Stream.Null); ;
+                await context.Request.Body.CopyToAsync(Stream.Null);
             }
             catch (Exception ex)
             {

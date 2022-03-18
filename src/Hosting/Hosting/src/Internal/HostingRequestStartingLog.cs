@@ -44,7 +44,7 @@ internal class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, ob
         if (_cachedToString == null)
         {
             var request = _request;
-            _cachedToString = $"{LogPreamble}{request.Protocol} {request.Method} {request.Scheme}://{request.Host.Value}{request.PathBase.Value}{request.Path.Value}{request.QueryString.Value} {EscapedValueOrEmptyMarker(request.ContentType)} {ValueOrEmptyMarker(request.ContentLength)}"; ;
+            _cachedToString = $"{LogPreamble}{request.Protocol} {request.Method} {request.Scheme}://{request.Host.Value}{request.PathBase.Value}{request.Path.Value}{request.QueryString.Value} {EscapedValueOrEmptyMarker(request.ContentType)} {ValueOrEmptyMarker(request.ContentLength)}";
         }
 
         return _cachedToString;

@@ -44,8 +44,8 @@ public class BlobLoggerProvider : BatchingLoggerProvider
     /// <param name="options">Options to be used in creating a logger.</param>
     internal BlobLoggerProvider(
         IOptionsMonitor<AzureBlobLoggerOptions> options,
-        Func<string, ICloudAppendBlob> blobReferenceFactory) :
-        base(options)
+        Func<string, ICloudAppendBlob> blobReferenceFactory)
+        : base(options)
     {
         _options = options;
         _blobReferenceFactory = blobReferenceFactory;

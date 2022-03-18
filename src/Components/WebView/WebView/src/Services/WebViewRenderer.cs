@@ -21,8 +21,8 @@ internal class WebViewRenderer : WebRenderer
         IpcSender ipcSender,
         ILoggerFactory loggerFactory,
         WebViewJSRuntime jsRuntime,
-        JSComponentInterop jsComponentInterop) :
-        base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
+        JSComponentInterop jsComponentInterop)
+        : base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _dispatcher = dispatcher;
         _ipcSender = ipcSender;

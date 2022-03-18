@@ -80,7 +80,13 @@ public static class WaitAssert
 
     private static void WaitAssertCore(IWebDriver driver, Action assertion, TimeSpan timeout = default)
     {
-        WaitAssertCore<object>(driver, () => { assertion(); return null; }, timeout);
+        WaitAssertCore<object>(
+            driver,
+            () =>
+            {
+                assertion();
+                return null;
+            }, timeout);
     }
 
     private static TResult WaitAssertCore<TResult>(IWebDriver driver, Func<TResult> assertion, TimeSpan timeout = default)

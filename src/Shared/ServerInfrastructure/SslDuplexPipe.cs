@@ -16,8 +16,8 @@ internal class SslDuplexPipe : DuplexPipeStreamAdapter<SslStream>
     {
     }
 
-    public SslDuplexPipe(IDuplexPipe transport, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions, Func<Stream, SslStream> factory) :
-        base(transport, readerOptions, writerOptions, factory)
+    public SslDuplexPipe(IDuplexPipe transport, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions, Func<Stream, SslStream> factory)
+        : base(transport, readerOptions, writerOptions, factory)
     {
     }
 }

@@ -155,7 +155,7 @@ public static class HandshakeProtocol
             {
                 throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading handshake response JSON.");
             }
-        };
+        }
 
         responseMessage = new HandshakeResponseMessage(error);
         return true;

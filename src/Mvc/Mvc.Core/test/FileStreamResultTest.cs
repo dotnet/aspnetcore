@@ -88,5 +88,4 @@ public class FileStreamResultTest : FileStreamResultTestBase
         Assert.Equal(entityTag, result.EntityTag);
         Assert.Equal(expectedMediaType, result.ContentType);
     }
-
 }

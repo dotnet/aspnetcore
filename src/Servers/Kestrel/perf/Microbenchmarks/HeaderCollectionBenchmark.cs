@@ -249,7 +249,6 @@ public class HeaderCollectionBenchmark
             value = headers.ContentType;
             return value;
         }
-
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

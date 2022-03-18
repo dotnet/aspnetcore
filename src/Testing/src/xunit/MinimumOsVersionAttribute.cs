@@ -19,8 +19,8 @@ public class MinimumOSVersionAttribute : Attribute, ITestCondition
     private readonly Version _currentVersion;
     private readonly bool _skip;
 
-    public MinimumOSVersionAttribute(OperatingSystems operatingSystem, string minVersion) :
-        this(operatingSystem, Version.Parse(minVersion), GetCurrentOS(), GetCurrentOSVersion())
+    public MinimumOSVersionAttribute(OperatingSystems operatingSystem, string minVersion)
+        : this(operatingSystem, Version.Parse(minVersion), GetCurrentOS(), GetCurrentOSVersion())
     {
     }
 

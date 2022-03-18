@@ -55,6 +55,11 @@ csharp_style_namespace_declarations = file_scoped
 # Brace settings
 csharp_prefer_braces = true # Prefer curly braces even for one line of code
 
+# Whitespace options
+csharp_style_allow_embedded_statements_on_same_line_experimental = false
+csharp_style_allow_blank_lines_between_consecutive_braces_experimental = false
+csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = false
+
 [*.{xml,config,*proj,nuspec,props,resx,targets,yml,tasks}]
 indent_size = 2
 
@@ -263,6 +268,18 @@ dotnet_diagnostic.IDE0161.severity = warning
 dotnet_style_allow_multiple_blank_lines_experimental = false
 dotnet_diagnostic.IDE2000.severity = warning
 
+# IDE2001: Embedded statements must be on their own line
+dotnet_diagnostic.IDE2001.severity = warning
+
+# IDE2002: Consecutive braces must not have blank line between them
+dotnet_diagnostic.IDE2002.severity = warning
+
+# IDE2003: Blank line required between block and subsequent statement
+dotnet_diagnostic.IDE2003.severity = warning
+
+# IDE2004: Blank line not allowed after constructor initializer colon
+dotnet_diagnostic.IDE2004.severity = warning
+
 [{eng/tools/**.cs,**/{test,testassets,samples,Samples,perf}/**.cs}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = suggestion
@@ -320,6 +337,8 @@ dotnet_diagnostic.IDE0059.severity = suggestion
 dotnet_diagnostic.IDE0060.severity = suggestion
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = suggestion
+# IDE2001: Embedded statements must be on their own line
+dotnet_diagnostic.IDE2001.severity = suggestion
 
 # CA2016: Forward the 'CancellationToken' parameter to methods that take one
 dotnet_diagnostic.CA2016.severity = suggestion
@@ -339,6 +358,8 @@ dotnet_diagnostic.IDE0060.severity = silent
 dotnet_diagnostic.IDE0062.severity = silent
 # IDE0161: Convert to file-scoped namespace
 dotnet_diagnostic.IDE0161.severity = silent
+# IDE2001: Embedded statements must be on their own line
+dotnet_diagnostic.IDE2001.severity = silent
 
 [{**/Shared/**.cs,**/microsoft.extensions.hostfactoryresolver.sources/**.{cs,vb}}]
 # IDE0005: Remove unused usings. Ignore for shared src files since imports for those depend on the projects in which they are included.

@@ -85,5 +85,4 @@ public class TaskExtensionsTest
         var exception = await Assert.ThrowsAsync<TimeoutException>(() => ExpectedTimeout().TimeoutAfter(TimeSpan.FromMilliseconds(30000)));
         Assert.Equal(message, exception.Message);
     }
-
 }

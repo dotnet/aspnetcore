@@ -1208,7 +1208,6 @@ public class ValidationIntegrationTests
         public int Id { get; set; }
 
         public uint Zip { get; set; }
-
     }
 
     [Fact]

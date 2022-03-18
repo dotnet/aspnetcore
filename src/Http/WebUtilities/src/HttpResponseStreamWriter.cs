@@ -166,7 +166,7 @@ public class HttpResponseStreamWriter : TextWriter
 
             remaining -= written;
             value = value.Slice(written);
-        };
+        }
     }
 
     /// <inheritdoc/>
@@ -374,7 +374,7 @@ public class HttpResponseStreamWriter : TextWriter
 
             remaining -= written;
             value = value.Slice(written);
-        };
+        }
     }
 
     /// <inheritdoc/>

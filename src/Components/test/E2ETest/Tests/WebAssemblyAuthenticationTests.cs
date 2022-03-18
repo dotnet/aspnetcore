@@ -38,8 +38,8 @@ public class WebAssemblyAuthenticationTests : ServerTestBase<AspNetSiteServerFix
     public WebAssemblyAuthenticationTests(
         BrowserFixture browserFixture,
         AspNetSiteServerFixture serverFixture,
-        ITestOutputHelper output) :
-        base(browserFixture, serverFixture, output)
+        ITestOutputHelper output)
+        : base(browserFixture, serverFixture, output)
     {
         _serverFixture.ApplicationAssembly = typeof(Program).Assembly;
 

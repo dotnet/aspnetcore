@@ -397,7 +397,7 @@ internal static partial class HttpUtilities
             default:
                 Debug.Fail("Unexpected HttpVersion: " + httpVersion);
                 return null;
-        };
+        }
     }
 
     public static string? MethodToString(HttpMethod method)

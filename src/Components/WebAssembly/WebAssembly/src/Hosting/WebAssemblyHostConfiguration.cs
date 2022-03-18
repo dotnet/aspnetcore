@@ -70,7 +70,6 @@ public class WebAssemblyHostConfiguration : IConfiguration, IConfigurationRoot, 
             {
                 provider.Set(key, value);
             }
-
         }
     }
 

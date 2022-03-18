@@ -32,7 +32,6 @@ internal class OptionsAnalyzer
             {
                 options.Add(new OptionsItem(property.Property, operation.Value.ConstantValue.Value));
             }
-
         }, OperationKind.SimpleAssignment);
 
         context.RegisterOperationBlockEndAction(context =>

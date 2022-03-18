@@ -461,7 +461,6 @@ internal class CommandLineApplication
                 // The command name is invalid so don't try to show help for something that doesn't exist
                 target = this;
             }
-
         }
 
         var optionsBuilder = new StringBuilder();

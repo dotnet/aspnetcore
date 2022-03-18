@@ -36,5 +36,4 @@ class TestEntry
 
         return files.Concat(otherFiles).ToArray();
     }
-
 }

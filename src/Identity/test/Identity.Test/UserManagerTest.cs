@@ -1785,5 +1785,4 @@ public class UserManagerTest
             return new IdentityError { Code = Code, Description = string.Format(CultureInfo.InvariantCulture, FormatError, email) };
         }
     }
-
 }

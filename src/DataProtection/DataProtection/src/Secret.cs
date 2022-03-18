@@ -148,7 +148,10 @@ public sealed unsafe class Secret : IDisposable, ISecret
         {
             numBytesPaddingRequired = 0; // we're already a proper multiple of the block size
         }
-        checked { numTotalBytesToAllocate += numBytesPaddingRequired; }
+        checked
+        {
+            numTotalBytesToAllocate += numBytesPaddingRequired;
+        }
         CryptoUtil.Assert(numTotalBytesToAllocate % CRYPTPROTECTMEMORY_BLOCK_SIZE == 0, "numTotalBytesToAllocate % CRYPTPROTECTMEMORY_BLOCK_SIZE == 0");
 
         // Allocate and copy plaintext data; padding is uninitialized / undefined.

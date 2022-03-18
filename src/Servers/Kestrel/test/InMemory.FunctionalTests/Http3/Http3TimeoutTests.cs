@@ -601,5 +601,4 @@ public class Http3TimeoutTests : Http3TestBase
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
-
 }

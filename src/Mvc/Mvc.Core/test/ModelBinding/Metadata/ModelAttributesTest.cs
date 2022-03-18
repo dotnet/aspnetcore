@@ -314,7 +314,6 @@ public class ModelAttributesTest
 
         [Range(10, 100)]
         public override int VirtualProperty { get; set; }
-
     }
 
     [ModelBinder(Name = "Custom")]
@@ -342,7 +341,6 @@ public class ModelAttributesTest
         public new string TestProperty { get; set; }
 
         public int VirtualProperty { get; set; }
-
     }
 
     public interface ICalculator

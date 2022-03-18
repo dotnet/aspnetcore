@@ -51,5 +51,4 @@ internal static class TransmitDataStreamToJS
             }
         }
     }
-
 }

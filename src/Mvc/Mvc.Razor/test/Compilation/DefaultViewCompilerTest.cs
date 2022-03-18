@@ -125,13 +125,13 @@ public class DefaultViewCompilerTest
 
     private class TestRazorViewCompiler : DefaultViewCompiler
     {
-        public TestRazorViewCompiler(IList<CompiledViewDescriptor> compiledViews) :
-            base(GetApplicationPartManager(new TestViewsFeatureProvider { CompiledViews = compiledViews }), NullLogger<DefaultViewCompiler>.Instance)
+        public TestRazorViewCompiler(IList<CompiledViewDescriptor> compiledViews)
+            : base(GetApplicationPartManager(new TestViewsFeatureProvider { CompiledViews = compiledViews }), NullLogger<DefaultViewCompiler>.Instance)
         {
         }
 
-        public TestRazorViewCompiler(TestViewsFeatureProvider featureProvider) :
-           base(GetApplicationPartManager(featureProvider), NullLogger<DefaultViewCompiler>.Instance)
+        public TestRazorViewCompiler(TestViewsFeatureProvider featureProvider)
+            : base(GetApplicationPartManager(featureProvider), NullLogger<DefaultViewCompiler>.Instance)
         {
         }
 

@@ -66,7 +66,7 @@ public sealed class CngCbcAuthenticatedEncryptorFactory : IAuthenticatedEncrypto
     private BCryptAlgorithmHandle GetHmacAlgorithmHandle(CngCbcAuthenticatedEncryptorConfiguration configuration)
     {
         // basic argument checking
-        if (String.IsNullOrEmpty(configuration.HashAlgorithm))
+        if (string.IsNullOrEmpty(configuration.HashAlgorithm))
         {
             throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(configuration.HashAlgorithm));
         }
@@ -77,9 +77,13 @@ public sealed class CngCbcAuthenticatedEncryptorFactory : IAuthenticatedEncrypto
         // Special-case cached providers
         if (configuration.HashAlgorithmProvider == null)
         {
-            if (configuration.HashAlgorithm == Constants.BCRYPT_SHA1_ALGORITHM) { algorithmHandle = CachedAlgorithmHandles.HMAC_SHA1; }
-            else if (configuration.HashAlgorithm == Constants.BCRYPT_SHA256_ALGORITHM) { algorithmHandle = CachedAlgorithmHandles.HMAC_SHA256; }
-            else if (configuration.HashAlgorithm == Constants.BCRYPT_SHA512_ALGORITHM) { algorithmHandle = CachedAlgorithmHandles.HMAC_SHA512; }
+            algorithmHandle = configuration.HashAlgorithm switch
+            {
+                Constants.BCRYPT_SHA1_ALGORITHM => CachedAlgorithmHandles.HMAC_SHA1,
+                Constants.BCRYPT_SHA256_ALGORITHM => CachedAlgorithmHandles.HMAC_SHA256,
+                Constants.BCRYPT_SHA512_ALGORITHM => CachedAlgorithmHandles.HMAC_SHA512,
+                _ => null,
+            };
         }
 
         // Look up the provider dynamically if we couldn't fetch a cached instance
@@ -100,7 +104,7 @@ public sealed class CngCbcAuthenticatedEncryptorFactory : IAuthenticatedEncrypto
     private BCryptAlgorithmHandle GetSymmetricBlockCipherAlgorithmHandle(CngCbcAuthenticatedEncryptorConfiguration configuration)
     {
         // basic argument checking
-        if (String.IsNullOrEmpty(configuration.EncryptionAlgorithm))
+        if (string.IsNullOrEmpty(configuration.EncryptionAlgorithm))
         {
             throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(EncryptionAlgorithm));
         }
@@ -116,7 +120,10 @@ public sealed class CngCbcAuthenticatedEncryptorFactory : IAuthenticatedEncrypto
         // Special-case cached providers
         if (configuration.EncryptionAlgorithmProvider == null)
         {
-            if (configuration.EncryptionAlgorithm == Constants.BCRYPT_AES_ALGORITHM) { algorithmHandle = CachedAlgorithmHandles.AES_CBC; }
+            if (configuration.EncryptionAlgorithm == Constants.BCRYPT_AES_ALGORITHM)
+            {
+                algorithmHandle = CachedAlgorithmHandles.AES_CBC;
+            }
         }
 
         // Look up the provider dynamically if we couldn't fetch a cached instance

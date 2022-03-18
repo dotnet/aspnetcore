@@ -140,7 +140,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
 
             Assert.Equal(HttpVersion.Version20, response.Version);
             await BulkContent.VerifyContent(await response.Content.ReadAsStreamAsync()).DefaultTimeout();
-        };
+        }
 
         await Task.WhenAll(requestTasks);
         await host.StopAsync().DefaultTimeout();

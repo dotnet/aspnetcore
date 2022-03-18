@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -18,8 +18,8 @@ public class ObjectAdapter : IObjectAdapterWithTest
     /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError"/>.</param>
     public ObjectAdapter(
         IContractResolver contractResolver,
-        Action<JsonPatchError> logErrorAction) :
-        this(contractResolver, logErrorAction, Adapters.AdapterFactory.Default)
+        Action<JsonPatchError> logErrorAction)
+        : this(contractResolver, logErrorAction, Adapters.AdapterFactory.Default)
     {
     }
 

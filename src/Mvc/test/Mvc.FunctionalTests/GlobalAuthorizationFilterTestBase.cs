@@ -58,5 +58,4 @@ public abstract class GlobalAuthorizationFilterTestBase : IClassFixture<MvcTestF
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Null(response.Headers.Location);
     }
-
 }

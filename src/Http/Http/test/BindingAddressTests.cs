@@ -106,5 +106,4 @@ public class BindingAddressTests
 
         Assert.Equal(toString ?? url, serverAddress.ToString());
     }
-
 }

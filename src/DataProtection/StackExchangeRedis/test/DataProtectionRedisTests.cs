@@ -103,6 +103,5 @@ public class DataProtectionRedisTests
                 await redis.GetDatabase().KeyDeleteAsync(key);
             }
         }
-
     }
 }

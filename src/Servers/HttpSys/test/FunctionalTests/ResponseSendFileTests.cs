@@ -510,7 +510,6 @@ public class ResponseSendFileTests
             {
                 testComplete.SetException(ex);
             }
-
         }, options => options.ThrowWriteExceptions = true))
         {
             var cts = new CancellationTokenSource();
@@ -553,7 +552,6 @@ public class ResponseSendFileTests
             {
                 testComplete.SetException(ex);
             }
-
         }))
         {
             var cts = new CancellationTokenSource();

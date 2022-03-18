@@ -344,7 +344,6 @@ public class IISDeployer : IISDeployerBase
                     .GetOrAdd("add", "name", tuple.Key)
                     .SetAttributeValue("value", tuple.Value);
             }
-
         }
 
         if (DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86)
@@ -399,7 +398,6 @@ public class IISDeployer : IISDeployerBase
                     {
                         throw new InvalidOperationException("WorkerProcess not stopped yet");
                     }
-
                 }
                 // If WAS was stopped for some reason appPool.WorkerProcesses
                 // would throw UnauthorizedAccessException.

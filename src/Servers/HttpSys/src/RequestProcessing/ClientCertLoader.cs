@@ -359,7 +359,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
         byte[]? blob = null;
         SafeLocalFreeChannelBinding? token = null;
 
-        uint bytesReceived = 0; ;
+        uint bytesReceived = 0;
         uint statusCode;
 
         do

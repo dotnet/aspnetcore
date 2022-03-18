@@ -145,7 +145,6 @@ internal partial class UrlGroup : IDisposable
             {
                 Log.CloseUrlGroupError(_logger, statusCode);
             }
-
         }
 
         Id = 0;

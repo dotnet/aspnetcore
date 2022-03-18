@@ -336,7 +336,6 @@ public class DefaultHttpContextTests
                 Assert.NotNull(v);
             }
         }
-
     }
 
     private static void TestFeatureProperties(object value, IFeatureCollection features, IEnumerable<PropertyInfo> properties)

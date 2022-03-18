@@ -232,7 +232,6 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
             RollFiles();
             streamWriter?.Dispose();
         }
-
     }
 
     internal bool TryCreateDirectory()

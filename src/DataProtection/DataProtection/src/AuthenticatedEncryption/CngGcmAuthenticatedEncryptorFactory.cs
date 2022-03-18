@@ -82,7 +82,10 @@ public sealed class CngGcmAuthenticatedEncryptorFactory : IAuthenticatedEncrypto
         // Special-case cached providers
         if (configuration.EncryptionAlgorithmProvider == null)
         {
-            if (configuration.EncryptionAlgorithm == Constants.BCRYPT_AES_ALGORITHM) { algorithmHandle = CachedAlgorithmHandles.AES_GCM; }
+            if (configuration.EncryptionAlgorithm == Constants.BCRYPT_AES_ALGORITHM)
+            {
+                algorithmHandle = CachedAlgorithmHandles.AES_GCM;
+            }
         }
 
         // Look up the provider dynamically if we couldn't fetch a cached instance

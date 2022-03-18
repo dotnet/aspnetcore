@@ -136,7 +136,6 @@ public class ResponseCompressionBodyTest
             {
                 return new NoFlushBufferedStream(outputStream);
             }
-
         }
     }
 

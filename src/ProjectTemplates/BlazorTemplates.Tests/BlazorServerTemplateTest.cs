@@ -139,8 +139,15 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
         var framesReceived = 0;
         var framesSent = 0;
 
-        void FrameReceived(object sender, IWebSocketFrame frame) { framesReceived++; }
-        void FrameSent(object sender, IWebSocketFrame frame) { framesSent++; }
+        void FrameReceived(object sender, IWebSocketFrame frame)
+        {
+            framesReceived++;
+        }
+
+        void FrameSent(object sender, IWebSocketFrame frame)
+        {
+            framesSent++;
+        }
 
         socket.FrameReceived += FrameReceived;
         socket.FrameSent += FrameSent;

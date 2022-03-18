@@ -62,5 +62,4 @@ public class UserStoreIntTest : SqlStoreTestBase<IntUser, IntRole, int>
             Assert.NotNull(sp.GetRequiredService<RoleManager<IdentityRole<int>>>());
         }
     }
-
 }

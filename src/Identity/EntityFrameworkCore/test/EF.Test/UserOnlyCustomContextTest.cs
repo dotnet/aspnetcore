@@ -98,5 +98,4 @@ public class UserOnlyCustomContextTest : IClassFixture<ScratchDatabaseFixture>
         IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
         IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));
     }
-
 }

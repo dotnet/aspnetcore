@@ -437,5 +437,4 @@ public class OpenIdConnectTests
 
         return nonceTime;
     }
-
 }

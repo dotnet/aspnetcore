@@ -689,7 +689,6 @@ public class DefaultHealthCheckServiceTest
             {
                 return Task.FromResult(HealthCheckResult.Unhealthy("failed", e));
             }
-
         }
     }
 

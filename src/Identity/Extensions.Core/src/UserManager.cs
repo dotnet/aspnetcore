@@ -2666,5 +2666,4 @@ public class UserManager<TUser> : IDisposable where TUser : class
             throw new ObjectDisposedException(GetType().Name);
         }
     }
-
 }

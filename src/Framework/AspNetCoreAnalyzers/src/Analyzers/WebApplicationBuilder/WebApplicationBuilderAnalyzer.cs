@@ -149,7 +149,6 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
 
                     return Diagnostic.Create(descriptor, location);
                 }
-
             }, OperationKind.Invocation);
         });
     }

@@ -349,5 +349,4 @@ public class CompilerFailedExceptionFactoryTest
         razorEngine.Process(codeDocument);
         return codeDocument;
     }
-
 }

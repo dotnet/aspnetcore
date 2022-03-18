@@ -733,8 +733,8 @@ public class RemoteAuthenticatorCoreTests
         public TestRemoteAuthenticationService(
             IJSRuntime jsRuntime,
             IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>> options,
-            TestNavigationManager navigationManager) :
-            base(jsRuntime, options, navigationManager, new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()))
+            TestNavigationManager navigationManager)
+            : base(jsRuntime, options, navigationManager, new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()))
         {
         }
 

@@ -13,8 +13,8 @@ public class ConnectionAbortedException : OperationCanceledException
     /// <summary>
     /// Initializes a new instance of <see cref="ConnectionAbortedException"/>.
     /// </summary>
-    public ConnectionAbortedException() :
-        this("The connection was aborted")
+    public ConnectionAbortedException()
+        : this("The connection was aborted")
     {
     }
 

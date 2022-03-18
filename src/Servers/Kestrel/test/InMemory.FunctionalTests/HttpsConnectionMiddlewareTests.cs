@@ -42,7 +42,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
             listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
-        };
+        }
 
         await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
         {
@@ -82,7 +82,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         {
             listenOptions.KestrelServerOptions = options;
             listenOptions.UseHttps();
-        };
+        }
 
         await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
         {
@@ -102,7 +102,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
             listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
-        };
+        }
 
         await using (var server = new TestServer(context =>
         {
@@ -244,7 +244,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
             listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
-        };
+        }
 
         await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
         {

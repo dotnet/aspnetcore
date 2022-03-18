@@ -244,7 +244,6 @@ public class TestServerTests
                 await context.Response.WriteAsync("ApplicationServicesEqual:" + (applicationServices == Services));
             });
         }
-
     }
 
     [Fact]

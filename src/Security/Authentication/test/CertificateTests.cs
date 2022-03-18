@@ -882,7 +882,6 @@ public class ClientCertificateAuthenticationTests
                     {
                         services.AddSingleton(clock);
                     }
-
                 }))
             .Build();
 

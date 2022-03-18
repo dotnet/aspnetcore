@@ -38,7 +38,7 @@ public class ConnectionLimitTests : LoggedTest
         {
             using (var connection = server.CreateConnection())
             {
-                await connection.SendEmptyGetAsKeepAlive(); ;
+                await connection.SendEmptyGetAsKeepAlive();
                 await connection.Receive("HTTP/1.1 200 OK");
                 Assert.True(await lockedTcs.Task.DefaultTimeout());
                 requestTcs.TrySetResult();

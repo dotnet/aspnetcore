@@ -120,5 +120,4 @@ public class MessagePumpTests
             Assert.StartsWith(Constants.DefaultServerAddress, server.Features.Get<IServerAddressesFeature>().Addresses.Single());
         }
     }
-
 }

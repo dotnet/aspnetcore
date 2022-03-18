@@ -190,5 +190,4 @@ public class TokenExtensionTests
             throw new NotImplementedException();
         }
     }
-
 }

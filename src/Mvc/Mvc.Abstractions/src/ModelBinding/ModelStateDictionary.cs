@@ -589,7 +589,6 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
                 {
                     break;
                 }
-
             } while (match.Type != Delimiter.None);
         }
 
