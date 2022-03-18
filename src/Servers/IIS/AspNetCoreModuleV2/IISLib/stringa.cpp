@@ -679,7 +679,7 @@ Return Value:
     int     i      = 0;
     BYTE    ch;
     HRESULT hr      = S_OK;
-    SIZE_T  NewSize = 0;
+    ULONG64  NewSize = 0;
 
     // Set to true if any % escaping occurs
     BOOL fEscapingDone = FALSE;
@@ -695,13 +695,14 @@ Return Value:
 
     _ASSERTE( pch );
 
-    while (ch = pch[i])
+    while (pch[i] != NULL)
     {
         //
         //  Escape characters that are in the non-printable range
         //  but ignore CR and LF
         //
 
+        ch = pch[i];
         if ( pfnFShouldEscape( ch ) )
         {
             if (FALSE == fEscapingDone)
@@ -711,7 +712,7 @@ Return Value:
 
                 // guess that the size needs to be larger than
                 // what we used to have times two
-                NewSize = QueryCCH() * 2;
+                NewSize = static_cast<ULONG64>(QueryCCH()) * 2;
                 if ( NewSize > MAXDWORD )
                 {
                     hr = HRESULT_FROM_WIN32( ERROR_ARITHMETIC_OVERFLOW );
@@ -740,14 +741,14 @@ Return Value:
 
             // resize the temporary (if needed) with the slop of the entire buffer length
             // this fixes constant reallocation if the entire string needs to be escaped
-            NewSize = QueryCCH() + 2 * sizeof(CHAR) + 1 * sizeof(CHAR);
+            NewSize = static_cast<ULONG64>(QueryCCH()) + 2 * sizeof(CHAR) + 1 * sizeof(CHAR);
             if ( NewSize > MAXDWORD )
             {
                 hr = HRESULT_FROM_WIN32( ERROR_ARITHMETIC_OVERFLOW );
                 return hr;
             }
 
-            BOOL fRet = straTemp.m_Buff.Resize(NewSize);
+            BOOL fRet = straTemp.m_Buff.Resize(static_cast<size_t>(NewSize));
             if ( !fRet )
             {
                 hr = HRESULT_FROM_WIN32(GetLastError());
@@ -1038,6 +1039,7 @@ STRA::AuxAppendW(
 {
     HRESULT hr          = S_OK;
     DWORD   cbRet       = 0;
+    UNREFERENCED_PARAMETER(fFailIfNoTranslation);
 
     //
     // There are only two expect places to append
@@ -1663,9 +1665,7 @@ STRA::IndexOf(
     __in DWORD          dwStartIndex
     ) const
 {
-    HRESULT hr = S_OK;
     INT nIndex = -1;
-    SIZE_T cchValue = 0;
 
     // Validate input parameters
     if( dwStartIndex >= QueryCCH() || !pszValue )

@@ -774,9 +774,9 @@ Return Value:
     //  Only resize when we have to.  When we do resize, we tack on
     //  some extra space to avoid extra reallocations.
     //
-    if( m_Buff.QuerySize() < (ULONGLONG)cbOffset + (cbStr * sizeof( WCHAR )) + sizeof(WCHAR) )
+    if (m_Buff.QuerySize() < (ULONGLONG)cbOffset + (cbStr * sizeof(WCHAR)) + sizeof(WCHAR))
     {
-        ULONGLONG cb64NewSize = (ULONGLONG)( cbOffset + cbStr * sizeof(WCHAR) + sizeof( WCHAR ) );
+        ULONGLONG cb64NewSize = (ULONGLONG)cbOffset + (ULONGLONG)cbStr * sizeof(WCHAR) + sizeof(WCHAR);
 
         //
         // Check for the arithmetic overflow
@@ -1099,9 +1099,7 @@ STRU::IndexOf(
     __in DWORD          dwStartIndex
     ) const
 {
-    HRESULT hr = S_OK;
     INT nIndex = -1;
-    SIZE_T cchValue = 0;
 
     // Validate input parameters
     if( dwStartIndex >= QueryCCH() || !pwszValue )

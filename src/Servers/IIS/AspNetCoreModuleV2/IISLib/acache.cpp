@@ -14,6 +14,9 @@ HANDLE  ALLOC_CACHE_HANDLER::sm_hHeap;
 // memory block to a FREE_LIST_HEADER*.  The signature is used to guard against
 // double deletion.  We also fill memory with a pattern.
 //
+// Disabling C4324 here; alignment comes from SLIST_ENTRY definition.
+#pragma warning(push)
+#pragma warning(disable:4324) 
 class FREE_LIST_HEADER
 {
 public:
@@ -25,6 +28,7 @@ public:
         FREE_SIGNATURE = (('A') | ('C' << 8) | ('a' << 16) | (('$' << 24) | 0x80)),
     };
 };
+#pragma warning(pop)
 
 ALLOC_CACHE_HANDLER::ALLOC_CACHE_HANDLER(
 ) : m_nThreshold(0),
@@ -223,6 +227,7 @@ ALLOC_CACHE_HANDLER::Alloc(
             // on memory that they've freed.
             //
             DBG_ASSERT(pfl->dwSignature == FREE_LIST_HEADER::FREE_SIGNATURE);
+            (void)pfl;
         }
     }
 
