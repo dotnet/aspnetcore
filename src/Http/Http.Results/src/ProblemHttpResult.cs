@@ -31,7 +31,9 @@ public sealed class ProblemHttpResult : IResult
     /// </summary>
     public string ContentType => "application/problem+json";
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int? StatusCode => ProblemDetails.Status;
 
     /// <inheritdoc/>

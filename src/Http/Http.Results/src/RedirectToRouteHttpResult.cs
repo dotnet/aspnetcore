@@ -130,19 +130,29 @@ public sealed partial class RedirectToRouteHttpResult : IResult
         Fragment = fragment;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the name of the route to use for generating the URL.
+    /// </summary>
     public string? RouteName { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the route data to use for generating the URL.
+    /// </summary>
     public RouteValueDictionary? RouteValues { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the value that specifies that the redirect should be permanent if true or temporary if false.
+    /// </summary>
     public bool Permanent { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets an indication that the redirect preserves the initial request method.
+    /// </summary>
     public bool PreserveMethod { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the fragment to add to the URL.
+    /// </summary>
     public string? Fragment { get; }
 
     /// <inheritdoc />

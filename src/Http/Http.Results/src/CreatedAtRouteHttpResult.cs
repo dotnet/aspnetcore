@@ -41,16 +41,24 @@ public sealed class CreatedAtRouteHttpResult : IResult
         RouteValues = new RouteValueDictionary(routeValues);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the object result.
+    /// </summary>
     public object? Value { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the name of the route to use for generating the URL.
+    /// </summary>
     public string? RouteName { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the route data to use for generating the URL.
+    /// </summary>
     public RouteValueDictionary? RouteValues { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int StatusCode => StatusCodes.Status201Created;
 
     /// <inheritdoc/>

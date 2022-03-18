@@ -77,16 +77,24 @@ public sealed partial class RedirectHttpResult : IResult
         _url = url;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the value that specifies that the redirect should be permanent if true or temporary if false.
+    /// </summary>
     public bool Permanent { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets an indication that the redirect preserves the initial request method.
+    /// </summary>
     public bool PreserveMethod { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the URL to redirect to.
+    /// </summary>
     public string? Url => _url;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets an indication that only local URLs are accepted.
+    /// </summary>
     public bool AcceptLocalUrlOnly { get; }
 
     /// <inheritdoc />

@@ -46,7 +46,9 @@ internal sealed class ObjectHttpResult : IResult
         ContentType = contentType;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the object result.
+    /// </summary>
     public object? Value { get; internal init; }
 
     /// <summary>
@@ -54,7 +56,9 @@ internal sealed class ObjectHttpResult : IResult
     /// </summary>
     public string? ContentType { get; internal init; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int? StatusCode { get; internal init; }
 
     /// <inheritdoc/>

@@ -38,7 +38,9 @@ public sealed class JsonHttpResult : IResult
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; internal init; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the object result.
+    /// </summary>
     public object? Value { get; }
 
     /// <summary>
@@ -46,7 +48,9 @@ public sealed class JsonHttpResult : IResult
     /// </summary>
     public string? ContentType { get; internal set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int? StatusCode { get; }
 
     /// <inheritdoc/>

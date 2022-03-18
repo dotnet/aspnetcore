@@ -42,7 +42,9 @@ public sealed partial class ContentHttpResult : IResult
     /// </summary>
     public string? ContentType { get; internal init; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int? StatusCode { get; internal init; }
 
     /// <summary>

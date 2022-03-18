@@ -18,10 +18,14 @@ public sealed class NotFoundObjectHttpResult : IResult
         Value = value;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the object result.
+    /// </summary>
     public object? Value { get; internal init; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int StatusCode => StatusCodes.Status404NotFound;
 
     /// <inheritdoc/>

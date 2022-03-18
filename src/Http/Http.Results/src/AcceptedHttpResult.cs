@@ -49,13 +49,19 @@ public sealed class AcceptedHttpResult : IResult
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the object result.
+    /// </summary>
     public object? Value { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int StatusCode => StatusCodes.Status202Accepted;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the location at which the status of the requested content can be monitored.
+    /// </summary>
     public string? Location { get; }
 
     /// <inheritdoc/>

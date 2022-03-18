@@ -19,10 +19,14 @@ public sealed class BadRequestObjectHttpResult : IResult
         Value = error;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the object result.
+    /// </summary>
     public object? Value { get; internal init; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int StatusCode => StatusCodes.Status400BadRequest;
 
     /// <inheritdoc/>

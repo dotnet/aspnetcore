@@ -19,7 +19,9 @@ public class NoContentHttpResult : IResult
     {
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int StatusCode => StatusCodes.Status204NoContent;
 
     /// <inheritdoc/>

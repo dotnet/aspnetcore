@@ -63,22 +63,34 @@ public sealed partial class PhysicalFileHttpResult : IResult
         EntityTag = entityTag;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the Content-Type header for the response.
+    /// </summary>
     public string ContentType { get; internal set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the file name that will be used in the Content-Disposition header of the response.
+    /// </summary>
     public string? FileDownloadName { get; internal set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the last modified information associated with the file result.
+    /// </summary>
     public DateTimeOffset? LastModified { get; internal set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the etag associated with the file result.
+    /// </summary>
     public EntityTagHeaderValue? EntityTag { get; internal init; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the value that enables range processing for the file result.
+    /// </summary>
     public bool EnableRangeProcessing { get; internal init; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets or sets the file length information .
+    /// </summary>
     public long? FileLength { get; internal set; }
 
     /// <summary>

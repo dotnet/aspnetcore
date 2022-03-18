@@ -22,7 +22,9 @@ public sealed partial class StatusCodeHttpResult : IResult
         StatusCode = statusCode;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int StatusCode { get; }
 
     /// <summary>

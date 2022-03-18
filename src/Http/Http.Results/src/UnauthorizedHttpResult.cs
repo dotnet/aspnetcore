@@ -19,7 +19,9 @@ public sealed class UnauthorizedHttpResult : IResult
     {
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the HTTP status code.
+    /// </summary>
     public int StatusCode => StatusCodes.Status401Unauthorized;
 
     /// <inheritdoc />
