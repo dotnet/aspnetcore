@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Http;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 /// <summary>
 /// An <see cref="StatusCodeHttpResult"/> that when executed
 /// will produce a response with content.
@@ -53,5 +56,11 @@ public sealed partial class ContentHttpResult : IResult
     /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
     /// <returns>A task that represents the asynchronous execute operation.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsHelper.WriteResultAsContentAsync(httpContext, Content, StatusCode, ContentType);
+    {
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ContentResult");
+
+        return HttpResultsHelper.WriteResultAsContentAsync(httpContext, logger, Content, StatusCode, ContentType);
+    }
 }

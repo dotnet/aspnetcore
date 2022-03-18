@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Http;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 /// <summary>
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with Not Found (404) status code.
@@ -31,5 +34,15 @@ public sealed class NotFoundObjectHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsHelper.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
+    {
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.NotFoundObjectResult");
+
+        return HttpResultsHelper.WriteResultAsJsonAsync(
+                httpContext,
+                logger: logger,
+                Value,
+                StatusCode);
+    }
 }

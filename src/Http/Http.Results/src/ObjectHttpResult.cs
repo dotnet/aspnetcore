@@ -4,6 +4,8 @@
 namespace Microsoft.AspNetCore.Http;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// An <see cref="IResult"/> that on execution will write an object to the response.
@@ -63,5 +65,16 @@ internal sealed class ObjectHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsHelper.WriteResultAsJsonAsync(httpContext, Value, StatusCode, ContentType);
+    {
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ObjectResult");
+
+        return HttpResultsHelper.WriteResultAsJsonAsync(
+                httpContext,
+                logger: logger,
+                Value,
+                StatusCode,
+                ContentType);
+    }
 }

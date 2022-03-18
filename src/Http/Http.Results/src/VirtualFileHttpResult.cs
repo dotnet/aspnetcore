@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
@@ -113,8 +114,13 @@ public sealed class VirtualFileHttpResult : IResult
         LastModified = LastModified ?? fileInfo.LastModified;
         FileLength = fileInfo.Length;
 
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.VirtualFileResult");
+
         return HttpResultsHelper.WriteResultAsFileAsync(
             httpContext,
+            logger,
             FileDownloadName,
             FileLength,
             ContentType,

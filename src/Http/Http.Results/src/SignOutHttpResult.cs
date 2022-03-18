@@ -92,7 +92,9 @@ public sealed partial class SignOutHttpResult : IResult
     /// <inheritdoc />
     public async Task ExecuteAsync(HttpContext httpContext)
     {
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<SignOutHttpResult>>();
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.SignOutResult");
 
         Log.SignOutResultExecuting(logger, AuthenticationSchemes);
 

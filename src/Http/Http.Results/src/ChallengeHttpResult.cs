@@ -90,7 +90,9 @@ public sealed partial class ChallengeHttpResult : IResult
     /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<ChallengeHttpResult>>();
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ChallengeResult");
 
         Log.ChallengeResultExecuting(logger, AuthenticationSchemes);
 

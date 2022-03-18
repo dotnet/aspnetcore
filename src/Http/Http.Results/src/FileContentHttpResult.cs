@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
@@ -102,9 +104,15 @@ public sealed partial class FileContentHttpResult : IResult
     public ReadOnlyMemory<byte> FileContents { get; internal init; }
 
     /// <inheritdoc/>
-    public Task ExecuteAsync(HttpContext httpContext) =>
-        HttpResultsHelper.WriteResultAsFileAsync(
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.FileContentResult");
+
+        return HttpResultsHelper.WriteResultAsFileAsync(
             httpContext,
+            logger,
             FileDownloadName,
             FileLength,
             ContentType,
@@ -112,4 +120,5 @@ public sealed partial class FileContentHttpResult : IResult
             LastModified,
             EntityTag,
             (context, range, rangeLength) => FileResultHelper.WriteFileAsync(httpContext, FileContents, range, rangeLength));
+    }
 }

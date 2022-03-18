@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -81,10 +83,17 @@ public sealed class JsonHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsHelper.WriteResultAsJsonAsync(
+    {
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.JsonResult");
+
+        return HttpResultsHelper.WriteResultAsJsonAsync(
             httpContext,
+            logger,
             Value,
             StatusCode,
             ContentType,
             JsonSerializerOptions);
+    }
 }

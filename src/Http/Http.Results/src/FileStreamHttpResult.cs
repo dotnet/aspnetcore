@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
@@ -113,10 +115,15 @@ public sealed class FileStreamHttpResult : IResult
     /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.FileStreamResult");
+
         await using (FileStream)
         {
             await HttpResultsHelper.WriteResultAsFileAsync(
                 httpContext,
+                logger,
                 FileDownloadName,
                 FileLength,
                 ContentType,

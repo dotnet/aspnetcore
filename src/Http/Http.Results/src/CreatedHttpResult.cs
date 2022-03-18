@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Http;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 /// <summary>
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with status code Created (201) and Location header.
@@ -69,8 +72,12 @@ public sealed class CreatedHttpResult : IResult
             httpContext.Response.Headers.Location = Location;
         }
 
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.CreatedResult");
         return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
+                logger,
                 Value,
                 StatusCode);
     }

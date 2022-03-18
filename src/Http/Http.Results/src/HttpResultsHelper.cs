@@ -1,17 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http;
-
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
+namespace Microsoft.AspNetCore.Http;
 internal static partial class HttpResultsHelper
 {
     private const string DefaultContentType = "text/plain; charset=utf-8";
@@ -19,12 +17,13 @@ internal static partial class HttpResultsHelper
 
     public static Task WriteResultAsJsonAsync(
         HttpContext httpContext,
+        ILogger logger,
         object? value,
         int? statusCode,
         string? contentType = null,
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
-        Log.WritingResultAsJson(GetLogger(httpContext), value, statusCode);
+        Log.WritingResultAsJson(logger, value, statusCode);
 
         if (statusCode is { } code)
         {
@@ -45,6 +44,7 @@ internal static partial class HttpResultsHelper
 
     public static async Task WriteResultAsContentAsync(
         HttpContext httpContext,
+        ILogger logger,
         string? content,
         int? statusCode,
         string? contentType = null)
@@ -65,7 +65,7 @@ internal static partial class HttpResultsHelper
             response.StatusCode = code;
         }
 
-        Log.WritingResultAsContent(GetLogger(httpContext), resolvedContentType);
+        Log.WritingResultAsContent(logger, resolvedContentType);
 
         if (content != null)
         {
@@ -76,6 +76,7 @@ internal static partial class HttpResultsHelper
 
     public static Task WriteResultAsFileAsync(
         HttpContext httpContext,
+        ILogger logger,
         string? fileDownloadName,
         long? fileLength,
         string contentType,
@@ -84,7 +85,6 @@ internal static partial class HttpResultsHelper
         EntityTagHeaderValue? entityTag,
         Func<HttpContext, RangeItemHeaderValue?, long, Task> writeOperation)
     {
-        var logger = GetLogger(httpContext);
         fileDownloadName ??= string.Empty;
 
         Log.WritingResultAsFile(logger, fileDownloadName);
@@ -157,13 +157,6 @@ internal static partial class HttpResultsHelper
             problemDetails.Title ??= defaults.Title;
             problemDetails.Type ??= defaults.Type;
         }
-    }
-
-    private static ILogger GetLogger(HttpContext httpContext)
-    {
-        var factory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = factory.CreateLogger(typeof(HttpResultsHelper));
-        return logger;
     }
 
     internal static partial class Log

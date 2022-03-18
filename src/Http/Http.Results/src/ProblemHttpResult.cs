@@ -4,6 +4,8 @@
 namespace Microsoft.AspNetCore.Http;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// An <see cref="IResult"/> that on execution will write Problem Details
@@ -39,9 +41,12 @@ public sealed class ProblemHttpResult : IResult
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsHelper.WriteResultAsJsonAsync(
-            httpContext,
-            value: ProblemDetails,
-            StatusCode,
-            ContentType);
+    {
+        return HttpResultsHelper.WriteResultAsJsonAsync(
+                httpContext,
+                logger: httpContext.RequestServices.GetRequiredService<ILogger<ProblemHttpResult>>(),
+                value: ProblemDetails,
+                StatusCode,
+                ContentType);
+    }
 }

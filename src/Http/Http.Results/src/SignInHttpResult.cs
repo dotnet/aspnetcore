@@ -55,7 +55,9 @@ public sealed partial class SignInHttpResult : IResult
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<SignInHttpResult>>();
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.SignInResult");
 
         Log.SignInResultExecuting(logger, AuthenticationScheme, Principal);
 

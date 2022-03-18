@@ -4,6 +4,8 @@
 namespace Microsoft.AspNetCore.Http;
 
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// An <see cref="IResult"/> that on execution will write an object to the response
@@ -74,8 +76,12 @@ public sealed class AcceptedHttpResult : IResult
             httpContext.Response.Headers.Location = Location;
         }
 
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.AcceptedResult");
         return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
+                logger,
                 Value,
                 StatusCode);
     }

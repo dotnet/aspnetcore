@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// An <see cref="IResult"/> that on execution will write an object to the response
@@ -78,7 +79,11 @@ public sealed class AcceptedAtRouteHttpResult : IResult
             throw new InvalidOperationException("No route matches the supplied values.");
         }
 
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.AcceptedAtRouteResult");
+
         httpContext.Response.Headers.Location = url;
-        return HttpResultsHelper.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
+        return HttpResultsHelper.WriteResultAsJsonAsync(httpContext, logger, Value, StatusCode);
     }
 }
