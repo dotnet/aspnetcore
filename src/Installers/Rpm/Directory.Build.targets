@@ -50,6 +50,14 @@
       <ChangeLogProps>$(ChangeLogProps);PACKAGE_VERSION=$(PackageVersion)</ChangeLogProps>
       <ChangeLogProps>$(ChangeLogProps);PACKAGE_REVISION=$(PackageRevision)</ChangeLogProps>
 
+      <!--
+        RpmArch is used to match our naming conventions but
+        https://fedoraproject.org/wiki/Architectures#Primary_Architectures lists the canonical names `fpm` and
+        `rpmbuild` expect on the command line. Aliases like ARMv8, arm-64 and amd64 should also work.
+      -->
+      <CommandLineArch Condition=" '$(TargetArchitecture)' == 'x64' ">x86_64</CommandLineArch>
+      <CommandLineArch Condition=" '$(TargetArchitecture)' == 'arm64' ">aarch64</CommandLineArch>
+
       <GeneratedChangeLog>$(IntermediateOutputPath)changelog</GeneratedChangeLog>
     </PropertyGroup>
 
@@ -64,7 +72,7 @@
       <FpmArgs Include="--package=$(TargetPath)" />
       <FpmArgs Include="--version=$(PackageVersion)" />
       <FpmArgs Include="--iteration=$(PackageRevision)" />
-      <FpmArgs Include="--architecture=$(RpmArch)" />
+      <FpmArgs Include="--architecture=$(CommandLineArch)" />
       <FpmArgs Include="--depends=&quot;%(RpmDependency.Identity) &gt;= %(RpmDependency.Version)&quot;" Condition=" '%(RpmDependency.Identity)' != '' "  />
       <FpmArgs Include="--rpm-changelog=&quot;$(GeneratedChangeLog)&quot;" />
       <FpmArgs Include="--rpm-summary=&quot;$(PackageSummary)&quot;" />
