@@ -14,7 +14,7 @@ public sealed class ConflictObjectHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="error">The error content to format in the entity body.</param>
-    internal ConflictObjectHttpResult(object? error)
+    public ConflictObjectHttpResult(object? error)
     {
         Value = error;
     }

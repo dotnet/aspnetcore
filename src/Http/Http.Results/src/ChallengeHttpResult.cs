@@ -78,12 +78,12 @@ public sealed partial class ChallengeHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets or sets the authentication schemes that are challenged.
+    /// Gets the authentication schemes that are challenged.
     /// </summary>
     public IReadOnlyList<string> AuthenticationSchemes { get; internal init; } = Array.Empty<string>();
 
     /// <summary>
-    /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the sign-out operation.
+    /// Gets the <see cref="AuthenticationProperties"/> used to perform the sign-out operation.
     /// </summary>
     public AuthenticationProperties? Properties { get; internal init; }
 

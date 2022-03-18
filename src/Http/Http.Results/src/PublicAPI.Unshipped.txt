@@ -30,6 +30,7 @@ Microsoft.AspNetCore.Http.ChallengeHttpResult.ChallengeHttpResult(string! authen
 Microsoft.AspNetCore.Http.ChallengeHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.ChallengeHttpResult.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
 Microsoft.AspNetCore.Http.ConflictObjectHttpResult
+Microsoft.AspNetCore.Http.ConflictObjectHttpResult.ConflictObjectHttpResult(object? error) -> void
 Microsoft.AspNetCore.Http.ConflictObjectHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.ConflictObjectHttpResult.StatusCode.get -> int
 Microsoft.AspNetCore.Http.ConflictObjectHttpResult.Value.get -> object?
@@ -188,6 +189,7 @@ Microsoft.AspNetCore.Http.SignOutHttpResult.SignOutHttpResult(string! authentica
 Microsoft.AspNetCore.Http.StatusCodeHttpResult
 Microsoft.AspNetCore.Http.StatusCodeHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.StatusCodeHttpResult.StatusCode.get -> int
+Microsoft.AspNetCore.Http.StatusCodeHttpResult.StatusCodeHttpResult(int statusCode) -> void
 Microsoft.AspNetCore.Http.UnauthorizedHttpResult
 Microsoft.AspNetCore.Http.UnauthorizedHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.UnauthorizedHttpResult.StatusCode.get -> int
