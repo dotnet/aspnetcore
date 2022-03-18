@@ -286,7 +286,8 @@ internal class ApiResponseTypeProvider
 
         // If the method is declared to return IActionResult, IResult or a derived class, that information
         // isn't valuable to the formatter.
-        if (typeof(IActionResult).IsAssignableFrom(unwrappedType))
+        if (typeof(IActionResult).IsAssignableFrom(unwrappedType) ||
+            typeof(IResult).IsAssignableFrom(unwrappedType))
         {
             return null;
         }
