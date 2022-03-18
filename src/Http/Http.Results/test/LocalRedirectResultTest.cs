@@ -121,6 +121,7 @@ public class LocalRedirectResultTest
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddTransient(typeof(ILogger<>), typeof(NullLogger<>));
+        serviceCollection.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         return serviceCollection.BuildServiceProvider();
     }
 

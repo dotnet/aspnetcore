@@ -85,6 +85,7 @@ public class SignOutResultTest
     private static IServiceCollection CreateServices()
     {
         var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         return services;
     }

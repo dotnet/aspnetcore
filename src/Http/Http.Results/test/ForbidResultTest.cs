@@ -121,6 +121,7 @@ public class ForbidResultTest
     {
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         return services;
     }
 }

@@ -100,6 +100,7 @@ public class RedirectToRouteResultTest
         services.AddSingleton<LinkGenerator>(new TestLinkGenerator { Url = path });
 
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         return services;
     }
 }

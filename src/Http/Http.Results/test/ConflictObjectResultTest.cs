@@ -3,7 +3,11 @@
 
 namespace Microsoft.AspNetCore.Http.Result;
 
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 public class ConflictObjectResultTest
 {
@@ -30,5 +34,51 @@ public class ConflictObjectResultTest
         Assert.Equal(StatusCodes.Status409Conflict, conflictObjectResult.StatusCode);
         Assert.Equal(StatusCodes.Status409Conflict, obj.Status);
         Assert.Equal(obj, conflictObjectResult.Value);
+    }
+
+    [Fact]
+    public async Task ConflictObjectResult_ExecuteAsync_SetsStatusCode()
+    {
+        // Arrange
+        var result = new ConflictObjectHttpResult("Hello");
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = CreateServices(),
+        };
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status409Conflict, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ConflictObjectResult_ExecuteResultAsync_FormatsData()
+    {
+        // Arrange
+        var result = new ConflictObjectHttpResult("Hello");
+        var stream = new MemoryStream();
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = CreateServices(),
+            Response =
+                {
+                    Body = stream,
+                },
+        };
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal("\"Hello\"", Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    private static IServiceProvider CreateServices()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+        return services.BuildServiceProvider();
     }
 }

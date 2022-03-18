@@ -94,6 +94,7 @@ public class ProblemResultTests
     private static IServiceProvider CreateServices()
     {
         var services = new ServiceCollection();
+        services.AddTransient(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
         return services.BuildServiceProvider();
