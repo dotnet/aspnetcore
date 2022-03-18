@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?include ..\AspNetCoreModule-Setup\IIS-Setup\include.wxi ?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <Fragment>
         <PackageGroup Id="PG_SHAREDFX_REDIST_BUNDLE">
@@ -9,7 +10,7 @@
                         Name="$(var.SharedFxRedistInstallerx64)"
                         Compressed="yes"
                         Vital="yes"
-                        InstallCondition="(ProcessorArchitecture!=&quot;ARM64&quot;) AND VersionNT64 AND (NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=&quot;0&quot;)"
+                        InstallCondition="(NativeMachine=&quot;$(var.NativeMachine_x64)&quot;) AND (NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=&quot;0&quot;)"
                         InstallCommand="/quiet /norestart"
                         RepairCommand="/quiet /repair"
                         Permanent="yes"
@@ -33,7 +34,7 @@
                         Name="$(var.SharedFxRedistInstallerarm64)"
                         Compressed="yes"
                         Vital="yes"
-                        InstallCondition="(ProcessorArchitecture=&quot;ARM64&quot;) AND VersionNT64 AND (NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=&quot;0&quot;)"
+                        InstallCondition="(NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=&quot;0&quot;)"
                         InstallCommand="/quiet /norestart"
                         RepairCommand="/quiet /repair"
                         Permanent="yes"
@@ -44,28 +45,20 @@
     </Fragment>
 
     <Fragment>
-        <util:RegistrySearch Id="Arm64_Reg_Check"
-                             Variable="ProcessorArchitecture"
-                             Root="HKLM"
-                             Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
-                             Value="PROCESSOR_ARCHITECTURE"
-                             Result="value"
-                             Format="raw" />
-
         <util:ProductSearch Id="SharedFxRedistProductSearch_x86"
-                            Condition="NOT VersionNT64"
+                            Condition="(NativeMachine=&quot;$(var.NativeMachine_x86)&quot;)"
                             ProductCode="$(var.SharedFxInstallerProductCodex86)"
                             Result="version"
                             Variable="SharedFxRedistProductVersion_x86" />
 
         <util:ProductSearch Id="SharedFxRedistProductSearch_x64"
-                            Condition="(ProcessorArchitecture!=&quot;ARM64&quot;) AND VersionNT64"
+                            Condition="(NativeMachine=&quot;$(var.NativeMachine_x64)&quot;)"
                             ProductCode="$(var.SharedFxInstallerProductCodex64)"
                             Result="version"
                             Variable="SharedFxRedistProductVersion_x64" />
 
         <util:ProductSearch Id="SharedFxRedistProductSearch_arm64"
-                            Condition="(ProcessorArchitecture=&quot;ARM64&quot;) AND VersionNT64"
+                            Condition="(NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;)"
                             ProductCode="$(var.SharedFxInstallerProductCodearm64)"
                             Result="version"
                             Variable="SharedFxRedistProductVersion_arm64" />
