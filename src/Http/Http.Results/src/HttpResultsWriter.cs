@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http;
 
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Internal;
@@ -13,29 +14,20 @@ using Microsoft.Net.Http.Headers;
 
 internal static partial class HttpResultsWriter
 {
-    public static void WriteResultAsStatusCode(
-        HttpContext httpContext,
-        IStatusCodeHttpResult statusCodeHttpResult)
-    {
-        if (statusCodeHttpResult is { StatusCode: { } statusCode })
-        {
-            Log.WritingResultAsStatusCode(GetLogger(httpContext), statusCodeResultType: statusCodeHttpResult.GetType().Name, statusCode);
-            httpContext.Response.StatusCode = statusCode;
-        }
-    }
+    private const string DefaultContentType = "text/plain; charset=utf-8";
+    private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
-    public static Task WriteResultAsJson(
+    public static Task WriteResultAsJsonAsync(
         HttpContext httpContext,
-        IObjectHttpResult objectHttpResult,
+        object? value,
+        int? statusCode,
         string? contentType = null,
         JsonSerializerOptions? jsonSerializerOptions = null,
         Action<HttpContext>? configureResponseHeader = null)
     {
-        Log.WritingResultAsJson(GetLogger(httpContext), objectHttpResult);
+        Log.WritingResultAsJson(GetLogger(httpContext), value, statusCode);
 
-        var statusCode = objectHttpResult.StatusCode;
-
-        if (objectHttpResult.Value is ProblemDetails problemDetails)
+        if (value is ProblemDetails problemDetails)
         {
             ApplyProblemDetailsDefaults(problemDetails, statusCode);
             statusCode ??= problemDetails.Status;
@@ -48,43 +40,80 @@ internal static partial class HttpResultsWriter
 
         configureResponseHeader?.Invoke(httpContext);
 
-        if (objectHttpResult.Value is null)
+        if (value is null)
         {
             return Task.CompletedTask;
         }
 
         return httpContext.Response.WriteAsJsonAsync(
-            objectHttpResult.Value,
-            objectHttpResult.Value.GetType(),
+            value,
+            value.GetType(),
             options: jsonSerializerOptions,
             contentType: contentType);
     }
 
+    public static async Task WriteResultAsContentAsync(
+        HttpContext httpContext,
+        string? content,
+        int? statusCode,
+        string? contentType = null)
+    {
+        var response = httpContext.Response;
+        ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
+            contentType,
+            response.ContentType,
+            (DefaultContentType, DefaultEncoding),
+            ResponseContentTypeHelper.GetEncoding,
+            out var resolvedContentType,
+            out var resolvedContentTypeEncoding);
+
+        response.ContentType = resolvedContentType;
+
+        if (statusCode is { } code)
+        {
+            response.StatusCode = code;
+        }
+
+        Log.WritingResultAsContent(GetLogger(httpContext), resolvedContentType);
+
+        if (content != null)
+        {
+            response.ContentLength = resolvedContentTypeEncoding.GetByteCount(content);
+            await response.WriteAsync(content, resolvedContentTypeEncoding);
+        }
+    }
+
     public static Task WriteResultAsFileAsync(
         HttpContext httpContext,
-        IFileHttpResult fileHttpResult,
+        string? fileDownloadName,
+        long? fileLength,
+        string contentType,
+        bool enableRangeProcessing,
+        DateTimeOffset? lastModified,
+        EntityTagHeaderValue? entityTag,
         Func<HttpContext, RangeItemHeaderValue?, long, Task> writeOperation)
     {
         var logger = GetLogger(httpContext);
+        fileDownloadName ??= string.Empty;
 
-        Log.WritingResultAsFile(logger, fileHttpResult);
+        Log.WritingResultAsFile(logger, fileDownloadName);
 
         var fileResultInfo = new FileResultInfo
         {
-            ContentType = fileHttpResult.ContentType,
-            EnableRangeProcessing = fileHttpResult.EnableRangeProcessing,
-            EntityTag = fileHttpResult.EntityTag,
-            FileDownloadName = fileHttpResult.FileDownloadName ?? string.Empty,
-            LastModified = fileHttpResult.LastModified,
+            ContentType = contentType,
+            EnableRangeProcessing = enableRangeProcessing,
+            EntityTag = entityTag,
+            FileDownloadName = fileDownloadName,
+            LastModified = lastModified,
         };
 
         var (range, rangeLength, serveBody) = FileResultHelper.SetHeadersAndLog(
             httpContext,
             fileResultInfo,
-            fileHttpResult.FileLength,
-            fileHttpResult.EnableRangeProcessing,
-            fileHttpResult.LastModified,
-            fileHttpResult.EntityTag,
+            fileLength,
+            enableRangeProcessing,
+            lastModified,
+            entityTag,
             logger);
 
         if (!serveBody)
@@ -138,49 +167,55 @@ internal static partial class HttpResultsWriter
         return logger;
     }
 
-    private static partial class Log
+    internal static partial class Log
     {
-        public static void WritingResultAsJson(ILogger logger, IObjectHttpResult objectHttpResult)
+        public static void WritingResultAsJson(ILogger logger, object? value, int? statusCode)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var objectResultType = objectHttpResult.GetType().Name;
-
-                if (objectHttpResult.Value is null)
+                if (value is null)
                 {
-                    WritingResultAsJsonWithoutValue(logger, objectResultType, objectHttpResult.StatusCode ?? StatusCodes.Status200OK);
+                    WritingResultAsJsonWithoutValue(logger, statusCode ?? StatusCodes.Status200OK);
                 }
                 else
                 {
-                    var valueType = objectHttpResult.Value.GetType().FullName!;
-                    WritingResultAsJson(logger, objectResultType, valueType, objectHttpResult.StatusCode ?? StatusCodes.Status200OK);
+                    var valueType = value.GetType().FullName!;
+                    WritingResultAsJson(logger, type: valueType, statusCode ?? StatusCodes.Status200OK);
                 }
             }
         }
-        public static void WritingResultAsFile(ILogger logger, IFileHttpResult fileHttpResult)
+        public static void WritingResultAsFile(ILogger logger, string fileDownloadName)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var fileResultType = fileHttpResult.GetType().Name;
-                WritingResultAsFileWithNoFileName(logger, fileResultType, fileDownloadName: fileHttpResult.FileDownloadName ?? string.Empty);
+                WritingResultAsFileWithNoFileName(logger, fileDownloadName: fileDownloadName);
             }
         }
 
         [LoggerMessage(1, LogLevel.Information,
-            "Executing '{StatusCodeResultType}', setting HTTP status code {StatusCode}.",
-            EventName = "StatusCodeResultExecuting")]
-        public static partial void WritingResultAsStatusCode(ILogger logger, string statusCodeResultType, int statusCode);
+            "Setting HTTP status code {StatusCode}.",
+            EventName = "WritingResultAsStatusCode")]
+        public static partial void WritingResultAsStatusCode(ILogger logger, int statusCode);
 
-        [LoggerMessage(2, LogLevel.Information, "Executing '{ObjectResultType}', writing value of type '{Type}' with status code '{StatusCode}'.", EventName = "ObjectResultExecuting", SkipEnabledCheck = true)]
-        private static partial void WritingResultAsJson(ILogger logger, string objectResultType, string type,  int statusCode);
+        [LoggerMessage(2, LogLevel.Information,
+            "Write content with HTTP Response ContentType of {ContentType}",
+            EventName = "WritingResultAsContent")]
+        public static partial void WritingResultAsContent(ILogger logger, string contentType);
 
-        [LoggerMessage(3, LogLevel.Information, "Executing result '{ObjectResultType}' with status code '{StatusCode}'.", EventName = "ObjectResultExecutingWithoutValue", SkipEnabledCheck = true)]
-        private static partial void WritingResultAsJsonWithoutValue(ILogger logger, string objectResultType, int statusCode);
-
-        [LoggerMessage(4, LogLevel.Information,
-            "Executing {FileResultType}, sending file with download name '{FileDownloadName}'.",
-            EventName = "ExecutingFileResultWithNoFileName",
+        [LoggerMessage(3, LogLevel.Information, "Writing value of type '{Type}'as Json with status code '{StatusCode}'.",
+            EventName = "WritingResultAsJson",
             SkipEnabledCheck = true)]
-        private static partial void WritingResultAsFileWithNoFileName(ILogger logger, string fileResultType, string fileDownloadName);
+        private static partial void WritingResultAsJson(ILogger logger, string type, int statusCode);
+
+        [LoggerMessage(4, LogLevel.Information, "Setting the status code '{StatusCode}' without value.",
+            EventName = "WritingResultAsJsonWithoutValue",
+            SkipEnabledCheck = true)]
+        private static partial void WritingResultAsJsonWithoutValue(ILogger logger, int statusCode);
+
+        [LoggerMessage(5, LogLevel.Information,
+            "Sending file with download name '{FileDownloadName}'.",
+            EventName = "WritingResultAsFileWithNoFileName",
+            SkipEnabledCheck = true)]
+        private static partial void WritingResultAsFileWithNoFileName(ILogger logger, string fileDownloadName);
     }
 }

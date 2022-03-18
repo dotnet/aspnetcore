@@ -7,9 +7,14 @@ namespace Microsoft.AspNetCore.Http;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with Unprocessable Entity (422) status code.
 /// </summary>
-public sealed class UnprocessableEntityObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
+public sealed class UnprocessableEntityObjectHttpResult : IResult
 {
-    internal UnprocessableEntityObjectHttpResult(object? error)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConflictObjectHttpResult"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="error">The error content to format in the entity body.</param>
+    public UnprocessableEntityObjectHttpResult(object? error)
     {
         Value = error;
     }
@@ -18,9 +23,9 @@ public sealed class UnprocessableEntityObjectHttpResult : IResult, IObjectHttpRe
     public object? Value { get; internal init; }
 
     /// <inheritdoc />>
-    public int? StatusCode => StatusCodes.Status422UnprocessableEntity;
+    public int StatusCode => StatusCodes.Status422UnprocessableEntity;
 
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, objectHttpResult: this);
+        => HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
 }

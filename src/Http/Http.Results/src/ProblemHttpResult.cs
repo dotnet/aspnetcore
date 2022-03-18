@@ -9,9 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 /// An <see cref="IResult"/> that on execution will write Problem Details
 /// HTTP API responses based on https://tools.ietf.org/html/rfc7807
 /// </summary>
-public sealed class ProblemHttpResult : IResult, IObjectHttpResult
+public sealed class ProblemHttpResult : IResult
 {
-    internal ProblemHttpResult(ProblemDetails problemDetails)
+    /// <summary>
+    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
+    /// the provided <paramref name="problemDetails"/>.
+    /// </summary>
+    /// <param name="problemDetails">The <see cref="ProblemDetails"/> instance to format in the entity body.</param>
+    public ProblemHttpResult(ProblemDetails problemDetails)
     {
         ProblemDetails = problemDetails;
     }
@@ -27,15 +32,13 @@ public sealed class ProblemHttpResult : IResult, IObjectHttpResult
     public string ContentType => "application/problem+json";
 
     /// <inheritdoc/>
-    public object? Value => ProblemDetails;
-
-    /// <inheritdoc/>
     public int? StatusCode => ProblemDetails.Status;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(
+        => HttpResultsWriter.WriteResultAsJsonAsync(
             httpContext,
-            objectHttpResult: this,
+            value: ProblemDetails,
+            StatusCode,
             ContentType);
 }

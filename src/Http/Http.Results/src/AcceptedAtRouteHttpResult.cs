@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// with status code Accepted (202) and Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed class AcceptedAtRouteHttpResult : IResult, IObjectHttpResult, IAtRouteHttpResult, IStatusCodeHttpResult
+public sealed class AcceptedAtRouteHttpResult : IResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AcceptedAtRouteHttpResult"/> class with the values
@@ -20,7 +20,7 @@ public sealed class AcceptedAtRouteHttpResult : IResult, IObjectHttpResult, IAtR
     /// </summary>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal AcceptedAtRouteHttpResult(object? routeValues, object? value)
+    public AcceptedAtRouteHttpResult(object? routeValues, object? value)
         : this(routeName: null, routeValues: routeValues, value: value)
     {
     }
@@ -32,7 +32,7 @@ public sealed class AcceptedAtRouteHttpResult : IResult, IObjectHttpResult, IAtR
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal AcceptedAtRouteHttpResult(
+    public AcceptedAtRouteHttpResult(
         string? routeName,
         object? routeValues,
         object? value)
@@ -52,11 +52,11 @@ public sealed class AcceptedAtRouteHttpResult : IResult, IObjectHttpResult, IAtR
     public RouteValueDictionary? RouteValues { get; }
 
     /// <inheritdoc/>
-    public int? StatusCode => StatusCodes.Status202Accepted;
+    public int StatusCode => StatusCodes.Status202Accepted;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, objectHttpResult: this, configureResponseHeader: ConfigureResponseHeaders);
+        => HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode, configureResponseHeader: ConfigureResponseHeaders);
 
     private void ConfigureResponseHeaders(HttpContext context)
     {

@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 /// with status code Created (201) and Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed class CreatedAtRouteHttpResult : IResult, IObjectHttpResult, IAtRouteHttpResult, IStatusCodeHttpResult
+public sealed class CreatedAtRouteHttpResult : IResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CreatedAtRouteHttpResult"/> class with the values
@@ -19,7 +19,7 @@ public sealed class CreatedAtRouteHttpResult : IResult, IObjectHttpResult, IAtRo
     /// </summary>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal CreatedAtRouteHttpResult(object? routeValues, object? value)
+    public CreatedAtRouteHttpResult(object? routeValues, object? value)
         : this(routeName: null, routeValues: routeValues, value: value)
     {
     }
@@ -31,7 +31,7 @@ public sealed class CreatedAtRouteHttpResult : IResult, IObjectHttpResult, IAtRo
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal CreatedAtRouteHttpResult(
+    public CreatedAtRouteHttpResult(
         string? routeName,
         object? routeValues,
         object? value)
@@ -51,13 +51,14 @@ public sealed class CreatedAtRouteHttpResult : IResult, IObjectHttpResult, IAtRo
     public RouteValueDictionary? RouteValues { get; }
 
     /// <inheritdoc/>
-    public int? StatusCode => StatusCodes.Status201Created;
+    public int StatusCode => StatusCodes.Status201Created;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(
+        => HttpResultsWriter.WriteResultAsJsonAsync(
             httpContext,
-            objectHttpResult: this,
+            Value,
+            StatusCode,
             configureResponseHeader: ConfigureResponseHeaders);
 
     private void ConfigureResponseHeaders(HttpContext context)

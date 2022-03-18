@@ -12,16 +12,14 @@ namespace Microsoft.AspNetCore.Http;
 /// or Permanent Redirect (308) response with a Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpResult, IAtRouteHttpResult
+public sealed partial class RedirectToRouteHttpResult : IResult
 {
-    private string? _destinationUrl;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="RedirectToRouteHttpResult"/> with the values
     /// provided.
     /// </summary>
     /// <param name="routeValues">The parameters for the route.</param>
-    internal RedirectToRouteHttpResult(object? routeValues)
+    public RedirectToRouteHttpResult(object? routeValues)
         : this(routeName: null, routeValues: routeValues)
     {
     }
@@ -32,7 +30,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for the route.</param>
-    internal RedirectToRouteHttpResult(
+    public RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues)
         : this(routeName, routeValues, permanent: false)
@@ -47,7 +45,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// <param name="routeValues">The parameters for the route.</param>
     /// <param name="permanent">If set to true, makes the redirect permanent (301).
     /// Otherwise a temporary redirect is used (302).</param>
-    internal RedirectToRouteHttpResult(
+    public RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
         bool permanent)
@@ -65,7 +63,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// Otherwise a temporary redirect is used (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
     /// or permanent redirect (308) preserve the initial request method.</param>
-    internal RedirectToRouteHttpResult(
+    public RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
         bool permanent,
@@ -81,7 +79,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for the route.</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
-    internal RedirectToRouteHttpResult(
+    public RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
         string? fragment)
@@ -98,7 +96,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// <param name="permanent">If set to true, makes the redirect permanent (301).
     /// Otherwise a temporary redirect is used (302).</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
-    internal RedirectToRouteHttpResult(
+    public RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
         bool permanent,
@@ -118,7 +116,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
     /// or permanent redirect (308) preserve the initial request method.</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
-    internal RedirectToRouteHttpResult(
+    public RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
         bool permanent,
@@ -147,40 +145,34 @@ public sealed partial class RedirectToRouteHttpResult : IResult, IRedirectHttpRe
     /// <inheritdoc/>
     public string? Fragment { get; }
 
-    /// <inheritdoc/>
-    public bool AcceptLocalUrlOnly => true;
-
-    /// <inheritdoc/>
-    public string? Url => _destinationUrl;
-
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {
         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
 
-        _destinationUrl = linkGenerator.GetUriByRouteValues(
+        var destinationUrl = linkGenerator.GetUriByRouteValues(
             httpContext,
             RouteName,
             RouteValues,
             fragment: Fragment == null ? FragmentString.Empty : new FragmentString("#" + Fragment));
 
-        if (string.IsNullOrEmpty(_destinationUrl))
+        if (string.IsNullOrEmpty(destinationUrl))
         {
             throw new InvalidOperationException("No route matches the supplied values.");
         }
 
         var logger = httpContext.RequestServices.GetRequiredService<ILogger<RedirectToRouteHttpResult>>();
-        Log.RedirectToRouteResultExecuting(logger, _destinationUrl, RouteName);
+        Log.RedirectToRouteResultExecuting(logger, destinationUrl, RouteName);
 
         if (PreserveMethod)
         {
             httpContext.Response.StatusCode = Permanent ?
                 StatusCodes.Status308PermanentRedirect : StatusCodes.Status307TemporaryRedirect;
-            httpContext.Response.Headers.Location = _destinationUrl;
+            httpContext.Response.Headers.Location = destinationUrl;
         }
         else
         {
-            httpContext.Response.Redirect(_destinationUrl, Permanent);
+            httpContext.Response.Redirect(destinationUrl, Permanent);
         }
 
         return Task.CompletedTask;

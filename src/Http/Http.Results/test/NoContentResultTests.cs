@@ -7,23 +7,24 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-public class UnauthorizedResultTests
+public class NoContentResultTests
 {
     [Fact]
-    public void UnauthorizedResult_InitializesStatusCode()
+    public void NoContentResultTests_InitializesStatusCode()
     {
         // Arrange & act
-        var result = new UnauthorizedHttpResult();
+        var result = new NoContentHttpResult();
 
         // Assert
-        Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
+        Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
     }
 
+
     [Fact]
-    public void UnauthorizedResult_ExecuteResultSetsResponseStatusCode()
+    public void NoContentResultTests_ExecuteResultSetsResponseStatusCode()
     {
         // Arrange
-        var result = new UnauthorizedHttpResult();
+        var result = new NoContentHttpResult();
 
         var httpContext = GetHttpContext();
 
@@ -31,7 +32,7 @@ public class UnauthorizedResultTests
         result.ExecuteAsync(httpContext);
 
         // Assert
-        Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status204NoContent, httpContext.Response.StatusCode);
     }
 
     private static IServiceCollection CreateServices()

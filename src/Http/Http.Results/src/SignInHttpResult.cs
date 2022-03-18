@@ -18,30 +18,8 @@ public sealed partial class SignInHttpResult : IResult
     /// default authentication scheme.
     /// </summary>
     /// <param name="principal">The claims principal containing the user claims.</param>
-    internal SignInHttpResult(ClaimsPrincipal principal)
-        : this(authenticationScheme: null, principal, properties: null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="SignInHttpResult"/> with the
-    /// specified authentication scheme.
-    /// </summary>
-    /// <param name="authenticationScheme">The authentication scheme to use when signing in the user.</param>
-    /// <param name="principal">The claims principal containing the user claims.</param>
-    internal SignInHttpResult(string? authenticationScheme, ClaimsPrincipal principal)
-        : this(authenticationScheme, principal, properties: null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="SignInHttpResult"/> with the
-    /// default authentication scheme and <paramref name="properties"/>.
-    /// </summary>
-    /// <param name="principal">The claims principal containing the user claims.</param>
-    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
-    internal SignInHttpResult(ClaimsPrincipal principal, AuthenticationProperties? properties)
-        : this(authenticationScheme: null, principal, properties)
+    public SignInHttpResult(ClaimsPrincipal principal)
+        : this(principal, authenticationScheme: null, properties: null)
     {
     }
 
@@ -49,10 +27,10 @@ public sealed partial class SignInHttpResult : IResult
     /// Initializes a new instance of <see cref="SignInHttpResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
-    /// <param name="authenticationScheme">The authentication schemes to use when signing in the user.</param>
     /// <param name="principal">The claims principal containing the user claims.</param>
+    /// <param name="authenticationScheme">The authentication schemes to use when signing in the user.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
-    internal SignInHttpResult(string? authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties? properties)
+    public SignInHttpResult(ClaimsPrincipal principal, string? authenticationScheme, AuthenticationProperties? properties)
     {
         Principal = principal ?? throw new ArgumentNullException(nameof(principal));
         AuthenticationScheme = authenticationScheme;

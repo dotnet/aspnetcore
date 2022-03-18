@@ -3,11 +3,14 @@
 
 namespace Microsoft.AspNetCore.Http;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 /// <summary>
 /// Represents an <see cref="IResult"/> that when executed will
 /// produce an HTTP response with the given response status code.
 /// </summary>
-internal sealed partial class StatusCodeHttpResult : IResult, IStatusCodeHttpResult
+public sealed partial class StatusCodeHttpResult : IResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="StatusCodeHttpResult"/> class
@@ -20,7 +23,7 @@ internal sealed partial class StatusCodeHttpResult : IResult, IStatusCodeHttpRes
     }
 
     /// <inheritdoc/>
-    public int? StatusCode { get; }
+    public int StatusCode { get; }
 
     /// <summary>
     /// Sets the status code on the HTTP response.
@@ -29,7 +32,11 @@ internal sealed partial class StatusCodeHttpResult : IResult, IStatusCodeHttpRes
     /// <returns>A task that represents the asynchronous execute operation.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        HttpResultsWriter.WriteResultAsStatusCode(httpContext, statusCodeHttpResult: this);
+        var logger = httpContext.RequestServices.GetRequiredService<ILogger<StatusCodeHttpResult>>();
+        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+
+        httpContext.Response.StatusCode = StatusCode;
+
         return Task.CompletedTask;
     }
 }

@@ -28,6 +28,7 @@ public class StatusCodeResultTests
     {
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         return services;
     }
 

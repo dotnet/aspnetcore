@@ -8,14 +8,25 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// An action result which formats the given object as JSON.
 /// </summary>
-public sealed class JsonHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
+public sealed class JsonHttpResult : IResult
 {
-    internal JsonHttpResult(object? value, JsonSerializerOptions? jsonSerializerOptions)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JsonHttpResult"/> class with the values.
+    /// </summary>
+    /// <param name="value">The value to format in the entity body.</param>
+    /// <param name="jsonSerializerOptions">The serializer settings.</param>
+    public JsonHttpResult(object? value, JsonSerializerOptions? jsonSerializerOptions)
         : this(value, statusCode: null, jsonSerializerOptions: jsonSerializerOptions)
     {
     }
 
-    internal JsonHttpResult(object? value, int? statusCode, JsonSerializerOptions? jsonSerializerOptions)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JsonHttpResult"/> class with the values.
+    /// </summary>
+    /// <param name="value">The value to format in the entity body.</param>
+    /// <param name="statusCode">The HTTP status code of the response.</param>
+    /// <param name="jsonSerializerOptions">The serializer settings.</param>
+    public JsonHttpResult(object? value, int? statusCode, JsonSerializerOptions? jsonSerializerOptions)
     {
         Value = value;
         StatusCode = statusCode;
@@ -24,12 +35,6 @@ public sealed class JsonHttpResult : IResult, IObjectHttpResult, IStatusCodeHttp
 
     /// <summary>
     /// Gets or sets the serializer settings.
-    /// <para>
-    /// When using <c>System.Text.Json</c>, this should be an instance of <see cref="JsonSerializerOptions" />
-    /// </para>
-    /// <para>
-    /// When using <c>Newtonsoft.Json</c>, this should be an instance of <c>JsonSerializerSettings</c>.
-    /// </para>
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; internal init; }
 
@@ -46,9 +51,10 @@ public sealed class JsonHttpResult : IResult, IObjectHttpResult, IStatusCodeHttp
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(
+        => HttpResultsWriter.WriteResultAsJsonAsync(
             httpContext,
-            objectHttpResult: this,
+            Value,
+            StatusCode,
             ContentType,
             JsonSerializerOptions);
 }

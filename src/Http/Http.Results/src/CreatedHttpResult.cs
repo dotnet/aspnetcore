@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with status code Created (201) and Location header.
 /// </summary>
-public sealed class CreatedHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult, IAtLocationHttpResult
+public sealed class CreatedHttpResult : IResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CreatedHttpResult"/> class with the values
@@ -15,7 +15,7 @@ public sealed class CreatedHttpResult : IResult, IObjectHttpResult, IStatusCodeH
     /// </summary>
     /// <param name="location">The location at which the content has been created.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal CreatedHttpResult(string location, object? value)
+    public CreatedHttpResult(string location, object? value)
     {
         Value = value;
         Location = location;
@@ -27,7 +27,7 @@ public sealed class CreatedHttpResult : IResult, IObjectHttpResult, IStatusCodeH
     /// </summary>
     /// <param name="locationUri">The location at which the content has been created.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal CreatedHttpResult(Uri locationUri, object? value)
+    public CreatedHttpResult(Uri locationUri, object? value)
     {
         Value = value;
 
@@ -50,23 +50,24 @@ public sealed class CreatedHttpResult : IResult, IObjectHttpResult, IStatusCodeH
     public object? Value { get; }
 
     /// <inheritdoc/>
-    public int? StatusCode => StatusCodes.Status201Created;
+    public int StatusCode => StatusCodes.Status201Created;
 
     /// <inheritdoc/>
     public string? Location { get; }
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(
-            httpContext,
-            objectHttpResult: this,
-            configureResponseHeader: ConfigureResponseHeaders);
-
-    private void ConfigureResponseHeaders(HttpContext context)
     {
-        if (!string.IsNullOrEmpty(Location))
-        {
-            context.Response.Headers.Location = Location;
-        }
+        return HttpResultsWriter.WriteResultAsJsonAsync(
+                httpContext,
+                Value,
+                StatusCode,
+                configureResponseHeader: (context) =>
+                {
+                    if (!string.IsNullOrEmpty(Location))
+                    {
+                        context.Response.Headers.Location = Location;
+                    }
+                });
     }
 }

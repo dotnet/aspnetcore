@@ -8,22 +8,31 @@ using Microsoft.AspNetCore.Mvc;
 /// <summary>
 /// An <see cref="IResult"/> that on execution will write an object to the response.
 /// </summary>
-internal sealed class ObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
+internal sealed class ObjectHttpResult : IResult
 {
     /// <summary>
     /// Creates a new <see cref="ObjectHttpResult"/> instance
     /// with the provided <paramref name="value"/>.
     /// </summary>
-    internal ObjectHttpResult(object? value)
+    public ObjectHttpResult(object? value)
         : this(value, null)
     {
     }
 
     /// <summary>
     /// Creates a new <see cref="ObjectHttpResult"/> instance with the provided
-    /// <paramref name="value"/> and <paramref name="statusCode"/>.
+    /// <paramref name="value"/>, <paramref name="statusCode"/>.
     /// </summary>
-    internal ObjectHttpResult(object? value, int? statusCode)
+    public ObjectHttpResult(object? value, int? statusCode)
+        : this(value, statusCode, contentType: null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="ObjectHttpResult"/> instance with the provided
+    /// <paramref name="value"/>, <paramref name="statusCode"/> and <paramref name="contentType"/>.
+    /// </summary>
+    public ObjectHttpResult(object? value, int? statusCode, string? contentType)
     {
         Value = value;
 
@@ -34,6 +43,7 @@ internal sealed class ObjectHttpResult : IResult, IObjectHttpResult, IStatusCode
         }
 
         StatusCode = statusCode;
+        ContentType = contentType;
     }
 
     /// <inheritdoc/>
@@ -47,11 +57,7 @@ internal sealed class ObjectHttpResult : IResult, IObjectHttpResult, IStatusCode
     /// <inheritdoc/>
     public int? StatusCode { get; internal init; }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="httpContext"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, objectHttpResult: this, ContentType);
+        => HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode, ContentType);
 }

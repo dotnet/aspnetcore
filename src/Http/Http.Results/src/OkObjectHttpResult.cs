@@ -9,9 +9,13 @@ using System.Threading.Tasks;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with Ok (200) status code.
 /// </summary>
-public sealed class OkObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
+public sealed class OkObjectHttpResult : IResult
 {
-    internal OkObjectHttpResult(object? value)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OkObjectHttpResult"/> class with the values.
+    /// </summary>
+    /// <param name="value">The value to format in the entity body.</param>
+    public OkObjectHttpResult(object? value)
     {
         Value = value;
     }
@@ -20,9 +24,9 @@ public sealed class OkObjectHttpResult : IResult, IObjectHttpResult, IStatusCode
     public object? Value { get; internal init; }
 
     /// <inheritdoc/>
-    public int? StatusCode => StatusCodes.Status200OK;
+    public int StatusCode => StatusCodes.Status200OK;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, objectHttpResult: this);
+        => HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
 }

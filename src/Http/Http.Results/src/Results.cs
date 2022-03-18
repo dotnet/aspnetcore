@@ -63,7 +63,7 @@ public static class Results
         ClaimsPrincipal principal,
         AuthenticationProperties? properties = null,
         string? authenticationScheme = null)
-        => new SignInHttpResult(authenticationScheme, principal, properties);
+        => new SignInHttpResult(principal, authenticationScheme, properties);
 
     /// <summary>
     /// Creates an <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, string?, AuthenticationProperties?)" />.
@@ -114,11 +114,7 @@ public static class Results
             mediaTypeHeaderValue.Encoding = contentEncoding ?? mediaTypeHeaderValue.Encoding;
         }
 
-        return new ContentHttpResult
-        {
-            Content = content,
-            ContentType = mediaTypeHeaderValue?.ToString()
-        };
+        return new ContentHttpResult(content, mediaTypeHeaderValue?.ToString());
     }
 
     /// <summary>
@@ -128,11 +124,7 @@ public static class Results
     /// <param name="contentType">The content type (MIME type).</param>
     /// <returns>The created <see cref="IResult"/> object for the response.</returns>
     public static IResult Content(string content, MediaTypeHeaderValue contentType)
-        => new ContentHttpResult
-        {
-            Content = content,
-            ContentType = contentType.ToString()
-        };
+        => new ContentHttpResult(content, contentType.ToString());
 
     /// <summary>
     /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
@@ -161,11 +153,11 @@ public static class Results
     /// This API is an alias for <see cref="Bytes(byte[], string, string?, bool, DateTimeOffset?, EntityTagHeaderValue?)"/>.</para>
     /// </summary>
     /// <param name="fileContents">The file contents.</param>
-    /// <param name="contentType">The Content-Type of the file.</param>
-    /// <param name="fileDownloadName">The suggested file name.</param>
-    /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
-    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
-    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="fileDownloadName">The suggested file name.</param>
+        /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
+        /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+        /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult File(
@@ -472,7 +464,7 @@ public static class Results
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
-        => new RedirectHttpResult(localUrl, permanent, preserveMethod, acceptLocalUrlOnly: true);
+        => new RedirectHttpResult(localUrl, acceptLocalUrlOnly: true, permanent, preserveMethod);
 
     /// <summary>
     /// Redirects to the specified route.

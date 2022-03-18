@@ -3,23 +3,33 @@
 
 namespace Microsoft.AspNetCore.Http;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 /// <summary>
 /// Represents an <see cref="IResult"/> that when executed will
 /// produce an HTTP response with the No Content (204) status code.
 /// </summary>
-public class NoContentHttpResult : IResult, IStatusCodeHttpResult
+public class NoContentHttpResult : IResult
 {
-    internal NoContentHttpResult()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NoContentHttpResult"/> class.
+    /// </summary>
+    public NoContentHttpResult()
     {
     }
 
     /// <inheritdoc/>
-    public int? StatusCode => StatusCodes.Status204NoContent;
+    public int StatusCode => StatusCodes.Status204NoContent;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        HttpResultsWriter.WriteResultAsStatusCode(httpContext, statusCodeHttpResult: this);
+        var logger = httpContext.RequestServices.GetRequiredService<ILogger<NoContentHttpResult>>();
+        HttpResultsWriter.Log.WritingResultAsStatusCode(logger, StatusCode);
+
+        httpContext.Response.StatusCode = StatusCode;
+
         return Task.CompletedTask;
     }
 }

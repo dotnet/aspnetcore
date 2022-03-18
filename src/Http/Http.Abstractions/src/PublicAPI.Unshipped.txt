@@ -1,27 +1,6 @@
 #nullable enable
 *REMOVED*abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string!
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetRequiredMetadata<T>() -> T!
-Microsoft.AspNetCore.Http.IAtLocationHttpResult
-Microsoft.AspNetCore.Http.IAtLocationHttpResult.Location.get -> string?
-Microsoft.AspNetCore.Http.IAtRouteHttpResult
-Microsoft.AspNetCore.Http.IAtRouteHttpResult.RouteName.get -> string?
-Microsoft.AspNetCore.Http.IAtRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
-Microsoft.AspNetCore.Http.IFileHttpResult
-Microsoft.AspNetCore.Http.IFileHttpResult.ContentType.get -> string!
-Microsoft.AspNetCore.Http.IFileHttpResult.EnableRangeProcessing.get -> bool
-Microsoft.AspNetCore.Http.IFileHttpResult.EntityTag.get -> Microsoft.Net.Http.Headers.EntityTagHeaderValue?
-Microsoft.AspNetCore.Http.IFileHttpResult.FileDownloadName.get -> string?
-Microsoft.AspNetCore.Http.IFileHttpResult.FileLength.get -> long?
-Microsoft.AspNetCore.Http.IFileHttpResult.LastModified.get -> System.DateTimeOffset?
-Microsoft.AspNetCore.Http.IObjectHttpResult
-Microsoft.AspNetCore.Http.IObjectHttpResult.Value.get -> object?
-Microsoft.AspNetCore.Http.IRedirectHttpResult
-Microsoft.AspNetCore.Http.IRedirectHttpResult.AcceptLocalUrlOnly.get -> bool
-Microsoft.AspNetCore.Http.IRedirectHttpResult.Permanent.get -> bool
-Microsoft.AspNetCore.Http.IRedirectHttpResult.PreserveMethod.get -> bool
-Microsoft.AspNetCore.Http.IRedirectHttpResult.Url.get -> string?
-Microsoft.AspNetCore.Http.IStatusCodeHttpResult
-Microsoft.AspNetCore.Http.IStatusCodeHttpResult.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.RouteHandlerFilterContext.RouteHandlerFilterContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! parameters) -> void
 Microsoft.AspNetCore.Http.IRouteHandlerFilter.InvokeAsync(Microsoft.AspNetCore.Http.RouteHandlerFilterContext! context, System.Func<Microsoft.AspNetCore.Http.RouteHandlerFilterContext!, System.Threading.Tasks.ValueTask<object?>>! next) -> System.Threading.Tasks.ValueTask<object?>
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata

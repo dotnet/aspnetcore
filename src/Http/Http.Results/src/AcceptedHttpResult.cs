@@ -10,23 +10,15 @@ using System.Threading.Tasks;
 /// with status code Accepted (202) and Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed class AcceptedHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult, IAtLocationHttpResult
+public sealed class AcceptedHttpResult : IResult
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AcceptedHttpResult"/> class with the values
-    /// provided.
-    /// </summary>
-    internal AcceptedHttpResult()
-    {
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AcceptedHttpResult"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="location">The location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal AcceptedHttpResult(string? location, object? value)
+    public AcceptedHttpResult(string? location, object? value)
     {
         Value = value;
         Location = location;
@@ -38,7 +30,7 @@ public sealed class AcceptedHttpResult : IResult, IObjectHttpResult, IStatusCode
     /// </summary>
     /// <param name="locationUri">The location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal AcceptedHttpResult(Uri locationUri, object? value)
+    public AcceptedHttpResult(Uri locationUri, object? value)
     {
         Value = value;
 
@@ -61,20 +53,24 @@ public sealed class AcceptedHttpResult : IResult, IObjectHttpResult, IStatusCode
     public object? Value { get; }
 
     /// <inheritdoc/>
-    public int? StatusCode => StatusCodes.Status202Accepted;
+    public int StatusCode => StatusCodes.Status202Accepted;
 
     /// <inheritdoc/>
     public string? Location { get; }
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, objectHttpResult: this, configureResponseHeader: ConfigureResponseHeaders);
-
-    private void ConfigureResponseHeaders(HttpContext context)
     {
-        if (!string.IsNullOrEmpty(Location))
-        {
-            context.Response.Headers.Location = Location;
-        }
+        return HttpResultsWriter.WriteResultAsJsonAsync(
+                httpContext,
+                Value,
+                StatusCode,
+                configureResponseHeader: (context) =>
+                {
+                    if (!string.IsNullOrEmpty(Location))
+                    {
+                        context.Response.Headers.Location = Location;
+                    }
+                });
     }
 }

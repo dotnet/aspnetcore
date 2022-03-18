@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http;
 /// A <see cref="PhysicalFileHttpResult"/> on execution will write a file from disk to the response
 /// using mechanisms provided by the host.
 /// </summary>
-public sealed partial class PhysicalFileHttpResult : IResult, IFileHttpResult
+public sealed partial class PhysicalFileHttpResult : IResult
 {
     /// <summary>
     /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
@@ -17,10 +17,50 @@ public sealed partial class PhysicalFileHttpResult : IResult, IFileHttpResult
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    internal PhysicalFileHttpResult(string fileName, string? contentType)
+    public PhysicalFileHttpResult(string fileName, string? contentType)
+        : this(fileName, contentType, fileDownloadName: null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
+    /// the provided <paramref name="fileName"/>, the provided <paramref name="contentType"/>
+    /// and the provided <paramref name="fileDownloadName"/>.
+    /// </summary>
+    /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
+    /// <param name="contentType">The Content-Type header of the response.</param>
+    /// <param name="fileDownloadName">The suggested file name.</param>
+    public PhysicalFileHttpResult(
+        string fileName,
+        string? contentType,
+        string? fileDownloadName)
+        : this(fileName, contentType, fileDownloadName, enableRangeProcessing: false)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with the provided values.
+    /// </summary>
+    /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
+    /// <param name="contentType">The Content-Type header of the response.</param>
+    /// <param name="fileDownloadName">The suggested file name.</param>
+    /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
+    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+    public PhysicalFileHttpResult(
+        string fileName,
+        string? contentType,
+        string? fileDownloadName,
+        bool enableRangeProcessing,
+        DateTimeOffset? lastModified = null,
+        EntityTagHeaderValue? entityTag = null)
     {
         FileName = fileName;
         ContentType = contentType ?? "application/octet-stream";
+        FileDownloadName = fileDownloadName;
+        EnableRangeProcessing = enableRangeProcessing;
+        LastModified = lastModified;
+        EntityTag = entityTag;
     }
 
     /// <inheritdoc/>
@@ -64,7 +104,12 @@ public sealed partial class PhysicalFileHttpResult : IResult, IFileHttpResult
 
         return HttpResultsWriter.WriteResultAsFileAsync(
             httpContext,
-            fileHttpResult: this,
+            FileDownloadName,
+            FileLength,
+            ContentType,
+            EnableRangeProcessing,
+            LastModified,
+            EntityTag,
             writeOperation: ExecuteCoreAsync);
     }
 

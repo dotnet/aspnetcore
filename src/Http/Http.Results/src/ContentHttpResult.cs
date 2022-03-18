@@ -1,24 +1,35 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
-using Microsoft.AspNetCore.Internal;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// An <see cref="StatusCodeHttpResult"/> that when executed
 /// will produce a response with content.
 /// </summary>
-public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult
+public sealed partial class ContentHttpResult : IResult
 {
-    private const string DefaultContentType = "text/plain; charset=utf-8";
-    private static readonly Encoding DefaultEncoding = Encoding.UTF8;
-
-    internal ContentHttpResult()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values.
+    /// </summary>
+    /// <param name="content">The value to format in the entity body.</param>
+    /// <param name="contentType">The Content-Type header for the response</param>
+    public ContentHttpResult(string? content, string? contentType)
+        : this(content, contentType, statusCode: null)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values
+    /// </summary>
+    /// <param name="content">The value to format in the entity body.</param>
+    /// <param name="statusCode">The HTTP status code of the response.</param>
+    /// <param name="contentType">The Content-Type header for the response</param>
+    public ContentHttpResult(string? content, string? contentType, int? statusCode)
+    {
+        Content = content;
+        StatusCode = statusCode;
+        ContentType = contentType;
     }
 
     /// <summary>
@@ -39,39 +50,6 @@ public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
     /// <returns>A task that represents the asynchronous execute operation.</returns>
-    public async Task ExecuteAsync(HttpContext httpContext)
-    {
-        var response = httpContext.Response;
-        ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
-            ContentType,
-            response.ContentType,
-            (DefaultContentType, DefaultEncoding),
-            ResponseContentTypeHelper.GetEncoding,
-            out var resolvedContentType,
-            out var resolvedContentTypeEncoding);
-
-        response.ContentType = resolvedContentType;
-
-        if (StatusCode != null)
-        {
-            response.StatusCode = StatusCode.Value;
-        }
-
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<ContentHttpResult>>();
-        Log.ContentResultExecuting(logger, resolvedContentType);
-
-        if (Content != null)
-        {
-            response.ContentLength = resolvedContentTypeEncoding.GetByteCount(Content);
-            await response.WriteAsync(Content, resolvedContentTypeEncoding);
-        }
-    }
-
-    private static partial class Log
-    {
-        [LoggerMessage(1, LogLevel.Information,
-            "Executing ContentResult with HTTP Response ContentType of {ContentType}",
-            EventName = "ContentResultExecuting")]
-        internal static partial void ContentResultExecuting(ILogger logger, string contentType);
-    }
+    public Task ExecuteAsync(HttpContext httpContext)
+        => HttpResultsWriter.WriteResultAsContentAsync(httpContext, Content, StatusCode, ContentType);
 }

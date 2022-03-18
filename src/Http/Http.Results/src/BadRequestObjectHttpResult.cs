@@ -7,9 +7,14 @@ namespace Microsoft.AspNetCore.Http;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with Bad Request (400) status code.
 /// </summary>
-public sealed class BadRequestObjectHttpResult : IResult, IObjectHttpResult, IStatusCodeHttpResult
+public sealed class BadRequestObjectHttpResult : IResult
 {
-    internal BadRequestObjectHttpResult(object? error)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BadRequestObjectHttpResult"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="error">The error content to format in the entity body.</param>
+    public BadRequestObjectHttpResult(object? error)
     {
         Value = error;
     }
@@ -18,9 +23,9 @@ public sealed class BadRequestObjectHttpResult : IResult, IObjectHttpResult, ISt
     public object? Value { get; internal init; }
 
     /// <inheritdoc/>
-    public int? StatusCode => StatusCodes.Status400BadRequest;
+    public int StatusCode => StatusCodes.Status400BadRequest;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
-        => HttpResultsWriter.WriteResultAsJson(httpContext, objectHttpResult: this);
+        => HttpResultsWriter.WriteResultAsJsonAsync(httpContext, Value, StatusCode);
 }

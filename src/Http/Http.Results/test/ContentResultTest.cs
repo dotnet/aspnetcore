@@ -15,14 +15,12 @@ public class ContentResultTest
     public async Task ContentResult_ExecuteAsync_Response_NullContent_SetsContentTypeAndEncoding()
     {
         // Arrange
-        var contentResult = new ContentHttpResult
+        var contentType = new MediaTypeHeaderValue("text/plain")
         {
-            Content = null,
-            ContentType = new MediaTypeHeaderValue("text/plain")
-            {
-                Encoding = Encoding.Unicode
-            }.ToString()
-        };
+            Encoding = Encoding.Unicode
+        }.ToString();
+
+        var contentResult = new ContentHttpResult(null, contentType);
         var httpContext = GetHttpContext();
 
         // Act
@@ -109,11 +107,7 @@ public class ContentResultTest
         byte[] expectedContentData)
     {
         // Arrange
-        var contentResult = new ContentHttpResult
-        {
-            Content = content,
-            ContentType = contentType?.ToString()
-        };
+        var contentResult = new ContentHttpResult(content, contentType?.ToString());
         var httpContext = GetHttpContext();
         var memoryStream = new MemoryStream();
         httpContext.Response.Body = memoryStream;
