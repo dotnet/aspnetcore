@@ -107,6 +107,7 @@ Microsoft.AspNetCore.Http.NoContentHttpResult.NoContentHttpResult() -> void
 Microsoft.AspNetCore.Http.NoContentHttpResult.StatusCode.get -> int
 Microsoft.AspNetCore.Http.NotFoundObjectHttpResult
 Microsoft.AspNetCore.Http.NotFoundObjectHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.NotFoundObjectHttpResult.NotFoundObjectHttpResult(object? value) -> void
 Microsoft.AspNetCore.Http.NotFoundObjectHttpResult.StatusCode.get -> int
 Microsoft.AspNetCore.Http.NotFoundObjectHttpResult.Value.get -> object?
 Microsoft.AspNetCore.Http.OkObjectHttpResult
