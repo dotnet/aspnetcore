@@ -269,7 +269,7 @@
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
     <StackExchangeRedisVersion>2.2.4</StackExchangeRedisVersion>
     <SystemReactiveLinqVersion>5.0.0</SystemReactiveLinqVersion>
-    <SwashbuckleAspNetCoreVersion>6.2.3</SwashbuckleAspNetCoreVersion>
+    <SwashbuckleAspNetCoreVersion>6.3.0</SwashbuckleAspNetCoreVersion>
     <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
     <XunitAnalyzersVersion>0.10.0</XunitAnalyzersVersion>
     <XunitVersion>2.4.1</XunitVersion>
