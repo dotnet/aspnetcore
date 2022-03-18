@@ -24,6 +24,19 @@ public class HttpResultMetadataConventionTest
         // Assert
         Assert.Single(action.Filters.OfType<IApiResponseMetadataProvider>());
     }
+    [Fact]
+    public void Apply_AddsFilter_ForCustomIResult()
+    {
+        // Arrange
+        var action = GetActionModel(typeof(TestController), nameof(TestController.CustomIResultAction));
+        var convention = GetConvention();
+
+        // Act
+        convention.Apply(action);
+
+        // Assert
+        Assert.Single(action.Filters.OfType<IApiResponseMetadataProvider>());
+    }
 
     [Fact]
     public void Apply_DoesNotAddFilter_ForActionResult()
@@ -73,9 +86,18 @@ public class HttpResultMetadataConventionTest
 
     private class TestController
     {
+        public class CustomIResult : IResult
+        {
+            public Task ExecuteAsync(HttpContext httpContext)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public record Todo(int id, string title);
 
         public IResult IResultAction(object value) => null;
+        public CustomIResult CustomIResultAction(object value) => null;
         public IActionResult IActionResultAction(object value) => null;
         public Todo UserDefinedTypeAction(object value) => default(Todo);
     }

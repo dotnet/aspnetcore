@@ -17,10 +17,11 @@ public class HttpResultsResultTest
     public void HttpResultsResult_InitializesWithResultsStaticMethods()
     {
         // Arrange & Act
-        var result = new HttpResultsActionResult(Results.Ok());
+        var httpResult = Mock.Of<IResult>();
+        var result = new HttpResultsActionResult(httpResult);
 
         // Assert
-        Assert.NotNull(result.Result);
+        Assert.Equal(httpResult, result.Result);
     }
 
     [Fact]
