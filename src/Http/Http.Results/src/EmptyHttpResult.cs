@@ -16,7 +16,7 @@ public sealed class EmptyHttpResult : IResult
     /// <summary>
     /// Gets an instance of <see cref="EmptyHttpResult"/>.
     /// </summary>
-    public static EmptyHttpResult Instance => new();
+    public static EmptyHttpResult Instance { get; } = new();
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
