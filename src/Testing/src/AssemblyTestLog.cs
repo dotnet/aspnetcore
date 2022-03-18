@@ -236,10 +236,7 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
 
                 var baseDirectory = TestFileOutputContext.GetOutputDirectory(assembly);
 
-                log = Create(assembly, baseDirectory);
-                _logs[assembly] = log;
-
-                // Try to clear previous logs, continue if it fails.
+                // Try to clear previous logs, continue if it fails. Do this before creating new global logger.
                 var assemblyBaseDirectory = TestFileOutputContext.GetAssemblyBaseDirectory(assembly);
                 if (!string.IsNullOrEmpty(assemblyBaseDirectory) &&
                     !TestFileOutputContext.GetPreserveExistingLogsInOutput(assembly))
@@ -248,8 +245,13 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
                     {
                         Directory.Delete(assemblyBaseDirectory, recursive: true);
                     }
-                    catch { }
+                    catch
+                    {
+                    }
                 }
+
+                log = Create(assembly, baseDirectory);
+                _logs[assembly] = log;
             }
 
             return log;
