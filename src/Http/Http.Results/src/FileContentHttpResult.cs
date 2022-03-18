@@ -19,7 +19,7 @@ public sealed partial class FileContentHttpResult : IResult
     /// </summary>
     /// <param name="fileContents">The bytes that represent the file contents.</param>
     /// <param name="contentType">The Content-Type of the file.</param>
-    public FileContentHttpResult(ReadOnlyMemory<byte> fileContents, string? contentType)
+    internal FileContentHttpResult(ReadOnlyMemory<byte> fileContents, string? contentType)
         : this(fileContents, contentType, fileDownloadName: null)
     {
     }
@@ -32,7 +32,7 @@ public sealed partial class FileContentHttpResult : IResult
     /// <param name="fileContents">The bytes that represent the file contents.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
     /// <param name="fileDownloadName">The suggested file name.</param>
-    public FileContentHttpResult(
+    internal FileContentHttpResult(
         ReadOnlyMemory<byte> fileContents,
         string? contentType,
         string? fileDownloadName)
@@ -49,7 +49,7 @@ public sealed partial class FileContentHttpResult : IResult
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
-    public FileContentHttpResult(
+    internal FileContentHttpResult(
         ReadOnlyMemory<byte> fileContents,
         string? contentType,
         string? fileDownloadName,

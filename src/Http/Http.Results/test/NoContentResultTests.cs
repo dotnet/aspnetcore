@@ -19,7 +19,6 @@ public class NoContentResultTests
         Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
     }
 
-
     [Fact]
     public void NoContentResultTests_ExecuteResultSetsResponseStatusCode()
     {

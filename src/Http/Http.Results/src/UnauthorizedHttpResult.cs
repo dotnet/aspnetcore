@@ -15,7 +15,7 @@ public sealed class UnauthorizedHttpResult : IResult
     /// <summary>
     /// Initializes a new instance of the <see cref="UnauthorizedHttpResult"/> class.
     /// </summary>
-    public UnauthorizedHttpResult()
+    internal UnauthorizedHttpResult()
     {
     }
 

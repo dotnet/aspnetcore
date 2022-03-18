@@ -13,7 +13,7 @@ public sealed class NotFoundObjectHttpResult : IResult
     /// Initializes a new instance of the <see cref="NotFoundObjectHttpResult"/> class with the values.
     /// </summary>
     /// <param name="value">The value to format in the entity body.</param>
-    public NotFoundObjectHttpResult(object? value)
+    internal NotFoundObjectHttpResult(object? value)
     {
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);

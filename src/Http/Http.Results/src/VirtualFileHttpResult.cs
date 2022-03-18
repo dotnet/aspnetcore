@@ -24,7 +24,7 @@ public sealed class VirtualFileHttpResult : IResult
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public VirtualFileHttpResult(string fileName, string? contentType)
+    internal VirtualFileHttpResult(string fileName, string? contentType)
         : this(fileName, contentType, fileDownloadName: null)
     {
     }
@@ -37,7 +37,7 @@ public sealed class VirtualFileHttpResult : IResult
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
     /// <param name="fileDownloadName">The suggested file name.</param>
-    public VirtualFileHttpResult(
+    internal VirtualFileHttpResult(
         string fileName,
         string? contentType,
         string? fileDownloadName)
@@ -54,7 +54,7 @@ public sealed class VirtualFileHttpResult : IResult
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
-    public VirtualFileHttpResult(
+    internal VirtualFileHttpResult(
         string fileName,
         string? contentType,
         string? fileDownloadName,

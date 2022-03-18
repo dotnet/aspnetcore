@@ -14,7 +14,7 @@ public sealed class BadRequestObjectHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="error">The error content to format in the entity body.</param>
-    public BadRequestObjectHttpResult(object? error)
+    internal BadRequestObjectHttpResult(object? error)
     {
         Value = error;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);

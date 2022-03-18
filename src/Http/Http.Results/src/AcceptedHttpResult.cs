@@ -18,7 +18,7 @@ public sealed class AcceptedHttpResult : IResult
     /// </summary>
     /// <param name="location">The location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public AcceptedHttpResult(string? location, object? value)
+    internal AcceptedHttpResult(string? location, object? value)
     {
         Value = value;
         Location = location;
@@ -31,7 +31,7 @@ public sealed class AcceptedHttpResult : IResult
     /// </summary>
     /// <param name="locationUri">The location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public AcceptedHttpResult(Uri locationUri, object? value)
+    internal AcceptedHttpResult(Uri locationUri, object? value)
     {
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);

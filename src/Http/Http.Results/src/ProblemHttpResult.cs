@@ -16,7 +16,7 @@ public sealed class ProblemHttpResult : IResult
     /// the provided <paramref name="problemDetails"/>.
     /// </summary>
     /// <param name="problemDetails">The <see cref="ProblemDetails"/> instance to format in the entity body.</param>
-    public ProblemHttpResult(ProblemDetails problemDetails)
+    internal ProblemHttpResult(ProblemDetails problemDetails)
     {
         ProblemDetails = problemDetails;
         HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: null);

@@ -16,7 +16,7 @@ public sealed partial class ChallengeHttpResult : IResult
     /// <summary>
     /// Initializes a new instance of <see cref="ChallengeHttpResult"/>.
     /// </summary>
-    public ChallengeHttpResult()
+    internal ChallengeHttpResult()
         : this(Array.Empty<string>())
     {
     }
@@ -26,7 +26,7 @@ public sealed partial class ChallengeHttpResult : IResult
     /// specified authentication scheme.
     /// </summary>
     /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-    public ChallengeHttpResult(string authenticationScheme)
+    internal ChallengeHttpResult(string authenticationScheme)
         : this(new[] { authenticationScheme })
     {
     }
@@ -36,7 +36,7 @@ public sealed partial class ChallengeHttpResult : IResult
     /// specified authentication schemes.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
-    public ChallengeHttpResult(IList<string> authenticationSchemes)
+    internal ChallengeHttpResult(IList<string> authenticationSchemes)
         : this(authenticationSchemes, properties: null)
     {
     }
@@ -47,7 +47,7 @@ public sealed partial class ChallengeHttpResult : IResult
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ChallengeHttpResult(AuthenticationProperties? properties)
+    internal ChallengeHttpResult(AuthenticationProperties? properties)
         : this(Array.Empty<string>(), properties)
     {
     }
@@ -59,7 +59,7 @@ public sealed partial class ChallengeHttpResult : IResult
     /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ChallengeHttpResult(string authenticationScheme, AuthenticationProperties? properties)
+    internal ChallengeHttpResult(string authenticationScheme, AuthenticationProperties? properties)
         : this(new[] { authenticationScheme }, properties)
     {
     }
@@ -71,7 +71,7 @@ public sealed partial class ChallengeHttpResult : IResult
     /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ChallengeHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
+    internal ChallengeHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
         AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;

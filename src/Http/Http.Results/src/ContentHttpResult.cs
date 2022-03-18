@@ -14,7 +14,7 @@ public sealed partial class ContentHttpResult : IResult
     /// </summary>
     /// <param name="content">The value to format in the entity body.</param>
     /// <param name="contentType">The Content-Type header for the response</param>
-    public ContentHttpResult(string? content, string? contentType)
+    internal ContentHttpResult(string? content, string? contentType)
         : this(content, contentType, statusCode: null)
     {
     }
@@ -25,7 +25,7 @@ public sealed partial class ContentHttpResult : IResult
     /// <param name="content">The value to format in the entity body.</param>
     /// <param name="statusCode">The HTTP status code of the response.</param>
     /// <param name="contentType">The Content-Type header for the response</param>
-    public ContentHttpResult(string? content, string? contentType, int? statusCode)
+    internal ContentHttpResult(string? content, string? contentType, int? statusCode)
     {
         Content = content;
         StatusCode = statusCode;

@@ -19,7 +19,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="routeValues">The parameters for the route.</param>
-    public RedirectToRouteHttpResult(object? routeValues)
+    internal RedirectToRouteHttpResult(object? routeValues)
         : this(routeName: null, routeValues: routeValues)
     {
     }
@@ -30,7 +30,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for the route.</param>
-    public RedirectToRouteHttpResult(
+    internal RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues)
         : this(routeName, routeValues, permanent: false)
@@ -45,7 +45,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// <param name="routeValues">The parameters for the route.</param>
     /// <param name="permanent">If set to true, makes the redirect permanent (301).
     /// Otherwise a temporary redirect is used (302).</param>
-    public RedirectToRouteHttpResult(
+    internal RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
         bool permanent)
@@ -63,7 +63,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// Otherwise a temporary redirect is used (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
     /// or permanent redirect (308) preserve the initial request method.</param>
-    public RedirectToRouteHttpResult(
+    internal RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
         bool permanent,
@@ -79,7 +79,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for the route.</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
-    public RedirectToRouteHttpResult(
+    internal RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
         string? fragment)
@@ -96,7 +96,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// <param name="permanent">If set to true, makes the redirect permanent (301).
     /// Otherwise a temporary redirect is used (302).</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
-    public RedirectToRouteHttpResult(
+    internal RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
         bool permanent,
@@ -116,7 +116,7 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
     /// or permanent redirect (308) preserve the initial request method.</param>
     /// <param name="fragment">The fragment to add to the URL.</param>
-    public RedirectToRouteHttpResult(
+    internal RedirectToRouteHttpResult(
         string? routeName,
         object? routeValues,
         bool permanent,

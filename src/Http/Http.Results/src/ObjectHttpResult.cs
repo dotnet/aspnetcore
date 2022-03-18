@@ -14,7 +14,7 @@ internal sealed class ObjectHttpResult : IResult
     /// Creates a new <see cref="ObjectHttpResult"/> instance
     /// with the provided <paramref name="value"/>.
     /// </summary>
-    public ObjectHttpResult(object? value)
+    internal ObjectHttpResult(object? value)
         : this(value, null)
     {
     }
@@ -23,7 +23,7 @@ internal sealed class ObjectHttpResult : IResult
     /// Creates a new <see cref="ObjectHttpResult"/> instance with the provided
     /// <paramref name="value"/>, <paramref name="statusCode"/>.
     /// </summary>
-    public ObjectHttpResult(object? value, int? statusCode)
+    internal ObjectHttpResult(object? value, int? statusCode)
         : this(value, statusCode, contentType: null)
     {
     }
@@ -32,7 +32,7 @@ internal sealed class ObjectHttpResult : IResult
     /// Creates a new <see cref="ObjectHttpResult"/> instance with the provided
     /// <paramref name="value"/>, <paramref name="statusCode"/> and <paramref name="contentType"/>.
     /// </summary>
-    public ObjectHttpResult(object? value, int? statusCode, string? contentType)
+    internal ObjectHttpResult(object? value, int? statusCode, string? contentType)
     {
         Value = value;
 

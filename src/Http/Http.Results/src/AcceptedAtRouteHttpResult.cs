@@ -20,7 +20,7 @@ public sealed class AcceptedAtRouteHttpResult : IResult
     /// </summary>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public AcceptedAtRouteHttpResult(object? routeValues, object? value)
+    internal AcceptedAtRouteHttpResult(object? routeValues, object? value)
         : this(routeName: null, routeValues: routeValues, value: value)
     {
     }
@@ -32,7 +32,7 @@ public sealed class AcceptedAtRouteHttpResult : IResult
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public AcceptedAtRouteHttpResult(
+    internal AcceptedAtRouteHttpResult(
         string? routeName,
         object? routeValues,
         object? value)

@@ -18,7 +18,7 @@ public sealed partial class SignInHttpResult : IResult
     /// default authentication scheme.
     /// </summary>
     /// <param name="principal">The claims principal containing the user claims.</param>
-    public SignInHttpResult(ClaimsPrincipal principal)
+    internal SignInHttpResult(ClaimsPrincipal principal)
         : this(principal, authenticationScheme: null, properties: null)
     {
     }
@@ -30,7 +30,7 @@ public sealed partial class SignInHttpResult : IResult
     /// <param name="principal">The claims principal containing the user claims.</param>
     /// <param name="authenticationScheme">The authentication schemes to use when signing in the user.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
-    public SignInHttpResult(ClaimsPrincipal principal, string? authenticationScheme, AuthenticationProperties? properties)
+    internal SignInHttpResult(ClaimsPrincipal principal, string? authenticationScheme, AuthenticationProperties? properties)
     {
         Principal = principal ?? throw new ArgumentNullException(nameof(principal));
         AuthenticationScheme = authenticationScheme;

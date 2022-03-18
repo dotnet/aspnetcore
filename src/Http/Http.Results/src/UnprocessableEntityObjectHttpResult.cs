@@ -14,7 +14,7 @@ public sealed class UnprocessableEntityObjectHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="error">The error content to format in the entity body.</param>
-    public UnprocessableEntityObjectHttpResult(object? error)
+    internal UnprocessableEntityObjectHttpResult(object? error)
     {
         Value = error;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);

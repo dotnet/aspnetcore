@@ -15,7 +15,7 @@ public sealed class OkObjectHttpResult : IResult
     /// Initializes a new instance of the <see cref="OkObjectHttpResult"/> class with the values.
     /// </summary>
     /// <param name="value">The value to format in the entity body.</param>
-    public OkObjectHttpResult(object? value)
+    internal OkObjectHttpResult(object? value)
     {
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);

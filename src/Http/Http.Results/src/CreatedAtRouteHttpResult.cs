@@ -19,7 +19,7 @@ public sealed class CreatedAtRouteHttpResult : IResult
     /// </summary>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public CreatedAtRouteHttpResult(object? routeValues, object? value)
+    internal CreatedAtRouteHttpResult(object? routeValues, object? value)
         : this(routeName: null, routeValues: routeValues, value: value)
     {
     }
@@ -31,7 +31,7 @@ public sealed class CreatedAtRouteHttpResult : IResult
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public CreatedAtRouteHttpResult(
+    internal CreatedAtRouteHttpResult(
         string? routeName,
         object? routeValues,
         object? value)

@@ -15,7 +15,7 @@ public class NoContentHttpResult : IResult
     /// <summary>
     /// Initializes a new instance of the <see cref="NoContentHttpResult"/> class.
     /// </summary>
-    public NoContentHttpResult()
+    internal NoContentHttpResult()
     {
     }
 

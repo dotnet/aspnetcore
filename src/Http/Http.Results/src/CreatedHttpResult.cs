@@ -15,7 +15,7 @@ public sealed class CreatedHttpResult : IResult
     /// </summary>
     /// <param name="location">The location at which the content has been created.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public CreatedHttpResult(string location, object? value)
+    internal CreatedHttpResult(string location, object? value)
     {
         Value = value;
         Location = location;
@@ -28,7 +28,7 @@ public sealed class CreatedHttpResult : IResult
     /// </summary>
     /// <param name="locationUri">The location at which the content has been created.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public CreatedHttpResult(Uri locationUri, object? value)
+    internal CreatedHttpResult(Uri locationUri, object? value)
     {
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);

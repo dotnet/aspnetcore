@@ -15,7 +15,7 @@ public sealed class JsonHttpResult : IResult
     /// </summary>
     /// <param name="value">The value to format in the entity body.</param>
     /// <param name="jsonSerializerOptions">The serializer settings.</param>
-    public JsonHttpResult(object? value, JsonSerializerOptions? jsonSerializerOptions)
+    internal JsonHttpResult(object? value, JsonSerializerOptions? jsonSerializerOptions)
         : this(value, statusCode: null, contentType: null, jsonSerializerOptions: jsonSerializerOptions)
     {
     }
@@ -26,7 +26,7 @@ public sealed class JsonHttpResult : IResult
     /// <param name="value">The value to format in the entity body.</param>
     /// <param name="statusCode">The HTTP status code of the response.</param>
     /// <param name="jsonSerializerOptions">The serializer settings.</param>
-    public JsonHttpResult(object? value, int? statusCode, JsonSerializerOptions? jsonSerializerOptions)
+    internal JsonHttpResult(object? value, int? statusCode, JsonSerializerOptions? jsonSerializerOptions)
         : this(value, statusCode: statusCode, contentType: null, jsonSerializerOptions: jsonSerializerOptions)
     {
     }
@@ -37,7 +37,7 @@ public sealed class JsonHttpResult : IResult
     /// <param name="value">The value to format in the entity body.</param>
     /// <param name="contentType">The value for the <c>Content-Type</c> header</param>
     /// <param name="jsonSerializerOptions">The serializer settings.</param>
-    public JsonHttpResult(object? value, string? contentType, JsonSerializerOptions? jsonSerializerOptions)
+    internal JsonHttpResult(object? value, string? contentType, JsonSerializerOptions? jsonSerializerOptions)
         : this(value, statusCode: null, contentType: contentType, jsonSerializerOptions: jsonSerializerOptions)
     {
 
@@ -50,7 +50,7 @@ public sealed class JsonHttpResult : IResult
     /// <param name="statusCode">The HTTP status code of the response.</param>
     /// <param name="jsonSerializerOptions">The serializer settings.</param>
     /// <param name="contentType">The value for the <c>Content-Type</c> header</param>
-    public JsonHttpResult(object? value, int? statusCode, string? contentType, JsonSerializerOptions? jsonSerializerOptions)
+    internal JsonHttpResult(object? value, int? statusCode, string? contentType, JsonSerializerOptions? jsonSerializerOptions)
     {
         Value = value;
         StatusCode = statusCode;

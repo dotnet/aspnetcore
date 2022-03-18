@@ -19,7 +19,7 @@ public sealed class PushStreamHttpResult : IResult
     /// </summary>
     /// <param name="streamWriterCallback">The stream writer callback.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public PushStreamHttpResult(Func<Stream, Task> streamWriterCallback, string? contentType)
+    internal PushStreamHttpResult(Func<Stream, Task> streamWriterCallback, string? contentType)
         : this(streamWriterCallback, contentType, fileDownloadName: null)
     {
     }
@@ -32,7 +32,7 @@ public sealed class PushStreamHttpResult : IResult
     /// <param name="streamWriterCallback">The stream writer callback.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
     /// <param name="fileDownloadName">The suggested file name.</param>
-    public PushStreamHttpResult(
+    internal PushStreamHttpResult(
         Func<Stream, Task> streamWriterCallback,
         string? contentType,
         string? fileDownloadName)
@@ -49,7 +49,7 @@ public sealed class PushStreamHttpResult : IResult
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
-    public PushStreamHttpResult(
+    internal PushStreamHttpResult(
         Func<Stream, Task> streamWriterCallback,
         string? contentType,
         string? fileDownloadName,
