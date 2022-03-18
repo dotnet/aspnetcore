@@ -96,6 +96,8 @@ Microsoft.AspNetCore.Http.JsonHttpResult.ContentType.get -> string?
 Microsoft.AspNetCore.Http.JsonHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.JsonHttpResult.JsonHttpResult(object? value, System.Text.Json.JsonSerializerOptions? jsonSerializerOptions) -> void
 Microsoft.AspNetCore.Http.JsonHttpResult.JsonHttpResult(object? value, int? statusCode, System.Text.Json.JsonSerializerOptions? jsonSerializerOptions) -> void
+Microsoft.AspNetCore.Http.JsonHttpResult.JsonHttpResult(object? value, int? statusCode, string? contentType, System.Text.Json.JsonSerializerOptions? jsonSerializerOptions) -> void
+Microsoft.AspNetCore.Http.JsonHttpResult.JsonHttpResult(object? value, string? contentType, System.Text.Json.JsonSerializerOptions? jsonSerializerOptions) -> void
 Microsoft.AspNetCore.Http.JsonHttpResult.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions?
 Microsoft.AspNetCore.Http.JsonHttpResult.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.JsonHttpResult.Value.get -> object?
