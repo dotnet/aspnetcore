@@ -42,9 +42,12 @@ public sealed class ProblemHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger(typeof(ProblemHttpResult));
+
         return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
-                logger: httpContext.RequestServices.GetRequiredService<ILogger<ProblemHttpResult>>(),
+                logger,
                 value: ProblemDetails,
                 StatusCode,
                 ContentType);
