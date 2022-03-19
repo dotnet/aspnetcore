@@ -16,7 +16,7 @@ HANDLE  ALLOC_CACHE_HANDLER::sm_hHeap;
 //
 // Disabling C4324 here; alignment comes from SLIST_ENTRY definition.
 #pragma warning(push)
-#pragma warning(disable:4324) 
+#pragma warning(disable:4324)
 class FREE_LIST_HEADER
 {
 public:
@@ -79,7 +79,7 @@ ALLOC_CACHE_HANDLER::Initialize(
     //
     m_cbSize = cbSize;
     m_cbSize = max(m_cbSize, sizeof(FREE_LIST_HEADER));
-    
+
     //
     // Round up the block size to a multiple of the size of a LONG (for
     // the fill pattern in Free()).
@@ -101,7 +101,7 @@ ALLOC_CACHE_HANDLER::Initialize(
         }
     } Init;
 #endif
-    
+
     hr = PER_CPU<SLIST_HEADER>::Create(Init,
                                        &m_pFreeLists );
     if (FAILED(hr))
@@ -324,11 +324,11 @@ ALLOC_CACHE_HANDLER::QueryDepthForAllSLists(
 /*++
 
 Description:
-    
+
     Aggregates the total count of elements in all lists.
-    
+
 Arguments:
-    
+
     None.
 
 Return Value:
@@ -393,7 +393,7 @@ ALLOC_CACHE_HANDLER::IsPageheapEnabled(
     }
 
     //
-    // Create a heap for calling heapwalk 
+    // Create a heap for calling heapwalk
     // otherwise HeapWalk turns off lookasides for a useful heap
     //
     hHeap = ::HeapCreate( 0, 0, 0 );
@@ -402,7 +402,7 @@ ALLOC_CACHE_HANDLER::IsPageheapEnabled(
         fRet = FALSE;
         goto Finished;
     }
-    
+
     fRet = ::HeapLock( hHeap );
     if ( !fRet )
     {

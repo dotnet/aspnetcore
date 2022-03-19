@@ -1039,6 +1039,7 @@ STRA::AuxAppendW(
 {
     HRESULT hr          = S_OK;
     DWORD   cbRet       = 0;
+    DWORD cbAvailable   = 0;
     UNREFERENCED_PARAMETER(fFailIfNoTranslation);
 
     //
@@ -1060,7 +1061,7 @@ STRA::AuxAppendW(
         goto Finished;
     }
 
-    DWORD cbAvailable = m_Buff.QuerySize() - cbOffset;
+    cbAvailable = m_Buff.QuerySize() - cbOffset;
 
     cbRet = WideCharToMultiByte(
         CodePage,
@@ -1168,28 +1169,23 @@ STRA::AuxAppendWTruncate(
 // Cheesey WCHAR --> CHAR conversion
 //
 {
-    HRESULT hr = S_OK;
-
     _ASSERTE( NULL != pszAppendW );
     _ASSERTE( 0 == cbOffset || cbOffset == QueryCB() );
 
     if( !pszAppendW )
     {
-        hr = HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
-        goto Finished;
+        return HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
     }
 
     ULONGLONG cbNeeded = static_cast<ULONGLONG>(cbOffset) + cchAppendW + sizeof( CHAR );
     if( cbNeeded > MAXDWORD )
     {
-        hr = HRESULT_FROM_WIN32( ERROR_ARITHMETIC_OVERFLOW );
-        goto Finished;
+        return HRESULT_FROM_WIN32( ERROR_ARITHMETIC_OVERFLOW );
     }
 
     if( !m_Buff.Resize( static_cast<SIZE_T>(cbNeeded) ) )
     {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
+        return E_OUTOFMEMORY;
     }
 
     //
@@ -1204,9 +1200,7 @@ STRA::AuxAppendWTruncate(
     m_cchLen = cchAppendW + cbOffset;
     *( QueryStr() + m_cchLen ) = '\0';
 
-Finished:
-
-    return hr;
+    return S_OK;
 }
 
 // static
@@ -1442,30 +1436,26 @@ STRA::StartsWith(
     __in PCSTR          pszPrefix,
     __in bool           fIgnoreCase) const
 {
-    BOOL    fMatch      = FALSE;
-    size_t  cchPrefix   = 0;
-
     if (pszPrefix == NULL)
     {
-        goto Finished;
+        return FALSE;
     }
 
-    HRESULT hr = StringCchLengthA(pszPrefix,
-                                  STRSAFE_MAX_CCH,
-                                  &cchPrefix);
+    size_t  cchPrefix   = 0;
+    HRESULT hr = StringCchLengthA(pszPrefix, STRSAFE_MAX_CCH, &cchPrefix);
     if (FAILED(hr))
     {
-        goto Finished;
+        return FALSE;
     }
 
     _ASSERTE( cchPrefix <= MAXDWORD );
-
     if (cchPrefix > m_cchLen)
     {
-        goto Finished;
+        return FALSE;
     }
 
-    if( fIgnoreCase )
+    BOOL fMatch = FALSE;
+    if ( fIgnoreCase )
     {
         fMatch = ( 0 == _strnicmp( QueryStr(), pszPrefix, cchPrefix ) );
     }
@@ -1473,9 +1463,6 @@ STRA::StartsWith(
     {
         fMatch = ( 0 == strncmp( QueryStr(), pszPrefix, cchPrefix ) );
     }
-
-
-Finished:
 
     return fMatch;
 }
@@ -1553,33 +1540,30 @@ STRA::EndsWith(
     __in bool           fIgnoreCase) const
 {
     PSTR      pszString   = QueryStr();
-    BOOL      fMatch      = FALSE;
-    size_t    cchSuffix   = 0;
 
     if (pszSuffix == NULL)
     {
-        goto Finished;
+        return FALSE;
     }
 
-    HRESULT hr = StringCchLengthA(pszSuffix,
-                                  STRSAFE_MAX_CCH,
-                                  &cchSuffix);
+    size_t    cchSuffix   = 0;
+    HRESULT hr = StringCchLengthA(pszSuffix, STRSAFE_MAX_CCH, &cchSuffix);
     if (FAILED(hr))
     {
-        goto Finished;
+        return FALSE;
     }
 
     _ASSERTE( cchSuffix <= MAXDWORD );
-
     if (cchSuffix > m_cchLen)
     {
-        goto Finished;
+        return FALSE;
     }
 
     ptrdiff_t ixOffset = m_cchLen - cchSuffix;
     _ASSERTE(ixOffset >= 0 && ixOffset <= MAXDWORD);
 
-    if( fIgnoreCase )
+    BOOL fMatch = FALSE;
+    if ( fIgnoreCase )
     {
         fMatch = ( 0 == _strnicmp( pszString + ixOffset, pszSuffix, cchSuffix ) );
     }
@@ -1587,8 +1571,6 @@ STRA::EndsWith(
     {
         fMatch = ( 0 == strncmp( pszString + ixOffset, pszSuffix, cchSuffix ) );
     }
-
-Finished:
 
     return fMatch;
 }
@@ -1621,21 +1603,19 @@ STRA::IndexOf(
     INT nIndex = -1;
 
     // Make sure that there are no buffer overruns.
-    if( dwStartIndex >= QueryCCH() )
+    if ( dwStartIndex >= QueryCCH() )
     {
-        goto Finished;
+        return nIndex;
     }
 
     const CHAR* pChar = strchr( QueryStr() + dwStartIndex, charValue );
 
     // Determine the index if found
-    if( pChar )
+    if ( pChar )
     {
         // nIndex will be set to -1 on failure.
         (VOID)SizeTToInt( pChar - QueryStr(), &nIndex );
     }
-
-Finished:
 
     return nIndex;
 }
@@ -1670,7 +1650,7 @@ STRA::IndexOf(
     // Validate input parameters
     if( dwStartIndex >= QueryCCH() || !pszValue )
     {
-        goto Finished;
+        return nIndex;
     }
 
     const CHAR* pChar = strstr( QueryStr() + dwStartIndex, pszValue );
@@ -1681,8 +1661,6 @@ STRA::IndexOf(
         // nIndex will be set to -1 on failure.
         (VOID)SizeTToInt( pChar - QueryStr(), &nIndex );
     }
-
-Finished:
 
     return nIndex;
 }
@@ -1717,7 +1695,7 @@ STRA::LastIndexOf(
     // Make sure that there are no buffer overruns.
     if( dwStartIndex >= QueryCCH() )
     {
-        goto Finished;
+        return nIndex;
     }
 
     const CHAR* pChar = strrchr( QueryStr() + dwStartIndex, charValue );
@@ -1728,8 +1706,6 @@ STRA::LastIndexOf(
         // nIndex will be set to -1 on failure.
         (VOID)SizeTToInt( pChar - QueryStr(), &nIndex );
     }
-
-Finished:
 
     return nIndex;
 }
