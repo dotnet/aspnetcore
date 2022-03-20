@@ -116,7 +116,7 @@ public static class DotNetDispatcher
         {
             valueTaskResult.AsTask().ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
         }
-        else if (syncResult?.GetType().GetGenericTypeDefinition()== typeof(ValueTask<>))
+        else if (syncResult?.GetType().IsGenericType ?? false && syncResult?.GetType().GetGenericTypeDefinition() == typeof(ValueTask<>))
         {
             var innerTask = GetTaskByType(syncResult.GetType().GenericTypeArguments[0], syncResult);
 
