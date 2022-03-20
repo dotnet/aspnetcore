@@ -4,11 +4,11 @@
 import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
 
 const navigatorUA = navigator as MonoNavigatorUserAgent;
+const brands = navigatorUA.userAgentData && navigatorUA.userAgentData.brands;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const currentBrowserIsChromeOrEdge = navigatorUA.userAgentData && navigatorUA.userAgentData.brands ?
-     (navigatorUA.userAgentData.brands.some(b => b.brand === 'Google Chrome') ||
-      navigatorUA.userAgentData.brands.some(b => b.brand === 'Microsoft Edge'))
-      : (window as any).chrome && navigator.userAgent.indexOf('Edge') < 0; // Edge pretends to be Chrome
+const currentBrowserIsChromeOrEdge = brands
+  ? (navigatorUA.userAgentData.brands.some(b => b.brand === 'Google Chrome' || b.brand === 'Microsoft Edge'))
+  : (window as any).chrome;
 const platform = navigatorUA.userAgentData ? navigatorUA.userAgentData.platform : navigator.platform;
 
 let hasReferencedPdbs = false;
