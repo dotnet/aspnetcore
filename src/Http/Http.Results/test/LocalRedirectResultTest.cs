@@ -16,7 +16,7 @@ public class LocalRedirectResultTest
         var url = "/test/url";
 
         // Act
-        var result = new LocalRedirectResult(url);
+        var result = new RedirectHttpResult(url, acceptLocalUrlOnly: true, false, false);
 
         // Assert
         Assert.False(result.PreserveMethod);
@@ -31,7 +31,7 @@ public class LocalRedirectResultTest
         var url = "/test/url";
 
         // Act
-        var result = new LocalRedirectResult(url, permanent: true);
+        var result = new RedirectHttpResult(url, acceptLocalUrlOnly: true, permanent: true, preserveMethod: false);
 
         // Assert
         Assert.False(result.PreserveMethod);
@@ -46,7 +46,7 @@ public class LocalRedirectResultTest
         var url = "/test/url";
 
         // Act
-        var result = new LocalRedirectResult(url, permanent: true, preserveMethod: true);
+        var result = new RedirectHttpResult(url, acceptLocalUrlOnly: true, permanent: true, preserveMethod: true);
 
         // Assert
         Assert.True(result.PreserveMethod);
@@ -63,7 +63,7 @@ public class LocalRedirectResultTest
         var expectedPath = "/Home/About";
 
         var httpContext = GetHttpContext(appRoot);
-        var result = new LocalRedirectResult(contentPath);
+        var result = new RedirectHttpResult(contentPath, acceptLocalUrlOnly: true, false, false);
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -86,7 +86,7 @@ public class LocalRedirectResultTest
     {
         // Arrange
         var httpContext = GetHttpContext(appRoot);
-        var result = new LocalRedirectResult(contentPath);
+        var result = new RedirectHttpResult(contentPath, acceptLocalUrlOnly: true, false, false);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => result.ExecuteAsync(httpContext));
@@ -107,7 +107,7 @@ public class LocalRedirectResultTest
     {
         // Arrange
         var httpContext = GetHttpContext(appRoot);
-        var result = new LocalRedirectResult(contentPath);
+        var result = new RedirectHttpResult(contentPath, acceptLocalUrlOnly: true, false, false);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => result.ExecuteAsync(httpContext));
@@ -121,6 +121,7 @@ public class LocalRedirectResultTest
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddTransient(typeof(ILogger<>), typeof(NullLogger<>));
+        serviceCollection.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         return serviceCollection.BuildServiceProvider();
     }
 

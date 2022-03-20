@@ -16,7 +16,7 @@ public class PhysicalFileResultTest : PhysicalFileResultTestBase
         EntityTagHeaderValue entityTag = null,
         bool enableRangeProcessing = false)
     {
-        var fileResult = new PhysicalFileResult(path, contentType)
+        var fileResult = new PhysicalFileHttpResult(path, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,

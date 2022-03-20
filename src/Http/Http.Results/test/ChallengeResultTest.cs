@@ -15,7 +15,7 @@ public class ChallengeResultTest
     public async Task ChallengeResult_ExecuteAsync()
     {
         // Arrange
-        var result = new ChallengeResult("", null);
+        var result = new ChallengeHttpResult("", null);
         var auth = new Mock<IAuthenticationService>();
         var httpContext = GetHttpContext(auth);
 
@@ -30,7 +30,7 @@ public class ChallengeResultTest
     public async Task ChallengeResult_ExecuteAsync_NoSchemes()
     {
         // Arrange
-        var result = new ChallengeResult(new string[] { }, null);
+        var result = new ChallengeHttpResult(new string[] { }, null);
         var auth = new Mock<IAuthenticationService>();
         var httpContext = GetHttpContext(auth);
 
@@ -54,6 +54,7 @@ public class ChallengeResultTest
     {
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         return services;
     }
 }

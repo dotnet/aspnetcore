@@ -6,88 +6,93 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
-internal sealed partial class ForbidResult : IResult
+/// <summary>
+/// An <see cref="IResult"/> that on execution invokes <see cref="M:HttpContext.ForbidAsync"/>.
+/// </summary>
+public sealed partial class ForbidHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/>.
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/>.
     /// </summary>
-    public ForbidResult()
+    internal ForbidHttpResult()
         : this(Array.Empty<string>())
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/> with the
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified authentication scheme.
     /// </summary>
     /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-    public ForbidResult(string authenticationScheme)
+    internal ForbidHttpResult(string authenticationScheme)
         : this(new[] { authenticationScheme })
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/> with the
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified authentication schemes.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
-    public ForbidResult(IList<string> authenticationSchemes)
+    internal ForbidHttpResult(IList<string> authenticationSchemes)
         : this(authenticationSchemes, properties: null)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/> with the
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified <paramref name="properties"/>.
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ForbidResult(AuthenticationProperties? properties)
+    internal ForbidHttpResult(AuthenticationProperties? properties)
         : this(Array.Empty<string>(), properties)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/> with the
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
     /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ForbidResult(string authenticationScheme, AuthenticationProperties? properties)
+    internal ForbidHttpResult(string authenticationScheme, AuthenticationProperties? properties)
         : this(new[] { authenticationScheme }, properties)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidResult"/> with the
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified authentication schemes and <paramref name="properties"/>.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ForbidResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
+    internal ForbidHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
-        AuthenticationSchemes = authenticationSchemes;
+        AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;
     }
 
     /// <summary>
-    /// Gets or sets the authentication schemes that are challenged.
+    /// Gets the authentication schemes that are challenged.
     /// </summary>
-    public IList<string> AuthenticationSchemes { get; init; }
+    public IReadOnlyList<string> AuthenticationSchemes { get; internal init; }
 
     /// <summary>
-    /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the authentication challenge.
+    /// Gets the <see cref="AuthenticationProperties"/> used to perform the authentication challenge.
     /// </summary>
-    public AuthenticationProperties? Properties { get; init; }
+    public AuthenticationProperties? Properties { get; internal init; }
 
     /// <inheritdoc />
     public async Task ExecuteAsync(HttpContext httpContext)
     {
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<ForbidResult>>();
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ForbidResult");
 
         Log.ForbidResultExecuting(logger, AuthenticationSchemes);
 
@@ -106,7 +111,7 @@ internal sealed partial class ForbidResult : IResult
 
     private static partial class Log
     {
-        public static void ForbidResultExecuting(ILogger logger, IList<string> authenticationSchemes)
+        public static void ForbidResultExecuting(ILogger logger, IReadOnlyList<string> authenticationSchemes)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {

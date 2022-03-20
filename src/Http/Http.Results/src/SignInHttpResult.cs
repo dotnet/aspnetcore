@@ -6,53 +6,31 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// An <see cref="IResult"/> that on execution invokes <see cref="M:HttpContext.SignInAsync"/>.
 /// </summary>
-internal sealed partial class SignInResult : IResult
+public sealed partial class SignInHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="SignInResult"/> with the
+    /// Initializes a new instance of <see cref="SignInHttpResult"/> with the
     /// default authentication scheme.
     /// </summary>
     /// <param name="principal">The claims principal containing the user claims.</param>
-    public SignInResult(ClaimsPrincipal principal)
-        : this(authenticationScheme: null, principal, properties: null)
+    internal SignInHttpResult(ClaimsPrincipal principal)
+        : this(principal, authenticationScheme: null, properties: null)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SignInResult"/> with the
-    /// specified authentication scheme.
-    /// </summary>
-    /// <param name="authenticationScheme">The authentication scheme to use when signing in the user.</param>
-    /// <param name="principal">The claims principal containing the user claims.</param>
-    public SignInResult(string? authenticationScheme, ClaimsPrincipal principal)
-        : this(authenticationScheme, principal, properties: null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="SignInResult"/> with the
-    /// default authentication scheme and <paramref name="properties"/>.
-    /// </summary>
-    /// <param name="principal">The claims principal containing the user claims.</param>
-    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
-    public SignInResult(ClaimsPrincipal principal, AuthenticationProperties? properties)
-        : this(authenticationScheme: null, principal, properties)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="SignInResult"/> with the
+    /// Initializes a new instance of <see cref="SignInHttpResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
-    /// <param name="authenticationScheme">The authentication schemes to use when signing in the user.</param>
     /// <param name="principal">The claims principal containing the user claims.</param>
+    /// <param name="authenticationScheme">The authentication schemes to use when signing in the user.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
-    public SignInResult(string? authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties? properties)
+    internal SignInHttpResult(ClaimsPrincipal principal, string? authenticationScheme, AuthenticationProperties? properties)
     {
         Principal = principal ?? throw new ArgumentNullException(nameof(principal));
         AuthenticationScheme = authenticationScheme;
@@ -62,22 +40,24 @@ internal sealed partial class SignInResult : IResult
     /// <summary>
     /// Gets or sets the authentication scheme that is used to perform the sign-in operation.
     /// </summary>
-    public string? AuthenticationScheme { get; set; }
+    public string? AuthenticationScheme { get; internal init; }
 
     /// <summary>
     /// Gets or sets the <see cref="ClaimsPrincipal"/> containing the user claims.
     /// </summary>
-    public ClaimsPrincipal Principal { get; set; }
+    public ClaimsPrincipal Principal { get; internal init; }
 
     /// <summary>
     /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the sign-in operation.
     /// </summary>
-    public AuthenticationProperties? Properties { get; set; }
+    public AuthenticationProperties? Properties { get; internal init; }
 
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        var logger = httpContext.RequestServices.GetRequiredService<ILogger<SignInResult>>();
+        // Creating the logger with a string to preserve the category after the refactoring.
+        var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.SignInResult");
 
         Log.SignInResultExecuting(logger, AuthenticationScheme, Principal);
 

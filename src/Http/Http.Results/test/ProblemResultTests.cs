@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,73 +9,15 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Result;
 
-public class ObjectResultTests
+public class ProblemResultTests
 {
-    [Fact]
-    public async Task ObjectResult_ExecuteAsync_WithNullValue_Works()
-    {
-        // Arrange
-        var result = new ObjectHttpResult(value: null, 411);
-
-        var httpContext = new DefaultHttpContext()
-        {
-            RequestServices = CreateServices(),
-        };
-
-        // Act
-        await result.ExecuteAsync(httpContext);
-
-        // Assert
-        Assert.Equal(411, httpContext.Response.StatusCode);
-    }
-
-    [Fact]
-    public async Task ObjectResult_ExecuteAsync_SetsStatusCode()
-    {
-        // Arrange
-        var result = new ObjectHttpResult("Hello", 407);
-
-        var httpContext = new DefaultHttpContext()
-        {
-            RequestServices = CreateServices(),
-        };
-
-        // Act
-        await result.ExecuteAsync(httpContext);
-
-        // Assert
-        Assert.Equal(407, httpContext.Response.StatusCode);
-    }
-
-    [Fact]
-    public async Task ObjectResult_ExecuteAsync_JsonSerializesBody()
-    {
-        // Arrange
-        var result = new ObjectHttpResult("Hello", 407);
-        var stream = new MemoryStream();
-        var httpContext = new DefaultHttpContext()
-        {
-            RequestServices = CreateServices(),
-            Response =
-                {
-                    Body = stream,
-                },
-        };
-
-        // Act
-        await result.ExecuteAsync(httpContext);
-
-        // Assert
-        Assert.Equal("\"Hello\"", Encoding.UTF8.GetString(stream.ToArray()));
-    }
-
     [Fact]
     public async Task ExecuteAsync_UsesDefaults_ForProblemDetails()
     {
         // Arrange
         var details = new ProblemDetails();
 
-        var result = new ObjectHttpResult(details);
+        var result = new ProblemHttpResult(details);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -105,7 +46,7 @@ public class ObjectResultTests
         // Arrange
         var details = new HttpValidationProblemDetails();
 
-        var result = new ObjectHttpResult(details);
+        var result = new ProblemHttpResult(details);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -129,31 +70,12 @@ public class ObjectResultTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_SetsProblemDetailsStatus_ForValidationProblemDetails()
-    {
-        // Arrange
-        var details = new HttpValidationProblemDetails();
-
-        var result = new ObjectHttpResult(details, StatusCodes.Status422UnprocessableEntity);
-        var httpContext = new DefaultHttpContext()
-        {
-            RequestServices = CreateServices(),
-        };
-
-        // Act
-        await result.ExecuteAsync(httpContext);
-
-        // Assert
-        Assert.Equal(StatusCodes.Status422UnprocessableEntity, details.Status.Value);
-    }
-
-    [Fact]
     public async Task ExecuteAsync_GetsStatusCodeFromProblemDetails()
     {
         // Arrange
         var details = new ProblemDetails { Status = StatusCodes.Status413RequestEntityTooLarge, };
 
-        var result = new ObjectHttpResult(details);
+        var result = new ProblemHttpResult(details);
 
         var httpContext = new DefaultHttpContext()
         {
@@ -169,31 +91,10 @@ public class ObjectResultTests
         Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, httpContext.Response.StatusCode);
     }
 
-    [Fact]
-    public async Task ExecuteAsync_UsesStatusCodeFromResultTypeForProblemDetails()
-    {
-        // Arrange
-        var details = new ProblemDetails { Status = StatusCodes.Status422UnprocessableEntity, };
-
-        var result = new BadRequestObjectHttpResult(details);
-
-        var httpContext = new DefaultHttpContext()
-        {
-            RequestServices = CreateServices(),
-        };
-
-        // Act
-        await result.ExecuteAsync(httpContext);
-
-        // Assert
-        Assert.Equal(StatusCodes.Status422UnprocessableEntity, details.Status.Value);
-        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
-        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
-    }
-
     private static IServiceProvider CreateServices()
     {
         var services = new ServiceCollection();
+        services.AddTransient(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
         return services.BuildServiceProvider();
