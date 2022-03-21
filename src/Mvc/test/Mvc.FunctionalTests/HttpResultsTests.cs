@@ -18,21 +18,6 @@ public class HttpResultsTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
     public HttpClient Client { get; }
 
     [Fact]
-    public async Task ActionCanReturnHttpResultsActionResult()
-    {
-        // Arrange
-        var id = 1;
-        var url = $"/contact/{nameof(BasicWebSite.ContactApiController.ActionReturningHttpResultsActionResult)}/{id}";
-        var response = await Client.GetAsync(url);
-
-        // Assert
-        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<Contact>();
-        Assert.NotNull(result);
-        Assert.Equal(id, result.ContactId);
-    }
-
-    [Fact]
     public async Task ActionCanReturnIResultWithContent()
     {
         // Arrange
@@ -56,29 +41,5 @@ public class HttpResultsTests : IClassFixture<MvcTestFixture<BasicWebSite.Startu
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.NoContent);
-    }
-
-    [Fact]
-    public async Task ActionCanHaveAFilterForIResult()
-    {
-        // Arrange
-        var url = $"/filters/{nameof(BasicWebSite.Controllers.FiltersController.HttpResultsFilterForIResult)}";
-        var response = await Client.GetAsync(url);
-
-        // Assert
-        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-        Assert.Single(response.Headers.GetValues("X-HttpResultType"));
-    }
-
-    [Fact]
-    public async Task ActionCanHaveAFilterForHttpResultsActionResult()
-    {
-        // Arrange
-        var url = $"/filters/{nameof(BasicWebSite.Controllers.FiltersController.HttpResultsFilter)}";
-        var response = await Client.GetAsync(url);
-
-        // Assert
-        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-        Assert.Single(response.Headers.GetValues("X-HttpResultType"));
     }
 }
