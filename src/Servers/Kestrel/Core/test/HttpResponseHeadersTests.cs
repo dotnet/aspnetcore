@@ -242,6 +242,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void AddingTabCharactersToHeaderPropertyWorks()
+        {
+            var responseHeaders = (IHeaderDictionary)new HttpResponseHeaders();
+
+            // Known special header
+            responseHeaders.Allow = "Da\tta";
+
+            // Unknown header fallback
+            responseHeaders.Accept = "Da\tta";
+        }
+
+        [Fact]
         public void ThrowsWhenAddingHeaderAfterReadOnlyIsSet()
         {
             var headers = new HttpResponseHeaders();
