@@ -21,11 +21,13 @@ public class RawResult
 {
     /// <summary>
     /// Stores the raw serialized bytes of a <see cref="CompletionMessage.Result"/> for forwarding to another server.
+    /// Will copy the passed in bytes to internal storage.
     /// </summary>
     /// <param name="rawBytes">The raw bytes from the client.</param>
     public RawResult(ReadOnlySequence<byte> rawBytes)
     {
-        RawSerializedData = rawBytes;
+        // Review: If we want to use an ArrayPool we would need some sort of release mechanism
+        RawSerializedData = new ReadOnlySequence<byte>(rawBytes.ToArray());
     }
 
     /// <summary>

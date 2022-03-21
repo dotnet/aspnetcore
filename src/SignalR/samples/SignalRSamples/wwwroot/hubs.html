@@ -146,7 +146,7 @@
             return;
         }
 
-        let hubRoute = "game";
+        let hubRoute = hubTypeDropdown.value || "default";
         let protocol = protocolDropdown.value === "msgpack" ?
             new signalR.protocols.msgpack.MessagePackHubProtocol() :
             new signalR.JsonHubProtocol();
@@ -172,16 +172,6 @@
 
         connection.on('Send', function (msg) {
             addLine('message-list', msg);
-        });
-
-        connection.on('F', function () {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => resolve(2), 5000);
-            });
-        });
-
-        connection.on('GetNumber', function () {
-            return 2;
         });
 
         connection.onclose(function (e) {

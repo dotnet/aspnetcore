@@ -11,7 +11,6 @@ public enum HubMessageType {
     CANCEL_INVOCATION(5),
     PING(6),
     CLOSE(7),
-    CLIENT_RESULT(8),
     INVOCATION_BINDING_FAILURE(-1),
     STREAM_BINDING_FAILURE(-2);
 

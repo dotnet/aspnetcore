@@ -37,10 +37,10 @@ internal class HubSample
                 logging.AddConsole();
             });
 
-        //connectionBuilder.Services.Configure<LoggerFilterOptions>(options =>
-        //{
-        //    options.MinLevel = LogLevel.Trace;
-        //});
+        connectionBuilder.Services.Configure<LoggerFilterOptions>(options =>
+        {
+            options.MinLevel = LogLevel.Trace;
+        });
 
         if (uri.Scheme == "net.tcp")
         {
@@ -66,51 +66,7 @@ internal class HubSample
             };
 
             // Set up handler
-            connection.On("GetNumber", () =>
-            {
-                Console.WriteLine("Provide an integer:");
-                return Task.FromResult<object>(int.Parse(Console.ReadLine(), System.Globalization.NumberFormatInfo.InvariantInfo));
-            });
-
-            connection.On("g", (string s, int r) =>
-            {
-                return Task.FromResult<int>(1);
-            });
-
-            connection.On("g", () =>
-            {
-                return 1;
-            });
-
-            connection.On("g", (string s) =>
-            {
-                return 1;
-            });
-
-            connection.On("g", async (string s) =>
-            {
-                await Task.CompletedTask;
-                return 1;
-            });
-
-            connection.On("g", async () =>
-            {
-                await Task.CompletedTask;
-                return 1;
-            });
-
-            connection.On("g", async (string s, int r) =>
-            {
-                await Task.CompletedTask;
-                return 1;
-            });
-
-            connection.On("g", (string s, int r) =>
-            {
-                return Task.FromResult<object>(1);
-            });
-
-            connection.On<string>("Result", r => Console.WriteLine($"Result: {r}"));
+            connection.On<string>("Send", Console.WriteLine);
 
             connection.Closed += e =>
             {
@@ -125,49 +81,39 @@ internal class HubSample
                 return 0;
             }
 
-            await connection.SendAsync("AddPlayer");
-
             Console.WriteLine("Connected to {0}", uri);
-            Console.WriteLine(connection.ConnectionId);
-
-            var wait = new TaskCompletionSource<object>();
-            closedTokenSource.Token.Register(() =>
-            {
-                wait.SetResult(null);
-            });
-            await wait.Task;
 
             // Handle the connected connection
-            //while (true)
-            //{
-            //    // If the underlying connection closes while waiting for user input, the user will not observe
-            //    // the connection close aside from "Connection closed..." being printed to the console. That's
-            //    // because cancelling Console.ReadLine() is a royal pain.
-            //    var line = Console.ReadLine();
+            while (true)
+            {
+                // If the underlying connection closes while waiting for user input, the user will not observe
+                // the connection close aside from "Connection closed..." being printed to the console. That's
+                // because cancelling Console.ReadLine() is a royal pain.
+                var line = Console.ReadLine();
 
-            //    if (line == null || closedTokenSource.Token.IsCancellationRequested)
-            //    {
-            //        Console.WriteLine("Exiting...");
-            //        break;
-            //    }
+                if (line == null || closedTokenSource.Token.IsCancellationRequested)
+                {
+                    Console.WriteLine("Exiting...");
+                    break;
+                }
 
-            //    try
-            //    {
-            //        await connection.InvokeAsync<object>("Send", line);
-            //    }
-            //    catch when (closedTokenSource.IsCancellationRequested)
-            //    {
-            //        // We're shutting down the client
-            //        Console.WriteLine("Failed to send '{0}' because the CancelKeyPress event fired first. Exiting...", line);
-            //        break;
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        // Send could have failed because the connection closed
-            //        // Continue to loop because we should be reconnecting.
-            //        Console.WriteLine(ex);
-            //    }
-            //}
+                try
+                {
+                    await connection.InvokeAsync<object>("Send", line);
+                }
+                catch when (closedTokenSource.IsCancellationRequested)
+                {
+                    // We're shutting down the client
+                    Console.WriteLine("Failed to send '{0}' because the CancelKeyPress event fired first. Exiting...", line);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    // Send could have failed because the connection closed
+                    // Continue to loop because we should be reconnecting.
+                    Console.WriteLine(ex);
+                }
+            }
         }
         finally
         {

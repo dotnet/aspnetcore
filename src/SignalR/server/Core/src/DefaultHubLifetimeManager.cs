@@ -357,7 +357,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             // Write message directly to connection without caching it in memory
             var message = new InvocationMessage(invocationId, methodName, args);
 
-            await connection.WriteAsync(message, cancellationToken).AsTask();
+            await connection.WriteAsync(message, cancellationToken);
         }
         catch
         {

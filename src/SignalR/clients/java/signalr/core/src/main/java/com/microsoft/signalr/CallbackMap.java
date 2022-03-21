@@ -14,7 +14,7 @@ class CallbackMap {
     private final Map<String, List<InvocationHandler>> handlers = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
-    public InvocationHandler put(String target, FunctionBase action, Type... types) {
+    public InvocationHandler put(String target, ActionBase action, Type... types) {
         try {
             lock.lock();
             InvocationHandler handler = new InvocationHandler(action, types);
