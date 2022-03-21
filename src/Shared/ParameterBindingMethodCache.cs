@@ -285,8 +285,12 @@ internal sealed class ParameterBindingMethodCache
             {
                 if (candidateInterfaceMethodInfo is not null)
                 {
-                    return !_throwOnInvalidMethod ? null :
+                    if (_throwOnInvalidMethod)
+                    {
                         throw new InvalidOperationException($"{TypeNameHelper.GetTypeDisplayName(type, fullName: false)} implements multiple interfaces defining a static {interfaceMethod} method causing ambiguity.");
+                    }
+
+                    return null;
                 }
 
                 candidateInterfaceMethodInfo = interfaceMethod;

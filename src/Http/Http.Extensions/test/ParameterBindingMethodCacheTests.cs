@@ -359,18 +359,29 @@ public class ParameterBindingMethodCacheTests
         Assert.Null(await parseHttpContext(httpContext));
     }
 
+    public static TheoryData<Type> InvalidTryParseStringTypesData
+    {
+        get
+        {
+            return new TheoryData<Type>
+            {
+                typeof(InvalidVoidReturnTryParseStruct),
+                typeof(InvalidVoidReturnTryParseClass),
+                typeof(InvalidWrongTypeTryParseStruct),
+                typeof(InvalidWrongTypeTryParseClass),
+                typeof(InvalidTryParseNullableStruct),
+                typeof(InvalidTooFewArgsTryParseStruct),
+                typeof(InvalidTooFewArgsTryParseClass),
+                typeof(InvalidNonStaticTryParseStruct),
+                typeof(InvalidNonStaticTryParseClass),
+                typeof(TryParseWrongTypeInheritClass),
+                typeof(TryParseWrongTypeFromInterface),
+            };
+        }
+    }
+
     [Theory]
-    [InlineData(typeof(InvalidVoidReturnTryParseStruct))]
-    [InlineData(typeof(InvalidVoidReturnTryParseClass))]
-    [InlineData(typeof(InvalidWrongTypeTryParseStruct))]
-    [InlineData(typeof(InvalidWrongTypeTryParseClass))]
-    [InlineData(typeof(InvalidTryParseNullableStruct))]
-    [InlineData(typeof(InvalidTooFewArgsTryParseStruct))]
-    [InlineData(typeof(InvalidTooFewArgsTryParseClass))]
-    [InlineData(typeof(InvalidNonStaticTryParseStruct))]
-    [InlineData(typeof(InvalidNonStaticTryParseClass))]
-    [InlineData(typeof(TryParseWrongTypeInheritClass))]
-    [InlineData(typeof(TryParseWrongTypeFromInterface))]
+    [MemberData(nameof(InvalidTryParseStringTypesData))]
     public void FindTryParseMethod_ThrowsIfInvalidTryParseOnType(Type type)
     {
         var ex = Assert.Throws<InvalidOperationException>(
@@ -381,17 +392,7 @@ public class ParameterBindingMethodCacheTests
     }
 
     [Theory]
-    [InlineData(typeof(InvalidVoidReturnTryParseStruct))]
-    [InlineData(typeof(InvalidVoidReturnTryParseClass))]
-    [InlineData(typeof(InvalidWrongTypeTryParseStruct))]
-    [InlineData(typeof(InvalidWrongTypeTryParseClass))]
-    [InlineData(typeof(InvalidTryParseNullableStruct))]
-    [InlineData(typeof(InvalidTooFewArgsTryParseStruct))]
-    [InlineData(typeof(InvalidTooFewArgsTryParseClass))]
-    [InlineData(typeof(InvalidNonStaticTryParseStruct))]
-    [InlineData(typeof(InvalidNonStaticTryParseClass))]
-    [InlineData(typeof(TryParseWrongTypeInheritClass))]
-    [InlineData(typeof(TryParseWrongTypeFromInterface))]
+    [MemberData(nameof(InvalidTryParseStringTypesData))]
     public void FindTryParseMethod_DoesNotThrowIfInvalidTryParseOnType_WhenThrowOnInvalidFalse(Type type)
     {
         Assert.Null(new ParameterBindingMethodCache(throwOnInvalidMethod: false).FindTryParseMethod(type));
@@ -420,15 +421,26 @@ public class ParameterBindingMethodCacheTests
         Assert.NotNull(method);
     }
 
+    public static TheoryData<Type> InvalidBindAsyncTypesData
+    {
+        get
+        {
+            return new TheoryData<Type>
+            {
+                typeof(InvalidWrongReturnBindAsyncStruct),
+                typeof(InvalidWrongReturnBindAsyncClass),
+                typeof(InvalidWrongParamBindAsyncStruct),
+                typeof(InvalidWrongParamBindAsyncClass),
+                typeof(BindAsyncWrongTypeInherit),
+                typeof(BindAsyncWithParameterInfoWrongTypeInherit),
+                typeof(BindAsyncWrongTypeFromInterface),
+                typeof(BindAsyncBothBadMethods),
+            };
+        }
+    }
+
     [Theory]
-    [InlineData(typeof(InvalidWrongReturnBindAsyncStruct))]
-    [InlineData(typeof(InvalidWrongReturnBindAsyncClass))]
-    [InlineData(typeof(InvalidWrongParamBindAsyncStruct))]
-    [InlineData(typeof(InvalidWrongParamBindAsyncClass))]
-    [InlineData(typeof(BindAsyncWrongTypeInherit))]
-    [InlineData(typeof(BindAsyncWithParameterInfoWrongTypeInherit))]
-    [InlineData(typeof(BindAsyncWrongTypeFromInterface))]
-    [InlineData(typeof(BindAsyncBothBadMethods))]
+    [MemberData(nameof(InvalidBindAsyncTypesData))]
     public void FindBindAsyncMethod_ThrowsIfInvalidBindAsyncOnType(Type type)
     {
         var cache = new ParameterBindingMethodCache();
@@ -443,14 +455,7 @@ public class ParameterBindingMethodCacheTests
     }
 
     [Theory]
-    [InlineData(typeof(InvalidWrongReturnBindAsyncStruct))]
-    [InlineData(typeof(InvalidWrongReturnBindAsyncClass))]
-    [InlineData(typeof(InvalidWrongParamBindAsyncStruct))]
-    [InlineData(typeof(InvalidWrongParamBindAsyncClass))]
-    [InlineData(typeof(BindAsyncWrongTypeInherit))]
-    [InlineData(typeof(BindAsyncWithParameterInfoWrongTypeInherit))]
-    [InlineData(typeof(BindAsyncWrongTypeFromInterface))]
-    [InlineData(typeof(BindAsyncBothBadMethods))]
+    [MemberData(nameof(InvalidBindAsyncTypesData))]
     public void FindBindAsyncMethod_DoesNotThrowIfInvalidBindAsyncOnType_WhenThrowOnInvalidFalse(Type type)
     {
         var cache = new ParameterBindingMethodCache(throwOnInvalidMethod: false);
