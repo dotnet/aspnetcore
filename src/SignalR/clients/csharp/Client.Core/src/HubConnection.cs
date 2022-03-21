@@ -313,13 +313,17 @@ public partial class HubConnection : IAsyncDisposable
     }
 
     /// <summary>
-    /// 
+    /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
-    /// <param name="methodName"></param>
-    /// <param name="parameterTypes"></param>
-    /// <param name="handler"></param>
-    /// <param name="state"></param>
-    /// <returns></returns>
+    /// <param name="methodName">The name of the hub method to define.</param>
+    /// <param name="parameterTypes">The parameters types expected by the hub method.</param>
+    /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
+    /// <param name="state">A state object that will be passed to the handler.</param>
+    /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
+    /// <remarks>
+    /// This is a low level method for registering a handler. Using an <see cref="HubConnectionExtensions"/> <c>On</c> extension method is recommended.
+    /// </remarks>
     public virtual IDisposable On(string methodName, Type[] parameterTypes, Func<object?[], object, Task<object?>> handler, object state)
     {
         Log.RegisteringHandler(_logger, methodName);
@@ -1077,6 +1081,10 @@ public partial class HubConnection : IAsyncDisposable
                 await SendWithLock(connectionState, CompletionMessage.WithResult(invocation.InvocationId!, result), cancellationToken: default).ConfigureAwait(false);
             }
         }
+        else if (hasResult)
+        {
+            // Log: result given but server didn't ask for one.
+        }
     }
 
     private async Task DispatchInvocationStreamItemAsync(StreamItemMessage streamItem, InvocationRequest irq)
@@ -1739,7 +1747,6 @@ public partial class HubConnection : IAsyncDisposable
             _callback = callback;
             ParameterTypes = parameterTypes;
             _state = state;
-
         }
 
         public Task InvokeAsync(object?[] parameters)

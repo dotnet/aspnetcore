@@ -15,21 +15,21 @@ namespace Microsoft.AspNetCore.SignalR.Protocol;
 /// stored as raw serialized bytes in the format of the protocol being used.
 /// </summary>
 /// <example>
-/// In Json that would mean storing the bytes of {"prop":10} as an example.
+/// In Json that would mean storing the byte representation of ascii {"prop":10} as an example.
 /// </example>
 public class RawResult
 {
     /// <summary>
-    /// 
+    /// Stores the raw serialized bytes of a <see cref="CompletionMessage.Result"/> for forwarding to another server.
     /// </summary>
-    /// <param name="rawBytes"></param>
+    /// <param name="rawBytes">The raw bytes from the client.</param>
     public RawResult(ReadOnlySequence<byte> rawBytes)
     {
         RawSerializedData = rawBytes;
     }
 
     /// <summary>
-    /// 
+    /// The raw serialized bytes from the client.
     /// </summary>
     public ReadOnlySequence<byte> RawSerializedData { get; private set; }
 }

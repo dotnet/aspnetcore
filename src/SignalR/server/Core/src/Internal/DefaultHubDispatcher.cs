@@ -178,7 +178,7 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
                 // InvocationId is always required on CompletionMessage, it's nullable because of the base type
                 else if (_hubLifetimeManager.TryGetReturnType(completionMessage.InvocationId!, out _))
                 {
-                    _hubLifetimeManager.SetConnectionResultAsync(connection.ConnectionId, completionMessage);
+                    return _hubLifetimeManager.SetConnectionResultAsync(connection.ConnectionId, completionMessage);
                 }
                 else
                 {
@@ -186,9 +186,6 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
                     Log.UnexpectedStreamCompletion(_logger);
                 }
                 break;
-
-            //case ClientResultMessage clientResultMessage:
-            //    return _hubLifetimeManager.SetClientResult(clientResultMessage);
 
             // Other kind of message we weren't expecting
             default:

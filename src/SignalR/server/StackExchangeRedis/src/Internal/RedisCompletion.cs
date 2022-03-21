@@ -5,27 +5,8 @@ using System.Buffers;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 
-internal readonly struct RedisReturnResult
-{
-    /// <summary>
-    /// Gets the message serialization cache containing serialized payloads for the message.
-    /// </summary>
-    public object? Result { get; }
-
-    public string InvocationId { get; }
-
-    public RedisReturnResult(string invocationId, object? result)
-    {
-        InvocationId = invocationId;
-        Result = result;
-    }
-}
-
 internal readonly struct RedisCompletion
 {
-    /// <summary>
-    /// Gets the message serialization cache containing serialized payloads for the message.
-    /// </summary>
     public ReadOnlySequence<byte> CompletionMessage { get; }
 
     public string ProtocolName { get; }

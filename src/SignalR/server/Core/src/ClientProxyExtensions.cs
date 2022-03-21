@@ -163,7 +163,7 @@ public static class ClientProxyExtensions
     /// <param name="arg5">The fifth argument.</param>
     /// <param name="arg6">The sixth argument.</param>
     /// <param name="arg7">The seventh argument.</param>
-    /// <param name="arg8">The eigth argument.</param>
+    /// <param name="arg8">The eighth argument.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous invoke.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
@@ -185,7 +185,7 @@ public static class ClientProxyExtensions
     /// <param name="arg5">The fifth argument.</param>
     /// <param name="arg6">The sixth argument.</param>
     /// <param name="arg7">The seventh argument.</param>
-    /// <param name="arg8">The eigth argument.</param>
+    /// <param name="arg8">The eighth argument.</param>
     /// <param name="arg9">The ninth argument.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous invoke.</returns>
@@ -208,7 +208,7 @@ public static class ClientProxyExtensions
     /// <param name="arg5">The fifth argument.</param>
     /// <param name="arg6">The sixth argument.</param>
     /// <param name="arg7">The seventh argument.</param>
-    /// <param name="arg8">The eigth argument.</param>
+    /// <param name="arg8">The eighth argument.</param>
     /// <param name="arg9">The ninth argument.</param>
     /// <param name="arg10">The tenth argument.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
@@ -220,10 +220,9 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
-    /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+    /// <param name="clientProxy">The <see cref="ISingleClientProxy"/>.</param>
     /// <param name="method">The name of the method to invoke.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous invoke.</returns>
@@ -234,10 +233,9 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
-    /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+    /// <param name="clientProxy">The <see cref="ISingleClientProxy"/>.</param>
     /// <param name="method">The name of the method to invoke.</param>
     /// <param name="arg1">The first argument.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
@@ -249,10 +247,9 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
-    /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+    /// <param name="clientProxy">The <see cref="ISingleClientProxy"/>.</param>
     /// <param name="method">The name of the method to invoke.</param>
     /// <param name="arg1">The first argument.</param>
     /// <param name="arg2">The second argument.</param>
@@ -265,10 +262,9 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
-    /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+    /// <param name="clientProxy">The <see cref="ISingleClientProxy"/>.</param>
     /// <param name="method">The name of the method to invoke.</param>
     /// <param name="arg1">The first argument.</param>
     /// <param name="arg2">The second argument.</param>
@@ -282,10 +278,9 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
-    /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+    /// <param name="clientProxy">The <see cref="ISingleClientProxy"/>.</param>
     /// <param name="method">The name of the method to invoke.</param>
     /// <param name="arg1">The first argument.</param>
     /// <param name="arg2">The second argument.</param>
@@ -300,10 +295,9 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
-    /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+    /// <param name="clientProxy">The <see cref="ISingleClientProxy"/>.</param>
     /// <param name="method">The name of the method to invoke.</param>
     /// <param name="arg1">The first argument.</param>
     /// <param name="arg2">The second argument.</param>
@@ -319,10 +313,9 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
-    /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+    /// <param name="clientProxy">The <see cref="ISingleClientProxy"/>.</param>
     /// <param name="method">The name of the method to invoke.</param>
     /// <param name="arg1">The first argument.</param>
     /// <param name="arg2">The second argument.</param>
@@ -339,8 +332,7 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
     /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
     /// <param name="method">The name of the method to invoke.</param>
@@ -360,10 +352,9 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
-    /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+    /// <param name="clientProxy">The <see cref="ISingleClientProxy"/>.</param>
     /// <param name="method">The name of the method to invoke.</param>
     /// <param name="arg1">The first argument.</param>
     /// <param name="arg2">The second argument.</param>
@@ -372,7 +363,7 @@ public static class ClientProxyExtensions
     /// <param name="arg5">The fifth argument.</param>
     /// <param name="arg6">The sixth argument.</param>
     /// <param name="arg7">The seventh argument.</param>
-    /// <param name="arg8">The eigth argument.</param>
+    /// <param name="arg8">The eighth argument.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous invoke.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
@@ -382,10 +373,9 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
-    /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+    /// <param name="clientProxy">The <see cref="ISingleClientProxy"/>.</param>
     /// <param name="method">The name of the method to invoke.</param>
     /// <param name="arg1">The first argument.</param>
     /// <param name="arg2">The second argument.</param>
@@ -394,7 +384,7 @@ public static class ClientProxyExtensions
     /// <param name="arg5">The fifth argument.</param>
     /// <param name="arg6">The sixth argument.</param>
     /// <param name="arg7">The seventh argument.</param>
-    /// <param name="arg8">The eigth argument.</param>
+    /// <param name="arg8">The eighth argument.</param>
     /// <param name="arg9">The ninth argument.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous invoke.</returns>
@@ -405,10 +395,9 @@ public static class ClientProxyExtensions
     }
 
     /// <summary>
-    /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
-    /// Does not wait for a response from the receiver.
+    /// Invokes a method on the connection represented by the <see cref="ISingleClientProxy"/> instance and waits for a response.
     /// </summary>
-    /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+    /// <param name="clientProxy">The <see cref="ISingleClientProxy"/>.</param>
     /// <param name="method">The name of the method to invoke.</param>
     /// <param name="arg1">The first argument.</param>
     /// <param name="arg2">The second argument.</param>
@@ -417,7 +406,7 @@ public static class ClientProxyExtensions
     /// <param name="arg5">The fifth argument.</param>
     /// <param name="arg6">The sixth argument.</param>
     /// <param name="arg7">The seventh argument.</param>
-    /// <param name="arg8">The eigth argument.</param>
+    /// <param name="arg8">The eighth argument.</param>
     /// <param name="arg9">The ninth argument.</param>
     /// <param name="arg10">The tenth argument.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>

@@ -209,6 +209,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                             }
                             else
                             {
+                                // If we have an invocation id already we can parse the end result
                                 var returnType = binder.GetReturnType(invocationId);
                                 result = BindType(ref reader, input, returnType);
                             }

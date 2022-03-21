@@ -32,9 +32,6 @@ internal class RedisProtocol
     // * The "Length prefixed string" is the string format used by BinaryReader/BinaryWriter:
     //   * A 7-bit variable length integer encodes the length in bytes, followed by the encoded string in UTF-8.
 
-    //public byte[] WriteInvocation(string methodName, object?[] args, string? invocationId = null) =>
-    //    WriteInvocation(methodName, args, invocationId, excludedConnectionIds: null);
-
     public byte[] WriteInvocation(string methodName, object?[] args, string? invocationId = null,
         IReadOnlyList<string>? excludedConnectionIds = null, string? returnChannel = null)
     {

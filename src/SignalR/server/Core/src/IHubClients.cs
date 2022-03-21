@@ -9,10 +9,9 @@ namespace Microsoft.AspNetCore.SignalR;
 public interface IHubClients : IHubClients<IClientProxy>
 {
     /// <summary>
-    /// 
+    /// Gets a proxy that can be used to invoke methods on a single client connected to the hub and receive results.
     /// </summary>
-    /// <param name="connectionId"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <param name="connectionId">The connection ID.</param>
+    /// <returns>A client caller.</returns>
     new ISingleClientProxy Single(string connectionId) => throw new NotImplementedException();
 }

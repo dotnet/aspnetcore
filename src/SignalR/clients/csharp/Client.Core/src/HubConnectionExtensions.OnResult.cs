@@ -20,14 +20,33 @@ public static partial class HubConnectionExtensions
     }
 
     /// <summary>
-    /// 
+    /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="hubConnection"></param>
-    /// <param name="methodName"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
+    /// <param name="hubConnection">The hub connection.</param>
+    /// <param name="methodName">The name of the hub method to define.</param>
+    /// <param name="parameterTypes">The parameters types expected by the hub method.</param>
+    /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
+    /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
+    public static IDisposable On<TResult>(this HubConnection hubConnection, string methodName, Type[] parameterTypes, Func<object?[], Task<TResult>> handler)
+    {
+        return hubConnection.On(methodName, parameterTypes, async (parameters, state) =>
+        {
+            var currentHandler = (Func<object?[], Task<TResult>>)state;
+            return await currentHandler(parameters).ConfigureAwait(false);
+        }, handler);
+    }
+
+    /// <summary>
+    /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
+    /// </summary>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
+    /// <param name="hubConnection">The hub connection.</param>
+    /// <param name="methodName">The name of the hub method to define.</param>
+    /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
+    /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<TResult>(this HubConnection hubConnection, string methodName, Func<Task<TResult>> handler)
     {
         if (hubConnection == null)
@@ -39,14 +58,14 @@ public static partial class HubConnectionExtensions
     }
 
     /// <summary>
-    /// 
+    /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="hubConnection"></param>
-    /// <param name="methodName"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
+    /// <param name="hubConnection">The hub connection.</param>
+    /// <param name="methodName">The name of the hub method to define.</param>
+    /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
+    /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<TResult>(this HubConnection hubConnection, string methodName, Func<TResult> handler)
     {
         if (hubConnection == null)
@@ -58,15 +77,15 @@ public static partial class HubConnectionExtensions
     }
 
     /// <summary>
-    /// 
+    /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
-    /// <typeparam name="T1"></typeparam>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="hubConnection"></param>
-    /// <param name="methodName"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <typeparam name="T1">The first argument type.</typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
+    /// <param name="hubConnection">The hub connection.</param>
+    /// <param name="methodName">The name of the hub method to define.</param>
+    /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
+    /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, TResult>(this HubConnection hubConnection, string methodName, Func<T1, TResult> handler)
     {
         if (hubConnection == null)
@@ -80,16 +99,16 @@ public static partial class HubConnectionExtensions
     }
 
     /// <summary>
-    /// 
+    /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
-    /// <typeparam name="T1"></typeparam>
-    /// /// <typeparam name="T2"></typeparam>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="hubConnection"></param>
-    /// <param name="methodName"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <typeparam name="T1">The first argument type.</typeparam>
+    /// <typeparam name="T2">The second argument type.</typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
+    /// <param name="hubConnection">The hub connection.</param>
+    /// <param name="methodName">The name of the hub method to define.</param>
+    /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
+    /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, TResult>(this HubConnection hubConnection, string methodName, Func<T1, T2, TResult> handler)
     {
         if (hubConnection == null)
@@ -104,11 +123,12 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
     /// <typeparam name="T3">The third argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -127,12 +147,13 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
     /// <typeparam name="T3">The third argument type.</typeparam>
     /// <typeparam name="T4">The fourth argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -151,13 +172,14 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
     /// <typeparam name="T3">The third argument type.</typeparam>
     /// <typeparam name="T4">The fourth argument type.</typeparam>
     /// <typeparam name="T5">The fifth argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -176,6 +198,7 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
@@ -183,7 +206,7 @@ public static partial class HubConnectionExtensions
     /// <typeparam name="T4">The fourth argument type.</typeparam>
     /// <typeparam name="T5">The fifth argument type.</typeparam>
     /// <typeparam name="T6">The sixth argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -202,6 +225,7 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
@@ -210,7 +234,7 @@ public static partial class HubConnectionExtensions
     /// <typeparam name="T5">The fifth argument type.</typeparam>
     /// <typeparam name="T6">The sixth argument type.</typeparam>
     /// <typeparam name="T7">The seventh argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -229,6 +253,7 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
@@ -238,7 +263,7 @@ public static partial class HubConnectionExtensions
     /// <typeparam name="T6">The sixth argument type.</typeparam>
     /// <typeparam name="T7">The seventh argument type.</typeparam>
     /// <typeparam name="T8">The eighth argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -256,15 +281,15 @@ public static partial class HubConnectionExtensions
     }
 
     /// <summary>
-    /// 
+    /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
-    /// <typeparam name="T1"></typeparam>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="hubConnection"></param>
-    /// <param name="methodName"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <typeparam name="T1">The first argument type.</typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
+    /// <param name="hubConnection">The hub connection.</param>
+    /// <param name="methodName">The name of the hub method to define.</param>
+    /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
+    /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, TResult>(this HubConnection hubConnection, string methodName, Func<T1, Task<TResult>> handler)
     {
         if (hubConnection == null)
@@ -278,16 +303,16 @@ public static partial class HubConnectionExtensions
     }
 
     /// <summary>
-    /// 
+    /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
-    /// <typeparam name="T1"></typeparam>
-    /// <typeparam name="T2"></typeparam>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="hubConnection"></param>
-    /// <param name="methodName"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <typeparam name="T1">The first argument type.</typeparam>
+    /// <typeparam name="T2">The second argument type.</typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
+    /// <param name="hubConnection">The hub connection.</param>
+    /// <param name="methodName">The name of the hub method to define.</param>
+    /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
+    /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<T1, T2, TResult>(this HubConnection hubConnection, string methodName, Func<T1, T2, Task<TResult>> handler)
     {
         if (hubConnection == null)
@@ -302,11 +327,12 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
     /// <typeparam name="T3">The third argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -325,12 +351,13 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
     /// <typeparam name="T3">The third argument type.</typeparam>
     /// <typeparam name="T4">The fourth argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -349,13 +376,14 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
     /// <typeparam name="T3">The third argument type.</typeparam>
     /// <typeparam name="T4">The fourth argument type.</typeparam>
     /// <typeparam name="T5">The fifth argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -374,6 +402,7 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
@@ -381,7 +410,7 @@ public static partial class HubConnectionExtensions
     /// <typeparam name="T4">The fourth argument type.</typeparam>
     /// <typeparam name="T5">The fifth argument type.</typeparam>
     /// <typeparam name="T6">The sixth argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -400,6 +429,7 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
@@ -408,7 +438,7 @@ public static partial class HubConnectionExtensions
     /// <typeparam name="T5">The fifth argument type.</typeparam>
     /// <typeparam name="T6">The sixth argument type.</typeparam>
     /// <typeparam name="T7">The seventh argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>
@@ -427,6 +457,7 @@ public static partial class HubConnectionExtensions
 
     /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+    /// Returns value returned by handler to server if the server requests a result.
     /// </summary>
     /// <typeparam name="T1">The first argument type.</typeparam>
     /// <typeparam name="T2">The second argument type.</typeparam>
@@ -436,7 +467,7 @@ public static partial class HubConnectionExtensions
     /// <typeparam name="T6">The sixth argument type.</typeparam>
     /// <typeparam name="T7">The seventh argument type.</typeparam>
     /// <typeparam name="T8">The eighth argument type.</typeparam>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">The return type the handler returns.</typeparam>
     /// <param name="hubConnection">The hub connection.</param>
     /// <param name="methodName">The name of the hub method to define.</param>
     /// <param name="handler">The handler that will be raised when the hub method is invoked.</param>

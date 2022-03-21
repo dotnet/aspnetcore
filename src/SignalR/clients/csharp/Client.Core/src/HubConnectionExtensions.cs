@@ -244,24 +244,6 @@ public static partial class HubConnectionExtensions
     }
 
     /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TResult"></typeparam>
-    /// <param name="hubConnection"></param>
-    /// <param name="methodName"></param>
-    /// <param name="parameterTypes"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
-    public static IDisposable On<TResult>(this HubConnection hubConnection, string methodName, Type[] parameterTypes, Func<object?[], Task<TResult>> handler)
-    {
-        return hubConnection.On(methodName, parameterTypes, async (parameters, state) =>
-        {
-            var currentHandler = (Func<object?[], Task<TResult>>)state;
-            return await currentHandler(parameters).ConfigureAwait(false);
-        }, handler);
-    }
-
-    /// <summary>
     /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
     /// </summary>
     /// <param name="hubConnection">The hub connection.</param>

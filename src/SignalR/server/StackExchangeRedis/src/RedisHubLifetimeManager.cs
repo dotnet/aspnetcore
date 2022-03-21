@@ -458,11 +458,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     /// <inheritdoc/>
     public override bool TryGetReturnType(string invocationId, [NotNullWhen(true)] out Type? type)
     {
-        if (_clientResultsManager.TryGetType(invocationId, out type))
-        {
-            return true;
-        }
-        return false;
+        return _clientResultsManager.TryGetType(invocationId, out type);
     }
 
     private async Task SubscribeToAll()
@@ -657,15 +653,6 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             invocationInfo.Completion((CompletionMessage)hubMessage);
         });
     }
-
-    //private CompletionMessage GetCompletionMessage(ReadOnlyMemory<byte> rawMessage, string protocolName)
-    //{
-    //    var protocol = _hubProtocolResolver.AllProtocols.First(p => p.Name.Equals(protocolName));
-    //    var serialized = new System.Buffers.ReadOnlySequence<byte>(rawMessage);
-    //    protocol.TryParseMessage(ref serialized, this, out var message);
-    //    Debug.Assert(message is CompletionMessage);
-    //    return (CompletionMessage)message;
-    //}
 
     private async Task EnsureRedisServerConnection()
     {
