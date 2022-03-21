@@ -8,9 +8,9 @@ using BasicWebSite.Models;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class HttpResultsTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithSystemTextJson>>
+public class HttpActionResultTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithSystemTextJson>>
 {
-    public HttpResultsTests(MvcTestFixture<BasicWebSite.StartupWithSystemTextJson> fixture)
+    public HttpActionResultTests(MvcTestFixture<BasicWebSite.StartupWithSystemTextJson> fixture)
     {
         Client = fixture.CreateDefaultClient();
     }
