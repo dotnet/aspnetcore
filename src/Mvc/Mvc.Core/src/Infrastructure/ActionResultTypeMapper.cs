@@ -37,9 +37,9 @@ internal class ActionResultTypeMapper : IActionResultTypeMapper
             return converter.Convert();
         }
 
-        if (value is IResult result)
+        if (value is IResult httpResult)
         {
-            return new HttpActionResult(result);
+            return new HttpActionResult(httpResult);
         }
 
         return new ObjectResult(value)

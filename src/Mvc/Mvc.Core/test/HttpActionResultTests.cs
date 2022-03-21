@@ -11,10 +11,10 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Mvc;
 
-public class HttpResultsResultTest
+public class HttpActionResultTests
 {
     [Fact]
-    public void HttpResultsResult_InitializesWithResultsStaticMethods()
+    public void HttpActionResult_InitializesWithResultsStaticMethods()
     {
         // Arrange & Act
         var httpResult = Mock.Of<IResult>();
@@ -25,7 +25,7 @@ public class HttpResultsResultTest
     }
 
     [Fact]
-    public async Task HttpResultsResult_SetsStatusCode()
+    public async Task HttpActionResult_SetsStatusCode()
     {
         // Arrange
         var httpContext = new DefaultHttpContext
