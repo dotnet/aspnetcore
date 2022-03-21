@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.JSInterop;
@@ -62,8 +63,12 @@ namespace Microsoft.AspNetCore.Components.WebView
 
         public void NotifyUnhandledException(Exception exception)
         {
+            // Send the serialized exception to the WebView for display
             var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.NotifyUnhandledException, exception.Message, exception.StackTrace);
             _dispatcher.InvokeAsync(() => _messageDispatcher(message));
+            
+            // Also rethrow so the AppDomain's UnhandledException handler gets notified
+            _dispatcher.InvokeAsync(() => ExceptionDispatchInfo.Capture(exception).Throw());
         }
 
         private void DispatchMessageWithErrorHandling(string message)
