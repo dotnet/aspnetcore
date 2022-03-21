@@ -32,5 +32,5 @@ public class FiltersController : Controller
     public IResult HttpResultsFilterForIResult() => Results.NoContent();
 
     [HttpResultsFilter]
-    public IActionResult HttpResultsFilter() => new HttpResultsActionResult(Results.NoContent());
+    public IActionResult HttpResultsFilter() => new HttpActionResult(Results.NoContent());
 }

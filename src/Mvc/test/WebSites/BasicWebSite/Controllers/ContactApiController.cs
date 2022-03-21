@@ -136,7 +136,7 @@ public class ContactApiController : Controller
     public ActionResult ActionReturningHttpResultsActionResult(int id)
     {
         var result = Results.Ok(new Contact() { ContactId = id });
-        return new HttpResultsActionResult(result);
+        return new HttpActionResult(result);
     }
 
     [HttpGet("[action]")]

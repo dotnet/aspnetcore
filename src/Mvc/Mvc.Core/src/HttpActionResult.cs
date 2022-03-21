@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// <summary>
 /// An <see cref="ActionResult"/> that when executed will produce a response based on the <see cref="IResult"/> provided.
 /// </summary>
-public sealed class HttpResultsActionResult : ActionResult
+internal sealed class HttpActionResult : ActionResult
 {
     /// <summary>
     /// Gets the instance of the current <see cref="IResult"/>.
@@ -16,11 +16,11 @@ public sealed class HttpResultsActionResult : ActionResult
     public IResult Result { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpResultsActionResult"/> class with the
+    /// Initializes a new instance of the <see cref="HttpActionResult"/> class with the
     /// <see cref="IResult"/> provided.
     /// </summary>
     /// <param name="result">The <see cref="IResult"/> instance to be used during the <see cref="ExecuteResultAsync"/> invocation.</param>
-    public HttpResultsActionResult(IResult result)
+    public HttpActionResult(IResult result)
     {
         Result = result;
     }

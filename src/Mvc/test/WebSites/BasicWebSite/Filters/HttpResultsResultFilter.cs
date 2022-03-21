@@ -15,7 +15,7 @@ public class HttpResultsFilter : Attribute, IResultFilter
 
     public void OnResultExecuting(ResultExecutingContext context)
     {
-        if (context is { Result: HttpResultsActionResult { Result: IResult result } })
+        if (context is { Result: HttpActionResult { Result: IResult result } })
         {
             context.Result = new StatusCodeResult(StatusCodes.Status200OK);
             context.HttpContext.Response.Headers["X-HttpResultType"] = result.GetType().Name;

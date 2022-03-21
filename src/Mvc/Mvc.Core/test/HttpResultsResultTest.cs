@@ -18,7 +18,7 @@ public class HttpResultsResultTest
     {
         // Arrange & Act
         var httpResult = Mock.Of<IResult>();
-        var result = new HttpResultsActionResult(httpResult);
+        var result = new HttpActionResult(httpResult);
 
         // Assert
         Assert.Equal(httpResult, result.Result);
@@ -39,7 +39,7 @@ public class HttpResultsResultTest
         httpResult.Setup(s => s.ExecuteAsync(httpContext))
             .Returns(() => Task.CompletedTask)
             .Verifiable();
-        var result = new HttpResultsActionResult(httpResult.Object);
+        var result = new HttpActionResult(httpResult.Object);
 
         // Act
         await result.ExecuteResultAsync(context);

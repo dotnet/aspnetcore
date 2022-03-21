@@ -39,7 +39,7 @@ internal class ActionResultTypeMapper : IActionResultTypeMapper
 
         if (value is IResult result)
         {
-            return new HttpResultsActionResult(result);
+            return new HttpActionResult(result);
         }
 
         return new ObjectResult(value)

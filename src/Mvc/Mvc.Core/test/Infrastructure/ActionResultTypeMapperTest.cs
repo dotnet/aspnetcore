@@ -36,7 +36,7 @@ public class ActionResultTypeMapperTest
         var result = mapper.Convert(returnValue, returnValue.GetType());
 
         // Assert
-        var httpResultsResult = Assert.IsType<HttpResultsActionResult>(result);
+        var httpResultsResult = Assert.IsType<HttpActionResult>(result);
         Assert.Same(returnValue, httpResultsResult.Result);
     }
 
