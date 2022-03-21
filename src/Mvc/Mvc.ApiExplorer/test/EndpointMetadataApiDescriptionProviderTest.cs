@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -1143,6 +1144,68 @@ public class EndpointMetadataApiDescriptionProviderTest
             constraint => Assert.IsType<MinLengthRouteConstraint>(constraint),
             constraint => Assert.IsType<GuidRouteConstraint>(constraint),
             constraint => Assert.IsType<MaxLengthRouteConstraint>(constraint));
+    }
+
+    [Fact]
+    public void HandlesEndpointWithDescriptionAndSummary_WithExtensionMethods()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos/{id}", (int id) => "").WithDescription("A description").WithSummary("A summary");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        Assert.NotEmpty(apiDescription.ActionDescriptor.EndpointMetadata);
+
+        var descriptionMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointDescriptionMetadata>().SingleOrDefault();
+        Assert.NotNull(descriptionMetadata);
+        Assert.Equal("A description", descriptionMetadata.Description);
+
+        var summaryMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointSummaryMetadata>().SingleOrDefault();
+        Assert.NotNull(summaryMetadata);
+        Assert.Equal("A summary", summaryMetadata.Summary);
+    }
+
+    [Fact]
+    public void HandlesEndpointWithDescriptionAndSummary_WithAttributes()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos/{id}", [EndpointSummary("A summary")][EndpointDescription("A description")] (int id) => "");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        Assert.NotEmpty(apiDescription.ActionDescriptor.EndpointMetadata);
+
+        var descriptionMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointDescriptionMetadata>().SingleOrDefault();
+        Assert.NotNull(descriptionMetadata);
+        Assert.Equal("A description", descriptionMetadata.Description);
+
+        var summaryMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointSummaryMetadata>().SingleOrDefault();
+        Assert.NotNull(summaryMetadata);
+        Assert.Equal("A summary", summaryMetadata.Summary);
     }
 
     private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)

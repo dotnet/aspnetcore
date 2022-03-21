@@ -523,7 +523,7 @@ public static class EndpointRouteBuilderExtensions
                 RouteParameterNames = routeParams,
                 ThrowOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false,
                 DisableInferBodyFromParameters = disableInferBodyFromParameters,
-                RouteHandlerFilters = routeHandlerBuilder.RouteHandlerFilters
+                RouteHandlerFilterFactories = routeHandlerBuilder.RouteHandlerFilterFactories
             };
             var filteredRequestDelegateResult = RequestDelegateFactory.Create(handler, options);
             // Add request delegate metadata

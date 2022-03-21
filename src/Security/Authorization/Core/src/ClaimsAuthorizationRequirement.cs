@@ -19,8 +19,7 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
     /// Creates a new instance of <see cref="ClaimsAuthorizationRequirement"/>.
     /// </summary>
     /// <param name="claimType">The claim type that must be present.</param>
-    /// <param name="allowedValues">The optional list of claim values, which, if present,
-    /// the claim must match.</param>
+    /// <param name="allowedValues">Optional list of claim values. If specified, the claim must match one or more of these values.</param>
     public ClaimsAuthorizationRequirement(string claimType, IEnumerable<string>? allowedValues)
     {
         if (claimType == null)

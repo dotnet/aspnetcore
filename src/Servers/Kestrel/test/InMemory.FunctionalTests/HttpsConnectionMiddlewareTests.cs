@@ -384,8 +384,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             using (var connection = server.CreateConnection())
             {
                 var stream = OpenSslStream(connection.Stream);
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                 await Assert.ThrowsAsync<IOException>(() =>
                     stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false));
+#pragma warning restore SYSLIB0039
                 Assert.Equal(1, selectorCalled);
             }
         }
@@ -444,8 +446,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             using (var connection = server.CreateConnection())
             {
                 var stream = OpenSslStream(connection.Stream);
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                 await Assert.ThrowsAsync<IOException>(() =>
                     stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false));
+#pragma warning restore SYSLIB0039
                 Assert.Equal(1, selectorCalled);
             }
         }
@@ -702,7 +706,9 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var clientOptions = new SslClientAuthenticationOptions()
         {
             TargetHost = Guid.NewGuid().ToString(),
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
             EnabledSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12,
+#pragma warning restore SYSLIB0039
         };
         clientOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
 
@@ -964,7 +970,9 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         {
             listenOptions.UseHttps(options =>
             {
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                 options.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
+#pragma warning restore SYSLIB0039
                 options.ServerCertificate = _x509Certificate2;
                 options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
                 options.AllowAnyClientCertificate();
@@ -979,8 +987,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             using (var connection = server.CreateConnection())
             {
                 var stream = OpenSslStreamWithCert(connection.Stream);
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                 var ex = await Assert.ThrowsAnyAsync<Exception>(
                     async () => await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls, false));
+#pragma warning restore SYSLIB0039
             }
         }
     }

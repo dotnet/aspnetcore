@@ -10,7 +10,9 @@ internal class HostingEnvironment : IHostingEnvironment, Extensions.Hosting.IHos
 {
     public string EnvironmentName { get; set; } = Extensions.Hosting.Environments.Production;
 
-    public string ApplicationName { get; set; } = default!;
+#pragma warning disable CS8766 // Nullability of reference types in return type doesn't match implicitly implemented member (possibly because of nullability attributes).
+    public string? ApplicationName { get; set; }
+#pragma warning restore CS8766 // Nullability of reference types in return type doesn't match implicitly implemented member (possibly because of nullability attributes).
 
     public string WebRootPath { get; set; } = default!;
 

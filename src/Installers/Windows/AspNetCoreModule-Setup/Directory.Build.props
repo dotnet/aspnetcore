@@ -32,7 +32,7 @@
 
     <_ServerIISBasePath>$(RepoRoot)\src\Servers\IIS\</_ServerIISBasePath>
     <DefineConstants>BLDVERMAJOR=$(BLDVERMAJOR);BLDVERMINOR=$(BLDVERMINOR);BLDNUMMAJOR=$(BLDNUMMAJOR);BLDNUMMINOR=$(BLDNUMMINOR);$(DefineConstants)</DefineConstants>
-    <DefineConstants>ANCMMsiVersion=$(ANCMMsiVersion);ANCMFolderVersion=$(ANCMFolderVersion);ANCMOutOfProcessNugetPackageHandlerVersion=$(ANCMOutOfProcessNugetPackageHandlerVersion);$(DefineConstants)</DefineConstants>
+    <DefineConstants>ArtifactsDir=$(ArtifactsDir);ANCMMsiVersion=$(ANCMMsiVersion);ANCMFolderVersion=$(ANCMFolderVersion);ANCMOutOfProcessNugetPackageHandlerVersion=$(ANCMOutOfProcessNugetPackageHandlerVersion);$(DefineConstants)</DefineConstants>
     <DefineConstants>
       AspNetCoreSchemaPath=$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml;
       AspNetCoreMofPath=$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\ancm.mof;
@@ -40,7 +40,7 @@
     </DefineConstants>
   </PropertyGroup>
 
- <ItemGroup>
+ <ItemGroup Condition="'$(BuildNative)' == 'true'">
     <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
       <Name>AspNetCoreV2</Name>
       <Private>True</Private>
@@ -70,5 +70,26 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SetPlatform>Platform=Win32</SetPlatform>
     </ProjectReference>
+   
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
+      <Name>AspNetCoreV2ARM64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=ARM64</SetPlatform>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
+      <Name>AspNetCoreV2HandlerARM64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=ARM64</SetPlatform>
+    </ProjectReference>
   </ItemGroup>
+
+  <Target Name="CopyANCM" BeforeTargets="_PrepareForBuild" Condition=" '$(BuildNative)' != 'true' ">
+    <ItemGroup>
+      <None Include="%(RunShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Condition="Exists('%(RunShimComponents.DllLocation)')" Link="%(RunShimComponents.Platform)\%(RunShimComponents.NativeAsset).dll" />
+    </ItemGroup>
+  </Target>
 </Project>
