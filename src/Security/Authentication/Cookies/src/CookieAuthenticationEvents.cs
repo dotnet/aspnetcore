@@ -105,7 +105,8 @@ public class CookieAuthenticationEvents
     private static bool IsAjaxRequest(HttpRequest request)
     {
         return string.Equals(request.Query[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal) ||
-            string.Equals(request.Headers.XRequestedWith, "XMLHttpRequest", StringComparison.Ordinal);
+            string.Equals(request.Headers.XRequestedWith, "XMLHttpRequest", StringComparison.Ordinal) ||
+            request.Headers.Accept.ToString().Contains("application/json");
     }
 
     /// <summary>
