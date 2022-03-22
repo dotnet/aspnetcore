@@ -362,6 +362,10 @@ public static class DotNetDispatcher
         }
     }
 
+    [UnconditionalSuppressMessage(
+        "ReflectionAnalysis",
+        "IL2060:MakeGenericMethod",
+        Justification = "https://github.com/mono/linker/issues/1727")]
     private static Task GetTaskByType(Type type, object obj)
     {
         var assemblyMethods = _cachedConvertToTaskByType.GetOrAdd(type, (Type t)=>
