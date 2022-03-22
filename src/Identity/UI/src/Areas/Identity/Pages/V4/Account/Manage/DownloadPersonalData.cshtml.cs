@@ -58,7 +58,7 @@ internal class DownloadPersonalDataModel<TUser> : DownloadPersonalDataModel wher
         _logger.LogInformation(LoggerEventIds.PersonalDataRequested, "User asked for their personal data.");
 
         // Only include personal data for download
-        var personalData = new Dictionary<string, string>();
+        var personalData = new Dictionary<string, string?>();
         var personalDataProps = typeof(TUser).GetProperties().Where(
                         prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
         foreach (var p in personalDataProps)

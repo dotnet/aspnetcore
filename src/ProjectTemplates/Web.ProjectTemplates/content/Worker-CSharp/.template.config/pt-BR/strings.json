@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Worker Service",
-    "description": "Um modelo de projeto vazio para criar um worker service."
-  }
-}

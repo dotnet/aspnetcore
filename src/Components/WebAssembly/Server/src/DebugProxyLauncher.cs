@@ -93,6 +93,10 @@ internal static class DebugProxyLauncher
 
     private static string LocateDebugProxyExecutable(IWebHostEnvironment environment)
     {
+        if (string.IsNullOrEmpty(environment.ApplicationName))
+        {
+            throw new InvalidOperationException("IWebHostEnvironment.ApplicationName is required to be set in order to start the debug proxy.");
+        }
         var assembly = Assembly.Load(environment.ApplicationName);
         var debugProxyPath = Path.Combine(
             Path.GetDirectoryName(assembly.Location)!,
@@ -168,6 +172,8 @@ internal static class DebugProxyLauncher
                 if (match.Success)
                 {
                     capturedUrl = match.Groups["url"].Value;
+                    capturedUrl = capturedUrl.Replace("http://", "ws://");
+                    capturedUrl = capturedUrl.Replace("https://", "wss://");
                 }
             }
         }

@@ -44,6 +44,19 @@ public class JsonFormatterController : Controller
         return objectResult;
     }
 
+#nullable enable
+    [HttpPost]
+    public IActionResult ReturnNonNullableInput([FromBody] DummyClass dummyObject)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        return Content(dummyObject.SampleInt.ToString(CultureInfo.InvariantCulture));
+    }
+#nullable restore
+
     [HttpPost]
     public IActionResult ReturnInput([FromBody] DummyClass dummyObject)
     {
@@ -52,7 +65,7 @@ public class JsonFormatterController : Controller
             return BadRequest(ModelState);
         }
 
-        return Content(dummyObject.SampleInt.ToString(CultureInfo.InvariantCulture));
+        return Content(dummyObject?.SampleInt.ToString(CultureInfo.InvariantCulture));
     }
 
     [HttpPost]

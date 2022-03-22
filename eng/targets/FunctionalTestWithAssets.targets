@@ -1,27 +1,48 @@
 <Project>
+  <!--
+    Test asset publication support intended for case where an asset is referenced in a single test project.
+    References in more than one or two test projects would slow the build because each restore or publish
+    operation gets unique (per-test project) global properties.
 
-  <ItemGroup>
-    <ProjectReference Include="@(FunctionalTestAssetProjectReference)" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <Target Name="CollectTestAssetPayload" BeforeTargets="GetCopyToOutputDirectoryItems" >
-    <MSBuild Targets="CollectFunctionalTestPayload"
-             BuildInParallel="true"
-             SkipNonexistentTargets="true"
-             Projects="%(FunctionalTestAssetProjectReference.Identity)"
-             RebaseOutputs="True">
-      <Output TaskParameter="TargetOutputs" ItemName="DependencyPayload" />
-    </MSBuild>
-
+    Hook into Build target in addition to Publish (for Helix), RunTests (for Arcade), and VSTest (for dotnet test)
+    because VS does not use a target when discovering or executing tests (examines test assembly instead). Need
+    those targets too to ensure everything is up-to-date when executing tests.
+  -->
+  <Target Name="PublishTestAssets"
+      BeforeTargets="Build;Publish;RunTests;VSTest"
+      Condition=" '$(ExcludeFromBuild)' != 'true' AND
+        '$(DotNetBuildFromSource)' != 'true' AND
+        '@(TestAssetProjectReference->Count())' != '0' ">
     <ItemGroup>
-      <ContentWithTargetPath
-        Include="@(DependencyPayload)"
-        Condition="'@(DependencyPayload->Count())' != '0'">
-        <TargetPath>%(DependencyPayload.RelativePath)</TargetPath>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </ContentWithTargetPath>
-    </ItemGroup>
-  </Target>
+      <_ProjectsToPublish Include="@(TestAssetProjectReference)" />
 
+      <!-- Always Publish test assets relative to test project's output. -->
+      <_ProjectsToPublish AdditionalProperties="%(_ProjectsToPublish.AdditionalProperties);
+          PublishDir=$(PublishDir)%(RelativeFolder)" />
+
+      <!-- Do not build when publishing if SkipBuild requested. -->
+      <_ProjectsToPublish Condition=" '%(SkipBuild)' == 'true' "
+          AdditionalProperties="%(_ProjectsToPublish.AdditionalProperties);NoBuild=true" />
+
+      <!--
+        Otherwise, both Build and Publish test assets into folders relative to test project's output. Reset
+        NoBuild because these projects aren't referenced anywhere else.
+      -->
+      <_ProjectsToPublish Condition=" '%(SkipBuild)' != 'true' "
+          AdditionalProperties="%(_ProjectsToPublish.AdditionalProperties);
+            NoBuild=false;
+            OutputPath=$(OutputPath)%(RelativeFolder)" />
+    </ItemGroup>
+
+    <!--
+      These are separate invocations to ensure Publish sees restored setup. Platform and PlatformTarget removals
+      are to fix builds inside VS.
+    -->
+    <MSBuild Projects="@(_ProjectsToPublish->WithMetadataValue('SkipBuild', 'false'))"
+        BuildInParallel="$(BuildInParallel)"
+        Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())"
+        RemoveProperties="Platform;PlatformTarget"
+        Targets="Restore" />
+    <MSBuild Projects="@(_ProjectsToPublish)" Targets="Publish" RemoveProperties="Platform;PlatformTarget" />
+  </Target>
 </Project>

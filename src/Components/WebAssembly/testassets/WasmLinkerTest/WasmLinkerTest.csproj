@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' != 'true' AND @(ILLinkSuppressionFile->Count()) != 0">$(ILLinkArgs) --link-attributes @(ILLinkSuppressionFile->'%(FullPath)', ' --link-attributes ')</ILLinkArgs>
+      <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' != 'true' AND '@(ILLinkSuppressionFile->Count())' != '0'">$(ILLinkArgs) --link-attributes @(ILLinkSuppressionFile->'%(FullPath)', ' --link-attributes ')</ILLinkArgs>
     </PropertyGroup>
 
     <!--

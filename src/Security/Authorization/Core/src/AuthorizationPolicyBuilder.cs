@@ -99,7 +99,7 @@ public class AuthorizationPolicyBuilder
     /// that the current user has the specified claim and that the claim value must be one of the allowed values.
     /// </summary>
     /// <param name="claimType">The claim type required.</param>
-    /// <param name="allowedValues">Values the claim must process one or more of for evaluation to succeed.</param>
+    /// <param name="allowedValues">Optional list of claim values. If specified, the claim must match one or more of these values.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] allowedValues)
     {
@@ -116,7 +116,7 @@ public class AuthorizationPolicyBuilder
     /// that the current user has the specified claim and that the claim value must be one of the allowed values.
     /// </summary>
     /// <param name="claimType">The claim type required.</param>
-    /// <param name="allowedValues">Values the claim must process one or more of for evaluation to succeed.</param>
+    /// <param name="allowedValues">Optional list of claim values. If specified, the claim must match one or more of these values.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> allowedValues)
     {
@@ -182,7 +182,7 @@ public class AuthorizationPolicyBuilder
     /// <summary>
     /// Adds a <see cref="NameAuthorizationRequirement"/> to the current instance which enforces that the current user matches the specified name.
     /// </summary>
-    /// <param name="userName">The user name the current user must possess.</param>
+    /// <param name="userName">The user name the current user must have.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireUserName(string userName)
     {

@@ -17,7 +17,7 @@
     "es6-promise": "^4.2.4",
     "jasmine": "^3.2.0",
     "jasmine-core": "^3.2.1",
-    "karma": "^6.3.4",
+    "karma": "^6.3.16",
     "karma-chrome-launcher": "^3.1.0",
     "karma-edge-launcher": "^0.4.2",
     "karma-firefox-launcher": "^2.1.1",
@@ -54,7 +54,7 @@
   },
   "resolutions": {
     "lodash": ">=4.17.21",
-    "url-parse": ">=1.5.0",
+    "url-parse": ">=1.5.6",
     "ua-parser-js": "^0.7.30"
   },
   "author": "",

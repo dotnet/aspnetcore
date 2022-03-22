@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { DefaultHttpClient } from "./DefaultHttpClient";
-import { AggregateErrors, DisabledTransportError, FailedToNegotiateWithServerError, FailedToStartTransportError, HttpError, UnsupportedTransportError } from "./Errors";
+import { AggregateErrors, DisabledTransportError, FailedToNegotiateWithServerError, FailedToStartTransportError, HttpError, UnsupportedTransportError, AbortError } from "./Errors";
 import { HeaderNames } from "./HeaderNames";
 import { HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
@@ -146,12 +146,12 @@ export class HttpConnection implements IConnection {
             // We cannot await stopPromise inside startInternal since stopInternal awaits the startInternalPromise.
             await this._stopPromise;
 
-            return Promise.reject(new Error(message));
+            return Promise.reject(new AbortError(message));
         } else if (this._connectionState as any !== ConnectionState.Connected) {
             // stop() was called and transitioned the client into the Disconnecting state.
             const message = "HttpConnection.startInternal completed gracefully but didn't enter the connection into the connected state!";
             this._logger.log(LogLevel.Error, message);
-            return Promise.reject(new Error(message));
+            return Promise.reject(new AbortError(message));
         }
 
         this._connectionStarted = true;
@@ -247,7 +247,7 @@ export class HttpConnection implements IConnection {
                     negotiateResponse = await this._getNegotiationResponse(url);
                     // the user tries to stop the connection when it is being started
                     if (this._connectionState === ConnectionState.Disconnecting || this._connectionState === ConnectionState.Disconnected) {
-                        throw new Error("The connection was stopped during negotiation.");
+                        throw new AbortError("The connection was stopped during negotiation.");
                     }
 
                     if (negotiateResponse.error) {
@@ -401,7 +401,7 @@ export class HttpConnection implements IConnection {
                     if (this._connectionState !== ConnectionState.Connecting) {
                         const message = "Failed to select transport before stop() was called.";
                         this._logger.log(LogLevel.Debug, message);
-                        return Promise.reject(new Error(message));
+                        return Promise.reject(new AbortError(message));
                     }
                 }
             }

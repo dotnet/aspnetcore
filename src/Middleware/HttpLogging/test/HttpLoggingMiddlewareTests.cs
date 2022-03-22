@@ -77,15 +77,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
         await middleware.Invoke(httpContext);
 
-        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
-        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Method: GET"));
-        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
-        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
-        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
-        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("QueryString: ?foo"));
-        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
-        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
-        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
+        Assert.Empty(TestSink.Writes);
     }
 
     [Fact]
@@ -754,8 +746,8 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
-        var writtenHeaders = new TaskCompletionSource<object>();
-        var letBodyFinish = new TaskCompletionSource<object>();
+        var writtenHeaders = new TaskCompletionSource();
+        var letBodyFinish = new TaskCompletionSource();
 
         var middleware = new HttpLoggingMiddleware(
             async c =>
@@ -764,7 +756,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 c.Response.Headers[HeaderNames.TransferEncoding] = "test";
                 c.Response.ContentType = "text/plain";
                 await c.Response.WriteAsync("test");
-                writtenHeaders.SetResult(null);
+                writtenHeaders.SetResult();
                 await letBodyFinish.Task;
             },
             options,
@@ -780,7 +772,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
 
-        letBodyFinish.SetResult(null);
+        letBodyFinish.SetResult();
 
         await middlewareTask;
 
@@ -793,8 +785,8 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
-        var writtenHeaders = new TaskCompletionSource<object>();
-        var letBodyFinish = new TaskCompletionSource<object>();
+        var writtenHeaders = new TaskCompletionSource();
+        var letBodyFinish = new TaskCompletionSource();
 
         var middleware = new HttpLoggingMiddleware(
             async c =>
@@ -803,7 +795,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 c.Response.Headers[HeaderNames.TransferEncoding] = "test";
                 c.Response.ContentType = "text/plain";
                 await c.Response.StartAsync();
-                writtenHeaders.SetResult(null);
+                writtenHeaders.SetResult();
                 await letBodyFinish.Task;
             },
             options,
@@ -819,7 +811,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: test"));
 
-        letBodyFinish.SetResult(null);
+        letBodyFinish.SetResult();
 
         await middlewareTask;
     }

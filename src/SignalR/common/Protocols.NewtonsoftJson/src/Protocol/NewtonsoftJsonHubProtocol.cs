@@ -328,7 +328,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
 
                         message = argumentBindingException != null
                             ? new InvocationBindingFailureMessage(invocationId, target, argumentBindingException)
-                            : BindInvocationMessage(invocationId, target, arguments, hasArguments, streamIds, binder);
+                            : BindInvocationMessage(invocationId, target, arguments, hasArguments, streamIds);
                     }
                     break;
                 case HubProtocolConstants.StreamInvocationMessageType:
@@ -354,7 +354,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
 
                         message = argumentBindingException != null
                             ? new InvocationBindingFailureMessage(invocationId, target, argumentBindingException)
-                            : BindStreamInvocationMessage(invocationId, target, arguments, hasArguments, streamIds, binder);
+                            : BindStreamInvocationMessage(invocationId, target, arguments, hasArguments, streamIds);
                     }
                     break;
                 case HubProtocolConstants.StreamItemMessageType:
@@ -377,7 +377,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                         };
                     }
 
-                    message = BindStreamItemMessage(invocationId, item, hasItem, binder);
+                    message = BindStreamItemMessage(invocationId, item, hasItem);
                     break;
                 case HubProtocolConstants.CompletionMessageType:
                     if (invocationId is null)
@@ -391,7 +391,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                         result = resultToken.ToObject(returnType, PayloadSerializer);
                     }
 
-                    message = BindCompletionMessage(invocationId, error, result, hasResult, binder);
+                    message = BindCompletionMessage(invocationId, error, result, hasResult);
                     break;
                 case HubProtocolConstants.CancelInvocationMessageType:
                     message = BindCancelInvocationMessage(invocationId);
@@ -637,7 +637,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return new CancelInvocationMessage(invocationId);
     }
 
-    private static HubMessage BindCompletionMessage(string invocationId, string? error, object? result, bool hasResult, IInvocationBinder binder)
+    private static HubMessage BindCompletionMessage(string invocationId, string? error, object? result, bool hasResult)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
@@ -657,7 +657,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return new CompletionMessage(invocationId, error, result: null, hasResult: false);
     }
 
-    private static HubMessage BindStreamItemMessage(string invocationId, object? item, bool hasItem, IInvocationBinder binder)
+    private static HubMessage BindStreamItemMessage(string invocationId, object? item, bool hasItem)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
@@ -672,7 +672,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return new StreamItemMessage(invocationId, item);
     }
 
-    private static HubMessage BindStreamInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds, IInvocationBinder binder)
+    private static HubMessage BindStreamInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
@@ -694,7 +694,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return new StreamInvocationMessage(invocationId, target, arguments, streamIds);
     }
 
-    private static HubMessage BindInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds, IInvocationBinder binder)
+    private static HubMessage BindInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds)
     {
         if (string.IsNullOrEmpty(target))
         {

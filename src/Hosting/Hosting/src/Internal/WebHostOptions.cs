@@ -5,12 +5,13 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting;
 
 internal class WebHostOptions
 {
-    public WebHostOptions(IConfiguration primaryConfiguration, IConfiguration? fallbackConfiguration = null)
+    public WebHostOptions(IConfiguration primaryConfiguration, IConfiguration? fallbackConfiguration = null, IHostEnvironment? environment = null)
     {
         if (primaryConfiguration is null)
         {
@@ -19,13 +20,13 @@ internal class WebHostOptions
 
         string? GetConfig(string key) => primaryConfiguration[key] ?? fallbackConfiguration?[key];
 
-        ApplicationName = GetConfig(WebHostDefaults.ApplicationKey) ?? Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty;
+        ApplicationName = environment?.ApplicationName ?? GetConfig(WebHostDefaults.ApplicationKey) ?? Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty;
         StartupAssembly = GetConfig(WebHostDefaults.StartupAssemblyKey);
         DetailedErrors = WebHostUtilities.ParseBool(GetConfig(WebHostDefaults.DetailedErrorsKey));
         CaptureStartupErrors = WebHostUtilities.ParseBool(GetConfig(WebHostDefaults.CaptureStartupErrorsKey));
-        Environment = GetConfig(WebHostDefaults.EnvironmentKey);
+        Environment = environment?.EnvironmentName ?? GetConfig(WebHostDefaults.EnvironmentKey);
         WebRoot = GetConfig(WebHostDefaults.WebRootKey);
-        ContentRootPath = GetConfig(WebHostDefaults.ContentRootKey);
+        ContentRootPath = environment?.ContentRootPath ?? GetConfig(WebHostDefaults.ContentRootKey);
         PreventHostingStartup = WebHostUtilities.ParseBool(GetConfig(WebHostDefaults.PreventHostingStartupKey));
         SuppressStatusMessages = WebHostUtilities.ParseBool(GetConfig(WebHostDefaults.SuppressStatusMessagesKey));
         ServerUrls = GetConfig(WebHostDefaults.ServerUrlsKey);

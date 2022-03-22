@@ -278,7 +278,7 @@ public partial class RazorViewEngine : IRazorViewEngine
             expanderContext.IsMainPage,
             expanderValues);
 
-        if (!ViewLookupCache.TryGetValue(cacheKey, out ViewLocationCacheResult cacheResult))
+        if (!ViewLookupCache.TryGetValue<ViewLocationCacheResult>(cacheKey, out var cacheResult) || cacheResult is null)
         {
             Log.ViewLookupCacheMiss(_logger, cacheKey.ViewName, cacheKey.ControllerName);
             cacheResult = OnCacheMiss(expanderContext, cacheKey);
@@ -403,7 +403,8 @@ public partial class RazorViewEngine : IRazorViewEngine
             cacheEntryOptions.AddExpirationToken(expirationToken);
         }
 
-        return ViewLookupCache.Set(cacheKey, cacheResult, cacheEntryOptions);
+        ViewLookupCache.Set(cacheKey, cacheResult, cacheEntryOptions);
+        return cacheResult;
     }
 
     // Internal for unit testing

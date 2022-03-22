@@ -117,14 +117,12 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     {
         switch (EndPoint)
         {
-            case IPEndPoint _:
-                return $"{Scheme}://{IPEndPoint}";
             case UnixDomainSocketEndPoint _:
                 return $"{Scheme}://unix:{EndPoint}";
             case FileHandleEndPoint _:
                 return $"{Scheme}://<file handle>";
             default:
-                throw new InvalidOperationException();
+                return $"{Scheme}://{EndPoint}";
         }
     }
 

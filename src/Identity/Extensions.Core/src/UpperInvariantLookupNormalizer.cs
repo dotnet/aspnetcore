@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Identity;
 
 /// <summary>
@@ -13,7 +15,8 @@ public sealed class UpperInvariantLookupNormalizer : ILookupNormalizer
     /// </summary>
     /// <param name="name">The key to normalize.</param>
     /// <returns>A normalized representation of the specified <paramref name="name"/>.</returns>
-    public string NormalizeName(string name)
+    [return: NotNullIfNotNull("name")]
+    public string? NormalizeName(string? name)
     {
         if (name == null)
         {
@@ -27,5 +30,6 @@ public sealed class UpperInvariantLookupNormalizer : ILookupNormalizer
     /// </summary>
     /// <param name="email">The email to normalize.</param>
     /// <returns>A normalized representation of the specified <paramref name="email"/>.</returns>
-    public string NormalizeEmail(string email) => NormalizeName(email);
+    [return: NotNullIfNotNull("email")]
+    public string? NormalizeEmail(string? email) => NormalizeName(email);
 }

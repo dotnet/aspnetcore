@@ -5,6 +5,8 @@
 
 #include "fx_ver.h"
 
+using namespace aspnet;
+
 class GlobalVersionUtility
 {
 public:

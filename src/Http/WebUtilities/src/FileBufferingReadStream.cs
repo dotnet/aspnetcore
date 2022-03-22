@@ -186,13 +186,13 @@ public class FileBufferingReadStream : Stream
     /// <inheritdoc/>
     public override bool CanRead
     {
-        get { return true; }
+        get { return !_disposed; }
     }
 
     /// <inheritdoc/>
     public override bool CanSeek
     {
-        get { return true; }
+        get { return !_disposed; }
     }
 
     /// <inheritdoc/>

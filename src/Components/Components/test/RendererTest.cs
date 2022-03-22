@@ -176,7 +176,7 @@ public class RendererTest
     {
         // Arrange
         var renderer = new TestRenderer();
-        var tcs = new TaskCompletionSource<int>();
+        var tcs = new TaskCompletionSource();
         var component = new AsyncComponent(tcs.Task, 5); // Triggers n renders, the first one creating <p>n</p> and the n-1 renders asynchronously update the value.
 
         // Act
@@ -185,7 +185,7 @@ public class RendererTest
 
         // Assert
         Assert.False(renderTask.IsCompleted);
-        tcs.SetResult(0);
+        tcs.SetResult();
         await renderTask;
         Assert.Equal(5, renderer.Batches.Count);
 
@@ -825,7 +825,7 @@ public class RendererTest
         EventArgs receivedArgs = null;
 
         var state = 0;
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var component = new EventComponent
         {
@@ -854,7 +854,7 @@ public class RendererTest
         Assert.Equal(1, state);
         Assert.Same(eventArgs, receivedArgs);
 
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task;
 
         Assert.Equal(2, state);
@@ -868,7 +868,7 @@ public class RendererTest
         DerivedEventArgs receivedArgs = null;
 
         var state = 0;
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var component = new EventComponent
         {
@@ -897,7 +897,7 @@ public class RendererTest
         Assert.Equal(1, state);
         Assert.Same(eventArgs, receivedArgs);
 
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task;
 
         Assert.Equal(2, state);
@@ -911,7 +911,7 @@ public class RendererTest
         object receivedArgs = null;
 
         var state = 0;
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var component = new EventComponent
         {
@@ -940,7 +940,7 @@ public class RendererTest
         Assert.Equal(1, state);
         Assert.NotNull(receivedArgs);
 
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task;
 
         Assert.Equal(2, state);
@@ -952,7 +952,7 @@ public class RendererTest
         EventArgs receivedArgs = null;
 
         var state = 0;
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         // Arrange: Render parent component
         var renderer = new TestRenderer();
@@ -994,7 +994,7 @@ public class RendererTest
         Assert.Equal(1, state);
         Assert.Same(eventArgs, receivedArgs);
 
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task;
 
         Assert.Equal(2, state);
@@ -1630,7 +1630,7 @@ public class RendererTest
     public async Task DispatchEventAsync_Delegate_AsynchronousCompletion()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1657,7 +1657,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task; // Does not throw
     }
 
@@ -1665,7 +1665,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallback_AsynchronousCompletion()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1692,7 +1692,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task; // Does not throw
     }
 
@@ -1700,7 +1700,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousCompletion()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         DerivedEventArgs arg = null;
 
@@ -1731,7 +1731,7 @@ public class RendererTest
         // Assert
         Assert.NotNull(arg);
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
         await task; // Does not throw
     }
 
@@ -1739,7 +1739,7 @@ public class RendererTest
     public async Task DispatchEventAsync_Delegate_AsynchronousCancellation()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1767,7 +1767,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await task; // Does not throw
         Assert.Empty(renderer.HandledExceptions);
@@ -1777,7 +1777,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallback_AsynchronousCancellation()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1805,7 +1805,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await task; // Does not throw
         Assert.Empty(renderer.HandledExceptions);
@@ -1815,7 +1815,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousCancellation()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         DerivedEventArgs arg = null;
 
@@ -1847,7 +1847,7 @@ public class RendererTest
         // Assert
         Assert.NotNull(arg);
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await task; // Does not throw
         Assert.Empty(renderer.HandledExceptions);
@@ -1857,7 +1857,7 @@ public class RendererTest
     public async Task DispatchEventAsync_Delegate_AsynchronousException()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1885,7 +1885,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
@@ -1894,7 +1894,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallback_AsynchronousException()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         var renderer = new TestRenderer();
         var parentComponent = new OuterEventComponent();
@@ -1922,7 +1922,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
@@ -1931,7 +1931,7 @@ public class RendererTest
     public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousException()
     {
         // Arrange
-        var tcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
 
         DerivedEventArgs arg = null;
 
@@ -1963,7 +1963,7 @@ public class RendererTest
         // Assert
         Assert.NotNull(arg);
         Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
-        tcs.SetResult(null);
+        tcs.SetResult();
 
         await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
     }
@@ -3115,8 +3115,8 @@ public class RendererTest
     {
         // Arrange
         var @event = new ManualResetEventSlim();
-        var tcs = new TaskCompletionSource<object>();
-        var afterRenderTcs = new TaskCompletionSource<object>();
+        var tcs = new TaskCompletionSource();
+        var afterRenderTcs = new TaskCompletionSource();
         var onAfterRenderCallCountLog = new List<int>();
         var component = new AsyncAfterRenderComponent(afterRenderTcs.Task)
         {
@@ -3130,8 +3130,8 @@ public class RendererTest
 
         // Act
         component.TriggerRender();
-        tcs.SetResult(null);
-        afterRenderTcs.SetResult(null);
+        tcs.SetResult();
+        afterRenderTcs.SetResult();
 
         // We need to wait here because the completions from SetResult will be scheduled.
         @event.Wait(Timeout);
@@ -3145,7 +3145,7 @@ public class RendererTest
     {
         // Arrange
         var @event = new ManualResetEventSlim();
-        var afterRenderTcs = new TaskCompletionSource<object>();
+        var afterRenderTcs = new TaskCompletionSource();
         var onAfterRenderCallCountLog = new List<int>();
         var component = new AsyncAfterRenderComponent(afterRenderTcs.Task)
         {
@@ -3159,7 +3159,7 @@ public class RendererTest
 
         // Act
         component.TriggerRender();
-        afterRenderTcs.SetResult(null);
+        afterRenderTcs.SetResult();
 
         // We need to wait here because the completions from SetResult will be scheduled.
         @event.Wait(Timeout);
@@ -3290,14 +3290,14 @@ public class RendererTest
             .AttributeEventHandlerId;
 
         // Act/Assert 1: Event can be fired for the first time
-        var render1TCS = new TaskCompletionSource<object>();
+        var render1TCS = new TaskCompletionSource();
         renderer.NextUpdateDisplayReturnTask = render1TCS.Task;
         await renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
         Assert.Equal(1, numEventsFired);
 
         // Act/Assert 2: *Same* event handler ID can be reused prior to completion of
         // preceding UI update
-        var render2TCS = new TaskCompletionSource<object>();
+        var render2TCS = new TaskCompletionSource();
         renderer.NextUpdateDisplayReturnTask = render2TCS.Task;
         await renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
         Assert.Equal(2, numEventsFired);
@@ -3311,7 +3311,7 @@ public class RendererTest
         // For that case, we are going to queue a continuation on render1TCS.Task, include a 1s delay and await the resulting
         // task to offer the best chance that we get to see the error in all cases.
         var awaitableTask = render1TCS.Task.ContinueWith(_ => Task.Delay(1000)).Unwrap();
-        render1TCS.SetResult(null);
+        render1TCS.SetResult();
         await awaitableTask;
         var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
         {
@@ -3426,7 +3426,7 @@ public class RendererTest
         // Arrange
         var renderer = new TestRenderer { ShouldHandleExceptions = true };
         var component = new NestedAsyncComponent();
-        var tcs = new TaskCompletionSource<int>();
+        var tcs = new TaskCompletionSource();
         var exception = new InvalidTimeZoneException();
 
         // Act/Assert
@@ -3455,7 +3455,7 @@ public class RendererTest
         }));
 
         Assert.False(renderTask.IsCompleted);
-        tcs.SetResult(0);
+        tcs.SetResult();
         await renderTask;
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
     }
@@ -3483,7 +3483,7 @@ public class RendererTest
         var componentId = renderer.AssignRootComponentId(component);
         await renderer.RenderRootComponentAsync(componentId); // Not throwing on first render
 
-        var asyncExceptionTcs = new TaskCompletionSource<object>();
+        var asyncExceptionTcs = new TaskCompletionSource();
         taskToAwait = asyncExceptionTcs.Task;
         await renderer.Dispatcher.InvokeAsync(component.TriggerRender);
 
@@ -3508,7 +3508,7 @@ public class RendererTest
         var component = new NestedAsyncComponent();
         var exception1 = new InvalidTimeZoneException();
         var exception2 = new UriFormatException();
-        var tcs = new TaskCompletionSource<int>();
+        var tcs = new TaskCompletionSource();
 
         // Act/Assert
         var componentId = renderer.AssignRootComponentId(component);
@@ -3551,7 +3551,7 @@ public class RendererTest
         }));
 
         Assert.False(renderTask.IsCompleted);
-        tcs.SetResult(0);
+        tcs.SetResult();
 
         await renderTask;
         Assert.Equal(2, renderer.HandledExceptions.Count);
@@ -3621,7 +3621,7 @@ public class RendererTest
         var component = new NestedAsyncComponent();
         var exception = new InvalidTimeZoneException();
 
-        var taskCompletionSource = new TaskCompletionSource<int>();
+        var taskCompletionSource = new TaskCompletionSource();
 
         // Act/Assert
         var componentId = renderer.AssignRootComponentId(component);
@@ -3647,7 +3647,7 @@ public class RendererTest
                             Event = NestedAsyncComponent.EventType.OnAfterRenderAsyncSync,
                             EventAction = () =>
                             {
-                                taskCompletionSource.TrySetResult(0);
+                                taskCompletionSource.TrySetResult();
                                 return Task.FromResult((1, NestedAsyncComponent.EventType.OnAfterRenderAsyncSync));
                             },
                         }
@@ -3675,7 +3675,7 @@ public class RendererTest
         var component = new NestedAsyncComponent();
         var exception = new InvalidTimeZoneException();
 
-        var taskCompletionSource = new TaskCompletionSource<int>();
+        var taskCompletionSource = new TaskCompletionSource();
 
         // Act/Assert
         var componentId = renderer.AssignRootComponentId(component);
@@ -3703,7 +3703,7 @@ public class RendererTest
                             EventAction = async () =>
                             {
                                 await Task.Yield();
-                                taskCompletionSource.TrySetResult(0);
+                                taskCompletionSource.TrySetResult();
                                 return (1, NestedAsyncComponent.EventType.OnAfterRenderAsyncAsync);
                             },
                         }
@@ -3874,7 +3874,7 @@ public class RendererTest
         // Arrange
         var renderer = new TestRenderer { ShouldHandleExceptions = true };
         var component = new NestedAsyncComponent();
-        var taskCompletionSource = new TaskCompletionSource<int>();
+        var taskCompletionSource = new TaskCompletionSource();
         var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Cancel();
 
@@ -3891,7 +3891,7 @@ public class RendererTest
                             Event = NestedAsyncComponent.EventType.OnAfterRenderAsyncSync,
                             EventAction = () =>
                             {
-                                taskCompletionSource.TrySetResult(0);
+                                taskCompletionSource.TrySetResult();
                                 cancellationTokenSource.Token.ThrowIfCancellationRequested();
                                 return default;
                             },
@@ -4137,7 +4137,7 @@ public class RendererTest
         // Arrange: Render a component with an event handler
         // We want the renderer to think none of the "UpdateDisplay" calls ever complete, because we
         // want to keep reusing the same eventHandlerId and not let it get disposed
-        var renderCompletedTcs = new TaskCompletionSource<object>();
+        var renderCompletedTcs = new TaskCompletionSource();
         var renderer = new TestRenderer { NextRenderResultTask = renderCompletedTcs.Task };
         var component = new BoundPropertyComponent { BoundString = "old property value" };
         var componentId = renderer.AssignRootComponentId(component);
@@ -5569,7 +5569,7 @@ public class RendererTest
 
             // Return a task that never completes to show that access is forbidden
             // after the synchronous return, not just after the returned task completes
-            return new TaskCompletionSource<object>().Task;
+            return new TaskCompletionSource().Task;
         }
     }
 

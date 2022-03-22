@@ -11,6 +11,7 @@ using System.Net.Quic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 [MsQuicSupported]
 [HttpSysHttp3Supported]
 [Collection(IISHttpsTestSiteCollection.Name)]
-public class Http3Tests
+public class Http3Tests : FunctionalTestsBase
 {
     public Http3Tests(IISTestSiteFixture fixture)
     {

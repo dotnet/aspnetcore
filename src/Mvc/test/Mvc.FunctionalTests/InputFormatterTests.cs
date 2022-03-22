@@ -186,7 +186,30 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
     }
 
     [Fact]
-    public async Task BodyIsRequiredByDefaultFailsWithEmptyBody()
+    public async Task BodyIsRequiredByDefault_WhenNullableContextEnabled()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.NonNullableBody)}", value: null);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+        var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.Collection(
+            problemDetails.Errors,
+            kvp =>
+            {
+                Assert.Empty(kvp.Key);
+                Assert.Equal("A non-empty request body is required.", Assert.Single(kvp.Value));
+            },
+            kvp =>
+            {
+                Assert.NotEmpty(kvp.Key);
+                Assert.Equal("The dummy field is required.", Assert.Single(kvp.Value));
+            });
+    }
+
+    [Fact]
+    public async Task BodyIsRequiredByDefaultFailsWithContentLengthZero()
     {
         var content = new ByteArrayContent(Array.Empty<byte>());
         Assert.Null(content.Headers.ContentType);
@@ -210,6 +233,26 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
     }
 
     [Fact]
+    public async Task OptionalFromBodyWorks_WithDefaultValue()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.DefaultValueBody)}", value: null);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task OptionalFromBodyWorks_WithNullable()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.NullableBody)}", value: null);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task OptionalFromBodyWorksWithEmptyRequest()
     {
         // Arrange
@@ -219,6 +262,36 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
 
         // Act
         var response = await Client.PostAsync($"Home/{nameof(HomeController.OptionalBody)}", content);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task OptionalFromBodyWorksWithEmptyRequest_WithDefaultValue()
+    {
+        // Arrange
+        var content = new ByteArrayContent(Array.Empty<byte>());
+        Assert.Null(content.Headers.ContentType);
+        Assert.Equal(0, content.Headers.ContentLength);
+
+        // Act
+        var response = await Client.PostAsync($"Home/{nameof(HomeController.DefaultValueBody)}", content);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task OptionalFromBodyWorksWithEmptyRequest_WithNullable()
+    {
+        // Arrange
+        var content = new ByteArrayContent(Array.Empty<byte>());
+        Assert.Null(content.Headers.ContentType);
+        Assert.Equal(0, content.Headers.ContentLength);
+
+        // Act
+        var response = await Client.PostAsync($"Home/{nameof(HomeController.NullableBody)}", content);
 
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);

@@ -24,9 +24,8 @@ internal class IdentityDefaultUIConfigureOptions<TUser> :
 
     public IWebHostEnvironment Environment { get; }
 
-    public void PostConfigure(string name, RazorPagesOptions options)
+    public void PostConfigure(string? name, RazorPagesOptions options)
     {
-        name = name ?? throw new ArgumentNullException(nameof(name));
         options = options ?? throw new ArgumentNullException(nameof(options));
 
         options.Conventions.AuthorizeAreaFolder(IdentityUIDefaultAreaName, "/Account/Manage");
@@ -47,9 +46,8 @@ internal class IdentityDefaultUIConfigureOptions<TUser> :
         // Nothing to do here as Configure(string name, CookieAuthenticationOptions options) is hte one setting things up.
     }
 
-    public void Configure(string name, CookieAuthenticationOptions options)
+    public void Configure(string? name, CookieAuthenticationOptions options)
     {
-        name = name ?? throw new ArgumentNullException(nameof(name));
         options = options ?? throw new ArgumentNullException(nameof(options));
 
         if (string.Equals(IdentityConstants.ApplicationScheme, name, StringComparison.Ordinal))

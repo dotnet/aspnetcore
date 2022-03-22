@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var methodSyntax = (MethodDeclarationSyntax)syntaxTree.GetRoot().FindNode(method.Locations[0].SourceSpan);
         var methodOperation = (IMethodBodyBaseOperation)compilation.GetSemanticModel(syntaxTree).GetOperation(methodSyntax);
 
-        var result = ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, methodOperation, CancellationToken.None, out var responseMetadatas);
+        var result = ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, methodOperation, out var responseMetadatas);
 
         return (result, responseMetadatas, testSource);
     }

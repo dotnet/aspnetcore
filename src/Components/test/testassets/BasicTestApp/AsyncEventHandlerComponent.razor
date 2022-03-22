@@ -8,13 +8,13 @@
 
 @code
 {
-    TaskCompletionSource<object> _tcs;
+    TaskCompletionSource _tcs;
     string state = "Stopped";
     Task Tick(MouseEventArgs e)
     {
         if (_tcs == null)
         {
-            _tcs = new TaskCompletionSource<object>();
+            _tcs = new TaskCompletionSource();
 
             state = "Started";
             return _tcs.Task.ContinueWith((task) =>
@@ -29,6 +29,6 @@
 
     void Tock(MouseEventArgs e)
     {
-        _tcs.TrySetResult(null);
+        _tcs.TrySetResult();
     }
 }

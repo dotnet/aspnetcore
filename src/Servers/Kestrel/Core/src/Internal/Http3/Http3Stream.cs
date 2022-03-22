@@ -20,6 +20,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
+using HttpCharacters = Microsoft.AspNetCore.Http.HttpCharacters;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
@@ -314,7 +315,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                         {
                             UpdateHeaderParsingState(value, GetPseudoHeaderField(staticTableIndex.GetValueOrDefault()));
 
-                            OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: true, name, value);
+                            OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: false, name, value);
                         }
                         else
                         {
@@ -810,6 +811,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         InputRemaining = HttpRequestHeaders.ContentLength;
+
+        OnHeadersComplete();
 
         // If the stream is complete after receiving the headers then run OnEndStreamReceived.
         // If there is a bad content length then this will throw before the request delegate is called.

@@ -20,7 +20,7 @@ public static class SignalRConnectionBuilderExtensions
     /// <typeparam name="THub">The <see cref="Hub"/> type to host on the connection.</typeparam>
     /// <param name="connectionBuilder">The connection to configure.</param>
     /// <returns>The same instance of the <see cref="IConnectionBuilder"/> for chaining.</returns>
-    public static IConnectionBuilder UseHub<[DynamicallyAccessedMembers(HubAccessibility)]THub>(this IConnectionBuilder connectionBuilder) where THub : Hub
+    public static IConnectionBuilder UseHub<[DynamicallyAccessedMembers(HubAccessibility)] THub>(this IConnectionBuilder connectionBuilder) where THub : Hub
     {
         var marker = connectionBuilder.ApplicationServices.GetService(typeof(SignalRCoreMarkerService));
         if (marker == null)

@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.Extensions.DependencyInjection;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -15,7 +17,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// The goal of this convention is to make intuitive and easy to document <see cref="BindingSource"/> inferences. The rules are:
 /// <list type="number">
 /// <item>A previously specified <see cref="BindingInfo.BindingSource" /> is never overwritten.</item>
-/// <item>A complex type parameter (<see cref="ModelMetadata.IsComplexType"/>) is assigned <see cref="BindingSource.Body"/>.</item>
+/// <item>A complex type parameter (<see cref="ModelMetadata.IsComplexType"/>), registered in the DI container, is assigned <see cref="BindingSource.Services"/>.</item>
+/// <item>A complex type parameter (<see cref="ModelMetadata.IsComplexType"/>), not registered in the DI container, is assigned <see cref="BindingSource.Body"/>.</item>
 /// <item>Parameter with a name that appears as a route value in ANY route template is assigned <see cref="BindingSource.Path"/>.</item>
 /// <item>All other parameters are <see cref="BindingSource.Query"/>.</item>
 /// </list>
@@ -23,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 public class InferParameterBindingInfoConvention : IActionModelConvention
 {
     private readonly IModelMetadataProvider _modelMetadataProvider;
+    private readonly IServiceProviderIsService? _serviceProviderIsService;
 
     /// <summary>
     /// Initializes a new instance of <see cref="InferParameterBindingInfoConvention"/>.
@@ -33,6 +37,21 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     {
         _modelMetadataProvider = modelMetadataProvider ?? throw new ArgumentNullException(nameof(modelMetadataProvider));
     }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="InferParameterBindingInfoConvention"/>.
+    /// </summary>
+    /// <param name="modelMetadataProvider">The model metadata provider.</param>
+    /// <param name="serviceProviderIsService">The service to determine if the a type is available from the <see cref="IServiceProvider"/>.</param>
+    public InferParameterBindingInfoConvention(
+        IModelMetadataProvider modelMetadataProvider,
+        IServiceProviderIsService serviceProviderIsService)
+        : this(modelMetadataProvider)
+    {
+        _serviceProviderIsService = serviceProviderIsService ?? throw new ArgumentNullException(nameof(serviceProviderIsService));
+    }
+
+    internal bool IsInferForServiceParametersEnabled => _serviceProviderIsService != null;
 
     /// <summary>
     /// Called to determine whether the action should apply.
@@ -88,6 +107,12 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
             message += Environment.NewLine + parameters;
             throw new InvalidOperationException(message);
         }
+        else if (fromBodyParameters.Count == 1 &&
+                  fromBodyParameters[0].BindingInfo!.EmptyBodyBehavior == EmptyBodyBehavior.Default &&
+                  IsOptionalParameter(fromBodyParameters[0]))
+        {
+            fromBodyParameters[0].BindingInfo!.EmptyBodyBehavior = EmptyBodyBehavior.Allow;
+        }
     }
 
     // Internal for unit testing.
@@ -95,6 +120,11 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     {
         if (IsComplexTypeParameter(parameter))
         {
+            if (_serviceProviderIsService?.IsService(parameter.ParameterType) is true)
+            {
+                return BindingSource.Services;
+            }
+
             return BindingSource.Body;
         }
 
@@ -131,5 +161,26 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
 
         return metadata.IsComplexType;
+    }
+
+    private bool IsOptionalParameter(ParameterModel parameter)
+    {
+        if (parameter.ParameterInfo.HasDefaultValue)
+        {
+            return true;
+        }
+
+        if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider)
+        {
+            var metadata = modelMetadataProvider.GetMetadataForParameter(parameter.ParameterInfo);
+            return metadata.NullabilityState == NullabilityState.Nullable || metadata.IsNullableValueType;
+        }
+        else
+        {
+            // Cannot be determine if the parameter is optional since the provider
+            // does not provides an option to getMetadata from the parameter info
+            // so, we will NOT treat the parameter as optional.
+            return false;
+        }
     }
 }

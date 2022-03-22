@@ -390,13 +390,13 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
         {
             // Use _config as a fallback for WebHostOptions in case the chained source was removed from the hosting IConfigurationBuilder.
-            var options = new WebHostOptions(context.Configuration, fallbackConfiguration: _config);
+            var options = new WebHostOptions(context.Configuration, fallbackConfiguration: _config, environment: context.HostingEnvironment);
             var webHostBuilderContext = new WebHostBuilderContext
             {
                 Configuration = context.Configuration,
                 HostingEnvironment = new HostingEnvironment(),
             };
-            webHostBuilderContext.HostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options);
+            webHostBuilderContext.HostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options, baseEnvironment: context.HostingEnvironment);
             context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
             context.Properties[typeof(WebHostOptions)] = options;
             return webHostBuilderContext;

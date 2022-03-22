@@ -393,6 +393,7 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public async Task POST_ServerAbort_ClientReceivesAbort(HttpProtocols protocol)
     {
         // Arrange
@@ -1492,7 +1493,21 @@ public class Http3RequestTests : LoggedTest
             readAsyncTask.SetResult(readTask);
 
             await readTask;
-        }, protocol: protocol);
+        },
+        protocol: protocol,
+        configureKestrel: kestrel =>
+        {
+            // Disable the min rate limit to ensure a shutdown timeout aborts an ongoing read and not the rate limit.
+            // This could also be fixed by sending more data from the client.
+            kestrel.Limits.MinRequestBodyDataRate = null;
+
+            // This would normally be done automatically for us if the "configureKestrel" callback we're in was left null.
+            kestrel.Listen(IPAddress.Loopback, 0, listenOptions =>
+            {
+                listenOptions.Protocols = protocol;
+                listenOptions.UseHttps();
+            });
+        });
 
         using (var host = builder.Build())
         using (var client = HttpHelpers.CreateClient())

@@ -36,7 +36,7 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
         SignInManager = signInManager;
         Options = options.Value;
         Clock = clock;
-        Logger = logger.CreateLogger(this.GetType().FullName);
+        Logger = logger.CreateLogger(GetType());
     }
 
     /// <summary>
@@ -102,7 +102,7 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
     /// </summary>
     /// <param name="principal">The principal to verify.</param>
     /// <returns>The verified user or null if verification fails.</returns>
-    protected virtual Task<TUser> VerifySecurityStamp(ClaimsPrincipal principal)
+    protected virtual Task<TUser?> VerifySecurityStamp(ClaimsPrincipal? principal)
         => SignInManager.ValidateSecurityStampAsync(principal);
 
     /// <summary>

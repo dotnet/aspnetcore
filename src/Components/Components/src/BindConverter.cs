@@ -39,7 +39,7 @@ public static class BindConverter
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static string? FormatValue(string? value, CultureInfo? culture = null) => FormatStringValueCore(value, culture);
 
-    private static string? FormatStringValueCore(string? value, CultureInfo? culture)
+    private static string? FormatStringValueCore(string? value, CultureInfo? _)
     {
         return value;
     }
@@ -61,7 +61,7 @@ public static class BindConverter
     }
 
     // Used with generics
-    private static object FormatBoolValueCore(bool value, CultureInfo? culture)
+    private static object FormatBoolValueCore(bool value, CultureInfo? _)
     {
         // Formatting for bool is special-cased. We need to produce a boolean value for conditional attributes
         // to work.
@@ -85,7 +85,7 @@ public static class BindConverter
     }
 
     // Used with generics
-    private static object? FormatNullableBoolValueCore(bool? value, CultureInfo? culture)
+    private static object? FormatNullableBoolValueCore(bool? value, CultureInfo? _)
     {
         // Formatting for bool is special-cased. We need to produce a boolean value for conditional attributes
         // to work.
@@ -662,7 +662,7 @@ public static class BindConverter
         return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
     }
 
-    private static string? FormatEnumValueCore<T>(T value, CultureInfo? culture)
+    private static string? FormatEnumValueCore<T>(T value, CultureInfo? _)
     {
         if (value == null)
         {
@@ -1600,7 +1600,7 @@ public static class BindConverter
         return true;
     }
 
-    private static bool ConvertToEnum<T>(object? obj, CultureInfo? culture, out T value) where T : struct, Enum
+    private static bool ConvertToEnum<T>(object? obj, CultureInfo? _, out T value) where T : struct, Enum
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1625,7 +1625,7 @@ public static class BindConverter
         return true;
     }
 
-    private static bool ConvertToNullableEnum<T>(object? obj, CultureInfo? culture, out T? value) where T : struct, Enum
+    private static bool ConvertToNullableEnum<T>(object? obj, CultureInfo? _, out T? value) where T : struct, Enum
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))

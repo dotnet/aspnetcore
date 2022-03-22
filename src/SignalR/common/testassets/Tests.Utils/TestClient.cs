@@ -31,7 +31,7 @@ internal
     private readonly CancellationTokenSource _cts;
 
     public DefaultConnectionContext Connection { get; }
-    public Task Connected => ((TaskCompletionSource<bool>)Connection.Items["ConnectedTask"]).Task;
+    public Task Connected => ((TaskCompletionSource)Connection.Items["ConnectedTask"]).Task;
     public HandshakeResponseMessage HandshakeResponseMessage { get; private set; }
 
     public TransferFormat SupportedFormats { get; set; } = TransferFormat.Text | TransferFormat.Binary;
@@ -57,7 +57,7 @@ internal
         }
 
         Connection.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
-        Connection.Items["ConnectedTask"] = new TaskCompletionSource<bool>();
+        Connection.Items["ConnectedTask"] = new TaskCompletionSource();
 
         _protocol = protocol ?? new NewtonsoftJsonHubProtocol();
         _invocationBinder = invocationBinder ?? new DefaultInvocationBinder();

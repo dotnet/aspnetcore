@@ -340,6 +340,56 @@ public class DefaultModelMetadataTest
     }
 
     [Theory]
+    [InlineData(typeof(int))]
+    [InlineData(typeof(int?))]
+    [InlineData(typeof(Guid))]
+    [InlineData(typeof(DateTime))]
+    [InlineData(typeof(DateTime?))]
+    [InlineData(typeof(System.Net.IPEndPoint))]
+    [InlineData(typeof(TypeWithTryParse))]
+    [InlineData(typeof(TypeWithTryParseAndIFormatProvider))]
+    public void IsParseableType_ReturnsTrue_ForParseableTypes(Type modelType)
+    {
+        // Arrange
+        var provider = new EmptyModelMetadataProvider();
+        var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+        var key = ModelMetadataIdentity.ForType(modelType);
+        var cache = new DefaultMetadataDetails(key, new ModelAttributes(Array.Empty<object>(), null, null));
+
+        var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+        // Act
+        var isParseableType = metadata.IsParseableType;
+
+        // Assert
+        Assert.True(isParseableType);
+    }
+
+    [Theory]
+    [InlineData(typeof(string))]
+    [InlineData(typeof(object))]
+    [InlineData(typeof(TypeWithInvalidTryParse))]
+    [InlineData(typeof(TypeWithProperties))]
+    public void IsParseableType_ReturnsFalse_ForNonParseableTypes(Type modelType)
+    {
+        // Arrange
+        var provider = new EmptyModelMetadataProvider();
+        var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+        var key = ModelMetadataIdentity.ForType(modelType);
+        var cache = new DefaultMetadataDetails(key, new ModelAttributes(Array.Empty<object>(), null, null));
+
+        var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+        // Act
+        var isParseableType = metadata.IsParseableType;
+
+        // Assert
+        Assert.False(isParseableType);
+    }
+
+    [Theory]
     [InlineData(typeof(string))]
     [InlineData(typeof(IDisposable))]
     [InlineData(typeof(Nullable<int>))]
@@ -1541,6 +1591,32 @@ public class DefaultModelMetadataTest
         public int PublicGetProtectedSetProperty { get; protected set; }
 
         public int PublicGetPublicSetProperty { get; set; }
+    }
+
+    private class TypeWithInvalidTryParse
+    {
+        public static bool TryParse(string s)
+        {
+            return true;
+        }
+    }
+
+    private class TypeWithTryParse
+    {
+        public static bool TryParse(string s, out TypeWithTryParse result)
+        {
+            result = new TypeWithTryParse();
+            return true;
+        }
+    }
+
+    private class TypeWithTryParseAndIFormatProvider
+    {
+        public static bool TryParse(string s, IFormatProvider provider, out TypeWithTryParseAndIFormatProvider result)
+        {
+            result = new TypeWithTryParseAndIFormatProvider();
+            return true;
+        }
     }
 
     public class Employee

@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Webová aplikace ASP.NET Core",
-    "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core s ukázkovým obsahem stránek ASP.NET Razor"
-  }
-}

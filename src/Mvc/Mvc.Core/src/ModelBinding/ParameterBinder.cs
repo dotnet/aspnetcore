@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -14,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// <summary>
 /// Binds and validates models specified by a <see cref="ParameterDescriptor"/>.
 /// </summary>
-public class ParameterBinder
+public partial class ParameterBinder
 {
     private readonly IModelMetadataProvider _modelMetadataProvider;
     private readonly IModelBinderFactory _modelBinderFactory;
@@ -136,11 +134,11 @@ public class ParameterBinder
             throw new ArgumentNullException(nameof(metadata));
         }
 
-        Logger.AttemptingToBindParameterOrProperty(parameter, metadata);
+        Log.AttemptingToBindParameterOrProperty(Logger, parameter, metadata);
 
         if (parameter.BindingInfo?.RequestPredicate?.Invoke(actionContext) == false)
         {
-            Logger.ParameterBinderRequestPredicateShortCircuit(parameter, metadata);
+            Log.ParameterBinderRequestPredicateShortCircuit(Logger, parameter, metadata);
             return ModelBindingResult.Failed();
         }
 
@@ -171,13 +169,13 @@ public class ParameterBinder
 
         await modelBinder.BindModelAsync(modelBindingContext);
 
-        Logger.DoneAttemptingToBindParameterOrProperty(parameter, metadata);
+        Log.DoneAttemptingToBindParameterOrProperty(Logger, parameter, metadata);
 
         var modelBindingResult = modelBindingContext.Result;
 
         if (_objectModelValidator is ObjectModelValidator baseObjectValidator)
         {
-            Logger.AttemptingToValidateParameterOrProperty(parameter, metadata);
+            Log.AttemptingToValidateParameterOrProperty(Logger, parameter, metadata);
 
             EnforceBindRequiredAndValidate(
                 baseObjectValidator,
@@ -188,7 +186,7 @@ public class ParameterBinder
                 modelBindingResult,
                 container);
 
-            Logger.DoneAttemptingToValidateParameterOrProperty(parameter, metadata);
+            Log.DoneAttemptingToValidateParameterOrProperty(Logger, parameter, metadata);
         }
         else
         {

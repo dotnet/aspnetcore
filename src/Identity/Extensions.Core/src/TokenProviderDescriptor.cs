@@ -27,5 +27,5 @@ public class TokenProviderDescriptor
     /// <summary>
     /// If specified, the instance to be used for the token provider.
     /// </summary>
-    public object ProviderInstance { get; set; }
+    public object? ProviderInstance { get; set; }
 }

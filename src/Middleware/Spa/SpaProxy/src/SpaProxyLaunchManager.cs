@@ -299,7 +299,7 @@ rm {scriptPath};
         }
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync()
     {
         Dispose(true);
         return Task.CompletedTask;

@@ -15,6 +15,8 @@ namespace ServerComparison.FunctionalTests;
 
 public class HelloWorldTests : LoggedTest
 {
+    private const string DebugEnvironmentVariable = "ASPNETCORE_MODULE_DEBUG";
+
     public HelloWorldTests(ITestOutputHelper output) : base(output)
     {
     }
@@ -45,6 +47,11 @@ public class HelloWorldTests : LoggedTest
             if (variant.Server == ServerType.Nginx)
             {
                 deploymentParameters.ServerConfigTemplateContent = Helpers.GetNginxConfigContent("nginx.conf");
+            }
+
+            if (variant.Server == ServerType.IISExpress)
+            {
+                deploymentParameters.EnvironmentVariables[DebugEnvironmentVariable] = "console";
             }
 
             using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

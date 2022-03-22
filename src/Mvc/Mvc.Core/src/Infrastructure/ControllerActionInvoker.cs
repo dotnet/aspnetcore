@@ -4,16 +4,18 @@
 #nullable enable
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ControllerActionInvoker : ResourceInvoker, IActionInvoker
+internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
 {
     private readonly ControllerActionInvokerCacheEntry _cacheEntry;
     private readonly ControllerContext _controllerContext;
@@ -64,12 +66,10 @@ internal class ControllerActionInvoker : ResourceInvoker, IActionInvoker
                     var controllerContext = _controllerContext;
 
                     _cursor.Reset();
-
-                    _logger.ExecutingControllerFactory(controllerContext);
+                    Log.ExecutingControllerFactory(_logger, controllerContext);
 
                     _instance = _cacheEntry.ControllerFactory(controllerContext);
-
-                    _logger.ExecutedControllerFactory(controllerContext);
+                    Log.ExecutedControllerFactory(_logger, controllerContext);
 
                     _arguments = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
@@ -424,7 +424,7 @@ internal class ControllerActionInvoker : ResourceInvoker, IActionInvoker
                     controllerContext,
                     arguments,
                     controller);
-                logger.ActionMethodExecuting(controllerContext, orderedArguments);
+                Log.ActionMethodExecuting(logger, controllerContext, orderedArguments);
                 var stopwatch = ValueStopwatch.StartNew();
                 var actionResultValueTask = actionMethodExecutor.Execute(invoker._mapper, objectMethodExecutor, controller!, orderedArguments);
                 if (actionResultValueTask.IsCompletedSuccessfully)
@@ -437,7 +437,7 @@ internal class ControllerActionInvoker : ResourceInvoker, IActionInvoker
                 }
 
                 invoker._result = result;
-                logger.ActionMethodExecuted(controllerContext, result, stopwatch.GetElapsedTime());
+                Log.ActionMethodExecuted(logger, controllerContext, result, stopwatch.GetElapsedTime());
             }
             finally
             {
@@ -583,5 +583,79 @@ internal class ControllerActionInvoker : ResourceInvoker, IActionInvoker
     private sealed class ActionExecutedContextSealed : ActionExecutedContext
     {
         public ActionExecutedContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters, object controller) : base(actionContext, filters, controller) { }
+    }
+
+    // Internal for unit testing
+    internal static new partial class Log
+    {
+        public static void ExecutingControllerFactory(ILogger logger, ControllerContext context)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var controllerType = context.ActionDescriptor.ControllerTypeInfo.AsType();
+            var controllerName = TypeNameHelper.GetTypeDisplayName(controllerType);
+            ExecutingControllerFactory(logger, controllerName, controllerType.Assembly.GetName().Name);
+        }
+
+        [LoggerMessage(1, LogLevel.Debug, "Executing controller factory for controller {Controller} ({AssemblyName})", EventName = "ControllerFactoryExecuting", SkipEnabledCheck = true)]
+        private static partial void ExecutingControllerFactory(ILogger logger, string controller, string? assemblyName);
+
+        public static void ExecutedControllerFactory(ILogger logger, ControllerContext context)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var controllerType = context.ActionDescriptor.ControllerTypeInfo.AsType();
+            var controllerName = TypeNameHelper.GetTypeDisplayName(controllerType);
+            ExecutedControllerFactory(logger, controllerName, controllerType.Assembly.GetName().Name);
+        }
+
+        [LoggerMessage(2, LogLevel.Debug, "Executed controller factory for controller {Controller} ({AssemblyName})", EventName = "ControllerFactoryExecuted", SkipEnabledCheck = true)]
+        private static partial void ExecutedControllerFactory(ILogger logger, string controller, string? assemblyName);
+
+        public static void ActionMethodExecuting(ILogger logger, ControllerContext context, object?[]? arguments)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var actionName = context.ActionDescriptor.DisplayName;
+
+                var validationState = context.ModelState.ValidationState;
+                ActionMethodExecuting(logger, actionName, validationState);
+
+                if (arguments != null && logger.IsEnabled(LogLevel.Trace))
+                {
+                    var convertedArguments = new string?[arguments.Length];
+                    for (var i = 0; i < arguments.Length; i++)
+                    {
+                        convertedArguments[i] = Convert.ToString(arguments[i], CultureInfo.InvariantCulture);
+                    }
+
+                    ActionMethodExecutingWithArguments(logger, actionName, convertedArguments);
+                }
+            }
+        }
+
+        [LoggerMessage(101, LogLevel.Information, "Executing action method {ActionName} - Validation state: {ValidationState}", EventName = "ActionMethodExecuting", SkipEnabledCheck = true)]
+        private static partial void ActionMethodExecuting(ILogger logger, string? actionName, ModelValidationState validationState);
+
+        [LoggerMessage(102, LogLevel.Trace, "Executing action method {ActionName} with arguments ({Arguments})", EventName = "ActionMethodExecutingWithArguments", SkipEnabledCheck = true)]
+        private static partial void ActionMethodExecutingWithArguments(ILogger logger, string? actionName, string?[] arguments);
+
+        public static void ActionMethodExecuted(ILogger logger, ControllerContext context, IActionResult result, TimeSpan timeSpan)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var actionName = context.ActionDescriptor.DisplayName;
+                ActionMethodExecuted(logger, actionName, Convert.ToString(result, CultureInfo.InvariantCulture), timeSpan.TotalMilliseconds);
+            }
+        }
+
+        [LoggerMessage(103, LogLevel.Information, "Executed action method {ActionName}, returned result {ActionResult} in {ElapsedMilliseconds}ms.", EventName = "ActionMethodExecuted", SkipEnabledCheck = true)]
+        private static partial void ActionMethodExecuted(ILogger logger, string? actionName, string? actionResult, double elapsedMilliseconds);
     }
 }

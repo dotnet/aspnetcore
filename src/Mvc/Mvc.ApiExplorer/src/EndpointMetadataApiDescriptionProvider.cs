@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
@@ -44,6 +45,18 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
     public void OnProvidersExecuting(ApiDescriptionProviderContext context)
     {
+        // Keep in sync with EndpointRouteBuilderExtensions.cs
+        static bool ShouldDisableInferredBody(string method)
+        {
+            // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
+            return method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
+                   method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
+                   method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
+                   method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
+                   method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
+                   method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
+        }
+
         foreach (var endpoint in _endpointDataSource.Endpoints)
         {
             if (endpoint is RouteEndpoint routeEndpoint &&
@@ -51,12 +64,15 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
                 routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata &&
                 routeEndpoint.Metadata.GetMetadata<IExcludeFromDescriptionMetadata>() is null or { ExcludeFromDescription: false })
             {
+                // We need to detect if any of the methods allow inferred body
+                var disableInferredBody = httpMethodMetadata.HttpMethods.Any(ShouldDisableInferredBody);
+
                 // REVIEW: Should we add an ApiDescription for endpoints without IHttpMethodMetadata? Swagger doesn't handle
                 // a null HttpMethod even though it's nullable on ApiDescription, so we'd need to define "default" HTTP methods.
                 // In practice, the Delegate will be called for any HTTP method if there is no IHttpMethodMetadata.
                 foreach (var httpMethod in httpMethodMetadata.HttpMethods)
                 {
-                    context.Results.Add(CreateApiDescription(routeEndpoint, httpMethod, methodInfo));
+                    context.Results.Add(CreateApiDescription(routeEndpoint, httpMethod, methodInfo, disableInferredBody));
                 }
             }
         }
@@ -66,7 +82,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
     {
     }
 
-    private ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo)
+    private ApiDescription CreateApiDescription(RouteEndpoint routeEndpoint, string httpMethod, MethodInfo methodInfo, bool disableInferredBody)
     {
         // Swashbuckle uses the "controller" name to group endpoints together.
         // For now, put all methods defined the same declaring type together.
@@ -80,7 +96,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         {
             // If the declaring type is null or compiler-generated (e.g. lambdas),
             // group the methods under the application name.
-            controllerName = _environment.ApplicationName;
+            controllerName = _environment.ApplicationName ?? string.Empty;
         }
 
         var apiDescription = new ApiDescription
@@ -102,7 +118,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
         foreach (var parameter in methodInfo.GetParameters())
         {
-            var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern);
+            var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern, disableInferredBody);
 
             if (parameterDescription is null)
             {
@@ -155,9 +171,9 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         return apiDescription;
     }
 
-    private ApiParameterDescription? CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern)
+    private ApiParameterDescription? CreateApiParameterDescription(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
     {
-        var (source, name, allowEmpty, paramType) = GetBindingSourceAndName(parameter, pattern);
+        var (source, name, allowEmpty, paramType) = GetBindingSourceAndName(parameter, pattern, disableInferredBody);
 
         // Services are ignored because they are not request parameters.
         if (source == BindingSource.Services)
@@ -230,7 +246,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
     // TODO: Share more of this logic with RequestDelegateFactory.CreateArgument(...) using RequestDelegateFactoryUtilities
     // which is shared source.
-    private (BindingSource, string, bool, Type) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern)
+    private (BindingSource, string, bool, Type) GetBindingSourceAndName(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
     {
         var attributes = parameter.GetCustomAttributes();
 
@@ -265,7 +281,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         {
             return (BindingSource.Services, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
-        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter))
+        else if (parameter.ParameterType == typeof(string) || ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType))
         {
             // complex types will display as strings since they use custom parsing via TryParse on a string
             var displayType = !parameter.ParameterType.IsPrimitive && Nullable.GetUnderlyingType(parameter.ParameterType)?.IsPrimitive != true
@@ -283,6 +299,13 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
         else if (parameter.ParameterType == typeof(IFormFile) || parameter.ParameterType == typeof(IFormFileCollection))
         {
             return (BindingSource.FormFile, parameter.Name ?? string.Empty, false, parameter.ParameterType);
+        }
+        else if (disableInferredBody && (
+                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
+                 parameter.ParameterType == typeof(string[]) ||
+                 parameter.ParameterType == typeof(StringValues)))
+        {
+            return (BindingSource.Query, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
         else
         {

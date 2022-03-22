@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -249,8 +250,8 @@ public class FormPipeReader
             {
                 if (!isFinalBlock)
                 {
-                    // Don't buffer indefinitely
-                    if ((uint)(sequenceReader.Consumed - consumedBytes) > (uint)KeyLengthLimit + (uint)ValueLengthLimit)
+                    // +2 to account for '&' and '='
+                    if ((sequenceReader.Length - consumedBytes) > (long)KeyLengthLimit + (long)ValueLengthLimit + 2) 
                     {
                         ThrowKeyOrValueTooLargeException();
                     }
@@ -314,17 +315,30 @@ public class FormPipeReader
 
     private void ThrowKeyOrValueTooLargeException()
     {
-        throw new InvalidDataException($"Form key length limit {KeyLengthLimit} or value length limit {ValueLengthLimit} exceeded.");
+        throw new InvalidDataException(
+            string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.FormPipeReader_KeyOrValueTooLarge,
+                KeyLengthLimit,
+                ValueLengthLimit));
     }
 
     private void ThrowKeyTooLargeException()
     {
-        throw new InvalidDataException($"Form key length limit {KeyLengthLimit} exceeded.");
+        throw new InvalidDataException(
+            string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.FormPipeReader_KeyTooLarge,
+                KeyLengthLimit));
     }
 
     private void ThrowValueTooLargeException()
     {
-        throw new InvalidDataException($"Form value length limit {ValueLengthLimit} exceeded.");
+        throw new InvalidDataException(
+            string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.FormPipeReader_ValueTooLarge,
+                ValueLengthLimit));
     }
 
     [SkipLocalsInit]
