@@ -181,10 +181,10 @@ private:
         }
     }
 
-    LONG                              m_cRapidFailCount;
+    volatile LONG                     m_cRapidFailCount;
     DWORD                             m_dwRapidFailTickStart;
     DWORD                             m_dwProcessesPerApplication;
-    DWORD                             m_dwRouteToProcessIndex;
+    volatile DWORD                    m_dwRouteToProcessIndex;
 
     SRWLOCK                           m_srwLock;
     SERVER_PROCESS                  **m_ppServerProcessList;
@@ -202,7 +202,7 @@ private:
     HANDLE                            m_hNULHandle;
     mutable LONG                      m_cRefs;
 
-    static BOOL                       sm_fWSAStartupDone;
-    BOOL                              m_fServerProcessListReady;
-    LONG                              m_lStopping;
+    volatile static BOOL              sm_fWSAStartupDone;
+    volatile BOOL                     m_fServerProcessListReady;
+    volatile LONG                     m_lStopping;
 };

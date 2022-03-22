@@ -202,12 +202,16 @@ private:
 
     LONG                _dwOutstandingIo;
 
+    volatile
     BOOL                _fCleanupInProgress;
 
+    volatile
     BOOL                _fIndicateCompletionToIis;
 
+    volatile
     BOOL                _fHandleClosed;
 
+    volatile
     BOOL                _fReceivedCloseMsg;
 
     static
