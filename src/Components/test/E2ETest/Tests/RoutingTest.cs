@@ -783,7 +783,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void CanArriveAtQueryStringPageWithStringQuery()
     {
-        SetUrlViaPushState("/WithQueryParameters/Abc?stringvalue=Hello+there");
+        SetUrlViaPushState("/WithQueryParameters/Abc?stringvalue=Hello+there#123");
 
         var app = Browser.MountTestComponent<TestRouter>();
         Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
