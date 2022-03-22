@@ -270,8 +270,8 @@ private:
     STRU                    m_struPort;
     STRU                    m_struCommandLine;
 
-    volatile LONG           m_lStopping;
-    volatile BOOL           m_fReady;
+    LONG           m_lStopping;
+    BOOL           m_fReady;
     mutable LONG            m_cRefs;
 
     std::mt19937            m_randomGenerator;

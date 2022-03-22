@@ -186,23 +186,23 @@ private:
     BOOL                                m_fResetConnection;
     BOOL                                m_fDoReverseRewriteHeaders;
     BOOL                                m_fServerResetConn;
-    volatile  BOOL                      m_fClientDisconnected;
+    BOOL                      m_fClientDisconnected;
     //
     // A safety guard flag indicating no more IIS PostCompletion is allowed
     //
-    volatile  BOOL                      m_fFinishRequest;
+    BOOL                      m_fFinishRequest;
     //
     // A safety guard flag to prevent from unexpect callback which may signal IIS pipeline
     // more than once with non-pending status
     //
-    volatile  BOOL                      m_fDoneAsyncCompletion;
-    volatile  BOOL                      m_fHasError;
+    BOOL                      m_fDoneAsyncCompletion;
+    BOOL                      m_fHasError;
     //
     // WinHttp may hit AV under race if handle got closed more than once simultaneously
     // Use two bool variables to guard
     //
-    volatile  BOOL                      m_fHttpHandleInClose;
-    volatile  BOOL                      m_fWebSocketHandleInClose;
+    BOOL                      m_fHttpHandleInClose;
+    BOOL                      m_fWebSocketHandleInClose;
 
     PCSTR                               m_pszOriginalHostHeader;
     PCWSTR                              m_pszHeaders;
@@ -210,7 +210,7 @@ private:
     // Record the number of winhttp handles in use
     // release IIS pipeline only after all handles got closed
     //
-    volatile  LONG                      m_dwHandlers;
+    LONG                      m_dwHandlers;
     DWORD                               m_cchHeaders;
     DWORD                               m_BytesToReceive;
     DWORD                               m_BytesToSend;

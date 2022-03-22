@@ -50,7 +50,7 @@ private:
     // Total heap allocations done over the lifetime.
     // Note that this is not interlocked, it is just a hint for debugging.
     //
-    volatile LONG           m_nTotal;
+    LONG           m_nTotal;
 
     LONG                    m_nFillPattern;
 
