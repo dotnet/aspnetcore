@@ -82,6 +82,27 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void MouseEnterAndMouseLeave_CanTrigger()
+    {
+        Browser.MountTestComponent<MouseEventComponent>();
+
+        var input = Browser.Exists(By.Id("mouseenter_input"));
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        var other = Browser.Exists(By.Id("other"));
+
+        // Mouse over the button and then back off
+        var actions = new Actions(Browser)
+            .MoveToElement(input)
+            .MoveToElement(other);
+
+        actions.Perform();
+        Browser.Equal("mouseenter,mouseleave,", () => output.Text);
+    }
+
+    [Fact]
     public void MouseMove_CanTrigger()
     {
         Browser.MountTestComponent<MouseEventComponent>();

@@ -108,6 +108,8 @@ registerBuiltInEventType([
   'mousemove',
   'mousedown',
   'mouseup',
+  'mouseleave',
+  'mouseenter',
   'dblclick',
 ], {
   createEventArgs: e => parseMouseEvent(e as MouseEvent),
