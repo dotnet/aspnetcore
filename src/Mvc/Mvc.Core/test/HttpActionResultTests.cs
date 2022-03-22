@@ -25,7 +25,7 @@ public class HttpActionResultTests
     }
 
     [Fact]
-    public async Task HttpActionResult_SetsStatusCode()
+    public async Task HttpActionResult_InvokesInternalHttpResult()
     {
         // Arrange
         var httpContext = new DefaultHttpContext

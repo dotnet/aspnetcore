@@ -809,6 +809,7 @@ public class ApiResponseTypeProviderTest
         public ActionResult<DerivedModel> GetUserLocation(int a, int b) => null;
 
         public ActionResult<DerivedModel> PutModel(string userId, DerivedModel model) => null;
+
         public IResult GetIResult(int id) => null;
     }
 
