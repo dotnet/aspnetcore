@@ -39,7 +39,7 @@ internal class HttpResultMetadataConvention : IActionModelConvention
     /// <see langword="true"/> if the convention applies, otherwise <see langword="false"/>.
     /// Derived types may override this method to selectively apply this convention.
     /// </returns>
-    protected virtual bool ShouldApply(ActionModel action) => typeof(IResult).IsAssignableFrom(action!.ActionMethod.ReturnType);
+    protected virtual bool ShouldApply(ActionModel action) => typeof(IResult).IsAssignableFrom(action.ActionMethod.ReturnType);
 
     private static void AddProducesAttribute(ActionModel action)
     {
