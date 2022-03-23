@@ -393,7 +393,7 @@ internal class Http2Utilities : IHttpStreamHeadersHandler
 
     public static async Task FlushAsync(PipeWriter writableBuffer)
     {
-        await writableBuffer.FlushAsync().AsTask().DefaultTimeout();
+        await writableBuffer.FlushAsync().AsTask();
     }
 
     public Task SendPreambleAsync() => SendAsync(ClientPreface);
@@ -827,7 +827,7 @@ internal class Http2Utilities : IHttpStreamHeadersHandler
 
         while (true)
         {
-            var result = await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout();
+            var result = await _pair.Application.Input.ReadAsync().AsTask();//.DefaultTimeout();
             var buffer = result.Buffer;
             var consumed = buffer.Start;
             var examined = buffer.Start;
