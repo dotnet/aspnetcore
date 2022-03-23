@@ -13,12 +13,9 @@ using Microsoft.Extensions.Logging;
 public sealed partial class ContentHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values.
+    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class
     /// </summary>
-    /// <param name="content">The value to format in the entity body.</param>
-    /// <param name="contentType">The Content-Type header for the response</param>
-    internal ContentHttpResult(string? content, string? contentType)
-        : this(content, contentType, statusCode: null)
+    public ContentHttpResult()
     {
     }
 
@@ -26,29 +23,36 @@ public sealed partial class ContentHttpResult : IResult
     /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values
     /// </summary>
     /// <param name="content">The value to format in the entity body.</param>
-    /// <param name="statusCode">The HTTP status code of the response.</param>
-    /// <param name="contentType">The Content-Type header for the response</param>
-    internal ContentHttpResult(string? content, string? contentType, int? statusCode)
+    public ContentHttpResult(string content)
     {
         Content = content;
-        StatusCode = statusCode;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values
+    /// </summary>
+    /// <param name="content">The value to format in the entity body.</param>
+    /// <param name="contentType">The Content-Type header for the response</param>
+    public ContentHttpResult(string content, string contentType)
+    {
+        Content = content;
         ContentType = contentType;
     }
 
     /// <summary>
     /// Gets or set the content representing the body of the response.
     /// </summary>
-    public string? Content { get; internal init; }
+    public string? Content { get; init;}
 
     /// <summary>
     /// Gets or sets the Content-Type header for the response.
     /// </summary>
-    public string? ContentType { get; internal init; }
+    public string? ContentType { get; init; }
 
     /// <summary>
     /// Gets the HTTP status code.
     /// </summary>
-    public int? StatusCode { get; internal init; }
+    public int? StatusCode { get; init; }
 
     /// <summary>
     /// Writes the content to the HTTP response.

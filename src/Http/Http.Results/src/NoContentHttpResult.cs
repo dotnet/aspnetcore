@@ -15,9 +15,14 @@ public class NoContentHttpResult : IResult
     /// <summary>
     /// Initializes a new instance of the <see cref="NoContentHttpResult"/> class.
     /// </summary>
-    internal NoContentHttpResult()
+    private NoContentHttpResult()
     {
     }
+
+    /// <summary>
+    /// Gets an instance of <see cref="EmptyHttpResult"/>.
+    /// </summary>
+    public static NoContentHttpResult Instance { get; } = new();
 
     /// <summary>
     /// Gets the HTTP status code.

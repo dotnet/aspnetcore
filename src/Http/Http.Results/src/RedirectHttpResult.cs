@@ -18,45 +18,16 @@ public sealed partial class RedirectHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
-    internal RedirectHttpResult(string url)
-         : this(url, permanent: false)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
-    /// provided.
-    /// </summary>
-    /// <param name="url">The URL to redirect to.</param>
-    /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-    internal RedirectHttpResult(string url, bool permanent)
-        : this(url, permanent, preserveMethod: false)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
-    /// provided.
-    /// </summary>
-    /// <param name="url">The URL to redirect to.</param>
-    /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-    /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
-    /// or permanent redirect (308) preserve the initial request method.</param>
-    internal RedirectHttpResult(string url, bool permanent, bool preserveMethod)
-        : this(url, acceptLocalUrlOnly: false, permanent, preserveMethod)
-    { }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
-    /// provided.
-    /// </summary>
-    /// <param name="url">The URL to redirect to.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
     /// or permanent redirect (308) preserve the initial request method.</param>
     /// <param name="acceptLocalUrlOnly">If set to true, only local URLs are accepted
     /// and will throw an exception when the supplied URL is not considered local.</param>
-    internal RedirectHttpResult(string url, bool acceptLocalUrlOnly, bool permanent, bool preserveMethod)
+    public RedirectHttpResult(
+        string url,
+        bool permanent = false,
+        bool preserveMethod = false,
+        bool acceptLocalUrlOnly = false)
     {
         if (url == null)
         {
@@ -75,24 +46,24 @@ public sealed partial class RedirectHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets the value that specifies that the redirect should be permanent if true or temporary if false.
-    /// </summary>
-    public bool Permanent { get; }
-
-    /// <summary>
-    /// Gets an indication that the redirect preserves the initial request method.
-    /// </summary>
-    public bool PreserveMethod { get; }
-
-    /// <summary>
     /// Gets the URL to redirect to.
     /// </summary>
     public string Url { get; }
 
     /// <summary>
+    /// Gets the value that specifies that the redirect should be permanent if true or temporary if false.
+    /// </summary>
+    public bool Permanent { get; init; }
+
+    /// <summary>
+    /// Gets an indication that the redirect preserves the initial request method.
+    /// </summary>
+    public bool PreserveMethod { get; init; }
+
+    /// <summary>
     /// Gets an indication that only local URLs are accepted.
     /// </summary>
-    public bool AcceptLocalUrlOnly { get; }
+    public bool AcceptLocalUrlOnly { get; init; }
 
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)

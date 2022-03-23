@@ -17,7 +17,7 @@ public sealed partial class StatusCodeHttpResult : IResult
     /// with the given <paramref name="statusCode"/>.
     /// </summary>
     /// <param name="statusCode">The HTTP status code of the response.</param>
-    internal StatusCodeHttpResult(int statusCode)
+    public StatusCodeHttpResult(int statusCode)
     {
         StatusCode = statusCode;
     }

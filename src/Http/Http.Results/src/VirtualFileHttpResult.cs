@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -16,32 +15,14 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed class VirtualFileHttpResult : IResult
 {
-    private string _fileName;
+    private DateTimeOffset? _lastModified;
 
     /// <summary>
-    /// Creates a new <see cref="VirtualFileHttpResult"/> instance with
-    /// the provided <paramref name="fileName"/> and the provided <paramref name="contentType"/>.
+    /// Creates a new <see cref="VirtualFileHttpResult"/> instance with the provided values.
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
-    /// <param name="contentType">The Content-Type header of the response.</param>
-    internal VirtualFileHttpResult(string fileName, string? contentType)
-        : this(fileName, contentType, fileDownloadName: null)
-    {
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="VirtualFileHttpResult"/> instance with
-    /// the provided <paramref name="fileName"/>, the provided <paramref name="contentType"/>
-    /// and the provided <paramref name="fileDownloadName"/>.
-    /// </summary>
-    /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
-    /// <param name="contentType">The Content-Type header of the response.</param>
-    /// <param name="fileDownloadName">The suggested file name.</param>
-    internal VirtualFileHttpResult(
-        string fileName,
-        string? contentType,
-        string? fileDownloadName)
-        : this(fileName, contentType, fileDownloadName, enableRangeProcessing: false)
+    public VirtualFileHttpResult(string fileName)
+        : this(fileName, contentType: null)
     {
     }
 
@@ -50,52 +31,49 @@ public sealed class VirtualFileHttpResult : IResult
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    /// <param name="fileDownloadName">The suggested file name.</param>
-    /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
-    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
-    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
-    internal VirtualFileHttpResult(
-        string fileName,
-        string? contentType,
-        string? fileDownloadName,
-        bool enableRangeProcessing,
-        DateTimeOffset? lastModified = null,
-        EntityTagHeaderValue? entityTag = null)
+    public VirtualFileHttpResult(string fileName, string? contentType)
     {
         FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         ContentType = contentType ?? "application/octet-stream";
-        FileDownloadName = fileDownloadName;
-        EnableRangeProcessing = enableRangeProcessing;
-        LastModified = lastModified;
-        EntityTag = entityTag;
     }
-
-    /// <inheritdoc />
-    public string ContentType { get; internal set; }
-
-    /// <inheritdoc />
-    public string? FileDownloadName { get; internal set; }
-
-    /// <inheritdoc />
-    public DateTimeOffset? LastModified { get; internal set; }
-
-    /// <inheritdoc />
-    public EntityTagHeaderValue? EntityTag { get; internal init; }
-
-    /// <inheritdoc />
-    public bool EnableRangeProcessing { get; internal init; }
-
-    /// <inheritdoc />
-    public long? FileLength { get; internal set; }
 
     /// <summary>
     /// Gets or sets the path to the file that will be sent back as the response.
     /// </summary>
-    public string FileName
+    public string FileName { get; }
+
+    /// <summary>
+    /// Gets or sets the file length information .
+    /// </summary>
+    public long? FileLength { get; private set; }
+
+    /// <summary>
+    /// Gets the Content-Type header for the response.
+    /// </summary>
+    public string ContentType { get; init; }
+
+    /// <summary>
+    /// Gets the value that enables range processing for the file result.
+    /// </summary>
+    public bool EnableRangeProcessing { get; init; }
+
+    /// <summary>
+    /// Gets the etag associated with the file result.
+    /// </summary>
+    public EntityTagHeaderValue? EntityTag { get; init; }
+
+    /// <summary>
+    /// Gets the file name that will be used in the Content-Disposition header of the response.
+    /// </summary>
+    public string? FileDownloadName { get; init; }
+
+    /// <summary>
+    /// Gets the last modified information associated with the file result.
+    /// </summary>
+    public DateTimeOffset? LastModified
     {
-        get => _fileName;
-        [MemberNotNull(nameof(_fileName))]
-        internal set => _fileName = value ?? throw new ArgumentNullException(nameof(value));
+        get => _lastModified;
+        init => _lastModified = value;
     }
 
     /// <inheritdoc/>
@@ -108,7 +86,7 @@ public sealed class VirtualFileHttpResult : IResult
         {
             throw new FileNotFoundException($"Could not find file: {FileName}.", FileName);
         }
-        LastModified = LastModified ?? fileInfo.LastModified;
+        _lastModified = LastModified ?? fileInfo.LastModified;
         FileLength = fileInfo.Length;
 
         // Creating the logger with a string to preserve the category after the refactoring.

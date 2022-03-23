@@ -15,9 +15,14 @@ public sealed class UnauthorizedHttpResult : IResult
     /// <summary>
     /// Initializes a new instance of the <see cref="UnauthorizedHttpResult"/> class.
     /// </summary>
-    internal UnauthorizedHttpResult()
+    private UnauthorizedHttpResult()
     {
     }
+
+    /// <summary>
+    /// Gets an instance of <see cref="UnauthorizedHttpResult"/>.
+    /// </summary>
+    public static UnauthorizedHttpResult Instance { get; } = new();
 
     /// <summary>
     /// Gets the HTTP status code.

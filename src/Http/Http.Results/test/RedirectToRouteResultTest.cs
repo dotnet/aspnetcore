@@ -56,7 +56,7 @@ public class RedirectToRouteResultTest
         var expectedStatusCode = StatusCodes.Status301MovedPermanently;
         var httpContext = GetHttpContext(expectedUrl);
 
-        var result = new RedirectToRouteHttpResult("Sample", null, true, "test");
+        var result = new RedirectToRouteHttpResult("Sample", null, true, fragment: "test");
 
         // Act
         await result.ExecuteAsync(httpContext);

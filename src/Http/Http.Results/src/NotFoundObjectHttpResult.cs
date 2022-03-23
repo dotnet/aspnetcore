@@ -16,16 +16,21 @@ public sealed class NotFoundObjectHttpResult : IResult
     /// Initializes a new instance of the <see cref="NotFoundObjectHttpResult"/> class with the values.
     /// </summary>
     /// <param name="value">The value to format in the entity body.</param>
-    internal NotFoundObjectHttpResult(object? value)
+    public NotFoundObjectHttpResult(object? value = null)
     {
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
+    /// Gets an instance of <see cref="NotFoundObjectHttpResult"/> without a <see cref="Value"/>.
+    /// </summary>
+    public static NotFoundObjectHttpResult Empty { get; } = new();
+
+    /// <summary>
     /// Gets the object result.
     /// </summary>
-    public object? Value { get; internal init; }
+    public object? Value { get; }
 
     /// <summary>
     /// Gets the HTTP status code.

@@ -14,30 +14,10 @@ namespace Microsoft.AspNetCore.Http;
 public sealed partial class ForbidHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidHttpResult"/>.
+    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the default sign out scheme.
     /// </summary>
-    internal ForbidHttpResult()
-        : this(Array.Empty<string>())
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
-    /// specified authentication scheme.
-    /// </summary>
-    /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-    internal ForbidHttpResult(string authenticationScheme)
-        : this(new[] { authenticationScheme })
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
-    /// specified authentication schemes.
-    /// </summary>
-    /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
-    internal ForbidHttpResult(IList<string> authenticationSchemes)
-        : this(authenticationSchemes, properties: null)
+    public ForbidHttpResult()
+        : this(authenticationSchemes: Array.Empty<string>(), properties: null)
     {
     }
 
@@ -47,7 +27,7 @@ public sealed partial class ForbidHttpResult : IResult
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    internal ForbidHttpResult(AuthenticationProperties? properties)
+    public ForbidHttpResult(AuthenticationProperties? properties)
         : this(Array.Empty<string>(), properties)
     {
     }
@@ -59,7 +39,7 @@ public sealed partial class ForbidHttpResult : IResult
     /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    internal ForbidHttpResult(string authenticationScheme, AuthenticationProperties? properties)
+    public ForbidHttpResult(string authenticationScheme, AuthenticationProperties? properties)
         : this(new[] { authenticationScheme }, properties)
     {
     }
@@ -71,7 +51,7 @@ public sealed partial class ForbidHttpResult : IResult
     /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    internal ForbidHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
+    public ForbidHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
         AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;
@@ -80,12 +60,12 @@ public sealed partial class ForbidHttpResult : IResult
     /// <summary>
     /// Gets the authentication schemes that are challenged.
     /// </summary>
-    public IReadOnlyList<string> AuthenticationSchemes { get; internal init; }
+    public IReadOnlyList<string> AuthenticationSchemes { get; init; }
 
     /// <summary>
     /// Gets the <see cref="AuthenticationProperties"/> used to perform the authentication challenge.
     /// </summary>
-    public AuthenticationProperties? Properties { get; internal init; }
+    public AuthenticationProperties? Properties { get; }
 
     /// <inheritdoc />
     public async Task ExecuteAsync(HttpContext httpContext)

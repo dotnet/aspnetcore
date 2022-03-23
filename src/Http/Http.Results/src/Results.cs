@@ -114,7 +114,10 @@ public static class Results
             mediaTypeHeaderValue.Encoding = contentEncoding ?? mediaTypeHeaderValue.Encoding;
         }
 
-        return new ContentHttpResult(content, mediaTypeHeaderValue?.ToString());
+        return new ContentHttpResult(content)
+        {
+            ContentType = mediaTypeHeaderValue?.ToString(),
+        };
     }
 
     /// <summary>
@@ -138,8 +141,9 @@ public static class Results
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
     public static IResult Json(object? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
-        => new JsonHttpResult(data, statusCode, options)
+        => new JsonHttpResult(data, options)
         {
+            StatusCode = statusCode,
             ContentType = contentType,
         };
 
@@ -464,7 +468,7 @@ public static class Results
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
-        => new RedirectHttpResult(localUrl, acceptLocalUrlOnly: true, permanent, preserveMethod);
+        => new RedirectHttpResult(localUrl, permanent, preserveMethod, acceptLocalUrlOnly: true);
 
     /// <summary>
     /// Redirects to the specified route.
@@ -503,14 +507,14 @@ public static class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult NotFound(object? value = null)
-        => new NotFoundObjectHttpResult(value);
+        => value is null ? NotFoundObjectHttpResult.Empty : new NotFoundObjectHttpResult(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
     /// </summary>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Unauthorized()
-        => new UnauthorizedHttpResult();
+        => UnauthorizedHttpResult.Instance;
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
@@ -518,7 +522,7 @@ public static class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult BadRequest(object? error = null)
-        => new BadRequestObjectHttpResult(error);
+        => error is null ? BadRequestObjectHttpResult.Empty : new BadRequestObjectHttpResult(error);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
@@ -526,14 +530,14 @@ public static class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Conflict(object? error = null)
-        => new ConflictObjectHttpResult(error);
+        => error is null ? ConflictObjectHttpResult.Empty : new ConflictObjectHttpResult(error);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status204NoContent"/> response.
     /// </summary>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult NoContent()
-        => new NoContentHttpResult();
+        => NoContentHttpResult.Instance;
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status200OK"/> response.
@@ -541,7 +545,7 @@ public static class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Ok(object? value = null)
-        => new OkObjectHttpResult(value);
+        => value is null ? OkObjectHttpResult.Empty : new OkObjectHttpResult(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
@@ -549,7 +553,7 @@ public static class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult UnprocessableEntity(object? error = null)
-        => new UnprocessableEntityObjectHttpResult(error);
+        => error is null ? UnprocessableEntityObjectHttpResult.Empty : new UnprocessableEntityObjectHttpResult(error);
 
     /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.
@@ -569,24 +573,7 @@ public static class Results
         string? type = null,
         IDictionary<string, object?>? extensions = null)
     {
-        var problemDetails = new ProblemDetails
-        {
-            Detail = detail,
-            Instance = instance,
-            Status = statusCode,
-            Title = title,
-            Type = type,
-        };
-
-        if (extensions is not null)
-        {
-            foreach (var extension in extensions)
-            {
-                problemDetails.Extensions.Add(extension);
-            }
-        }
-
-        return new ProblemHttpResult(problemDetails);
+        return new ProblemHttpResult(detail, instance, statusCode, title, type, extensions);
     }
 
     /// <summary>

@@ -18,10 +18,47 @@ public sealed class ProblemHttpResult : IResult
     /// the provided <paramref name="problemDetails"/>.
     /// </summary>
     /// <param name="problemDetails">The <see cref="ProblemDetails"/> instance to format in the entity body.</param>
-    internal ProblemHttpResult(ProblemDetails problemDetails)
+    public ProblemHttpResult(ProblemDetails problemDetails)
     {
         ProblemDetails = problemDetails;
         HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: null);
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
+    /// the provided values.
+    /// </summary>
+    /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public ProblemHttpResult(
+        string? detail = null,
+        string? instance = null,
+        int? statusCode = null,
+        string? title = null,
+        string? type = null,
+        IDictionary<string, object?>? extensions = null)
+    {
+        ProblemDetails = new ProblemDetails
+        {
+            Detail = detail,
+            Instance = instance,
+            Status = statusCode,
+            Title = title,
+            Type = type,
+        };
+
+        if (extensions is not null)
+        {
+            foreach (var extension in extensions)
+            {
+                ProblemDetails.Extensions.Add(extension);
+            }
+        }
     }
 
     /// <summary>

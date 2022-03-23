@@ -15,22 +15,15 @@ public sealed partial class SignInHttpResult : IResult
 {
     /// <summary>
     /// Initializes a new instance of <see cref="SignInHttpResult"/> with the
-    /// default authentication scheme.
-    /// </summary>
-    /// <param name="principal">The claims principal containing the user claims.</param>
-    internal SignInHttpResult(ClaimsPrincipal principal)
-        : this(principal, authenticationScheme: null, properties: null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="SignInHttpResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
     /// <param name="principal">The claims principal containing the user claims.</param>
     /// <param name="authenticationScheme">The authentication schemes to use when signing in the user.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
-    internal SignInHttpResult(ClaimsPrincipal principal, string? authenticationScheme, AuthenticationProperties? properties)
+    public SignInHttpResult(
+        ClaimsPrincipal principal,
+        string? authenticationScheme = null,
+        AuthenticationProperties? properties = null)
     {
         Principal = principal ?? throw new ArgumentNullException(nameof(principal));
         AuthenticationScheme = authenticationScheme;
@@ -38,19 +31,19 @@ public sealed partial class SignInHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets or sets the authentication scheme that is used to perform the sign-in operation.
-    /// </summary>
-    public string? AuthenticationScheme { get; internal init; }
-
-    /// <summary>
     /// Gets or sets the <see cref="ClaimsPrincipal"/> containing the user claims.
     /// </summary>
-    public ClaimsPrincipal Principal { get; internal init; }
+    public ClaimsPrincipal Principal { get; }
+
+    /// <summary>
+    /// Gets or sets the authentication scheme that is used to perform the sign-in operation.
+    /// </summary>
+    public string? AuthenticationScheme { get; init; }
 
     /// <summary>
     /// Gets or sets the <see cref="AuthenticationProperties"/> used to perform the sign-in operation.
     /// </summary>
-    public AuthenticationProperties? Properties { get; internal init; }
+    public AuthenticationProperties? Properties { get; init; }
 
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)

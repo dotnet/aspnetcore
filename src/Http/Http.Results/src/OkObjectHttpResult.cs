@@ -17,16 +17,21 @@ public sealed class OkObjectHttpResult : IResult
     /// Initializes a new instance of the <see cref="OkObjectHttpResult"/> class with the values.
     /// </summary>
     /// <param name="value">The value to format in the entity body.</param>
-    internal OkObjectHttpResult(object? value)
+    public OkObjectHttpResult(object? value = null)
     {
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
+    /// Gets an instance of <see cref="OkObjectHttpResult"/> without a <see cref="Value"/>.
+    /// </summary>
+    public static OkObjectHttpResult Empty { get; } = new();
+
+    /// <summary>
     /// Gets the object result.
     /// </summary>
-    public object? Value { get; internal init; }
+    public object? Value { get; }
 
     /// <summary>
     /// Gets the HTTP status code.
@@ -36,6 +41,7 @@ public sealed class OkObjectHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.OkObjectResult");

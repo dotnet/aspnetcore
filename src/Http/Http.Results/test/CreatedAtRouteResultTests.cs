@@ -21,7 +21,7 @@ public partial class CreatedAtRouteResultTests
             { "sample", "route" }
         });
         var obj = new HttpValidationProblemDetails();
-        var result = new CreatedAtRouteHttpResult(routeValues, obj);
+        var result = new CreatedAtRouteHttpResult( routeValues: routeValues, value: obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);

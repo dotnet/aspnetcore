@@ -13,30 +13,14 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed partial class PhysicalFileHttpResult : IResult
 {
-    /// <summary>
-    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
-    /// the provided <paramref name="fileName"/> and the provided <paramref name="contentType"/>.
-    /// </summary>
-    /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
-    /// <param name="contentType">The Content-Type header of the response.</param>
-    internal PhysicalFileHttpResult(string fileName, string? contentType)
-        : this(fileName, contentType, fileDownloadName: null)
-    {
-    }
+    private DateTimeOffset? _lastModified;
 
     /// <summary>
-    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
-    /// the provided <paramref name="fileName"/>, the provided <paramref name="contentType"/>
-    /// and the provided <paramref name="fileDownloadName"/>.
+    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with the provided values.
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
-    /// <param name="contentType">The Content-Type header of the response.</param>
-    /// <param name="fileDownloadName">The suggested file name.</param>
-    internal PhysicalFileHttpResult(
-        string fileName,
-        string? contentType,
-        string? fileDownloadName)
-        : this(fileName, contentType, fileDownloadName, enableRangeProcessing: false)
+    public PhysicalFileHttpResult(string fileName)
+        : this(fileName, contentType: null)
     {
     }
 
@@ -45,60 +29,50 @@ public sealed partial class PhysicalFileHttpResult : IResult
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    /// <param name="fileDownloadName">The suggested file name.</param>
-    /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
-    /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
-    /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
-    internal PhysicalFileHttpResult(
-        string fileName,
-        string? contentType,
-        string? fileDownloadName,
-        bool enableRangeProcessing,
-        DateTimeOffset? lastModified = null,
-        EntityTagHeaderValue? entityTag = null)
+    public PhysicalFileHttpResult(string fileName, string? contentType)
     {
-        FileName = fileName;
+        FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         ContentType = contentType ?? "application/octet-stream";
-        FileDownloadName = fileDownloadName;
-        EnableRangeProcessing = enableRangeProcessing;
-        LastModified = lastModified;
-        EntityTag = entityTag;
     }
-
-    /// <summary>
-    /// Gets the Content-Type header for the response.
-    /// </summary>
-    public string ContentType { get; internal set; }
-
-    /// <summary>
-    /// Gets the file name that will be used in the Content-Disposition header of the response.
-    /// </summary>
-    public string? FileDownloadName { get; internal set; }
-
-    /// <summary>
-    /// Gets the last modified information associated with the file result.
-    /// </summary>
-    public DateTimeOffset? LastModified { get; internal set; }
-
-    /// <summary>
-    /// Gets the etag associated with the file result.
-    /// </summary>
-    public EntityTagHeaderValue? EntityTag { get; internal init; }
-
-    /// <summary>
-    /// Gets the value that enables range processing for the file result.
-    /// </summary>
-    public bool EnableRangeProcessing { get; internal init; }
-
-    /// <summary>
-    /// Gets or sets the file length information .
-    /// </summary>
-    public long? FileLength { get; internal set; }
 
     /// <summary>
     /// Gets or sets the path to the file that will be sent back as the response.
     /// </summary>
     public string FileName { get; }
+
+    /// <summary>
+    /// Gets or sets the file length information .
+    /// </summary>
+    public long? FileLength { get; private set; }
+
+    /// <summary>
+    /// Gets the Content-Type header for the response.
+    /// </summary>
+    public string ContentType { get; init; }
+
+    /// <summary>
+    /// Gets the value that enables range processing for the file result.
+    /// </summary>
+    public bool EnableRangeProcessing { get; init; }
+
+    /// <summary>
+    /// Gets the etag associated with the file result.
+    /// </summary>
+    public EntityTagHeaderValue? EntityTag { get; init; }
+
+    /// <summary>
+    /// Gets the file name that will be used in the Content-Disposition header of the response.
+    /// </summary>
+    public string? FileDownloadName { get; init; }
+
+    /// <summary>
+    /// Gets the last modified information associated with the file result.
+    /// </summary>
+    public DateTimeOffset? LastModified
+    {
+        get => _lastModified;
+        init => _lastModified = value;
+    }
 
     // For testing
     internal Func<string, FileInfoWrapper> GetFileInfoWrapper { get; init; } =
@@ -113,7 +87,7 @@ public sealed partial class PhysicalFileHttpResult : IResult
             throw new FileNotFoundException($"Could not find file: {FileName}", FileName);
         }
 
-        LastModified ??= fileInfo.LastWriteTimeUtc;
+        _lastModified ??= fileInfo.LastWriteTimeUtc;
         FileLength = fileInfo.Length;
 
         // Creating the logger with a string to preserve the category after the refactoring.

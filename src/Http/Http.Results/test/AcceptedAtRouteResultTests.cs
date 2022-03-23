@@ -20,7 +20,7 @@ public class AcceptedAtRouteResultTests
             { "sample", "route" }
         });
         var obj = new HttpValidationProblemDetails();
-        var result = new AcceptedAtRouteHttpResult(routeValues, obj);
+        var result = new AcceptedAtRouteHttpResult(routeValues: routeValues, value: obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);

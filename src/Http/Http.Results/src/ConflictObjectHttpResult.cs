@@ -17,16 +17,21 @@ public sealed class ConflictObjectHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="error">The error content to format in the entity body.</param>
-    internal ConflictObjectHttpResult(object? error)
+    public ConflictObjectHttpResult(object? error = null)
     {
         Value = error;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
+    /// Gets an instance of <see cref="ConflictObjectHttpResult"/> without a <see cref="Value"/>.
+    /// </summary>
+    public static ConflictObjectHttpResult Empty { get; } = new();
+
+    /// <summary>
     /// Gets the object result.
     /// </summary>
-    public object? Value { get; internal init; }
+    public object? Value { get; }
 
     /// <summary>
     /// Gets the HTTP status code.

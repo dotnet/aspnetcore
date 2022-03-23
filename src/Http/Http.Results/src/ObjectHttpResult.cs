@@ -13,55 +13,49 @@ using Microsoft.Extensions.Logging;
 internal sealed class ObjectHttpResult : IResult
 {
     /// <summary>
-    /// Creates a new <see cref="ObjectHttpResult"/> instance
-    /// with the provided <paramref name="value"/>.
+    /// Creates a new <see cref="ObjectHttpResult"/> instance with the provided
+    /// <paramref name="value"/>.
     /// </summary>
-    internal ObjectHttpResult(object? value)
-        : this(value, null)
+    public ObjectHttpResult(object? value)
     {
+        Value = value;
+
+        if (value is ProblemDetails problemDetails)
+        {
+            HttpResultsHelper.ApplyProblemDetailsDefaults(problemDetails, null);
+            StatusCode = problemDetails.Status;
+        }
     }
 
     /// <summary>
     /// Creates a new <see cref="ObjectHttpResult"/> instance with the provided
     /// <paramref name="value"/>, <paramref name="statusCode"/>.
     /// </summary>
-    internal ObjectHttpResult(object? value, int? statusCode)
-        : this(value, statusCode, contentType: null)
-    {
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="ObjectHttpResult"/> instance with the provided
-    /// <paramref name="value"/>, <paramref name="statusCode"/> and <paramref name="contentType"/>.
-    /// </summary>
-    internal ObjectHttpResult(object? value, int? statusCode, string? contentType)
+    public ObjectHttpResult(object? value, int statusCode)
     {
         Value = value;
+        StatusCode = statusCode;
 
         if (value is ProblemDetails problemDetails)
         {
             HttpResultsHelper.ApplyProblemDetailsDefaults(problemDetails, statusCode);
-            statusCode ??= problemDetails.Status;
         }
-
-        StatusCode = statusCode;
-        ContentType = contentType;
     }
 
     /// <summary>
     /// Gets the object result.
     /// </summary>
-    public object? Value { get; internal init; }
-
-    /// <summary>
-    /// Gets or sets the value for the <c>Content-Type</c> header.
-    /// </summary>
-    public string? ContentType { get; internal init; }
+    public object? Value { get; }
 
     /// <summary>
     /// Gets the HTTP status code.
     /// </summary>
-    public int? StatusCode { get; internal init; }
+    public int? StatusCode { get; }
+
+    /// <summary>
+    /// Gets or sets the value for the <c>Content-Type</c> header.
+    /// </summary>
+    public string? ContentType { get; init; }
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)

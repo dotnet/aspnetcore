@@ -16,48 +16,30 @@ public sealed partial class SignOutHttpResult : IResult
     /// <summary>
     /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the default sign out scheme.
     /// </summary>
-    internal SignOutHttpResult()
-        : this(Array.Empty<string>())
+    public SignOutHttpResult()
+        : this(authenticationSchemes: Array.Empty<string>(), properties: null)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the default sign out scheme.
-    /// specified authentication scheme and <paramref name="properties"/>.
+    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
+    /// specified <paramref name="properties"/>.
     /// </summary>
-    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-    internal SignOutHttpResult(AuthenticationProperties properties)
+    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
+    /// challenge.</param>
+    public SignOutHttpResult(AuthenticationProperties? properties)
         : this(Array.Empty<string>(), properties)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
-    /// specified authentication scheme.
-    /// </summary>
-    /// <param name="authenticationScheme">The authentication scheme to use when signing out the user.</param>
-    internal SignOutHttpResult(string authenticationScheme)
-        : this(new[] { authenticationScheme })
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
-    /// specified authentication schemes.
-    /// </summary>
-    /// <param name="authenticationSchemes">The authentication schemes to use when signing out the user.</param>
-    internal SignOutHttpResult(IList<string> authenticationSchemes)
-        : this(authenticationSchemes, properties: null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
-    /// <param name="authenticationScheme">The authentication schemes to use when signing out the user.</param>
-    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-    internal SignOutHttpResult(string authenticationScheme, AuthenticationProperties? properties)
+    /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
+    /// challenge.</param>
+    public SignOutHttpResult(string authenticationScheme, AuthenticationProperties? properties)
         : this(new[] { authenticationScheme }, properties)
     {
     }
@@ -66,15 +48,11 @@ public sealed partial class SignOutHttpResult : IResult
     /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
     /// specified authentication schemes and <paramref name="properties"/>.
     /// </summary>
-    /// <param name="authenticationSchemes">The authentication scheme to use when signing out the user.</param>
-    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-    internal SignOutHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
+    /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
+    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
+    /// challenge.</param>
+    public SignOutHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
-        if (authenticationSchemes is null)
-        {
-            throw new ArgumentNullException(nameof(authenticationSchemes));
-        }
-
         AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;
     }
@@ -82,12 +60,12 @@ public sealed partial class SignOutHttpResult : IResult
     /// <summary>
     /// Gets the authentication schemes that are challenged.
     /// </summary>
-    public IReadOnlyList<string> AuthenticationSchemes { get; internal init; }
+    public IReadOnlyList<string> AuthenticationSchemes { get; init; }
 
     /// <summary>
     /// Gets the <see cref="AuthenticationProperties"/> used to perform the sign-out operation.
     /// </summary>
-    public AuthenticationProperties? Properties { get; internal init; }
+    public AuthenticationProperties? Properties { get; }
 
     /// <inheritdoc />
     public async Task ExecuteAsync(HttpContext httpContext)

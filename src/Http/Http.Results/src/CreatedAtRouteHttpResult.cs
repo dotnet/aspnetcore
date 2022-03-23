@@ -18,30 +18,24 @@ public sealed class CreatedAtRouteHttpResult : IResult
     /// Initializes a new instance of the <see cref="CreatedAtRouteHttpResult"/> class with the values
     /// provided.
     /// </summary>
-    /// <param name="routeValues">The route data to use for generating the URL.</param>
-    /// <param name="value">The value to format in the entity body.</param>
-    internal CreatedAtRouteHttpResult(object? routeValues, object? value)
-        : this(routeName: null, routeValues: routeValues, value: value)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CreatedAtRouteHttpResult"/> class with the values
-    /// provided.
-    /// </summary>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    internal CreatedAtRouteHttpResult(
-        string? routeName,
-        object? routeValues,
-        object? value)
+    public CreatedAtRouteHttpResult(
+        string? routeName = null,
+        object? routeValues = null,
+        object? value = null)
     {
         Value = value;
         RouteName = routeName;
         RouteValues = new RouteValueDictionary(routeValues);
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
+
+    /// <summary>
+    /// Gets an instance of <see cref="CreatedAtRouteHttpResult"/> without a <see cref="RouteName"/>, <see cref="RouteValues"/> and <see cref="Value"/>.
+    /// </summary>
+    public static CreatedAtRouteHttpResult Empty { get; } = new();
 
     /// <summary>
     /// Gets the object result.
