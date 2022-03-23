@@ -514,8 +514,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
                 // We need to make sure the cancellation is observed by the code
                 _frameWriter.Schedule(this);
             }
-
-            // _frameWriter.AbortPendingStreamDataWrites(_flowControl);
         }
     }
 
