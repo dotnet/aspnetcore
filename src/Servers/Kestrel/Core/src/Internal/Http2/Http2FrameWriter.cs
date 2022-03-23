@@ -231,9 +231,9 @@ internal class Http2FrameWriter
             }
 
             _completed = true;
+            AbortFlowControl();
             _outputWriter.Abort();
             _channel.Writer.TryComplete();
-            AbortFlowControl();
         }
     }
 
@@ -248,7 +248,6 @@ internal class Http2FrameWriter
 
             _aborted = true;
             _connectionContext.Abort(error);
-            AbortFlowControl();
 
             Complete();
         }
