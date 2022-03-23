@@ -17,7 +17,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     private static readonly ExcludeFromDescriptionAttribute _excludeFromDescriptionMetadataAttribute = new();
 
     /// <summary>
-    /// Adds the <see cref="IExcludeFromDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// Adds the <see cref="IExcludeFromDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
     /// produced by <paramref name="builder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
@@ -30,7 +30,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
     /// produced by <paramref name="builder"/>.
     /// </summary>
     /// <typeparam name="TResponse">The type of the response.</typeparam>
@@ -50,7 +50,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// Adds an <see cref="IProducesResponseTypeMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
     /// produced by <paramref name="builder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
@@ -85,7 +85,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
 
     /// <summary>
     /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="ProblemDetails"/> type
-    /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
+    /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="statusCode">The response status code.</param>
@@ -105,7 +105,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
 
     /// <summary>
     /// Adds an <see cref="IProducesResponseTypeMetadata"/> with a <see cref="HttpValidationProblemDetails"/> type
-    /// to <see cref="EndpointBuilder.Metadata"/> for all builders produced by <paramref name="builder"/>.
+    /// to <see cref="EndpointBuilder.Metadata"/> for all endpoints produced by <paramref name="builder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="statusCode">The response status code. Defaults to <see cref="StatusCodes.Status400BadRequest"/>.</param>
@@ -124,7 +124,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds the <see cref="ITagsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// Adds the <see cref="ITagsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
     /// produced by <paramref name="builder"/>.
     /// </summary>
     /// <remarks>
@@ -142,7 +142,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
     /// produced by <paramref name="builder"/>.
     /// </summary>
     /// <typeparam name="TRequest">The type of the request body.</typeparam>
@@ -159,7 +159,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
     /// produced by <paramref name="builder"/>.
     /// </summary>
     /// <typeparam name="TRequest">The type of the request body.</typeparam>
@@ -177,7 +177,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
     /// produced by <paramref name="builder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
@@ -193,7 +193,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all builders
+    /// Adds <see cref="IAcceptsMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
     /// produced by <paramref name="builder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
@@ -206,6 +206,32 @@ public static class OpenApiRouteHandlerBuilderExtensions
         Type requestType, bool isOptional, string contentType, params string[] additionalContentTypes)
     {
         builder.WithMetadata(new AcceptsMetadata(requestType, isOptional, GetAllContentTypes(contentType, additionalContentTypes)));
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds <see cref="IEndpointDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
+    /// produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="description">A string representing a detailed description of the endpoint.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder WithDescription(this RouteHandlerBuilder builder, string description)
+    {
+        builder.WithMetadata(new EndpointDescriptionAttribute(description));
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds <see cref="IEndpointSummaryMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
+    /// produced by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="summary">A string representing a brief description of the endpoint.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder WithSummary(this RouteHandlerBuilder builder, string summary)
+    {
+        builder.WithMetadata(new EndpointSummaryAttribute(summary));
         return builder;
     }
 

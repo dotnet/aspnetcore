@@ -36,9 +36,9 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
     /// <inheritdoc />
     public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
     {
-        var previousContentRoot = _context.HostingEnvironment.ContentRootPath;
+        var previousContentRoot = HostingPathResolver.ResolvePath(_context.HostingEnvironment.ContentRootPath);
         var previousContentRootConfig = _configuration[WebHostDefaults.ContentRootKey];
-        var previousWebRoot = _context.HostingEnvironment.WebRootPath;
+        var previousWebRoot = HostingPathResolver.ResolvePath(_context.HostingEnvironment.WebRootPath, previousContentRoot);
         var previousWebRootConfig = _configuration[WebHostDefaults.WebRootKey];
         var previousApplication = _configuration[WebHostDefaults.ApplicationKey];
         var previousEnvironment = _configuration[WebHostDefaults.EnvironmentKey];
@@ -113,8 +113,8 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
             return this;
         }
 
-        var previousContentRoot = _context.HostingEnvironment.ContentRootPath;
-        var previousWebRoot = _context.HostingEnvironment.WebRootPath;
+        var previousContentRoot = HostingPathResolver.ResolvePath(_context.HostingEnvironment.ContentRootPath);
+        var previousWebRoot = HostingPathResolver.ResolvePath(_context.HostingEnvironment.WebRootPath);
         var previousApplication = _configuration[WebHostDefaults.ApplicationKey];
         var previousEnvironment = _configuration[WebHostDefaults.EnvironmentKey];
         var previousHostingStartupAssemblies = _configuration[WebHostDefaults.HostingStartupAssembliesKey];

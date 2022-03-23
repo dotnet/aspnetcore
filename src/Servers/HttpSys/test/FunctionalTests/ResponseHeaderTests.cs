@@ -114,6 +114,27 @@ public class ResponseHeaderTests
     }
 
     [ConditionalFact]
+    public async Task ResponseHeaders_ServerSendsNonAsciiHeaders_Success()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
+            var responseHeaders = responseInfo.Headers;
+            responseHeaders["Custom-Header1"] = new string[] { "Dašta" };
+            return Task.FromResult(0);
+        }))
+        {
+            var socketsHttpHandler = new SocketsHttpHandler() { ResponseHeaderEncodingSelector = (_, _) => Encoding.UTF8 };
+            var httpClient = new HttpClient(socketsHttpHandler);
+            var response = await httpClient.GetAsync(address);
+            response.EnsureSuccessStatusCode();
+            Assert.True(response.Headers.TryGetValues("Custom-Header1", out var header));
+            Assert.Equal("Dašta", header.Single());
+        }
+    }
+
+    [ConditionalFact]
     public async Task ResponseHeaders_ServerSendsConnectionClose_Closed()
     {
         string address;

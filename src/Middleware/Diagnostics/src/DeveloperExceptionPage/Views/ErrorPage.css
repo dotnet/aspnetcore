@@ -203,7 +203,8 @@ a {
     margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
+/* Intentional double at-signs here to escape properly when included in cshtml */
+@@media (prefers-color-scheme: dark) {
     body {
         color: #dcdcdc;
         background-color: #222;

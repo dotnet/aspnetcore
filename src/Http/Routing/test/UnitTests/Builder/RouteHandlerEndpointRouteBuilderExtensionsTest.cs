@@ -6,13 +6,15 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Builder;
 
-public class RouteHandlerEndpointRouteBuilderExtensionsTest
+public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 {
     private ModelEndpointDataSource GetBuilderEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
     {
@@ -845,6 +847,154 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest
 
         await endpoint.RequestDelegate!(httpContext);
         Assert.Equal(400, httpContext.Response.StatusCode);
+    }
+
+    public static object[][] AddFiltersByClassData =
+{
+        new object[] { (Action<RouteHandlerBuilder>)((RouteHandlerBuilder builder) => builder.AddFilter(new IncrementArgFilter())) },
+        new object[] { (Action<RouteHandlerBuilder>)((RouteHandlerBuilder builder) => builder.AddFilter<IncrementArgFilter>()) }
+    };
+
+    [Theory]
+    [MemberData(nameof(AddFiltersByClassData))]
+    public async Task AddFilterMethods_CanRegisterFilterWithClassImplementation(Action<RouteHandlerBuilder> addFilter)
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        string PrintId(int id) => $"ID: {id}";
+        var routeHandlerBuilder = builder.Map("/{id}", PrintId);
+        addFilter(routeHandlerBuilder);
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.RouteValues["id"] = "2";
+        var outStream = new MemoryStream();
+        httpContext.Response.Body = outStream;
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        // Assert;
+        var httpResponse = httpContext.Response;
+        httpResponse.Body.Seek(0, SeekOrigin.Begin);
+        var streamReader = new StreamReader(httpResponse.Body);
+        var body = streamReader.ReadToEndAsync().Result;
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal("ID: 3", body);
+    }
+
+    public static object[][] AddFiltersByDelegateData
+    {
+        get
+        {
+            void WithFilter(RouteHandlerBuilder builder) =>
+                builder.AddFilter(async (context, next) =>
+                {
+                    context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+                    return await next(context);
+                });
+
+            void WithFilterFactory(RouteHandlerBuilder builder) =>
+                builder.AddFilter((routeHandlerContext, next) => async (context) =>
+                {
+                    Assert.NotNull(routeHandlerContext.MethodInfo);
+                    Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
+                    Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
+                    context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+                    return await next(context);
+                });
+
+            return new object[][] {
+                new object[] { (Action<RouteHandlerBuilder>)WithFilter },
+                new object[] { (Action<RouteHandlerBuilder>)WithFilterFactory  }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(AddFiltersByDelegateData))]
+    public async Task AddFilterMethods_CanRegisterFilterWithDelegateImplementation(Action<RouteHandlerBuilder> addFilter)
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        string PrintId(int id) => $"ID: {id}";
+        var routeHandlerBuilder = builder.Map("/{id}", PrintId);
+        addFilter(routeHandlerBuilder);
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.RouteValues["id"] = "2";
+        var outStream = new MemoryStream();
+        httpContext.Response.Body = outStream;
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        // Assert;
+        var httpResponse = httpContext.Response;
+        httpResponse.Body.Seek(0, SeekOrigin.Begin);
+        var streamReader = new StreamReader(httpResponse.Body);
+        var body = streamReader.ReadToEndAsync().Result;
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal("ID: 3", body);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatAccessesServices()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}";
+        var routeHandlerBuilder = builder.Map("/", PrintLogger);
+        routeHandlerBuilder.AddFilter<ServiceAccessingRouteHandlerFilter>();
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+        var outStream = new MemoryStream();
+        httpContext.Response.Body = outStream;
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var httpResponse = httpContext.Response;
+        httpResponse.Body.Seek(0, SeekOrigin.Begin);
+        var streamReader = new StreamReader(httpResponse.Body);
+        var body = streamReader.ReadToEndAsync().Result;
+        Assert.Equal("loggerErrorIsEnabled: True", body);
+    }
+
+    class ServiceAccessingRouteHandlerFilter : IRouteHandlerFilter
+    {
+        private ILogger _logger;
+
+        public ServiceAccessingRouteHandlerFilter(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger<ServiceAccessingRouteHandlerFilter>();
+        }
+
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
+        {
+            context.HttpContext.Items["loggerErrorIsEnabled"] = _logger.IsEnabled(LogLevel.Error);
+            return await next(context);
+        }
+    }
+
+    class IncrementArgFilter : IRouteHandlerFilter
+    {
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
+        {
+            context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+            return await next(context);
+        }
     }
 
     class FromRoute : Attribute, IFromRouteMetadata

@@ -27,7 +27,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// </summary>
     public static readonly int DefaultOrder = 10000;
 
-    private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
+    private static readonly ParameterBindingMethodCache ParameterBindingMethodCache
+        = new(throwOnInvalidMethod: false);
 
     private int? _hashCode;
     private IReadOnlyList<ModelMetadata>? _boundProperties;
@@ -544,18 +545,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
 
     internal static Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type modelType)
     {
-        try
-        {
-            modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
-            return ParameterBindingMethodCache.FindTryParseMethod(modelType);
-        }
-        catch (InvalidOperationException)
-        {
-            // The ParameterBindingMethodCache.FindTryParseMethod throws an exception
-            // when an wrong try/parse method is detected
-            // but we don't need this behavior here and return null is enough
-            return null;
-        }
+        modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
+        return ParameterBindingMethodCache.FindTryParseMethod(modelType);
     }
 
     [MemberNotNull(nameof(_parameterMapping), nameof(_boundConstructorPropertyMapping))]
@@ -654,7 +645,7 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         Debug.Assert(ModelType != null);
 
         IsConvertibleType = TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
-        IsParseableType = ModelMetadata.FindTryParseMethod(ModelType) is not null;
+        IsParseableType = FindTryParseMethod(ModelType) is not null;
         IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
         IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
         UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;

@@ -16,7 +16,7 @@ public class ObjectResultTests
     public async Task ObjectResult_ExecuteAsync_WithNullValue_Works()
     {
         // Arrange
-        var result = new ObjectResult(value: null, 411);
+        var result = new ObjectHttpResult(value: null, 411);
 
         var httpContext = new DefaultHttpContext()
         {
@@ -34,7 +34,7 @@ public class ObjectResultTests
     public async Task ObjectResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
-        var result = new ObjectResult("Hello", 407);
+        var result = new ObjectHttpResult("Hello", 407);
 
         var httpContext = new DefaultHttpContext()
         {
@@ -52,7 +52,7 @@ public class ObjectResultTests
     public async Task ObjectResult_ExecuteAsync_JsonSerializesBody()
     {
         // Arrange
-        var result = new ObjectResult("Hello", 407);
+        var result = new ObjectHttpResult("Hello", 407);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -76,7 +76,7 @@ public class ObjectResultTests
         // Arrange
         var details = new ProblemDetails();
 
-        var result = new ObjectResult(details);
+        var result = new ObjectHttpResult(details);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -105,7 +105,7 @@ public class ObjectResultTests
         // Arrange
         var details = new HttpValidationProblemDetails();
 
-        var result = new ObjectResult(details);
+        var result = new ObjectHttpResult(details);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -134,7 +134,7 @@ public class ObjectResultTests
         // Arrange
         var details = new HttpValidationProblemDetails();
 
-        var result = new ObjectResult(details, StatusCodes.Status422UnprocessableEntity);
+        var result = new ObjectHttpResult(details, StatusCodes.Status422UnprocessableEntity);
         var httpContext = new DefaultHttpContext()
         {
             RequestServices = CreateServices(),
@@ -153,7 +153,7 @@ public class ObjectResultTests
         // Arrange
         var details = new ProblemDetails { Status = StatusCodes.Status413RequestEntityTooLarge, };
 
-        var result = new ObjectResult(details);
+        var result = new ObjectHttpResult(details);
 
         var httpContext = new DefaultHttpContext()
         {
@@ -165,7 +165,7 @@ public class ObjectResultTests
 
         // Assert
         Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, details.Status.Value);
-        Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, result.StatusCode.Value);
+        Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, result.StatusCode);
         Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, httpContext.Response.StatusCode);
     }
 
@@ -175,7 +175,7 @@ public class ObjectResultTests
         // Arrange
         var details = new ProblemDetails { Status = StatusCodes.Status422UnprocessableEntity, };
 
-        var result = new BadRequestObjectResult(details);
+        var result = new BadRequestObjectHttpResult(details);
 
         var httpContext = new DefaultHttpContext()
         {
@@ -187,7 +187,7 @@ public class ObjectResultTests
 
         // Assert
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, details.Status.Value);
-        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode.Value);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
     }
 

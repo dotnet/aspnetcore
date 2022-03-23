@@ -8,8 +8,6 @@ Param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
-. $PSScriptRoot\tools.ps1
-
 
 function Get-AzDOHeaders(
     [string] $token)
@@ -38,10 +36,10 @@ function Update-BuildRetention(
         Write-Host "Updated retention settings for build ${buildId}."
     }
     catch {
-        Write-PipelineTelemetryError -Category "Build" -Message "Failed to update retention settings for build: $_.Exception.Response.StatusDescription"
-        ExitWithExitCode 1
+        Write-Error "Failed to update retention settings for build: $_.Exception.Response.StatusDescription"
+        exit 1
     }
 }
 
 Update-BuildRetention -azdoOrgUri $azdoOrgUri -azdoProject $azdoProject -buildId $buildId -token $token
-ExitWithExitCode 0
+exit 0

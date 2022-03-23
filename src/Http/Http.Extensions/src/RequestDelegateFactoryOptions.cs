@@ -35,5 +35,5 @@ public sealed class RequestDelegateFactoryOptions
     /// <summary>
     /// The list of filters that must run in the pipeline for a given route handler.
     /// </summary>
-    public IReadOnlyList<IRouteHandlerFilter>? RouteHandlerFilters { get; init; }
+    public IReadOnlyList<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? RouteHandlerFilterFactories { get; init; }
 }
