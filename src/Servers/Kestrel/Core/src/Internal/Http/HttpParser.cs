@@ -55,6 +55,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// </summary>
     public bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
     {
+        // Skip any leading \r or \n on the request line. This is not technically allowed, but
+        // but apparently there are enough clients relying on this that it's worth allowing.
+        reader.AdvancePastAny((byte)'\r', (byte)'\n');
         if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, ByteLF, advancePastDelimiter: true))
         {
             ParseRequestLine(handler, requestLine);
