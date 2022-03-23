@@ -41,6 +41,21 @@ public class ActionResultTypeMapperTest
     }
 
     [Fact]
+    public void Convert_WithIConvertToActionResultAndIResult_DelegatesToInterface()
+    {
+        // Arrange
+        var mapper = new ActionResultTypeMapper();
+
+        var returnValue = new CustomConvertibleIResult();
+
+        // Act
+        var result = mapper.Convert(returnValue, returnValue.GetType());
+
+        // Assert
+        Assert.IsType<EmptyResult>(result);
+    }
+
+    [Fact]
     public void Convert_WithRegularType_CreatesObjectResult()
     {
         // Arrange
@@ -85,5 +100,12 @@ public class ActionResultTypeMapperTest
 
         // Assert
         Assert.Equal(typeof(string), result);
+    }
+
+    private class CustomConvertibleIResult : IConvertToActionResult, IResult
+    {
+        public IActionResult Convert() => new EmptyResult();
+
+        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
     }
 }
