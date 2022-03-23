@@ -52,8 +52,6 @@ internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelPro
                 new InferParameterBindingInfoConvention(modelMetadataProvider, serviceProviderIsService);
             ActionModelConventions.Add(convention);
         }
-
-        ActionModelConventions.Add(new HttpResultMetadataConvention());
     }
 
     /// <remarks>

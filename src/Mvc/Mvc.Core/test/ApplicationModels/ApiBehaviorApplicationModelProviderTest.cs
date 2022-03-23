@@ -77,7 +77,6 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.NotEmpty(actionModel.Filters.OfType<ModelStateInvalidFilterFactory>());
         Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
         Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
-        Assert.Empty(actionModel.Filters.OfType<IApiResponseMetadataProvider>());
     }
 
     [Fact]
@@ -118,7 +117,6 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.NotEmpty(actionModel.Filters.OfType<ModelStateInvalidFilterFactory>());
         Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
         Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
-        Assert.NotEmpty(actionModel.Filters.OfType<IApiResponseMetadataProvider>());
     }
 
     [Fact]
@@ -139,8 +137,7 @@ public class ApiBehaviorApplicationModelProviderTest
                 var convention = Assert.IsType<ApiConventionApplicationModelConvention>(c);
                 Assert.Equal(typeof(ProblemDetails), convention.DefaultErrorResponseType.Type);
             },
-            c => Assert.IsType<InferParameterBindingInfoConvention>(c),
-            c => Assert.IsType<HttpResultMetadataConvention>(c));
+            c => Assert.IsType<InferParameterBindingInfoConvention>(c));
     }
 
     [Fact]
