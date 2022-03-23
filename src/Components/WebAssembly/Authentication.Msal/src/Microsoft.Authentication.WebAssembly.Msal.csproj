@@ -25,6 +25,7 @@
   <PropertyGroup>
     <YarnWorkingDir>$(MSBuildThisFileDirectory)Interop\</YarnWorkingDir>
     <ResolveStaticWebAssetsInputsDependsOn>
+      CheckForSourceBuild;
       CompileInterop;
       IncludeCompileInteropOutput;
       $(ResolveStaticWebAssetsInputsDependsOn)
@@ -91,5 +92,9 @@
       <FileWrites Include="$(_InteropBuildOutput)" />
     </ItemGroup>
   </Target>
-
+   
+  <Target Name="CheckForSourceBuild" Condition=" '$(DotNetBuildFromSource)' == 'true'">
+    <Error Text="The Yarn.Msbuild SDK is currently excluded from SourceBuild. If you are enabling this project for SourceBuild, remove the condition on the Yarn.Msbuild SDK above." />
+  </Target>
+   
 </Project>
