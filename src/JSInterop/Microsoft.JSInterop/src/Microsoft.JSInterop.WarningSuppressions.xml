@@ -39,6 +39,12 @@
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
+      <argument>IL2060</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.&lt;&gt;c.&lt;GetTaskByType&gt;b__13_0(System.Type)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
       <argument>IL2065</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.ScanAssemblyForCallableMethods(Microsoft.JSInterop.Infrastructure.DotNetDispatcher.AssemblyKey)</property>
