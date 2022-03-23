@@ -370,8 +370,8 @@ public static class DotNetDispatcher
         Justification = "https://github.com/mono/linker/issues/1727")]
     private static Task GetTaskByType(Type type, object obj)
     {
-        var converterDelegate = _cachedConvertToTaskByType.GetOrAdd(type, (Type t) =>
-            _taskConverterMethodInfo.MakeGenericMethod(t).CreateDelegate<Func<object, Task>>());
+        var converterDelegate = _cachedConvertToTaskByType.GetOrAdd(type, (Type t, MethodInfo taskConverterMethodInfo) =>
+            taskConverterMethodInfo.MakeGenericMethod(t).CreateDelegate<Func<object, Task>>(), _taskConverterMethodInfo);
 
         return converterDelegate.Invoke(obj);
     }
