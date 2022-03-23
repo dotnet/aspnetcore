@@ -177,7 +177,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         _enqueuedForObservation = false;
 
         // Trigger the data process task to resume
-        _resetAwaitable.SetResult(null);
+        // _resetAwaitable.SetResult(null);
     }
 
     public void Complete()
@@ -193,13 +193,16 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             Stop();
 
-            var enqueue = EnqueueForObservation();
-            // Make sure the writing side is completed.
-            _pipeWriter.Complete();
-
-            if (enqueue)
+            if (!_streamCompleted)
             {
-                _frameWriter.Schedule(this);
+                var enqueue = EnqueueForObservation();
+                // Make sure the writing side is completed.
+                _pipeWriter.Complete();
+
+                if (enqueue)
+                {
+                    _frameWriter.Schedule(this);
+                }
             }
 
             if (_fakeMemoryOwner != null)
@@ -638,6 +641,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         _disposed = true;
 
         // Set awaitable after disposed is true to ensure ProcessDataWrites exits successfully.
-        _resetAwaitable.SetResult(null);
+        // _resetAwaitable.SetResult(null);
     }
 }
