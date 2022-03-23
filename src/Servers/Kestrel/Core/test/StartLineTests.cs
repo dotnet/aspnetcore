@@ -516,6 +516,27 @@ public class StartLineTests : IDisposable
         DifferentFormsWorkTogether();
     }
 
+    [Theory]
+    [InlineData("\r")]
+    [InlineData("\n")]
+    [InlineData("\r\r\r\r\r")]
+    [InlineData("\r\n")]
+    [InlineData("\n\r")]
+    [InlineData("\r\n\n")]
+    public void LeadingCrLfAreAllowed(string startOfRequestLine)
+    {
+        var rawTarget = "http://localhost/path1?q=123&w=xyzw";
+        Http1Connection.Reset();
+        // RawTarget, Path, QueryString are null after reset
+        Assert.Null(Http1Connection.RawTarget);
+        Assert.Null(Http1Connection.Path);
+        Assert.Null(Http1Connection.QueryString);
+
+        var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"{startOfRequestLine}CONNECT {rawTarget} HTTP/1.1\r\n"));
+        var reader = new SequenceReader<byte>(ros);
+        Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
+    }
+
     public StartLineTests()
     {
         MemoryPool = PinnedBlockMemoryPoolFactory.Create();
