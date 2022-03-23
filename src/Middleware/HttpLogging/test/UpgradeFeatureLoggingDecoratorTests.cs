@@ -7,13 +7,13 @@ using Moq;
 namespace Microsoft.AspNetCore.HttpLogging.Tests;
 public class UpgradeFeatureLoggingDecoratorTests
 {
-    private readonly Mock<IHttpUpgradeFeature> upgradeFeatureMock;
-    private readonly Mock<Action> loggingDelegateMock;
+    private readonly Mock<IHttpUpgradeFeature> _upgradeFeatureMock;
+    private readonly Mock<Action> _loggingDelegateMock;
 
     public UpgradeFeatureLoggingDecoratorTests()
     {
-        upgradeFeatureMock = new();
-        loggingDelegateMock = new();
+        _upgradeFeatureMock = new();
+        _loggingDelegateMock = new();
     }
 
     [Fact]
@@ -21,40 +21,40 @@ public class UpgradeFeatureLoggingDecoratorTests
     {
         Assert.Throws<ArgumentNullException>(() => new UpgradeFeatureLoggingDecorator(
             null,
-            loggingDelegateMock.Object));
+            _loggingDelegateMock.Object));
 
         Assert.Throws<ArgumentNullException>(() => new UpgradeFeatureLoggingDecorator(
-            upgradeFeatureMock.Object,
+            _upgradeFeatureMock.Object,
             null));
     }
 
     [Fact]
     public void IsUpgradableRequest_ShouldForwardToWrappedFeature()
     {
-        var decorator = new UpgradeFeatureLoggingDecorator(upgradeFeatureMock.Object, loggingDelegateMock.Object);
+        var decorator = new UpgradeFeatureLoggingDecorator(_upgradeFeatureMock.Object, _loggingDelegateMock.Object);
 
         var isUpgradableRequest = decorator.IsUpgradableRequest;
 
         Assert.Null(
-            Record.Exception(() => upgradeFeatureMock.Verify(m => m.IsUpgradableRequest, Times.Once)));
+            Record.Exception(() => _upgradeFeatureMock.Verify(m => m.IsUpgradableRequest, Times.Once)));
         Assert.Null(
-            Record.Exception(() => upgradeFeatureMock.VerifyNoOtherCalls()));
+            Record.Exception(() => _upgradeFeatureMock.VerifyNoOtherCalls()));
     }
 
     [Fact]
     public async Task UpgradeAsync_ShouldForwardToWrappedFeatureAndThenLog()
     {
-        var decorator = new UpgradeFeatureLoggingDecorator(upgradeFeatureMock.Object, loggingDelegateMock.Object);
+        var decorator = new UpgradeFeatureLoggingDecorator(_upgradeFeatureMock.Object, _loggingDelegateMock.Object);
 
         await decorator.UpgradeAsync();
 
         Assert.Null(
-            Record.Exception(() => upgradeFeatureMock.Verify(m => m.UpgradeAsync(), Times.Once)));
+            Record.Exception(() => _upgradeFeatureMock.Verify(m => m.UpgradeAsync(), Times.Once)));
         Assert.Null(
-            Record.Exception(() => upgradeFeatureMock.VerifyNoOtherCalls()));
+            Record.Exception(() => _upgradeFeatureMock.VerifyNoOtherCalls()));
         Assert.Null(
-            Record.Exception(() => loggingDelegateMock.Verify(m => m(), Times.Once)));
+            Record.Exception(() => _loggingDelegateMock.Verify(m => m(), Times.Once)));
         Assert.Null(
-            Record.Exception(() => loggingDelegateMock.VerifyNoOtherCalls()));
+            Record.Exception(() => _loggingDelegateMock.VerifyNoOtherCalls()));
     }
 }
