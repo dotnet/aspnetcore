@@ -215,7 +215,6 @@ internal class Http2FrameWriter
             }
 
             _completed = true;
-            _connectionOutputFlowControl.Abort();
             _outputWriter.Abort();
         }
     }
@@ -572,7 +571,7 @@ internal class Http2FrameWriter
                 return flushResult;
             }
 
-            var shouldFlush = false;
+            // var shouldFlush = false;
 
             WriteDataUnsynchronized(streamId, data, dataLength, endStream);
 

@@ -75,6 +75,10 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
     internal PooledStreamStack<Http2Stream> StreamPool;
 
+    private readonly object _windowUpdateLock = new();
+    private long _window;
+    private ManualResetValueTaskSource<object?>? _waitForMoreWindow;
+
     public Http2Connection(HttpConnectionContext context)
     {
         var httpLimits = context.ServiceContext.ServerOptions.Limits;
@@ -371,10 +375,12 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
                 TimeoutControl.StartDrainTimeout(Limits.MinResponseDataRate, Limits.MaxResponseBufferSize);
 
                 _frameWriter.Complete();
+                AbortFlowControl();
             }
             catch
             {
                 _frameWriter.Abort(connectionError);
+                AbortFlowControl();
                 throw;
             }
             finally
@@ -1696,10 +1702,6 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             useSynchronizationContext: false);
     }
 
-    private readonly object _windowUpdateLock = new();
-    private long _window;
-    private ManualResetValueTaskSource<object?> _waitForMoreWindow;
-
     internal (long, long) ConsumeWindow(long bytes)
     {
         lock (_windowUpdateLock)
@@ -1732,6 +1734,19 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         // Resume the connection copy loop
         tcs?.TrySetResult(null);
         return true;
+    }
+
+    private void AbortFlowControl()
+    {
+        ManualResetValueTaskSource<object?>? tcs = null;
+
+        lock (_windowUpdateLock)
+        {
+            tcs = _waitForMoreWindow;
+        }
+
+        // Resume the connection copy loop
+        tcs?.TrySetResult(null);
     }
 
     private async Task CopyOutputPipeAsync(PipeReader reader, PipeWriter writer)
@@ -1778,7 +1793,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
                 if (remaining == 0)
                 {
-                    await new ValueTask(_waitForMoreWindow, _waitForMoreWindow.Version);
+                    // This shouldn't be null here
+                    await new ValueTask(_waitForMoreWindow!, _waitForMoreWindow!.Version);
                 }
             }
         }
