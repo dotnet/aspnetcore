@@ -123,27 +123,28 @@ internal class Http2FrameWriter
                     stream.ResponseTrailers.SetReadOnly();
                     stream.DecrementActiveClientStreamCount();
 
-                    // TBD: Trailers
-                    //if (readResult.Buffer.Length > 0)
-                    //{
-                    //    // It is faster to write data and trailers together. Locking once reduces lock contention.
-                    //    flushResult = await WriteDataAndTrailersAsync(stream.StreamId, _flowControl, readResult.Buffer, producer.FirstWrite, stream.ResponseTrailers);
-                    //}
-                    //else
-                    //{
-                    //    flushResult = await WriteResponseTrailersAsync(stream.StreamId, stream.ResponseTrailers);
-                    //}
+                    if (buffer.Length > 0)
+                    {
+                        // It is faster to write data and trailers together. Locking once reduces lock contention.
+                        flushResult = await WriteDataAndTrailersAsync(stream.StreamId, buffer, producer.FirstWrite, stream.ResponseTrailers);
+                    }
+                    else
+                    {
+                        flushResult = await WriteResponseTrailersAsync(stream.StreamId, stream.ResponseTrailers);
+                    }
                 }
                 else if (readResult.IsCompleted && producer.StreamEnded)
                 {
-                    if (readResult.Buffer.Length != 0)
+                    if (buffer.Length != 0)
                     {
                         // TODO: Use the right logger here.
-                        // _log.LogCritical(nameof(Http2OutputProducer) + "." + " observed an unexpected state where the streams output ended with data still remaining in the pipe.");
+                        _log.LogCritical(nameof(Http2OutputProducer) + "." + " observed an unexpected state where the streams output ended with data still remaining in the pipe.");
                     }
-
-                    // Headers have already been written and there is no other content to write
-                    flushResult = await FlushAsync(outputAborter: null, cancellationToken: default);
+                    else
+                    {
+                        // Headers have already been written and there is no other content to write
+                        flushResult = await FlushAsync(outputAborter: null, cancellationToken: default);
+                    }
                 }
                 else
                 {
@@ -401,6 +402,43 @@ internal class Http2FrameWriter
 
             return default;
         }
+    }
+
+    public ValueTask<FlushResult> WriteDataAndTrailersAsync(int streamId, in ReadOnlySequence<byte> data, bool firstWrite, HttpResponseTrailers headers)
+    {
+        // This method combines WriteDataAsync and WriteResponseTrailers.
+        // Changes here may need to be mirrored in WriteDataAsync.
+
+        // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
+        var dataLength = data.Length;
+
+        lock (_writeLock)
+        {
+            if (_completed)
+            {
+                return default;
+            }
+
+            //// Zero-length data frames are allowed to be sent immediately even if there is no space available in the flow control window.
+            //// https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
+            //if (dataLength != 0 && dataLength > flowControl.Available)
+            //{
+            //    return WriteDataAndTrailersAsyncCore(this, streamId, flowControl, data, dataLength, firstWrite, headers);
+            //}
+
+            // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
+            // flowControl.Advance((int)dataLength);
+            WriteDataUnsynchronized(streamId, data, dataLength, endStream: false);
+
+            return WriteResponseTrailersAsync(streamId, headers);
+        }
+
+        //static async ValueTask<FlushResult> WriteDataAndTrailersAsyncCore(Http2FrameWriter writer, int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool firstWrite, HttpResponseTrailers headers)
+        //{
+        //    await writer.WriteDataAsync(streamId, flowControl, data, dataLength, endStream: false, firstWrite);
+
+        //    return await writer.WriteResponseTrailersAsync(streamId, headers);
+        //}
     }
 
     public ValueTask<FlushResult> WriteDataAndTrailersAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool firstWrite, HttpResponseTrailers headers)
