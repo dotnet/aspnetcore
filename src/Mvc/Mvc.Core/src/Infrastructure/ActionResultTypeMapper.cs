@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 internal class ActionResultTypeMapper : IActionResultTypeMapper
@@ -33,6 +35,11 @@ internal class ActionResultTypeMapper : IActionResultTypeMapper
         if (value is IConvertToActionResult converter)
         {
             return converter.Convert();
+        }
+
+        if (value is IResult httpResult)
+        {
+            return new HttpActionResult(httpResult);
         }
 
         return new ObjectResult(value)
