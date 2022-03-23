@@ -216,6 +216,7 @@ internal class Http2FrameWriter
 
             _completed = true;
             _outputWriter.Abort();
+            _channel.Writer.TryComplete();
         }
     }
 
