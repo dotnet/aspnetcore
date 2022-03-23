@@ -370,10 +370,10 @@ public static class DotNetDispatcher
         Justification = "https://github.com/mono/linker/issues/1727")]
     private static Task GetTaskByType(Type type, object obj)
     {
-        var assemblyMethods = _cachedConvertToTaskByType.GetOrAdd(type, (Type t)=>
+        var converterDelegate = _cachedConvertToTaskByType.GetOrAdd(type, (Type t) =>
             _taskConverterMethodInfo.MakeGenericMethod(t).CreateDelegate<Func<object, Task>>());
 
-        return assemblyMethods.Invoke(obj);
+        return converterDelegate.Invoke(obj);
     }
     private static readonly MethodInfo _taskConverterMethodInfo = typeof(DotNetDispatcher).GetMethod(nameof(CreateValueTaskConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static Task CreateValueTaskConverter<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T>(object result) => ((ValueTask<T>)result).AsTask();
