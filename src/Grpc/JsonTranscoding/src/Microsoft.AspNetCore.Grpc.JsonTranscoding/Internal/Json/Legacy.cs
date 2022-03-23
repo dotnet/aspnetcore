@@ -83,7 +83,7 @@ internal static class Legacy
             if (subseconds != "")
             {
                 // This should always work, as we've got 1-9 digits.
-                int parsedFraction = int.Parse(subseconds.Substring(1), CultureInfo.InvariantCulture);
+                int parsedFraction = int.Parse(subseconds.AsSpan(1), CultureInfo.InvariantCulture);
                 nanosToAdd = parsedFraction * SubsecondScalingFactors[subseconds.Length];
             }
             int secondsToAdd = 0;
@@ -91,8 +91,8 @@ internal static class Legacy
             {
                 // This is the amount we need to *subtract* from the local time to get to UTC - hence - => +1 and vice versa.
                 int sign = offset[0] == '-' ? 1 : -1;
-                int hours = int.Parse(offset.Substring(1, 2), CultureInfo.InvariantCulture);
-                int minutes = int.Parse(offset.Substring(4, 2), CultureInfo.InvariantCulture);
+                int hours = int.Parse(offset.AsSpan(1, 2), CultureInfo.InvariantCulture);
+                int minutes = int.Parse(offset.AsSpan(4, 2), CultureInfo.InvariantCulture);
                 int totalMinutes = hours * 60 + minutes;
                 if (totalMinutes > 18 * 60)
                 {
@@ -198,7 +198,7 @@ internal static class Legacy
             if (subseconds != "")
             {
                 // This should always work, as we've got 1-9 digits.
-                int parsedFraction = int.Parse(subseconds.Substring(1), CultureInfo.InvariantCulture);
+                int parsedFraction = int.Parse(subseconds.AsSpan(1), CultureInfo.InvariantCulture);
                 nanos = parsedFraction * SubsecondScalingFactors[subseconds.Length] * multiplier;
             }
             if (!IsNormalized(seconds, nanos))
