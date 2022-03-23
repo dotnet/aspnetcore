@@ -535,15 +535,14 @@ public sealed class JsonHubProtocol : IHubProtocol
             }
             else
             {
-                var resultType = message.Result.GetType();
-                if (resultType == typeof(RawResult))
+                if (message.Result is RawResult result)
                 {
-                    Debug.Assert(((RawResult)message.Result).RawSerializedData.IsSingleSegment);
-                    writer.WriteRawValue(((RawResult)message.Result).RawSerializedData.First.Span, skipInputValidation: true);
+                    Debug.Assert(result.RawSerializedData.IsSingleSegment);
+                    writer.WriteRawValue(result.RawSerializedData.First.Span, skipInputValidation: true);
                 }
                 else
                 {
-                    JsonSerializer.Serialize(writer, message.Result, resultType, _payloadSerializerOptions);
+                    JsonSerializer.Serialize(writer, message.Result, message.Result.GetType(), _payloadSerializerOptions);
                 }
             }
         }

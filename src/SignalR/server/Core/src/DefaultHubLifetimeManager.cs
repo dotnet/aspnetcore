@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -300,11 +299,6 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         _connections.Remove(connection);
         _groups.RemoveDisconnectedConnection(connection.ConnectionId);
 
-        List<Task>? pendingTasks = null;
-        _clientResultsManager.CleanupConnection(connection.ConnectionId, pendingTasks);
-        // Completions should be synchronous for DefaultHubLifetimeManager
-        Debug.Assert(pendingTasks is null);
-
         return Task.CompletedTask;
     }
 
@@ -342,14 +336,9 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         }
 
         var invocationId = Interlocked.Increment(ref _lastInvocationId).ToString(NumberFormatInfo.InvariantInfo);
-        var task = _clientResultsManager.AddInvocation<T>(connectionId, invocationId, cancellationToken);
-        // Connection disconnected while adding invocation
-        // we need to try to remove it here to avoid the task hanging if the add happened after the connection cleanup
-        if (connection.ConnectionAborted.IsCancellationRequested)
-        {
-            await _clientResultsManager.TryCompleteResult(connectionId, CompletionMessage.WithError(invocationId, "Connection disconnected"));
-            return await task;
-        }
+        using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
+            connection.ConnectionAborted, out var linkedToken);
+        var task = _clientResultsManager.AddInvocation<T>(connectionId, invocationId, linkedToken);
 
         try
         {
@@ -365,7 +354,19 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             throw;
         }
 
-        return await task;
+        try
+        {
+            return await task;
+        }
+        catch
+        {
+            // ConnectionAborted will trigger a generic "Canceled" exception from the task, let's convert it into a more specific message.
+            if (connection.ConnectionAborted.IsCancellationRequested)
+            {
+                throw new Exception("Connection disconnected.");
+            }
+            throw;
+        }
     }
 
     /// <inheritdoc/>

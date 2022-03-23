@@ -677,29 +677,35 @@ export class HubConnection {
     private async _invokeClientMethod(invocationMessage: InvocationMessage) {
         const methods = this._methods[invocationMessage.target.toLowerCase()];
         if (methods) {
+            // Avoid issues with handlers removing themselves thus modifying the list while iterating through it
             const methodsCopy = methods.slice();
 
+            // Server expects a response
             if (invocationMessage.invocationId) {
+                // We preserve the last result or exception but still call all handlers
                 let res;
                 let exception;
                 for (const m of methodsCopy) {
                     try {
                         if (res) {
-                            this._logger.log(LogLevel.Warning, `Result already provided for '${invocationMessage.target.toLowerCase()}' only last one will be sent.`);
+                            this._logger.log(LogLevel.Warning, `Result already provided for '${invocationMessage.target.toLowerCase()}' only the last one will be sent.`);
                         }
                         res = await m.apply(this, invocationMessage.arguments);
+                        // Ignore exception if we got a result after, the exception will be logged
                         exception = undefined;
                     } catch (e) {
                         exception = e;
                         this._logger.log(LogLevel.Error, `A callback for the method '${invocationMessage.target.toLowerCase()}' threw error '${e}'.`);
                     }
                 }
+                // If there is an exception that means either no result was given or a handler after a result threw
+                // And since we prefer handlers registered later we'll use the exception to return to the server.
                 if (exception) {
                     await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, `${exception}`, null));
-                }
-                else if (res !== undefined) {
+                } else if (res !== undefined) {
                     await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, null, res));
                 } else {
+                    // Client didn't provide a result or throw from a handler, server expects a response so we send an error
                     await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, "Client didn't provide a result.", null));
                 }
             } else {
@@ -712,6 +718,7 @@ export class HubConnection {
         } else {
             this._logger.log(LogLevel.Warning, `No client method with the name '${invocationMessage.target.toLowerCase()}' found.`);
 
+            // No handlers provided by client but the server is expecting a response still, so we send an error
             if (invocationMessage.invocationId) {
                 await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, "Client didn't provide a result.", null));
             }

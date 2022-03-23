@@ -441,9 +441,9 @@ internal abstract class MessagePackHubProtocolWorker
         {
             writer.WriteNil();
         }
-        else if (argument.GetType() == typeof(RawResult))
+        else if (argument is RawResult result)
         {
-            writer.WriteRaw(((RawResult)argument).RawSerializedData);
+            writer.WriteRaw(result.RawSerializedData);
         }
         else
         {

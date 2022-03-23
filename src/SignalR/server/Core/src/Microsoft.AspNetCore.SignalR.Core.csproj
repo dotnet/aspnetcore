@@ -18,6 +18,7 @@
     <Compile Include="$(SignalRSharedSourceRoot)ISystemClock.cs" Link="Internal\ISystemClock.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)SystemClock.cs" Link="Internal\SystemClock.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)ClientResultsManager.cs" Link="Internal\ClientResultsManager.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)CreateLinkedToken.cs" Link="Internal\CreateLinkedToken.cs" />
   </ItemGroup>
 
   <ItemGroup>

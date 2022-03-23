@@ -568,10 +568,12 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             var invoke1 = manager1.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" });
             var invocation = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
 
+            connection1.Abort();
             await manager2.OnDisconnectedAsync(connection1).DefaultTimeout();
 
             // Server should propogate connection closure so task isn't blocked
-            await Assert.ThrowsAsync<Exception>(() => invoke1).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<Exception>(() => invoke1).DefaultTimeout();
+            Assert.Equal("Connection disconnected.", ex.Message);
         }
     }
 }

@@ -27,7 +27,7 @@ internal class HubConnectionBinder<THub> : IInvocationBinder where THub : Hub
         {
             return type;
         }
-        throw new InvalidOperationException("Unknown invocation ID.");
+        throw new InvalidOperationException($"Unknown invocation ID '{invocationId}'.");
     }
 
     public Type GetStreamItemType(string streamId)

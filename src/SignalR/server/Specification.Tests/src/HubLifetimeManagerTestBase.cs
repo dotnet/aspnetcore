@@ -331,9 +331,11 @@ public abstract class HubLifetimeManagerTestsBase<THub> where THub : Hub
 
             var invoke1 = manager1.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" });
 
+            connection1.Abort();
             await manager1.OnDisconnectedAsync(connection1).DefaultTimeout();
 
-            await Assert.ThrowsAsync<Exception>(() => invoke1).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<Exception>(() => invoke1).DefaultTimeout();
+            Assert.Equal("Connection disconnected.", ex.Message);
         }
     }
 

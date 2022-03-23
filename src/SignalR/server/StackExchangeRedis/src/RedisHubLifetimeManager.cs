@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -137,8 +138,6 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         {
             tasks.Add(RemoveUserAsync(connection));
         }
-
-        _clientResultsManager.CleanupConnection(connection.ConnectionId, tasks);
 
         return Task.WhenAll(tasks);
     }
@@ -409,7 +408,9 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         var connection = _connections[connectionId];
 
         var invocationId = Interlocked.Increment(ref _lastInvocationId).ToString(NumberFormatInfo.InvariantInfo);
-        var task = _clientResultsManager.AddInvocation<T>(connectionId, invocationId, cancellationToken);
+        using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
+            connection?.ConnectionAborted ?? default, out var linkedToken);
+        var task = _clientResultsManager.AddInvocation<T>(connectionId, invocationId, linkedToken);
 
         try
         {
@@ -425,14 +426,6 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             }
             else
             {
-                // Connection disconnected while adding invocation
-                // we need to try to remove it here to avoid the task hanging if the add happened after the connection cleanup
-                if (connection.ConnectionAborted.IsCancellationRequested)
-                {
-                    await _clientResultsManager.TryCompleteResult(connectionId, CompletionMessage.WithError(invocationId, "Connection disconnected"));
-                    return await task;
-                }
-
                 // We're sending to a single connection
                 // Write message directly to connection without caching it in memory
                 var message = new InvocationMessage(invocationId, methodName, args);
@@ -446,7 +439,19 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             throw;
         }
 
-        return await task;
+        try
+        {
+            return await task;
+        }
+        catch
+        {
+            // ConnectionAborted will trigger a generic "Canceled" exception from the task, let's convert it into a more specific message.
+            if (connection?.ConnectionAborted.IsCancellationRequested == true)
+            {
+                throw new Exception("Connection disconnected.");
+            }
+            throw;
+        }
     }
 
     /// <inheritdoc/>
@@ -549,11 +554,19 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         channel.OnMessage(channelMessage =>
         {
             var invocation = RedisProtocol.ReadInvocation((byte[])channelMessage.Message);
+            // This is a Client result we need to setup state for the completion and send the message to the client
             if (!string.IsNullOrEmpty(invocation.InvocationId))
             {
-                _clientResultsManager.AddInvocation(invocation.InvocationId, (typeof(RawResult), connection.ConnectionId, completionMessage =>
+                object? tokenRegistration = null;
+                _clientResultsManager.AddInvocation(invocation.InvocationId,
+                    (typeof(RawResult), connection.ConnectionId, null!, (_, completionMessage) =>
                 {
                     var protocolName = connection.Protocol.Name;
+                    if (tokenRegistration is not null)
+                    {
+                        ((CancellationTokenRegistration)tokenRegistration).Dispose();
+                    }
+                    // TODO: acquiring this and then calling RedisProtocol.WriteCompletionMessage will allocate a new MemoryBufferWriter, we can avoid this
                     var memoryBufferWriter = AspNetCore.Internal.MemoryBufferWriter.Get();
                     try
                     {
@@ -568,13 +581,16 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                     }
                 }
                 ));
-                // Connection disconnected while adding invocation
-                // we need to try to remove it here to avoid the task hanging if the add happened after the connection cleanup
-                if (connection.ConnectionAborted.IsCancellationRequested)
+
+                // TODO: this isn't great
+                tokenRegistration = connection.ConnectionAborted.UnsafeRegister(_ =>
                 {
-                    return _clientResultsManager.TryCompleteResult(connection.ConnectionId, CompletionMessage.WithError(invocation.InvocationId, "Connection disconnected"));
-                }
+                    var invocationInfo = _clientResultsManager.RemoveInvocation(invocation.InvocationId);
+                    invocationInfo?.Completion(null!, CompletionMessage.WithError(invocation.InvocationId, "Connection disconnected."));
+                }, null);
             }
+
+            // Normal client method invokes and client result invokes use the same message
             return connection.WriteAsync(invocation.Message).AsTask();
         });
     }
@@ -645,12 +661,22 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         channel.OnMessage((channelMessage) =>
         {
             var completion = RedisProtocol.ReadCompletion(channelMessage.Message);
-            var protocol = _hubProtocolResolver.AllProtocols.Where(p => p.Name.Equals(completion.ProtocolName)).First();
+            IHubProtocol? protocol = null;
+            foreach (var hubProtocol in _hubProtocolResolver.AllProtocols)
+            {
+                if (hubProtocol.Name.Equals(completion.ProtocolName))
+                {
+                    protocol = hubProtocol;
+                    break;
+                }
+            }
+            Debug.Assert(protocol is not null);
             var ros = completion.CompletionMessage;
-            protocol.TryParseMessage(ref ros, _clientResultsManager, out var hubMessage);
+            var parseSuccess = protocol.TryParseMessage(ref ros, _clientResultsManager, out var hubMessage);
+            Debug.Assert(parseSuccess);
 
             var invocationInfo = _clientResultsManager.RemoveInvocation(((CompletionMessage)hubMessage!).InvocationId!);
-            invocationInfo.Completion((CompletionMessage)hubMessage);
+            invocationInfo?.Completion(invocationInfo?.Tcs!, (CompletionMessage)hubMessage!);
         });
     }
 

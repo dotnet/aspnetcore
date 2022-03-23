@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol;
 /// <example>
 /// In Json that would mean storing the byte representation of ascii {"prop":10} as an example.
 /// </example>
-public class RawResult
+public sealed class RawResult
 {
     /// <summary>
     /// Stores the raw serialized bytes of a <see cref="CompletionMessage.Result"/> for forwarding to another server.

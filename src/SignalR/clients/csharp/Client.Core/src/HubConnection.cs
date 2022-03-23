@@ -259,7 +259,7 @@ public partial class HubConnection : IAsyncDisposable
                 throw new InvalidOperationException($"The {nameof(HubConnection)} cannot be started while {nameof(StopAsync)} is running.");
             }
 
-            using (CreateLinkedToken(cancellationToken, _state.StopCts.Token, out var linkedToken))
+            using (CancellationTokenUtils.CreateLinkedToken(cancellationToken, _state.StopCts.Token, out var linkedToken))
             {
                 await StartAsyncCore(linkedToken).ConfigureAwait(false);
             }
@@ -1148,7 +1148,7 @@ public partial class HubConnection : IAsyncDisposable
         try
         {
             // cancellationToken already contains _state.StopCts.Token, so we don't have to link it again
-            using (CreateLinkedToken(cancellationToken, handshakeCts.Token, out var linkedToken))
+            using (CancellationTokenUtils.CreateLinkedToken(cancellationToken, handshakeCts.Token, out var linkedToken))
             {
                 while (true)
                 {
@@ -1634,26 +1634,6 @@ public partial class HubConnection : IAsyncDisposable
         {
             // Fire-and-forget the reconnected event
             _ = RunReconnectedEventAsync();
-        }
-    }
-
-    private static IDisposable? CreateLinkedToken(CancellationToken token1, CancellationToken token2, out CancellationToken linkedToken)
-    {
-        if (!token1.CanBeCanceled)
-        {
-            linkedToken = token2;
-            return null;
-        }
-        else if (!token2.CanBeCanceled)
-        {
-            linkedToken = token1;
-            return null;
-        }
-        else
-        {
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(token1, token2);
-            linkedToken = cts.Token;
-            return cts;
         }
     }
 

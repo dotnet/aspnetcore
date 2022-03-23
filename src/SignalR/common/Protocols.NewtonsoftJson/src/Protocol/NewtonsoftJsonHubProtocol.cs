@@ -549,9 +549,13 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         else if (message.HasResult)
         {
             writer.WritePropertyName(ResultPropertyName);
-            if (message.Result?.GetType() == typeof(RawResult))
+            if (message.Result is RawResult result)
             {
-                writer.WriteRawValue(Encoding.UTF8.GetString(((RawResult)message.Result).RawSerializedData.ToArray()));
+#if NETCOREAPP2_1_OR_GREATER
+                writer.WriteRawValue(Encoding.UTF8.GetString(result.RawSerializedData));
+#else
+                writer.WriteRawValue(Encoding.UTF8.GetString(result.RawSerializedData.ToArray()));
+#endif
             }
             else
             {
