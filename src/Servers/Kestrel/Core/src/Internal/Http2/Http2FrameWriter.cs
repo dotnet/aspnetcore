@@ -77,7 +77,7 @@ internal class Http2FrameWriter
         _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
         _channel = Channel.CreateBounded<Http2OutputProducer>(serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection);
 
-        _ = WriteToOutputPipe();
+        _ = Task.Run(WriteToOutputPipe);
     }
 
     public void Schedule(Http2OutputProducer producer)
@@ -89,90 +89,97 @@ internal class Http2FrameWriter
     {
         await foreach (var producer in _channel.Reader.ReadAllAsync())
         {
-            var reader = producer.PipeReader;
-            var stream = producer.Stream;
-
-            var hasData = reader.TryRead(out var readResult);
-            var buffer = readResult.Buffer;
-
-            // This shouldn't be called when there's no data
-            Debug.Assert(hasData);
-
-            var (actual, remaining) = producer.ConsumeWindow(buffer.Length);
-
-            // Write what we can
-            if (actual < buffer.Length)
+            try
             {
-                buffer = buffer.Slice(0, actual);
-            }
+                var reader = producer.PipeReader;
+                var stream = producer.Stream;
 
-            FlushResult flushResult = default;
+                var hasData = reader.TryRead(out var readResult);
+                var buffer = readResult.Buffer;
 
-            if (readResult.IsCanceled)
-            {
-                // Response body is aborted, break and complete reader.
-                // break;
-            }
-            else if (readResult.IsCompleted && stream.ResponseTrailers?.Count > 0)
-            {
-                // Output is ending and there are trailers to write
-                // Write any remaining content then write trailers
+                // This shouldn't be called when there's no data
+                Debug.Assert(hasData);
 
-                stream.ResponseTrailers.SetReadOnly();
-                stream.DecrementActiveClientStreamCount();
+                var (actual, remaining) = producer.ConsumeWindow(buffer.Length);
 
-                // TBD: Trailers
-                //if (readResult.Buffer.Length > 0)
-                //{
-                //    // It is faster to write data and trailers together. Locking once reduces lock contention.
-                //    flushResult = await WriteDataAndTrailersAsync(stream.StreamId, _flowControl, readResult.Buffer, producer.FirstWrite, stream.ResponseTrailers);
-                //}
-                //else
-                //{
-                //    flushResult = await WriteResponseTrailersAsync(stream.StreamId, stream.ResponseTrailers);
-                //}
-            }
-            else if (readResult.IsCompleted && producer.StreamEnded)
-            {
-                if (readResult.Buffer.Length != 0)
+                // Write what we can
+                if (actual < buffer.Length)
                 {
-                    // TODO: Use the right logger here.
-                    // _log.LogCritical(nameof(Http2OutputProducer) + "." + " observed an unexpected state where the streams output ended with data still remaining in the pipe.");
+                    buffer = buffer.Slice(0, actual);
                 }
 
-                // Headers have already been written and there is no other content to write
-                flushResult = await FlushAsync(outputAborter: null, cancellationToken: default);
-            }
-            else
-            {
-                var endStream = readResult.IsCompleted;
+                FlushResult flushResult = default;
 
-                if (endStream)
+                if (readResult.IsCanceled)
                 {
+                    // Response body is aborted, break and complete reader.
+                    // break;
+                }
+                else if (readResult.IsCompleted && stream.ResponseTrailers?.Count > 0)
+                {
+                    // Output is ending and there are trailers to write
+                    // Write any remaining content then write trailers
+
+                    stream.ResponseTrailers.SetReadOnly();
                     stream.DecrementActiveClientStreamCount();
+
+                    // TBD: Trailers
+                    //if (readResult.Buffer.Length > 0)
+                    //{
+                    //    // It is faster to write data and trailers together. Locking once reduces lock contention.
+                    //    flushResult = await WriteDataAndTrailersAsync(stream.StreamId, _flowControl, readResult.Buffer, producer.FirstWrite, stream.ResponseTrailers);
+                    //}
+                    //else
+                    //{
+                    //    flushResult = await WriteResponseTrailersAsync(stream.StreamId, stream.ResponseTrailers);
+                    //}
+                }
+                else if (readResult.IsCompleted && producer.StreamEnded)
+                {
+                    if (readResult.Buffer.Length != 0)
+                    {
+                        // TODO: Use the right logger here.
+                        // _log.LogCritical(nameof(Http2OutputProducer) + "." + " observed an unexpected state where the streams output ended with data still remaining in the pipe.");
+                    }
+
+                    // Headers have already been written and there is no other content to write
+                    flushResult = await FlushAsync(outputAborter: null, cancellationToken: default);
+                }
+                else
+                {
+                    var endStream = readResult.IsCompleted;
+
+                    if (endStream)
+                    {
+                        stream.DecrementActiveClientStreamCount();
+                    }
+
+                    flushResult = await WriteDataAsync(stream.StreamId, buffer, actual, endStream, producer.FirstWrite);
                 }
 
-                flushResult = await WriteDataAsync(stream.StreamId, buffer, actual, endStream, producer.FirstWrite);
+                producer.FirstWrite = false;
+
+                var hasModeData = producer.Dequeue(buffer.Length);
+
+                reader.AdvanceTo(buffer.End);
+
+                if (readResult.IsCompleted || readResult.IsCanceled)
+                {
+                    await reader.CompleteAsync();
+
+                    producer.CompleteResponse(flushResult);
+                }
+                // We're not going to schedule this again if there's no remaining window.
+                // When the window update is sent, the producer will be re-queued if needed.
+                else if (hasModeData && remaining > 0)
+                {
+                    // Move this stream to the back of the queue so we're being fair to the other streams that have data
+                    Schedule(producer);
+                }
             }
-
-            producer.FirstWrite = false;
-
-            var hasModeData = producer.Dequeue(buffer.Length);
-
-            reader.AdvanceTo(buffer.End);
-
-            if (readResult.IsCompleted || readResult.IsCanceled)
+            catch (Exception ex)
             {
-                await reader.CompleteAsync();
-
-                producer.CompleteResponse(flushResult);
-            }
-            // We're not going to schedule this again if there's no remaining window.
-            // When the window update is sent, the producer will be re-queued if needed.
-            else if (hasModeData && remaining > 0)
-            {
-                // Move this stream to the back of the queue so we're being fair to the other streams that have data
-                Schedule(producer);
+                _log.LogCritical(ex, "The event loop in connection {ConnectionId} failed unexpectedly", _connectionId);
             }
         }
     }
@@ -541,7 +548,7 @@ internal class Http2FrameWriter
             //    }
             //    else
             //    {
-                    
+
             //    }
 
             //    // Don't call FlushAsync() with the min data rate, since we time this write while also accounting for
@@ -557,7 +564,7 @@ internal class Http2FrameWriter
 
             //if (shouldFlush)
             //{
-                
+
             //}
 
             if (_minResponseDataRate != null)
