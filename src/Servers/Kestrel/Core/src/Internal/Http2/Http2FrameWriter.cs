@@ -121,8 +121,7 @@ internal class Http2FrameWriter
 
                 if (readResult.IsCanceled)
                 {
-                    // Response body is aborted, break and complete reader.
-                    // break;
+                    // Response body is aborted, complete reader for this output producer.
                 }
                 else if (readResult.IsCompleted && stream.ResponseTrailers?.Count > 0)
                 {
@@ -198,6 +197,8 @@ internal class Http2FrameWriter
                 _log.LogCritical(ex, "The event loop in connection {ConnectionId} failed unexpectedly", _connectionId);
             }
         }
+
+        _log.LogDebug("The connection processing loop for {ConnectionId} ended gracefully", _connectionId);
     }
 
     public void UpdateMaxHeaderTableSize(uint maxHeaderTableSize)
@@ -759,7 +760,7 @@ internal class Http2FrameWriter
     {
         ManualResetValueTaskSource<object?>? tcs = null;
 
-        lock (_writeLock)
+        lock (_windowUpdateLock)
         {
             tcs = _waitForMoreWindow;
         }
@@ -772,7 +773,7 @@ internal class Http2FrameWriter
     {
         ManualResetValueTaskSource<object?>? tcs = null;
 
-        lock (_writeLock)
+        lock (_windowUpdateLock)
         {
             tcs = _waitForMoreWindow;
 
