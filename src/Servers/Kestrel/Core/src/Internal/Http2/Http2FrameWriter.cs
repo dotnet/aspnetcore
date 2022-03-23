@@ -47,6 +47,10 @@ internal class Http2FrameWriter
     private bool _completed;
     private bool _aborted;
 
+    private readonly object _windowUpdateLock = new();
+    private long _window;
+    private ManualResetValueTaskSource<object?>? _waitForMoreWindow;
+
     public Http2FrameWriter(
         PipeWriter outputPipeWriter,
         BaseConnectionContext connectionContext,
@@ -76,6 +80,7 @@ internal class Http2FrameWriter
 
         _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
         _channel = Channel.CreateBounded<Http2OutputProducer>(serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection);
+        _window = connectionOutputFlowControl.Available;
 
         _ = Task.Run(WriteToOutputPipe);
     }
@@ -94,13 +99,17 @@ internal class Http2FrameWriter
                 var reader = producer.PipeReader;
                 var stream = producer.Stream;
 
-                var hasData = reader.TryRead(out var readResult);
+                var hasResult = reader.TryRead(out var readResult);
                 var buffer = readResult.Buffer;
 
                 // This shouldn't be called when there's no data
-                Debug.Assert(hasData);
+                Debug.Assert(hasResult);
 
-                var (actual, remaining) = producer.ConsumeWindow(buffer.Length);
+                // Check the stream window
+                var (actual, remainingStream) = producer.ConsumeWindow(buffer.Length);
+
+                // Now check the connection window
+                (actual, var remainingConnection) = ConsumeWindow(actual);
 
                 // Write what we can
                 if (actual < buffer.Length)
@@ -155,7 +164,7 @@ internal class Http2FrameWriter
                         stream.DecrementActiveClientStreamCount();
                     }
 
-                    flushResult = await WriteDataAsync(stream.StreamId, buffer, actual, endStream, producer.FirstWrite);
+                    flushResult = await WriteDataAsync(stream.StreamId, buffer, buffer.Length, endStream, producer.FirstWrite);
                 }
 
                 producer.FirstWrite = false;
@@ -172,10 +181,16 @@ internal class Http2FrameWriter
                 }
                 // We're not going to schedule this again if there's no remaining window.
                 // When the window update is sent, the producer will be re-queued if needed.
-                else if (hasModeData && remaining > 0)
+                else if (hasModeData && remainingStream > 0)
                 {
                     // Move this stream to the back of the queue so we're being fair to the other streams that have data
                     Schedule(producer);
+                }
+
+                if (remainingConnection == 0)
+                {
+                    // This shouldn't be null here
+                    await new ValueTask(_waitForMoreWindow!, _waitForMoreWindow!.Version);
                 }
             }
             catch (Exception ex)
@@ -217,6 +232,7 @@ internal class Http2FrameWriter
             _completed = true;
             _outputWriter.Abort();
             _channel.Writer.TryComplete();
+            AbortFlowControl();
         }
     }
 
@@ -231,6 +247,7 @@ internal class Http2FrameWriter
 
             _aborted = true;
             _connectionContext.Abort(error);
+            AbortFlowControl();
 
             Complete();
         }
@@ -369,41 +386,6 @@ internal class Http2FrameWriter
         }
     }
 
-    private ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream, bool firstWrite, bool forceFlush)
-    {
-        // Logic in this method is replicated in WriteDataAndTrailersAsync.
-        // Changes here may need to be mirrored in WriteDataAndTrailersAsync.
-
-        // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
-        var dataLength = data.Length;
-
-        lock (_writeLock)
-        {
-            if (_completed || flowControl.IsAborted)
-            {
-                return default;
-            }
-
-            // Zero-length data frames are allowed to be sent immediately even if there is no space available in the flow control window.
-            // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
-            if (dataLength != 0 && dataLength > flowControl.Available)
-            {
-                return WriteDataAsync(streamId, flowControl, data, dataLength, endStream, firstWrite);
-            }
-
-            // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
-            flowControl.Advance((int)dataLength);
-            WriteDataUnsynchronized(streamId, data, dataLength, endStream);
-
-            if (forceFlush)
-            {
-                return TimeFlushUnsynchronizedAsync();
-            }
-
-            return default;
-        }
-    }
-
     public ValueTask<FlushResult> WriteDataAndTrailersAsync(int streamId, in ReadOnlySequence<byte> data, bool firstWrite, HttpResponseTrailers headers)
     {
         // This method combines WriteDataAsync and WriteResponseTrailers.
@@ -419,62 +401,9 @@ internal class Http2FrameWriter
                 return default;
             }
 
-            //// Zero-length data frames are allowed to be sent immediately even if there is no space available in the flow control window.
-            //// https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
-            //if (dataLength != 0 && dataLength > flowControl.Available)
-            //{
-            //    return WriteDataAndTrailersAsyncCore(this, streamId, flowControl, data, dataLength, firstWrite, headers);
-            //}
-
-            // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
-            // flowControl.Advance((int)dataLength);
             WriteDataUnsynchronized(streamId, data, dataLength, endStream: false);
 
             return WriteResponseTrailersAsync(streamId, headers);
-        }
-
-        //static async ValueTask<FlushResult> WriteDataAndTrailersAsyncCore(Http2FrameWriter writer, int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool firstWrite, HttpResponseTrailers headers)
-        //{
-        //    await writer.WriteDataAsync(streamId, flowControl, data, dataLength, endStream: false, firstWrite);
-
-        //    return await writer.WriteResponseTrailersAsync(streamId, headers);
-        //}
-    }
-
-    public ValueTask<FlushResult> WriteDataAndTrailersAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool firstWrite, HttpResponseTrailers headers)
-    {
-        // This method combines WriteDataAsync and WriteResponseTrailers.
-        // Changes here may need to be mirrored in WriteDataAsync.
-
-        // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
-        var dataLength = data.Length;
-
-        lock (_writeLock)
-        {
-            if (_completed || flowControl.IsAborted)
-            {
-                return default;
-            }
-
-            // Zero-length data frames are allowed to be sent immediately even if there is no space available in the flow control window.
-            // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
-            if (dataLength != 0 && dataLength > flowControl.Available)
-            {
-                return WriteDataAndTrailersAsyncCore(this, streamId, flowControl, data, dataLength, firstWrite, headers);
-            }
-
-            // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
-            flowControl.Advance((int)dataLength);
-            WriteDataUnsynchronized(streamId, data, dataLength, endStream: false);
-
-            return WriteResponseTrailersAsync(streamId, headers);
-        }
-
-        static async ValueTask<FlushResult> WriteDataAndTrailersAsyncCore(Http2FrameWriter writer, int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool firstWrite, HttpResponseTrailers headers)
-        {
-            await writer.WriteDataAsync(streamId, flowControl, data, dataLength, endStream: false, firstWrite);
-
-            return await writer.WriteResponseTrailersAsync(streamId, headers);
         }
     }
 
@@ -572,38 +501,7 @@ internal class Http2FrameWriter
                 return flushResult;
             }
 
-            // var shouldFlush = false;
-
             WriteDataUnsynchronized(streamId, data, dataLength, endStream);
-
-            //if (actual > 0)
-            //{
-            //    if (actual < dataLength)
-            //    {
-            //        WriteDataUnsynchronized(streamId, data.Slice(0, actual), actual, endStream: false);
-            //        data = data.Slice(actual);
-            //        dataLength -= actual;
-            //    }
-            //    else
-            //    {
-
-            //    }
-
-            //    // Don't call FlushAsync() with the min data rate, since we time this write while also accounting for
-            //    // flow control induced backpressure below.
-            //    shouldFlush = true;
-            //}
-            //else if (firstWrite)
-            //{
-            //    // If we're facing flow control induced backpressure on the first write for a given stream's response body,
-            //    // we make sure to flush the response headers immediately.
-            //    shouldFlush = true;
-            //}
-
-            //if (shouldFlush)
-            //{
-
-            //}
 
             if (_minResponseDataRate != null)
             {
@@ -615,8 +513,6 @@ internal class Http2FrameWriter
             _unflushedBytes = 0;
 
             writeTask = _flusher.FlushAsync();
-
-            //firstWrite = false;
         }
 
         // REVIEW: This will include flow control waiting as of right now. We need to handle that elsewhere.
@@ -630,104 +526,6 @@ internal class Http2FrameWriter
         if (_minResponseDataRate != null)
         {
             _timeoutControl.StopTimingWrite();
-        }
-
-        return flushResult;
-    }
-
-    private async ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream, bool firstWrite)
-    {
-        FlushResult flushResult = default;
-
-        while (dataLength > 0)
-        {
-            ValueTask<object?> availabilityTask;
-            var writeTask = default(ValueTask<FlushResult>);
-
-            lock (_writeLock)
-            {
-                if (_completed || flowControl.IsAborted)
-                {
-                    break;
-                }
-
-                // Observe HTTP/2 backpressure
-                var actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityTask);
-
-                var shouldFlush = false;
-
-                if (actual > 0)
-                {
-                    if (actual < dataLength)
-                    {
-                        WriteDataUnsynchronized(streamId, data.Slice(0, actual), actual, endStream: false);
-                        data = data.Slice(actual);
-                        dataLength -= actual;
-                    }
-                    else
-                    {
-                        WriteDataUnsynchronized(streamId, data, actual, endStream);
-                        dataLength = 0;
-                    }
-
-                    // Don't call FlushAsync() with the min data rate, since we time this write while also accounting for
-                    // flow control induced backpressure below.
-                    shouldFlush = true;
-                }
-                else if (firstWrite)
-                {
-                    // If we're facing flow control induced backpressure on the first write for a given stream's response body,
-                    // we make sure to flush the response headers immediately.
-                    shouldFlush = true;
-                }
-
-                if (shouldFlush)
-                {
-                    if (_minResponseDataRate != null)
-                    {
-                        // Call BytesWrittenToBuffer before FlushAsync() to make testing easier, otherwise the Flush can cause test code to run before the timeout
-                        // control updates and if the test checks for a timeout it can fail
-                        _timeoutControl.BytesWrittenToBuffer(_minResponseDataRate, _unflushedBytes);
-                    }
-
-                    _unflushedBytes = 0;
-
-                    writeTask = _flusher.FlushAsync();
-                }
-
-                firstWrite = false;
-            }
-
-            // Avoid timing writes that are already complete. This is likely to happen during the last iteration.
-            if (availabilityTask.IsCompleted && writeTask.IsCompleted)
-            {
-                continue;
-            }
-
-            if (_minResponseDataRate != null)
-            {
-                _timeoutControl.StartTimingWrite();
-            }
-
-            // This awaitable releases continuations in FIFO order when the window updates.
-            // It should be very rare for a continuation to run without any availability.
-            if (!availabilityTask.IsCompleted)
-            {
-                await availabilityTask;
-            }
-
-            flushResult = await writeTask;
-
-            if (_minResponseDataRate != null)
-            {
-                _timeoutControl.StopTimingWrite();
-            }
-        }
-
-        if (!_scheduleInline)
-        {
-            // Ensure that the application continuation isn't executed inline by ProcessWindowUpdateFrameAsync.
-            await ThreadPoolAwaitable.Instance;
         }
 
         return flushResult;
@@ -939,27 +737,50 @@ internal class Http2FrameWriter
         return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
     }
 
+    internal (long, long) ConsumeWindow(long bytes)
+    {
+        lock (_windowUpdateLock)
+        {
+            var actual = Math.Min(bytes, _window);
+            var remaining = _window -= actual;
+
+            if (remaining == 0)
+            {
+                // Reset the awaitable if we've drained the connection window, it means we can't write any more just yet
+                _waitForMoreWindow ??= new();
+                _waitForMoreWindow.Reset();
+            }
+
+            return (actual, remaining);
+        }
+    }
+
+    private void AbortFlowControl()
+    {
+        ManualResetValueTaskSource<object?>? tcs = null;
+
+        lock (_writeLock)
+        {
+            tcs = _waitForMoreWindow;
+        }
+
+        // Resume the connection copy loop
+        tcs?.TrySetResult(null);
+    }
+
     public bool TryUpdateConnectionWindow(int bytes)
     {
-        lock (_writeLock)
-        {
-            return _connectionOutputFlowControl.TryUpdateWindow(bytes);
-        }
-    }
+        ManualResetValueTaskSource<object?>? tcs = null;
 
-    public bool TryUpdateStreamWindow(StreamOutputFlowControl flowControl, int bytes)
-    {
         lock (_writeLock)
         {
-            return flowControl.TryUpdateWindow(bytes);
-        }
-    }
+            tcs = _waitForMoreWindow;
 
-    public void AbortPendingStreamDataWrites(StreamOutputFlowControl flowControl)
-    {
-        lock (_writeLock)
-        {
-            flowControl.Abort();
+            _window += bytes;
         }
+
+        // Resume the connection copy loop
+        tcs?.TrySetResult(null);
+        return true;
     }
 }
