@@ -117,9 +117,11 @@ public static class DotNetDispatcher
         {
             valueTaskResult.AsTask().ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
         }
-        else if (syncResult?.GetType().IsGenericType ?? false && syncResult?.GetType().GetGenericTypeDefinition() == typeof(ValueTask<>))
+        else if (syncResult?.GetType() is { IsGenericType: true } syncResultType
+            && syncResultType.GetGenericTypeDefinition() == typeof(ValueTask<>))
         {
-            var innerTask = GetTaskByType(syncResult.GetType().GenericTypeArguments[0], syncResult);
+            // It's a ValueTask<T>. We'll coerce it to a Task so that we can attach a continuation.
+            var innerTask = GetTaskByType(syncResultType.GenericTypeArguments[0], syncResult);
 
             innerTask!.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
         }
