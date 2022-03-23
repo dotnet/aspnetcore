@@ -47,7 +47,7 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         writer.WriteEndObject();
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization ProblemDetails.Extensions might require types that cannot be statically analyzed. ")]
+    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     internal static void ReadValue(ref Utf8JsonReader reader, ProblemDetails value, JsonSerializerOptions options)
     {
         if (TryReadStringProperty(ref reader, Type, out var propertyValue))
@@ -99,7 +99,7 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         return true;
     }
 
-    [RequiresUnreferencedCode("JSON serialization and deserialization ProblemDetails.Extensions might require types that cannot be statically analyzed. ")]
+    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     internal static void WriteProblemDetails(Utf8JsonWriter writer, ProblemDetails value, JsonSerializerOptions options)
     {
         if (value.Type != null)
