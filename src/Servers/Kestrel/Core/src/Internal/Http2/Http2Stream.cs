@@ -507,7 +507,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     public bool TryUpdateOutputWindow(int bytes)
     {
         return _http2Output.TryUpdateStreamWindow(bytes);
-        // return _context.FrameWriter.TryUpdateStreamWindow(_outputFlowControl, bytes);
     }
 
     public void AbortRstStreamReceived()
