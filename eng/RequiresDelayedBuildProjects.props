@@ -8,13 +8,13 @@
 -->
 <Project>
   <ItemGroup>
-    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\HttpApi\perf\Microsoft.AspNetCore.Grpc.Microbenchmarks\Microsoft.AspNetCore.Grpc.Microbenchmarks.csproj" />
-    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\HttpApi\src\Microsoft.AspNetCore.Grpc.HttpApi\Microsoft.AspNetCore.Grpc.HttpApi.csproj" />
-    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\HttpApi\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj" />
-    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\HttpApi\test\Microsoft.AspNetCore.Grpc.HttpApi.IntegrationTests\Microsoft.AspNetCore.Grpc.HttpApi.IntegrationTests.csproj" />
-    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\HttpApi\test\Microsoft.AspNetCore.Grpc.HttpApi.Tests\Microsoft.AspNetCore.Grpc.HttpApi.Tests.csproj" />
-    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\HttpApi\test\Microsoft.AspNetCore.Grpc.Swagger.Tests\Microsoft.AspNetCore.Grpc.Swagger.Tests.csproj" />
-    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\HttpApi\test\testassets\IntegrationTestsWebsite\IntegrationTestsWebsite.csproj" />
-    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\HttpApi\test\testassets\Sandbox\Sandbox.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\perf\Microsoft.AspNetCore.Grpc.Microbenchmarks\Microsoft.AspNetCore.Grpc.Microbenchmarks.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests\Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests\Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\Microsoft.AspNetCore.Grpc.Swagger.Tests\Microsoft.AspNetCore.Grpc.Swagger.Tests.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\IntegrationTestsWebsite\IntegrationTestsWebsite.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\Sandbox\Sandbox.csproj" />
   </ItemGroup>
 </Project>

@@ -28,7 +28,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
     private readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
     private readonly ParameterPolicyFactory _parameterPolicyFactory;
 
-    // Executes before MVC's DefaultApiDescriptionProvider and GrpcHttpApiDescriptionProvider for no particular reason.
+    // Executes before MVC's DefaultApiDescriptionProvider and GrpcJsonTranscodingDescriptionProvider for no particular reason.
     public int Order => -1100;
 
     public EndpointMetadataApiDescriptionProvider(

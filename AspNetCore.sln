@@ -1664,7 +1664,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LinkabilityChecker", "src\T
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interop", "Interop", "{7A331A1C-E2C4-4E37-B0A0-B5AA10661229}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HttpApi", "HttpApi", "{DD076DDA-7956-4361-A7D4-2B8025AB3DFD}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JsonTranscoding", "JsonTranscoding", "{DD076DDA-7956-4361-A7D4-2B8025AB3DFD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{5CDB8ABC-9DD0-4A9F-8948-EED5FFE89F67}"
 EndProject
@@ -1674,21 +1674,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B43BE3EB-9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{9A8AE587-A3DB-4211-8354-430C4CCBEB9B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTestsWebsite", "src\Grpc\HttpApi\test\testassets\IntegrationTestsWebsite\IntegrationTestsWebsite.csproj", "{2E28881D-A188-47AF-800A-B5877AD8C288}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTestsWebsite", "src\Grpc\JsonTranscoding\test\testassets\IntegrationTestsWebsite\IntegrationTestsWebsite.csproj", "{2E28881D-A188-47AF-800A-B5877AD8C288}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sandbox", "src\Grpc\HttpApi\test\testassets\Sandbox\Sandbox.csproj", "{A53696E8-6065-41BA-84FB-E89E0DACFF6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sandbox", "src\Grpc\JsonTranscoding\test\testassets\Sandbox\Sandbox.csproj", "{A53696E8-6065-41BA-84FB-E89E0DACFF6C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.HttpApi", "src\Grpc\HttpApi\src\Microsoft.AspNetCore.Grpc.HttpApi\Microsoft.AspNetCore.Grpc.HttpApi.csproj", "{109C702D-DACE-4F82-A490-15E5AFA94005}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.JsonTranscoding", "src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj", "{109C702D-DACE-4F82-A490-15E5AFA94005}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.Swagger", "src\Grpc\HttpApi\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj", "{E3C5FAD2-8AB7-47C8-AAFD-8262551A5D11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.Swagger", "src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj", "{E3C5FAD2-8AB7-47C8-AAFD-8262551A5D11}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.Swagger.Tests", "src\Grpc\HttpApi\test\Microsoft.AspNetCore.Grpc.Swagger.Tests\Microsoft.AspNetCore.Grpc.Swagger.Tests.csproj", "{90CF4DC6-AC53-459F-9EAB-623A11EADAA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.Swagger.Tests", "src\Grpc\JsonTranscoding\test\Microsoft.AspNetCore.Grpc.Swagger.Tests\Microsoft.AspNetCore.Grpc.Swagger.Tests.csproj", "{90CF4DC6-AC53-459F-9EAB-623A11EADAA3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.HttpApi.Tests", "src\Grpc\HttpApi\test\Microsoft.AspNetCore.Grpc.HttpApi.Tests\Microsoft.AspNetCore.Grpc.HttpApi.Tests.csproj", "{F18E97AE-3A3F-424D-8DC2-4D001A167F98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests", "src\Grpc\JsonTranscoding\test\Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests\Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.csproj", "{F18E97AE-3A3F-424D-8DC2-4D001A167F98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.HttpApi.IntegrationTests", "src\Grpc\HttpApi\test\Microsoft.AspNetCore.Grpc.HttpApi.IntegrationTests\Microsoft.AspNetCore.Grpc.HttpApi.IntegrationTests.csproj", "{8C3E422A-F281-4B93-A567-88C7A1ED0412}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests", "src\Grpc\JsonTranscoding\test\Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests\Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests.csproj", "{8C3E422A-F281-4B93-A567-88C7A1ED0412}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.Microbenchmarks", "src\Grpc\HttpApi\perf\Microsoft.AspNetCore.Grpc.Microbenchmarks\Microsoft.AspNetCore.Grpc.Microbenchmarks.csproj", "{EB14F068-AD55-4970-B9B4-1FBE33704243}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Grpc.Microbenchmarks", "src\Grpc\JsonTranscoding\perf\Microsoft.AspNetCore.Grpc.Microbenchmarks\Microsoft.AspNetCore.Grpc.Microbenchmarks.csproj", "{EB14F068-AD55-4970-B9B4-1FBE33704243}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.LongTests", "src\Servers\IIS\IIS\test\IIS.LongTests\IIS.LongTests.csproj", "{B7DAA48B-8E5E-4A5D-9FEB-E6D49AE76A04}"
 EndProject

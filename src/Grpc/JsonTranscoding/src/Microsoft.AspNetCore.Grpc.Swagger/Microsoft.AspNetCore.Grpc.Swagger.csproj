@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Swagger for gRPC ASP.NET Core</Description>
+    <PackageTags>gRPC RPC HTTP/2 REST Swagger OpenAPI</PackageTags>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Grpc.Swagger.Tests" />
+
+    <Compile Include="..\Shared\ServiceDescriptorHelpers.cs" Link="Internal\Shared\ServiceDescriptorHelpers.cs" />
+
+    <Reference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
+    <Reference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+</Project>
