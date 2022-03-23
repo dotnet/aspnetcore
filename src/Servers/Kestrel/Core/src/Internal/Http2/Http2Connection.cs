@@ -1708,12 +1708,11 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
                     // FIN
                     break;
                 }
-                var buffer = readResult.Buffer;
 
                 var outputBuffer = writer.GetMemory(_minAllocBufferSize);
 
-                var copyAmount = (int)Math.Min(outputBuffer.Length, buffer.Length);
-                var bufferSlice = buffer.Slice(0, copyAmount);
+                var copyAmount = (int)Math.Min(outputBuffer.Length, readResult.Buffer.Length);
+                var bufferSlice = readResult.Buffer.Slice(0, copyAmount);
 
                 bufferSlice.CopyTo(outputBuffer.Span);
 
