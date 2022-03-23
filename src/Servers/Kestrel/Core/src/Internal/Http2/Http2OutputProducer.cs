@@ -31,7 +31,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     private readonly Pipe _pipe;
     private readonly ConcurrentPipeWriter _pipeWriter;
     private readonly PipeReader _pipeReader;
-    private readonly ManualResetValueTaskSource<object?> _resetAwaitable = new ManualResetValueTaskSource<object?>();
     private IMemoryOwner<byte>? _fakeMemoryOwner;
     private byte[]? _fakeMemory;
     private bool _startedWritingDataFrames;
@@ -41,7 +40,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     private bool _writerComplete;
 
     // Internal for testing
-    internal Task _dataWriteProcessingTask;
     internal bool _disposed;
     internal long _unconsumedBytes;
     internal long _window;
@@ -78,8 +76,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         _flusher = new TimingPipeFlusher(timeoutControl: null, _log);
         _flusher.Initialize(_pipeWriter);
         _window = flowControl.Available;
-
-        // _dataWriteProcessingTask = ProcessDataWrites();
     }
 
     public Http2Stream Stream => _stream;
@@ -157,8 +153,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
     public void StreamReset()
     {
-        // Data background task must still be running.
-        // Debug.Assert(!_dataWriteProcessingTask.IsCompleted);
         // Response should have been completed.
         Debug.Assert(_responseCompleteTaskSource.GetStatus(_responseCompleteTaskSource.Version) == ValueTaskSourceStatus.Succeeded);
 
@@ -174,9 +168,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         _window = _flowControl.Available;
         _unconsumedBytes = 0;
         _enqueuedForObservation = false;
-
-        // Trigger the data process task to resume
-        // _resetAwaitable.SetResult(null);
     }
 
     public void Complete()
@@ -638,7 +629,5 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         }
         _disposed = true;
 
-        // Set awaitable after disposed is true to ensure ProcessDataWrites exits successfully.
-        // _resetAwaitable.SetResult(null);
     }
 }

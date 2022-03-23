@@ -426,7 +426,7 @@ public class Http2ConnectionTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
         var output = (Http2OutputProducer)stream.Output;
-        await output._dataWriteProcessingTask.DefaultTimeout();
+        // await output._dataWriteProcessingTask.DefaultTimeout();
     }
 
     [Fact]
@@ -577,7 +577,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         var output = (Http2OutputProducer)stream.Output;
         Assert.True(output._disposed);
-        await output._dataWriteProcessingTask.DefaultTimeout();
+        // await output._dataWriteProcessingTask.DefaultTimeout();
 
         // Stream is not returned to the pool
         Assert.Equal(0, _connection.StreamPool.Count);
