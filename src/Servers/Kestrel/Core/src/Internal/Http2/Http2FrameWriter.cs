@@ -163,6 +163,8 @@ internal class Http2FrameWriter
 
             if (readResult.IsCompleted || readResult.IsCanceled)
             {
+                await reader.CompleteAsync();
+
                 producer.CompleteResponse(flushResult);
             }
             // We're not going to schedule this again if there's no remaining window.

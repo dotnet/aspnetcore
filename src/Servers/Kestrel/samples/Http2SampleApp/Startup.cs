@@ -17,7 +17,7 @@ public class Startup
 
     public void Configure(IApplicationBuilder app)
     {
-        app.UseTimingMiddleware();
+        // app.UseTimingMiddleware();
         app.Run(context =>
         {
             return context.Response.WriteAsync("Hello World! " + context.Request.Protocol);
