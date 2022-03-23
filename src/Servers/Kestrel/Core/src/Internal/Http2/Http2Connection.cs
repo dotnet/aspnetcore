@@ -126,7 +126,9 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         _scheduleInline = context.ServiceContext.Scheduler == PipeScheduler.Inline;
 
         _inputTask = CopyPipeAsync(_context.Transport.Input, _input.Writer);
-        _outputTask = CopyPipeAsync(_output.Reader, _context.Transport.Output);
+        _outputTask = CopyOutputPipeAsync(_output.Reader, _context.Transport.Output);
+
+        _window = _outputFlowControl.Available;
     }
 
     public string ConnectionId => _context.ConnectionId;
@@ -1000,7 +1002,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
         if (_incomingFrame.StreamId == 0)
         {
-            if (!_frameWriter.TryUpdateConnectionWindow(_incomingFrame.WindowUpdateSizeIncrement))
+            if (!TryUpdateConnectionWindow(_incomingFrame.WindowUpdateSizeIncrement))
             {
                 throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR);
             }
@@ -1694,6 +1696,104 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             useSynchronizationContext: false);
     }
 
+    private readonly object _windowUpdateLock = new();
+    private long _window;
+    private ManualResetValueTaskSource<object?> _waitForMoreWindow;
+
+    internal (long, long) ConsumeWindow(long bytes)
+    {
+        lock (_windowUpdateLock)
+        {
+            var actual = Math.Min(bytes, _window);
+            var remaining = _window -= actual;
+
+            if (remaining == 0)
+            {
+                // Reset the awaitable if we've drained the connection window, it means we can't write any more just yet
+                _waitForMoreWindow ??= new();
+                _waitForMoreWindow.Reset();
+            }
+
+            return (actual, remaining);
+        }
+    }
+
+    private bool TryUpdateConnectionWindow(int windowUpdateSizeIncrement)
+    {
+        ManualResetValueTaskSource<object?>? tcs = null;
+
+        lock (_windowUpdateLock)
+        {
+            tcs = _waitForMoreWindow;
+
+            _window += windowUpdateSizeIncrement;
+        }
+
+        // Resume the connection copy loop
+        tcs?.TrySetResult(null);
+        return true;
+    }
+
+    private async Task CopyOutputPipeAsync(PipeReader reader, PipeWriter writer)
+    {
+        Exception? error = null;
+        try
+        {
+            while (true)
+            {
+                var readResult = await reader.ReadAsync();
+
+                if ((readResult.IsCompleted && readResult.Buffer.Length == 0) || readResult.IsCanceled)
+                {
+                    // FIN
+                    break;
+                }
+                var buffer = readResult.Buffer;
+
+                var (actual, remaining) = ConsumeWindow(buffer.Length);
+
+                if (actual < buffer.Length)
+                {
+                    buffer = buffer.Slice(0, actual);
+                }
+
+                var outputBuffer = writer.GetMemory(_minAllocBufferSize);
+
+                var copyAmount = (int)Math.Min(outputBuffer.Length, buffer.Length);
+                var bufferSlice = buffer.Slice(0, copyAmount);
+
+                bufferSlice.CopyTo(outputBuffer.Span);
+
+                writer.Advance(copyAmount);
+
+                var result = await writer.FlushAsync();
+
+                reader.AdvanceTo(bufferSlice.End);
+
+                if (result.IsCompleted || result.IsCanceled)
+                {
+                    // flushResult should not be canceled.
+                    break;
+                }
+
+                if (remaining == 0)
+                {
+                    await new ValueTask(_waitForMoreWindow, _waitForMoreWindow.Version);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Don't rethrow the exception. It should be handled by the Pipeline consumer.
+            error = ex;
+        }
+        finally
+        {
+            await reader.CompleteAsync(error);
+            await writer.CompleteAsync(error);
+        }
+    }
+
     private async Task CopyPipeAsync(PipeReader reader, PipeWriter writer)
     {
         Exception? error = null;
@@ -1708,11 +1808,12 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
                     // FIN
                     break;
                 }
+                var buffer = readResult.Buffer;
 
                 var outputBuffer = writer.GetMemory(_minAllocBufferSize);
 
-                var copyAmount = (int)Math.Min(outputBuffer.Length, readResult.Buffer.Length);
-                var bufferSlice = readResult.Buffer.Slice(0, copyAmount);
+                var copyAmount = (int)Math.Min(outputBuffer.Length, buffer.Length);
+                var bufferSlice = buffer.Slice(0, copyAmount);
 
                 bufferSlice.CopyTo(outputBuffer.Span);
 
