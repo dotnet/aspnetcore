@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.Extensions;
+using OpenQA.Selenium.Support.UI;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -91,14 +93,14 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
 
-        var other = Browser.Exists(By.Id("other"));
+        // Mouse enter the button and then mouse leave
+        Browser.ExecuteJavaScript($@"
+            var mouseEnterElement = document.getElementById('mouseenter_input');
+            var mouseEnterEvent = new MouseEvent('mouseenter');
+            var mouseLeaveEvent = new MouseEvent('mouseleave');
+            mouseEnterElement.dispatchEvent(mouseEnterEvent);
+            mouseEnterElement.dispatchEvent(mouseLeaveEvent);");
 
-        // Mouse over the button and then back off
-        var actions = new Actions(Browser)
-            .MoveToElement(input)
-            .MoveToElement(other);
-
-        actions.Perform();
         Browser.Equal("mouseenter,mouseleave,", () => output.Text);
     }
 
