@@ -15,7 +15,7 @@ internal sealed class MessageConverter<TMessage> : SettingsConverterBase<TMessag
 {
     private readonly Dictionary<string, FieldDescriptor> _jsonFieldMap;
 
-    public MessageConverter(JsonSettings settings) : base(settings)
+    public MessageConverter(JsonContext context) : base(context)
     {
         _jsonFieldMap = CreateJsonFieldMap((new TMessage()).Descriptor.Fields.InFieldNumberOrder());
     }
@@ -92,12 +92,12 @@ internal sealed class MessageConverter<TMessage> : SettingsConverterBase<TMessag
     {
         writer.WriteStartObject();
 
-        WriteMessageFields(writer, message, Settings, options);
+        WriteMessageFields(writer, message, Context.Settings, options);
 
         writer.WriteEndObject();
     }
 
-    internal static void WriteMessageFields(Utf8JsonWriter writer, IMessage message, JsonSettings settings, JsonSerializerOptions options)
+    internal static void WriteMessageFields(Utf8JsonWriter writer, IMessage message, GrpcJsonSettings settings, JsonSerializerOptions options)
     {
         var fields = message.Descriptor.Fields;
 
@@ -105,7 +105,7 @@ internal sealed class MessageConverter<TMessage> : SettingsConverterBase<TMessag
         {
             var accessor = field.Accessor;
             var value = accessor.GetValue(message);
-            if (!ShouldFormatFieldValue(message, field, value, settings.FormatDefaultValues))
+            if (!ShouldFormatFieldValue(message, field, value, !settings.IgnoreDefaultValues))
             {
                 continue;
             }

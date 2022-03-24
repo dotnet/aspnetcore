@@ -424,7 +424,7 @@ public class JsonConverterReadTests
         AssertReadJson<Int64Value>(json);
     }
 
-    private TValue AssertReadJson<TValue>(string value, JsonSettings? settings = null) where TValue : IMessage, new()
+    private TValue AssertReadJson<TValue>(string value, GrpcJsonSettings? settings = null) where TValue : IMessage, new()
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
@@ -451,7 +451,7 @@ public class JsonConverterReadTests
         return objectNew;
     }
 
-    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, JsonSettings? settings = null) where TValue : IMessage, new()
+    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null) where TValue : IMessage, new()
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
@@ -470,9 +470,10 @@ public class JsonConverterReadTests
         assertException(ex);
     }
 
-    internal static JsonSerializerOptions CreateSerializerOptions(JsonSettings? settings, TypeRegistry typeRegistery)
+    internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery)
     {
-        var resolvedSettings = settings ?? new JsonSettings { TypeRegistry = typeRegistery };
-        return JsonConverterHelper.CreateSerializerOptions(resolvedSettings);
+        var context = new JsonContext(settings ?? new GrpcJsonSettings(), typeRegistery ?? TypeRegistry.Empty);
+
+        return JsonConverterHelper.CreateSerializerOptions(context);
     }
 }

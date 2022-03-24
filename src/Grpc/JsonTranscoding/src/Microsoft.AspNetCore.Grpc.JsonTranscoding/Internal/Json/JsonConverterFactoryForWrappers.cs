@@ -12,11 +12,11 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 internal class JsonConverterFactoryForWrappers : JsonConverterFactory
 {
-    private readonly JsonSettings _settings;
+    private readonly JsonContext _context;
 
-    public JsonConverterFactoryForWrappers(JsonSettings settings)
+    public JsonConverterFactoryForWrappers(JsonContext context)
     {
-        _settings = settings;
+        _context = context;
     }
 
     public override bool CanConvert(Type typeToConvert)
@@ -42,7 +42,7 @@ internal class JsonConverterFactoryForWrappers : JsonConverterFactory
             typeof(WrapperConverter<>).MakeGenericType(new Type[] { typeToConvert }),
             BindingFlags.Instance | BindingFlags.Public,
             binder: null,
-            args: new object[] { _settings },
+            args: new object[] { _context },
             culture: null)!;
 
         return converter;

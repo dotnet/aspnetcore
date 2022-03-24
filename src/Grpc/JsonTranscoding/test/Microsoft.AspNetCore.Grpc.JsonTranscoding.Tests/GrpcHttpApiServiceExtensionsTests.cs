@@ -15,7 +15,7 @@ public class GrpcJsonTranscodingServiceExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddGrpcJsonTranscoding();
+        services.AddGrpc().AddJsonTranscoding();
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
@@ -32,12 +32,12 @@ public class GrpcJsonTranscodingServiceExtensionsTests
     public void AddGrpcJsonTranscoding_OverrideOptions_OptionsApplied()
     {
         // Arrange
-        var settings = new JsonSettings();
+        var settings = new GrpcJsonSettings();
 
         var services = new ServiceCollection();
 
         // Act
-        services.AddGrpcJsonTranscoding(o =>
+        services.AddGrpc().AddJsonTranscoding(o =>
         {
             o.JsonSettings = settings;
         });

@@ -132,7 +132,7 @@ public class JsonConverterWriteTests
 
         AssertWrittenJson(
             wrappers,
-            new JsonSettings { FormatDefaultValues = true, FormatInt64sAsIntegers = false });
+            new GrpcJsonSettings { WriteInt64sAsStrings = true });
     }
 
     [Fact]
@@ -151,7 +151,7 @@ public class JsonConverterWriteTests
     {
         var m = new NullValueContainer();
 
-        AssertWrittenJson(m, new JsonSettings { FormatDefaultValues = true });
+        AssertWrittenJson(m);
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public class JsonConverterWriteTests
             NullValue = (NullValue)1
         };
 
-        AssertWrittenJson(m, new JsonSettings { FormatDefaultValues = true });
+        AssertWrittenJson(m);
     }
 
     [Fact]
@@ -423,23 +423,22 @@ public class JsonConverterWriteTests
             SingleEnum = value
         };
 
-        AssertWrittenJson(dataTypes, new JsonSettings { FormatEnumsAsIntegers = true, FormatDefaultValues = false });
+        AssertWrittenJson(dataTypes, new GrpcJsonSettings { WriteEnumsAsIntegers = true, IgnoreDefaultValues = true });
     }
 
-    private void AssertWrittenJson<TValue>(TValue value, JsonSettings? settings = null, bool? compareRawStrings = null) where TValue : IMessage
+    private void AssertWrittenJson<TValue>(TValue value, GrpcJsonSettings? settings = null, bool? compareRawStrings = null) where TValue : IMessage
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
             Timestamp.Descriptor.File);
 
-        settings = settings ?? new JsonSettings { TypeRegistry = typeRegistery, FormatDefaultValues = false, FormatInt64sAsIntegers = false };
-
+        settings ??= new GrpcJsonSettings { WriteInt64sAsStrings = true };
         var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery);
 
         var formatterSettings = new JsonFormatter.Settings(
-            formatDefaultValues: settings.FormatDefaultValues,
+            formatDefaultValues: !settings.IgnoreDefaultValues,
             typeRegistery);
-        formatterSettings = formatterSettings.WithFormatEnumsAsIntegers(settings.FormatEnumsAsIntegers);
+        formatterSettings = formatterSettings.WithFormatEnumsAsIntegers(settings.WriteEnumsAsIntegers);
         var formatter = new JsonFormatter(formatterSettings);
 
         var jsonOld = formatter.Format(value);
@@ -459,9 +458,10 @@ public class JsonConverterWriteTests
         Assert.True(comparer.Equals(doc1.RootElement, doc2.RootElement));
     }
 
-    internal static JsonSerializerOptions CreateSerializerOptions(JsonSettings? settings, TypeRegistry typeRegistery)
+    internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery)
     {
-        var resolvedSettings = settings ?? new JsonSettings { TypeRegistry = typeRegistery };
-        return JsonConverterHelper.CreateSerializerOptions(resolvedSettings);
+        var context = new JsonContext(settings ?? new GrpcJsonSettings(), typeRegistery ?? TypeRegistry.Empty);
+
+        return JsonConverterHelper.CreateSerializerOptions(context);
     }
 }

@@ -37,7 +37,7 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
         {
             if (endpoint is RouteEndpoint routeEndpoint)
             {
-                var grpcMetadata = endpoint.Metadata.GetMetadata<GrpcHttpMetadata>();
+                var grpcMetadata = endpoint.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>();
 
                 if (grpcMetadata != null)
                 {

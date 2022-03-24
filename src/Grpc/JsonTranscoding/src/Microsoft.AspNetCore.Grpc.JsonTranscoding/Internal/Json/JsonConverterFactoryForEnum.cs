@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 internal class JsonConverterFactoryForEnum : JsonConverterFactory
 {
-    private readonly JsonSettings _settings;
+    private readonly JsonContext _context;
 
-    public JsonConverterFactoryForEnum(JsonSettings settings)
+    public JsonConverterFactoryForEnum(JsonContext context)
     {
-        _settings = settings;
+        _context = context;
     }
 
     public override bool CanConvert(Type typeToConvert)
@@ -29,7 +29,7 @@ internal class JsonConverterFactoryForEnum : JsonConverterFactory
             typeof(EnumConverter<>).MakeGenericType(new Type[] { typeToConvert }),
             BindingFlags.Instance | BindingFlags.Public,
             binder: null,
-            args: new object[] { _settings },
+            args: new object[] { _context },
             culture: null)!;
 
         return converter;

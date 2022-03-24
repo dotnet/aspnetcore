@@ -18,11 +18,11 @@ internal static class JsonConverterHelper
 {
     internal const int WrapperValueFieldNumber = Int32Value.ValueFieldNumber;
 
-    internal static JsonSerializerOptions CreateSerializerOptions(JsonSettings settings, bool isStreamingOptions = false)
+    internal static JsonSerializerOptions CreateSerializerOptions(JsonContext context, bool isStreamingOptions = false)
     {
         // Streaming is line delimited between messages. That means JSON can't be indented as it adds new lines.
         // For streaming to work, indenting must be disabled when streaming.
-        var writeIndented = !isStreamingOptions ? settings.WriteIndented : false;
+        var writeIndented = !isStreamingOptions ? context.Settings.WriteIndented : false;
 
         var options = new JsonSerializerOptions
         {
@@ -32,13 +32,13 @@ internal static class JsonConverterHelper
         };
         options.Converters.Add(new NullValueConverter());
         options.Converters.Add(new ByteStringConverter());
-        options.Converters.Add(new Int64Converter(settings));
+        options.Converters.Add(new Int64Converter(context));
         options.Converters.Add(new UInt64Converter());
         options.Converters.Add(new BoolConverter());
-        options.Converters.Add(new JsonConverterFactoryForEnum(settings));
-        options.Converters.Add(new JsonConverterFactoryForWrappers(settings));
-        options.Converters.Add(new JsonConverterFactoryForWellKnownTypes(settings));
-        options.Converters.Add(new JsonConverterFactoryForMessage(settings));
+        options.Converters.Add(new JsonConverterFactoryForEnum(context));
+        options.Converters.Add(new JsonConverterFactoryForWrappers(context));
+        options.Converters.Add(new JsonConverterFactoryForWellKnownTypes(context));
+        options.Converters.Add(new JsonConverterFactoryForMessage(context));
 
         return options;
     }

@@ -7,17 +7,17 @@ using Google.Protobuf.Reflection;
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding;
 
 /// <summary>
-/// Metadata for a gRPC HTTP API endpoint.
+/// Metadata for a gRPC JSON transcoding endpoint.
 /// </summary>
-public class GrpcHttpMetadata
+public sealed class GrpcJsonTranscodingMetadata
 {
     /// <summary>
-    /// Creates a new instance of <see cref="GrpcHttpMetadata"/> with the provided Protobuf
+    /// Creates a new instance of <see cref="GrpcJsonTranscodingMetadata"/> with the provided Protobuf
     /// <see cref="Google.Protobuf.Reflection.MethodDescriptor"/> and <see cref="Google.Api.HttpRule"/>.
     /// </summary>
     /// <param name="methodDescriptor">The Protobuf <see cref="Google.Protobuf.Reflection.MethodDescriptor"/>.</param>
     /// <param name="httpRule">The <see cref="Google.Api.HttpRule"/>.</param>
-    public GrpcHttpMetadata(MethodDescriptor methodDescriptor, HttpRule httpRule)
+    public GrpcJsonTranscodingMetadata(MethodDescriptor methodDescriptor, HttpRule httpRule)
     {
         MethodDescriptor = methodDescriptor;
         HttpRule = httpRule;

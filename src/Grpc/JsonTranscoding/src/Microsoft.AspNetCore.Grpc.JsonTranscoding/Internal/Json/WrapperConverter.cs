@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 internal sealed class WrapperConverter<TMessage> : SettingsConverterBase<TMessage> where TMessage : IMessage, new()
 {
-    public WrapperConverter(JsonSettings settings) : base(settings)
+    public WrapperConverter(JsonContext context) : base(context)
     {
     }
 

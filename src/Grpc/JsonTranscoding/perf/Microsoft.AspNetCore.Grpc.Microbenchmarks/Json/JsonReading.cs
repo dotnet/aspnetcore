@@ -4,6 +4,7 @@
 using System.Text.Json;
 using BenchmarkDotNet.Attributes;
 using Google.Protobuf;
+using Google.Protobuf.Reflection;
 using Greet;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
@@ -20,7 +21,7 @@ public class JsonReading
     public void GlobalSetup()
     {
         _requestJson = (new HelloRequest() { Name = "Hello world" }).ToString();
-        _serializerOptions = JsonConverterHelper.CreateSerializerOptions(new JsonSettings { WriteIndented = false });
+        _serializerOptions = JsonConverterHelper.CreateSerializerOptions(new JsonContext(new GrpcJsonSettings { WriteIndented = false }, TypeRegistry.Empty));
         _jsonFormatter = new JsonParser(new JsonParser.Settings(recursionLimit: 100));
     }
 

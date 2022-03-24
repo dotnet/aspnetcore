@@ -14,7 +14,7 @@ internal sealed class AnyConverter<TMessage> : SettingsConverterBase<TMessage> w
     internal const string AnyTypeUrlField = "@type";
     internal const string AnyWellKnownTypeValueField = "value";
 
-    public AnyConverter(JsonSettings settings) : base(settings)
+    public AnyConverter(JsonContext context) : base(context)
     {
     }
 
@@ -29,7 +29,7 @@ internal sealed class AnyConverter<TMessage> : SettingsConverterBase<TMessage> w
         var typeUrl = urlField.GetString();
         var typeName = Any.GetTypeName(typeUrl);
 
-        var descriptor = Settings.TypeRegistry.Find(typeName);
+        var descriptor = Context.TypeRegistry.Find(typeName);
         if (descriptor == null)
         {
             throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'.");
@@ -62,7 +62,7 @@ internal sealed class AnyConverter<TMessage> : SettingsConverterBase<TMessage> w
         var typeUrl = (string)value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
         var data = (ByteString)value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
         var typeName = Any.GetTypeName(typeUrl);
-        var descriptor = Settings.TypeRegistry.Find(typeName);
+        var descriptor = Context.TypeRegistry.Find(typeName);
         if (descriptor == null)
         {
             throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'.");
@@ -86,7 +86,7 @@ internal sealed class AnyConverter<TMessage> : SettingsConverterBase<TMessage> w
         }
         else
         {
-            MessageConverter<Any>.WriteMessageFields(writer, valueMessage, Settings, options);
+            MessageConverter<Any>.WriteMessageFields(writer, valueMessage, Context.Settings, options);
         }
 
         writer.WriteEndObject();

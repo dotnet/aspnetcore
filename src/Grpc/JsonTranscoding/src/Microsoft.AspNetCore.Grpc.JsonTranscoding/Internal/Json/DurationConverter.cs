@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 internal sealed class DurationConverter<TMessage> : SettingsConverterBase<TMessage> where TMessage : IMessage, new()
 {
-    public DurationConverter(JsonSettings settings) : base(settings)
+    public DurationConverter(JsonContext context) : base(context)
     {
     }
 

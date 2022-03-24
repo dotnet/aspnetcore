@@ -167,7 +167,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             methodInvoker,
             _loggerFactory,
             descriptorInfo,
-            _JsonTranscodingOptions.JsonSettings.UnarySerializerOptions);
+            _JsonTranscodingOptions.UnarySerializerOptions);
 
         return (callHandler.HandleCallAsync, metadata);
     }
@@ -194,7 +194,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             methodInvoker,
             _loggerFactory,
             descriptorInfo,
-            _JsonTranscodingOptions.JsonSettings.ServerStreamingSerializerOptions);
+            _JsonTranscodingOptions.ServerStreamingSerializerOptions);
 
         return (callHandler.HandleCallAsync, metadata);
     }

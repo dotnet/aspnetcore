@@ -7,10 +7,10 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 internal abstract class SettingsConverterBase<T> : JsonConverter<T>
 {
-    public SettingsConverterBase(JsonSettings settings)
+    public SettingsConverterBase(JsonContext context)
     {
-        Settings = settings;
+        Context = context;
     }
 
-    public JsonSettings Settings { get; }
+    public JsonContext Context { get; }
 }

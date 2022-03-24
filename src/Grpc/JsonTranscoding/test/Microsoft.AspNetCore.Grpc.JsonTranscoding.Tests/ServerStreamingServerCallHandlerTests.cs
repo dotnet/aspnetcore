@@ -205,13 +205,14 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
             MethodOptions.Create(new[] { serviceOptions }),
             new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
 
-        var jsonSettings = JsonTranscodingOptions?.JsonSettings ?? new JsonSettings() { WriteIndented = false };
+        var jsonSettings = JsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings() { WriteIndented = false };
+        var jsonContext = new JsonContext(jsonSettings, JsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty);
 
         return new ServerStreamingServerCallHandler<JsonTranscodingGreeterService, HelloRequest, HelloReply>(
             callInvoker,
             LoggerFactory,
             descriptorInfo ?? TestHelpers.CreateDescriptorInfo(),
-            JsonConverterHelper.CreateSerializerOptions(jsonSettings));
+            JsonConverterHelper.CreateSerializerOptions(jsonContext));
     }
 
     public static Marshaller<TMessage> GetMarshaller<TMessage>(MessageParser<TMessage> parser) where TMessage : IMessage<TMessage> =>

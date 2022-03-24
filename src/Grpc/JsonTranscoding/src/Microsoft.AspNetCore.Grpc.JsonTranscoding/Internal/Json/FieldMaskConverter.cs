@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 internal sealed class FieldMaskConverter<TMessage> : SettingsConverterBase<TMessage> where TMessage : IMessage, new()
 {
-    public FieldMaskConverter(JsonSettings settings) : base(settings)
+    public FieldMaskConverter(JsonContext context) : base(context)
     {
     }
 

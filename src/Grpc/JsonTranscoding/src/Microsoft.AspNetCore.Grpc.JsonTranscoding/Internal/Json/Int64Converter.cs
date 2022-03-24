@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 internal sealed class Int64Converter : SettingsConverterBase<long>
 {
-    public Int64Converter(JsonSettings settings) : base(settings)
+    public Int64Converter(JsonContext context) : base(context)
     {
     }
 
@@ -25,7 +25,7 @@ internal sealed class Int64Converter : SettingsConverterBase<long>
 
     public override void Write(Utf8JsonWriter writer, long value, JsonSerializerOptions options)
     {
-        if (Settings.FormatInt64sAsIntegers)
+        if (!Context.Settings.WriteInt64sAsStrings)
         {
             writer.WriteNumberValue(value);
         }

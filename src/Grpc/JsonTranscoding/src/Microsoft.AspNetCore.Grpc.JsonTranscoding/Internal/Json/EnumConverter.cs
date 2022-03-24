@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where TEnum : Enum
 {
-    public EnumConverter(JsonSettings settings) : base(settings)
+    public EnumConverter(JsonContext context) : base(context)
     {
     }
 
@@ -61,7 +61,7 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
 
     public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)
     {
-        if (Settings.FormatEnumsAsIntegers)
+        if (Context.Settings.WriteEnumsAsIntegers)
         {
             writer.WriteNumberValue(ConvertToInteger(value));
         }

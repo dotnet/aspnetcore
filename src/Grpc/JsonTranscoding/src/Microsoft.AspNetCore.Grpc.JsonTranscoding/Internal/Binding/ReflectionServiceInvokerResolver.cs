@@ -42,8 +42,8 @@ internal sealed class ReflectionServiceInvokerResolver<TService>
         metadata.Add(new HttpMethodMetadata(new[] { verb }));
 
         // Add protobuf service method descriptor.
-        // Is used by swagger generation to identify gRPC HTTP APIs.
-        metadata.Add(new GrpcHttpMetadata(methodDescriptor, httpRule));
+        // Is used by swagger generation to identify gRPC JSON transcoding APIs.
+        metadata.Add(new GrpcJsonTranscodingMetadata(methodDescriptor, httpRule));
 
         return (invoker, metadata);
     }

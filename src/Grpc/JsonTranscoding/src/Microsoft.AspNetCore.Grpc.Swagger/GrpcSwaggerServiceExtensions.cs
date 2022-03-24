@@ -14,12 +14,12 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods for the gRPC HTTP API services.
+/// Extension methods for the gRPC JSON transcoding services.
 /// </summary>
 public static class GrpcSwaggerServiceExtensions
 {
     /// <summary>
-    /// Adds gRPC HTTP API services to the specified <see cref="IServiceCollection" />.
+    /// Adds gRPC JSON transcoding services to the specified <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
@@ -30,7 +30,7 @@ public static class GrpcSwaggerServiceExtensions
             throw new ArgumentNullException(nameof(services));
         }
 
-        services.AddGrpcJsonTranscoding();
+        services.AddGrpc().AddJsonTranscoding();
 
         services.TryAddEnumerable(ServiceDescriptor.Transient<IApiDescriptionProvider, GrpcJsonTranscodingDescriptionProvider>());
 

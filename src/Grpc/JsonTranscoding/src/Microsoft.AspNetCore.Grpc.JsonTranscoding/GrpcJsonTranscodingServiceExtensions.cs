@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Binding;
@@ -9,41 +10,41 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods for the gRPC HTTP API services.
+/// Extension methods for the gRPC JSON transcoding services.
 /// </summary>
 public static class GrpcJsonTranscodingServiceExtensions
 {
     /// <summary>
-    /// Adds gRPC HTTP API services to the specified <see cref="IServiceCollection" />.
+    /// Adds gRPC JSON transcoding services to the specified <see cref="IGrpcServerBuilder" />.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddGrpcJsonTranscoding(this IServiceCollection services)
+    /// <param name="grpcBuilder">The <see cref="IGrpcServerBuilder"/>.</param>
+    /// <returns>The same instance of the <see cref="IGrpcServerBuilder"/> for chaining.</returns>
+    public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder grpcBuilder)
     {
-        if (services == null)
+        if (grpcBuilder == null)
         {
-            throw new ArgumentNullException(nameof(services));
+            throw new ArgumentNullException(nameof(grpcBuilder));
         }
 
-        services.AddGrpc();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
+        grpcBuilder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
 
-        return services;
+        return grpcBuilder;
     }
 
     /// <summary>
-    /// Adds gRPC HTTP API services to the specified <see cref="IServiceCollection" />.
+    /// Adds gRPC JSON transcoding services to the specified <see cref="IGrpcServerBuilder" />.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
+    /// <param name="grpcBuilder">The <see cref="IGrpcServerBuilder"/>.</param>
     /// <param name="configureOptions">An <see cref="Action{GrpcJsonTranscodingOptions}"/> to configure the provided <see cref="GrpcJsonTranscodingOptions"/>.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddGrpcJsonTranscoding(this IServiceCollection services, Action<GrpcJsonTranscodingOptions> configureOptions)
+    /// <returns>The same instance of the <see cref="IGrpcServerBuilder"/> for chaining.</returns>
+    public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder grpcBuilder, Action<GrpcJsonTranscodingOptions> configureOptions)
     {
-        if (services == null)
+        if (grpcBuilder == null)
         {
-            throw new ArgumentNullException(nameof(services));
+            throw new ArgumentNullException(nameof(grpcBuilder));
         }
 
-        return services.Configure(configureOptions).AddGrpcJsonTranscoding();
+        grpcBuilder.Services.Configure(configureOptions);
+        return grpcBuilder.AddJsonTranscoding();
     }
 }

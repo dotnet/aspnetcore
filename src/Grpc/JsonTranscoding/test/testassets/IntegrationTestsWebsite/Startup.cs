@@ -15,8 +15,8 @@ public class Startup
             .AddGrpc(options =>
             {
                 options.EnableDetailedErrors = true;
-            });
-        services.AddGrpcJsonTranscoding();
+            })
+            .AddJsonTranscoding();
         services.AddHttpContextAccessor();
 
         // When the site is run from the test project these types will be injected

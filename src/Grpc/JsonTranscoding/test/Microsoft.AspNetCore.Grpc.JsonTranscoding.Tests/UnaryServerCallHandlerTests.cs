@@ -893,10 +893,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
             descriptorInfo: TestHelpers.CreateDescriptorInfo(bodyDescriptor: HelloRequest.Descriptor),
             JsonTranscodingOptions: new GrpcJsonTranscodingOptions
             {
-                JsonSettings = new JsonSettings
-                {
-                    TypeRegistry = typeRegistry
-                }
+                TypeRegistry = typeRegistry
             });
         var httpContext = TestHelpers.CreateHttpContext();
         var requestJson = jsonFormatter.Format(new HelloRequest
@@ -944,13 +941,15 @@ public class UnaryServerCallHandlerTests : LoggedTest
             MethodOptions.Create(new[] { serviceOptions }),
             new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
 
-        var jsonSettings = JsonTranscodingOptions?.JsonSettings ?? new JsonSettings();
+        var jsonContext = new JsonContext(
+            JsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings(),
+            JsonTranscodingOptions?.TypeRegistry ?? TypeRegistry.Empty);
 
         return new UnaryServerCallHandler<JsonTranscodingGreeterService, HelloRequest, HelloReply>(
             unaryServerCallInvoker,
             LoggerFactory,
             descriptorInfo ?? TestHelpers.CreateDescriptorInfo(),
-            JsonConverterHelper.CreateSerializerOptions(jsonSettings));
+            JsonConverterHelper.CreateSerializerOptions(jsonContext));
     }
 
     public static Marshaller<TMessage> GetMarshaller<TMessage>(MessageParser<TMessage> parser) where TMessage : IMessage<TMessage> =>
