@@ -365,7 +365,7 @@ internal class HostingApplicationDiagnostics
 
     private static class Log
     {
-        public static IDisposable RequestScope(ILogger logger, HttpContext httpContext)
+        public static IDisposable? RequestScope(ILogger logger, HttpContext httpContext)
         {
             return logger.BeginScope(new HostingLogScope(httpContext));
         }

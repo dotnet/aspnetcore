@@ -17,7 +17,7 @@ internal static partial class MvcCoreLoggerExtensions
     public const string ActionFilter = "Action Filter";
     private static readonly string[] _noFilters = new[] { "None" };
 
-    public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
+    public static IDisposable? ActionScope(this ILogger logger, ActionDescriptor action)
     {
         return logger.BeginScope(new ActionLogScope(action));
     }
@@ -204,7 +204,7 @@ internal static partial class MvcCoreLoggerExtensions
 
     [LoggerMessage(24, LogLevel.Debug, "Attempting to bind model of type '{ModelType}' using the name '{ModelName}' in request data ...", EventName = "AttemptingToBindModel", SkipEnabledCheck = true)]
     private static partial void AttemptingToBindModel(ILogger logger, Type modelType, string modelName);
-    
+
     public static void DoneAttemptingToBindModel(this ILogger logger, ModelBindingContext bindingContext)
     {
         if (!logger.IsEnabled(LogLevel.Debug))
