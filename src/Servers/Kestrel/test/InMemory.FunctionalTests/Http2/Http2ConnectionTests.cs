@@ -4720,6 +4720,10 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 1);
 
+        // Kick the input loop so it sees that we have no more active streams. This is a bug in the graceful shutdown logic
+        // but since we wake up the loop pretty often it doesn't show up in practice
+        _pair.Transport.Input.CancelPendingRead();
+
         await _closedStateReached.Task.DefaultTimeout();
         VerifyGoAway(await ReceiveFrameAsync(), 1, Http2ErrorCode.NO_ERROR);
     }
@@ -4739,7 +4743,7 @@ public class Http2ConnectionTests : Http2TestBase
         await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
         await SendDataAsync(1, _helloBytes, true);
-        var f = await ExpectAsync(Http2FrameType.HEADERS,
+        await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 32,
             withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
             withStreamId: 1);
@@ -4764,6 +4768,10 @@ public class Http2ConnectionTests : Http2TestBase
             withLength: 0,
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
+
+        // Kick the input loop so it sees that we have no more active streams. This is a bug in the graceful shutdown logic
+        // but since we wake up the loop pretty often it doesn't show up in practice
+        _pair.Transport.Input.CancelPendingRead();
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
