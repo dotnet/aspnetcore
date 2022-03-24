@@ -6,7 +6,7 @@
 #include "exceptions.h"
 #include "SRWSharedLock.h"
 
-BOOL               PROCESS_MANAGER::sm_fWSAStartupDone = FALSE;
+volatile BOOL               PROCESS_MANAGER::sm_fWSAStartupDone = FALSE;
 
 HRESULT
 PROCESS_MANAGER::Initialize(
