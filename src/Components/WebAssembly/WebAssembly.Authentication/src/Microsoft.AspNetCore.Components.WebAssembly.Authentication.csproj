@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <Sdk Name="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
+  <Import Project="Sdk.props" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -97,5 +97,7 @@
   <Target Name="CheckForSourceBuild" Condition=" '$(DotNetBuildFromSource)' == 'true'">
     <Error Text="The Yarn.Msbuild SDK is currently excluded from SourceBuild. If you are enabling this project for SourceBuild, remove the condition on the Yarn.Msbuild SDK above." />
   </Target>
+
+  <Import Project="Sdk.targets" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
 
 </Project>
