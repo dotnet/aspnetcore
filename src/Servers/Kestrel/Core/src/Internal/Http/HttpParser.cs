@@ -55,7 +55,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// </summary>
     public bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
     {
-        // Skip any leading \r or \n on the request line. This is not technically allowed, but
+        // Skip any leading \r or \n on the request line. This is not technically allowed,
         // but apparently there are enough clients relying on this that it's worth allowing.
         // Peek first as a minor performance optimization; it's a quick inlined check.
         if (reader.TryPeek(out byte b) && (b == ByteCR || b == ByteLF))
