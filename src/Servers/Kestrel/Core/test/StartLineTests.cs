@@ -6,6 +6,7 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -516,14 +517,42 @@ public class StartLineTests : IDisposable
         DifferentFormsWorkTogether();
     }
 
+    public static IEnumerable<object[]> GetCrLfAndMethodCombinations()
+    {
+        // HTTP methods to test
+        var methods = new string[] {
+            HttpMethods.Connect,
+            HttpMethods.Delete,
+            HttpMethods.Get,
+            HttpMethods.Head,
+            HttpMethods.Options,
+            HttpMethods.Patch,
+            HttpMethods.Post,
+            HttpMethods.Put,
+            HttpMethods.Trace
+        };
+
+        // Prefixes to test
+        var crLfPrefixes = new string[] {
+            "\r",
+            "\n",
+            "\r\r\r\r\r",
+            "\r\n",
+            "\n\r"
+        };
+
+        foreach (var method in methods)
+        {
+            foreach (var prefix in crLfPrefixes)
+            {
+                yield return new object[] { prefix, method };
+            }
+        }
+    }
+
     [Theory]
-    [InlineData("\r")]
-    [InlineData("\n")]
-    [InlineData("\r\r\r\r\r")]
-    [InlineData("\r\n")]
-    [InlineData("\n\r")]
-    [InlineData("\r\n\n")]
-    public void LeadingCrLfAreAllowed(string startOfRequestLine)
+    [MemberData(nameof(GetCrLfAndMethodCombinations))]
+    public void LeadingCrLfAreAllowed(string startOfRequestLine, string httpMethod)
     {
         var rawTarget = "http://localhost/path1?q=123&w=xyzw";
         Http1Connection.Reset();
@@ -532,7 +561,7 @@ public class StartLineTests : IDisposable
         Assert.Null(Http1Connection.Path);
         Assert.Null(Http1Connection.QueryString);
 
-        var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"{startOfRequestLine}CONNECT {rawTarget} HTTP/1.1\r\n"));
+        var ros = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"{startOfRequestLine}{httpMethod} {rawTarget} HTTP/1.1\r\n"));
         var reader = new SequenceReader<byte>(ros);
         Assert.True(Parser.ParseRequestLine(ParsingHandler, ref reader));
     }
