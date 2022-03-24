@@ -850,7 +850,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     public static object[][] AddFiltersByClassData =
-{
+    {
         new object[] { (Action<RouteHandlerBuilder>)((RouteHandlerBuilder builder) => builder.AddFilter(new IncrementArgFilter())) },
         new object[] { (Action<RouteHandlerBuilder>)((RouteHandlerBuilder builder) => builder.AddFilter<IncrementArgFilter>()) }
     };
@@ -972,6 +972,49 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("loggerErrorIsEnabled: True", body);
     }
 
+    public static object[][] RouteHandlerWithDifferentMethodInfo
+    {
+        get
+        {
+            string PrintFromString(string id) => $"ID: {id}";
+            string PrintFromInt(int id) => $"ID: {id}";
+
+            return new object[][] {
+                new object[] { (Func<string, string>)PrintFromString, "ID: 2"},
+                new object[] { (Func<int, string>)PrintFromInt, "ID: 3" }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(RouteHandlerWithDifferentMethodInfo))]
+    public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatAccessesRouteHandlerContext(Delegate handler, string response)
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
+
+        var routeHandlerBuilder = builder.Map("/{id}", handler);
+        routeHandlerBuilder.AddFilter<IncrementArgFilter>();
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.RouteValues["id"] = "2";
+        var outStream = new MemoryStream();
+        httpContext.Response.Body = outStream;
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        // Assert;
+        var httpResponse = httpContext.Response;
+        httpResponse.Body.Seek(0, SeekOrigin.Begin);
+        var streamReader = new StreamReader(httpResponse.Body);
+        var body = streamReader.ReadToEndAsync().Result;
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal(response, body);
+    }
+
     class ServiceAccessingRouteHandlerFilter : IRouteHandlerFilter
     {
         private ILogger _logger;
@@ -981,7 +1024,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             _logger = loggerFactory.CreateLogger<ServiceAccessingRouteHandlerFilter>();
         }
 
-        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next, RouteHandlerContext routeHandlerContext)
         {
             context.HttpContext.Items["loggerErrorIsEnabled"] = _logger.IsEnabled(LogLevel.Error);
             return await next(context);
@@ -990,9 +1033,14 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
     class IncrementArgFilter : IRouteHandlerFilter
     {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next, RouteHandlerContext routeHandlerContext)
         {
-            context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+            if (routeHandlerContext.MethodInfo.GetParameters().Length == 1
+                && routeHandlerContext.MethodInfo.GetParameters()[0].ParameterType == typeof(int))
+            {
+                context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+            }
+            
             return await next(context);
         }
     }
