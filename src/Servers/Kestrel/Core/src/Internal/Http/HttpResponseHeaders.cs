@@ -161,13 +161,13 @@ internal sealed partial class HttpResponseHeaders : HttpHeaders
                 : default;
         }
 
-        public KeyValuePair<string, StringValues> Current => _current;
+        public readonly KeyValuePair<string, StringValues> Current => _current;
 
-        internal KnownHeaderType CurrentKnownType => _currentKnownType;
+        internal readonly KnownHeaderType CurrentKnownType => _currentKnownType;
 
-        object IEnumerator.Current => _current;
+        readonly object IEnumerator.Current => _current;
 
-        public void Dispose()
+        public readonly void Dispose()
         {
         }
 
