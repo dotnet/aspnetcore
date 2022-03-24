@@ -186,7 +186,10 @@ internal class Http2FrameWriter
                     // a window update to resume the connection.
                     if (remainingConnection == 0)
                     {
-                        _waitingForMoreWindow.Enqueue(producer);
+                        lock (_windowUpdateLock)
+                        {
+                            _waitingForMoreWindow.Enqueue(producer);
+                        }
                     }
                     else if (remainingStream > 0)
                     {
@@ -769,6 +772,7 @@ internal class Http2FrameWriter
     {
         lock (_windowUpdateLock)
         {
+            // REVIEW: What should this be doing?
             while (_waitingForMoreWindow.TryDequeue(out var producer))
             {
                 Schedule(producer);
