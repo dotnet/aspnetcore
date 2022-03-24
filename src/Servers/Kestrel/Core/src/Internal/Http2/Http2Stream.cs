@@ -70,7 +70,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         {
             _inputFlowControl.Reset();
             _outputFlowControl.Reset(context.ClientPeerSettings.InitialWindowSize);
-            _http2Output.StreamReset();
+            _http2Output.StreamReset(context.ClientPeerSettings.InitialWindowSize);
             RequestBodyPipe.Reset();
         }
     }

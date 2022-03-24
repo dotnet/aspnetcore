@@ -74,7 +74,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         // The minimum output data rate is enforced at the connection level by Http2FrameWriter.
         _flusher = new TimingPipeFlusher(timeoutControl: null, _log);
         _flusher.Initialize(_pipeWriter);
-        _window = flowControl.Available;
+        _window = context.ClientPeerSettings.InitialWindowSize;
     }
 
     public Http2Stream Stream => _stream;
@@ -141,15 +141,15 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     {
         lock (_dataWriterLock)
         {
-            var wasEmpty = _window == 0;
+            var wasDepleted = _window <= 0;
 
             _window += bytes;
 
-            return wasEmpty && _unconsumedBytes > 0;
+            return wasDepleted && _window > 0 && _unconsumedBytes > 0;
         }
     }
 
-    public void StreamReset()
+    public void StreamReset(uint initialWindowSize)
     {
         // Response should have been completed.
         Debug.Assert(_responseCompleteTaskSource.GetStatus(_responseCompleteTaskSource.Version) == ValueTaskSourceStatus.Succeeded);
@@ -164,7 +164,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         _pipeWriter.Reset();
         _responseCompleteTaskSource.Reset();
 
-        _window = _flowControl.Available;
+        _window = initialWindowSize;
         _unconsumedBytes = 0;
         _enqueuedForObservation = false;
     }
@@ -570,9 +570,18 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         }
     }
 
-    // REVIEW: When does this fail? When the connection is aborted?
     public bool TryUpdateStreamWindow(int bytes)
     {
+        lock (_dataWriterLock)
+        {
+            var maxUpdate = Http2PeerSettings.MaxWindowSize - _window;
+
+            if (bytes > maxUpdate)
+            {
+                return false;
+            }
+        }
+
         if (UpdateWindow(bytes))
         {
             _frameWriter.Schedule(this);

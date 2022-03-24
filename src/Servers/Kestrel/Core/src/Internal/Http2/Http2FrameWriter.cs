@@ -49,7 +49,7 @@ internal class Http2FrameWriter
 
     private readonly object _windowUpdateLock = new();
     private long _window;
-    private ManualResetValueTaskSource<object?>? _waitForMoreWindow;
+    private readonly Queue<Http2OutputProducer> _waitingForMoreWindow = new();
 
     public Http2FrameWriter(
         PipeWriter outputPipeWriter,
@@ -180,16 +180,19 @@ internal class Http2FrameWriter
                 }
                 // We're not going to schedule this again if there's no remaining window.
                 // When the window update is sent, the producer will be re-queued if needed.
-                else if (hasModeData && remainingStream > 0)
+                else if (hasModeData)
                 {
-                    // Move this stream to the back of the queue so we're being fair to the other streams that have data
-                    Schedule(producer);
-                }
-
-                if (remainingConnection == 0)
-                {
-                    // This shouldn't be null here
-                    await new ValueTask(_waitForMoreWindow!, _waitForMoreWindow!.Version);
+                    // We have no more connection window, put this producer in a queue waiting for it to
+                    // a window update to resume the connection.
+                    if (remainingConnection == 0)
+                    {
+                        _waitingForMoreWindow.Enqueue(producer);
+                    }
+                    else if (remainingStream > 0)
+                    {
+                        // Move this stream to the back of the queue so we're being fair to the other streams that have data
+                        Schedule(producer);
+                    }
                 }
             }
             catch (Exception ex)
@@ -496,12 +499,23 @@ internal class Http2FrameWriter
 
         lock (_writeLock)
         {
+            var shouldFlush = false;
+
             if (_completed)
             {
                 return flushResult;
             }
 
-            WriteDataUnsynchronized(streamId, data, dataLength, endStream);
+            if (dataLength > 0 || endStream)
+            {
+                WriteDataUnsynchronized(streamId, data, dataLength, endStream);
+
+                shouldFlush = true;
+            }
+            else if (firstWrite)
+            {
+                shouldFlush = true;
+            }
 
             if (_minResponseDataRate != null)
             {
@@ -510,9 +524,12 @@ internal class Http2FrameWriter
                 _timeoutControl.BytesWrittenToBuffer(_minResponseDataRate, _unflushedBytes);
             }
 
-            _unflushedBytes = 0;
+            if (shouldFlush)
+            {
+                _unflushedBytes = 0;
 
-            writeTask = _flusher.FlushAsync();
+                writeTask = _flusher.FlushAsync();
+            }
         }
 
         // REVIEW: This will include flow control waiting as of right now. We need to handle that elsewhere.
@@ -744,43 +761,39 @@ internal class Http2FrameWriter
             var actual = Math.Min(bytes, _window);
             var remaining = _window -= actual;
 
-            if (remaining == 0)
-            {
-                // Reset the awaitable if we've drained the connection window, it means we can't write any more just yet
-                _waitForMoreWindow ??= new();
-                _waitForMoreWindow.Reset();
-            }
-
             return (actual, remaining);
         }
     }
 
     private void AbortFlowControl()
     {
-        ManualResetValueTaskSource<object?>? tcs = null;
-
         lock (_windowUpdateLock)
         {
-            tcs = _waitForMoreWindow;
+            while (_waitingForMoreWindow.TryDequeue(out var producer))
+            {
+                Schedule(producer);
+            }
         }
-
-        // Resume the connection copy loop
-        tcs?.TrySetResult(null);
     }
 
     public bool TryUpdateConnectionWindow(int bytes)
     {
-        ManualResetValueTaskSource<object?>? tcs = null;
-
         lock (_windowUpdateLock)
         {
-            tcs = _waitForMoreWindow;
+            var maxUpdate = Http2PeerSettings.MaxWindowSize - _window;
+
+            if (bytes > maxUpdate)
+            {
+                return false;
+            }
 
             _window += bytes;
-        }
 
-        // Resume the connection copy loop
-        tcs?.TrySetResult(null);
+            while (_waitingForMoreWindow.TryDequeue(out var producer))
+            {
+                Schedule(producer);
+            }
+        }
         return true;
     }
 }
