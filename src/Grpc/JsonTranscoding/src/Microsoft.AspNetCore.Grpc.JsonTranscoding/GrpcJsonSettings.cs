@@ -3,8 +3,9 @@
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding;
 
-// TODO - improve names. boolean property values should aim to be false
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+/// <summary>
+/// Provides settings for serializing JSON.
+/// </summary>
 public sealed class GrpcJsonSettings
 {
     /// <summary>
@@ -15,10 +16,21 @@ public sealed class GrpcJsonSettings
     /// </summary>
     public bool IgnoreDefaultValues { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value that indicates whether <see cref="Enum"/> values are written as integers instead of strings.
+    /// Default value is false.
+    /// </summary>
     public bool WriteEnumsAsIntegers { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value that indicates whether <see cref="Int64"/> and <see cref="UInt64"/> values are written as strings instead of numbers.
+    /// Default value is false.
+    /// </summary>
     public bool WriteInt64sAsStrings { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value that indicates whether JSON should use pretty printing.
+    /// Default value is false.
+    /// </summary>
     public bool WriteIndented { get; set; }
 }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
