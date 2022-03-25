@@ -23,12 +23,12 @@ internal sealed class UpgradeFeatureLoggingDecorator : IHttpUpgradeFeature
 
     public async Task<Stream> UpgradeAsync()
     {
-        var upgradeTask = await _innerUpgradeFeature.UpgradeAsync();
+        var upgradeStream = await _innerUpgradeFeature.UpgradeAsync();
 
         _isUpgraded = true;
 
         _loggingDelegate();
 
-        return upgradeTask;
+        return upgradeStream;
     }
 }
