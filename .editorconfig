@@ -263,7 +263,7 @@ dotnet_diagnostic.IDE0161.severity = warning
 dotnet_style_allow_multiple_blank_lines_experimental = false
 dotnet_diagnostic.IDE2000.severity = warning
 
-[{eng/tools/**.cs,**/{test,testassets,samples,Samples,perf}/**.cs}]
+[{eng/tools/**.cs,**/{test,testassets,samples,Samples,perf,scripts}/**.cs}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = suggestion
 # CA1507: Use nameof to express symbol names
@@ -302,6 +302,8 @@ dotnet_diagnostic.CA1845.severity = suggestion
 dotnet_diagnostic.CA1846.severity = suggestion
 # CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
 dotnet_diagnostic.CA1847.severity = suggestion
+# CA2007: Consider calling ConfigureAwait on the awaited task
+dotnet_diagnostic.CA2007.severity = suggestion
 # CA2008: Do not create tasks without passing a TaskScheduler
 dotnet_diagnostic.CA2008.severity = suggestion
 # CA2012: Use ValueTask correctly
