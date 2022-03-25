@@ -200,6 +200,34 @@ public class JsonConverterWriteTests
         AssertWrittenJson(v);
     }
 
+    [Theory]
+    [InlineData(true, @"""1""")]
+    [InlineData(false, @"1")]
+    public void NullableWrapper_Root_Int64_WriteAsStrings(bool writeInt64sAsStrings, string expectedJson)
+    {
+        var v = new Int64Value { Value = 1 };
+
+        var settings = new GrpcJsonSettings { WriteInt64sAsStrings = writeInt64sAsStrings };
+        var jsonSerializerOptions = CreateSerializerOptions(settings, TypeRegistry.Empty);
+        var json = JsonSerializer.Serialize(v, jsonSerializerOptions);
+
+        Assert.Equal(expectedJson, json);
+    }
+
+    [Theory]
+    [InlineData(true, @"""2""")]
+    [InlineData(false, @"2")]
+    public void NullableWrapper_Root_UInt64_WriteAsStrings(bool writeInt64sAsStrings, string expectedJson)
+    {
+        var v = new UInt64Value { Value = 2 };
+
+        var settings = new GrpcJsonSettings { WriteInt64sAsStrings = writeInt64sAsStrings };
+        var jsonSerializerOptions = CreateSerializerOptions(settings, TypeRegistry.Empty);
+        var json = JsonSerializer.Serialize(v, jsonSerializerOptions);
+
+        Assert.Equal(expectedJson, json);
+    }
+
     [Fact]
     public void Any()
     {
@@ -433,7 +461,6 @@ public class JsonConverterWriteTests
             Timestamp.Descriptor.File);
 
         settings ??= new GrpcJsonSettings { WriteInt64sAsStrings = true };
-        var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery);
 
         var formatterSettings = new JsonFormatter.Settings(
             formatDefaultValues: !settings.IgnoreDefaultValues,
@@ -446,6 +473,7 @@ public class JsonConverterWriteTests
         _output.WriteLine("Old:");
         _output.WriteLine(jsonOld);
 
+        var jsonSerializerOptions = CreateSerializerOptions(settings, typeRegistery);
         var jsonNew = JsonSerializer.Serialize(value, jsonSerializerOptions);
 
         _output.WriteLine("New:");

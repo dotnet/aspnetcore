@@ -8,8 +8,12 @@ using Type = System.Type;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
-internal sealed class UInt64Converter : JsonConverter<ulong>
+internal sealed class UInt64Converter : SettingsConverterBase<ulong>
 {
+    public UInt64Converter(JsonContext context) : base(context)
+    {
+    }
+
     public override ulong Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.String)
@@ -22,6 +26,13 @@ internal sealed class UInt64Converter : JsonConverter<ulong>
 
     public override void Write(Utf8JsonWriter writer, ulong value, JsonSerializerOptions options)
     {
-        writer.WriteStringValue(value.ToString("d", CultureInfo.InvariantCulture));
+        if (!Context.Settings.WriteInt64sAsStrings)
+        {
+            writer.WriteNumberValue(value);
+        }
+        else
+        {
+            writer.WriteStringValue(value.ToString("d", CultureInfo.InvariantCulture));
+        }
     }
 }

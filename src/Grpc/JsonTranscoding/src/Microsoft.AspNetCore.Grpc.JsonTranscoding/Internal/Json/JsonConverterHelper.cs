@@ -33,7 +33,7 @@ internal static class JsonConverterHelper
         options.Converters.Add(new NullValueConverter());
         options.Converters.Add(new ByteStringConverter());
         options.Converters.Add(new Int64Converter(context));
-        options.Converters.Add(new UInt64Converter());
+        options.Converters.Add(new UInt64Converter(context));
         options.Converters.Add(new BoolConverter());
         options.Converters.Add(new JsonConverterFactoryForEnum(context));
         options.Converters.Add(new JsonConverterFactoryForWrappers(context));
