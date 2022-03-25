@@ -972,11 +972,49 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         await middlewareTask;
     }
 
-    [Fact]
-    public async Task UpgradeToWebSocketLogsWrittenOnlyOnce()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LogsWrittenOutsideUpgradeWrapperIfUpgradeDoesNotOccur(bool isUpgradableRequest)
     {
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders;
+
+        var httpContext = new DefaultHttpContext();
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.Setup(m => m.IsUpgradableRequest).Returns(isUpgradableRequest);
+        httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
+
+        var middleware = new HttpLoggingMiddleware(
+            async c =>
+            {
+                c.Response.StatusCode = 200;
+                c.Response.Headers[HeaderNames.TransferEncoding] = "test";
+                c.Response.ContentType = "text/plain";
+                await c.Response.StartAsync();
+            },
+            options,
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+        var middlewareTask = middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Content-Type: text/plain"));
+        Assert.Null(
+            Record.Exception(() => upgradeFeatureMock.Verify(m => m.UpgradeAsync(), Times.Never)));
+
+        await middlewareTask;
+    }
+
+    [Theory]
+    [InlineData(HttpLoggingFields.ResponseStatusCode)]
+    [InlineData(HttpLoggingFields.ResponseHeaders)]
+    public async Task UpgradeToWebSocketLogsWrittenOnlyOnce(HttpLoggingFields loggingFields)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = loggingFields;
 
         var httpContext = new DefaultHttpContext();
 
@@ -999,7 +1037,6 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             async c =>
             {
                 await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
-                await c.Response.CompleteAsync();
             },
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
@@ -1009,11 +1046,13 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Equal(1, writeCount);
     }
 
-    [Fact]
-    public async Task OriginalUpgradeFeatureIsRestoredBeforeMiddlewareCompletes()
+    [Theory]
+    [InlineData(HttpLoggingFields.ResponseStatusCode)]
+    [InlineData(HttpLoggingFields.ResponseHeaders)]
+    public async Task OriginalUpgradeFeatureIsRestoredBeforeMiddlewareCompletes(HttpLoggingFields loggingFields)
     {
         var options = CreateOptionsAccessor();
-        options.CurrentValue.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders;
+        options.CurrentValue.LoggingFields = loggingFields;
 
         var letBodyFinish = new TaskCompletionSource();
 

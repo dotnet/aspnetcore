@@ -176,7 +176,7 @@ internal sealed class HttpLoggingMiddleware
 
             if (ResponseHeadersNotWrittenYet(responseBufferingStream, loggableUpgradeFeature))
             {
-                // No body and not an upgradable request, write headers here.
+                // No body, not an upgradable request or request not upgraded, write headers here. 
                 LogResponseHeaders(response, options, _logger);
             }
 
@@ -214,8 +214,17 @@ internal sealed class HttpLoggingMiddleware
 
     private static bool ResponseHeadersNotWrittenYet(ResponseBufferingStream? responseBufferingStream, UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
     {
-        return (responseBufferingStream == null || responseBufferingStream.FirstWrite == false) &&
-               (upgradeFeatureLogging == null || !upgradeFeatureLogging.IsUpgradableRequest);
+        return BodyNotWrittenYet(responseBufferingStream) && NotUpgradeRequestOrNotUpgraded(upgradeFeatureLogging);
+    }
+
+    private static bool BodyNotWrittenYet(ResponseBufferingStream? responseBufferingStream)
+    {
+        return responseBufferingStream == null || responseBufferingStream.FirstWrite == false;
+    }
+
+    private static bool NotUpgradeRequestOrNotUpgraded(UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
+    {
+        return upgradeFeatureLogging == null || !upgradeFeatureLogging.IsUpgradableRequest || !upgradeFeatureLogging.IsUpgraded;
     }
 
     private static void AddToList(List<KeyValuePair<string, object?>> list, string key, string? value)
