@@ -138,7 +138,7 @@ internal sealed class HttpLoggingMiddleware
         {
             var response = context.Response;
 
-            if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponsePropertiesAndHeaders))
+            if (options.LoggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode) || options.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
             {
                 originalUpgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
 
