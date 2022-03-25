@@ -36,11 +36,15 @@ public class MvcTemplateTest : LoggedTest
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
-    private async Task MvcTemplateCore(string languageOverride)
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task MvcTemplate_ProgramMainNoAuthCSharp() => await MvcTemplateCore(languageOverride: null, new [] { "--use-program-main" });
+
+    private async Task MvcTemplateCore(string languageOverride, string[] args = null)
     {
         var project = await ProjectFactory.GetOrCreateProject("mvcnoauth" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
 
-        var createResult = await project.RunDotNetNewAsync("mvc", language: languageOverride);
+        var createResult = await project.RunDotNetNewAsync("mvc", language: languageOverride, args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
         var projectExtension = languageOverride == "F#" ? "fsproj" : "csproj";

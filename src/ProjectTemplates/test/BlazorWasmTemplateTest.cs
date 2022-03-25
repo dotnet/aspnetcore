@@ -38,6 +38,9 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     public Task BlazorWasmHostedTemplateCanCreateBuildPublish() => CreateBuildPublishAsync("blazorhosted", args: new[] { "--hosted" }, serverProject: true);
 
     [Fact]
+    public Task BlazorWasmHostedTemplateWithProgamMainCanCreateBuildPublish() => CreateBuildPublishAsync("blazorhosted", args: new[] { "--use-program-main", "--hosted" }, serverProject: true);
+
+    [Fact]
     public Task BlazorWasmStandalonePwaTemplateCanCreateBuildPublish() => CreateBuildPublishAsync("blazorstandalonepwa", args: new[] { "--pwa" });
 
     [Fact]

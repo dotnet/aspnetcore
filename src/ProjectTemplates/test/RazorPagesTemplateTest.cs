@@ -34,13 +34,16 @@ public class RazorPagesTemplateTest : LoggedTest
         }
     }
 
-    [ConditionalFact]
+    [ConditionalTheory]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task RazorPagesTemplate_NoAuth()
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RazorPagesTemplate_NoAuth(bool useProgramMain)
     {
         var project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
 
-        var createResult = await project.RunDotNetNewAsync("razor");
+        var args = useProgramMain ? new [] { "--use-program-main" } : null;
+        var createResult = await project.RunDotNetNewAsync("razor", args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("razor", project, createResult));
 
         var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");

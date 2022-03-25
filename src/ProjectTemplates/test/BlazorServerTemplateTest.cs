@@ -26,6 +26,9 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     [Fact]
     public Task BlazorServerTemplateWorks_NoAuth() => CreateBuildPublishAsync("blazorservernoauth");
 
+    [Fact]
+    public Task BlazorServerTemplateWorks_ProgamMainNoAuth() => CreateBuildPublishAsync("blazorservernoauth", args: new [] { "--use-program-main" });
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
