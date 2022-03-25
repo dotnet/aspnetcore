@@ -16,7 +16,7 @@ public class W3CLoggerTests
     public async Task WritesDateTime()
     {
         var path = Path.GetTempFileName() + "_";
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var options = new W3CLoggerOptions()
         {
             LoggingFields = W3CLoggingFields.Date | W3CLoggingFields.Time,
