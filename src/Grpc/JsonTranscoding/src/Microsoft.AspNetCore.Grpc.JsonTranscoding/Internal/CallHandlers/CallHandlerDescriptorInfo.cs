@@ -31,7 +31,7 @@ internal sealed class CallHandlerDescriptorInfo
 
     public FieldDescriptor? ResponseBodyDescriptor { get; }
     public MessageDescriptor? BodyDescriptor { get; }
-    [MemberNotNullWhen(true, nameof(BodyFieldDescriptors))]
+    [MemberNotNullWhen(true, nameof(BodyFieldDescriptors), nameof(BodyFieldDescriptorsPath))]
     public bool BodyDescriptorRepeated { get; }
     public List<FieldDescriptor>? BodyFieldDescriptors { get; }
     public Dictionary<string, List<FieldDescriptor>> RouteParameterDescriptors { get; }
