@@ -191,7 +191,8 @@ internal class Http2FrameWriter
                     // a window update to resume the connection.
                     if (remainingConnection == 0)
                     {
-                        producer.MarkWaitingForWindowUpdates();
+                        // Mark the output as waiting for a window upate to resume writing (there's still data)
+                        producer.MarkWaitingForWindowUpdates(true);
 
                         lock (_windowUpdateLock)
                         {
@@ -205,7 +206,8 @@ internal class Http2FrameWriter
                     }
                     else
                     {
-                        producer.MarkWaitingForWindowUpdates();
+                        // Mark the output as waiting for a window upate to resume writing (there's still data)
+                        producer.MarkWaitingForWindowUpdates(true);
                     }
                 }
             }
@@ -788,7 +790,8 @@ internal class Http2FrameWriter
             {
                 if (!producer.StreamCompleted)
                 {
-                    Schedule(producer);
+                    // Stop the output
+                    producer.Stop();
                 }
             }
         }
@@ -811,6 +814,8 @@ internal class Http2FrameWriter
             {
                 if (!producer.StreamCompleted)
                 {
+                    // We're no longer waiting for the update
+                    producer.MarkWaitingForWindowUpdates(false);
                     Schedule(producer);
                 }
             }

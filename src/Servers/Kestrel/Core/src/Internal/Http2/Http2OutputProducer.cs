@@ -273,12 +273,12 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         }
     }
 
-    public void MarkWaitingForWindowUpdates()
+    public void MarkWaitingForWindowUpdates(bool waitingForUpdates)
     {
         lock (_dataWriterLock)
         {
-            _waitingForWindowUpdates = true;
-        }
+            _waitingForWindowUpdates = waitingForUpdates;
+         }
     }
 
     private void Schedule()
