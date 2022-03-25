@@ -45,6 +45,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
     // For changes scheduling changes that don't affect the number of bytes written to the pipe, we need another state
     bool _enqueuedForObservation;
+    bool _waitingForWindowUpdates;
 
     /// <summary>The core logic for the IValueTaskSource implementation.</summary>
     private ManualResetValueTaskSourceCore<FlushResult> _responseCompleteTaskSource = new ManualResetValueTaskSourceCore<FlushResult> { RunContinuationsAsynchronously = true }; // mutable struct, do not make this readonly
@@ -84,6 +85,17 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
     public bool StreamEnded => _streamEnded;
 
+    public bool StreamCompleted
+    {
+        get
+        {
+            lock (_dataWriterLock)
+            {
+                return _streamCompleted;
+            }
+        }
+    }
+
     // Added bytes to the queue.
     // Returns a bool that represents whether we should schedule this producer to write
     // the enqueued bytes
@@ -105,7 +117,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         {
             var wasEnqueuedForObservation = _enqueuedForObservation;
             _enqueuedForObservation = true;
-            return _unconsumedBytes == 0 && !wasEnqueuedForObservation;
+            return (_unconsumedBytes == 0 || _waitingForWindowUpdates) && !wasEnqueuedForObservation;
         }
     }
 
@@ -189,7 +201,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
                 if (enqueue)
                 {
-                    _frameWriter.Schedule(this);
+                    Schedule();
                 }
             }
 
@@ -245,7 +257,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
                 if (enqueue)
                 {
-                    _frameWriter.Schedule(this);
+                    Schedule();
                 }
 
                 return task;
@@ -257,6 +269,25 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
                 return _frameWriter.FlushAsync(this, cancellationToken);
             }
         }
+    }
+
+    public void MarkWaitingForWindowUpdates()
+    {
+        lock (_dataWriterLock)
+        {
+            _waitingForWindowUpdates = true;
+        }
+    }
+
+    private void Schedule()
+    {
+        lock (_dataWriterLock)
+        {
+            // Lock here
+            _waitingForWindowUpdates = false;
+        }
+
+        _frameWriter.Schedule(this);
     }
 
     public ValueTask<FlushResult> Write100ContinueAsync()
@@ -336,7 +367,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             if (enqueue)
             {
-                _frameWriter.Schedule(this);
+                Schedule();
             }
 
             return task;
@@ -360,7 +391,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             if (enqueue)
             {
-                _frameWriter.Schedule(this);
+                Schedule();
             }
 
             return GetWaiterTask();
@@ -465,7 +496,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             if (enqueue)
             {
-                _frameWriter.Schedule(this);
+                Schedule();
             }
 
             return task;
@@ -510,7 +541,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             if (enqueue)
             {
                 // We need to make sure the cancellation is observed by the code
-                _frameWriter.Schedule(this);
+                Schedule();
             }
         }
     }
@@ -582,7 +613,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
         if (UpdateWindow(bytes))
         {
-            _frameWriter.Schedule(this);
+            Schedule();
         }
 
         return true;

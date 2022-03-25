@@ -79,7 +79,12 @@ internal class Http2FrameWriter
         _scheduleInline = serviceContext.Scheduler == PipeScheduler.Inline;
 
         _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
-        _channel = Channel.CreateBounded<Http2OutputProducer>(serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection);
+
+        _channel = Channel.CreateBounded<Http2OutputProducer>(new BoundedChannelOptions(serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection)
+        {
+            AllowSynchronousContinuations = _scheduleInline
+        });
+
         _window = connectionOutputFlowControl.Available;
 
         _ = Task.Run(WriteToOutputPipe);
@@ -186,6 +191,8 @@ internal class Http2FrameWriter
                     // a window update to resume the connection.
                     if (remainingConnection == 0)
                     {
+                        producer.MarkWaitingForWindowUpdates();
+
                         lock (_windowUpdateLock)
                         {
                             _waitingForMoreWindow.Enqueue(producer);
@@ -195,6 +202,10 @@ internal class Http2FrameWriter
                     {
                         // Move this stream to the back of the queue so we're being fair to the other streams that have data
                         Schedule(producer);
+                    }
+                    else
+                    {
+                        producer.MarkWaitingForWindowUpdates();
                     }
                 }
             }
@@ -775,7 +786,10 @@ internal class Http2FrameWriter
             // REVIEW: What should this be doing?
             while (_waitingForMoreWindow.TryDequeue(out var producer))
             {
-                Schedule(producer);
+                if (!producer.StreamCompleted)
+                {
+                    Schedule(producer);
+                }
             }
         }
     }
@@ -795,7 +809,10 @@ internal class Http2FrameWriter
 
             while (_waitingForMoreWindow.TryDequeue(out var producer))
             {
-                Schedule(producer);
+                if (!producer.StreamCompleted)
+                {
+                    Schedule(producer);
+                }
             }
         }
         return true;
