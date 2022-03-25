@@ -3804,7 +3804,11 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
 
+        // Force input loop to check connection state
+        TriggerTick();
+
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+
         await _closedStateReached.Task.DefaultTimeout();
     }
 
@@ -4168,7 +4172,7 @@ public class Http2ConnectionTests : Http2TestBase
                 for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
                 {
                     await expectingDataSem.WaitAsync();
-                    Assert.True(context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length).IsCompleted);
+                    await context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length);
                 }
 
                 await expectingDataSem.WaitAsync();
@@ -4722,7 +4726,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         // Kick the input loop so it sees that we have no more active streams. This is a bug in the graceful shutdown logic
         // but since we wake up the loop pretty often it doesn't show up in practice
-        _pair.Transport.Input.CancelPendingRead();
+        TriggerTick();
 
         await _closedStateReached.Task.DefaultTimeout();
         VerifyGoAway(await ReceiveFrameAsync(), 1, Http2ErrorCode.NO_ERROR);
@@ -4772,7 +4776,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         // Kick the input loop so it sees that we have no more active streams. This is a bug in the graceful shutdown logic
         // but since we wake up the loop pretty often it doesn't show up in practice
-        _pair.Transport.Input.CancelPendingRead();
+        TriggerTick();
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
