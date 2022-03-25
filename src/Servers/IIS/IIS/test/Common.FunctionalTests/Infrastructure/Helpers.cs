@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
@@ -169,7 +170,18 @@ public static class Helpers
         deploymentResult.AssertWorkerProcessStop();
         if (deploymentResult.DeploymentParameters.ServerType == ServerType.IIS)
         {
-            verificationAction = verificationAction ?? (() => deploymentResult.AssertStarts());
+            verificationAction = verificationAction ?? (async () =>
+            {
+                // Very rarely the server will be shutting down still, so we will attempt a single retry
+                try
+                {
+                    await deploymentResult.AssertStarts();
+                }
+                catch (EqualException)
+                {
+                    await deploymentResult.AssertStarts();
+                }
+            });
             await verificationAction();
         }
     }
