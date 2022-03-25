@@ -16,17 +16,17 @@ public sealed class UnprocessableEntityObjectHttpResult : IResult
     /// Initializes a new instance of the <see cref="UnprocessableEntityObjectHttpResult"/> class with the values
     /// provided.
     /// </summary>
-    /// <param name="value">The value to format in the entity body.</param>
-    public UnprocessableEntityObjectHttpResult(object? value = null)
+    /// <param name="error">The value to format in the entity body.</param>
+    public UnprocessableEntityObjectHttpResult(object? error = null)
     {
-        Value = value;
+        Value = error;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
     /// <summary>
-    /// Gets an instance of <see cref="UnprocessableEntityObjectHttpResult"/> without a <see cref="Value"/>.
+    /// Gets an instance of <see cref="UnprocessableEntityObjectHttpResult"/> with a <c>null</c> <see cref="Value"/>.
     /// </summary>
-    public static UnprocessableEntityObjectHttpResult Empty { get; } = new();
+    public static UnprocessableEntityObjectHttpResult Instance { get; } = new();
 
     /// <inheritdoc />
     public object? Value { get; internal init; }

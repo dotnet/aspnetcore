@@ -22,7 +22,7 @@ public class ForbidResultTest
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new ForbidHttpResult("", null);
+        var result = new ForbidHttpResult(null, "");
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -46,7 +46,7 @@ public class ForbidResultTest
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new ForbidHttpResult(new[] { "Scheme1", "Scheme2" }, authProperties);
+        var result = new ForbidHttpResult(authProperties, new[] { "Scheme1", "Scheme2" });
         var routeData = new RouteData();
 
         // Act
@@ -95,10 +95,7 @@ public class ForbidResultTest
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new ForbidHttpResult(expected)
-        {
-            AuthenticationSchemes = new string[0]
-        };
+        var result = new ForbidHttpResult(expected, new string[0]);
         var routeData = new RouteData();
 
         // Act

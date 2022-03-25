@@ -18,16 +18,19 @@ public sealed partial class RedirectHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
-    /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-    /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
-    /// or permanent redirect (308) preserve the initial request method.</param>
+    public RedirectHttpResult(string url)
+        : this(url, acceptLocalUrlOnly: false)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
+    /// provided.
+    /// </summary>
+    /// <param name="url">The URL to redirect to.</param>
     /// <param name="acceptLocalUrlOnly">If set to true, only local URLs are accepted
     /// and will throw an exception when the supplied URL is not considered local.</param>
-    public RedirectHttpResult(
-        string url,
-        bool permanent = false,
-        bool preserveMethod = false,
-        bool acceptLocalUrlOnly = false)
+    public RedirectHttpResult(string url, bool acceptLocalUrlOnly)
     {
         if (url == null)
         {
@@ -40,8 +43,6 @@ public sealed partial class RedirectHttpResult : IResult
         }
 
         Url = url;
-        Permanent = permanent;
-        PreserveMethod = preserveMethod;
         AcceptLocalUrlOnly = acceptLocalUrlOnly;
     }
 
@@ -49,6 +50,11 @@ public sealed partial class RedirectHttpResult : IResult
     /// Gets the URL to redirect to.
     /// </summary>
     public string Url { get; }
+
+    /// <summary>
+    /// Gets an indication that only local URLs are accepted.
+    /// </summary>
+    public bool AcceptLocalUrlOnly { get; }
 
     /// <summary>
     /// Gets the value that specifies that the redirect should be permanent if true or temporary if false.
@@ -59,11 +65,6 @@ public sealed partial class RedirectHttpResult : IResult
     /// Gets an indication that the redirect preserves the initial request method.
     /// </summary>
     public bool PreserveMethod { get; init; }
-
-    /// <summary>
-    /// Gets an indication that only local URLs are accepted.
-    /// </summary>
-    public bool AcceptLocalUrlOnly { get; init; }
 
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)

@@ -16,7 +16,11 @@ public class LocalRedirectResultTest
         var url = "/test/url";
 
         // Act
-        var result = new RedirectHttpResult(url, false, false, true);
+        var result = new RedirectHttpResult(url, acceptLocalUrlOnly: true)
+        {
+            Permanent = false,
+            PreserveMethod = false
+        };
 
         // Assert
         Assert.False(result.PreserveMethod);
@@ -32,7 +36,11 @@ public class LocalRedirectResultTest
         var url = "/test/url";
 
         // Act
-        var result = new RedirectHttpResult(url, true, false, true);
+        var result = new RedirectHttpResult(url, acceptLocalUrlOnly: true)
+        {
+            Permanent = true,
+            PreserveMethod = false
+        };
 
         // Assert
         Assert.False(result.PreserveMethod);
@@ -48,7 +56,11 @@ public class LocalRedirectResultTest
         var url = "/test/url";
 
         // Act
-        var result = new RedirectHttpResult(url, true, true, true);
+        var result = new RedirectHttpResult(url, acceptLocalUrlOnly: true)
+        {
+            Permanent = true,
+            PreserveMethod = true
+        };
 
         // Assert
         Assert.True(result.PreserveMethod);

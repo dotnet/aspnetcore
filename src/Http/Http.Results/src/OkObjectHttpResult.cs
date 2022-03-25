@@ -24,9 +24,9 @@ public sealed class OkObjectHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets an instance of <see cref="OkObjectHttpResult"/> without a <see cref="Value"/>.
+    /// Gets an instance of <see cref="OkObjectHttpResult"/> with a <c>null</c> <see cref="Value"/>.
     /// </summary>
-    public static OkObjectHttpResult Empty { get; } = new();
+    public static OkObjectHttpResult Instance { get; } = new();
 
     /// <summary>
     /// Gets the object result.
@@ -41,7 +41,6 @@ public sealed class OkObjectHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.OkObjectResult");

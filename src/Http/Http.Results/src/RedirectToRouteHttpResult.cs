@@ -38,23 +38,10 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// </summary>
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for the route.</param>
-    /// <param name="permanent">If set to true, makes the redirect permanent (301).
-    /// Otherwise a temporary redirect is used (302).</param>
-    /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
-    /// or permanent redirect (308) preserve the initial request method.</param>
-    /// <param name="fragment">The fragment to add to the URL.</param>
-    public RedirectToRouteHttpResult(
-        string? routeName,
-        object? routeValues,
-        bool permanent = false,
-        bool preserveMethod = false,
-        string? fragment = null)
+    public RedirectToRouteHttpResult(string? routeName, object? routeValues)
     {
         RouteName = routeName;
         RouteValues = routeValues == null ? null : new RouteValueDictionary(routeValues);
-        PreserveMethod = preserveMethod;
-        Permanent = permanent;
-        Fragment = fragment;
     }
 
     /// <summary>

@@ -34,11 +34,6 @@ public sealed class AcceptedAtRouteHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets an instance of <see cref="AcceptedAtRouteHttpResult"/> without a <see cref="RouteName"/>, <see cref="RouteValues"/> and <see cref="Value"/>.
-    /// </summary>
-    public static AcceptedAtRouteHttpResult Empty { get; } = new();
-
-    /// <summary>
     /// Gets the object result.
     /// </summary>
     public object? Value { get; }

@@ -17,7 +17,7 @@ public sealed partial class ChallengeHttpResult : IResult
     /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the default sign out scheme.
     /// </summary>
     public ChallengeHttpResult()
-        : this(authenticationSchemes: Array.Empty<string>(), properties: null)
+        : this(properties: null, authenticationSchemes: Array.Empty<string>())
     {
     }
 
@@ -28,7 +28,7 @@ public sealed partial class ChallengeHttpResult : IResult
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
     public ChallengeHttpResult(AuthenticationProperties? properties)
-        : this(Array.Empty<string>(), properties)
+        : this(properties, authenticationSchemes: Array.Empty<string>())
     {
     }
 
@@ -39,8 +39,8 @@ public sealed partial class ChallengeHttpResult : IResult
     /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ChallengeHttpResult(string authenticationScheme, AuthenticationProperties? properties)
-        : this(new[] { authenticationScheme }, properties)
+    public ChallengeHttpResult(AuthenticationProperties? properties, string authenticationScheme)
+        : this(properties, authenticationSchemes: new[] { authenticationScheme })
     {
     }
 
@@ -51,7 +51,7 @@ public sealed partial class ChallengeHttpResult : IResult
     /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ChallengeHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
+    public ChallengeHttpResult(AuthenticationProperties? properties, IList<string> authenticationSchemes)
     {
         AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;
@@ -60,7 +60,7 @@ public sealed partial class ChallengeHttpResult : IResult
     /// <summary>
     /// Gets the authentication schemes that are challenged.
     /// </summary>
-    public IReadOnlyList<string> AuthenticationSchemes { get; init; }
+    public IReadOnlyList<string> AuthenticationSchemes { get; }
 
     /// <summary>
     /// Gets the <see cref="AuthenticationProperties"/> used to perform the sign-out operation.

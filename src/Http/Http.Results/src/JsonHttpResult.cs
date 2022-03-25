@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed class JsonHttpResult : IResult
 {
+    private int? _statusCode;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonHttpResult"/> class with the values.
     /// </summary>
@@ -31,7 +33,7 @@ public sealed class JsonHttpResult : IResult
         Value = value;
         JsonSerializerOptions = jsonSerializerOptions;
 
-        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
+        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, statusCode: null);
     }
 
     /// <summary>
@@ -42,7 +44,7 @@ public sealed class JsonHttpResult : IResult
     /// <summary>
     /// Gets or sets the serializer settings.
     /// </summary>
-    public JsonSerializerOptions? JsonSerializerOptions { get; init; }
+    public JsonSerializerOptions? JsonSerializerOptions { get; }
 
     /// <summary>
     /// Gets the value for the <c>Content-Type</c> header.
@@ -52,7 +54,15 @@ public sealed class JsonHttpResult : IResult
     /// <summary>
     /// Gets the HTTP status code.
     /// </summary>
-    public int? StatusCode { get; init; }
+    public int? StatusCode
+    {
+        get => _statusCode;
+        init
+        {
+            _statusCode = value;
+            HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, _statusCode);
+        }
+    }
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)

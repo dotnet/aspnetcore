@@ -59,6 +59,8 @@ public sealed class ProblemHttpResult : IResult
                 ProblemDetails.Extensions.Add(extension);
             }
         }
+
+        HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: null);
     }
 
     /// <summary>

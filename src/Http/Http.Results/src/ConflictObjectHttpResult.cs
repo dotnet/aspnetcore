@@ -24,9 +24,9 @@ public sealed class ConflictObjectHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets an instance of <see cref="ConflictObjectHttpResult"/> without a <see cref="Value"/>.
+    /// Gets an instance of <see cref="ConflictObjectHttpResult"/> with a <c>null</c> <see cref="Value"/>.
     /// </summary>
-    public static ConflictObjectHttpResult Empty { get; } = new();
+    public static ConflictObjectHttpResult Instance { get; } = new();
 
     /// <summary>
     /// Gets the object result.

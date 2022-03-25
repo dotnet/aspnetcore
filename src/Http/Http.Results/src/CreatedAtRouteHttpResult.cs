@@ -33,11 +33,6 @@ public sealed class CreatedAtRouteHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets an instance of <see cref="CreatedAtRouteHttpResult"/> without a <see cref="RouteName"/>, <see cref="RouteValues"/> and <see cref="Value"/>.
-    /// </summary>
-    public static CreatedAtRouteHttpResult Empty { get; } = new();
-
-    /// <summary>
     /// Gets the object result.
     /// </summary>
     public object? Value { get; }

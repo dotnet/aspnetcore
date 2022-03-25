@@ -14,7 +14,11 @@ public class RedirectResultTest : RedirectResultTestBase
         var url = "/test/url";
 
         // Act
-        var result = new RedirectHttpResult(url, permanent: true, preserveMethod: true);
+        var result = new RedirectHttpResult(url)
+        {
+            Permanent = true,
+            PreserveMethod = true,
+        };
 
         // Assert
         Assert.True(result.PreserveMethod);
@@ -24,7 +28,12 @@ public class RedirectResultTest : RedirectResultTestBase
 
     protected override Task ExecuteAsync(HttpContext httpContext, string contentPath)
     {
-        var redirectResult = new RedirectHttpResult(contentPath, false, false);
+        var redirectResult = new RedirectHttpResult(contentPath)
+        {
+            Permanent = false,
+            PreserveMethod = false,
+        };
+
         return redirectResult.ExecuteAsync(httpContext);
     }
 }

@@ -57,7 +57,7 @@ public sealed class FileStreamHttpResult : IResult
     /// <summary>
     /// Gets the Content-Type header for the response.
     /// </summary>
-    public string ContentType { get; init; }
+    public string ContentType { get; }
 
     /// <summary>
     /// Gets the value that enables range processing for the file result.
