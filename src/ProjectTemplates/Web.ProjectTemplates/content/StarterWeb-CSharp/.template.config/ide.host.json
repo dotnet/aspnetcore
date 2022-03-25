@@ -45,7 +45,16 @@
     }
   ],
   "symbolInfo": [
-    
+    {
+      "id": "UseProgramMain",
+      "name": {
+        "text": "Use top-level statements (uncheck to use an explicit Program class with a Main method)",
+        "overrideDefaultText": true
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "defaultValue": true
+    }
   ],
   "disableHttpsSymbol": "NoHttps"
 }
