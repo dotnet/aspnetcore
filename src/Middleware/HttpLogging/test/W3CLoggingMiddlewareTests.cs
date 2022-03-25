@@ -85,7 +85,7 @@ public class W3CLoggingMiddlewareTests
         httpContext.Request.Headers["Cookie"] = "Snickerdoodle";
         httpContext.Response.StatusCode = 200;
 
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         await middleware.Invoke(httpContext);
         await logger.Processor.WaitForWrites(4).DefaultTimeout();
 
@@ -119,7 +119,7 @@ public class W3CLoggingMiddlewareTests
 
         var httpContext = new DefaultHttpContext();
 
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         await middleware.Invoke(httpContext);
         await logger.Processor.WaitForWrites(4).DefaultTimeout();
 
