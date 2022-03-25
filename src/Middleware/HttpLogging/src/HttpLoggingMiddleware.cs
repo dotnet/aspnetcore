@@ -174,7 +174,7 @@ internal sealed class HttpLoggingMiddleware
                 requestBufferingStream.LogRequestBody();
             }
 
-            if (ResponseHeadersNotWrittenYet(responseBufferingStream, loggableUpgradeFeature))
+            if (ResponseHeadersNotYetWritten(responseBufferingStream, loggableUpgradeFeature))
             {
                 // No body, not an upgradable request or request not upgraded, write headers here. 
                 LogResponseHeaders(response, options, _logger);
@@ -212,17 +212,17 @@ internal sealed class HttpLoggingMiddleware
         }
     }
 
-    private static bool ResponseHeadersNotWrittenYet(ResponseBufferingStream? responseBufferingStream, UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
+    private static bool ResponseHeadersNotYetWritten(ResponseBufferingStream? responseBufferingStream, UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
     {
-        return BodyNotWrittenYet(responseBufferingStream) && NotUpgradeRequestOrNotUpgraded(upgradeFeatureLogging);
+        return BodyNotYetWritten(responseBufferingStream) && NotUpgradeableRequestOrRequestNotUpgraded(upgradeFeatureLogging);
     }
 
-    private static bool BodyNotWrittenYet(ResponseBufferingStream? responseBufferingStream)
+    private static bool BodyNotYetWritten(ResponseBufferingStream? responseBufferingStream)
     {
         return responseBufferingStream == null || responseBufferingStream.FirstWrite == false;
     }
 
-    private static bool NotUpgradeRequestOrNotUpgraded(UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
+    private static bool NotUpgradeableRequestOrRequestNotUpgraded(UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
     {
         return upgradeFeatureLogging == null || !upgradeFeatureLogging.IsUpgraded;
     }
