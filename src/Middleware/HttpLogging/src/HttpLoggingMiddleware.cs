@@ -224,7 +224,7 @@ internal sealed class HttpLoggingMiddleware
 
     private static bool NotUpgradeRequestOrNotUpgraded(UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
     {
-        return upgradeFeatureLogging == null || !upgradeFeatureLogging.IsUpgradableRequest || !upgradeFeatureLogging.IsUpgraded;
+        return upgradeFeatureLogging == null || !upgradeFeatureLogging.IsUpgraded;
     }
 
     private static void AddToList(List<KeyValuePair<string, object?>> list, string key, string? value)
