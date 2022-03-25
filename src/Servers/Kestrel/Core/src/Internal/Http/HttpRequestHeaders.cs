@@ -243,11 +243,11 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
                 : default;
         }
 
-        public KeyValuePair<string, StringValues> Current => _current;
+        public readonly KeyValuePair<string, StringValues> Current => _current;
 
-        object IEnumerator.Current => _current;
+        readonly object IEnumerator.Current => _current;
 
-        public void Dispose()
+        public readonly void Dispose()
         {
         }
 

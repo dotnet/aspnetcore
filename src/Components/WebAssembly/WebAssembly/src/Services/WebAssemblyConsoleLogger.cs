@@ -30,7 +30,7 @@ internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
         _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
     }
 
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
         return NoOpDisposable.Instance;
     }
