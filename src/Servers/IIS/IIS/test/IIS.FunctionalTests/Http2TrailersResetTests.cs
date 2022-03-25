@@ -503,7 +503,7 @@ public class Http2TrailerResetTests : FunctionalTestsBase
         var handler = new HttpClientHandler();
         handler.MaxResponseHeadersLength = 128;
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        var client = new HttpClient(handler);
+        var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(200) };
         return client;
     }
 
@@ -512,7 +512,7 @@ public class Http2TrailerResetTests : FunctionalTestsBase
         var handler = new HttpClientHandler();
         handler.MaxResponseHeadersLength = 128;
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        using var client = new HttpClient(handler);
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(200) };
         client.DefaultRequestVersion = http2 ? HttpVersion.Version20 : HttpVersion.Version11;
         return await client.GetAsync(uri);
     }
