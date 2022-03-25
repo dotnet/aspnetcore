@@ -205,6 +205,11 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
                     Schedule();
                 }
             }
+            else
+            {
+                // Make sure the writing side is completed.
+                _pipeWriter.Complete();
+            }
 
             if (_fakeMemoryOwner != null)
             {
@@ -278,7 +283,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         lock (_dataWriterLock)
         {
             _waitingForWindowUpdates = waitingForUpdates;
-         }
+        }
     }
 
     private void Schedule()
