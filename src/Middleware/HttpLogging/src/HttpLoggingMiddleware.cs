@@ -144,7 +144,7 @@ internal sealed class HttpLoggingMiddleware
 
                 if (originalUpgradeFeature != null && originalUpgradeFeature.IsUpgradableRequest)
                 {
-                    loggableUpgradeFeature = new UpgradeFeatureLoggingDecorator(originalUpgradeFeature, () => LogResponseHeaders(context.Response, options, _logger));
+                    loggableUpgradeFeature = new UpgradeFeatureLoggingDecorator(originalUpgradeFeature, response, options, _logger);
 
                     context.Features.Set<IHttpUpgradeFeature>(loggableUpgradeFeature);
                 }
