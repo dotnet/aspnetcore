@@ -928,6 +928,51 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task UpgradeToWebSocketDoesNotLogWhenResponseIsFlushedIfLoggingOptionsAreOtherThanResponseStatusCodeOrResponseHeaders()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All ^ HttpLoggingFields.ResponsePropertiesAndHeaders;
+
+        var writtenHeaders = new TaskCompletionSource();
+        var letBodyFinish = new TaskCompletionSource();
+
+        var httpContext = new DefaultHttpContext();
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.Setup(m => m.IsUpgradableRequest).Returns(true);
+        upgradeFeatureMock
+            .Setup(m => m.UpgradeAsync())
+            .Callback(() =>
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
+                httpContext.Response.Headers[HeaderNames.Connection] = HeaderNames.Upgrade;
+            })
+            .ReturnsAsync(Stream.Null);
+        httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
+
+        var middleware = new HttpLoggingMiddleware(
+            async c =>
+            {
+                await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
+                writtenHeaders.SetResult();
+                await letBodyFinish.Task;
+            },
+            options,
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+        var middlewareTask = middleware.Invoke(httpContext);
+
+        await writtenHeaders.Task;
+
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("StatusCode: 101"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Connection: Upgrade"));
+
+        letBodyFinish.SetResult();
+
+        await middlewareTask;
+    }
+
+    [Fact]
     public async Task UpgradeToWebSocketLogsWrittenOnlyOnce()
     {
         var options = CreateOptionsAccessor();
