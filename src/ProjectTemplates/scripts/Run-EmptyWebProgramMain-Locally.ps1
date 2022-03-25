@@ -9,4 +9,4 @@ $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\Test-Template.ps1
 
-Test-Template "reactredux" "reactredux" "Microsoft.DotNet.Web.Spa.ProjectTemplates.7.0.7.0.0-dev.nupkg" $false
+Test-Template "web" "web --use-program-main" "Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg" $false
