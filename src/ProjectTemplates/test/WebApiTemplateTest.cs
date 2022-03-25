@@ -50,6 +50,10 @@ public class WebApiTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public Task WebApiTemplateProgramMainCSharp() => WebApiTemplateCore(languageOverride: null, args: new [] { "--use-program-main" });
+
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     public async Task WebApiTemplateCSharp_WithoutOpenAPI()
     {
         var project = await FactoryFixture.GetOrCreateProject("webapinoopenapi", Output);
@@ -68,7 +72,7 @@ public class WebApiTemplateTest : LoggedTest
         await aspNetProcess.AssertNotFound("swagger");
     }
 
-    private async Task<Project> PublishAndBuildWebApiTemplate(string languageOverride, string auth, string[] args)
+    private async Task<Project> PublishAndBuildWebApiTemplate(string languageOverride, string auth, string[] args = null)
     {
         var project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp") + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
 
@@ -94,9 +98,9 @@ public class WebApiTemplateTest : LoggedTest
         return project;
     }
 
-    private async Task WebApiTemplateCore(string languageOverride)
+    private async Task WebApiTemplateCore(string languageOverride, string[] args = null)
     {
-        var project = await PublishAndBuildWebApiTemplate(languageOverride, null, null);
+        var project = await PublishAndBuildWebApiTemplate(languageOverride, null, args);
 
         // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
         if (languageOverride != null)

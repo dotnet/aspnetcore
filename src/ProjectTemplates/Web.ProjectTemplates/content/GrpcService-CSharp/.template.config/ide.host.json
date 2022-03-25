@@ -2,5 +2,17 @@
   "$schema": "http://json.schemastore.org/vs-2017.3.host",
   "order": 500,
   "icon": "ide/gRPC.png",
-  "supportsDocker": true
+  "supportsDocker": true,
+  "symbolInfo": [
+    {
+      "id": "UseProgramMain",
+      "name": {
+        "text": "Use top-level statements (uncheck to use an explicit Program class with a Main method)",
+        "overrideDefaultText": true
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "defaultValue": true
+    }
+  ]
 }
