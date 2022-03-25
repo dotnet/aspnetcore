@@ -220,7 +220,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_CreateTargetingPackArchive"
           Inputs="@(RefPackContent)"
-          Outputs="$(ZipArchiveOutputPath);$(TarArchiveOutputPath)">
+          Outputs="$(ArchiveOutputPath)">
     <ZipDirectory
       SourceDirectory="$(TargetingPackLayoutRoot)"
       DestinationFile="$(ArchiveOutputPath)"
