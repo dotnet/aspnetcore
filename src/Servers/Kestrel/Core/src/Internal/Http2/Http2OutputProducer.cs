@@ -125,14 +125,14 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     // Removes consumed bytes from the queue.
     // Returns a bool that represents whether we should schedule this producer to write
     // the remaining bytes.
-    internal bool Dequeue(long bytes)
+    internal (bool, bool) Dequeue(long bytes)
     {
         lock (_dataWriterLock)
         {
             var wasEnqueuedForObservation = _enqueuedForObservation;
             _enqueuedForObservation = false;
             _unconsumedBytes -= bytes;
-            return _unconsumedBytes > 0 || wasEnqueuedForObservation;
+            return (_unconsumedBytes > 0, wasEnqueuedForObservation);
         }
     }
 
@@ -199,13 +199,13 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             {
                 var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation();
 
+                // Make sure the writing side is completed.
+                _pipeWriter.Complete();
+
                 if (enqueue)
                 {
                     Schedule();
                 }
-
-                // Make sure the writing side is completed.
-                _pipeWriter.Complete();
             }
             else
             {
@@ -395,12 +395,12 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             // Try to enqueue any unflushed bytes
             var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation();
 
+            _pipeWriter.Complete();
+
             if (enqueue)
             {
                 Schedule();
             }
-
-            _pipeWriter.Complete();
 
             return GetWaiterTask();
         }
@@ -543,13 +543,13 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation();
 
+            _pipeReader.CancelPendingRead();
+
             if (enqueue)
             {
                 // We need to make sure the cancellation is observed by the code
                 Schedule();
             }
-
-            _pipeReader.CancelPendingRead();
         }
     }
 
