@@ -4,6 +4,7 @@
     <PackageTags>gRPC RPC HTTP/2 REST Swagger OpenAPI</PackageTags>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
