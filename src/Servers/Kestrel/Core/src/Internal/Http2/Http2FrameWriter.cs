@@ -119,16 +119,19 @@ internal class Http2FrameWriter
                     buffer = buffer.Slice(0, actual);
                 }
 
+                var (hasModeData, scheduleAgain) = producer.Dequeue(buffer.Length);
+
                 FlushResult flushResult = default;
 
                 if (readResult.IsCanceled)
                 {
                     // Response body is aborted, complete reader for this output producer.
                 }
-                else if (readResult.IsCompleted && stream.ResponseTrailers?.Count > 0)
+                else if (readResult.IsCompleted && stream.ResponseTrailers is { Count: > 0 } && !hasModeData)
                 {
                     // Output is ending and there are trailers to write
-                    // Write any remaining content then write trailers
+                    // Write any remaining content then write trailers and there's no
+                    // flow control back pressure being applied (hasMoreData)
 
                     stream.ResponseTrailers.SetReadOnly();
                     stream.DecrementActiveClientStreamCount();
@@ -158,7 +161,7 @@ internal class Http2FrameWriter
                 }
                 else
                 {
-                    var endStream = readResult.IsCompleted;
+                    var endStream = readResult.IsCompleted && !hasModeData;
 
                     if (endStream)
                     {
@@ -170,11 +173,9 @@ internal class Http2FrameWriter
 
                 producer.FirstWrite = false;
 
-                var hasModeData = producer.Dequeue(buffer.Length);
-
                 reader.AdvanceTo(buffer.End);
 
-                if (readResult.IsCompleted || readResult.IsCanceled)
+                if ((readResult.IsCompleted && !hasModeData) || readResult.IsCanceled)
                 {
                     await reader.CompleteAsync();
 
@@ -206,6 +207,10 @@ internal class Http2FrameWriter
                         // Mark the output as waiting for a window upate to resume writing (there's still data)
                         producer.MarkWaitingForWindowUpdates(true);
                     }
+                }
+                else if (scheduleAgain)
+                {
+                    Schedule(producer);
                 }
             }
             catch (Exception ex)
@@ -249,7 +254,6 @@ internal class Http2FrameWriter
             _completed = true;
             AbortFlowControl();
             _outputWriter.Abort();
-            _channel.Writer.TryComplete();
         }
     }
 
