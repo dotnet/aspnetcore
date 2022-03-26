@@ -197,14 +197,15 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             if (!_streamCompleted)
             {
-                var enqueue = EnqueueForObservation();
-                // Make sure the writing side is completed.
-                _pipeWriter.Complete();
+                var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation();
 
                 if (enqueue)
                 {
                     Schedule();
                 }
+
+                // Make sure the writing side is completed.
+                _pipeWriter.Complete();
             }
             else
             {
@@ -391,13 +392,15 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             _streamCompleted = true;
             _suffixSent = true;
 
-            var enqueue = EnqueueForObservation();
-            _pipeWriter.Complete();
+            // Try to enqueue any unflushed bytes
+            var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation();
 
             if (enqueue)
             {
                 Schedule();
             }
+
+            _pipeWriter.Complete();
 
             return GetWaiterTask();
         }
@@ -538,15 +541,15 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             _streamCompleted = true;
 
-            var enqueue = EnqueueForObservation();
-
-            _pipeReader.CancelPendingRead();
+            var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation();
 
             if (enqueue)
             {
                 // We need to make sure the cancellation is observed by the code
                 Schedule();
             }
+
+            _pipeReader.CancelPendingRead();
         }
     }
 
