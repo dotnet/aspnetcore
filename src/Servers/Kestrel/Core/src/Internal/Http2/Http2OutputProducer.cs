@@ -40,8 +40,9 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
     // Internal for testing
     internal bool _disposed;
-    internal long _unconsumedBytes;
-    internal long _window;
+
+    private long _unconsumedBytes;
+    private long _window;
 
     // For changes scheduling changes that don't affect the number of bytes written to the pipe, we need another state
     bool _enqueuedForObservation;
@@ -179,6 +180,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         _window = initialWindowSize;
         _unconsumedBytes = 0;
         _enqueuedForObservation = false;
+        _waitingForWindowUpdates = false;
     }
 
     public void Complete()
@@ -258,16 +260,15 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
                 Debug.Assert(_pipeWriter.CanGetUnflushedBytes);
 
                 var enqueue = Enqueue(_pipeWriter.UnflushedBytes);
-                // If there's already been response data written to the stream, just wait for that. Any header
-                // should be in front of the data frames in the connection pipe. Trailers could change things.
-                var task = _flusher.FlushAsync(this, cancellationToken);
 
                 if (enqueue)
                 {
                     Schedule();
                 }
 
-                return task;
+                // If there's already been response data written to the stream, just wait for that. Any header
+                // should be in front of the data frames in the connection pipe. Trailers could change things.
+                return _flusher.FlushAsync(this, cancellationToken);
             }
             else
             {
@@ -370,14 +371,13 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             _pipeWriter.Write(data);
 
             var enqueue = Enqueue(data.Length);
-            var task = _flusher.FlushAsync(this, cancellationToken).GetAsTask();
 
             if (enqueue)
             {
                 Schedule();
             }
 
-            return task;
+            return _flusher.FlushAsync(this, cancellationToken).GetAsTask();
         }
     }
 
@@ -499,14 +499,13 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             _pipeWriter.Write(data);
 
             var enqueue = Enqueue(data.Length);
-            var task = _flusher.FlushAsync(this, cancellationToken);
 
             if (enqueue)
             {
                 Schedule();
             }
 
-            return task;
+            return _flusher.FlushAsync(this, cancellationToken);
         }
     }
 
@@ -671,6 +670,5 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             return;
         }
         _disposed = true;
-
     }
 }

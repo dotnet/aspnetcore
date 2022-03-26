@@ -577,7 +577,6 @@ public class Http2ConnectionTests : Http2TestBase
 
         var output = (Http2OutputProducer)stream.Output;
         Assert.True(output._disposed);
-        // await output._dataWriteProcessingTask.DefaultTimeout();
 
         // Stream is not returned to the pool
         Assert.Equal(0, _connection.StreamPool.Count);
@@ -3804,9 +3803,6 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
 
-        // Force input loop to check connection state
-        TriggerTick();
-
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
         await _closedStateReached.Task.DefaultTimeout();
@@ -4172,7 +4168,7 @@ public class Http2ConnectionTests : Http2TestBase
                 for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
                 {
                     await expectingDataSem.WaitAsync();
-                    await context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length);
+                    Assert.True(context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length).IsCompleted);
                 }
 
                 await expectingDataSem.WaitAsync();
@@ -4724,10 +4720,6 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 1);
 
-        // Kick the input loop so it sees that we have no more active streams. This is a bug in the graceful shutdown logic
-        // but since we wake up the loop pretty often it doesn't show up in practice
-        TriggerTick();
-
         await _closedStateReached.Task.DefaultTimeout();
         VerifyGoAway(await ReceiveFrameAsync(), 1, Http2ErrorCode.NO_ERROR);
     }
@@ -4772,10 +4764,6 @@ public class Http2ConnectionTests : Http2TestBase
             withLength: 0,
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
-
-        // Kick the input loop so it sees that we have no more active streams. This is a bug in the graceful shutdown logic
-        // but since we wake up the loop pretty often it doesn't show up in practice
-        TriggerTick();
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }

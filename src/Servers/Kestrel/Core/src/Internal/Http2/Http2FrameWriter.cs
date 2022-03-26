@@ -104,11 +104,8 @@ internal class Http2FrameWriter
                 var reader = producer.PipeReader;
                 var stream = producer.Stream;
 
-                var hasResult = reader.TryRead(out var readResult);
+                var readResult = await reader.ReadAsync();
                 var buffer = readResult.Buffer;
-
-                // This shouldn't be called when there's no data
-                Debug.Assert(hasResult);
 
                 // Check the stream window
                 var (actual, remainingStream) = producer.ConsumeWindow(buffer.Length);
