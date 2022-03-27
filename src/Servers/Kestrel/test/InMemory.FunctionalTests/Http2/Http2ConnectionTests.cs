@@ -424,9 +424,6 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-        var output = (Http2OutputProducer)stream.Output;
-        // await output._dataWriteProcessingTask.DefaultTimeout();
     }
 
     [Fact]
@@ -3804,7 +3801,6 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 3);
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
-
         await _closedStateReached.Task.DefaultTimeout();
     }
 
