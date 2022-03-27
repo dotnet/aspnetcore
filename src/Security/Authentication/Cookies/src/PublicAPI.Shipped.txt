@@ -125,5 +125,4 @@ virtual Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.S
 virtual Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.SigningIn(Microsoft.AspNetCore.Authentication.Cookies.CookieSigningInContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.SigningOut(Microsoft.AspNetCore.Authentication.Cookies.CookieSigningOutContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.ValidatePrincipal(Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext! context) -> System.Threading.Tasks.Task!
-virtual Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.CheckSlidingExpiration(Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.FinishResponseAsync() -> System.Threading.Tasks.Task!
