@@ -72,6 +72,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     internal readonly Http2KeepAlive? _keepAlive;
     internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
     internal PooledStreamStack<Http2Stream> StreamPool;
+    internal Action<Http2Stream>? _onStreamCompleted;
 
     public Http2Connection(HttpConnectionContext context)
     {
@@ -1230,6 +1231,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     {
         _completedStreams.Enqueue(stream);
         _streamCompletionAwaitable.Complete();
+        _onStreamCompleted?.Invoke(stream);
     }
 
     private void UpdateCompletedStreams()

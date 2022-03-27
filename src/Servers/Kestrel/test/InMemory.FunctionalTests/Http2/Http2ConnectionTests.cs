@@ -564,10 +564,16 @@ public class Http2ConnectionTests : Http2TestBase
             throw new InvalidOperationException("Put the stream into an invalid state by throwing after writing to response.");
         });
 
+        var streamCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _connection._onStreamCompleted =  _ => streamCompletedTcs.TrySetResult();
+
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
         var stream = _connection._streams[1];
         serverTcs.SetResult();
+
+        // Wait for the stream to be completed
+        await streamCompletedTcs.Task;
 
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
@@ -3800,6 +3806,7 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
 
+        TriggerTick();
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         await _closedStateReached.Task.DefaultTimeout();
     }
@@ -4164,7 +4171,7 @@ public class Http2ConnectionTests : Http2TestBase
                 for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
                 {
                     await expectingDataSem.WaitAsync();
-                    Assert.True(context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length).IsCompleted);
+                    await context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length);
                 }
 
                 await expectingDataSem.WaitAsync();
@@ -4716,6 +4723,7 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 1);
 
+        TriggerTick();
         await _closedStateReached.Task.DefaultTimeout();
         VerifyGoAway(await ReceiveFrameAsync(), 1, Http2ErrorCode.NO_ERROR);
     }
@@ -4760,6 +4768,8 @@ public class Http2ConnectionTests : Http2TestBase
             withLength: 0,
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
+
+        TriggerTick();
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }

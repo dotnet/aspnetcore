@@ -45,7 +45,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     private long _window;
 
     // For changes scheduling changes that don't affect the number of bytes written to the pipe, we need another state
-    private bool _enqueuedForObservation;
+    private State _observationState;
     private bool _waitingForWindowUpdates;
 
     /// <summary>The core logic for the IValueTaskSource implementation.</summary>
@@ -84,7 +84,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
     public bool IsTimingWrite { get; set; }
 
-    public bool FirstWrite { get; set; } = true;
+    public bool WriteHeaders { get; set; }
 
     public bool StreamEnded => _streamEnded;
 
@@ -99,6 +99,9 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         }
     }
 
+    // Useful for debugging the scheduling state in the debugger
+    internal (int, long, State, long, bool) SchedulingState => (Stream.StreamId, _unconsumedBytes, _observationState, _window, _waitingForWindowUpdates);
+
     // Added bytes to the queue.
     // Returns a bool that represents whether we should schedule this producer to write
     // the enqueued bytes
@@ -108,18 +111,18 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         {
             var wasEmpty = _unconsumedBytes == 0;
             _unconsumedBytes += bytes;
-            return wasEmpty && _unconsumedBytes > 0;
+            return wasEmpty && _unconsumedBytes > 0 && _observationState == State.None;
         }
     }
 
     // Determines if we should schedule this producer to observe
     // any state changes made.
-    private bool EnqueueForObservation()
+    private bool EnqueueForObservation(State state)
     {
         lock (_dataWriterLock)
         {
-            var wasEnqueuedForObservation = _enqueuedForObservation;
-            _enqueuedForObservation = true;
+            var wasEnqueuedForObservation = _observationState != State.None;
+            _observationState |= state;
             return (_unconsumedBytes == 0 || _waitingForWindowUpdates) && !wasEnqueuedForObservation;
         }
     }
@@ -127,14 +130,13 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     // Removes consumed bytes from the queue.
     // Returns a bool that represents whether we should schedule this producer to write
     // the remaining bytes.
-    internal (bool, bool) Dequeue(long bytes)
+    internal (bool, bool) Dequeue(long bytes, State state)
     {
         lock (_dataWriterLock)
         {
-            var wasEnqueuedForObservation = _enqueuedForObservation;
-            _enqueuedForObservation = false;
+            _observationState &= ~state;
             _unconsumedBytes -= bytes;
-            return (_unconsumedBytes > 0, wasEnqueuedForObservation);
+            return (_unconsumedBytes > 0, _observationState != State.None);
         }
     }
 
@@ -179,8 +181,10 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
         _window = initialWindowSize;
         _unconsumedBytes = 0;
-        _enqueuedForObservation = false;
+        _observationState = State.None;
         _waitingForWindowUpdates = false;
+        WriteHeaders = false;
+        IsTimingWrite = false;
     }
 
     public void Complete()
@@ -198,7 +202,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             if (!_streamCompleted)
             {
-                var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation();
+                var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation(State.Completed);
 
                 // Make sure the writing side is completed.
                 _pipeWriter.Complete();
@@ -262,20 +266,27 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
                 var enqueue = Enqueue(_pipeWriter.UnflushedBytes);
 
+                // If there's already been response data written to the stream, just wait for that. Any header
+                // should be in front of the data frames in the connection pipe. Trailers could change things.
+                var task = _flusher.FlushAsync(this, cancellationToken);
+
                 if (enqueue)
                 {
                     Schedule();
                 }
 
-                // If there's already been response data written to the stream, just wait for that. Any header
-                // should be in front of the data frames in the connection pipe. Trailers could change things.
-                return _flusher.FlushAsync(this, cancellationToken);
+                return task;
             }
             else
             {
-                // Flushing the connection pipe ensures headers already in the pipe are flushed even if no data
-                // frames have been written.
-                return _frameWriter.FlushAsync(this, cancellationToken);
+                var enqueue = EnqueueForObservation(State.FlushHeaders);
+
+                if (enqueue)
+                {
+                    Schedule();
+                }
+
+                return default;
             }
         }
     }
@@ -332,20 +343,12 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             // The headers will be the final frame if:
             // 1. There is no content
             // 2. There is no trailing HEADERS frame.
-            Http2HeadersFrameFlags http2HeadersFrame;
-
             if (appCompleted && !_startedWritingDataFrames && (_stream.ResponseTrailers == null || _stream.ResponseTrailers.Count == 0))
             {
                 _streamEnded = true;
-                _stream.DecrementActiveClientStreamCount();
-                http2HeadersFrame = Http2HeadersFrameFlags.END_STREAM;
-            }
-            else
-            {
-                http2HeadersFrame = Http2HeadersFrameFlags.NONE;
             }
 
-            _frameWriter.WriteResponseHeaders(StreamId, statusCode, http2HeadersFrame, responseHeaders);
+            WriteHeaders = true;
         }
     }
 
@@ -373,12 +376,14 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             var enqueue = Enqueue(data.Length);
 
+            var task = _flusher.FlushAsync(this, cancellationToken).GetAsTask();
+
             if (enqueue)
             {
                 Schedule();
             }
 
-            return _flusher.FlushAsync(this, cancellationToken).GetAsTask();
+            return task;
         }
     }
 
@@ -395,7 +400,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             _suffixSent = true;
 
             // Try to enqueue any unflushed bytes
-            var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation();
+            var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation(State.Completed);
 
             _pipeWriter.Complete();
 
@@ -502,13 +507,14 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             _pipeWriter.Write(data);
 
             var enqueue = Enqueue(data.Length);
+            var task = _flusher.FlushAsync(this, cancellationToken);
 
             if (enqueue)
             {
                 Schedule();
             }
 
-            return _flusher.FlushAsync(this, cancellationToken);
+            return task;
         }
     }
 
@@ -543,7 +549,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             _streamCompleted = true;
 
-            var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation();
+            var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation(State.Cancelled);
 
             _pipeReader.CancelPendingRead();
 
@@ -673,5 +679,14 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             return;
         }
         _disposed = true;
+    }
+
+    [Flags]
+    public enum State
+    {
+        None = 0,
+        FlushHeaders = 1,
+        Cancelled = 2,
+        Completed = 4
     }
 }
