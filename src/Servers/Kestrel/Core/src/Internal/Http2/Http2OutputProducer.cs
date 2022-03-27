@@ -45,8 +45,8 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     private long _window;
 
     // For changes scheduling changes that don't affect the number of bytes written to the pipe, we need another state
-    bool _enqueuedForObservation;
-    bool _waitingForWindowUpdates;
+    private bool _enqueuedForObservation;
+    private bool _waitingForWindowUpdates;
 
     /// <summary>The core logic for the IValueTaskSource implementation.</summary>
     private ManualResetValueTaskSourceCore<FlushResult> _responseCompleteTaskSource = new ManualResetValueTaskSourceCore<FlushResult> { RunContinuationsAsynchronously = true }; // mutable struct, do not make this readonly
@@ -155,9 +155,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         lock (_dataWriterLock)
         {
             var wasDepleted = _window <= 0;
-
             _window += bytes;
-
             return wasDepleted && _window > 0 && _unconsumedBytes > 0;
         }
     }
