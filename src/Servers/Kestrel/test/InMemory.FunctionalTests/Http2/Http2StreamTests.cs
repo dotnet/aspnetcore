@@ -3103,14 +3103,10 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(async context =>
         {
             context.Response.Headers["too_long"] = new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.WriteAsync("Hello World")).DefaultTimeout();
-            appFinished.TrySetResult(ex.InnerException.Message);
+            await context.Response.WriteAsync("Hello World");
         });
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
-
-        var message = await appFinished.Task.DefaultTimeout();
-        Assert.Equal(SR.net_http_hpack_encode_failure, message);
 
         // Just the StatusCode gets written before aborting in the continuation frame
         await ExpectAsync(Http2FrameType.HEADERS,
