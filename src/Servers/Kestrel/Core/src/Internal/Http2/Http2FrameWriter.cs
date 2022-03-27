@@ -85,7 +85,8 @@ internal class Http2FrameWriter
             AllowSynchronousContinuations = _scheduleInline
         });
 
-        _window = connectionOutputFlowControl.Available;
+        // This is null in tests sometimes
+        _window = connectionOutputFlowControl?.Available ?? 0;
 
         _ = Task.Run(WriteToOutputPipe);
     }
