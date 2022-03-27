@@ -583,6 +583,8 @@ internal class Http2FrameWriter
 
     private async ValueTask<FlushResult> WriteDataAsync(int streamId, ReadOnlySequence<byte> data, long dataLength, bool endStream, bool firstWrite)
     {
+        FlushResult flushResult = default;
+
         var writeTask = default(ValueTask<FlushResult>);
 
         lock (_writeLock)
@@ -591,7 +593,7 @@ internal class Http2FrameWriter
 
             if (_completed)
             {
-                return new FlushResult(isCanceled: false, isCompleted: true);
+                return flushResult;
             }
 
             if (dataLength > 0 || endStream)
@@ -625,7 +627,7 @@ internal class Http2FrameWriter
             _timeoutControl.StartTimingWrite();
         }
 
-        var flushResult = await writeTask;
+        flushResult = await writeTask;
 
         if (_minResponseDataRate != null)
         {
@@ -856,7 +858,6 @@ internal class Http2FrameWriter
     {
         lock (_windowUpdateLock)
         {
-            // REVIEW: What should this be doing?
             while (_waitingForMoreWindow.TryDequeue(out var producer))
             {
                 if (!producer.StreamCompleted)

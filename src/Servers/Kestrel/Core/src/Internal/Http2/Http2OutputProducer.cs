@@ -70,6 +70,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         _pipe = CreateDataPipe(_memoryPool);
 
         _pipeWriter = new ConcurrentPipeWriter(_pipe.Writer, _memoryPool, _dataWriterLock);
+        Debug.Assert(_pipeWriter.CanGetUnflushedBytes);
         _pipeReader = _pipe.Reader;
 
         // No need to pass in timeoutControl here, since no minDataRates are passed to the TimingPipeFlusher.
@@ -262,8 +263,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             if (_startedWritingDataFrames)
             {
-                Debug.Assert(_pipeWriter.CanGetUnflushedBytes);
-
                 var enqueue = Enqueue(_pipeWriter.UnflushedBytes);
 
                 // If there's already been response data written to the stream, just wait for that. Any header
