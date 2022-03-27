@@ -170,21 +170,14 @@ internal class Http2FrameWriter
                     stream.ResponseTrailers.SetReadOnly();
                     stream.DecrementActiveClientStreamCount();
 
-                    // TODO: Combine headers, data and trailers
-                    if (producer.WriteHeaders)
-                    {
-                        // write headers
-                        WriteResponseHeaders(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
-                    }
-
                     if (buffer.Length > 0)
                     {
                         // It is faster to write data and trailers together. Locking once reduces lock contention.
-                        flushResult = await WriteDataAndTrailersAsync(stream.StreamId, buffer, producer.WriteHeaders, stream.ResponseTrailers);
+                        flushResult = await WriteDataAndTrailersAsync(stream, buffer, producer.WriteHeaders, stream.ResponseTrailers);
                     }
                     else
                     {
-                        flushResult = await WriteResponseTrailersAsync(stream.StreamId, stream.ResponseTrailers);
+                        flushResult = await WriteResponseTrailersAsync(stream, producer.WriteHeaders, stream.ResponseTrailers);
                     }
                 }
                 else if (readResult.IsCompleted && producer.StreamEnded)
@@ -217,13 +210,7 @@ internal class Http2FrameWriter
                         stream.DecrementActiveClientStreamCount();
                     }
 
-                    if (producer.WriteHeaders)
-                    {
-                        // We need to write headers
-                        WriteResponseHeaders(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
-                    }
-
-                    flushResult = await WriteDataAsync(stream.StreamId, buffer, buffer.Length, endStream, producer.WriteHeaders);
+                    flushResult = await WriteDataAsync(stream, buffer, buffer.Length, endStream, producer.WriteHeaders);
                 }
 
                 if (producer.IsTimingWrite)
@@ -403,25 +390,30 @@ internal class Http2FrameWriter
                 return;
             }
 
-            try
-            {
-                _headersEnumerator.Initialize(headers);
-                _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
-                var buffer = _headerEncodingBuffer.AsSpan();
-                var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
-                FinishWritingHeaders(streamId, payloadLength, done);
-            }
-            // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
-            // Since we allow custom header encoders we don't know what type of exceptions to expect.
-            catch (Exception ex)
-            {
-                _log.HPackEncodingError(_connectionId, streamId, ex);
-                _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
-            }
+            WriteResponseHeadersUnsynchronized(streamId, statusCode, headerFrameFlags, headers);
         }
     }
 
-    private ValueTask<FlushResult> WriteResponseTrailersAsync(int streamId, HttpResponseTrailers headers)
+    private void WriteResponseHeadersUnsynchronized(int streamId, int statusCode, Http2HeadersFrameFlags headerFrameFlags, HttpResponseHeaders headers)
+    {
+        try
+        {
+            _headersEnumerator.Initialize(headers);
+            _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
+            var buffer = _headerEncodingBuffer.AsSpan();
+            var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
+            FinishWritingHeaders(streamId, payloadLength, done);
+        }
+        // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
+        // Since we allow custom header encoders we don't know what type of exceptions to expect.
+        catch (Exception ex)
+        {
+            _log.HPackEncodingError(_connectionId, streamId, ex);
+            _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
+        }
+    }
+
+    private ValueTask<FlushResult> WriteResponseTrailersAsync(Http2Stream stream, bool firstWrite, HttpResponseTrailers headers)
     {
         lock (_writeLock)
         {
@@ -429,6 +421,13 @@ internal class Http2FrameWriter
             {
                 return default;
             }
+
+            if (firstWrite)
+            {
+                WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
+            }
+
+            var streamId = stream.StreamId;
 
             try
             {
@@ -479,7 +478,7 @@ internal class Http2FrameWriter
         }
     }
 
-    public ValueTask<FlushResult> WriteDataAndTrailersAsync(int streamId, in ReadOnlySequence<byte> data, bool firstWrite, HttpResponseTrailers headers)
+    public ValueTask<FlushResult> WriteDataAndTrailersAsync(Http2Stream stream, in ReadOnlySequence<byte> data, bool firstWrite, HttpResponseTrailers headers)
     {
         // This method combines WriteDataAsync and WriteResponseTrailers.
         // Changes here may need to be mirrored in WriteDataAsync.
@@ -494,9 +493,14 @@ internal class Http2FrameWriter
                 return default;
             }
 
-            WriteDataUnsynchronized(streamId, data, dataLength, endStream: false);
+            if (firstWrite)
+            {
+                WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
+            }
 
-            return WriteResponseTrailersAsync(streamId, headers);
+            WriteDataUnsynchronized(stream.StreamId, data, dataLength, endStream: false);
+
+            return WriteResponseTrailersAsync(stream, firstWrite: false, headers);
         }
     }
 
@@ -581,7 +585,7 @@ internal class Http2FrameWriter
         }
     }
 
-    private async ValueTask<FlushResult> WriteDataAsync(int streamId, ReadOnlySequence<byte> data, long dataLength, bool endStream, bool firstWrite)
+    private async ValueTask<FlushResult> WriteDataAsync(Http2Stream stream, ReadOnlySequence<byte> data, long dataLength, bool endStream, bool firstWrite)
     {
         FlushResult flushResult = default;
 
@@ -589,21 +593,24 @@ internal class Http2FrameWriter
 
         lock (_writeLock)
         {
-            var shouldFlush = false;
-
             if (_completed)
             {
                 return flushResult;
             }
 
-            if (dataLength > 0 || endStream)
+            var shouldFlush = false;
+
+            if (firstWrite)
             {
-                WriteDataUnsynchronized(streamId, data, dataLength, endStream);
+                WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
 
                 shouldFlush = true;
             }
-            else if (firstWrite)
+
+            if (dataLength > 0 || endStream)
             {
+                WriteDataUnsynchronized(stream.StreamId, data, dataLength, endStream);
+
                 shouldFlush = true;
             }
 
