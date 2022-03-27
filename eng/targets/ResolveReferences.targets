@@ -311,12 +311,18 @@
     <Warning Condition=" '$(IsProjectReferenceProvider)' == 'true' AND '$(AssemblyName)' != '$(MSBuildProjectName)' "
         Text="Project name &quot;$(MSBuildProjectName)&quot; is confusing; assembly is named &quot;$(AssemblyName)&quot;." />
 
-    <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
+    <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' OR '$(RequiresDelayedBuild)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <IsAspNetCoreApp>$([MSBuild]::ValueOrDefault($(IsAspNetCoreApp),'false'))</IsAspNetCoreApp>
         <IsPackable>$([MSBuild]::ValueOrDefault($(IsPackable),'false'))</IsPackable>
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
         <Trimmable>$([MSBuild]::ValueOrDefault($(Trimmable),'false'))</Trimmable>
+
+        <!-- True if the project may be referenced using a @(Reference) item. -->
+        <IsProjectReferenceProvider>$([MSBuild]::ValueOrDefault($(IsProjectReferenceProvider),'false'))</IsProjectReferenceProvider>
+
+        <!-- True if project must be restored etc. after App.Ref and App.Runtime are fully built. -->
+        <RequiresDelayedBuild>$([MSBuild]::ValueOrDefault($(RequiresDelayedBuild),'false'))</RequiresDelayedBuild>
       </ProvidesReference>
     </ItemGroup>
   </Target>

@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ContainsFunctionalTestAssets>true</ContainsFunctionalTestAssets>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\..\Shared\Process\ProcessEx.cs" Link="Helpers\ProcessEx.cs" />
+    <Compile Include="..\..\..\..\Shared\Process\ProcessExtensions.cs" Link="Helpers\ProcessExtensions.cs" />
+
+    <!-- Enforce build order. Need shared Fx before PublishTestAssets runs. -->
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+
+    <TestAssetProjectReference Include="..\testassets\**\*.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,6 +1,16 @@
 <Project>
   <Import Project="Common.props" />
 
+  <!--
+    @(RequiresDelayedBuild) projects can be extended many ways but this isn't fully automated because the new
+    projects likely aren't referenced initially. To add new projects, edit RequiresDelayedBuildProjects.props
+    manually, update the $(BuildMainlyReferenceProviders)' == 'true' item group near the bottom of this file,
+    or edit BuildAfterTargetingPack.csproj. Then run GenerateProjectList.ps1 (even for the first option to ensure
+    the format is correct) and undo any temporary changes. When complete, only BuildAfterTargetingPack.csproj and
+    other @(RequiresDelayedBuild) projects should mention projects listed in RequiresDelayedBuildProjects.props.
+  -->
+  <Import Project="RequiresDelayedBuildProjects.props" />
+
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
     <!-- Explicitly excluded projects -->
@@ -16,8 +26,11 @@
     <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
     <ProjectToExclude Include="$(RepoRoot)src\Middleware\WebSockets\samples\**\*.csproj" />
 
-    <!-- These projects are meant to be referenced only by tests. -->
-    <ProjectToExclude Include="$(RepoRoot)src\**\testassets\**\*.*proj"
+    <!-- These projects are meant to be referenced only by tests or via BuildAfterTargetingPack.csproj. -->
+    <ProjectToExclude
+      Include="$(RepoRoot)src\**\testassets\**\*.*proj;
+               @(RequiresDelayedBuild);
+               "
       Exclude="$(RepoRoot)src\Components\WebAssembly\testassets\WasmLinkerTest\*.*proj;
                $(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\*.*proj;
                $(RepoRoot)src\Http\Routing\test\testassets\RoutingSandbox\*.*proj;
@@ -190,6 +203,7 @@
                           $(RepoRoot)src\ProjectTemplates\*\*.csproj;
                           $(RepoRoot)src\submodules\spa-templates\src\*.csproj;
                           $(RepoRoot)src\Extensions\**\*.csproj;
+                          $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
@@ -229,6 +243,7 @@
                           $(RepoRoot)src\HealthChecks\**\src\*.csproj;
                           $(RepoRoot)src\Testing\**\src\*.csproj;
                           $(RepoRoot)src\Extensions\**\src\*.csproj;
+                          $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);

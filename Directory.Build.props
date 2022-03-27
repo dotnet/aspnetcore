@@ -239,6 +239,7 @@
   <Import Project="artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\ProjectReferences.props" />
+  <Import Project="eng\RequiresDelayedBuildProjects.props" />
   <Import Project="eng\SharedFramework.Local.props" />
   <Import Project="eng\SharedFramework.External.props" />
   <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
