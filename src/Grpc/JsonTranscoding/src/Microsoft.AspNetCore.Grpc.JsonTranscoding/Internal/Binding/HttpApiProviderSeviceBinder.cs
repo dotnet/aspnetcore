@@ -285,7 +285,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         [LoggerMessage(1, LogLevel.Warning, "Unable to find method descriptor for {MethodName} on {ServiceType}.", EventName = "MethodDescriptorNotFound")]
         public static partial void MethodDescriptorNotFound(ILogger logger, string methodName, Type serviceType);
 
-        [LoggerMessage(2, LogLevel.Warning, "Unable to bind {MethodName} on {ServiceName} to HTTP API. Client and bidirectional streaming methods are not supported.", EventName = "StreamingMethodNotSupported")]
+        [LoggerMessage(2, LogLevel.Warning, "Unable to bind {MethodName} on {ServiceName} to gRPC JSON transcoding. Client and bidirectional streaming methods are not supported.", EventName = "StreamingMethodNotSupported")]
         public static partial void StreamingMethodNotSupported(ILogger logger, string methodName, string serviceName);
 
         [LoggerMessage(3, LogLevel.Trace, "Found HttpRule mapping. Method {MethodName} on {ServiceName}. HttpRule payload: {HttpRulePayload}", EventName = "HttpRuleFound", SkipEnabledCheck = true)]

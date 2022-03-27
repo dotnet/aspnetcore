@@ -181,7 +181,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Google.Api.CommonProtos" />
     <LatestPackageReference Include="Google.Protobuf" />
     <LatestPackageReference Include="Grpc.AspNetCore" />
-    <LatestPackageReference Include="Grpc.AspNetCore.Server" />    
+    <LatestPackageReference Include="Grpc.AspNetCore.Server" />
     <LatestPackageReference Include="Grpc.Auth" />
     <LatestPackageReference Include="Grpc.Net.Client" />
     <LatestPackageReference Include="Grpc.Tools" />
@@ -204,7 +204,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Serilog.Extensions.Logging" />
     <LatestPackageReference Include="Serilog.Sinks.File" />
     <LatestPackageReference Include="StackExchange.Redis" />
-    <LatestPackageReference Include="Swashbuckle.AspNetCore" />    
+    <LatestPackageReference Include="Swashbuckle.AspNetCore" />
     <LatestPackageReference Include="System.Reactive.Linq" />
     <LatestPackageReference Include="xunit.abstractions" />
     <LatestPackageReference Include="xunit.analyzers" />
