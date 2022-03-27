@@ -82,6 +82,8 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     public Http2Stream Stream => _stream;
     public PipeReader PipeReader => _pipeReader;
 
+    public bool IsTimingWrite { get; set; }
+
     public bool FirstWrite { get; set; } = true;
 
     public bool StreamEnded => _streamEnded;
