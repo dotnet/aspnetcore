@@ -123,7 +123,6 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         _scheduleInline = context.ServiceContext.Scheduler == PipeScheduler.Inline;
 
         _inputTask = CopyPipeAsync(_context.Transport.Input, _input.Writer);
-
     }
 
     public string ConnectionId => _context.ConnectionId;
