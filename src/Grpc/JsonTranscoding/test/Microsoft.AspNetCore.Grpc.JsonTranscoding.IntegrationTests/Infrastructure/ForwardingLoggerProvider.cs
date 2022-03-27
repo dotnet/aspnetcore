@@ -34,7 +34,7 @@ internal class ForwardingLoggerProvider : ILoggerProvider
             _logAction = logAction;
         }
 
-        public IDisposable BeginScope<TState>(TState state)
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {
             return null!;
         }
