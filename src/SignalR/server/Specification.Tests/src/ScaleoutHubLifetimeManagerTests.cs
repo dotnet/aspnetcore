@@ -576,4 +576,42 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             Assert.Equal("Connection disconnected.", ex.Message);
         }
     }
+
+    /// <summary>
+    /// Specification test for SignalR HubLifetimeManager.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
+    [Fact]
+    public async Task InvocationsFromDifferentServersUseUniqueIDs()
+    {
+        var backplane = CreateBackplane();
+        var manager1 = CreateNewHubLifetimeManager(backplane);
+        var manager2 = CreateNewHubLifetimeManager(backplane);
+
+        using (var client1 = new TestClient())
+        using (var client2 = new TestClient())
+        {
+            var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+            var connection2 = HubConnectionContextUtils.Create(client2.Connection);
+
+            await manager1.OnConnectedAsync(connection1).DefaultTimeout();
+            await manager2.OnConnectedAsync(connection2).DefaultTimeout();
+
+            var invoke1 = manager1.InvokeConnectionAsync<int>(connection2.ConnectionId, "Result", new object[] { "test" });
+            var invocation2 = Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
+
+            var invoke2 = manager2.InvokeConnectionAsync<int>(connection1.ConnectionId, "Result", new object[] { "test" });
+            var invocation1 = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
+
+            Assert.NotEqual(invocation1.InvocationId, invocation2.InvocationId);
+
+            await manager1.SetConnectionResultAsync(connection2.ConnectionId, CompletionMessage.WithResult(invocation2.InvocationId, 2)).DefaultTimeout();
+            await manager2.SetConnectionResultAsync(connection1.ConnectionId, CompletionMessage.WithResult(invocation1.InvocationId, 5)).DefaultTimeout();
+
+            var res = await invoke1.DefaultTimeout();
+            Assert.Equal(2, res);
+            res = await invoke2.DefaultTimeout();
+            Assert.Equal(5, res);
+        }
+    }
 }

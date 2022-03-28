@@ -407,7 +407,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
         var connection = _connections[connectionId];
 
-        var invocationId = Interlocked.Increment(ref _lastInvocationId).ToString(NumberFormatInfo.InvariantInfo);
+        // Needs to be unique across servers, easiest way to do that is prefix with connection ID.
+        var invocationId = $"{connectionId}{Interlocked.Increment(ref _lastInvocationId)}";
         using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
             connection?.ConnectionAborted ?? default, out var linkedToken);
         var task = _clientResultsManager.AddInvocation<T>(connectionId, invocationId, linkedToken);

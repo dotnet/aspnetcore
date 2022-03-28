@@ -218,8 +218,22 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                         if (returnType == typeof(RawResult))
                                         {
                                             var token = JToken.Load(reader);
-                                            var str = token.ToString(Formatting.None);
-                                            result = new RawResult(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(str)));
+                                            using var strm = new MemoryStream();
+                                            using var writer = new StreamWriter(strm);
+                                            using var jsonTextWriter = new JsonTextWriter(writer);
+                                            token.WriteTo(jsonTextWriter);
+                                            jsonTextWriter.Flush();
+                                            writer.Flush();
+                                            Memory<byte> buf;
+                                            if (strm.TryGetBuffer(out var segment))
+                                            {
+                                                buf = segment.Array.AsMemory(segment.Offset, segment.Count);
+                                            }
+                                            else
+                                            {
+                                                buf = strm.ToArray();
+                                            }
+                                            result = new RawResult(new ReadOnlySequence<byte>(buf));
                                         }
                                         else
                                         {
@@ -400,8 +414,22 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                         var returnType = binder.GetReturnType(invocationId);
                         if (returnType == typeof(RawResult))
                         {
-                            var str = resultToken.ToString(Formatting.None);
-                            result = new RawResult(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(str)));
+                            using var strm = new MemoryStream();
+                            using var writer = new StreamWriter(strm);
+                            using var jsonTextWriter = new JsonTextWriter(writer);
+                            resultToken.WriteTo(jsonTextWriter);
+                            jsonTextWriter.Flush();
+                            writer.Flush();
+                            Memory<byte> buf;
+                            if (strm.TryGetBuffer(out var segment))
+                            {
+                                buf = segment.Array.AsMemory(segment.Offset, segment.Count);
+                            }
+                            else
+                            {
+                                buf = strm.ToArray();
+                            }
+                            result = new RawResult(new ReadOnlySequence<byte>(buf));
                         }
                         else
                         {
