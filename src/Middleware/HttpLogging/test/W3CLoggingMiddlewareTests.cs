@@ -96,7 +96,7 @@ public class W3CLoggingMiddlewareTests
         var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
         // Assert that the log was written in the last 10 seconds
         var delta = now.Subtract(startDate).TotalSeconds;
-        Assert.Range(delta, 0, 10);
+        Assert.InRange(delta, 0, 10);
 
         Assert.Equal("#Fields: date time c-ip s-computername s-ip s-port cs-method cs-uri-stem cs-uri-query sc-status time-taken cs-version cs-host cs(User-Agent) cs(Referer)", lines[2]);
         Assert.DoesNotContain(lines[3], "Snickerdoodle");
@@ -131,7 +131,7 @@ public class W3CLoggingMiddlewareTests
         var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
         // Assert that the log was written in the last 10 seconds
         var delta = now.Subtract(startDate).TotalSeconds;
-        Assert.Range(delta, 0, 10);
+        Assert.InRange(delta, 0, 10);
 
         Assert.Equal("#Fields: time-taken", lines[2]);
         double num;
