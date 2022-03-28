@@ -55,6 +55,10 @@
       "invertBoolean": true,
       "isVisible": true,
       "defaultValue": true
+    },
+    {
+      "id": "UseProgramMain",
+      "isVisible": true
     }
   ],
   "disableHttpsSymbol": "NoHttps"
