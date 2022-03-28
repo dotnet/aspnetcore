@@ -101,8 +101,7 @@ public class Http1OutputProducerTests : IDisposable
         // Close
         socketOutput.CancelPendingFlush();
 
-        await socketOutput.WriteDataAsync(new byte[] { 1, 2, 3, 4 }, default);
-        var cancelResult = await socketOutput.FlushAsync();
+        var cancelResult = await socketOutput.WriteDataToPipeAsync(new byte[] { 1, 2, 3, 4 }, default);
         Assert.True(cancelResult.IsCanceled);
 
         socketOutput.Pipe.Writer.Complete();
