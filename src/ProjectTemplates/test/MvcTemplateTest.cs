@@ -113,14 +113,17 @@ public class MvcTemplateTest : LoggedTest
     }
 
     [ConditionalTheory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
+    public async Task MvcTemplate_IndividualAuth(bool useLocalDB, bool useProgramMain)
     {
         var project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
 
-        var createResult = await project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: useLocalDB);
+        var args = useProgramMain ? new [] { "--use-program-main" } : null;
+        var createResult = await project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: useLocalDB, args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
         var projectFileContents = project.ReadFile($"{project.ProjectName}.csproj");
