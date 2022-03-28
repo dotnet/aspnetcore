@@ -4560,6 +4560,94 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("HELLO, TESTNAMEPREFIX!", responseBody);
     }
 
+    [Fact]
+    public void RequestDelegateFactory_DiscoversEndpointParameterMetadata_FromParamaters()
+    {
+        var httpContext = CreateHttpContext();
+
+        var @delegate = (ProvidesParameterMetadata param1, ProvidesParameterMetadata param2) => { };
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var metadata = factoryResult.EndpointMetadata;
+
+        Assert.Contains(metadata, m => m is ParameterNameMetadata pnm && string.Equals(pnm.Name, "param1", StringComparison.Ordinal));
+        Assert.Contains(metadata, m => m is ParameterNameMetadata pnm && string.Equals(pnm.Name, "param2", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RequestDelegateFactory_DiscoversEndpointMetadata_FromParameters()
+    {
+        var httpContext = CreateHttpContext();
+
+        var @delegate = (ProvidesParameterMetadata param1) => { };
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var metadata = factoryResult.EndpointMetadata;
+
+        Assert.Contains(metadata, m => m is CustomEndpointMetadata cem && cem.Source == MetadataSource.Parameter);
+    }
+
+    [Fact]
+    public void RequestDelegateFactory_DiscoversEndpointMetadata_FromReturnType()
+    {
+        var httpContext = CreateHttpContext();
+
+        var @delegate = () => new ProvidesEndpointResultMetadata();
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var metadata = factoryResult.EndpointMetadata;
+
+        Assert.Contains(metadata, m => m is CustomEndpointMetadata cem && cem.Source == MetadataSource.ReturnType);
+    }
+
+    [Fact]
+    public void RequestDelegateFactory_DiscoversEndpointMetadata_FromMethodAttributes()
+    {
+        var httpContext = CreateHttpContext();
+
+        var @delegate = [ProvidesMetadataAttribute("Some custom data")] () => { };
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var metadata = factoryResult.EndpointMetadata;
+
+        Assert.Contains(metadata, m => m is CustomEndpointMetadata cem && cem.Source == MetadataSource.MethodAttribute && string.Equals("Some custom data", cem.Data, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RequestDelegateFactory_ThrowsArgumentNullException_WhenNullReturnedFromIProvideEndpointMetadata_FromParameters()
+    {
+        var httpContext = CreateHttpContext();
+
+        var @delegate = (ProvidesNullParameterMetadata param1, ProvidesParameterMetadata param2) => { };
+
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+        });
+    }
+
+    [Fact]
+    public void RequestDelegateFactory_ThrowsArgumentNullException_WhenNullReturnedFromIProvideEndpointMetadata_FromReturnType()
+    {
+        var httpContext = CreateHttpContext();
+
+        var @delegate = () => new ProvidesNullEndpointResultMetadata();
+
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+        });
+    }
+
+    [Fact]
+    public void RequestDelegateFactory_ThrowsArgumentNullException_WhenNullReturnedFromIProvideEndpointMetadata_FromMethodAttributes()
+    {
+        var httpContext = CreateHttpContext();
+
+        var @delegate = [ProvidesNullMetadataAttribute("Some custom data")] () => { };
+
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            var factoryResult = RequestDelegateFactory.Create(@delegate);
+        });
+    }
+
     private DefaultHttpContext CreateHttpContext()
     {
         var responseFeature = new TestHttpResponseFeature();
@@ -4574,6 +4662,119 @@ public class RequestDelegateFactoryTests : LoggedTest
                     [typeof(IHttpRequestLifetimeFeature)] = new TestHttpRequestLifetimeFeature(),
                 }
         };
+    }
+
+    private class ProvidesEndpointResultMetadata : IProvideEndpointMetadata, IResult
+    {
+        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
+        {
+            yield return new CustomEndpointMetadata { Source = MetadataSource.ReturnType };
+        }
+
+        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
+    }
+
+    private class ProvidesNullEndpointResultMetadata : IProvideEndpointMetadata, IResult
+    {
+        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
+        {
+#pragma warning disable CS8603 // Possible null reference return.
+            return null;
+#pragma warning restore CS8603 // Possible null reference return.
+        }
+
+        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
+    }
+
+    private class ProvidesParameterMetadata : IProvideEndpointParameterMetadata, IProvideEndpointMetadata
+    {
+        public static IEnumerable<object> GetMetadata(ParameterInfo parameter, IServiceProvider services)
+        {
+            yield return new ParameterNameMetadata { Name = parameter.Name };
+        }
+
+        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
+        {
+            yield return new CustomEndpointMetadata { Source = MetadataSource.Parameter };
+        }
+
+        public static ValueTask<ProvidesParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
+    }
+
+    private class ProvidesNullParameterMetadata : IProvideEndpointParameterMetadata, IProvideEndpointMetadata
+    {
+        public static IEnumerable<object> GetMetadata(ParameterInfo parameter, IServiceProvider services)
+        {
+#pragma warning disable CS8603 // Possible null reference return.
+            return null;
+#pragma warning restore CS8603 // Possible null reference return.
+        }
+
+        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
+        {
+#pragma warning disable CS8603 // Possible null reference return.
+            return null;
+#pragma warning restore CS8603 // Possible null reference return.
+        }
+
+        public static ValueTask<ProvidesNullParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
+    }
+
+    private class ParameterNameMetadata
+    {
+        public string? Name { get; init; }
+    }
+
+    private class CustomEndpointMetadata
+    {
+        public string? Data { get; init; }
+
+        public MetadataSource Source { get; init; }
+    }
+
+    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
+    private sealed class ProvidesMetadataAttribute : Attribute, IProvideEndpointMetadata
+    {
+        public ProvidesMetadataAttribute(string someData)
+        {
+            SomeData = someData;
+        }
+
+        public string SomeData { get; init; }
+
+        public MetadataSource Source => MetadataSource.MethodAttribute;
+
+        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
+        {
+            yield return new CustomEndpointMetadata { Source = MetadataSource.MethodAttribute, Data = methodInfo.GetCustomAttribute<ProvidesMetadataAttribute>()?.SomeData };
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
+    private sealed class ProvidesNullMetadataAttribute : Attribute, IProvideEndpointMetadata
+    {
+        public ProvidesNullMetadataAttribute(string someData)
+        {
+            SomeData = someData;
+        }
+
+        public string SomeData { get; init; }
+
+        public MetadataSource Source => MetadataSource.MethodAttribute;
+
+        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
+        {
+#pragma warning disable CS8603 // Possible null reference return.
+            return null;
+#pragma warning restore CS8603 // Possible null reference return.
+        }
+    }
+
+    private enum MetadataSource
+    {
+        Parameter,
+        ReturnType,
+        MethodAttribute
     }
 
     private class Todo : ITodo

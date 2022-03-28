@@ -251,7 +251,7 @@ public static partial class RequestDelegateFactory
             if (typeof(IProvideEndpointMetadata).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IProvideEndpointMetadata
-                var metadata = GetMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, new object?[] { parameter, factoryContext.ServiceProvider });
+                var metadata = GetMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, new object?[] { methodInfo, factoryContext.ServiceProvider });
                 if (metadata is null)
                 {
                     throw new ArgumentNullException(null, argumentNullExceptionMessage);
