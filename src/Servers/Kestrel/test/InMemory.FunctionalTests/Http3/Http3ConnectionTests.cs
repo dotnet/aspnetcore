@@ -128,6 +128,7 @@ public class Http3ConnectionTests : Http3TestBase
 
         await requestStream.SendHeadersAsync(requestHeaders, endStream: false);
 
+        //requestStream.Connection.Abort(new ConnectionAbortedException());
         var http3Stream = (Http3Stream)streamContext.Features.Get<IPersistentStateFeature>().State[Http3Connection.StreamPersistentStateKey];
 
         http3Stream.CancelPendingFlush();
