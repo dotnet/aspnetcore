@@ -93,7 +93,9 @@ internal class Http2FrameWriter
 
     public void Schedule(Http2OutputProducer producer)
     {
-        _channel.Writer.TryWrite(producer);
+        var scheduled = _channel.Writer.TryWrite(producer);
+
+        Debug.Assert(scheduled, $"Unable to schedule Stream {producer.Stream.StreamId}");
     }
 
     private async Task WriteToOutputPipe()
@@ -191,14 +193,8 @@ internal class Http2FrameWriter
                     {
                         stream.DecrementActiveClientStreamCount();
 
-                        if (producer.WriteHeaders)
-                        {
-                            // write headers
-                            WriteResponseHeaders(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.END_STREAM, (HttpResponseHeaders)stream.ResponseHeaders);
-                        }
-
                         // Headers have already been written and there is no other content to write
-                        flushResult = await FlushAsync(outputAborter: null, cancellationToken: default);
+                        flushResult = await FlushAsync(stream, producer.WriteHeaders, outputAborter: null, cancellationToken: default);
                     }
                 }
                 else
@@ -334,13 +330,19 @@ internal class Http2FrameWriter
         }
     }
 
-    public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
+    private ValueTask<FlushResult> FlushAsync(Http2Stream stream, bool firstWrite, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
     {
         lock (_writeLock)
         {
             if (_completed)
             {
                 return default;
+            }
+
+            if (firstWrite)
+            {
+                // write headers
+                WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.END_STREAM, (HttpResponseHeaders)stream.ResponseHeaders);
             }
 
             var bytesWritten = _unflushedBytes;
