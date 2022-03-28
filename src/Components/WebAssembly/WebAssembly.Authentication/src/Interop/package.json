@@ -29,6 +29,7 @@
     "oidc-client": "^1.11.5"
   },
   "resolutions": {
-    "ansi-regex": "5.0.1"
+    "ansi-regex": "5.0.1",
+    "minimist": ">=1.2.6"
   }
 }
