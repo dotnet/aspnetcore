@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RunTests
 {
-    class Program
+    internal class Program
     {
         static async Task Main(string[] args)
         {
