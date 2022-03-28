@@ -49,7 +49,7 @@ internal class ClientResultsManager : IInvocationBinder
         {
             if (item.ConnectionId != connectionId)
             {
-                throw new Exception("wrong ID");
+                throw new InvalidOperationException($"Connection ID '{connectionId}' is not valid for invocation ID '{message.InvocationId}'.");
             }
 
             // if false the connection disconnected right after the above TryGetValue
@@ -90,7 +90,7 @@ internal class ClientResultsManager : IInvocationBinder
         {
             return type;
         }
-        throw new InvalidOperationException();
+        throw new InvalidOperationException($"Invocation ID '{invocationId}' is not associated with a pending client result.");
     }
 
     // Unused, here to honor the IInvocationBinder interface but should never be called

@@ -146,7 +146,7 @@ public abstract class HubLifetimeManager<THub> where THub : Hub
     /// <returns>The response from the connection.</returns>
     public virtual Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException($"{GetType().Name} does not support client return values.");
     }
 
     /// <summary>
@@ -157,7 +157,7 @@ public abstract class HubLifetimeManager<THub> where THub : Hub
     /// <returns>A <see cref="Task"/> that represents the result being set or being forwarded to another server.</returns>
     public virtual Task SetConnectionResultAsync(string connectionId, CompletionMessage result)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException($"{GetType().Name} does not support client return values.");
     }
 
     /// <summary>

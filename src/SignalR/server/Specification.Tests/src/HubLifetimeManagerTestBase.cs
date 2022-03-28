@@ -248,10 +248,10 @@ public abstract class HubLifetimeManagerTestsBase<THub> where THub : Hub
             Assert.NotNull(invocation.InvocationId);
             Assert.Equal("test", invocation.Arguments[0]);
 
-            var ex = await Assert.ThrowsAsync<Exception>(() =>
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 manager.SetConnectionResultAsync(connection2.ConnectionId, CompletionMessage.WithError(invocation.InvocationId, "Error from client"))).DefaultTimeout();
 
-            Assert.Equal("wrong ID", ex.Message);
+            Assert.Equal($"Connection ID '{connection2.ConnectionId}' is not valid for invocation ID '{invocation.InvocationId}'.", ex.Message);
 
             // Internal state for invocation isn't affected by wrong client, check that we can still complete the invocation
             await manager.SetConnectionResultAsync(connection1.ConnectionId, CompletionMessage.WithResult(invocation.InvocationId, 10)).DefaultTimeout();
