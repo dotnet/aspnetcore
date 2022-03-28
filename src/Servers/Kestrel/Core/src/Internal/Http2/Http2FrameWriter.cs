@@ -330,7 +330,7 @@ internal class Http2FrameWriter
         }
     }
 
-    private ValueTask<FlushResult> FlushAsync(Http2Stream stream, bool firstWrite, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
+    private ValueTask<FlushResult> FlushAsync(Http2Stream stream, bool writeHeaders, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
     {
         lock (_writeLock)
         {
@@ -339,7 +339,7 @@ internal class Http2FrameWriter
                 return default;
             }
 
-            if (firstWrite)
+            if (writeHeaders)
             {
                 // write headers
                 WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.END_STREAM, (HttpResponseHeaders)stream.ResponseHeaders);
@@ -415,7 +415,7 @@ internal class Http2FrameWriter
         }
     }
 
-    private ValueTask<FlushResult> WriteResponseTrailersAsync(Http2Stream stream, bool firstWrite, HttpResponseTrailers headers)
+    private ValueTask<FlushResult> WriteResponseTrailersAsync(Http2Stream stream, bool writeHeaders, HttpResponseTrailers headers)
     {
         lock (_writeLock)
         {
@@ -424,7 +424,7 @@ internal class Http2FrameWriter
                 return default;
             }
 
-            if (firstWrite)
+            if (writeHeaders)
             {
                 WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
             }
@@ -480,7 +480,7 @@ internal class Http2FrameWriter
         }
     }
 
-    public ValueTask<FlushResult> WriteDataAndTrailersAsync(Http2Stream stream, in ReadOnlySequence<byte> data, bool firstWrite, HttpResponseTrailers headers)
+    public ValueTask<FlushResult> WriteDataAndTrailersAsync(Http2Stream stream, in ReadOnlySequence<byte> data, bool writeHeaders, HttpResponseTrailers headers)
     {
         // This method combines WriteDataAsync and WriteResponseTrailers.
         // Changes here may need to be mirrored in WriteDataAsync.
@@ -495,14 +495,14 @@ internal class Http2FrameWriter
                 return default;
             }
 
-            if (firstWrite)
+            if (writeHeaders)
             {
                 WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
             }
 
             WriteDataUnsynchronized(stream.StreamId, data, dataLength, endStream: false);
 
-            return WriteResponseTrailersAsync(stream, firstWrite: false, headers);
+            return WriteResponseTrailersAsync(stream, writeHeaders: false, headers);
         }
     }
 
@@ -587,7 +587,7 @@ internal class Http2FrameWriter
         }
     }
 
-    private ValueTask<FlushResult> WriteDataAsync(Http2Stream stream, ReadOnlySequence<byte> data, long dataLength, bool endStream, bool firstWrite)
+    private ValueTask<FlushResult> WriteDataAsync(Http2Stream stream, ReadOnlySequence<byte> data, long dataLength, bool endStream, bool writeHeaders)
     {
         var writeTask = default(ValueTask<FlushResult>);
 
@@ -600,7 +600,7 @@ internal class Http2FrameWriter
 
             var shouldFlush = false;
 
-            if (firstWrite)
+            if (writeHeaders)
             {
                 WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
 
