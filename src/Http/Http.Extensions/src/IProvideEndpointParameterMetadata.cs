@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Indicates that a type provides a static method that returns <see cref="Endpoint"/> metadata when declared as the
-/// parameter type of a route handler delegate. The method must be of the form:
+/// parameter type of an <see cref="Endpoint"/> route handler delegate. The method must be of the form:
 /// <code>public static <see cref="IEnumerable{Object}"/> GetMetadata(<see cref="ParameterInfo"/> parameter, <see cref="IServiceProvider"/> services)</code>
 /// </summary>
 public interface IProvideEndpointParameterMetadata

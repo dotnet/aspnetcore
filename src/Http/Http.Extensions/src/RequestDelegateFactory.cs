@@ -40,6 +40,8 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringIsNullOrEmptyMethod = typeof(string).GetMethod(nameof(string.IsNullOrEmpty), BindingFlags.Static | BindingFlags.Public)!;
     private static readonly MethodInfo WrapObjectAsValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WrapObjectAsValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo GetMetadataForParameterMethod = typeof(RequestDelegateFactory).GetMethod(nameof(GetMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo GetMetadataForEndpointMethod = typeof(RequestDelegateFactory).GetMethod(nameof(GetMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
     // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
@@ -162,6 +164,7 @@ public static partial class RequestDelegateFactory
     private static FactoryContext CreateFactoryContext(RequestDelegateFactoryOptions? options) =>
         new()
         {
+            ServiceProvider = options?.ServiceProvider,
             ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>(),
             RouteParameters = options?.RouteParameterNames?.ToList(),
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
@@ -190,6 +193,9 @@ public static partial class RequestDelegateFactory
         var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
         var returnType = methodInfo.ReturnType;
         factoryContext.MethodCall = CreateMethodCall(methodInfo, targetExpression, arguments);
+
+        // Add metadata provided by method attribute, argument, and return types
+        AddTypeProvidedMetadata(methodInfo, factoryContext);
 
         // If there are filters registered on the route handler, then we update the method call and
         // return type associated with the request to allow for the filter invocation pipeline.
@@ -220,6 +226,76 @@ public static partial class RequestDelegateFactory
         }
 
         return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
+    }
+
+    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, FactoryContext factoryContext)
+    {
+        // Get metadata from parameter types
+        var parameters = methodInfo.GetParameters();
+        foreach (var parameter in parameters)
+        {
+            if (typeof(IProvideEndpointParameterMetadata).IsAssignableFrom(parameter.ParameterType))
+            {
+                // Parameter type implements IProvideEndpointParameterMetadata
+                var metadata = GetMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, new object?[] { parameter, factoryContext.ServiceProvider });
+                if (metadata is null)
+                {
+                    throw new ArgumentNullException(null, "");
+                }
+
+                factoryContext.Metadata.AddRange((IEnumerable<object>)metadata);
+            }
+
+            if (typeof(IProvideEndpointMetadata).IsAssignableFrom(parameter.ParameterType))
+            {
+                // Parameter type implements IProvideEndpointMetadata
+                var metadata = GetMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, new object?[] { parameter, factoryContext.ServiceProvider });
+                if (metadata is null)
+                {
+                    throw new ArgumentNullException(null, "");
+                }
+
+                factoryContext.Metadata.AddRange((IEnumerable<object>)metadata);
+            }
+        }
+
+        // Get metadata from return type
+        if (methodInfo.ReturnType is not null && typeof(IProvideEndpointMetadata).IsAssignableFrom(methodInfo.ReturnType))
+        {
+            // Return type implements IProvideEndpointMetadata
+            var metadata = GetMetadataForEndpointMethod.MakeGenericMethod(methodInfo.ReturnType).Invoke(null, new object?[] { methodInfo, factoryContext.ServiceProvider });
+            if (metadata is null)
+            {
+                throw new ArgumentNullException(null, "");
+            }
+
+            factoryContext.Metadata.AddRange((IEnumerable<object>)metadata);
+        }
+
+        // Get metadata from method attributes that implement IProvideEndpointMetadata
+        var methodAttrs = methodInfo.GetCustomAttributes(inherit: true).OfType<IProvideEndpointMetadata>().ToList();
+        foreach (var attribute in methodAttrs)
+        {
+            var metadata = GetMetadataForEndpointMethod.MakeGenericMethod(attribute.GetType()).Invoke(null, new object?[] { methodInfo, factoryContext.ServiceProvider });
+            if (metadata is null)
+            {
+                throw new ArgumentNullException(null, "");
+            }
+
+            factoryContext.Metadata.AddRange((IEnumerable<object>)metadata);
+        }
+    }
+
+    private static IEnumerable<object> GetMetadataForParameter<T>(ParameterInfo parameter, IServiceProvider services)
+        where T : IProvideEndpointParameterMetadata
+    {
+        return T.GetMetadata(parameter, services);
+    }
+
+    private static IEnumerable<object> GetMetadataForEndpoint<T>(MethodInfo methodInfo, IServiceProvider services)
+        where T : IProvideEndpointMetadata
+    {
+        return T.GetMetadata(methodInfo, services);
     }
 
     private static RouteHandlerFilterDelegate CreateFilterPipeline(MethodInfo methodInfo, Expression? target, FactoryContext factoryContext)
@@ -1669,6 +1745,7 @@ public static partial class RequestDelegateFactory
     private class FactoryContext
     {
         // Options
+        public IServiceProvider? ServiceProvider { get; init; }
         public IServiceProviderIsService? ServiceProviderIsService { get; init; }
         public List<string>? RouteParameters { get; init; }
         public bool ThrowOnBadRequest { get; init; }
