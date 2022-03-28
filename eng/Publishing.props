@@ -100,7 +100,7 @@
       and npm project. We use Microsoft.AspNetCore.App.Runtime.csproj because it is shipping (we need a stable
       version string to use for productVersion.txt).
     -->
-    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+    <MSBuild Projects="$(RepoRoot)src\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.npmproj"
         Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
