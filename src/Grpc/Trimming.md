@@ -1,6 +1,6 @@
 # Guide to trimming ASP.NET Core
 
-This guide discusses the steps required to enable, annotate, and verify trimming in ASP.NET Core assemblies. An assembly that supports trimming knows all the types and members it needs at runtime. Unused code is removed when an app is published, reducing app size. Trimming is also a prelude to supporting AOT, which requires knowledge of the APIs used by an app on build.
+This guide discusses the steps required to enable, annotate, and verify trimming in ASP.NET Core assemblies. An assembly that supports trimming knows all the types and members it needs at runtime. Unused code is removed when an app is published, reducing app size. Trimming is also a precursor to supporting AOT, which requires knowledge of the APIs used by an app on build.
 
 [Trim self-contained deployments and executables](https://docs.microsoft.com/dotnet/core/deploying/trimming/trim-self-contained) has general documentation for trimming. It includes:
 
@@ -18,15 +18,16 @@ For example, `Microsoft.AspNetCore.Http` depends on `Microsoft.AspNetCore.Http.A
 
 The first step to trimming an ASP.NET Core assembly is adding it to `LinkabilityChecker`. `LinkabilityChecker` is a tool in the ASP.NET Core repo that runs ILLink on its referenced assemblies and outputs trim warnings.
 
-1. Add the project to `Tools.slnf`.
-  1. Right-click solution and select *View unloaded projects*.
-  2. Right-click on the project and select *Reload project*.
-  3. Update the solution filter.
-2. Update the project file to enable trimming `<Trimmable>true</Trimmable>`.
-3. Run `eng/scripts/GenerateProjectList.ps1` to update the list of projects that are known to be trimmable.
-4. Build `LinkabilityChecker`.
+1. Open `Tools.slnf`
+2. Add the project to `Tools.slnf`.
+    1. Right-click solution and select *View unloaded projects*.
+    2. Right-click on the project and select *Reload project*.
+    3. Update the solution filter.
+3. Update the project file to enable trimming `<Trimmable>true</Trimmable>`.
+4. Run `eng/scripts/GenerateProjectList.ps1` to update the list of projects that are known to be trimmable.
+5. Build `LinkabilityChecker`.
 
-There isn't enough type information when building an assembly to provide all trimming warnings, so `LinkabilityChecker` is required. It's possible to introduce new trim warnings during typical dev work after annotating an assembly for trimming. `LinkabilityChecker` automatically runs on the build server and catches new warnings.
+`LinkabilityChecker` is required to get a complete list of trim warnings because there isn't enough type information when building an assembly. It's possible to introduce new trim warnings during typical dev work after annotating an assembly for trimming. `LinkabilityChecker` automatically runs on the build server and catches new warnings.
 
 ## Fix trim warnings
 
