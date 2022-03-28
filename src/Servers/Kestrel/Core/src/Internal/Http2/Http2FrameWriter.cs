@@ -587,17 +587,15 @@ internal class Http2FrameWriter
         }
     }
 
-    private async ValueTask<FlushResult> WriteDataAsync(Http2Stream stream, ReadOnlySequence<byte> data, long dataLength, bool endStream, bool firstWrite)
+    private ValueTask<FlushResult> WriteDataAsync(Http2Stream stream, ReadOnlySequence<byte> data, long dataLength, bool endStream, bool firstWrite)
     {
-        FlushResult flushResult = default;
-
         var writeTask = default(ValueTask<FlushResult>);
 
         lock (_writeLock)
         {
             if (_completed)
             {
-                return flushResult;
+                return new(default(FlushResult));
             }
 
             var shouldFlush = false;
@@ -631,19 +629,28 @@ internal class Http2FrameWriter
             }
         }
 
-        if (_minResponseDataRate != null)
+        if (writeTask.IsCompletedSuccessfully)
         {
-            _timeoutControl.StartTimingWrite();
+            return new(writeTask.Result);
         }
 
-        flushResult = await writeTask;
+        return FlushAsyncAwaited(writeTask, _timeoutControl, _minResponseDataRate);
 
-        if (_minResponseDataRate != null)
+        static async ValueTask<FlushResult> FlushAsyncAwaited(ValueTask<FlushResult> writeTask, ITimeoutControl timeoutControl, MinDataRate? minResponseDataRate)
         {
-            _timeoutControl.StopTimingWrite();
-        }
+            if (minResponseDataRate != null)
+            {
+                timeoutControl.StartTimingWrite();
+            }
 
-        return flushResult;
+            var flushResult = await writeTask;
+
+            if (minResponseDataRate != null)
+            {
+                timeoutControl.StopTimingWrite();
+            }
+            return flushResult;
+        }
     }
 
     /* https://tools.ietf.org/html/rfc7540#section-6.9
