@@ -41,7 +41,7 @@
       <argument>ILLink</argument>
       <argument>IL2060</argument>
       <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.&lt;&gt;c.&lt;GetTaskByType&gt;b__13_0(System.Type,System.Reflection.MethodInfo)</property>
+      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.&lt;&gt;c.&lt;GetTaskByType&gt;b__14_0(System.Type,System.Reflection.MethodInfo)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>
