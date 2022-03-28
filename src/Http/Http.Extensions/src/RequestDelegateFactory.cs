@@ -230,6 +230,8 @@ public static partial class RequestDelegateFactory
 
     private static void AddTypeProvidedMetadata(MethodInfo methodInfo, FactoryContext factoryContext)
     {
+        const string argumentNullExceptionMessage = "The IEnumerable<object> returned from GetMetadata must not be null.";
+
         // Get metadata from parameter types
         var parameters = methodInfo.GetParameters();
         foreach (var parameter in parameters)
@@ -240,7 +242,7 @@ public static partial class RequestDelegateFactory
                 var metadata = GetMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, new object?[] { parameter, factoryContext.ServiceProvider });
                 if (metadata is null)
                 {
-                    throw new ArgumentNullException(null, "");
+                    throw new ArgumentNullException(null, argumentNullExceptionMessage);
                 }
 
                 factoryContext.Metadata.AddRange((IEnumerable<object>)metadata);
@@ -252,7 +254,7 @@ public static partial class RequestDelegateFactory
                 var metadata = GetMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, new object?[] { parameter, factoryContext.ServiceProvider });
                 if (metadata is null)
                 {
-                    throw new ArgumentNullException(null, "");
+                    throw new ArgumentNullException(null, argumentNullExceptionMessage);
                 }
 
                 factoryContext.Metadata.AddRange((IEnumerable<object>)metadata);
@@ -266,7 +268,7 @@ public static partial class RequestDelegateFactory
             var metadata = GetMetadataForEndpointMethod.MakeGenericMethod(methodInfo.ReturnType).Invoke(null, new object?[] { methodInfo, factoryContext.ServiceProvider });
             if (metadata is null)
             {
-                throw new ArgumentNullException(null, "");
+                throw new ArgumentNullException(null, argumentNullExceptionMessage);
             }
 
             factoryContext.Metadata.AddRange((IEnumerable<object>)metadata);
@@ -279,7 +281,7 @@ public static partial class RequestDelegateFactory
             var metadata = GetMetadataForEndpointMethod.MakeGenericMethod(attribute.GetType()).Invoke(null, new object?[] { methodInfo, factoryContext.ServiceProvider });
             if (metadata is null)
             {
-                throw new ArgumentNullException(null, "");
+                throw new ArgumentNullException(null, argumentNullExceptionMessage);
             }
 
             factoryContext.Metadata.AddRange((IEnumerable<object>)metadata);
