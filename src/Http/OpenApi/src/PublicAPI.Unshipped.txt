@@ -1,0 +1,4 @@
+#nullable enable
+Microsoft.AspNetCore.OpenApi.OpenApiRouteHandlerBuilderExtensions
+static Microsoft.AspNetCore.OpenApi.OpenApiRouteHandlerBuilderExtensions.WithOpenApi(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static Microsoft.AspNetCore.OpenApi.OpenApiRouteHandlerBuilderExtensions.WithOpenApi(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, System.Func<Microsoft.OpenApi.Models.OpenApiOperation!, Microsoft.OpenApi.Models.OpenApiOperation!>! configureOperation) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!

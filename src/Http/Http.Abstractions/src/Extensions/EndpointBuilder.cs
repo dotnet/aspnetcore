@@ -26,6 +26,11 @@ public abstract class EndpointBuilder
     public IList<object> Metadata { get; } = new List<object>();
 
     /// <summary>
+    /// Gets the <see cref="IServiceProvider"/> associated with the endpoint.
+    /// </summary>
+    public IServiceProvider? ServiceProvider { get; set; }
+
+    /// <summary>
     /// Creates an instance of <see cref="Endpoint"/> from the <see cref="EndpointBuilder"/>.
     /// </summary>
     /// <returns>The created <see cref="Endpoint"/>.</returns>
