@@ -18,16 +18,15 @@ For example, `Microsoft.AspNetCore.Http` depends on `Microsoft.AspNetCore.Http.A
 
 The first step to trimming an ASP.NET Core assembly is adding it to `LinkabilityChecker`. `LinkabilityChecker` is a tool in the ASP.NET Core repo that runs ILLink on its referenced assemblies and outputs trim warnings.
 
-1. Open `Tools.slnf`
-2. Add the project to `Tools.slnf`.
-    1. Right-click solution and select *View unloaded projects*.
-    2. Right-click on the project and select *Reload project*.
-    3. Update the solution filter.
-3. Update the project file to enable trimming `<Trimmable>true</Trimmable>`.
-4. Run `eng/scripts/GenerateProjectList.ps1` to update the list of projects that are known to be trimmable.
+1. Update the project file to enable trimming `<Trimmable>true</Trimmable>`.
+2. Run `eng/scripts/GenerateProjectList.ps1` to update the list of projects that are known to be trimmable. The script adds the project to the list of known trimmable projects at [`eng/TrimmableProjects.props`](../eng/TrimmableProjects.props).
+3. Open `Tools.slnf`
+4. Add the project to `Tools.slnf`.
+    1. Right-click `LinkabilityCheck` and select *Load Direct Dependencies*.
+    2. Update the solution filter.
 5. Build `LinkabilityChecker`.
 
-`LinkabilityChecker` is required to get a complete list of trim warnings because there isn't enough type information when building an assembly. It's possible to introduce new trim warnings during typical dev work after annotating an assembly for trimming. `LinkabilityChecker` automatically runs on the build server and catches new warnings.
+`LinkabilityChecker` is required to get a complete list of trim warnings because there isn't enough type information when building an assembly on its own. It's possible to introduce new trim warnings during typical dev work after annotating an assembly for trimming. `LinkabilityChecker` automatically runs on the build server and catches new warnings.
 
 ## Fix trim warnings
 
