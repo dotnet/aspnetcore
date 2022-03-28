@@ -1,4 +1,8 @@
 #nullable enable
+Microsoft.AspNetCore.Http.IProvideEndpointParameterMetadata
+Microsoft.AspNetCore.Http.IProvideEndpointParameterMetadata.GetMetadata(System.Reflection.ParameterInfo! parameter, System.IServiceProvider! services) -> System.Collections.Generic.IEnumerable<object!>!
+Microsoft.AspNetCore.Http.IProvideEndpointResponseMetadata
+Microsoft.AspNetCore.Http.IProvideEndpointResponseMetadata.GetMetadata(Microsoft.AspNetCore.Http.Endpoint! endpoint, System.IServiceProvider! services) -> System.Collections.Generic.IEnumerable<object!>!
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.RouteHandlerContext!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!>!>?
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.init -> void
 Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions
