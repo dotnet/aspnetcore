@@ -39,7 +39,8 @@ public class W3CLoggerTests
                 Assert.StartsWith("#Start-Date: ", lines[1]);
                 var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
                 // Assert that the log was written in the last 10 seconds
-                Assert.True(now.Subtract(startDate).TotalSeconds < 10);
+                var delta = now.Subtract(startDate).TotalSeconds;
+                Assert.True(delta < 10 && delta >= 0);
 
                 Assert.Equal("#Fields: date time", lines[2]);
 
@@ -80,7 +81,8 @@ public class W3CLoggerTests
                 Assert.StartsWith("#Start-Date: ", lines[1]);
                 var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
                 // Assert that the log was written in the last 10 seconds
-                Assert.True(now.Subtract(startDate).TotalSeconds < 10);
+                var delta = now.Subtract(startDate).TotalSeconds;
+                Assert.True(delta < 10 && delta >= 0);
 
                 Assert.Equal("#Fields: cs-uri-query sc-status cs-host", lines[2]);
                 Assert.Equal("- - -", lines[3]);
