@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Internal;
@@ -16,12 +14,7 @@ internal struct CopyOnWriteDictionaryHolder<TKey, TValue> where TKey : notnull
 
     public CopyOnWriteDictionaryHolder(Dictionary<TKey, TValue> source)
     {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-
-        _source = source;
+        _source = source ?? throw new ArgumentNullException(nameof(source));
         _copy = null;
     }
 
@@ -41,16 +34,15 @@ internal struct CopyOnWriteDictionaryHolder<TKey, TValue> where TKey : notnull
             {
                 return _copy;
             }
-            else if (_source != null)
+
+            if (_source != null)
             {
                 return _source;
             }
-            else
-            {
-                // Default-Constructor case
-                _copy = new Dictionary<TKey, TValue>();
-                return _copy;
-            }
+
+            // Default-Constructor case
+            _copy = new Dictionary<TKey, TValue>();
+            return _copy;
         }
     }
 
@@ -58,62 +50,29 @@ internal struct CopyOnWriteDictionaryHolder<TKey, TValue> where TKey : notnull
     {
         get
         {
-            if (_copy == null && _source == null)
+            _copy = _copy switch
             {
-                // Default-Constructor case
-                _copy = new Dictionary<TKey, TValue>();
-            }
-            else if (_copy == null)
-            {
-                _copy = new Dictionary<TKey, TValue>(_source, _source.Comparer);
-            }
+                null when _source == null => new Dictionary<TKey, TValue>(),  // Default-Constructor case
+                null => new Dictionary<TKey, TValue>(_source, _source.Comparer),
+                _ => _copy
+            };
 
             return _copy;
         }
     }
 
-    public Dictionary<TKey, TValue>.KeyCollection Keys
-    {
-        get
-        {
-            return ReadDictionary.Keys;
-        }
-    }
+    public Dictionary<TKey, TValue>.KeyCollection Keys => ReadDictionary.Keys;
 
-    public Dictionary<TKey, TValue>.ValueCollection Values
-    {
-        get
-        {
-            return ReadDictionary.Values;
-        }
-    }
+    public Dictionary<TKey, TValue>.ValueCollection Values => ReadDictionary.Values;
 
-    public int Count
-    {
-        get
-        {
-            return ReadDictionary.Count;
-        }
-    }
+    public int Count => ReadDictionary.Count;
 
-    public static bool IsReadOnly
-    {
-        get
-        {
-            return false;
-        }
-    }
+    public static bool IsReadOnly => false;
 
     public TValue this[TKey key]
     {
-        get
-        {
-            return ReadDictionary[key];
-        }
-        set
-        {
-            WriteDictionary[key] = value;
-        }
+        get => ReadDictionary[key];
+        set => WriteDictionary[key] = value;
     }
 
     public bool ContainsKey(TKey key)
