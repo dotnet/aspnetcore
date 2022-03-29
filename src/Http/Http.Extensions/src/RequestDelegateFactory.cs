@@ -275,7 +275,7 @@ public static partial class RequestDelegateFactory
         }
 
         // Get metadata from method attributes that implement IProvideEndpointMetadata
-        var methodAttrs = methodInfo.GetCustomAttributes(inherit: true).OfType<IProvideEndpointMetadata>().ToList();
+        var methodAttrs = methodInfo.GetCustomAttributes(inherit: true).OfType<IProvideEndpointMetadata>();
         foreach (var attribute in methodAttrs)
         {
             var metadata = GetMetadataForEndpointMethod.MakeGenericMethod(attribute.GetType()).Invoke(null, new object?[] { methodInfo, factoryContext.ServiceProvider });

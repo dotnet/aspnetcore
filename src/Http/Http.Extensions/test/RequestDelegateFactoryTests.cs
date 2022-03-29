@@ -4561,7 +4561,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public void RequestDelegateFactory_DiscoversEndpointParameterMetadata_FromParamaters()
+    public void RequestDelegateFactory_DiscoversEndpointParameterMetadata_FromParameters()
     {
         var httpContext = CreateHttpContext();
 
@@ -4678,9 +4678,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
         {
-#pragma warning disable CS8603 // Possible null reference return.
-            return null;
-#pragma warning restore CS8603 // Possible null reference return.
+            return null!;
         }
 
         public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
@@ -4705,16 +4703,12 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         public static IEnumerable<object> GetMetadata(ParameterInfo parameter, IServiceProvider services)
         {
-#pragma warning disable CS8603 // Possible null reference return.
-            return null;
-#pragma warning restore CS8603 // Possible null reference return.
+            return null!;
         }
 
         public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
         {
-#pragma warning disable CS8603 // Possible null reference return.
-            return null;
-#pragma warning restore CS8603 // Possible null reference return.
+            return null!;
         }
 
         public static ValueTask<ProvidesNullParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
@@ -4764,9 +4758,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
         {
-#pragma warning disable CS8603 // Possible null reference return.
-            return null;
-#pragma warning restore CS8603 // Possible null reference return.
+            return null!;
         }
     }
 
