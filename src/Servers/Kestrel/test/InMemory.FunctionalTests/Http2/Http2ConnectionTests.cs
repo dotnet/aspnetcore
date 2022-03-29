@@ -430,50 +430,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    public async Task FlushAsync_OnAbortedRequest_ReturnsResultWithIsCompletedTrue()
-    {
-        // Add stream to Http2Connection._completedStreams inline with SetResult().
-        var serverTcs = new TaskCompletionSource();
-
-        await InitializeConnectionAsync(async context =>
-        {
-            await serverTcs.Task;
-        });
-
-        await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-
-        var stream = _connection._streams[1];
-        stream.Abort(new IOException());
-
-        var output = (Http2OutputProducer)stream.Output;
-        var result = await output.FlushAsync(new CancellationToken());
-
-        Assert.True(result.IsCompleted);
-    }
-    [Fact]
-    public async Task FlushAsync_OnCanceledPendingFlush_ReturnsResultWithIsCanceledTrue()
-    {
-        // Add stream to Http2Connection._completedStreams inline with SetResult().
-        var serverTcs = new TaskCompletionSource();
-
-        await InitializeConnectionAsync(async context =>
-        {
-            await serverTcs.Task;
-        });
-
-        await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-
-        var stream = _connection._streams[1];
-
-        var output = (Http2OutputProducer)stream.Output;
-        output.CancelPendingFlush();
-
-        var result = await output.FlushAsync(new CancellationToken());
-
-        Assert.True(result.IsCanceled);
-    }
-
-    [Fact]
     public async Task StreamPool_MultipleStreamsConcurrent_StreamsReturnedToPool()
     {
         await InitializeConnectionAsync(_echoApplication);

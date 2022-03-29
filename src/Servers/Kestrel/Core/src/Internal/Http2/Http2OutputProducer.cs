@@ -39,7 +39,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     private bool _suffixSent;
     private bool _streamEnded;
     private bool _writerComplete;
-    private bool _pendingFlushCanceled;
 
     // Internal for testing
     internal Task _dataWriteProcessingTask;
@@ -89,8 +88,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         _startedWritingDataFrames = false;
         _streamCompleted = false;
         _writerComplete = false;
-        _pendingFlushCanceled = false;
-
         _pipe.Reset();
         _pipeWriter.Reset();
         _responseCompleteTaskSource.Reset();
@@ -153,11 +150,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             ThrowIfSuffixSentOrCompleted();
             if (_streamCompleted)
             {
-                return new ValueTask<FlushResult>(new FlushResult(false, false));
-            }
-            if (_pendingFlushCanceled)
-            {
-                return new ValueTask<FlushResult>(new FlushResult(true, false));
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             if (_startedWritingDataFrames)
@@ -335,7 +328,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             }
 
             _pipeWriter.CancelPendingFlush();
-            _pendingFlushCanceled = true;
         }
     }
 
@@ -354,7 +346,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             // frame will actually be written causing the headers to be flushed.
             if (_streamCompleted || data.Length == 0)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             _startedWritingDataFrames = true;

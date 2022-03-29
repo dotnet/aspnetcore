@@ -720,8 +720,12 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         _http1Connection.CancelPendingFlush();
 
-        var failResult= await _http1Connection.FlushPipeAsync(new CancellationToken());
-        Assert.True(failResult.IsCanceled);
+        var canceledResult= await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.True(canceledResult.IsCanceled);
+
+        //Cancel pending should cancel only next flush
+        var goodResult= await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.False(goodResult.IsCanceled);
     }
 
     [Fact]

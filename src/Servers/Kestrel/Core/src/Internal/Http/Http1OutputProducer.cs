@@ -40,7 +40,6 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
     private bool _pipeWriterCompleted;
     private bool _aborted;
-    private bool _pendingFlushCanceled;
     private long _unflushedBytes;
     private int _currentMemoryPrefixBytes;
 
@@ -145,10 +144,6 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             if (_pipeWriterCompleted)
             {
                 return new ValueTask<FlushResult>(new FlushResult(false, true));
-            }
-            if (_pendingFlushCanceled)
-            {
-                return new ValueTask<FlushResult>(new FlushResult(true, false));
             }
 
             if (_autoChunk)
@@ -284,7 +279,6 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     public void CancelPendingFlush()
     {
         _pipeWriter.CancelPendingFlush();
-        _pendingFlushCanceled = true;
     }
 
     // This method is for chunked http responses that directly call response.WriteAsync
@@ -492,7 +486,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false,true));
             }
 
             // Uses same BufferWriter to write response headers and response
@@ -512,7 +506,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             // Uses same BufferWriter to write response headers and chunk
@@ -550,7 +544,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             var writer = new BufferWriter<PipeWriter>(_pipeWriter);

@@ -104,6 +104,10 @@ public class Http1OutputProducerTests : IDisposable
         var cancelResult = await socketOutput.WriteDataToPipeAsync(new byte[] { 1, 2, 3, 4 }, default);
         Assert.True(cancelResult.IsCanceled);
 
+        // only one flush should be cancelled
+        var goodResult = await socketOutput.WriteDataToPipeAsync(new byte[] { 1, 2, 3, 4 }, default);
+        Assert.False(goodResult.IsCanceled);
+
         socketOutput.Pipe.Writer.Complete();
         socketOutput.Pipe.Reader.Complete();
     }
