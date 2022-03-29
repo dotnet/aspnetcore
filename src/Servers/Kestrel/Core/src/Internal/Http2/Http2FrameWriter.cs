@@ -151,7 +151,7 @@ internal class Http2FrameWriter
                     buffer = buffer.Slice(0, actual);
                 }
 
-                var (hasModeData, reschedule) = producer.Dequeue(buffer.Length, observed);
+                var (hasMoreData, reschedule) = producer.Dequeue(buffer.Length, observed);
 
                 FlushResult flushResult = default;
 
@@ -164,7 +164,7 @@ internal class Http2FrameWriter
                         WriteResponseHeaders(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
                     }
                 }
-                else if (readResult.IsCompleted && stream.ResponseTrailers is { Count: > 0 } && !hasModeData)
+                else if (readResult.IsCompleted && stream.ResponseTrailers is { Count: > 0 } && !hasMoreData)
                 {
                     // Output is ending and there are trailers to write
                     // Write any remaining content then write trailers and there's no
@@ -200,7 +200,7 @@ internal class Http2FrameWriter
                 }
                 else
                 {
-                    var endStream = readResult.IsCompleted && !hasModeData;
+                    var endStream = readResult.IsCompleted && !hasMoreData;
 
                     if (endStream)
                     {
@@ -219,7 +219,7 @@ internal class Http2FrameWriter
 
                 reader.AdvanceTo(buffer.End);
 
-                if ((readResult.IsCompleted && !hasModeData) || readResult.IsCanceled)
+                if ((readResult.IsCompleted && !hasMoreData) || readResult.IsCanceled)
                 {
                     await reader.CompleteAsync();
 
@@ -227,7 +227,7 @@ internal class Http2FrameWriter
                 }
                 // We're not going to schedule this again if there's no remaining window.
                 // When the window update is sent, the producer will be re-queued if needed.
-                else if (hasModeData)
+                else if (hasMoreData)
                 {
                     // We have no more connection window, put this producer in a queue waiting for it to
                     // a window update to resume the connection.
