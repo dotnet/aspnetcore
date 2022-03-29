@@ -705,7 +705,7 @@ public static class Results
     /// <summary>
     /// Produces an empty result response, that when executed will do nothing.
     /// </summary>
-    public static IResult Empty { get; } = new EmptyHttpResult();
+    public static IResult Empty { get; } = EmptyHttpResult.Instance;
 
     /// <summary>
     /// Provides a container for external libraries to extend

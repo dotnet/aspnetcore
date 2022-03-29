@@ -82,7 +82,7 @@ using System.CodeDom.Compiler;
 internal static partial class ResultsCache
 {
 <# foreach (var statusCode in statusCodes) { #>
-    private static readonly StatusCodeHttpResult Status<#= statusCode.Name #> = new StatusCodeHttpResult(StatusCodes.Status<#= statusCode.Name #>);
+    private static readonly StatusCodeHttpResult Status<#= statusCode.Name #> = new(StatusCodes.Status<#= statusCode.Name #>);
 <#	} 	#>
 
     internal static StatusCodeHttpResult StatusCode(int statusCode)
