@@ -310,5 +310,14 @@ public partial class HubConnection
 
         [LoggerMessage(84, LogLevel.Trace, "Client threw an error for stream '{StreamId}'.", EventName = "ErroredStream")]
         public static partial void ErroredStream(ILogger logger, string streamId, Exception exception);
+
+        [LoggerMessage(85, LogLevel.Warning, "No result given for '{Target}' method and invocation ID '{InvocationId}'.", EventName = "NoResultGiven")]
+        public static partial void NoResultGiven(ILogger logger, string target, string invocationId);
+
+        [LoggerMessage(86, LogLevel.Warning, "Result given for '{Target}' method but server is not expecting a result.", EventName = "ResultNotExpected")]
+        public static partial void ResultNotExpected(ILogger logger, string target);
+
+        [LoggerMessage(87, LogLevel.Warning, "Result already provided for '{Target}' only the last one will be sent.", EventName = "IgnoringPreviousResult")]
+        public static partial void IgnoringPreviousResult(ILogger logger, string target);
     }
 }

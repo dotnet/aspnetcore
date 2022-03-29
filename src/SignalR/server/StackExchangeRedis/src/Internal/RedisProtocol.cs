@@ -51,8 +51,6 @@ internal class RedisProtocol
             if (!string.IsNullOrEmpty(returnChannel))
             {
                 writer.WriteArrayHeader(4);
-                writer.Write(invocationId);
-                writer.Write(returnChannel);
             }
             else
             {
@@ -72,6 +70,15 @@ internal class RedisProtocol
             }
 
             WriteHubMessage(ref writer, new InvocationMessage(invocationId, methodName, args));
+
+            // Write last in order to preserve original order for cases where one server is updated and the other isn't.
+            // Not really a supported scenario, but why not be nice
+            if (!string.IsNullOrEmpty(returnChannel))
+            {
+                writer.Write(invocationId);
+                writer.Write(returnChannel);
+            }
+
             writer.Flush();
 
             return memoryBufferWriter.ToArray();
@@ -170,11 +177,6 @@ internal class RedisProtocol
 
         string? returnChannel = null;
         string? invocationId = null;
-        if (length > 3)
-        {
-            invocationId = reader.ReadString();
-            returnChannel = reader.ReadString();
-        }
 
         // Read excluded Ids
         IReadOnlyList<string>? excludedConnectionIds = null;
@@ -192,6 +194,13 @@ internal class RedisProtocol
 
         // Read payload
         var message = ReadSerializedHubMessage(ref reader);
+
+        if (length > 3)
+        {
+            invocationId = reader.ReadString();
+            returnChannel = reader.ReadString();
+        }
+
         return new RedisInvocation(message, excludedConnectionIds, invocationId, returnChannel);
     }
 

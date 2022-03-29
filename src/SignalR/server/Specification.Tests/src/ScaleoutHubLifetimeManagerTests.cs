@@ -614,4 +614,19 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             Assert.Equal(5, res);
         }
     }
+
+    /// <summary>
+    /// Specification test for SignalR HubLifetimeManager.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
+    [Fact]
+    public async Task ConnectionDoesNotExist_FailsInvokeConnectionAsync()
+    {
+        var backplane = CreateBackplane();
+        var manager1 = CreateNewHubLifetimeManager(backplane);
+        var manager2 = CreateNewHubLifetimeManager(backplane);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => manager1.InvokeConnectionAsync<int>("1234", "Result", new object[] { "test" })).DefaultTimeout();
+        Assert.Equal("Connection does not exist.", ex.Message);
+    }
 }

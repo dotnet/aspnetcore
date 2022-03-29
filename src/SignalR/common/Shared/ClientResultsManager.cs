@@ -18,7 +18,7 @@ internal class ClientResultsManager : IInvocationBinder
     public Task<T> AddInvocation<T>(string connectionId, string invocationId, CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSourceWithCancellation<T>(this, connectionId, invocationId, cancellationToken);
-        _pendingInvocations.TryAdd(invocationId, (typeof(T), connectionId, tcs, static (state, completionMessage) =>
+        var result = _pendingInvocations.TryAdd(invocationId, (typeof(T), connectionId, tcs, static (state, completionMessage) =>
         {
             var tcs = (TaskCompletionSourceWithCancellation<T>)state;
             if (completionMessage.HasResult)
@@ -32,6 +32,7 @@ internal class ClientResultsManager : IInvocationBinder
             return Task.CompletedTask;
         }
         ));
+        Debug.Assert(result);
 
         tcs.RegisterCancellation();
 
@@ -40,7 +41,8 @@ internal class ClientResultsManager : IInvocationBinder
 
     public void AddInvocation(string invocationId, (Type Type, string ConnectionId, object Tcs, Func<object, CompletionMessage, Task> Completion) invocationInfo)
     {
-        _pendingInvocations.TryAdd(invocationId, invocationInfo);
+        var result = _pendingInvocations.TryAdd(invocationId, invocationInfo);
+        Debug.Assert(result);
     }
 
     public Task TryCompleteResult(string connectionId, CompletionMessage message)
@@ -107,7 +109,7 @@ internal class ClientResultsManager : IInvocationBinder
 
     // Custom TCS type to avoid the extra allocation that would be introduced if we managed the cancellation separately
     // Also makes it easier to keep track of the CancellationTokenRegistration for disposal
-    private sealed class TaskCompletionSourceWithCancellation<T> : TaskCompletionSource<T>
+    internal sealed class TaskCompletionSourceWithCancellation<T> : TaskCompletionSource<T>
     {
         private readonly ClientResultsManager _clientResultsManager;
         private readonly string _connectionId;
@@ -149,14 +151,14 @@ internal class ClientResultsManager : IInvocationBinder
 
         public new void SetResult(T result)
         {
-            base.SetResult(result);
             _tokenRegistration.Dispose();
+            base.SetResult(result);
         }
 
         public new void SetException(Exception exception)
         {
-            base.SetException(exception);
             _tokenRegistration.Dispose();
+            base.SetException(exception);
         }
 
 #pragma warning disable IDE0060 // Remove unused parameter

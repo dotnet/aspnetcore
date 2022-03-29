@@ -3925,7 +3925,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
 
         Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
-            w.EventId.Name == "UnexpectedStreamCompletion"));
+            w.EventId.Name == "UnexpectedCompletion"));
     }
 
     public static string CustomErrorMessage = "custom error for testing ::::)";

@@ -10,7 +10,7 @@ internal static class CancellationTokenUtils
 {
     // Similar to CreateLinkedTokenSource except it will not allocate a new internal LinkedCancellationTokenSource in the case where
     // one of the tokens passed in isn't cancellable.
-    // Returns a disposable only when an actual LinkkedTokenSource is created.
+    // Returns a disposable only when an actual LinkedTokenSource is created.
     internal static IDisposable? CreateLinkedToken(CancellationToken token1, CancellationToken token2, out CancellationToken linkedToken)
     {
         if (!token1.CanBeCanceled)

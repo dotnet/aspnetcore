@@ -1030,6 +1030,7 @@ public partial class HubConnection : IAsyncDisposable
             Log.MissingHandler(_logger, invocation.Target);
             if (expectsResult)
             {
+                Log.NoResultGiven(_logger, invocation.Target, invocation.InvocationId!);
                 await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
             }
             return;
@@ -1047,6 +1048,10 @@ public partial class HubConnection : IAsyncDisposable
                 var task = handler.InvokeAsync(invocation.Arguments);
                 if (handler.HasResult && task is Task<object?> resultTask)
                 {
+                    if (hasResult)
+                    {
+                        Log.IgnoringPreviousResult(_logger, invocation.Target);
+                    }
                     hasResult = true;
                     result = await resultTask.ConfigureAwait(false);
                     // ignore previous results' exception, we prefer last .On handler for results
@@ -1074,6 +1079,7 @@ public partial class HubConnection : IAsyncDisposable
             }
             else if (!hasResult)
             {
+                Log.NoResultGiven(_logger, invocation.Target, invocation.InvocationId!);
                 await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
             }
             else
@@ -1083,7 +1089,7 @@ public partial class HubConnection : IAsyncDisposable
         }
         else if (hasResult)
         {
-            // Log: result given but server didn't ask for one.
+            Log.ResultNotExpected(_logger, invocation.Target);
         }
     }
 

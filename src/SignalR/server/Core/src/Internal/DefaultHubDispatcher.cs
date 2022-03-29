@@ -182,8 +182,7 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
                 }
                 else
                 {
-                    // TODO: Retire this log and replace with a more generic one
-                    Log.UnexpectedStreamCompletion(_logger);
+                    Log.UnexpectedCompletion(_logger, completionMessage.InvocationId!);
                 }
                 break;
 

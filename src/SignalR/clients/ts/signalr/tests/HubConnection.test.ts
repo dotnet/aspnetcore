@@ -650,7 +650,8 @@ describe("HubConnection", () => {
                         type: MessageType.Invocation,
                     });
 
-                    expect(warnings).toEqual(["No client method with the name 'message' found."]);
+                    expect(warnings).toEqual(["No client method with the name 'message' found.",
+                        "No result given for 'message' method and invocation ID '0'."]);
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1035,7 +1036,8 @@ describe("HubConnection", () => {
                         type: MessageType.Invocation,
                     });
 
-                    expect(warnings).toEqual(["No client method with the name 'message' found."]);
+                    expect(warnings).toEqual(["No client method with the name 'message' found.",
+                        "No result given for 'message' method and invocation ID '0'."]);
 
                     hubConnection.off(null!, undefined!);
                     hubConnection.off(undefined!, null!);

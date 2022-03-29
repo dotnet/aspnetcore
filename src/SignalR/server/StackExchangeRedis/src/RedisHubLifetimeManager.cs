@@ -408,6 +408,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
         // Needs to be unique across servers, easiest way to do that is prefix with connection ID.
         var invocationId = $"{connectionId}{Interlocked.Increment(ref _lastInvocationId)}";
+
         using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
             connection?.ConnectionAborted ?? default, out var linkedToken);
         var task = _clientResultsManager.AddInvocation<T>(connectionId, invocationId, linkedToken);
@@ -554,18 +555,16 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         channel.OnMessage(channelMessage =>
         {
             var invocation = RedisProtocol.ReadInvocation((byte[])channelMessage.Message);
+
             // This is a Client result we need to setup state for the completion and send the message to the client
             if (!string.IsNullOrEmpty(invocation.InvocationId))
             {
-                object? tokenRegistration = null;
+                CancellationTokenRegistration? tokenRegistration = null;
                 _clientResultsManager.AddInvocation(invocation.InvocationId,
                     (typeof(RawResult), connection.ConnectionId, null!, (_, completionMessage) =>
                 {
                     var protocolName = connection.Protocol.Name;
-                    if (tokenRegistration is not null)
-                    {
-                        ((CancellationTokenRegistration)tokenRegistration).Dispose();
-                    }
+                    tokenRegistration?.Dispose();
                     // TODO: acquiring this and then calling RedisProtocol.WriteCompletionMessage will allocate a new MemoryBufferWriter, we can avoid this
                     var memoryBufferWriter = AspNetCore.Internal.MemoryBufferWriter.Get();
                     try
@@ -590,6 +589,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                 }, null);
             }
 
+            // Forward message from other server to client
             // Normal client method invokes and client result invokes use the same message
             return connection.WriteAsync(invocation.Message).AsTask();
         });
