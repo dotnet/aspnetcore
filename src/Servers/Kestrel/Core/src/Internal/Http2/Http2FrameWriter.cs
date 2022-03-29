@@ -435,7 +435,6 @@ internal class Http2FrameWriter
                 WriteResponseHeadersUnsynchronized(streamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
             }
 
-
             if (dataLength > 0)
             {
                 WriteDataUnsynchronized(streamId, data, dataLength, endStream: false);
