@@ -80,9 +80,11 @@ internal class Http2FrameWriter
 
         _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
 
-        _channel = Channel.CreateBounded<Http2OutputProducer>(new BoundedChannelOptions(serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection)
+        // In practice, this is bounded by the number of concurrent streams allowed + whatever overflow we allow
+        _channel = Channel.CreateUnbounded<Http2OutputProducer>(new UnboundedChannelOptions()
         {
-            AllowSynchronousContinuations = _scheduleInline
+            AllowSynchronousContinuations = _scheduleInline,
+            SingleReader = true
         });
 
         // This is null in tests sometimes
@@ -93,9 +95,7 @@ internal class Http2FrameWriter
 
     public void Schedule(Http2OutputProducer producer)
     {
-        var scheduled = _channel.Writer.TryWrite(producer);
-
-        Debug.Assert(scheduled, $"Unable to schedule Stream {producer.Stream.StreamId}");
+        _channel.Writer.TryWrite(producer);
     }
 
     private async Task WriteToOutputPipe()
