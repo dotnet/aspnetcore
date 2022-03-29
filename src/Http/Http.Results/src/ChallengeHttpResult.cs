@@ -14,20 +14,12 @@ namespace Microsoft.AspNetCore.Http;
 public sealed partial class ChallengeHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the default sign out scheme.
-    /// </summary>
-    public ChallengeHttpResult()
-        : this(properties: null, authenticationSchemes: Array.Empty<string>())
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the
     /// specified <paramref name="properties"/>.
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ChallengeHttpResult(AuthenticationProperties? properties)
+    public ChallengeHttpResult(AuthenticationProperties? properties = null)
         : this(properties, authenticationSchemes: Array.Empty<string>())
     {
     }

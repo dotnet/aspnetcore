@@ -18,19 +18,9 @@ public sealed partial class RedirectHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
-    public RedirectHttpResult(string url)
-        : this(url, acceptLocalUrlOnly: false)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
-    /// provided.
-    /// </summary>
-    /// <param name="url">The URL to redirect to.</param>
     /// <param name="acceptLocalUrlOnly">If set to true, only local URLs are accepted
     /// and will throw an exception when the supplied URL is not considered local.</param>
-    public RedirectHttpResult(string url, bool acceptLocalUrlOnly)
+    public RedirectHttpResult(string url, bool acceptLocalUrlOnly = false)
     {
         if (url == null)
         {

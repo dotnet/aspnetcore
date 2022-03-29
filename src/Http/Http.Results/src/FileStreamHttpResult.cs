@@ -18,17 +18,8 @@ public sealed class FileStreamHttpResult : IResult
     /// Creates a new <see cref="FileStreamHttpResult"/> instance with the provided values.
     /// </summary>
     /// <param name="fileStream">The stream with the file.</param>
-    public FileStreamHttpResult(Stream fileStream)
-        : this(fileStream, contentType: null)
-    {
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="FileStreamHttpResult"/> instance with the provided values.
-    /// </summary>
-    /// <param name="fileStream">The stream with the file.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public FileStreamHttpResult(Stream fileStream, string? contentType)
+    public FileStreamHttpResult(Stream fileStream, string? contentType = null)
     {
         if (fileStream == null)
         {

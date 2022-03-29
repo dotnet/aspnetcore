@@ -19,17 +19,8 @@ public sealed class PushStreamHttpResult : IResult
     /// Creates a new <see cref="PushStreamHttpResult"/> instance with the provided values.
     /// </summary>
     /// <param name="streamWriterCallback">The stream writer callback.</param>
-    public PushStreamHttpResult(Func<Stream, Task> streamWriterCallback)
-        : this(streamWriterCallback, contentType: null)
-    {
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="PushStreamHttpResult"/> instance with the provided values.
-    /// </summary>
-    /// <param name="streamWriterCallback">The stream writer callback.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public PushStreamHttpResult(Func<Stream, Task> streamWriterCallback, string? contentType)
+    public PushStreamHttpResult(Func<Stream, Task> streamWriterCallback, string? contentType = null)
     {
         _streamWriterCallback = streamWriterCallback;
         ContentType = contentType ?? "application/octet-stream";

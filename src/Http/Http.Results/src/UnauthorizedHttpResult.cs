@@ -13,18 +13,6 @@ using Microsoft.Extensions.Logging;
 public sealed class UnauthorizedHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="UnauthorizedHttpResult"/> class.
-    /// </summary>
-    private UnauthorizedHttpResult()
-    {
-    }
-
-    /// <summary>
-    /// Gets an instance of <see cref="UnauthorizedHttpResult"/>.
-    /// </summary>
-    public static UnauthorizedHttpResult Instance { get; } = new();
-
-    /// <summary>
     /// Gets the HTTP status code.
     /// </summary>
     public int StatusCode => StatusCodes.Status401Unauthorized;

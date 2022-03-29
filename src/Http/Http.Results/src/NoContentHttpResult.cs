@@ -13,18 +13,6 @@ using Microsoft.Extensions.Logging;
 public class NoContentHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="NoContentHttpResult"/> class.
-    /// </summary>
-    private NoContentHttpResult()
-    {
-    }
-
-    /// <summary>
-    /// Gets an instance of <see cref="EmptyHttpResult"/>.
-    /// </summary>
-    public static NoContentHttpResult Instance { get; } = new();
-
-    /// <summary>
     /// Gets the HTTP status code.
     /// </summary>
     public int StatusCode => StatusCodes.Status204NoContent;

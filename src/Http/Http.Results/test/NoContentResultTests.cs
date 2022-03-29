@@ -13,7 +13,7 @@ public class NoContentResultTests
     public void NoContentResultTests_InitializesStatusCode()
     {
         // Arrange & act
-        var result = NoContentHttpResult.Instance;
+        var result = new NoContentHttpResult();
 
         // Assert
         Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
@@ -23,7 +23,7 @@ public class NoContentResultTests
     public void NoContentResultTests_ExecuteResultSetsResponseStatusCode()
     {
         // Arrange
-        var result = NoContentHttpResult.Instance;
+        var result = new NoContentHttpResult();
 
         var httpContext = GetHttpContext();
 

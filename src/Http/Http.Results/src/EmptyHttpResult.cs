@@ -9,15 +9,6 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed class EmptyHttpResult : IResult
 {
-    private EmptyHttpResult()
-    {
-    }
-
-    /// <summary>
-    /// Gets an instance of <see cref="EmptyHttpResult"/>.
-    /// </summary>
-    public static EmptyHttpResult Instance { get; } = new();
-
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {

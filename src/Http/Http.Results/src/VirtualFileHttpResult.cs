@@ -21,17 +21,8 @@ public sealed class VirtualFileHttpResult : IResult
     /// Creates a new <see cref="VirtualFileHttpResult"/> instance with the provided values.
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
-    public VirtualFileHttpResult(string fileName)
-        : this(fileName, contentType: null)
-    {
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="VirtualFileHttpResult"/> instance with the provided values.
-    /// </summary>
-    /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public VirtualFileHttpResult(string fileName, string? contentType)
+    public VirtualFileHttpResult(string fileName, string? contentType = null)
     {
         FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         ContentType = contentType ?? "application/octet-stream";

@@ -18,17 +18,8 @@ public sealed partial class FileContentHttpResult : IResult
     /// Creates a new <see cref="FileContentHttpResult"/> instance with the provided values.
     /// </summary>
     /// <param name="fileContents">The bytes that represent the file contents.</param>
-    public FileContentHttpResult(ReadOnlyMemory<byte> fileContents)
-        : this(fileContents, contentType: null)
-    {
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="FileContentHttpResult"/> instance with the provided values.
-    /// </summary>
-    /// <param name="fileContents">The bytes that represent the file contents.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    public FileContentHttpResult(ReadOnlyMemory<byte> fileContents, string? contentType)
+    public FileContentHttpResult(ReadOnlyMemory<byte> fileContents, string? contentType = null)
     {
         FileContents = fileContents;
         FileLength = fileContents.Length;

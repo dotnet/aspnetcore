@@ -13,27 +13,11 @@ using Microsoft.Extensions.Logging;
 public sealed partial class ContentHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class
-    /// </summary>
-    public ContentHttpResult()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values
-    /// </summary>
-    /// <param name="content">The value to format in the entity body.</param>
-    public ContentHttpResult(string content)
-    {
-        Content = content;
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values
     /// </summary>
     /// <param name="content">The value to format in the entity body.</param>
     /// <param name="contentType">The Content-Type header for the response</param>
-    public ContentHttpResult(string content, string contentType)
+    public ContentHttpResult(string? content = null, string? contentType = null)
     {
         Content = content;
         ContentType = contentType;

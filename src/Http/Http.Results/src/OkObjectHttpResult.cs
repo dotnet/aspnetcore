@@ -24,11 +24,6 @@ public sealed class OkObjectHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets an instance of <see cref="OkObjectHttpResult"/> with a <c>null</c> <see cref="Value"/>.
-    /// </summary>
-    public static OkObjectHttpResult Instance { get; } = new();
-
-    /// <summary>
     /// Gets the object result.
     /// </summary>
     public object? Value { get; }

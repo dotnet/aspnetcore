@@ -17,18 +17,8 @@ public sealed class CreatedHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="location">The location at which the status of requested content can be monitored.</param>
-    public CreatedHttpResult(string? location)
-        : this(location, null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CreatedHttpResult"/> class with the values
-    /// provided.
-    /// </summary>
-    /// <param name="location">The location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public CreatedHttpResult(string? location, object? value)
+    public CreatedHttpResult(string? location, object? value = null)
     {
         Value = value;
         Location = location;
@@ -40,18 +30,8 @@ public sealed class CreatedHttpResult : IResult
     /// provided.
     /// </summary>
     /// <param name="locationUri">The location at which the status of requested content can be monitored.</param>
-    public CreatedHttpResult(Uri locationUri)
-        : this(locationUri, null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CreatedHttpResult"/> class with the values
-    /// provided.
-    /// </summary>
-    /// <param name="locationUri">The location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public CreatedHttpResult(Uri locationUri, object? value)
+    public CreatedHttpResult(Uri locationUri, object? value = null)
     {
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);

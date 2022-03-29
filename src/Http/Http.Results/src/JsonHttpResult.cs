@@ -18,17 +18,8 @@ public sealed class JsonHttpResult : IResult
     /// Initializes a new instance of the <see cref="JsonHttpResult"/> class with the values.
     /// </summary>
     /// <param name="value">The value to format in the entity body.</param>
-    public JsonHttpResult(object? value)
-        : this(value, null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="JsonHttpResult"/> class with the values.
-    /// </summary>
-    /// <param name="value">The value to format in the entity body.</param>
     /// <param name="jsonSerializerOptions">The serializer settings.</param>
-    public JsonHttpResult(object? value, JsonSerializerOptions? jsonSerializerOptions)
+    public JsonHttpResult(object? value = null, JsonSerializerOptions? jsonSerializerOptions = null)
     {
         Value = value;
         JsonSerializerOptions = jsonSerializerOptions;

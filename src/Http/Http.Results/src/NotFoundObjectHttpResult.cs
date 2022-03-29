@@ -23,11 +23,6 @@ public sealed class NotFoundObjectHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets an instance of <see cref="NotFoundObjectHttpResult"/> with a <c>null</c> <see cref="Value"/>.
-    /// </summary>
-    public static NotFoundObjectHttpResult Instance { get; } = new();
-
-    /// <summary>
     /// Gets the object result.
     /// </summary>
     public object? Value { get; }

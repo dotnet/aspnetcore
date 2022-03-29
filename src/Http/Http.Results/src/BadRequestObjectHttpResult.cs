@@ -24,11 +24,6 @@ public sealed class BadRequestObjectHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets an instance of <see cref="BadRequestObjectHttpResult"/> with a <c>null</c> <see cref="Value"/>.
-    /// </summary>
-    public static BadRequestObjectHttpResult Instance { get; } = new();
-
-    /// <summary>
     /// Gets the object result.
     /// </summary>
     public object? Value { get; }

@@ -23,11 +23,6 @@ public sealed class UnprocessableEntityObjectHttpResult : IResult
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
-    /// <summary>
-    /// Gets an instance of <see cref="UnprocessableEntityObjectHttpResult"/> with a <c>null</c> <see cref="Value"/>.
-    /// </summary>
-    public static UnprocessableEntityObjectHttpResult Instance { get; } = new();
-
     /// <inheritdoc />
     public object? Value { get; internal init; }
 

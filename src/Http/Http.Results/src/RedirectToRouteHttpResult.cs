@@ -18,27 +18,9 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// Initializes a new instance of the <see cref="RedirectToRouteHttpResult"/> with the values
     /// provided.
     /// </summary>
-    /// <param name="routeValues">The parameters for the route.</param>
-    public RedirectToRouteHttpResult(object routeValues)
-        : this(routeName: null, routeValues)
-    { }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RedirectToRouteHttpResult"/> with the values
-    /// provided.
-    /// </summary>
-    /// <param name="routeName">The name of the route.</param>
-    public RedirectToRouteHttpResult(string routeName)
-        : this(routeName, routeValues: null)
-    { }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RedirectToRouteHttpResult"/> with the values
-    /// provided.
-    /// </summary>
     /// <param name="routeName">The name of the route.</param>
     /// <param name="routeValues">The parameters for the route.</param>
-    public RedirectToRouteHttpResult(string? routeName, object? routeValues)
+    public RedirectToRouteHttpResult(string? routeName = null, object? routeValues = null)
     {
         RouteName = routeName;
         RouteValues = routeValues == null ? null : new RouteValueDictionary(routeValues);
