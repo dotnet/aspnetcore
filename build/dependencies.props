@@ -103,7 +103,7 @@
     <DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>
     <DevDependency_AzureStorageBlobsPackageVersion>12.10.0</DevDependency_AzureStorageBlobsPackageVersion>
     <FSharpCorePackageVersion>4.2.3</FSharpCorePackageVersion>
-    <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
+    <GoogleProtobufPackageVersion>3.15.0</GoogleProtobufPackageVersion>
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
     <MessagePackPackageVersion>1.7.3.7</MessagePackPackageVersion>
     <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>

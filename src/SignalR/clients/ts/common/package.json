@@ -22,5 +22,10 @@
     "uglify-js": "^3.3.5",
     "webpack": "^4.35.3",
     "webpack-cli": "^3.0.3"
+  },
+  "resolutions": {
+    "lodash": ">=4.17.21",
+    "y18n": ">=3.2.2",
+    "minimist": ">=1.2.6"
   }
 }

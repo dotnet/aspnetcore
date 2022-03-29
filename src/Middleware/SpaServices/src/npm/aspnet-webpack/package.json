@@ -34,5 +34,8 @@
   },
   "peerDependencies": {
     "webpack": "^1.13.2 || ^2.1.0-beta || ^3.0.0"
+  },
+  "resolutions": {
+    "glob-parent": ">=5.1.2"
   }
 }
