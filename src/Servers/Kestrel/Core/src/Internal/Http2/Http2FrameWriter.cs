@@ -131,7 +131,7 @@ internal class Http2FrameWriter
 
                 if (readResult.IsCanceled)
                 {
-                    observed |= Http2OutputProducer.State.Cancelled;
+                    observed |= Http2OutputProducer.State.Canceled;
                 }
 
                 if (readResult.IsCompleted)
