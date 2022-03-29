@@ -203,20 +203,11 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             // The headers will be the final frame if:
             // 1. There is no content
             // 2. There is no trailing HEADERS frame.
-            Http2HeadersFrameFlags http2HeadersFrame;
+            _streamEnded = appCompleted
+                && !_startedWritingDataFrames
+                && (_stream.ResponseTrailers == null || _stream.ResponseTrailers.Count == 0);
 
-            if (appCompleted && !_startedWritingDataFrames && (_stream.ResponseTrailers == null || _stream.ResponseTrailers.Count == 0))
-            {
-                _streamEnded = true;
-                _stream.DecrementActiveClientStreamCount();
-                http2HeadersFrame = Http2HeadersFrameFlags.END_STREAM;
-            }
-            else
-            {
-                http2HeadersFrame = Http2HeadersFrameFlags.NONE;
-            }
-
-            _frameWriter.WriteResponseHeaders(StreamId, statusCode, http2HeadersFrame, responseHeaders);
+            _frameWriter.WriteResponseHeaders(_stream, statusCode, _streamEnded, responseHeaders);
         }
     }
 
@@ -429,16 +420,15 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
                         // Write any remaining content then write trailers
 
                         _stream.ResponseTrailers.SetReadOnly();
-                        _stream.DecrementActiveClientStreamCount();
 
                         if (readResult.Buffer.Length > 0)
                         {
                             // It is faster to write data and trailers together. Locking once reduces lock contention.
-                            flushResult = await _frameWriter.WriteDataAndTrailersAsync(StreamId, _flowControl, readResult.Buffer, firstWrite, _stream.ResponseTrailers);
+                            flushResult = await _frameWriter.WriteDataAndTrailersAsync(_stream, _flowControl, readResult.Buffer, firstWrite, _stream.ResponseTrailers);
                         }
                         else
                         {
-                            flushResult = await _frameWriter.WriteResponseTrailersAsync(StreamId, _stream.ResponseTrailers);
+                            flushResult = await _frameWriter.WriteResponseTrailersAsync(_stream, _stream.ResponseTrailers);
                         }
                     }
                     else if (readResult.IsCompleted && _streamEnded)
@@ -454,13 +444,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
                     else
                     {
                         var endStream = readResult.IsCompleted;
-
-                        if (endStream)
-                        {
-                            _stream.DecrementActiveClientStreamCount();
-                        }
-
-                        flushResult = await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream, firstWrite, forceFlush: true);
+                        flushResult = await _frameWriter.WriteDataAsync(_stream, _flowControl, readResult.Buffer, endStream, firstWrite, forceFlush: true);
                     }
 
                     firstWrite = false;
