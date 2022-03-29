@@ -603,7 +603,7 @@ internal class Http2FrameWriter
         {
             if (_completed)
             {
-                return new(default(FlushResult));
+                return ValueTask.FromResult<FlushResult>(default);
             }
 
             var shouldFlush = false;
