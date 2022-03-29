@@ -151,7 +151,7 @@ internal class Http2FrameWriter
                     buffer = buffer.Slice(0, actual);
                 }
 
-                var (hasModeData, scheduleAgain) = producer.Dequeue(buffer.Length, observed);
+                var (hasModeData, reschedule) = producer.Dequeue(buffer.Length, observed);
 
                 FlushResult flushResult = default;
 
@@ -266,7 +266,7 @@ internal class Http2FrameWriter
                         }
                     }
                 }
-                else if (scheduleAgain)
+                else if (reschedule)
                 {
                     Schedule(producer);
                 }
