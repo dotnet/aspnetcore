@@ -948,7 +948,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
 
-        string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}";
+        string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
         var routeHandlerBuilder = builder.Map("/", PrintLogger);
         routeHandlerBuilder.AddFilter<ServiceAccessingRouteHandlerFilter>();
 
@@ -969,78 +969,33 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
         var body = streamReader.ReadToEndAsync().Result;
-        Assert.Equal("loggerErrorIsEnabled: True", body);
-    }
-
-    public static object[][] RouteHandlerWithDifferentMethodInfo
-    {
-        get
-        {
-            string PrintFromString(string id) => $"ID: {id}";
-            string PrintFromInt(int id) => $"ID: {id}";
-
-            return new object[][] {
-                new object[] { (Func<string, string>)PrintFromString, "ID: 2"},
-                new object[] { (Func<int, string>)PrintFromInt, "ID: 3" }
-            };
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(RouteHandlerWithDifferentMethodInfo))]
-    public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatAccessesRouteHandlerContext(Delegate handler, string response)
-    {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()));
-
-        var routeHandlerBuilder = builder.Map("/{id}", handler);
-        routeHandlerBuilder.AddFilter<IncrementArgFilter>();
-
-        var dataSource = GetBuilderEndpointDataSource(builder);
-        // Trigger Endpoint build by calling getter.
-        var endpoint = Assert.Single(dataSource.Endpoints);
-
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.RouteValues["id"] = "2";
-        var outStream = new MemoryStream();
-        httpContext.Response.Body = outStream;
-
-        await endpoint.RequestDelegate!(httpContext);
-
-        // Assert;
-        var httpResponse = httpContext.Response;
-        httpResponse.Body.Seek(0, SeekOrigin.Begin);
-        var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.Equal(response, body);
+        Assert.Equal("loggerErrorIsEnabled: True, parentName: RouteHandlerEndpointRouteBuilderExtensionsTest", body);
     }
 
     class ServiceAccessingRouteHandlerFilter : IRouteHandlerFilter
     {
         private ILogger _logger;
+        private RouteHandlerContext _routeHandlerContext;
 
-        public ServiceAccessingRouteHandlerFilter(ILoggerFactory loggerFactory)
+        public ServiceAccessingRouteHandlerFilter(ILoggerFactory loggerFactory, RouteHandlerContext routeHandlerContext)
         {
             _logger = loggerFactory.CreateLogger<ServiceAccessingRouteHandlerFilter>();
+            _routeHandlerContext = routeHandlerContext;
         }
 
-        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next, RouteHandlerContext routeHandlerContext)
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
         {
             context.HttpContext.Items["loggerErrorIsEnabled"] = _logger.IsEnabled(LogLevel.Error);
+            context.HttpContext.Items["parentName"] = _routeHandlerContext.MethodInfo.DeclaringType?.Name;
             return await next(context);
         }
     }
 
     class IncrementArgFilter : IRouteHandlerFilter
     {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next, RouteHandlerContext routeHandlerContext)
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
         {
-            if (routeHandlerContext.MethodInfo.GetParameters().Length == 1
-                && routeHandlerContext.MethodInfo.GetParameters()[0].ParameterType == typeof(int))
-            {
-                context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
-            }
-            
+            context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
             return await next(context);
         }
     }
