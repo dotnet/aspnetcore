@@ -22,5 +22,8 @@
     "@types/selenium-webdriver": "^4.0.15",
     "@types/yargs": "^11.0.0",
     "ts-node": "^5.0.0"
+  },
+  "resolutions": {
+    "minimist": ">=1.2.6"
   }
 }
