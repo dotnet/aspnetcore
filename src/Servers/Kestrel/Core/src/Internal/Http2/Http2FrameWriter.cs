@@ -50,6 +50,7 @@ internal class Http2FrameWriter
     private readonly object _windowUpdateLock = new();
     private long _window;
     private readonly Queue<Http2OutputProducer> _waitingForMoreWindow = new();
+    private readonly Task _writeQueueTask;
 
     public Http2FrameWriter(
         PipeWriter outputPipeWriter,
@@ -90,7 +91,7 @@ internal class Http2FrameWriter
         // This is null in tests sometimes
         _window = connectionOutputFlowControl?.Available ?? 0;
 
-        _ = Task.Run(WriteToOutputPipe);
+        _writeQueueTask = Task.Run(WriteToOutputPipe);
     }
 
     public void Schedule(Http2OutputProducer producer)
@@ -314,6 +315,13 @@ internal class Http2FrameWriter
         }
     }
 
+    public Task ShutdownAsync()
+    {
+        _channel.Writer.TryComplete();
+
+        return _writeQueueTask;
+    }
+
     public void Abort(ConnectionAbortedException error)
     {
         lock (_writeLock)
@@ -480,7 +488,7 @@ internal class Http2FrameWriter
         }
     }
 
-    public ValueTask<FlushResult> WriteDataAndTrailersAsync(Http2Stream stream, in ReadOnlySequence<byte> data, bool writeHeaders, HttpResponseTrailers headers)
+    private ValueTask<FlushResult> WriteDataAndTrailersAsync(Http2Stream stream, in ReadOnlySequence<byte> data, bool writeHeaders, HttpResponseTrailers headers)
     {
         // This method combines WriteDataAsync and WriteResponseTrailers.
         // Changes here may need to be mirrored in WriteDataAsync.

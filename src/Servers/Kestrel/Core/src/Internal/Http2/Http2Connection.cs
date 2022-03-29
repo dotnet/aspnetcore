@@ -377,6 +377,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
                 Input.Complete();
                 _context.Transport.Input.CancelPendingRead();
                 await _inputTask;
+                await _frameWriter.ShutdownAsync();
             }
         }
     }
