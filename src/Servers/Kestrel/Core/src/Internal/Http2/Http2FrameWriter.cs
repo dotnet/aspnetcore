@@ -173,15 +173,8 @@ internal class Http2FrameWriter
                     stream.ResponseTrailers.SetReadOnly();
                     stream.DecrementActiveClientStreamCount();
 
-                    if (buffer.Length > 0)
-                    {
-                        // It is faster to write data and trailers together. Locking once reduces lock contention.
-                        flushResult = await WriteDataAndTrailersAsync(stream, buffer, producer.WriteHeaders, stream.ResponseTrailers);
-                    }
-                    else
-                    {
-                        flushResult = await WriteResponseTrailersAsync(stream, producer.WriteHeaders, stream.ResponseTrailers);
-                    }
+                    // It is faster to write data and trailers together. Locking once reduces lock contention.
+                    flushResult = await WriteDataAndTrailersAsync(stream, buffer, producer.WriteHeaders, stream.ResponseTrailers);
                 }
                 else if (readResult.IsCompleted && producer.StreamEnded)
                 {
@@ -423,8 +416,11 @@ internal class Http2FrameWriter
         }
     }
 
-    private ValueTask<FlushResult> WriteResponseTrailersAsync(Http2Stream stream, bool writeHeaders, HttpResponseTrailers headers)
+    private ValueTask<FlushResult> WriteDataAndTrailersAsync(Http2Stream stream, in ReadOnlySequence<byte> data, bool writeHeaders, HttpResponseTrailers headers)
     {
+        // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
+        var dataLength = data.Length;
+
         lock (_writeLock)
         {
             if (_completed)
@@ -432,12 +428,18 @@ internal class Http2FrameWriter
                 return default;
             }
 
+            var streamId = stream.StreamId;
+
             if (writeHeaders)
             {
-                WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
+                WriteResponseHeadersUnsynchronized(streamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
             }
 
-            var streamId = stream.StreamId;
+
+            if (dataLength > 0)
+            {
+                WriteDataUnsynchronized(streamId, data, dataLength, endStream: false);
+            }
 
             try
             {
@@ -485,32 +487,6 @@ internal class Http2FrameWriter
 
             WriteHeaderUnsynchronized();
             _outputWriter.Write(buffer.Slice(0, payloadLength));
-        }
-    }
-
-    private ValueTask<FlushResult> WriteDataAndTrailersAsync(Http2Stream stream, in ReadOnlySequence<byte> data, bool writeHeaders, HttpResponseTrailers headers)
-    {
-        // This method combines WriteDataAsync and WriteResponseTrailers.
-        // Changes here may need to be mirrored in WriteDataAsync.
-
-        // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
-        var dataLength = data.Length;
-
-        lock (_writeLock)
-        {
-            if (_completed)
-            {
-                return default;
-            }
-
-            if (writeHeaders)
-            {
-                WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
-            }
-
-            WriteDataUnsynchronized(stream.StreamId, data, dataLength, endStream: false);
-
-            return WriteResponseTrailersAsync(stream, writeHeaders: false, headers);
         }
     }
 
