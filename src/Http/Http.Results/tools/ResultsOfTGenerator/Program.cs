@@ -26,9 +26,12 @@ writer.WriteLine();
 
 for (int i = 1; i <= typeArgCount; i++)
 {
+    if (i == 1) continue;
+
     // Class summary doc
     writer.WriteLine("/// <summary>");
-    writer.WriteLine($"/// Represents the result of an <see cref=\"Endpoint\"/> route handler delegate that can return {i.ToWords()} different <see cref=\"IResult\"/> types.");
+    writer.WriteLine($"/// An <see cref=\"IResult\"/> that could be one of {i.ToWords()} different <see cref=\"IResult\"/> types. On execution will");
+    writer.WriteLine("/// execute the underlying <see cref=\"IResult\"/> instance that was actually returned by the HTTP endpoint.");
     writer.WriteLine("/// </summary>");
 
     // Type params docs

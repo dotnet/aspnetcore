@@ -5,43 +5,8 @@
 namespace Microsoft.AspNetCore.Http.Result;
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return one different <see cref="IResult"/> types.
-/// </summary>
-/// <typeparam name="TResult1">The first result type.</typeparam>
-public sealed class Results<TResult1> : IResult
-   where TResult1 : IResult
-{
-    private Results(IResult activeResult)
-    {
-        Result = activeResult;
-    }
-
-    /// <summary>
-    /// Gets the actual <see cref="IResult"/> returned by the <see cref="Endpoint"/> route handler delegate.
-    /// </summary>
-    public IResult Result { get; }
-
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
-    public async Task ExecuteAsync(HttpContext httpContext)
-    {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
-
-        await Result.ExecuteAsync(httpContext);
-    }
-
-    /// <summary>
-    /// Converts the <typeparamref name="TResult1"/> to a <see cref="Results{TResult1}" />.
-    /// </summary>
-    /// <param name="result">The result.</param>
-    public static implicit operator Results<TResult1>(TResult1 result) => new(result);
-}
-
-/// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return two different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of two different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -85,7 +50,8 @@ public sealed class Results<TResult1, TResult2> : IResult
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return three different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of three different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -137,7 +103,8 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return four different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of four different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -197,7 +164,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return five different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of five different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -265,7 +233,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return six different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of six different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -341,7 +310,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return seven different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of seven different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -425,7 +395,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return eight different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of eight different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -517,7 +488,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return nine different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of nine different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -617,7 +589,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return ten different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of ten different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -725,7 +698,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return eleven different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of eleven different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -841,7 +815,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return twelve different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of twelve different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -965,7 +940,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return thirteen different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of thirteen different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -1097,7 +1073,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return fourteen different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of fourteen different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -1237,7 +1214,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return fifteen different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of fifteen different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -1385,7 +1363,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 }
 
 /// <summary>
-/// Represents the result of an <see cref="Endpoint"/> route handler delegate that can return sixteen different <see cref="IResult"/> types.
+/// An <see cref="IResult"/> that could be one of sixteen different <see cref="IResult"/> types. On execution will
+/// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
