@@ -32,7 +32,7 @@
         * when a project is a test or sample project
         * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
       Package downgrade errors may indicate mismatched transitive references in the PackageBaseline - if you see such errors in your project,
-      try adding <UseLatestPackageReferences>true</UseLatestPackageReferences> -->
+      try adding <UseLatestPackageReferences>true</UseLatestPackageReferences>
     -->
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
