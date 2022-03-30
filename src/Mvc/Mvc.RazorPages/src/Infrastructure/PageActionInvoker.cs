@@ -272,7 +272,7 @@ internal class PageActionInvoker : ResourceInvoker, IActionInvoker
             try
             {
                 _result = await executor(_instance, arguments);
-                _logger.ExecutedHandlerMethod(_pageContext, handler, _result);
+                _logger.ExecutedHandlerMethod(handler, _result);
             }
             finally
             {

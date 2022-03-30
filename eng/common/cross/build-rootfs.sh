@@ -194,8 +194,8 @@ while :; do
             __LLDB_Package="liblldb-6.0-dev"
             ;;
         tizen)
-            if [ "$__BuildArch" != "arm" ] && [ "$__BuildArch" != "armel" ] && [ "$__BuildArch" != "arm64" ]; then
-                echo "Tizen is available only for arm, armel and arm64."
+            if [ "$__BuildArch" != "arm" ] && [ "$__BuildArch" != "armel" ] && [ "$__BuildArch" != "arm64" ] && [ "$__BuildArch" != "x86" ] ; then
+                echo "Tizen is available only for arm, armel, arm64 and x86."
                 usage;
                 exit 1;
             fi

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -36,9 +35,6 @@ internal class WebViewRenderer : WebRenderer
     {
         // Notify the JS code so it can show the in-app UI
         _ipcSender.NotifyUnhandledException(exception);
-
-        // Also rethrow so the AppDomain's UnhandledException handler gets notified
-        ExceptionDispatchInfo.Capture(exception).Throw();
     }
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)

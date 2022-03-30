@@ -8,6 +8,7 @@
     <PackageTags>aspnetcore;hosting</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+    <Trimmable>true</Trimmable>
   </PropertyGroup>
 
   <ItemGroup>

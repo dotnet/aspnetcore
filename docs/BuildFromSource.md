@@ -72,25 +72,26 @@ Building ASP.NET Core on Windows (10, version 1803 or newer) requires that you h
 
 > :bulb: Be sure you have least 10 GB of disk space and a good Internet connection. The build scripts will download several tools and dependencies onto your machine.
 
-#### [Visual Studio 2019](https://visualstudio.com)
+#### [Visual Studio 2022](https://visualstudio.com)
 
-Visual Studio 2019 (16.10 Preview 3) is required to build the repo locally. If you don't have visual studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
+Visual Studio 2022 (17.1 or above) is required to build the repo locally. If you don't have Visual Studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
 
 > :bulb: By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
 > :bulb: To install Visual Studio from the preview channel, you can use the `-Channel` flag to set the channel (`-Channel Preview`).
 > :bulb: Even if you have installed Visual Studio, we still recommend using this script to install again to avoid errors due to missing components.
+> :bulb: To update an existing Visual Studio installation or customize the installation path, you can use the `-InstallPath` flag (`-InstallPath "D:\Program Files\Microsoft Visual Studio\2022\Enterprise"`).
 
 ```powershell
-./eng/scripts/InstallVisualStudio.ps1  [-Edition {Enterprise|Community|Professional}] [-Channel {Release|Preview}]
+./eng/scripts/InstallVisualStudio.ps1 [-Edition {Enterprise|Community|Professional}] [-Channel {Release|Preview}]
 ```
 
 > :bulb: To execute the setup script or other PowerShell scripts in the repo, you may need to update the execution policy on your machine.
 > You can do so by running the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` command
 > in PowerShell. For more information on execution policies, you can read the [execution policy docs](https://docs.microsoft.com/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
-The [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.16.json](/eng/scripts/vs.16.json) file provides a description of the components needed to build within VS. If you plan on developing in Visual Studio, you will need to have these components installed.
+The [global.json](/global.json) file specifies the minimum requirements needed to build using `msbuild`. The [eng/scripts/vs.17.json](/eng/scripts/vs.17.json) file provides a description of the components needed to build within Visual Studio. If you plan on developing in Visual Studio, you will need to have these components installed.
 
-> :bulb: The `InstallVisualStudio.ps1` script mentioned above reads from the `vs.17.json` file to determine what components to install.
+> :bulb: The `InstallVisualStudio.ps1` script mentioned above reads from the `vs.17[.channel].json` file to determine what components to install.
 
 #### [Git](https://git-scm.org) on Windows
 
@@ -107,10 +108,6 @@ NodeJS installs the Node package manager (npm) by default. This repo depends on 
 ```powershell
 npm install -g yarn
 ```
-
-#### [tar](http://gnuwin32.sourceforge.net/packages/gtar.htm) on Windows
-
-Building the repo requires tar to be installed. First, check whether `tar.exe` is already in your path i.e. execute `tar -help` (Win10 comes with tar already installed). Then, assuming you have `git` installed, you might add `C:\Program Files\Git\usr\bin\` to your path to pick up the `tar.exe` that ships with `git`. Finally, you can find installation executables of tar at <http://gnuwin32.sourceforge.net/packages/gtar.htm>; download that and add the installation directory to your PATH variable.
 
 #### Java Development Kit on Windows
 

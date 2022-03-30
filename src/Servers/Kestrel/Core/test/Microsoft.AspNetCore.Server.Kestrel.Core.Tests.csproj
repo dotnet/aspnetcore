@@ -1,10 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TestGroupName>Kestrel.Core.Tests</TestGroupName>
-    <DefineConstants>$(DefineConstants);KESTREL</DefineConstants>
+    <DefineConstants>$(DefineConstants);KESTREL;IS_TESTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,20 +11,20 @@
     <Compile Include="$(SharedSourceRoot)Buffers.Testing\*.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)KnownHeaders.cs" LinkBase="shared" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.crt" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.key" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(KestrelSharedSourceRoot)\HPackHeaderWriter.cs" Link="Http2\HPackHeaderWriter.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\Http2HeadersEnumerator.cs" Link="Http2\Http2HeadersEnumerator.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
     <Compile Include="$(SharedSourceRoot)test\Shared.Tests\runtime\Http2\*.cs" LinkBase="Shared\runtime\Http2" />
     <Compile Include="$(SharedSourceRoot)test\Shared.Tests\runtime\Http3\*.cs" LinkBase="Shared\runtime\Http3" />
-  </ItemGroup>
 
-  <ItemGroup>
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.crt" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.key" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
-
 </Project>

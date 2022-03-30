@@ -1,39 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-#nullable enable annotations
+#nullable enable
+
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 
-#if ActivatorUtilities_In_DependencyInjection
-using Microsoft.Extensions.Internal;
-
-namespace Microsoft.Extensions.DependencyInjection;
-#else
 namespace Microsoft.Extensions.Internal;
-#endif
 
-/// <summary>
-/// Helper code for the various activator services.
-/// </summary>
-#if ActivatorUtilities_In_DependencyInjection
-public
-#else
-// Do not take a dependency on this class unless you are explicitly trying to avoid taking a
-// dependency on Microsoft.AspNetCore.DependencyInjection.Abstractions.
-internal
-#endif
-static class ActivatorUtilities
+internal static class ActivatorUtilities
 {
-    private const DynamicallyAccessedMemberTypes ActivatorAccessibility = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors;
-
-    private static readonly MethodInfo GetServiceInfo =
-        GetMethodInfo<Func<IServiceProvider, Type, Type, bool, object>>((sp, t, r, c) => GetService(sp, t, r, c));
+    private const DynamicallyAccessedMemberTypes ActivatorAccessibility = DynamicallyAccessedMemberTypes.PublicConstructors;
 
     /// <summary>
     /// Instantiate a type with constructor arguments provided directly and/or from an <see cref="IServiceProvider"/>.
@@ -47,8 +26,7 @@ static class ActivatorUtilities
         [DynamicallyAccessedMembers(ActivatorAccessibility)] Type instanceType,
         params object[] parameters)
     {
-        int bestLength = -1;
-        var seenPreferred = false;
+        var bestLength = -1;
 
         ConstructorMatcher bestMatcher = default;
 
@@ -57,29 +35,13 @@ static class ActivatorUtilities
             foreach (var constructor in instanceType.GetConstructors())
             {
                 var matcher = new ConstructorMatcher(constructor);
-                var isPreferred = constructor.IsDefined(typeof(ActivatorUtilitiesConstructorAttribute), false);
                 var length = matcher.Match(parameters);
 
-                if (isPreferred)
-                {
-                    if (seenPreferred)
-                    {
-                        ThrowMultipleCtorsMarkedWithAttributeException();
-                    }
-
-                    if (length == -1)
-                    {
-                        ThrowMarkedCtorDoesNotTakeAllProvidedArguments();
-                    }
-                }
-
-                if (isPreferred || bestLength < length)
+                if (bestLength < length)
                 {
                     bestLength = length;
                     bestMatcher = matcher;
                 }
-
-                seenPreferred |= isPreferred;
             }
         }
 
@@ -90,35 +52,6 @@ static class ActivatorUtilities
         }
 
         return bestMatcher.CreateInstance(provider);
-    }
-
-    /// <summary>
-    /// Create a delegate that will instantiate a type with constructor arguments provided directly
-    /// and/or from an <see cref="IServiceProvider"/>.
-    /// </summary>
-    /// <param name="instanceType">The type to activate</param>
-    /// <param name="argumentTypes">
-    /// The types of objects, in order, that will be passed to the returned function as its second parameter
-    /// </param>
-    /// <returns>
-    /// A factory that will instantiate instanceType using an <see cref="IServiceProvider"/>
-    /// and an argument array containing objects matching the types defined in argumentTypes
-    /// </returns>
-    public static ObjectFactory CreateFactory(
-        [DynamicallyAccessedMembers(ActivatorAccessibility)] Type instanceType,
-        Type[] argumentTypes)
-    {
-        FindApplicableConstructor(instanceType, argumentTypes, out ConstructorInfo constructor, out int?[] parameterMap);
-
-        var provider = Expression.Parameter(typeof(IServiceProvider), "provider");
-        var argumentArray = Expression.Parameter(typeof(object[]), "argumentArray");
-        var factoryExpressionBody = BuildFactoryExpression(constructor, parameterMap, provider, argumentArray);
-
-        var factoryLamda = Expression.Lambda<Func<IServiceProvider, object[], object>>(
-            factoryExpressionBody, provider, argumentArray);
-
-        var result = factoryLamda.Compile();
-        return result.Invoke;
     }
 
     /// <summary>
@@ -161,184 +94,17 @@ static class ActivatorUtilities
         return provider.GetService(type) ?? CreateInstance(provider, type);
     }
 
-    private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
-    {
-        var mc = (MethodCallExpression)expr.Body;
-        return mc.Method;
-    }
-
-    private static object? GetService(IServiceProvider sp, Type type, Type requiredBy, bool isDefaultParameterRequired)
-    {
-        var service = sp.GetService(type);
-        if (service == null && !isDefaultParameterRequired)
-        {
-            var message = $"Unable to resolve service for type '{type}' while attempting to activate '{requiredBy}'.";
-            throw new InvalidOperationException(message);
-        }
-        return service;
-    }
-
-    private static Expression BuildFactoryExpression(
-        ConstructorInfo constructor,
-        int?[] parameterMap,
-        Expression serviceProvider,
-        Expression factoryArgumentArray)
-    {
-        var constructorParameters = constructor.GetParameters();
-        var constructorArguments = new Expression[constructorParameters.Length];
-
-        for (var i = 0; i < constructorParameters.Length; i++)
-        {
-            var constructorParameter = constructorParameters[i];
-            var parameterType = constructorParameter.ParameterType;
-            var hasDefaultValue = ParameterDefaultValue.TryGetDefaultValue(constructorParameter, out var defaultValue);
-
-            if (parameterMap[i] != null)
-            {
-                constructorArguments[i] = Expression.ArrayAccess(factoryArgumentArray, Expression.Constant(parameterMap[i]));
-            }
-            else
-            {
-                var parameterTypeExpression = new Expression[] { serviceProvider,
-                    Expression.Constant(parameterType, typeof(Type)),
-                    Expression.Constant(constructor.DeclaringType, typeof(Type)),
-                    Expression.Constant(hasDefaultValue) };
-                constructorArguments[i] = Expression.Call(GetServiceInfo, parameterTypeExpression);
-            }
-
-            // Support optional constructor arguments by passing in the default value
-            // when the argument would otherwise be null.
-            if (hasDefaultValue)
-            {
-                var defaultValueExpression = Expression.Constant(defaultValue);
-                constructorArguments[i] = Expression.Coalesce(constructorArguments[i], defaultValueExpression);
-            }
-
-            constructorArguments[i] = Expression.Convert(constructorArguments[i], parameterType);
-        }
-
-        return Expression.New(constructor, constructorArguments);
-    }
-
-    private static void FindApplicableConstructor(
-        [DynamicallyAccessedMembers(ActivatorAccessibility)] Type instanceType,
-        Type[] argumentTypes,
-        out ConstructorInfo matchingConstructor,
-        out int?[] parameterMap)
-    {
-        matchingConstructor = null!;
-        parameterMap = null!;
-
-        if (!TryFindPreferredConstructor(instanceType, argumentTypes, ref matchingConstructor!, ref parameterMap!) &&
-            !TryFindMatchingConstructor(instanceType, argumentTypes, ref matchingConstructor!, ref parameterMap!))
-        {
-            var message = $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
-            throw new InvalidOperationException(message);
-        }
-    }
-
-    // Tries to find constructor based on provided argument types
-    private static bool TryFindMatchingConstructor(
-        [DynamicallyAccessedMembers(ActivatorAccessibility)] Type instanceType,
-        Type[] argumentTypes,
-        ref ConstructorInfo matchingConstructor,
-        ref int?[] parameterMap)
-    {
-        foreach (var constructor in instanceType.GetConstructors())
-        {
-            if (TryCreateParameterMap(constructor.GetParameters(), argumentTypes, out int?[] tempParameterMap))
-            {
-                if (matchingConstructor != null)
-                {
-                    throw new InvalidOperationException($"Multiple constructors accepting all given argument types have been found in type '{instanceType}'. There should only be one applicable constructor.");
-                }
-
-                matchingConstructor = constructor;
-                parameterMap = tempParameterMap;
-            }
-        }
-
-        return matchingConstructor != null;
-    }
-
-    // Tries to find constructor marked with ActivatorUtilitiesConstructorAttribute
-    private static bool TryFindPreferredConstructor(
-        [DynamicallyAccessedMembers(ActivatorAccessibility)] Type instanceType,
-        Type[] argumentTypes,
-        ref ConstructorInfo matchingConstructor,
-        ref int?[] parameterMap)
-    {
-        var seenPreferred = false;
-        foreach (var constructor in instanceType.GetConstructors())
-        {
-            if (constructor.IsDefined(typeof(ActivatorUtilitiesConstructorAttribute), false))
-            {
-                if (seenPreferred)
-                {
-                    ThrowMultipleCtorsMarkedWithAttributeException();
-                }
-
-                if (!TryCreateParameterMap(constructor.GetParameters(), argumentTypes, out int?[] tempParameterMap))
-                {
-                    ThrowMarkedCtorDoesNotTakeAllProvidedArguments();
-                }
-
-                matchingConstructor = constructor;
-                parameterMap = tempParameterMap;
-                seenPreferred = true;
-            }
-        }
-
-        return matchingConstructor != null;
-    }
-
-    // Creates an injective parameterMap from givenParameterTypes to assignable constructorParameters.
-    // Returns true if each given parameter type is assignable to a unique; otherwise, false.
-    private static bool TryCreateParameterMap(ParameterInfo[] constructorParameters, Type[] argumentTypes, out int?[] parameterMap)
-    {
-        parameterMap = new int?[constructorParameters.Length];
-
-        for (var i = 0; i < argumentTypes.Length; i++)
-        {
-            var foundMatch = false;
-            var givenParameter = argumentTypes[i];
-
-            for (var j = 0; j < constructorParameters.Length; j++)
-            {
-                if (parameterMap[j] != null)
-                {
-                    // This ctor parameter has already been matched
-                    continue;
-                }
-
-                if (constructorParameters[j].ParameterType.IsAssignableFrom(givenParameter))
-                {
-                    foundMatch = true;
-                    parameterMap[j] = i;
-                    break;
-                }
-            }
-
-            if (!foundMatch)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private struct ConstructorMatcher
     {
         private readonly ConstructorInfo _constructor;
         private readonly ParameterInfo[] _parameters;
-        private readonly object[] _parameterValues;
+        private readonly object?[] _parameterValues;
 
         public ConstructorMatcher(ConstructorInfo constructor)
         {
             _constructor = constructor;
             _parameters = _constructor.GetParameters();
-            _parameterValues = new object[_parameters.Length];
+            _parameterValues = new object?[_parameters.Length];
         }
 
         public int Match(object[] givenParameters)
@@ -378,26 +144,24 @@ static class ActivatorUtilities
 
         public object CreateInstance(IServiceProvider provider)
         {
-            for (var index = 0; index != _parameters.Length; index++)
+            for (var index = 0; index < _parameters.Length; index++)
             {
-                if (_parameterValues[index] == null)
+                var parameter = _parameters[index];
+
+                if (_parameterValues[index] is null)
                 {
-                    var value = provider.GetService(_parameters[index].ParameterType);
-                    if (value == null)
+                    var value = provider.GetService(parameter.ParameterType);
+                    if (value is null)
                     {
-                        if (!ParameterDefaultValue.TryGetDefaultValue(_parameters[index], out var defaultValue))
+                        if (!ParameterDefaultValue.TryGetDefaultValue(parameter, out var defaultValue))
                         {
                             throw new InvalidOperationException($"Unable to resolve service for type '{_parameters[index].ParameterType}' while attempting to activate '{_constructor.DeclaringType}'.");
                         }
-                        else
-                        {
-                            _parameterValues[index] = defaultValue;
-                        }
+
+                        value = defaultValue;
                     }
-                    else
-                    {
-                        _parameterValues[index] = value;
-                    }
+
+                    _parameterValues[index] = value;
                 }
             }
 
@@ -416,16 +180,6 @@ static class ActivatorUtilities
             }
 #endif
         }
-    }
-
-    private static void ThrowMultipleCtorsMarkedWithAttributeException()
-    {
-        throw new InvalidOperationException($"Multiple constructors were marked with {nameof(ActivatorUtilitiesConstructorAttribute)}.");
-    }
-
-    private static void ThrowMarkedCtorDoesNotTakeAllProvidedArguments()
-    {
-        throw new InvalidOperationException($"Constructor marked with {nameof(ActivatorUtilitiesConstructorAttribute)} does not accept all given argument types.");
     }
 }
 

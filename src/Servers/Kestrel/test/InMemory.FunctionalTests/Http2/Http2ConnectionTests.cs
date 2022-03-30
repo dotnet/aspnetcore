@@ -430,7 +430,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39477")]
     public async Task StreamPool_MultipleStreamsConcurrent_StreamsReturnedToPool()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -554,6 +553,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40626")]
     public async Task StreamPool_StreamIsInvalidState_DontReturnedToPool()
     {
         // Add (or don't add) stream to Http2Connection._completedStreams inline with SetResult().
@@ -3765,7 +3765,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39520")]
     public async Task GOAWAY_Received_SetsConnectionStateToClosingAndWaitForAllStreamsToComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -4696,7 +4695,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39492")]
     public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -4727,7 +4725,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39479")]
     public async Task AcceptNewStreamsDuringClosingConnection()
     {
         await InitializeConnectionAsync(_echoApplication);

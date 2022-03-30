@@ -519,8 +519,7 @@ public class PageInvokerProviderTest
             new IFilterProvider[0],
             parameterBinder,
             modelMetadataProvider,
-            modelBinderFactory,
-            Options.Create(mvcOptions));
+            modelBinderFactory);
 
         return new PageActionInvokerProvider(
             loader,

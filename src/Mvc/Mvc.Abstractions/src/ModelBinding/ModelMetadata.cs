@@ -6,7 +6,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -24,6 +26,9 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// The default value of <see cref="ModelMetadata.Order"/>.
     /// </summary>
     public static readonly int DefaultOrder = 10000;
+
+    private static readonly ParameterBindingMethodCache ParameterBindingMethodCache
+        = new(throwOnInvalidMethod: false);
 
     private int? _hashCode;
     private IReadOnlyList<ModelMetadata>? _boundProperties;
@@ -434,10 +439,10 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// </summary>
     /// <remarks>
     /// A complex type is defined as a <see cref="Type"/> without a <see cref="TypeConverter"/> that can convert
-    /// from <see cref="string"/>. Most POCO and <see cref="IEnumerable"/> types are therefore complex. Most, if
-    /// not all, BCL value types are simple types.
+    /// from <see cref="string"/> and without a <c>TryParse</c> method. Most POCO and <see cref="IEnumerable"/> types are therefore complex.
+    /// Most, if not all, BCL value types are simple types.
     /// </remarks>
-    public bool IsComplexType { get; private set; }
+    public bool IsComplexType => !IsConvertibleType && !IsParseableType;
 
     /// <summary>
     /// Gets a value indicating whether or not <see cref="ModelType"/> is a <see cref="Nullable{T}"/>.
@@ -474,6 +479,17 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     /// Identical to <see cref="ModelType"/> unless <see cref="IsNullableValueType"/> is <c>true</c>.
     /// </remarks>
     public Type UnderlyingOrModelType { get; private set; } = default!;
+
+    /// <summary>
+    /// Gets a value indicating whether or not <see cref="ModelType"/> has a TryParse method.
+    /// </summary>
+    internal virtual bool IsParseableType { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether or not <see cref="ModelType"/> has a <see cref="TypeConverter"/>
+    /// from <see cref="string"/>.
+    /// </summary>
+    internal bool IsConvertibleType { get; private set; }
 
     /// <summary>
     /// Gets a value indicating the NullabilityState of the value or reference type.
@@ -525,6 +541,12 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
         {
             throw _recordTypeValidatorsOnPropertiesError;
         }
+    }
+
+    internal static Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type modelType)
+    {
+        modelType = Nullable.GetUnderlyingType(modelType) ?? modelType;
+        return ParameterBindingMethodCache.FindTryParseMethod(modelType);
     }
 
     [MemberNotNull(nameof(_parameterMapping), nameof(_boundConstructorPropertyMapping))]
@@ -622,7 +644,8 @@ public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadata
     {
         Debug.Assert(ModelType != null);
 
-        IsComplexType = !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
+        IsConvertibleType = TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
+        IsParseableType = FindTryParseMethod(ModelType) is not null;
         IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
         IsReferenceOrNullableType = !ModelType.IsValueType || IsNullableValueType;
         UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;

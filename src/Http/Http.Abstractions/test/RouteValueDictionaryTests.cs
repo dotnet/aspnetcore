@@ -25,7 +25,7 @@ public class RouteValueDictionaryTests
     {
         // Arrange
         // Act
-        var dict = new RouteValueDictionary(null);
+        var dict = new RouteValueDictionary(values: (object?)null);
 
         // Assert
         Assert.Empty(dict);
@@ -170,11 +170,11 @@ public class RouteValueDictionaryTests
     public void CreateFromIEnumerableStringValuePair_ThrowsExceptionForDuplicateKey()
     {
         // Arrange
-        var values = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string, string>("name", "Billy"),
-                new KeyValuePair<string, string>("Name", "Joey"),
-            };
+        var values = new List<KeyValuePair<string, string?>>()
+        {
+            new("name", "Billy"),
+            new("Name", "Joey"),
+        };
 
         // Act & Assert
         ExceptionAssert.ThrowsArgument(

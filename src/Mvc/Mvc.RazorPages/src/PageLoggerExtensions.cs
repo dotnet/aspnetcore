@@ -121,7 +121,7 @@ internal static partial class PageLoggerExtensions
     [LoggerMessage(108, LogLevel.Information, "Executed handler method {HandlerName}, returned result {ActionResult}.", EventName = "ExecutedHandlerMethod")]
     public static partial void ExecutedHandlerMethod(this ILogger logger, string handlerName, string? actionResult);
 
-    public static void ExecutedHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, IActionResult? result)
+    public static void ExecutedHandlerMethod(this ILogger logger, HandlerMethodDescriptor handler, IActionResult? result)
     {
         if (logger.IsEnabled(LogLevel.Information))
         {

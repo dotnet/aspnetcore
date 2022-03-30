@@ -1,7 +1,25 @@
 #nullable enable
 *REMOVED*abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string!
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetRequiredMetadata<T>() -> T!
+Microsoft.AspNetCore.Http.IRouteHandlerFilter.InvokeAsync(Microsoft.AspNetCore.Http.RouteHandlerInvocationContext! context, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate! next) -> System.Threading.Tasks.ValueTask<object?>
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
+Microsoft.AspNetCore.Http.RouteHandlerContext
+Microsoft.AspNetCore.Http.RouteHandlerContext.EndpointMetadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection!
+Microsoft.AspNetCore.Http.RouteHandlerContext.MethodInfo.get -> System.Reflection.MethodInfo!
+Microsoft.AspNetCore.Http.RouteHandlerContext.RouteHandlerContext(System.Reflection.MethodInfo! methodInfo, Microsoft.AspNetCore.Http.EndpointMetadataCollection! endpointMetadata) -> void
+Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate
+Microsoft.AspNetCore.Http.RouteHandlerInvocationContext
+Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.Parameters.get -> System.Collections.Generic.IList<object?>!
+Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.RouteHandlerInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! parameters) -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(Microsoft.AspNetCore.Routing.RouteValueDictionary? dictionary) -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? values) -> void
+Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string?>>? values) -> void
 abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string?
 Microsoft.AspNetCore.Http.Metadata.ISkipStatusCodePagesMetadata
+Microsoft.AspNetCore.Http.IRouteHandlerFilter
+Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
+Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
+Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata
+Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata.Summary.get -> string!

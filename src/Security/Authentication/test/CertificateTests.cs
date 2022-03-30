@@ -152,7 +152,8 @@ public class ClientCertificateAuthenticationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813", Queues = $"All.Ubuntu;{HelixConstants.RedhatAmd64}")]
     public async Task VerifyExpiredSelfSignedFails()
     {
         using var host = await CreateHost(
@@ -187,7 +188,7 @@ public class ClientCertificateAuthenticationTests
     }
 
     [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/32813", Queues = $"All.Ubuntu;{HelixConstants.RedhatAmd64}")]
     public async Task VerifyNotYetValidSelfSignedFails()
     {
         using var host = await CreateHost(
@@ -925,42 +926,5 @@ public class ClientCertificateAuthenticationTests
             return Task.CompletedTask;
         }
     };
-
-    private static class Certificates
-    {
-        public static X509Certificate2 SelfSignedPrimaryRoot { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedPrimaryRootCertificate.cer"));
-
-        public static X509Certificate2 SignedSecondaryRoot { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSignedSecondaryRootCertificate.cer"));
-
-        public static X509Certificate2 SignedClient { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSignedClientCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedValidWithClientEku { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedClientEkuCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedValidWithNoEku { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedNoEkuCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedValidWithServerEku { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedServerEkuCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedNotYetValid { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("selfSignedNoEkuCertificateNotValidYet.cer"));
-
-        public static X509Certificate2 SelfSignedExpired { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("selfSignedNoEkuCertificateExpired.cer"));
-
-        private static string GetFullyQualifiedFilePath(string filename)
-        {
-            var filePath = Path.Combine(AppContext.BaseDirectory, filename);
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException(filePath);
-            }
-            return filePath;
-        }
-    }
 }
 

@@ -20,6 +20,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
+using HttpCharacters = Microsoft.AspNetCore.Http.HttpCharacters;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
@@ -314,7 +315,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                         {
                             UpdateHeaderParsingState(value, GetPseudoHeaderField(staticTableIndex.GetValueOrDefault()));
 
-                            OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: true, name, value);
+                            OnHeader(staticTableIndex.GetValueOrDefault(), indexOnly: false, name, value);
                         }
                         else
                         {

@@ -582,11 +582,9 @@ public class TemplateBinder
                         // for format, so we remove '.' and generate 5.
                         if (!context.Accept(converted, parameterPart.EncodeSlashes))
                         {
-                            RoutePatternSeparatorPart? nullablePart;
-                            if (j != 0 && parameterPart.IsOptional && (nullablePart = parts[j - 1] as RoutePatternSeparatorPart) != null)
+                            if (j != 0 && parameterPart.IsOptional && parts[j - 1] is RoutePatternSeparatorPart)
                             {
-                                separatorPart = nullablePart;
-                                context.Remove(separatorPart.Content);
+                                context.Remove();
                             }
                             else
                             {

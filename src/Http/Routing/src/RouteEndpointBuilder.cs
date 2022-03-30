@@ -38,6 +38,24 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
         Order = order;
     }
 
+    /// <summary>
+    /// Constructs a new <see cref="RouteEndpointBuilder"/> instance.
+    /// </summary>
+    /// <param name="routePattern">The <see cref="RoutePattern"/> to use in URL matching.</param>
+    /// <param name="order">The order assigned to the endpoint.</param>
+    /// <remarks>
+    /// This constructor allows the <see cref="RequestDelegate"/> to be added to the
+    /// <see cref="RouteEndpointBuilder"/> after construction but before <see cref="Build"/>
+    /// is invoked.
+    /// </remarks>
+    internal RouteEndpointBuilder(
+        RoutePattern routePattern,
+        int order)
+    {
+        RoutePattern = routePattern;
+        Order = order;
+    }
+
     /// <inheritdoc />
     public override Endpoint Build()
     {

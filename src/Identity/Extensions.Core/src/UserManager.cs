@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -2276,7 +2277,59 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <returns></returns>
     protected virtual string CreateTwoFactorRecoveryCode()
-        => Guid.NewGuid().ToString().Substring(0, 8);
+    {
+        var recoveryCode = new StringBuilder(11);
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append('-');
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        return recoveryCode.ToString();
+    }
+
+    // We don't want to use any confusing characters like 0/O 1/I/L/l
+    // Taken from windows valid product key source
+    private static readonly char[] AllowedChars = "23456789BCDFGHJKMNPQRTVWXY".ToCharArray();
+    private static char GetRandomRecoveryCodeChar()
+    {
+        // Based on RandomNumberGenerator implementation of GetInt32
+        uint range = (uint)AllowedChars.Length - 1;
+
+        // Create a mask for the bits that we care about for the range. The other bits will be
+        // masked away.
+        uint mask = range;
+        mask |= mask >> 1;
+        mask |= mask >> 2;
+        mask |= mask >> 4;
+        mask |= mask >> 8;
+        mask |= mask >> 16;
+
+#if NETCOREAPP
+        Span<uint> resultBuffer = stackalloc uint[1];
+#else
+        var resultBuffer = new byte[1];
+#endif
+        uint result;
+
+        do
+        {
+#if NETCOREAPP
+            RandomNumberGenerator.Fill(MemoryMarshal.AsBytes(resultBuffer));
+#else
+            _rng.GetBytes(resultBuffer);
+#endif
+            result = mask & resultBuffer[0];
+        }
+        while (result > range);
+
+        return AllowedChars[(int)result];
+    }
 
     /// <summary>
     /// Returns whether a recovery code is valid for a user. Note: recovery codes are only valid

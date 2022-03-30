@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.Extensions.Primitives;
@@ -207,6 +208,30 @@ public class FormPipeReaderTests
         // The body pipe is still readable and has not advanced.
         var readResult = await bodyPipe.Reader.ReadAsync();
         Assert.Equal(Encoding.UTF8.GetBytes("baz=12345678901"), readResult.Buffer.ToArray());
+    }
+
+    [Fact]
+    public void ReadFormAsync_ChunkedDataNoDelimiter_ThrowsEarly()
+    {
+        var bytes = CreateBytes_NoDelimiter(10 * 1024);
+        var readOnlySequence = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(bytes);
+        KeyValueAccumulator accumulator = default;
+        var valueLengthLimit = 1024;
+        var keyLengthLimit = 10;
+        var formReader = new FormPipeReader(null!)
+        {
+            ValueLengthLimit = valueLengthLimit,
+            KeyLengthLimit = keyLengthLimit
+        };
+        var exception = Assert.Throws<InvalidDataException>(
+            () => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: false));
+        // Make sure that FormPipeReader throws an exception after hitting KeyLengthLimit + ValueLengthLimit,
+        // Rather than after reading the entire request.
+        Assert.Equal(string.Format(
+            CultureInfo.CurrentCulture,
+            Resources.FormPipeReader_KeyOrValueTooLarge,
+            keyLengthLimit,
+            valueLengthLimit), exception.Message);
     }
 
     // https://en.wikipedia.org/wiki/Percent-encoding
@@ -609,5 +634,17 @@ public class FormPipeReaderTests
         // Complete the writer so the reader will complete after processing all data.
         bodyPipe.Writer.Complete();
         return bodyPipe.Reader;
+    }
+
+    private static byte[] CreateBytes_NoDelimiter(int n)
+    {
+        //Create the bytes of "key=vvvvvvvv....", of length n
+        var keyValue = new char[n];
+        Array.Fill(keyValue, 'v');
+        keyValue[0] = 'k';
+        keyValue[1] = 'e';
+        keyValue[2] = 'y';
+        keyValue[3] = '=';
+        return Encoding.UTF8.GetBytes(keyValue);
     }
 }

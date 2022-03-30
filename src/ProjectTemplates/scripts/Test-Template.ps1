@@ -64,7 +64,9 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         if ($isBlazorWasmHosted) {
             Push-Location Server
         }
-        dotnet.exe ef migrations add mvc
+        if ($templateArgs -match '-au') {
+            dotnet.exe ef migrations add mvc
+        }
         dotnet.exe publish --configuration Release
         Set-Location .\bin\Release\net7.0\publish
         if ($isBlazorWasm -eq $false) {

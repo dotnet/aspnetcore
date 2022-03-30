@@ -26,21 +26,25 @@ internal sealed class ParameterBindingMethodCache
     internal static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
 
     private readonly MethodInfo _enumTryParseMethod;
+    private readonly bool _throwOnInvalidMethod;
 
     // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
-    private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression>?> _stringMethodCallCache = new();
+    private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression, Expression>?> _stringMethodCallCache = new();
     private readonly ConcurrentDictionary<Type, (Func<ParameterInfo, Expression>?, int)> _bindAsyncMethodCallCache = new();
 
     // If IsDynamicCodeSupported is false, we can't use the static Enum.TryParse<T> since there's no easy way for
     // this code to generate the specific instantiation for any enums used
-    public ParameterBindingMethodCache() : this(preferNonGenericEnumParseOverload: !RuntimeFeature.IsDynamicCodeSupported)
+    public ParameterBindingMethodCache(bool throwOnInvalidMethod = true)
+        : this(preferNonGenericEnumParseOverload: !RuntimeFeature.IsDynamicCodeSupported,
+              throwOnInvalidMethod)
     {
     }
 
     // This is for testing
-    public ParameterBindingMethodCache(bool preferNonGenericEnumParseOverload)
+    public ParameterBindingMethodCache(bool preferNonGenericEnumParseOverload, bool throwOnInvalidMethod = true)
     {
         _enumTryParseMethod = GetEnumTryParseMethod(preferNonGenericEnumParseOverload);
+        _throwOnInvalidMethod = throwOnInvalidMethod;
     }
 
     public bool HasTryParseMethod(Type type)
@@ -52,9 +56,9 @@ internal sealed class ParameterBindingMethodCache
     public bool HasBindAsyncMethod(ParameterInfo parameter) =>
         FindBindAsyncMethod(parameter).Expression is not null;
 
-    public Func<ParameterExpression, Expression>? FindTryParseMethod(Type type)
+    public Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type type)
     {
-        Func<ParameterExpression, Expression>? Finder(Type type)
+        Func<ParameterExpression, Expression, Expression>? Finder(Type type)
         {
             MethodInfo? methodInfo;
 
@@ -64,10 +68,10 @@ internal sealed class ParameterBindingMethodCache
                 {
                     methodInfo = _enumTryParseMethod.MakeGenericMethod(type);
 
-                    return (expression) => Expression.Call(methodInfo!, TempSourceStringExpr, expression);
+                    return (expression, formatProvider) => Expression.Call(methodInfo!, TempSourceStringExpr, expression);
                 }
 
-                return (expression) =>
+                return (expression, formatProvider) =>
                 {
                     var enumAsObject = Expression.Variable(typeof(object), "enumAsObject");
                     var success = Expression.Variable(typeof(bool), "success");
@@ -108,21 +112,21 @@ internal sealed class ParameterBindingMethodCache
                     _ => DateTimeStyles.AllowWhiteSpaces
                 };
 
-                return (expression) => Expression.Call(
+                return (expression, formatProvider) => Expression.Call(
                     methodInfo!,
                     TempSourceStringExpr,
-                    Expression.Constant(CultureInfo.InvariantCulture),
+                    formatProvider,
                     Expression.Constant(dateTimeStyles),
                     expression);
             }
 
             if (TryGetNumberStylesTryGetMethod(type, out methodInfo, out var numberStyle))
             {
-                return (expression) => Expression.Call(
+                return (expression, formatProvider) => Expression.Call(
                     methodInfo!,
                     TempSourceStringExpr,
                     Expression.Constant(numberStyle),
-                    Expression.Constant(CultureInfo.InvariantCulture),
+                    formatProvider,
                     expression);
             }
 
@@ -130,10 +134,10 @@ internal sealed class ParameterBindingMethodCache
 
             if (methodInfo is not null)
             {
-                return (expression) => Expression.Call(
+                return (expression, formatProvider) => Expression.Call(
                     methodInfo,
                     TempSourceStringExpr,
-                    Expression.Constant(CultureInfo.InvariantCulture),
+                    formatProvider,
                     expression);
             }
 
@@ -141,10 +145,10 @@ internal sealed class ParameterBindingMethodCache
 
             if (methodInfo is not null)
             {
-                return (expression) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
+                return (expression, formatProvider) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
             }
 
-            if (GetAnyMethodFromHierarchy(type, "TryParse") is MethodInfo invalidMethod)
+            if (_throwOnInvalidMethod && GetAnyMethodFromHierarchy(type, "TryParse") is MethodInfo invalidMethod)
             {
                 var stringBuilder = new StringBuilder();
                 stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format");
@@ -170,7 +174,7 @@ internal sealed class ParameterBindingMethodCache
 
     public (Expression? Expression, int ParamCount) FindBindAsyncMethod(ParameterInfo parameter)
     {
-        static (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
+        (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
         {
             var hasParameterInfo = true;
             // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
@@ -230,7 +234,7 @@ internal sealed class ParameterBindingMethodCache
                 }
             }
 
-            if (GetAnyMethodFromHierarchy(nonNullableParameterType, "BindAsync") is MethodInfo invalidBindMethod)
+            if (_throwOnInvalidMethod && GetAnyMethodFromHierarchy(nonNullableParameterType, "BindAsync") is MethodInfo invalidBindMethod)
             {
                 var stringBuilder = new StringBuilder();
                 stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)} with incorrect format. Must be a static method with format");
@@ -259,7 +263,7 @@ internal sealed class ParameterBindingMethodCache
         }
     }
 
-    private static MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
+    private MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
     {
         bool IsMatch(MethodInfo? method) => method is not null && !method.IsAbstract && validateReturnType(method);
 
@@ -281,7 +285,12 @@ internal sealed class ParameterBindingMethodCache
             {
                 if (candidateInterfaceMethodInfo is not null)
                 {
-                    throw new InvalidOperationException($"{TypeNameHelper.GetTypeDisplayName(type, fullName: false)} implements multiple interfaces defining a static {interfaceMethod} method causing ambiguity.");
+                    if (_throwOnInvalidMethod)
+                    {
+                        throw new InvalidOperationException($"{TypeNameHelper.GetTypeDisplayName(type, fullName: false)} implements multiple interfaces defining a static {interfaceMethod} method causing ambiguity.");
+                    }
+
+                    return null;
                 }
 
                 candidateInterfaceMethodInfo = interfaceMethod;

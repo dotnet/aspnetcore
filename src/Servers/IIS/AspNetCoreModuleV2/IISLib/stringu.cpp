@@ -774,9 +774,9 @@ Return Value:
     //  Only resize when we have to.  When we do resize, we tack on
     //  some extra space to avoid extra reallocations.
     //
-    if( m_Buff.QuerySize() < (ULONGLONG)cbOffset + (cbStr * sizeof( WCHAR )) + sizeof(WCHAR) )
+    if (m_Buff.QuerySize() < (ULONGLONG)cbOffset + (cbStr * sizeof(WCHAR)) + sizeof(WCHAR))
     {
-        ULONGLONG cb64NewSize = (ULONGLONG)( cbOffset + cbStr * sizeof(WCHAR) + sizeof( WCHAR ) );
+        ULONGLONG cb64NewSize = (ULONGLONG)cbOffset + (ULONGLONG)cbStr * sizeof(WCHAR) + sizeof(WCHAR);
 
         //
         // Check for the arithmetic overflow
@@ -905,50 +905,41 @@ STRU::StartsWith(
     __in PCWSTR         pwszPrefix,
     __in bool           fIgnoreCase) const
 {
-    BOOL    fMatch      = FALSE;
-    size_t  cchPrefix   = 0;
-
     if (pwszPrefix == NULL)
     {
-        goto Finished;
+        return FALSE;
     }
 
-    HRESULT hr = StringCchLengthW(pwszPrefix,
-                                  STRSAFE_MAX_CCH,
-                                  &cchPrefix);
+    size_t  cchPrefix = 0;
+    HRESULT hr = StringCchLengthW(pwszPrefix, STRSAFE_MAX_CCH, &cchPrefix);
     if (FAILED(hr))
     {
-        goto Finished;
+        return FALSE;
     }
 
-    _ASSERTE( cchPrefix <= MAXDWORD );
-
+    _ASSERTE(cchPrefix <= MAXDWORD);
     if (cchPrefix > m_cchLen)
     {
-        goto Finished;
+        return FALSE;
     }
 
-    #if defined( NTDDI_VERSION ) && NTDDI_VERSION >= NTDDI_LONGHORN
-
-        fMatch = ( CSTR_EQUAL == CompareStringOrdinal( QueryStr(),
-                                                       cchPrefix,
-                                                       pwszPrefix,
-                                                       cchPrefix,
-                                                       fIgnoreCase ) );
-    #else
-
-        if( fIgnoreCase )
-        {
-            fMatch = ( 0 == _wcsnicmp( QueryStr(), pwszPrefix, cchPrefix ) );
-        }
-        else
-        {
-            fMatch = ( 0 == wcsncmp( QueryStr(), pwszPrefix, cchPrefix ) );
-        }
-
-    #endif
-
-Finished:
+    BOOL fMatch = FALSE;
+#if defined( NTDDI_VERSION ) && NTDDI_VERSION >= NTDDI_LONGHORN
+    fMatch = ( CSTR_EQUAL == CompareStringOrdinal( QueryStr(),
+                                                    cchPrefix,
+                                                    pwszPrefix,
+                                                    cchPrefix,
+                                                    fIgnoreCase ) );
+#else
+    if( fIgnoreCase )
+    {
+        fMatch = ( 0 == _wcsnicmp( QueryStr(), pwszPrefix, cchPrefix ) );
+    }
+    else
+    {
+        fMatch = ( 0 == wcsncmp( QueryStr(), pwszPrefix, cchPrefix ) );
+    }
+#endif
 
     return fMatch;
 }
@@ -977,53 +968,45 @@ STRU::EndsWith(
     __in bool           fIgnoreCase) const
 {
     PWSTR       pwszString  = QueryStr();
-    BOOL        fMatch      = FALSE;
     size_t      cchSuffix   = 0;
 
     if (pwszSuffix == NULL)
     {
-        goto Finished;
+        return FALSE;
     }
 
-    HRESULT hr = StringCchLengthW(pwszSuffix,
-                                  STRSAFE_MAX_CCH,
-                                  &cchSuffix);
+    HRESULT hr = StringCchLengthW(pwszSuffix, STRSAFE_MAX_CCH, &cchSuffix);
     if (FAILED(hr))
     {
-        goto Finished;
+        return FALSE;
     }
 
-    _ASSERTE( cchSuffix <= MAXDWORD );
-
+    _ASSERTE(cchSuffix <= MAXDWORD);
     if (cchSuffix > m_cchLen)
     {
-        goto Finished;
+        return FALSE;
     }
 
     ptrdiff_t ixOffset = m_cchLen - cchSuffix;
     _ASSERTE(ixOffset >= 0 && ixOffset <= MAXDWORD);
 
-    #if defined( NTDDI_VERSION ) && NTDDI_VERSION >= NTDDI_LONGHORN
-
-        fMatch = ( CSTR_EQUAL == CompareStringOrdinal( pwszString + ixOffset,
-                                                       cchSuffix,
-                                                       pwszSuffix,
-                                                       cchSuffix,
-                                                       fIgnoreCase ) );
-    #else
-
-        if( fIgnoreCase )
-        {
-            fMatch = ( 0 == _wcsnicmp( pwszString + ixOffset, pwszSuffix, cchSuffix ) );
-        }
-        else
-        {
-            fMatch = ( 0 == wcsncmp( pwszString + ixOffset, pwszSuffix, cchSuffix ) );
-        }
-
-    #endif
-
-Finished:
+    BOOL fMatch = FALSE;
+#if defined( NTDDI_VERSION ) && NTDDI_VERSION >= NTDDI_LONGHORN
+    fMatch = ( CSTR_EQUAL == CompareStringOrdinal( pwszString + ixOffset,
+                                                    cchSuffix,
+                                                    pwszSuffix,
+                                                    cchSuffix,
+                                                    fIgnoreCase ) );
+#else
+    if( fIgnoreCase )
+    {
+        fMatch = ( 0 == _wcsnicmp( pwszString + ixOffset, pwszSuffix, cchSuffix ) );
+    }
+    else
+    {
+        fMatch = ( 0 == wcsncmp( pwszString + ixOffset, pwszSuffix, cchSuffix ) );
+    }
+#endif
 
     return fMatch;
 }
@@ -1057,7 +1040,7 @@ STRU::IndexOf(
     // Make sure that there are no buffer overruns.
     if( dwStartIndex >= QueryCCH() )
     {
-        goto Finished;
+        return nIndex;
     }
 
     const WCHAR* pwChar = wcschr( QueryStr() + dwStartIndex, charValue );
@@ -1068,8 +1051,6 @@ STRU::IndexOf(
         // nIndex will be set to -1 on failure.
         (VOID)SizeTToInt( pwChar - QueryStr(), &nIndex );
     }
-
-Finished:
 
     return nIndex;
 }
@@ -1099,14 +1080,12 @@ STRU::IndexOf(
     __in DWORD          dwStartIndex
     ) const
 {
-    HRESULT hr = S_OK;
     INT nIndex = -1;
-    SIZE_T cchValue = 0;
 
     // Validate input parameters
     if( dwStartIndex >= QueryCCH() || !pwszValue )
     {
-        goto Finished;
+        return nIndex;
     }
 
     const WCHAR* pwChar = wcsstr( QueryStr() + dwStartIndex, pwszValue );
@@ -1117,8 +1096,6 @@ STRU::IndexOf(
         // nIndex will be set to -1 on failure.
         (VOID)SizeTToInt( pwChar - QueryStr(), &nIndex );
     }
-
-Finished:
 
     return nIndex;
 }
@@ -1153,7 +1130,7 @@ STRU::LastIndexOf(
     // Make sure that there are no buffer overruns.
     if( dwStartIndex >= QueryCCH() )
     {
-        goto Finished;
+        return nIndex;
     }
 
     const WCHAR* pwChar = wcsrchr( QueryStr() + dwStartIndex, charValue );
@@ -1164,8 +1141,6 @@ STRU::LastIndexOf(
         // nIndex will be set to -1 on failure.
         (VOID)SizeTToInt( pwChar - QueryStr(), &nIndex );
     }
-
-Finished:
 
     return nIndex;
 }
@@ -1186,47 +1161,41 @@ Return Value:
     HRESULT
 --*/
 {
-    HRESULT                 hr              = S_OK;
-    if ( pszString == NULL ||
-         pstrExpandedString == NULL )
+    if (pszString == NULL || pstrExpandedString == NULL)
     {
         DBG_ASSERT( FALSE );
-        hr = HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
-        goto Exit;
+        return HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
     }
+
     DWORD cchNewSize = ExpandEnvironmentStrings(pszString,
                                                 pstrExpandedString->QueryStr(),
                                                 pstrExpandedString->QuerySizeCCH());
-    if ( cchNewSize == 0 )
+    if (cchNewSize == 0)
     {
-        hr = HRESULT_FROM_WIN32( GetLastError() );
-        goto Exit;
+        return HRESULT_FROM_WIN32(GetLastError());
     }
-    if ( cchNewSize > pstrExpandedString->QuerySizeCCH() )
+
+    if (cchNewSize > pstrExpandedString->QuerySizeCCH())
     {
-        hr = pstrExpandedString->Resize(
-            ( cchNewSize + 1 ) * sizeof( WCHAR )
-            );
-        if ( FAILED( hr ) )
+        HRESULT hr = pstrExpandedString->Resize(( cchNewSize + 1 ) * sizeof( WCHAR ));
+        if (FAILED(hr))
         {
-            goto Exit;
+            return hr;
         }
+
         cchNewSize = ExpandEnvironmentStrings(
             pszString,
             pstrExpandedString->QueryStr(),
             pstrExpandedString->QuerySizeCCH()
             );
-        if ( cchNewSize == 0 ||
-             cchNewSize > pstrExpandedString->QuerySizeCCH() )
+        if (cchNewSize == 0 || cchNewSize > pstrExpandedString->QuerySizeCCH())
         {
-            hr = HRESULT_FROM_WIN32( GetLastError() );
-            goto Exit;
+            return HRESULT_FROM_WIN32( GetLastError() );
         }
     }
+
     pstrExpandedString->SyncWithBuffer();
-    hr = S_OK;
-Exit:
-    return hr;
+    return S_OK;
 }
 
 #pragma warning( pop )

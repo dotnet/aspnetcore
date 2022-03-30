@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
@@ -51,7 +50,7 @@ internal class OutputProducer
         }
     }
 
-    public void Abort(Exception error)
+    public void Abort()
     {
         lock (_contextLock)
         {
@@ -107,9 +106,9 @@ internal class OutputProducer
             await awaitable;
             cancellationToken.ThrowIfCancellationRequested();
         }
-        catch (OperationCanceledException ex)
+        catch (OperationCanceledException)
         {
-            Abort(new ConnectionAbortedException(CoreStrings.ConnectionOrStreamAbortedByCancellationToken, ex));
+            Abort();
         }
         catch
         {

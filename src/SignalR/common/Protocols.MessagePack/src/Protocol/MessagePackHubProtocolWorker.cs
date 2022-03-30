@@ -349,8 +349,8 @@ internal abstract class MessagePackHubProtocolWorker
             case CancelInvocationMessage cancelInvocationMessage:
                 WriteCancelInvocationMessage(cancelInvocationMessage, ref writer);
                 break;
-            case PingMessage pingMessage:
-                WritePingMessage(pingMessage, ref writer);
+            case PingMessage:
+                WritePingMessage(ref writer);
                 break;
             case CloseMessage closeMessage:
                 WriteCloseMessage(closeMessage, ref writer);
@@ -505,7 +505,7 @@ internal abstract class MessagePackHubProtocolWorker
         writer.Write(message.AllowReconnect);
     }
 
-    private static void WritePingMessage(PingMessage pingMessage, ref MessagePackWriter writer)
+    private static void WritePingMessage(ref MessagePackWriter writer)
     {
         writer.WriteArrayHeader(1);
         writer.Write(HubProtocolConstants.PingMessageType);

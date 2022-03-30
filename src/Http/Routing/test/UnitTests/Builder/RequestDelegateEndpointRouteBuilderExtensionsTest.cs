@@ -1,10 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO.Pipelines;
 using System.Linq.Expressions;
+using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -67,6 +72,31 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Equal(requestDelegate, endpointBuilder1.RequestDelegate);
         Assert.Equal("/", endpointBuilder1.DisplayName);
         Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
+    }
+
+    [Fact]
+    public async Task MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate()
+    {
+        var httpContext = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Arrange
+        var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+        static async Task<string> GenericTypeTaskDelegate(HttpContext context) => await Task.FromResult("String Test");
+
+        // Act
+        var endpointBuilder = builder.MapGet("/", GenericTypeTaskDelegate);
+
+        // Assert
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints); // Triggers build and construction of delegate
+        var requestDelegate = endpoint.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+
+        Assert.Equal("String Test", responseBody);
     }
 
     [Fact]

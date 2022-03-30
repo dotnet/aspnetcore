@@ -71,7 +71,7 @@ internal class LinkGenerationDecisionTree
         {
             var results = new List<OutboundMatchResult>();
             Walk(results, values, ambientValues ?? EmptyAmbientValues, _root, isFallbackPath: false);
-            ProcessConventionalEntries(results, values, ambientValues ?? EmptyAmbientValues);
+            ProcessConventionalEntries(results);
             results.Sort(OutboundMatchResultComparer.Instance);
             return results;
         }
@@ -159,10 +159,7 @@ internal class LinkGenerationDecisionTree
         }
     }
 
-    private void ProcessConventionalEntries(
-        List<OutboundMatchResult> results,
-        RouteValueDictionary values,
-        RouteValueDictionary ambientvalues)
+    private void ProcessConventionalEntries(List<OutboundMatchResult> results)
     {
         for (var i = 0; i < _conventionalEntries.Count; i++)
         {

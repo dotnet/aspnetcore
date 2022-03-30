@@ -52,7 +52,7 @@ internal class IpcReceiver
                     BeginInvokeDotNet(pageContext, args[0].GetString(), args[1].GetString(), args[2].GetString(), args[3].GetInt64(), args[4].GetString());
                     break;
                 case IpcCommon.IncomingMessageType.EndInvokeJS:
-                    EndInvokeJS(pageContext, args[0].GetInt64(), args[1].GetBoolean(), args[2].GetString());
+                    EndInvokeJS(pageContext, args[2].GetString());
                     break;
                 case IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS:
                     ReceiveByteArrayFromJS(pageContext, args[0].GetInt32(), args[1].GetBytesFromBase64());
@@ -77,7 +77,7 @@ internal class IpcReceiver
             argsJson);
     }
 
-    private static void EndInvokeJS(PageContext pageContext, long asyncHandle, bool succeeded, string argumentsOrError)
+    private static void EndInvokeJS(PageContext pageContext, string argumentsOrError)
     {
         DotNetDispatcher.EndInvokeJS(pageContext.JSRuntime, argumentsOrError);
     }

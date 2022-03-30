@@ -58,7 +58,6 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
   <ItemGroup Label="Sources packages">
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
-    <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
   </ItemGroup>
 
 </Project>
