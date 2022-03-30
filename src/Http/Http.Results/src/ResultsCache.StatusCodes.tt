@@ -92,6 +92,7 @@ internal partial class ResultsCache
     {
         return statusCode switch
         {
+            (< 100) or (> 599) => new StatusCodeHttpResult(statusCode), // No HTTP status code assigned outside the 100..599 range
 <# foreach (var statusCode in statusCodes) { #>
             StatusCodes.Status<#= statusCode.Name #> => _status<#= statusCode.Name #> ??= new(StatusCodes.Status<#= statusCode.Name #>),
 <# } #>
