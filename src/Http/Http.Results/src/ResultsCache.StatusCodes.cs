@@ -77,9 +77,15 @@ internal partial class ResultsCache
 
     internal static StatusCodeHttpResult StatusCode(int statusCode)
     {
+        if ( statusCode is (< 100) or (> 511))
+        {
+            // No HTTP status code assigned outside the 100..599 range
+            // so, it will not be available in the cache
+            return new StatusCodeHttpResult(statusCode);
+        }
+
         return statusCode switch
         {
-            (< 100) or (> 599) => new StatusCodeHttpResult(statusCode), // No HTTP status code assigned outside the 100..599 range
             StatusCodes.Status100Continue => _status100Continue ??= new(StatusCodes.Status100Continue),
             StatusCodes.Status101SwitchingProtocols => _status101SwitchingProtocols ??= new(StatusCodes.Status101SwitchingProtocols),
             StatusCodes.Status102Processing => _status102Processing ??= new(StatusCodes.Status102Processing),
