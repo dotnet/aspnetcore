@@ -73,7 +73,8 @@ public class Http2RequestTests : LoggedTest
                     c.Response.AppendTrailer("test-trailer", "value!");
                 }
             },
-            protocol: HttpProtocols.Http2);
+            protocol: HttpProtocols.Http2,
+            plaintext: true);
 
         using var host = builder.Build();
         logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Test");
@@ -107,8 +108,9 @@ public class Http2RequestTests : LoggedTest
 
     private static async Task<(byte[], HttpResponseHeaders)> StartLongRunningRequestAsync(ILogger logger, IHost host, HttpMessageInvoker client)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:{host.GetPort()}/");
         request.Version = HttpVersion.Version20;
+        request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
         var responseMessage = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
         responseMessage.EnsureSuccessStatusCode();
