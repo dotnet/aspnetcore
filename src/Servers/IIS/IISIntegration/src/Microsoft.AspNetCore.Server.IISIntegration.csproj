@@ -8,6 +8,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- The BaselineReference to System.Buffers here is lower than the one Microsoft.AspNetCore.Http.Extensions.
+         We use latest package references in this project to work around that -->
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
   </PropertyGroup>
 
   <ItemGroup>
