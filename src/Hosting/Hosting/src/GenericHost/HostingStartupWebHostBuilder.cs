@@ -83,7 +83,8 @@ internal sealed class HostingStartupWebHostBuilder : IWebHostBuilder, ISupportsS
         return _builder.UseStartup(startupType);
     }
 
-    public IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
+    [RequiresUnreferencedCode("Startup type created by factory can't be determined statically. Specify the startup type explicitly in configuration.")]
+    public IWebHostBuilder UseStartup<TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
     {
         return _builder.UseStartup(startupFactory);
     }

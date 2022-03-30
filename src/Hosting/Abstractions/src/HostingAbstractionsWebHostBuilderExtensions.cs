@@ -49,7 +49,7 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
     /// <param name="startupAssemblyName">The name of the assembly containing the startup type.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    [RequiresUnreferencedCode("Types and members the loaded assembly depends on might be removed.")]
+    [RequiresUnreferencedCode("Finding the startup type in an assembly isn't support. Specify the startup type explicitly in configuration.")]
     public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, string startupAssemblyName)
     {
         if (startupAssemblyName == null)
