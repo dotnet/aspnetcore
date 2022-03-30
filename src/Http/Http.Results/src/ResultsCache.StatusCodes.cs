@@ -15,9 +15,9 @@ internal partial class ResultsCache
     private static StatusCodeHttpResult? _status100Continue;
     private static StatusCodeHttpResult? _status101SwitchingProtocols;
     private static StatusCodeHttpResult? _status102Processing;
-    private static StatusCodeHttpResult _status200OK = new(StatusCodes.Status200OK);
-    private static StatusCodeHttpResult _status201Created = new(StatusCodes.Status201Created);
-    private static StatusCodeHttpResult _status202Accepted = new(StatusCodes.Status202Accepted);
+    private static StatusCodeHttpResult? _status200OK;
+    private static StatusCodeHttpResult? _status201Created;
+    private static StatusCodeHttpResult? _status202Accepted;
     private static StatusCodeHttpResult? _status203NonAuthoritative;
     private static StatusCodeHttpResult? _status204NoContent;
     private static StatusCodeHttpResult? _status205ResetContent;
@@ -38,12 +38,12 @@ internal partial class ResultsCache
     private static StatusCodeHttpResult? _status401Unauthorized;
     private static StatusCodeHttpResult? _status402PaymentRequired;
     private static StatusCodeHttpResult? _status403Forbidden;
-    private static StatusCodeHttpResult _status404NotFound = new(StatusCodes.Status404NotFound);
+    private static StatusCodeHttpResult? _status404NotFound;
     private static StatusCodeHttpResult? _status405MethodNotAllowed;
     private static StatusCodeHttpResult? _status406NotAcceptable;
     private static StatusCodeHttpResult? _status407ProxyAuthenticationRequired;
     private static StatusCodeHttpResult? _status408RequestTimeout;
-    private static StatusCodeHttpResult _status409Conflict = new(StatusCodes.Status409Conflict);
+    private static StatusCodeHttpResult? _status409Conflict;
     private static StatusCodeHttpResult? _status410Gone;
     private static StatusCodeHttpResult? _status411LengthRequired;
     private static StatusCodeHttpResult? _status412PreconditionFailed;
@@ -63,7 +63,7 @@ internal partial class ResultsCache
     private static StatusCodeHttpResult? _status429TooManyRequests;
     private static StatusCodeHttpResult? _status431RequestHeaderFieldsTooLarge;
     private static StatusCodeHttpResult? _status451UnavailableForLegalReasons;
-    private static StatusCodeHttpResult _status500InternalServerError = new(StatusCodes.Status500InternalServerError);
+    private static StatusCodeHttpResult? _status500InternalServerError;
     private static StatusCodeHttpResult? _status501NotImplemented;
     private static StatusCodeHttpResult? _status502BadGateway;
     private static StatusCodeHttpResult? _status503ServiceUnavailable;
@@ -82,9 +82,9 @@ internal partial class ResultsCache
             StatusCodes.Status100Continue => _status100Continue ??= new(StatusCodes.Status100Continue),
             StatusCodes.Status101SwitchingProtocols => _status101SwitchingProtocols ??= new(StatusCodes.Status101SwitchingProtocols),
             StatusCodes.Status102Processing => _status102Processing ??= new(StatusCodes.Status102Processing),
-            StatusCodes.Status200OK => _status200OK,
-            StatusCodes.Status201Created => _status201Created,
-            StatusCodes.Status202Accepted => _status202Accepted,
+            StatusCodes.Status200OK => _status200OK ??= new(StatusCodes.Status200OK),
+            StatusCodes.Status201Created => _status201Created ??= new(StatusCodes.Status201Created),
+            StatusCodes.Status202Accepted => _status202Accepted ??= new(StatusCodes.Status202Accepted),
             StatusCodes.Status203NonAuthoritative => _status203NonAuthoritative ??= new(StatusCodes.Status203NonAuthoritative),
             StatusCodes.Status204NoContent => _status204NoContent ??= new(StatusCodes.Status204NoContent),
             StatusCodes.Status205ResetContent => _status205ResetContent ??= new(StatusCodes.Status205ResetContent),
@@ -105,12 +105,12 @@ internal partial class ResultsCache
             StatusCodes.Status401Unauthorized => _status401Unauthorized ??= new(StatusCodes.Status401Unauthorized),
             StatusCodes.Status402PaymentRequired => _status402PaymentRequired ??= new(StatusCodes.Status402PaymentRequired),
             StatusCodes.Status403Forbidden => _status403Forbidden ??= new(StatusCodes.Status403Forbidden),
-            StatusCodes.Status404NotFound => _status404NotFound,
+            StatusCodes.Status404NotFound => _status404NotFound ??= new(StatusCodes.Status404NotFound),
             StatusCodes.Status405MethodNotAllowed => _status405MethodNotAllowed ??= new(StatusCodes.Status405MethodNotAllowed),
             StatusCodes.Status406NotAcceptable => _status406NotAcceptable ??= new(StatusCodes.Status406NotAcceptable),
             StatusCodes.Status407ProxyAuthenticationRequired => _status407ProxyAuthenticationRequired ??= new(StatusCodes.Status407ProxyAuthenticationRequired),
             StatusCodes.Status408RequestTimeout => _status408RequestTimeout ??= new(StatusCodes.Status408RequestTimeout),
-            StatusCodes.Status409Conflict => _status409Conflict,
+            StatusCodes.Status409Conflict => _status409Conflict ??= new(StatusCodes.Status409Conflict),
             StatusCodes.Status410Gone => _status410Gone ??= new(StatusCodes.Status410Gone),
             StatusCodes.Status411LengthRequired => _status411LengthRequired ??= new(StatusCodes.Status411LengthRequired),
             StatusCodes.Status412PreconditionFailed => _status412PreconditionFailed ??= new(StatusCodes.Status412PreconditionFailed),
@@ -130,7 +130,7 @@ internal partial class ResultsCache
             StatusCodes.Status429TooManyRequests => _status429TooManyRequests ??= new(StatusCodes.Status429TooManyRequests),
             StatusCodes.Status431RequestHeaderFieldsTooLarge => _status431RequestHeaderFieldsTooLarge ??= new(StatusCodes.Status431RequestHeaderFieldsTooLarge),
             StatusCodes.Status451UnavailableForLegalReasons => _status451UnavailableForLegalReasons ??= new(StatusCodes.Status451UnavailableForLegalReasons),
-            StatusCodes.Status500InternalServerError => _status500InternalServerError,
+            StatusCodes.Status500InternalServerError => _status500InternalServerError ??= new(StatusCodes.Status500InternalServerError),
             StatusCodes.Status501NotImplemented => _status501NotImplemented ??= new(StatusCodes.Status501NotImplemented),
             StatusCodes.Status502BadGateway => _status502BadGateway ??= new(StatusCodes.Status502BadGateway),
             StatusCodes.Status503ServiceUnavailable => _status503ServiceUnavailable ??= new(StatusCodes.Status503ServiceUnavailable),
