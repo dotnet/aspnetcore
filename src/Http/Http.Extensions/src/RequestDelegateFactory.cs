@@ -273,19 +273,6 @@ public static partial class RequestDelegateFactory
 
             factoryContext.Metadata.AddRange((IEnumerable<object>)metadata);
         }
-
-        // Get metadata from method attributes that implement IProvideEndpointMetadata
-        var methodAttrs = methodInfo.GetCustomAttributes(inherit: true).OfType<IProvideEndpointMetadata>();
-        foreach (var attribute in methodAttrs)
-        {
-            var metadata = GetMetadataForEndpointMethod.MakeGenericMethod(attribute.GetType()).Invoke(null, new object?[] { methodInfo, factoryContext.ServiceProvider });
-            if (metadata is null)
-            {
-                throw new ArgumentNullException(null, argumentNullExceptionMessage);
-            }
-
-            factoryContext.Metadata.AddRange((IEnumerable<object>)metadata);
-        }
     }
 
     private static IEnumerable<object> GetMetadataForParameter<T>(ParameterInfo parameter, IServiceProvider services)

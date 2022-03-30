@@ -4598,18 +4598,6 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public void RequestDelegateFactory_DiscoversEndpointMetadata_FromMethodAttributes()
-    {
-        var httpContext = CreateHttpContext();
-
-        var @delegate = [ProvidesMetadataAttribute("Some custom data")] () => { };
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var metadata = factoryResult.EndpointMetadata;
-
-        Assert.Contains(metadata, m => m is CustomEndpointMetadata cem && cem.Source == MetadataSource.MethodAttribute && string.Equals("Some custom data", cem.Data, StringComparison.Ordinal));
-    }
-
-    [Fact]
     public void RequestDelegateFactory_ThrowsArgumentNullException_WhenNullReturnedFromIProvideEndpointMetadata_FromParameters()
     {
         var httpContext = CreateHttpContext();
@@ -4628,19 +4616,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         var httpContext = CreateHttpContext();
 
         var @delegate = () => new ProvidesNullEndpointResultMetadata();
-
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            var factoryResult = RequestDelegateFactory.Create(@delegate);
-        });
-    }
-
-    [Fact]
-    public void RequestDelegateFactory_ThrowsArgumentNullException_WhenNullReturnedFromIProvideEndpointMetadata_FromMethodAttributes()
-    {
-        var httpContext = CreateHttpContext();
-
-        var @delegate = [ProvidesNullMetadataAttribute("Some custom data")] () => { };
 
         Assert.Throws<ArgumentNullException>(() =>
         {
@@ -4724,42 +4699,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         public string? Data { get; init; }
 
         public MetadataSource Source { get; init; }
-    }
-
-    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    private sealed class ProvidesMetadataAttribute : Attribute, IProvideEndpointMetadata
-    {
-        public ProvidesMetadataAttribute(string someData)
-        {
-            SomeData = someData;
-        }
-
-        public string SomeData { get; init; }
-
-        public MetadataSource Source => MetadataSource.MethodAttribute;
-
-        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
-        {
-            yield return new CustomEndpointMetadata { Source = MetadataSource.MethodAttribute, Data = methodInfo.GetCustomAttribute<ProvidesMetadataAttribute>()?.SomeData };
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    private sealed class ProvidesNullMetadataAttribute : Attribute, IProvideEndpointMetadata
-    {
-        public ProvidesNullMetadataAttribute(string someData)
-        {
-            SomeData = someData;
-        }
-
-        public string SomeData { get; init; }
-
-        public MetadataSource Source => MetadataSource.MethodAttribute;
-
-        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
-        {
-            return null!;
-        }
     }
 
     private enum MetadataSource
