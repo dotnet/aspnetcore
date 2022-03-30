@@ -18,5 +18,5 @@ public interface IProvideEndpointMetadata
     /// <param name="methodInfo">The <see cref="MethodInfo"/> representing the endpoint route handler delegate.</param>
     /// <param name="services">The application's <see cref="IServiceProvider"/>.</param>
     /// <returns>The objects to apply as <see cref="Endpoint"/> metadata.</returns>
-    public static abstract IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services);
+    static abstract IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services);
 }
