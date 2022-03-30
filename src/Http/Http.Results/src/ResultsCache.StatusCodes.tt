@@ -6,92 +6,95 @@
 	/// <see href="http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml" >HTTP status codes</see >.
 	var statusCodes = new[]
 	{
-		new { StatusCode = 100, Name = "100Continue"},
-        new { StatusCode = 101, Name = "101SwitchingProtocols"},
-        new { StatusCode = 102, Name = "102Processing"},
-        new { StatusCode = 200, Name = "200OK"},
-        new { StatusCode = 201, Name = "201Created"},
-        new { StatusCode = 202, Name = "202Accepted"},
-        new { StatusCode = 203, Name = "203NonAuthoritative"},
-        new { StatusCode = 204, Name = "204NoContent"},
-        new { StatusCode = 205, Name = "205ResetContent"},
-        new { StatusCode = 206, Name = "206PartialContent"},
-        new { StatusCode = 207, Name = "207MultiStatus"},
-        new { StatusCode = 208, Name = "208AlreadyReported"},
-        new { StatusCode = 226, Name = "226IMUsed"},
-        new { StatusCode = 300, Name = "300MultipleChoices"},
-        new { StatusCode = 301, Name = "301MovedPermanently"},
-        new { StatusCode = 302, Name = "302Found"},
-        new { StatusCode = 303, Name = "303SeeOther"},
-        new { StatusCode = 304, Name = "304NotModified"},
-        new { StatusCode = 305, Name = "305UseProxy"},
-        new { StatusCode = 306, Name = "306SwitchProxy"},
-        new { StatusCode = 307, Name = "307TemporaryRedirect"},
-        new { StatusCode = 308, Name = "308PermanentRedirect"},
-        new { StatusCode = 400, Name = "400BadRequest"},
-        new { StatusCode = 401, Name = "401Unauthorized"},
-        new { StatusCode = 402, Name = "402PaymentRequired"},
-        new { StatusCode = 403, Name = "403Forbidden"},
-        new { StatusCode = 404, Name = "404NotFound"},
-        new { StatusCode = 405, Name = "405MethodNotAllowed"},
-        new { StatusCode = 406, Name = "406NotAcceptable"},
-        new { StatusCode = 407, Name = "407ProxyAuthenticationRequired"},
-        new { StatusCode = 408, Name = "408RequestTimeout"},
-        new { StatusCode = 409, Name = "409Conflict"},
-        new { StatusCode = 410, Name = "410Gone"},
-        new { StatusCode = 411, Name = "411LengthRequired"},
-        new { StatusCode = 412, Name = "412PreconditionFailed"},
-        new { StatusCode = 413, Name = "413RequestEntityTooLarge"},
-        new { StatusCode = 414, Name = "414RequestUriTooLong"},
-        new { StatusCode = 415, Name = "415UnsupportedMediaType"},
-        new { StatusCode = 416, Name = "416RequestedRangeNotSatisfiable"},
-        new { StatusCode = 417, Name = "417ExpectationFailed"},
-        new { StatusCode = 418, Name = "418ImATeapot"},
-        new { StatusCode = 419, Name = "419AuthenticationTimeout"},
-        new { StatusCode = 421, Name = "421MisdirectedRequest"},
-        new { StatusCode = 422, Name = "422UnprocessableEntity"},
-        new { StatusCode = 423, Name = "423Locked"},
-        new { StatusCode = 424, Name = "424FailedDependency"},
-        new { StatusCode = 426, Name = "426UpgradeRequired"},
-        new { StatusCode = 428, Name = "428PreconditionRequired"},
-        new { StatusCode = 429, Name = "429TooManyRequests"},
-        new { StatusCode = 431, Name = "431RequestHeaderFieldsTooLarge"},
-        new { StatusCode = 451, Name = "451UnavailableForLegalReasons"},
-        new { StatusCode = 500, Name = "500InternalServerError"},
-        new { StatusCode = 501, Name = "501NotImplemented"},
-        new { StatusCode = 502, Name = "502BadGateway"},
-        new { StatusCode = 503, Name = "503ServiceUnavailable"},
-        new { StatusCode = 504, Name = "504GatewayTimeout"},
-        new { StatusCode = 505, Name = "505HttpVersionNotsupported"},
-        new { StatusCode = 506, Name = "506VariantAlsoNegotiates"},
-        new { StatusCode = 507, Name = "507InsufficientStorage"},
-        new { StatusCode = 508, Name = "508LoopDetected"},
-        new { StatusCode = 510, Name = "510NotExtended"},
-        new { StatusCode = 511, Name = "511NetworkAuthenticationRequired"},
+		new { StatusCode = 100, HotPath = false, Name = "100Continue"},
+        new { StatusCode = 101, HotPath = false, Name = "101SwitchingProtocols"},
+        new { StatusCode = 102, HotPath = false, Name = "102Processing"},
+        new { StatusCode = 200, HotPath = true, Name = "200OK"},
+        new { StatusCode = 201, HotPath = true, Name = "201Created"},
+        new { StatusCode = 202, HotPath = true, Name = "202Accepted"},
+        new { StatusCode = 203, HotPath = false, Name = "203NonAuthoritative"},
+        new { StatusCode = 204, HotPath = false, Name = "204NoContent"},
+        new { StatusCode = 205, HotPath = false, Name = "205ResetContent"},
+        new { StatusCode = 206, HotPath = false, Name = "206PartialContent"},
+        new { StatusCode = 207, HotPath = false, Name = "207MultiStatus"},
+        new { StatusCode = 208, HotPath = false, Name = "208AlreadyReported"},
+        new { StatusCode = 226, HotPath = false, Name = "226IMUsed"},
+        new { StatusCode = 300, HotPath = false, Name = "300MultipleChoices"},
+        new { StatusCode = 301, HotPath = false, Name = "301MovedPermanently"},
+        new { StatusCode = 302, HotPath = false, Name = "302Found"},
+        new { StatusCode = 303, HotPath = false, Name = "303SeeOther"},
+        new { StatusCode = 304, HotPath = false, Name = "304NotModified"},
+        new { StatusCode = 305, HotPath = false, Name = "305UseProxy"},
+        new { StatusCode = 306, HotPath = false, Name = "306SwitchProxy"},
+        new { StatusCode = 307, HotPath = false, Name = "307TemporaryRedirect"},
+        new { StatusCode = 308, HotPath = false, Name = "308PermanentRedirect"},
+        new { StatusCode = 400, HotPath = false, Name = "400BadRequest"},
+        new { StatusCode = 401, HotPath = false, Name = "401Unauthorized"},
+        new { StatusCode = 402, HotPath = false, Name = "402PaymentRequired"},
+        new { StatusCode = 403, HotPath = false, Name = "403Forbidden"},
+        new { StatusCode = 404, HotPath = true, Name = "404NotFound"},
+        new { StatusCode = 405, HotPath = false, Name = "405MethodNotAllowed"},
+        new { StatusCode = 406, HotPath = false, Name = "406NotAcceptable"},
+        new { StatusCode = 407, HotPath = false, Name = "407ProxyAuthenticationRequired"},
+        new { StatusCode = 408, HotPath = false, Name = "408RequestTimeout"},
+        new { StatusCode = 409, HotPath = true, Name = "409Conflict"},
+        new { StatusCode = 410, HotPath = false, Name = "410Gone"},
+        new { StatusCode = 411, HotPath = false, Name = "411LengthRequired"},
+        new { StatusCode = 412, HotPath = false, Name = "412PreconditionFailed"},
+        new { StatusCode = 413, HotPath = false, Name = "413RequestEntityTooLarge"},
+        new { StatusCode = 414, HotPath = false, Name = "414RequestUriTooLong"},
+        new { StatusCode = 415, HotPath = false, Name = "415UnsupportedMediaType"},
+        new { StatusCode = 416, HotPath = false, Name = "416RequestedRangeNotSatisfiable"},
+        new { StatusCode = 417, HotPath = false, Name = "417ExpectationFailed"},
+        new { StatusCode = 418, HotPath = false, Name = "418ImATeapot"},
+        new { StatusCode = 419, HotPath = false, Name = "419AuthenticationTimeout"},
+        new { StatusCode = 421, HotPath = false, Name = "421MisdirectedRequest"},
+        new { StatusCode = 422, HotPath = false, Name = "422UnprocessableEntity"},
+        new { StatusCode = 423, HotPath = false, Name = "423Locked"},
+        new { StatusCode = 424, HotPath = false, Name = "424FailedDependency"},
+        new { StatusCode = 426, HotPath = false, Name = "426UpgradeRequired"},
+        new { StatusCode = 428, HotPath = false, Name = "428PreconditionRequired"},
+        new { StatusCode = 429, HotPath = false, Name = "429TooManyRequests"},
+        new { StatusCode = 431, HotPath = false, Name = "431RequestHeaderFieldsTooLarge"},
+        new { StatusCode = 451, HotPath = false, Name = "451UnavailableForLegalReasons"},
+        new { StatusCode = 500, HotPath = true, Name = "500InternalServerError"},
+        new { StatusCode = 501, HotPath = false, Name = "501NotImplemented"},
+        new { StatusCode = 502, HotPath = false, Name = "502BadGateway"},
+        new { StatusCode = 503, HotPath = false, Name = "503ServiceUnavailable"},
+        new { StatusCode = 504, HotPath = false, Name = "504GatewayTimeout"},
+        new { StatusCode = 505, HotPath = false, Name = "505HttpVersionNotsupported"},
+        new { StatusCode = 506, HotPath = false, Name = "506VariantAlsoNegotiates"},
+        new { StatusCode = 507, HotPath = false, Name = "507InsufficientStorage"},
+        new { StatusCode = 508, HotPath = false, Name = "508LoopDetected"},
+        new { StatusCode = 510, HotPath = false, Name = "510NotExtended"},
+        new { StatusCode = 511, HotPath = false, Name = "511NetworkAuthenticationRequired"},
 	}; 
 #>
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // <auto-generated />
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Http;
 
 using System.CodeDom.Compiler;
+using System.Runtime.CompilerServices;
 
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal static partial class ResultsCache
+internal partial class ResultsCache
 {
 <# foreach (var statusCode in statusCodes) { #>
-    private static readonly StatusCodeHttpResult Status<#= statusCode.Name #> = new(StatusCodes.Status<#= statusCode.Name #>);
-<#	} 	#>
+    private static <#= statusCode.HotPath ? "StatusCodeHttpResult" : "StatusCodeHttpResult?" #> _status<#= statusCode.Name #><# if (statusCode.HotPath) { #> = new(StatusCodes.Status<#= statusCode.Name #>)<# }#>;
+<# } #>
 
     internal static StatusCodeHttpResult StatusCode(int statusCode)
     {
         return statusCode switch
         {
 <# foreach (var statusCode in statusCodes) { #>
-            StatusCodes.Status<#= statusCode.Name #> => Status<#= statusCode.Name #>,
-<#	} 	#>
+            StatusCodes.Status<#= statusCode.Name #> => _status<#= statusCode.Name #><# if (!statusCode.HotPath) { #> ??= new(StatusCodes.Status<#= statusCode.Name #>)<#}#>,
+<# } #>
             _ => new StatusCodeHttpResult(statusCode),
         };
     }
