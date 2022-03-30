@@ -54,7 +54,6 @@ public class Http2RequestTests : LoggedTest
         var syncPoint = new SyncPoint();
 
         ILogger logger = null;
-        IHostApplicationLifetime hostApplicationLifetime = null;
         var builder = CreateHostBuilder(
             async c =>
             {
@@ -65,6 +64,8 @@ public class Http2RequestTests : LoggedTest
                 logger.LogInformation($"Server writing {randomBytes.Length} bytes response");
                 randomBytes.CopyTo(memory);
 
+                // It's important for this test that the large write is the last data written to
+                // the response and it's not awaited by the request delegate.
                 logger.LogInformation($"Server advancing {randomBytes.Length} bytes response");
                 c.Response.BodyWriter.Advance(randomBytes.Length);
 
@@ -78,7 +79,6 @@ public class Http2RequestTests : LoggedTest
 
         using var host = builder.Build();
         logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Test");
-        hostApplicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
         var client = HttpHelpers.CreateClient();
 
