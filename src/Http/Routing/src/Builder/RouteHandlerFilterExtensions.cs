@@ -44,10 +44,14 @@ public static class RouteHandlerFilterExtensions
             filterFactory = ActivatorUtilities.CreateFactory(typeof(TFilterType), Type.EmptyTypes);
         }
 
-        builder.RouteHandlerFilterFactories.Add((routeHandlerContext, next) => (context) =>
+        builder.RouteHandlerFilterFactories.Add((routeHandlerContext, next) =>
         {
-            var filter = (IRouteHandlerFilter)filterFactory.Invoke(context.HttpContext.RequestServices, new[] { routeHandlerContext });
-            return filter.InvokeAsync(context, next);
+            var invokeArguments = new[] { routeHandlerContext };
+            return (context) =>
+            {
+                var filter = (IRouteHandlerFilter)filterFactory.Invoke(context.HttpContext.RequestServices, invokeArguments);
+                return filter.InvokeAsync(context, next);
+            };
         });
         return builder;
     }
