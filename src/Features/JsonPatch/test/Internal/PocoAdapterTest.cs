@@ -1,6 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.JsonPatch.IntegrationTests;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
@@ -193,6 +200,28 @@ public class PocoAdapterTest
     }
 
     [Fact]
+    public void TryReplace_UsesCustomConverter()
+    {
+        // Arrange
+        var adapter = new PocoAdapter();
+        var contractResolver = new RectangleContractResolver();
+        var model = new Square()
+        {
+            Rectangle = new Rectangle()
+            {
+                RectangleProperty = "Square"
+            }
+        };
+
+        // Act
+        var replaceStatus = adapter.TryReplace(model, "Rectangle", contractResolver, "Oval", out var errorMessage);
+
+        // Assert
+        Assert.Equal("Oval", model.Rectangle.RectangleProperty);
+        Assert.True(replaceStatus);
+    }
+
+    [Fact]
     public void TryTest_DoesNotThrowException_IfTestSuccessful()
     {
         var adapter = new PocoAdapter();
@@ -236,5 +265,42 @@ public class PocoAdapterTest
         public string Name { get; set; }
 
         public int Age { get; set; }
+    }
+}
+
+public class RectangleContractResolver : DefaultContractResolver
+{
+    protected override JsonConverter ResolveContractConverter(Type objectType)
+    {
+        if (objectType == typeof(Rectangle))
+        {
+            return new RectangleJsonConverter();
+        }
+
+        return base.ResolveContractConverter(objectType);
+    }
+}
+
+public class RectangleJsonConverter : CustomCreationConverter<Rectangle>
+{
+    private const string TypeProperty = "Type";
+
+    public override bool CanRead => true;
+
+    public override Rectangle Create(Type objectType)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override object ReadJson(
+        JsonReader reader,
+        Type objectType,
+        object existingValue,
+        JsonSerializer serializer)
+    {
+        return new Rectangle()
+        {
+            RectangleProperty = reader.Value.ToString()
+        };
     }
 }

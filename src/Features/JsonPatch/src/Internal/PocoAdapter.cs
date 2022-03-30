@@ -34,7 +34,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, jsonProperty.PropertyType, out var convertedValue))
+        if (!TryConvertValue(value, jsonProperty.PropertyType, out var convertedValue, contractResolver))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -125,7 +125,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, jsonProperty.PropertyType, out var convertedValue))
+        if (!TryConvertValue(value, jsonProperty.PropertyType, out var convertedValue, contractResolver))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -157,7 +157,7 @@ public class PocoAdapter : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, jsonProperty.PropertyType, out var convertedValue))
+        if (!TryConvertValue(value, jsonProperty.PropertyType, out var convertedValue, contractResolver))
         {
             errorMessage = Resources.FormatInvalidValueForProperty(value);
             return false;
@@ -223,9 +223,9 @@ public class PocoAdapter : IAdapter
         return false;
     }
 
-    protected virtual bool TryConvertValue(object value, Type propertyType, out object convertedValue)
+    protected virtual bool TryConvertValue(object value, Type propertyType, out object convertedValue, IContractResolver contractResolver)
     {
-        var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType);
+        var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType, contractResolver);
         if (!conversionResult.CanBeConverted)
         {
             convertedValue = null;

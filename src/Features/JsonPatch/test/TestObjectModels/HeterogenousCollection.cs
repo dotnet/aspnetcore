@@ -20,6 +20,11 @@ public class Rectangle : Shape
     public string RectangleProperty { get; set; }
 }
 
+public class Square : Shape
+{
+    public Rectangle Rectangle { get; set; }
+}
+
 public class Canvas
 {
     public IList<Shape> Items { get; set; }
