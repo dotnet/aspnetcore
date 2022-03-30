@@ -9,8 +9,8 @@ var typeArgName = "TResult";
 var filePath = Path.Join(Directory.GetCurrentDirectory(), $"{className}OfT.cs");
 
 Console.WriteLine($"Will generate file at {filePath}");
-Console.WriteLine("Press Enter to continue");
-Console.ReadLine();
+Console.WriteLine("Press any key to continue or Ctrl-C to cancel");
+Console.ReadKey();
 
 using var writer = new StreamWriter(filePath, append: false);
 
@@ -27,9 +27,9 @@ writer.WriteLine();
 for (int i = 1; i <= typeArgCount; i++)
 {
     // Class summary doc
-    writer.WriteLine(@$"/// <summary>
-/// Represents the result of an <see cref=""Endpoint""/> route handler delegate that can return {i.ToWords()} different <see cref=""IResult""/> types.
-/// </summary>");
+    writer.WriteLine("/// <summary>");
+    writer.WriteLine($"/// Represents the result of an <see cref=\"Endpoint\"/> route handler delegate that can return {i.ToWords()} different <see cref=\"IResult\"/> types.");
+    writer.WriteLine("/// </summary>");
 
     // Type params docs
     for (int j = 1; j <= i; j++)
@@ -128,6 +128,14 @@ for (int i = 1; i <= typeArgCount; i++)
 }
 
 writer.Flush();
+writer.Close();
+
+var file = new FileInfo(filePath);
+
+if (!file.Exists) throw new FileNotFoundException(filePath);
+
+Console.WriteLine();
+Console.WriteLine($"{file.Length:N0} bytes written to {file.FullName} successfully!");
 
 static class StringExtensions
 {
@@ -153,7 +161,7 @@ static class StringExtensions
         18 => "eighteen",
         19 => "nineteen",
         20 => "twenty",
-        _ => "!!unsupported!!"
+        _ => throw new NotImplementedException("Add more numbers")
     };
 
     public static string ToOrdinalWords(this int number) => number switch
@@ -178,7 +186,7 @@ static class StringExtensions
         18 => "eighteenth",
         19 => "nineteenth",
         20 => "twentieth",
-        _ => "!!unsupported!!"
+        _ => throw new NotImplementedException("Add more numbers")
     };
 }
 
