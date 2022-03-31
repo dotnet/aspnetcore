@@ -12,6 +12,7 @@ public class RateLimitingOptions
     private readonly string _defaultLimitingPolicyName = "__DefaultRateLimitingPolicy";
     private IDictionary<string, RateLimitingPolicy> PolicyMap { get; }
         = new Dictionary<string, RateLimitingPolicy>(StringComparer.Ordinal);
+    // TODO - Provide a default?
     private PartitionedRateLimiter<HttpContext>? _limiter;
 
     /// <summary>

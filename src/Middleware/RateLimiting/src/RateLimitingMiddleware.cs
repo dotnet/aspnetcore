@@ -18,6 +18,8 @@ public partial class RateLimitingMiddleware
 
     public RateLimitingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<RateLimitingOptions> options)
     {
+        _next = next ?? throw new ArgumentNullException(nameof(next));
+
         if (options.Value.Limiter == null)
         {
             throw new ArgumentException("The value of 'options.Limiter' must not be null.", nameof(options));
@@ -28,7 +30,11 @@ public partial class RateLimitingMiddleware
             throw new ArgumentException("The value of 'options.OnRejected' must not be null.", nameof(options));
         }
 
-        _next = next;
+        if (loggerFactory == null)
+        {
+            throw new ArgumentNullException(nameof(loggerFactory));
+        }
+
         _logger = loggerFactory.CreateLogger<RateLimitingMiddleware>();
         _limiter = options.Value.Limiter;
         _onRejected = options.Value.OnRejected;
