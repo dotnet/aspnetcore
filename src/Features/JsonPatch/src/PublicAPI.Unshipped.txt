@@ -1,1 +1,2 @@
 #nullable enable
+~virtual Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.TryConvertValue(object value, System.Type propertyType, out object convertedValue, Newtonsoft.Json.Serialization.IContractResolver contractResolver) -> bool
