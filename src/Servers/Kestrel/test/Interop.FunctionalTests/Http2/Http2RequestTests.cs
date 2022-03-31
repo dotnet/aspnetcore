@@ -3,11 +3,16 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Headers;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Interop.FunctionalTests.Http2;
 
@@ -35,6 +40,94 @@ public class Http2RequestTests : LoggedTest
             Assert.Equal(HttpStatusCode.BadRequest, responseMessage.StatusCode);
             Assert.Equal("An HTTP/1.x request was sent to an HTTP/2 only endpoint.", await responseMessage.Content.ReadAsStringAsync());
         }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GET_RequestReturnsLargeData_GracefulShutdownDuringRequest_RequestGracefullyCompletes(bool hasTrailers)
+    {
+        // Arrange
+        const int DataLength = 500_000;
+        var randomBytes = Enumerable.Range(1, DataLength).Select(i => (byte)((i % 10) + 48)).ToArray();
+
+        var syncPoint = new SyncPoint();
+
+        ILogger logger = null;
+        var builder = CreateHostBuilder(
+            async c =>
+            {
+                await syncPoint.WaitToContinue();
+
+                var memory = c.Response.BodyWriter.GetMemory(randomBytes.Length);
+
+                logger.LogInformation($"Server writing {randomBytes.Length} bytes response");
+                randomBytes.CopyTo(memory);
+
+                // It's important for this test that the large write is the last data written to
+                // the response and it's not awaited by the request delegate.
+                logger.LogInformation($"Server advancing {randomBytes.Length} bytes response");
+                c.Response.BodyWriter.Advance(randomBytes.Length);
+
+                if (hasTrailers)
+                {
+                    c.Response.AppendTrailer("test-trailer", "value!");
+                }
+            },
+            protocol: HttpProtocols.Http2,
+            plaintext: true);
+
+        using var host = builder.Build();
+        logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Test");
+
+        var client = HttpHelpers.CreateClient();
+
+        // Act
+        await host.StartAsync().DefaultTimeout();
+
+        var longRunningTask = StartLongRunningRequestAsync(logger, host, client);
+
+        logger.LogInformation("Waiting for request on server");
+        await syncPoint.WaitForSyncPoint().DefaultTimeout();
+
+        logger.LogInformation("Stopping server");
+        var stopTask = host.StopAsync();
+
+        syncPoint.Continue();
+
+        var (readData, trailers) = await longRunningTask.DefaultTimeout();
+        await stopTask.DefaultTimeout();
+
+        // Assert
+        Assert.Equal(randomBytes, readData);
+        if (hasTrailers)
+        {
+            Assert.Equal("value!", trailers.GetValues("test-trailer").Single());
+        }
+    }
+
+    private static async Task<(byte[], HttpResponseHeaders)> StartLongRunningRequestAsync(ILogger logger, IHost host, HttpMessageInvoker client)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:{host.GetPort()}/");
+        request.Version = HttpVersion.Version20;
+        request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+        var responseMessage = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+        responseMessage.EnsureSuccessStatusCode();
+
+        var responseStream = await responseMessage.Content.ReadAsStreamAsync();
+
+        var data = new List<byte>();
+        var buffer = new byte[1024 * 128];
+        int readCount;
+        while ((readCount = await responseStream.ReadAsync(buffer)) != 0)
+        {
+            data.AddRange(buffer.AsMemory(0, readCount).ToArray());
+            logger.LogInformation($"Received {readCount} bytes. Total {data.Count} bytes.");
+        }
+        logger.LogInformation($"Finished reading response content");
+
+        return (data.ToArray(), responseMessage.TrailingHeaders);
     }
 
     private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, bool? plaintext = null)
