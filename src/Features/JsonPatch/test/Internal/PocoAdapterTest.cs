@@ -283,8 +283,6 @@ public class RectangleContractResolver : DefaultContractResolver
 
 public class RectangleJsonConverter : CustomCreationConverter<Rectangle>
 {
-    private const string TypeProperty = "Type";
-
     public override bool CanRead => true;
 
     public override Rectangle Create(Type objectType)
