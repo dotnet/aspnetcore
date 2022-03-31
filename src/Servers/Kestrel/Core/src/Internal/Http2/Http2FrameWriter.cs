@@ -9,7 +9,6 @@ using System.Net.Http.HPack;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
 using Microsoft.Extensions.Logging;
@@ -28,7 +27,6 @@ internal class Http2FrameWriter
     private readonly ConcurrentPipeWriter _outputWriter;
     private readonly BaseConnectionContext _connectionContext;
     private readonly Http2Connection _http2Connection;
-    private readonly OutputFlowControl _connectionOutputFlowControl;
     private readonly string _connectionId;
     private readonly KestrelTrace _log;
     private readonly ITimeoutControl _timeoutControl;
@@ -56,7 +54,7 @@ internal class Http2FrameWriter
         PipeWriter outputPipeWriter,
         BaseConnectionContext connectionContext,
         Http2Connection http2Connection,
-        OutputFlowControl connectionOutputFlowControl,
+        long initialWindowSize,
         ITimeoutControl timeoutControl,
         MinDataRate? minResponseDataRate,
         string connectionId,
@@ -67,7 +65,6 @@ internal class Http2FrameWriter
         _outputWriter = new ConcurrentPipeWriter(outputPipeWriter, memoryPool, _writeLock);
         _connectionContext = connectionContext;
         _http2Connection = http2Connection;
-        _connectionOutputFlowControl = connectionOutputFlowControl;
         _connectionId = connectionId;
         _log = serviceContext.Log;
         _timeoutControl = timeoutControl;
@@ -88,8 +85,7 @@ internal class Http2FrameWriter
             SingleReader = true
         });
 
-        // This is null in tests sometimes
-        _window = connectionOutputFlowControl?.Available ?? 0;
+        _window = initialWindowSize;
 
         _writeQueueTask = Task.Run(WriteToOutputPipe);
     }

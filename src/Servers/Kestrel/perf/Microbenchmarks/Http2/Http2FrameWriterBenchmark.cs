@@ -39,7 +39,7 @@ public class Http2FrameWriterBenchmark
             new NullPipeWriter(),
             connectionContext: null,
             http2Connection: null,
-            new OutputFlowControl(new SingleAwaitableProvider(), initialWindowSize: int.MaxValue),
+            int.MaxValue,
             timeoutControl: null,
             minResponseDataRate: null,
             "TestConnectionId",

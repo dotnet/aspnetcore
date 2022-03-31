@@ -7,7 +7,6 @@ using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
 
@@ -20,9 +19,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     private readonly TimingPipeFlusher _flusher;
     private readonly KestrelTrace _log;
 
-    // This should only be accessed via the FrameWriter. The connection-level output flow control is protected by the
-    // FrameWriter's connection-level write lock.
-    private readonly StreamOutputFlowControl _flowControl;
     private readonly MemoryPool<byte> _memoryPool;
     private readonly Http2Stream _stream;
     private readonly object _dataWriterLock = new object();
@@ -49,11 +45,10 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     private bool _completedResponse;
     private bool _requestProcessingComplete;
 
-    public Http2OutputProducer(Http2Stream stream, Http2StreamContext context, StreamOutputFlowControl flowControl)
+    public Http2OutputProducer(Http2Stream stream, Http2StreamContext context)
     {
         _stream = stream;
         _frameWriter = context.FrameWriter;
-        _flowControl = flowControl;
         _memoryPool = context.MemoryPool;
         _log = context.ServiceContext.Log;
 

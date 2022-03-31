@@ -40,7 +40,6 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     private readonly int _minAllocBufferSize;
     private readonly HPackDecoder _hpackDecoder;
     private readonly InputFlowControl _inputFlowControl;
-    private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(new MultipleAwaitableProvider(), Http2PeerSettings.DefaultInitialWindowSize);
 
     private readonly Http2PeerSettings _serverSettings = new Http2PeerSettings();
     private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
@@ -90,7 +89,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             context.Transport.Output,
             context.ConnectionContext,
             this,
-            _outputFlowControl,
+            Http2PeerSettings.DefaultInitialWindowSize,
             context.TimeoutControl,
             httpLimits.MinResponseDataRate,
             context.ConnectionId,
@@ -758,8 +757,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             _clientSettings,
             _serverSettings,
             _frameWriter,
-            _inputFlowControl,
-            _outputFlowControl);
+            _inputFlowControl);
         streamContext.TimeoutControl = _context.TimeoutControl;
         streamContext.InitialExecutionContext = _context.InitialExecutionContext;
 

@@ -21,7 +21,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     private Http2StreamContext _context = default!;
     private Http2OutputProducer _http2Output = default!;
     private StreamInputFlowControl _inputFlowControl = default!;
-    private StreamOutputFlowControl _outputFlowControl = default!;
     private Http2MessageBody? _messageBody;
 
     private bool _decrementCalled;
@@ -56,11 +55,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                 context.ServerPeerSettings.InitialWindowSize,
                 context.ServerPeerSettings.InitialWindowSize / 2);
 
-            _outputFlowControl = new StreamOutputFlowControl(
-                context.ConnectionOutputFlowControl,
-                context.ClientPeerSettings.InitialWindowSize);
-
-            _http2Output = new Http2OutputProducer(this, context, _outputFlowControl);
+            _http2Output = new Http2OutputProducer(this, context);
 
             RequestBodyPipe = CreateRequestBodyPipe();
 
@@ -69,7 +64,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         else
         {
             _inputFlowControl.Reset();
-            _outputFlowControl.Reset(context.ClientPeerSettings.InitialWindowSize);
             _http2Output.StreamReset(context.ClientPeerSettings.InitialWindowSize);
             RequestBodyPipe.Reset();
         }
