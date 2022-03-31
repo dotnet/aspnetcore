@@ -35,6 +35,11 @@ public sealed class Results<TResult1, TResult2> : IResult
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
 
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
+
         await Result.ExecuteAsync(httpContext);
     }
 
@@ -83,6 +88,11 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -140,6 +150,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -205,6 +220,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -278,6 +298,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -359,6 +384,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -448,6 +478,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -545,6 +580,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -650,6 +690,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -763,6 +808,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -884,6 +934,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -1013,6 +1068,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -1150,6 +1210,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -1295,6 +1360,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }
@@ -1448,6 +1518,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+
+        if (Result is null)
+        {
+            throw new InvalidOperationException("The IResult assigned to the Result property must not be null.");
+        }
 
         await Result.ExecuteAsync(httpContext);
     }

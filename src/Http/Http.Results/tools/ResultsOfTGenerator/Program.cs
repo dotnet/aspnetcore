@@ -95,6 +95,11 @@ for (int i = 1; i <= typeArgCount; i++)
     writer.WriteLine("    {");
     writer.WriteLine("        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));");
     writer.WriteLine();
+    writer.WriteLine("        if (Result is null)");
+    writer.WriteLine("        {");
+    writer.WriteLine("            throw new InvalidOperationException(\"The IResult assigned to the Result property must not be null.\");");
+    writer.WriteLine("        }");
+    writer.WriteLine();
     writer.WriteLine("        await Result.ExecuteAsync(httpContext);");
     writer.WriteLine("    }");
     writer.WriteLine();

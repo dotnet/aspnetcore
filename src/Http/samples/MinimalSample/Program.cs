@@ -19,6 +19,8 @@ app.MapGet("/json", Json);
 string SayHello(string name) => $"Hello, {name}!";
 app.MapGet("/hello/{name}", SayHello);
 
+app.MapGet("/null-result", () => (IResult)null);
+
 app.MapGet("/todo/{id}", Results<OkObjectHttpResult, NotFoundObjectHttpResult> (int id) =>
 {
     return id switch
