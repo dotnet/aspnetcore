@@ -223,6 +223,11 @@ public class PocoAdapter : IAdapter
         return false;
     }
 
+    protected virtual bool TryConvertValue(object value, Type propertyType, out object convertedValue)
+    {
+        return TryConvertValue(value, propertyType, out convertedValue, null); 
+    }
+
     protected virtual bool TryConvertValue(object value, Type propertyType, out object convertedValue, IContractResolver contractResolver)
     {
         var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType, contractResolver);
