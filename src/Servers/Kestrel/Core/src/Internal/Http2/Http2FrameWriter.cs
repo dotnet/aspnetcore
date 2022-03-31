@@ -838,7 +838,7 @@ internal class Http2FrameWriter
         return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
     }
 
-    internal (long, long) ConsumeWindow(long bytes)
+    private (long, long) ConsumeWindow(long bytes)
     {
         lock (_windowUpdateLock)
         {
