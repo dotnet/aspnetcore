@@ -50,7 +50,7 @@
       "type": "bind",
       "binding": "HostIdentifier"
     },
-    "Framework": {
+    "framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
@@ -62,7 +62,7 @@
       ],
       "defaultValue": "net7.0"
     },
-    "ExcludeLaunchSettings": {
+    "excludeLaunchSettings": {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
@@ -118,7 +118,7 @@
       },
       "replaces": "5001"
     },
-    "UseProgramMain": {
+    "useProgramMain": {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
