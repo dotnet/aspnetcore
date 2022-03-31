@@ -45,8 +45,8 @@ internal class StackTraceHelper
             var frame = stackFrames[i];
             var method = frame.GetMethod();
 
-            // It seems like a MethodInfo should always be available for methods in the stack,
-            // but double check we have one for trimmed apps.
+            // MethodInfo should always be available for methods in the stack, but double check for null here.
+            // Apps with trimming enabled may remove some metdata. Better to be safe than sorry.
             if (method == null)
             {
                 continue;
