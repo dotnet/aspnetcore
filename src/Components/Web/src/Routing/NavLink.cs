@@ -45,6 +45,12 @@ public class NavLink : ComponentBase, IDisposable
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Gets or sets a flag to indicate whether route matching should ignore the query string.
+    /// </summary>
+    [Parameter]
+    public bool IgnoreQueryString { get; set; }
+
+    /// <summary>
     /// Gets or sets a value representing the URL matching behavior.
     /// </summary>
     [Parameter]
@@ -113,13 +119,15 @@ public class NavLink : ComponentBase, IDisposable
             return false;
         }
 
-        if (EqualsHrefExactlyOrIfTrailingSlashAdded(currentUriAbsolute))
+        var matchingUri = IgnoreQueryString ? RemoveQueryString(currentUriAbsolute) : currentUriAbsolute;
+
+        if (EqualsHrefExactlyOrIfTrailingSlashAdded(matchingUri))
         {
             return true;
         }
 
         if (Match == NavLinkMatch.Prefix
-            && IsStrictlyPrefixWithSeparator(currentUriAbsolute, _hrefAbsolute))
+            && IsStrictlyPrefixWithSeparator(matchingUri, _hrefAbsolute))
         {
             return true;
         }
@@ -192,4 +200,7 @@ public class NavLink : ComponentBase, IDisposable
             return false;
         }
     }
+
+    private static string RemoveQueryString(string path)
+        => path.Contains('?') ? path.Split('?')[0] : path;
 }

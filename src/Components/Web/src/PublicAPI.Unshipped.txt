@@ -1,3 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.set -> void
+Microsoft.AspNetCore.Components.Routing.NavLink.IgnoreQueryString.get -> bool
+Microsoft.AspNetCore.Components.Routing.NavLink.IgnoreQueryString.set -> void
