@@ -34,6 +34,13 @@ for (int i = 1; i <= typeArgCount; i++)
     writer.WriteLine("/// execute the underlying <see cref=\"IResult\"/> instance that was actually returned by the HTTP endpoint.");
     writer.WriteLine("/// </summary>");
 
+    // Class remarks doc
+    writer.WriteLine("/// <remarks>");
+    writer.WriteLine("/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance");
+    writer.WriteLine("/// from an instance of one of the declared type arguments, e.g.");
+    writer.WriteLine("/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>");
+    writer.WriteLine("/// </remarks>");
+
     // Type params docs
     for (int j = 1; j <= i; j++)
     {
@@ -68,6 +75,7 @@ for (int i = 1; i <= typeArgCount; i++)
     writer.WriteLine("{");
 
     // Ctor
+    writer.WriteLine("    // Use implicit cast operators to create an instance");
     writer.WriteLine($"    private {className}(IResult activeResult)");
     writer.WriteLine("    {");
     writer.WriteLine("        Result = activeResult;");
@@ -82,11 +90,7 @@ for (int i = 1; i <= typeArgCount; i++)
     writer.WriteLine();
 
     // ExecuteAsync method
-    writer.WriteLine("    /// <summary>");
-    writer.WriteLine("    /// Writes an HTTP response reflecting the result.");
-    writer.WriteLine("    /// </summary>");
-    writer.WriteLine("    /// <param name=\"httpContext\">The <see cref=\"HttpContext\"/> for the current request.</param>");
-    writer.WriteLine("    /// <returns>A <see cref=\"Task\"/> that represents the asynchronous execute operation.</returns>");
+    writer.WriteLine("    /// <inheritdoc/>");
     writer.WriteLine("    public async Task ExecuteAsync(HttpContext httpContext)");
     writer.WriteLine("    {");
     writer.WriteLine("        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));");

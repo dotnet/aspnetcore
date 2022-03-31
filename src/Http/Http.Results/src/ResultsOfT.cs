@@ -8,12 +8,18 @@ namespace Microsoft.AspNetCore.Http.Result;
 /// An <see cref="IResult"/> that could be one of two different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 public sealed class Results<TResult1, TResult2> : IResult
    where TResult1 : IResult
    where TResult2 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -24,11 +30,7 @@ public sealed class Results<TResult1, TResult2> : IResult
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -53,6 +55,11 @@ public sealed class Results<TResult1, TResult2> : IResult
 /// An <see cref="IResult"/> that could be one of three different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -61,6 +68,7 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult
    where TResult2 : IResult
    where TResult3 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -71,11 +79,7 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -106,6 +110,11 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult
 /// An <see cref="IResult"/> that could be one of four different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -116,6 +125,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult
    where TResult3 : IResult
    where TResult4 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -126,11 +136,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -167,6 +173,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult
 /// An <see cref="IResult"/> that could be one of five different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -179,6 +190,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
    where TResult4 : IResult
    where TResult5 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -189,11 +201,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -236,6 +244,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
 /// An <see cref="IResult"/> that could be one of six different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -250,6 +263,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult5 : IResult
    where TResult6 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -260,11 +274,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -313,6 +323,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// An <see cref="IResult"/> that could be one of seven different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -329,6 +344,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult6 : IResult
    where TResult7 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -339,11 +355,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -398,6 +410,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// An <see cref="IResult"/> that could be one of eight different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -416,6 +433,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult7 : IResult
    where TResult8 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -426,11 +444,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -491,6 +505,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// An <see cref="IResult"/> that could be one of nine different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -511,6 +530,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult8 : IResult
    where TResult9 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -521,11 +541,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -592,6 +608,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// An <see cref="IResult"/> that could be one of ten different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -614,6 +635,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult9 : IResult
    where TResult10 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -624,11 +646,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -701,6 +719,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// An <see cref="IResult"/> that could be one of eleven different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -725,6 +748,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult10 : IResult
    where TResult11 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -735,11 +759,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -818,6 +838,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// An <see cref="IResult"/> that could be one of twelve different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -844,6 +869,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult11 : IResult
    where TResult12 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -854,11 +880,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -943,6 +965,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// An <see cref="IResult"/> that could be one of thirteen different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -971,6 +998,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult12 : IResult
    where TResult13 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -981,11 +1009,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -1076,6 +1100,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// An <see cref="IResult"/> that could be one of fourteen different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -1106,6 +1135,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult13 : IResult
    where TResult14 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -1116,11 +1146,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -1217,6 +1243,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// An <see cref="IResult"/> that could be one of fifteen different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -1249,6 +1280,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult14 : IResult
    where TResult15 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -1259,11 +1291,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
@@ -1366,6 +1394,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// An <see cref="IResult"/> that could be one of sixteen different <see cref="IResult"/> types. On execution will
 /// execute the underlying <see cref="IResult"/> instance that was actually returned by the HTTP endpoint.
 /// </summary>
+/// <remarks>
+/// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
+/// from an instance of one of the declared type arguments, e.g.
+/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
@@ -1400,6 +1433,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
    where TResult15 : IResult
    where TResult16 : IResult
 {
+    // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
     {
         Result = activeResult;
@@ -1410,11 +1444,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// </summary>
     public IResult Result { get; }
 
-    /// <summary>
-    /// Writes an HTTP response reflecting the result.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous execute operation.</returns>
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
