@@ -410,7 +410,7 @@ public class StartupTests : IISFunctionalTestBase
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             var responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains("500.31", responseContent);
-            Assert.Contains("The framework 'Microsoft.NETCore.App', version '2.9.9'", responseContent);
+            Assert.Contains("Framework: 'Microsoft.NETCore.App', version '2.9.9'", responseContent);
         }
         else
         {
@@ -1354,7 +1354,8 @@ public class StartupTests : IISFunctionalTestBase
         };
         var client = new HttpClient(handler)
         {
-            BaseAddress = new Uri(deploymentParameters.ApplicationBaseUriHint)
+            BaseAddress = new Uri(deploymentParameters.ApplicationBaseUriHint),
+            Timeout = TimeSpan.FromSeconds(200),
         };
 
         if (DeployerSelector.HasNewHandler)

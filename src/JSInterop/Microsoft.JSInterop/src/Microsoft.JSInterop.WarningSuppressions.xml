@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <linker>
   <assembly fullname="Microsoft.JSInterop, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
@@ -36,6 +36,12 @@
       <argument>IL2026</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.JSInterop.JSRuntime.InvokeAsync``1(System.Int64,System.String,System.Threading.CancellationToken,System.Object[])</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2060</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.&lt;&gt;c.&lt;GetTaskByType&gt;b__14_0(System.Type,System.Reflection.MethodInfo)</property>
     </attribute>
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
       <argument>ILLink</argument>

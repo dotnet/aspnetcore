@@ -173,6 +173,6 @@ public class Http3Tests : FunctionalTestsBase
         var handler = new HttpClientHandler();
         // Needed on CI, the IIS Express cert we use isn't trusted there.
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return new HttpClient(handler);
+        return new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(200) };
     }
 }

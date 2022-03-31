@@ -29,6 +29,7 @@
     "@azure/msal-browser": "^2.16.1"
   },
   "resolutions": {
-    "ansi-regex": "5.0.1"
+    "ansi-regex": "5.0.1",
+    "minimist": ">=1.2.6"
   }
 }

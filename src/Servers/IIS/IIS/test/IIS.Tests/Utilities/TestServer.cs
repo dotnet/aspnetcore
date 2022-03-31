@@ -106,7 +106,8 @@ public class TestServer : IDisposable
 
         HttpClient = new HttpClient(new LoggingHandler(new SocketsHttpHandler(), _loggerFactory.CreateLogger<TestServer>()))
         {
-            BaseAddress = BaseUri
+            BaseAddress = BaseUri,
+            Timeout = TimeSpan.FromSeconds(200),
         };
     }
 
