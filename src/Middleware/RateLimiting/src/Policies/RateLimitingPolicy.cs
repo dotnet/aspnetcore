@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.RateLimiting.Policies;
 internal class RateLimitingPolicy

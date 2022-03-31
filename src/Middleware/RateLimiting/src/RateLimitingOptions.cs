@@ -9,9 +9,18 @@ namespace Microsoft.AspNetCore.RateLimiting;
 
 public class RateLimitingOptions
 {
-    private string _defaultLimitingPolicyName = "__DefaultRateLimitingPolicy";
-    internal IDictionary<string, RateLimitingPolicy> PolicyMap { get; }
+    private readonly string _defaultLimitingPolicyName = "__DefaultRateLimitingPolicy";
+    private IDictionary<string, RateLimitingPolicy> PolicyMap { get; }
         = new Dictionary<string, RateLimitingPolicy>(StringComparer.Ordinal);
+    private PartitionedRateLimiter<HttpContext>? _limiter;
+
+    /// <summary>
+    /// Gets the <see cref="PartitionedRateLimiter{TResource}"/>
+    /// </summary>
+    public PartitionedRateLimiter<HttpContext>? Limiter
+    {
+        get => _limiter;
+    }
 
     /// <summary>
     /// Adds a new rate limiter and sets it as the default.
@@ -27,7 +36,6 @@ public class RateLimitingOptions
         AddLimiter(_defaultLimitingPolicyName, limiter);
         return this;
     }
-
 
     /// <summary>
     /// Adds a new rate limiter with the given name.
@@ -55,12 +63,27 @@ public class RateLimitingOptions
         return this;
     }
 
-    /*
-    public void AddLimiter<T>(string name, RateLimiter<T> limiter) where T : HttpContext
+    /// <summary>
+    /// Adds a new rate limiter.
+    /// </summary>
+    /// <param name="limiter">The <see cref="PartitionedRateLimiter{TResource}"/> to be added.</param>
+    public void AddLimiter<HttpContext>(PartitionedRateLimiter<Http.HttpContext> limiter)
     {
-        PolicyMap[name] = new RateLimitingPolicy(limiter);
+        if (limiter == null)
+        {
+            throw new ArgumentNullException(nameof(limiter));
+        }
+        _limiter = limiter;
     }
-    */
+
+    /// <summary>
+    /// A <see cref="RequestDelegate"/> that handles requests rejected by this middleware.
+    /// If it doesn't modify the response, an empty 503 response will be written.
+    /// </summary>
+    public RequestDelegate OnRejected { get; set; } = context =>
+    {
+        return Task.CompletedTask;
+    };
 
     /// <summary>
     /// Gets the policy based on the <paramref name="name"/>

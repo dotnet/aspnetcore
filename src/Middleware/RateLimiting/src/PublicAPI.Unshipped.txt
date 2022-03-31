@@ -1,17 +1,20 @@
-﻿Microsoft.AspNetCore.Builder.RateLimitingEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.Builder.RateLimitingEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.RateLimiting.Policies.IRateLimitingPolicyMetadata
 Microsoft.AspNetCore.RateLimiting.Policies.IRateLimitingPolicyMetadata.Name.get -> string!
-Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicy.Order.get -> System.Threading.RateLimiting.QueueProcessingOrder
-Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicy.Order.set -> void
-Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicy.RateLimitingPolicy() -> void
 Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicyMetadata
 Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicyMetadata.Name.get -> string!
 Microsoft.AspNetCore.RateLimiting.Policies.RateLimitingPolicyMetadata.RateLimitingPolicyMetadata(string! name) -> void
 Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware
+Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.RateLimitingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!>! options) -> void
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.AddDefaultLimiter(System.Threading.RateLimiting.RateLimiter! limiter) -> Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.AddLimiter(string! name, System.Threading.RateLimiting.RateLimiter! limiter) -> Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!
+Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.AddLimiter<HttpContext>(System.Threading.RateLimiting.PartitionedRateLimiter<Microsoft.AspNetCore.Http.HttpContext!>! limiter) -> void
+Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.Limiter.get -> System.Threading.RateLimiting.PartitionedRateLimiter<Microsoft.AspNetCore.Http.HttpContext!>?
+Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.OnRejected.get -> Microsoft.AspNetCore.Http.RequestDelegate!
+Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.OnRejected.set -> void
+Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.RateLimitingOptions() -> void
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptionsExtensions
 static Microsoft.AspNetCore.Builder.RateLimitingEndpointConventionBuilderExtensions.RequireRateLimiting<TBuilder>(this TBuilder builder, string! name) -> TBuilder
 static Microsoft.AspNetCore.RateLimiting.RateLimitingOptionsExtensions.AddConcurrencyLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimitingOptions! options, string! name, System.Threading.RateLimiting.ConcurrencyLimiterOptions! concurrencyLimiterOptions) -> Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!
