@@ -77,7 +77,7 @@ internal partial class ResultsCache
 
     internal static StatusCodeHttpResult StatusCode(int statusCode)
     {
-        if (statusCode is (< 100) or (> 511))
+        if (statusCode is (< 100) or (> 599))
         {
             // No HTTP status code assigned outside the 100..599 range
             // so, it will not be available in the cache
