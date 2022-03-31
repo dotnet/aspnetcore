@@ -7,7 +7,6 @@
 namespace Microsoft.AspNetCore.Http;
 
 using System.CodeDom.Compiler;
-using System.Runtime.CompilerServices;
 
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal partial class ResultsCache

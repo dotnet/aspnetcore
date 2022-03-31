@@ -1,4 +1,4 @@
-<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ assembly name="System.Core" #>
 <#@ output extension=".cs" #>
 <#
@@ -79,7 +79,6 @@
 namespace Microsoft.AspNetCore.Http;
 
 using System.CodeDom.Compiler;
-using System.Runtime.CompilerServices;
 
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal partial class ResultsCache
