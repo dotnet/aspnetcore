@@ -82,7 +82,7 @@ dotnet restore RunTests/RunTests.csproj --ignore-failed-sources --verbosity diag
 
 exit_code=$?
 
-if [ "$exit_code" -eq 0 ]; then
+if [ "$exit_code" != "0" ]; then
     echo "Restore runtests failed: exit_code=$exit_code"
     exit $exit_code
 fi
