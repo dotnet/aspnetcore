@@ -216,7 +216,7 @@ internal class Http2FrameWriter
                 {
                     await reader.CompleteAsync();
 
-                    producer.CompleteResponse(flushResult);
+                    producer.CompleteResponse();
                 }
                 // We're not going to schedule this again if there's no remaining window.
                 // When the window update is sent, the producer will be re-queued if needed.

@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -14,7 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IValueTaskSource<FlushResult>, IDisposable
+internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IDisposable
 {
     private int StreamId => _stream.StreamId;
     private readonly Http2FrameWriter _frameWriter;
@@ -47,17 +46,8 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     // For changes scheduling changes that don't affect the number of bytes written to the pipe, we need another state
     private State _observationState;
     private bool _waitingForWindowUpdates;
-
-    /// <summary>The core logic for the IValueTaskSource implementation.</summary>
-    private ManualResetValueTaskSourceCore<FlushResult> _responseCompleteTaskSource = new ManualResetValueTaskSourceCore<FlushResult> { RunContinuationsAsynchronously = true }; // mutable struct, do not make this readonly
-
-    // This object is itself usable as a backing source for ValueTask.  Since there's only ever one awaiter
-    // for this object's state transitions at a time, we allow the object to be awaited directly. All functionality
-    // associated with the implementation is just delegated to the ManualResetValueTaskSourceCore.
-    private ValueTask<FlushResult> GetWaiterTask() => new ValueTask<FlushResult>(this, _responseCompleteTaskSource.Version);
-    ValueTaskSourceStatus IValueTaskSource<FlushResult>.GetStatus(short token) => _responseCompleteTaskSource.GetStatus(token);
-    void IValueTaskSource<FlushResult>.OnCompleted(Action<object?> continuation, object? state, short token, ValueTaskSourceOnCompletedFlags flags) => _responseCompleteTaskSource.OnCompleted(continuation, state, token, flags);
-    FlushResult IValueTaskSource<FlushResult>.GetResult(short token) => _responseCompleteTaskSource.GetResult(token);
+    private bool _completedResponse;
+    private bool _requestProcessingComplete;
 
     public Http2OutputProducer(Http2Stream stream, Http2StreamContext context, StreamOutputFlowControl flowControl)
     {
@@ -168,7 +158,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     public void StreamReset(uint initialWindowSize)
     {
         // Response should have been completed.
-        Debug.Assert(_responseCompleteTaskSource.GetStatus(_responseCompleteTaskSource.Version) == ValueTaskSourceStatus.Succeeded);
+        Debug.Assert(_completedResponse);
 
         _streamEnded = false;
         _suffixSent = false;
@@ -177,12 +167,13 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         _writerComplete = false;
         _pipe.Reset();
         _pipeWriter.Reset();
-        _responseCompleteTaskSource.Reset();
 
         _window = initialWindowSize;
         _unconsumedBytes = 0;
         _observationState = State.None;
         _waitingForWindowUpdates = false;
+        _completedResponse = false;
+        _requestProcessingComplete = false;
         WriteHeaders = false;
         IsTimingWrite = false;
     }
@@ -390,7 +381,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         {
             if (_streamCompleted)
             {
-                return GetWaiterTask();
+                return ValueTask.FromResult<FlushResult>(default);
             }
 
             _streamCompleted = true;
@@ -406,7 +397,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
                 Schedule();
             }
 
-            return GetWaiterTask();
+            return ValueTask.FromResult<FlushResult>(default);
         }
     }
 
@@ -562,9 +553,36 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     {
     }
 
-    internal void CompleteResponse(in FlushResult flushResult)
+    internal void OnRequestProcessingEnded()
     {
-        _responseCompleteTaskSource.SetResult(flushResult);
+        lock (_dataWriterLock)
+        {
+            if (_requestProcessingComplete)
+            {
+                // Noop, we're done
+                return;
+            }
+
+            _requestProcessingComplete = true;
+
+            if (_completedResponse)
+            {
+                Stream.CompleteStream(errored: false);
+            }
+        }
+    }
+
+    internal void CompleteResponse()
+    {
+        lock (_dataWriterLock)
+        {
+            _completedResponse = true;
+
+            if (_requestProcessingComplete)
+            {
+                Stream.CompleteStream(errored: false);
+            }
+        }
     }
 
     internal Memory<byte> GetFakeMemory(int minSize)

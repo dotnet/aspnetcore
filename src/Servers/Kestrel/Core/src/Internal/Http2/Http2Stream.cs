@@ -129,7 +129,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
     protected override void OnRequestProcessingEnded()
     {
-        CompleteStream(errored: false);
+        _http2Output.OnRequestProcessingEnded();
     }
 
     public void CompleteStream(bool errored)
