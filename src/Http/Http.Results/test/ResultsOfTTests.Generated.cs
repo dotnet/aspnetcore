@@ -57,6 +57,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -107,6 +145,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -161,6 +237,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -219,6 +333,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -281,6 +433,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -347,6 +537,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -417,6 +645,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -491,6 +757,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -569,6 +873,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -651,6 +993,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -737,6 +1117,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11TResult12_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11TResult12_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -827,6 +1245,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11TResult12TResult13_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11TResult12TResult13_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -921,6 +1377,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11TResult12TResult13TResult14_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11TResult12TResult13TResult14_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -1019,6 +1513,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11TResult12TResult13TResult14TResult15_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11TResult12TResult13TResult14TResult15_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     [Theory]
     [InlineData(1, typeof(ChecksumResult1))]
     [InlineData(2, typeof(ChecksumResult2))]
@@ -1121,6 +1653,44 @@ public partial class ResultsOfTTests
         Assert.Equal(input, httpContext.Items[result.Result]);
     }
 
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11TResult12TResult13TResult14TResult15TResult16_Throws_ArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        HttpContext httpContext = null;
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
+    [Fact]
+    public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6TResult7TResult8TResult9TResult10TResult11TResult12TResult13TResult14TResult15TResult16_Throws_InvalidOperationException_WhenResultIsNull()
+    {
+        // Arrange
+        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        {
+            return new ChecksumResult1(1);
+        }
+        var httpContext = GetHttpContext();
+        
+        // Act & Assert
+        var result = MyApi();
+        
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await result.ExecuteAsync(httpContext);
+        });
+    }
+    
     class ChecksumResult : IResult
     {
         public ChecksumResult(int checksum = 0)

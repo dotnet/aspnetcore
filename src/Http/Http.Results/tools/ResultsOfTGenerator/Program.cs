@@ -388,7 +388,6 @@ void GenerateTest_ExecuteResult_ExecutesAssignedResult(StreamWriter writer, int 
             writer.WriteIndentedLine(4, $"_ => new ChecksumResult{j}(checksum)");
         }
     }
-    //writer.WriteIndentedLine(4, $"_ => (NoContentHttpResult)Results.NoContent()");
     writer.WriteIndentedLine(3, "};");
     writer.WriteIndentedLine(2, "}");
     writer.WriteIndentedLine(2, "var httpContext = GetHttpContext();");
@@ -415,9 +414,9 @@ void GenerateTest_Throws_ArgumentNullException_WhenHttpContextIsNull(StreamWrite
     //public void ResultsOfTResult1TResult2_Throws_ArgumentNullException_WhenHttpContextIsNull()
     //{
     //    // Arrange
-    //    Results<ChecksumResult, NoContentHttpResult> MyApi()
+    //    Results<ChecksumResult1, NoContentHttpResult> MyApi()
     //    {
-    //        return new ChecksumResult(1);
+    //        return new ChecksumResult1(1);
     //    }
     //    HttpContext httpContext = null;
 
@@ -430,6 +429,40 @@ void GenerateTest_Throws_ArgumentNullException_WhenHttpContextIsNull(StreamWrite
     //    });
     //}
 
+    // Attributes
+    writer.WriteIndentedLine("[Fact]");
+
+    // Start method
+    writer.WriteIndent(1, "public void ResultsOf");
+    for (int j = 1; j <= typeArgNumber; j++)
+    {
+        writer.Write($"TResult{j}");
+    }
+    writer.WriteLine("_Throws_ArgumentNullException_WhenHttpContextIsNull()");
+    writer.WriteIndentedLine("{");
+
+    // Arrange
+    writer.WriteIndentedLine(2, "// Arrange");
+    writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContentHttpResult> MyApi()");
+    writer.WriteIndentedLine(2, "{");
+    writer.WriteIndentedLine(3, "return new ChecksumResult1(1);");
+    writer.WriteIndentedLine(2, "}");
+    writer.WriteIndentedLine(2, "HttpContext httpContext = null;");
+    writer.WriteIndentedLine(2);
+
+    // Act & Assert
+    writer.WriteIndentedLine(2, "// Act & Assert");
+    writer.WriteIndentedLine(2, "var result = MyApi();");
+    writer.WriteIndentedLine(2);
+
+    writer.WriteIndentedLine(2, "Assert.ThrowsAsync<ArgumentNullException>(async () =>");
+    writer.WriteIndentedLine(2, "{");
+    writer.WriteIndentedLine(3, "await result.ExecuteAsync(httpContext);");
+    writer.WriteIndentedLine(2, "});");
+
+    // Close method
+    writer.WriteIndentedLine(1, "}");
+    writer.WriteIndentedLine();
 }
 
 void GenerateTest_Throws_InvalidOperationException_WhenResultIsNull(StreamWriter writer, int typeArgNumber)
@@ -438,9 +471,9 @@ void GenerateTest_Throws_InvalidOperationException_WhenResultIsNull(StreamWriter
     //public void ResultsOfTResult1TResult2_Throws_InvalidOperationException_WhenResultIsNull()
     //{
     //    // Arrange
-    //    Results<ChecksumResult, NoContentHttpResult> MyApi()
+    //    Results<ChecksumResult1, NoContentHttpResult> MyApi()
     //    {
-    //        return (ChecksumResult)null;
+    //        return (ChecksumResult1)null;
     //    }
     //    var httpContext = GetHttpContext();
 
@@ -453,6 +486,40 @@ void GenerateTest_Throws_InvalidOperationException_WhenResultIsNull(StreamWriter
     //    });
     //}
 
+    // Attributes
+    writer.WriteIndentedLine("[Fact]");
+
+    // Start method
+    writer.WriteIndent(1, "public void ResultsOf");
+    for (int j = 1; j <= typeArgNumber; j++)
+    {
+        writer.Write($"TResult{j}");
+    }
+    writer.WriteLine("_Throws_InvalidOperationException_WhenResultIsNull()");
+    writer.WriteIndentedLine("{");
+
+    // Arrange
+    writer.WriteIndentedLine(2, "// Arrange");
+    writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContentHttpResult> MyApi()");
+    writer.WriteIndentedLine(2, "{");
+    writer.WriteIndentedLine(3, "return new ChecksumResult1(1);");
+    writer.WriteIndentedLine(2, "}");
+    writer.WriteIndentedLine(2, "var httpContext = GetHttpContext();");
+    writer.WriteIndentedLine(2);
+
+    // Act & Assert
+    writer.WriteIndentedLine(2, "// Act & Assert");
+    writer.WriteIndentedLine(2, "var result = MyApi();");
+    writer.WriteIndentedLine(2);
+
+    writer.WriteIndentedLine(2, "Assert.ThrowsAsync<InvalidOperationException>(async () =>");
+    writer.WriteIndentedLine(2, "{");
+    writer.WriteIndentedLine(3, "await result.ExecuteAsync(httpContext);");
+    writer.WriteIndentedLine(2, "});");
+
+    // Close method
+    writer.WriteIndentedLine(1, "}");
+    writer.WriteIndentedLine();
 }
 
 void Generate_ChecksumResultClass(StreamWriter writer, int typeArgNumber = -1)
