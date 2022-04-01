@@ -10,7 +10,6 @@
 #nullable enable
 using System.Collections;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -441,7 +440,6 @@ namespace System.Net
         #region Custom WriteEvent overloads
 
         [NonEvent]
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
         private unsafe void WriteEvent(int eventId, string? arg1, string? arg2, string? arg3, string? arg4)
         {
             if (IsEnabled())
@@ -486,7 +484,6 @@ namespace System.Net
         }
 
         [NonEvent]
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
         private unsafe void WriteEvent(int eventId, string? arg1, string? arg2, byte[]? arg3)
         {
             if (IsEnabled())
