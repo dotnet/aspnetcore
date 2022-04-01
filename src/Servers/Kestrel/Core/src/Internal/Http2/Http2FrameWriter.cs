@@ -109,7 +109,7 @@ internal class Http2FrameWriter
                 // We don't need to check the result because it's either
                 // - true because we have a result
                 // - false because we're flushing headers
-                var hasResult = reader.TryRead(out var readResult);
+                reader.TryRead(out var readResult);
 
                 var buffer = readResult.Buffer;
 
