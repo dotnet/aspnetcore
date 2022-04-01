@@ -24,6 +24,10 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Server.HttpSys" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.IIS" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authorization" />
     <TrimmableProject Include="Microsoft.AspNetCore.HttpOverrides" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Authorization" />
