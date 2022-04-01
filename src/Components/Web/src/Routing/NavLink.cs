@@ -202,5 +202,18 @@ public class NavLink : ComponentBase, IDisposable
     }
 
     private static string RemoveQueryString(string path)
-        => path.Contains('?') ? path.Split('?')[0] : path;
+    {
+        if (!path.Contains('?'))
+        {
+            return path;
+        }
+
+        var pathWithoutQuery = path.Split('?')[0];
+
+        // We remove trailing slashes to ensure the following matches:
+        //   - "/abc/?value=123" matches "/abc"
+        //   - "/abc/def?value=123" matches "/abc/def"
+        //   - "/abc/def/?value=123" matches "/abc/def"
+        return pathWithoutQuery.EndsWith('/') ? pathWithoutQuery.TrimEnd('/') : pathWithoutQuery;
+    }
 }
