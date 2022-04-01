@@ -30,6 +30,12 @@
     <li><a href="/subdir/images/blazor_logo_1000x.png" download>Download Me</a></li>
     <li><NavLink>Null href never matches</NavLink></li>
     <li><custom-link-with-shadow-root target-url="Other"></custom-link-with-shadow-root></li>
+    <li><NavLink href="/subdir/WithQueryParameters/IgnoreQueryString" Match=NavLinkMatch.All IgnoreQueryString=@true>Base IgnoreQueryString URL</NavLink></li>
+    <li><NavLink href="/subdir/WithQueryParameters/IgnoreQueryString?intvalue=123" Match=NavLinkMatch.All IgnoreQueryString=@true>With query parameters (matches all and ignores query string)</NavLink></li>
+    <li><NavLink href="/subdir/WithQueryParameters/IgnoreQueryString/?intvalue=123" Match=NavLinkMatch.All IgnoreQueryString=@true>With query parameters (matches all and ignores query string with trailing slash)</NavLink></li>
+    <li><NavLink href="/subdir/WithQueryParameters/DoNotIgnoreQueryString" Match=NavLinkMatch.All IgnoreQueryString=@false>Base DoNotIgnoreQueryString URL</NavLink></li>
+    <li><NavLink href="/subdir/WithQueryParameters/DoNotIgnoreQueryString?intvalue=123" Match=NavLinkMatch.All IgnoreQueryString=@false>With query parameters (matches all and does not ignore query string)</NavLink></li>
+    <li><NavLink href="/subdir/WithQueryParameters/DoNotIgnoreQueryString/?intvalue=123" Match=NavLinkMatch.All IgnoreQueryString=@false>With query parameters (matches all and does not ignore query string with trailing slash)</NavLink></li>
 </ul>
 
 <button id="do-navigation" @onclick=@(x => NavigationManager.NavigateTo("Other"))>

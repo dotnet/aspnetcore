@@ -880,6 +880,46 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
     }
 
+    [Fact]
+    public void IgnoresQueryString()
+    {
+        SetUrlViaPushState("/WithQueryParameters/IgnoreQueryString?intvalue=123");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        Assert.Equal("123", app.FindElement(By.Id("value-QueryInt")).Text);
+        AssertHighlightedLinks("Base IgnoreQueryString URL");
+    }
+
+    [Fact]
+    public void IgnoresQueryStringWithTrailingSlash()
+    {
+        SetUrlViaPushState("/WithQueryParameters/IgnoreQueryString/?intvalue=123");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        Assert.Equal("123", app.FindElement(By.Id("value-QueryInt")).Text);
+        AssertHighlightedLinks("Base IgnoreQueryString URL");
+    }
+
+    [Fact]
+    public void DoesNotIgnoreQueryString()
+    {
+        SetUrlViaPushState("/WithQueryParameters/DoNotIgnoreQueryString?intvalue=123");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        Assert.Equal("123", app.FindElement(By.Id("value-QueryInt")).Text);
+        AssertHighlightedLinks("With query parameters (matches all and does not ignore query string)");
+    }
+
+    [Fact]
+    public void DoesNotIgnoreQueryStringWithTrailingSlash()
+    {
+        SetUrlViaPushState("/WithQueryParameters/DoNotIgnoreQueryString/?intvalue=123");
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        Assert.Equal("123", app.FindElement(By.Id("value-QueryInt")).Text);
+        AssertHighlightedLinks("With query parameters (matches all and does not ignore query string with trailing slash)");
+    }
+
     private long BrowserScrollY
     {
         get => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY");
