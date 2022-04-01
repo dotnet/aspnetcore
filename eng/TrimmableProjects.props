@@ -10,6 +10,8 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Hosting" />
     <TrimmableProject Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Abstractions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Core" />
     <TrimmableProject Include="Microsoft.Net.Http.Headers" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Extensions" />
@@ -19,11 +21,15 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />
     <TrimmableProject Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.IIS" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authorization" />
+    <TrimmableProject Include="Microsoft.AspNetCore.HttpOverrides" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Authorization" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Forms" />
