@@ -7,6 +7,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.RateLimiting;
+
+/// <summary>
+/// Limits the rate of requests allowed in the application, based on limits set by a user-provided <see cref="PartitionedRateLimiter{TResource}"/>.
+/// </summary>
 public partial class RateLimitingMiddleware
 {
 
@@ -16,6 +20,12 @@ public partial class RateLimitingMiddleware
     private readonly PartitionedRateLimiter<HttpContext> _limiter;
     private RateLimitLease? _lease;
 
+    /// <summary>
+    /// Creates a new <see cref="RateLimitingMiddleware"/>.
+    /// </summary>
+    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+    /// <param name="options">The options for the middleware.</param>
     public RateLimitingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<RateLimitingOptions> options)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
@@ -41,6 +51,11 @@ public partial class RateLimitingMiddleware
     }
 
     // TODO - EventSource?
+    /// <summary>
+    /// Invokes the logic of the middleware.
+    /// </summary>
+    /// <param name="context">The <see cref="HttpContext"/>.</param>
+    /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
     public async Task Invoke(HttpContext context)
     {
         var acquireLeaseTask = TryAcquireAsync(context);
