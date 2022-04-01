@@ -10,6 +10,10 @@
       "_justification": "This is a fake password used in test code."
     },
     {
+      "placeholder": "my password",
+      "_justification": "This is a fake password hash used in test code."
+    },
+    {
       "placeholder": "newpassword",
       "_justification": "This is a fake password used in test code."
     },
