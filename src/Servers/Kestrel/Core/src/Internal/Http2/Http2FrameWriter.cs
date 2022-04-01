@@ -106,17 +106,10 @@ internal class Http2FrameWriter
 
                 var observed = Http2OutputProducer.State.None;
 
-                if (!reader.TryRead(out var readResult))
-                {
-                    if (producer.WriteHeaders)
-                    {
-                        // Flush headers, we have nothing to look at on the pipe
-                    }
-                    else
-                    {
-                        readResult = await reader.ReadAsync();
-                    }
-                }
+                // We don't need to check the result because it's either
+                // - true because we have a result
+                // - false because we're flushing headers
+                var hasResult = reader.TryRead(out var readResult);
 
                 var buffer = readResult.Buffer;
 
