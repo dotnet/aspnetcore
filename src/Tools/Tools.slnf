@@ -26,6 +26,7 @@
       "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
+      "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
       "src\\Tools\\Extensions.ApiDescription.Client\\src\\Microsoft.Extensions.ApiDescription.Client.csproj",
       "src\\Tools\\Extensions.ApiDescription.Client\\test\\Microsoft.Extensions.ApiDescription.Client.Tests.csproj",
