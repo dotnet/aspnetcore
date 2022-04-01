@@ -2,8 +2,10 @@ Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware
 Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.RateLimitingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!>! options) -> void
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions
-Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.AddLimiter<HttpContext>(System.Threading.RateLimiting.PartitionedRateLimiter<Microsoft.AspNetCore.Http.HttpContext!>! limiter) -> Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.Limiter.get -> System.Threading.RateLimiting.PartitionedRateLimiter<Microsoft.AspNetCore.Http.HttpContext!>?
+Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.Limiter.set -> void
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.OnRejected.get -> Microsoft.AspNetCore.Http.RequestDelegate!
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.OnRejected.set -> void
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.RateLimitingOptions() -> void
+Microsoft.AspNetCore.RateLimiting.RateLimitingServicesExtensions
+static Microsoft.AspNetCore.RateLimiting.RateLimitingServicesExtensions.AddRateLimiting(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

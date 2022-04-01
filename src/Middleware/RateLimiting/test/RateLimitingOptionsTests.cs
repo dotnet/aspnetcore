@@ -11,6 +11,6 @@ public class RateLimitingOptionsTests
     public void ThrowsOnNullLimiter()
     {
         var options = new RateLimitingOptions();
-        var ex = Assert.Throws<ArgumentNullException>(() => options.AddLimiter<HttpContext>(null));
+        var ex = Assert.Throws<ArgumentNullException>(() => options.Limiter = null);
     }
 }

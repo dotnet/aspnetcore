@@ -11,14 +11,13 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// <summary>
 /// Limits the rate of requests allowed in the application, based on limits set by a user-provided <see cref="PartitionedRateLimiter{TResource}"/>.
 /// </summary>
-public partial class RateLimitingMiddleware
+public sealed partial class RateLimitingMiddleware
 {
 
     private readonly RequestDelegate _next;
     private readonly RequestDelegate _onRejected;
     private readonly ILogger _logger;
     private readonly PartitionedRateLimiter<HttpContext> _limiter;
-    private RateLimitLease? _lease;
 
     /// <summary>
     /// Creates a new <see cref="RateLimitingMiddleware"/>.
@@ -62,15 +61,17 @@ public partial class RateLimitingMiddleware
 
         // Make sure we only ever call GetResult once on the TryEnterAsync ValueTask b/c it resets.
         bool result;
+        RateLimitLease lease;
 
         if (acquireLeaseTask.IsCompleted)
         {
-            result = acquireLeaseTask.Result;
+            lease = acquireLeaseTask.Result;
         }
         else
         {
-            result = await acquireLeaseTask;
+            lease = await acquireLeaseTask;
         }
+        result = lease.IsAcquired;
 
         if (result)
         {
@@ -80,7 +81,7 @@ public partial class RateLimitingMiddleware
             }
             finally
             {
-                OnCompletion();
+                OnCompletion(lease);
             }
         }
         else
@@ -91,53 +92,34 @@ public partial class RateLimitingMiddleware
         }
     }
 
-    private ValueTask<bool> TryAcquireAsync(HttpContext context)
+    private ValueTask<RateLimitLease> TryAcquireAsync(HttpContext context)
     {
-        // a return value of 'false' indicates that the request is rejected
-        // a return value of 'true' indicates that the request may proceed
-
         var lease = _limiter.Acquire(context);
         if (lease.IsAcquired)
         {
-            _lease = lease;
-            return ValueTask.FromResult(true);
+            return ValueTask.FromResult(lease);
         }
 
         var task = _limiter.WaitAsync(context);
         if (task.IsCompletedSuccessfully)
         {
-            lease = task.Result;
-            if (lease.IsAcquired)
-            {
-                _lease = lease;
-                return ValueTask.FromResult(true);
-            }
-
-            return ValueTask.FromResult(false);
+            return task;
         }
 
         return Awaited(task);
     }
 
-    private void OnCompletion()
+    private static void OnCompletion(RateLimitLease lease)
     {
-        if (_lease != null)
+        if (lease != null)
         {
-            _lease.Dispose();
+            lease.Dispose();
         }
     }
 
-    private async ValueTask<bool> Awaited(ValueTask<RateLimitLease> task)
+    private static async ValueTask<RateLimitLease> Awaited(ValueTask<RateLimitLease> task)
     {
-        var lease = await task;
-
-        if (lease.IsAcquired)
-        {
-            _lease = lease;
-            return true;
-        }
-
-        return false;
+        return await task;
     }
 
     private static partial class RateLimiterLog

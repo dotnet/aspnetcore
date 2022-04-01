@@ -21,7 +21,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
     public void Ctor_ThrowsExceptionsWhenNullArgs()
     {
         var options = CreateOptionsAccessor();
-        options.Value.AddLimiter<HttpContext>(new TestPartitionedRateLimiter<HttpContext>());
+        options.Value.Limiter = new TestPartitionedRateLimiter<HttpContext>();
 
         Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(
             null,
@@ -54,7 +54,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
     {
         var options = CreateOptionsAccessor();
         options.Value.OnRejected = null;
-        options.Value.AddLimiter<HttpContext>(new TestPartitionedRateLimiter<HttpContext>());
+        options.Value.Limiter =  new TestPartitionedRateLimiter<HttpContext>();
         var ex = Assert.Throws<ArgumentException>(() => new RateLimitingMiddleware(c =>
         {
             return Task.CompletedTask;
@@ -69,7 +69,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
     {
         var flag = false;
         var options = CreateOptionsAccessor();
-        options.Value.AddLimiter<HttpContext>(new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(true)));
+        options.Value.Limiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(true));
         var middleware = new RateLimitingMiddleware(c =>
         {
             flag = true;
@@ -87,7 +87,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
     {
         bool onRejectedInvoked = false;
         var options = CreateOptionsAccessor();
-        options.Value.AddLimiter<HttpContext>(new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false)));
+        options.Value.Limiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
         options.Value.OnRejected = httpContext =>
         {
             onRejectedInvoked = true;

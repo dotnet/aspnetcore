@@ -20,20 +20,14 @@ public class RateLimitingOptions
     public PartitionedRateLimiter<HttpContext>? Limiter
     {
         get => _limiter;
-    }
-
-    /// <summary>
-    /// Adds a new rate limiter.
-    /// </summary>
-    /// <param name="limiter">The <see cref="PartitionedRateLimiter{TResource}"/> to be added.</param>
-    public RateLimitingOptions AddLimiter<HttpContext>(PartitionedRateLimiter<Http.HttpContext> limiter)
-    {
-        if (limiter == null)
+        set
         {
-            throw new ArgumentNullException(nameof(limiter));
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            _limiter = value;
         }
-        _limiter = limiter;
-        return this;
     }
 
     /// <summary>
