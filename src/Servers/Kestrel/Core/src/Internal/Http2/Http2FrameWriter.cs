@@ -169,8 +169,7 @@ internal class Http2FrameWriter
                 {
                     if (buffer.Length != 0)
                     {
-                        // TODO: Use the right logger here.
-                        _log.LogCritical(nameof(Http2OutputProducer) + "." + " observed an unexpected state where the streams output ended with data still remaining in the pipe.");
+                        _log.LogCritical("{StreamId} observed an unexpected state where the streams output ended with data still remaining in the pipe.", stream.StreamId);
                     }
                     else
                     {
