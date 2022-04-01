@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text;
 
 var className = "Results";
@@ -35,7 +36,10 @@ void GenerateClassFile(string classFilePath)
     for (int i = 1; i <= typeArgCount; i++)
     {
         // Skip first as we don't have a Results<TResult1> class
-        if (i == 1) continue;
+        if (i == 1)
+        {
+            continue;
+        }
 
         // Class summary doc
         writer.WriteLine("/// <summary>");
@@ -117,7 +121,7 @@ void GenerateClassFile(string classFilePath)
         var sb = new StringBuilder();
         for (int j = 1; j <= i; j++)
         {
-            sb.Append($"{typeArgName}{j}");
+            sb.AppendFormat(CultureInfo.InvariantCulture, "{0}{1}", typeArgName, j);
             if (j != i)
             {
                 sb.Append(", ");
@@ -153,7 +157,10 @@ void GenerateClassFile(string classFilePath)
 
     var file = new FileInfo(classFilePath);
 
-    if (!file.Exists) throw new FileNotFoundException(classFilePath);
+    if (!file.Exists)
+    {
+        throw new FileNotFoundException(classFilePath);
+    }
 
     Console.WriteLine();
     Console.WriteLine($"{file.Length:N0} bytes written to {file.FullName} successfully!");
@@ -191,7 +198,10 @@ void GenerateTestFiles(string testFilePath)
     for (int i = 1; i <= typeArgCount; i++)
     {
         // Skip first as we don't have a Results<TResult1> class
-        if (i == 1) continue;
+        if (i == 1)
+        {
+            continue;
+        }
 
         GenerateTest_Result_IsAssignedResult(writer, i);
         GenerateTest_ExecuteResult_ExecutesAssignedResult(writer, i);
@@ -221,7 +231,10 @@ void GenerateTestFiles(string testFilePath)
 
     var file = new FileInfo(testFilePath);
 
-    if (!file.Exists) throw new FileNotFoundException(testFilePath);
+    if (!file.Exists)
+    {
+        throw new FileNotFoundException(testFilePath);
+    }
 
     Console.WriteLine();
     Console.WriteLine($"{file.Length:N0} bytes written to {file.FullName} successfully!");
