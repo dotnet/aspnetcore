@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// <summary>
 /// Limits the rate of requests allowed in the application, based on limits set by a user-provided <see cref="PartitionedRateLimiter{TResource}"/>.
 /// </summary>
-public sealed partial class RateLimitingMiddleware
+internal sealed partial class RateLimitingMiddleware
 {
 
     private readonly RequestDelegate _next;
