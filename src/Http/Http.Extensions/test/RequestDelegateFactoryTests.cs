@@ -422,7 +422,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public async Task RequestDelegatePopulatesFromRouteParameterBasedOnAttributeNameProperty()n
+    public async Task RequestDelegatePopulatesFromRouteParameterBasedOnAttributeNameProperty()
     {
         const string specifiedName = "value";
         const int originalRouteParam = 42;
