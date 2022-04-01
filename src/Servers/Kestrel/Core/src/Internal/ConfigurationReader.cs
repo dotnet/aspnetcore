@@ -184,7 +184,17 @@ internal class ConfigurationReader
 
     private static SslProtocols? ParseSslProcotols(IConfigurationSection sslProtocols)
     {
-        var stringProtocols = sslProtocols.Get<string[]>();
+        // Avoid trimming warning from IConfigurationSection.Get<string[]>()
+        string[]? stringProtocols = null;
+        var childrenSections = sslProtocols.GetChildren().ToArray();
+        if (childrenSections.Length > 0)
+        {
+            stringProtocols = new string[childrenSections.Length];
+            for (var i = 0; i < childrenSections.Length; i++)
+            {
+                stringProtocols[i] = childrenSections[i].Value!;
+            }
+        }
 
         return stringProtocols?.Aggregate(SslProtocols.None, (acc, current) =>
         {
