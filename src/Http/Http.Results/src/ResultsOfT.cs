@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Http;
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
 public sealed class Results<TResult1, TResult2> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -69,9 +69,9 @@ public sealed class Results<TResult1, TResult2> : IResult
 /// <typeparam name="TResult2">The second result type.</typeparam>
 /// <typeparam name="TResult3">The third result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -130,10 +130,10 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult
 /// <typeparam name="TResult3">The third result type.</typeparam>
 /// <typeparam name="TResult4">The fourth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -199,11 +199,11 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult
 /// <typeparam name="TResult4">The fourth result type.</typeparam>
 /// <typeparam name="TResult5">The fifth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -276,12 +276,12 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
 /// <typeparam name="TResult5">The fifth result type.</typeparam>
 /// <typeparam name="TResult6">The sixth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -361,13 +361,13 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// <typeparam name="TResult6">The sixth result type.</typeparam>
 /// <typeparam name="TResult7">The seventh result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
-   where TResult7 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -454,14 +454,14 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// <typeparam name="TResult7">The seventh result type.</typeparam>
 /// <typeparam name="TResult8">The eighth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
-   where TResult7 : IResult
-   where TResult8 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+    where TResult8 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -555,15 +555,15 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// <typeparam name="TResult8">The eighth result type.</typeparam>
 /// <typeparam name="TResult9">The ninth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8, TResult9> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
-   where TResult7 : IResult
-   where TResult8 : IResult
-   where TResult9 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+    where TResult8 : IResult
+    where TResult9 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -664,16 +664,16 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// <typeparam name="TResult9">The ninth result type.</typeparam>
 /// <typeparam name="TResult10">The tenth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8, TResult9, TResult10> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
-   where TResult7 : IResult
-   where TResult8 : IResult
-   where TResult9 : IResult
-   where TResult10 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+    where TResult8 : IResult
+    where TResult9 : IResult
+    where TResult10 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -781,17 +781,17 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// <typeparam name="TResult10">The tenth result type.</typeparam>
 /// <typeparam name="TResult11">The eleventh result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8, TResult9, TResult10, TResult11> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
-   where TResult7 : IResult
-   where TResult8 : IResult
-   where TResult9 : IResult
-   where TResult10 : IResult
-   where TResult11 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+    where TResult8 : IResult
+    where TResult9 : IResult
+    where TResult10 : IResult
+    where TResult11 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -906,18 +906,18 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// <typeparam name="TResult11">The eleventh result type.</typeparam>
 /// <typeparam name="TResult12">The twelfth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8, TResult9, TResult10, TResult11, TResult12> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
-   where TResult7 : IResult
-   where TResult8 : IResult
-   where TResult9 : IResult
-   where TResult10 : IResult
-   where TResult11 : IResult
-   where TResult12 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+    where TResult8 : IResult
+    where TResult9 : IResult
+    where TResult10 : IResult
+    where TResult11 : IResult
+    where TResult12 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -1039,19 +1039,19 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// <typeparam name="TResult12">The twelfth result type.</typeparam>
 /// <typeparam name="TResult13">The thirteenth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8, TResult9, TResult10, TResult11, TResult12, TResult13> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
-   where TResult7 : IResult
-   where TResult8 : IResult
-   where TResult9 : IResult
-   where TResult10 : IResult
-   where TResult11 : IResult
-   where TResult12 : IResult
-   where TResult13 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+    where TResult8 : IResult
+    where TResult9 : IResult
+    where TResult10 : IResult
+    where TResult11 : IResult
+    where TResult12 : IResult
+    where TResult13 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -1180,20 +1180,20 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// <typeparam name="TResult13">The thirteenth result type.</typeparam>
 /// <typeparam name="TResult14">The fourteenth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8, TResult9, TResult10, TResult11, TResult12, TResult13, TResult14> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
-   where TResult7 : IResult
-   where TResult8 : IResult
-   where TResult9 : IResult
-   where TResult10 : IResult
-   where TResult11 : IResult
-   where TResult12 : IResult
-   where TResult13 : IResult
-   where TResult14 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+    where TResult8 : IResult
+    where TResult9 : IResult
+    where TResult10 : IResult
+    where TResult11 : IResult
+    where TResult12 : IResult
+    where TResult13 : IResult
+    where TResult14 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -1329,21 +1329,21 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// <typeparam name="TResult14">The fourteenth result type.</typeparam>
 /// <typeparam name="TResult15">The fifteenth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8, TResult9, TResult10, TResult11, TResult12, TResult13, TResult14, TResult15> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
-   where TResult7 : IResult
-   where TResult8 : IResult
-   where TResult9 : IResult
-   where TResult10 : IResult
-   where TResult11 : IResult
-   where TResult12 : IResult
-   where TResult13 : IResult
-   where TResult14 : IResult
-   where TResult15 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+    where TResult8 : IResult
+    where TResult9 : IResult
+    where TResult10 : IResult
+    where TResult11 : IResult
+    where TResult12 : IResult
+    where TResult13 : IResult
+    where TResult14 : IResult
+    where TResult15 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)
@@ -1486,22 +1486,22 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
 /// <typeparam name="TResult15">The fifteenth result type.</typeparam>
 /// <typeparam name="TResult16">The sixteenth result type.</typeparam>
 public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6, TResult7, TResult8, TResult9, TResult10, TResult11, TResult12, TResult13, TResult14, TResult15, TResult16> : IResult
-   where TResult1 : IResult
-   where TResult2 : IResult
-   where TResult3 : IResult
-   where TResult4 : IResult
-   where TResult5 : IResult
-   where TResult6 : IResult
-   where TResult7 : IResult
-   where TResult8 : IResult
-   where TResult9 : IResult
-   where TResult10 : IResult
-   where TResult11 : IResult
-   where TResult12 : IResult
-   where TResult13 : IResult
-   where TResult14 : IResult
-   where TResult15 : IResult
-   where TResult16 : IResult
+    where TResult1 : IResult
+    where TResult2 : IResult
+    where TResult3 : IResult
+    where TResult4 : IResult
+    where TResult5 : IResult
+    where TResult6 : IResult
+    where TResult7 : IResult
+    where TResult8 : IResult
+    where TResult9 : IResult
+    where TResult10 : IResult
+    where TResult11 : IResult
+    where TResult12 : IResult
+    where TResult13 : IResult
+    where TResult14 : IResult
+    where TResult15 : IResult
+    where TResult16 : IResult
 {
     // Use implicit cast operators to create an instance
     private Results(IResult activeResult)

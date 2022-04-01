@@ -74,43 +74,43 @@ void GenerateClassFile(string classFilePath)
         // Type arg contraints
         for (int j = 1; j <= i; j++)
         {
-            writer.Write($"   where {typeArgName}{j} : IResult");
+            writer.WriteIndent($"where {typeArgName}{j} : IResult");
             if (j != i)
             {
-                writer.Write(Environment.NewLine);
+                writer.WriteLine();
             }
         }
         writer.WriteLine();
         writer.WriteLine("{");
 
         // Ctor
-        writer.WriteLine("    // Use implicit cast operators to create an instance");
-        writer.WriteLine($"    private {className}(IResult activeResult)");
-        writer.WriteLine("    {");
-        writer.WriteLine("        Result = activeResult;");
-        writer.WriteLine("    }");
+        writer.WriteIndentedLine("// Use implicit cast operators to create an instance");
+        writer.WriteIndentedLine($"private {className}(IResult activeResult)");
+        writer.WriteIndentedLine("{");
+        writer.WriteIndentedLine(2, "Result = activeResult;");
+        writer.WriteIndentedLine("}");
         writer.WriteLine();
 
         // Result property
-        writer.WriteLine("    /// <summary>");
-        writer.WriteLine($"    /// Gets the actual <see cref=\"IResult\"/> returned by the <see cref=\"Endpoint\"/> route handler delegate.");
-        writer.WriteLine("    /// </summary>");
-        writer.WriteLine("    public IResult Result { get; }");
+        writer.WriteIndentedLine("/// <summary>");
+        writer.WriteIndentedLine($"/// Gets the actual <see cref=\"IResult\"/> returned by the <see cref=\"Endpoint\"/> route handler delegate.");
+        writer.WriteIndentedLine("/// </summary>");
+        writer.WriteIndentedLine("public IResult Result { get; }");
         writer.WriteLine();
 
         // ExecuteAsync method
-        writer.WriteLine("    /// <inheritdoc/>");
-        writer.WriteLine("    public async Task ExecuteAsync(HttpContext httpContext)");
-        writer.WriteLine("    {");
-        writer.WriteLine("        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));");
+        writer.WriteIndentedLine("/// <inheritdoc/>");
+        writer.WriteIndentedLine("public async Task ExecuteAsync(HttpContext httpContext)");
+        writer.WriteIndentedLine("{");
+        writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));");
         writer.WriteLine();
-        writer.WriteLine("        if (Result is null)");
-        writer.WriteLine("        {");
-        writer.WriteLine("            throw new InvalidOperationException(\"The IResult assigned to the Result property must not be null.\");");
-        writer.WriteLine("        }");
+        writer.WriteIndentedLine(2, "if (Result is null)");
+        writer.WriteIndentedLine(2, "{");
+        writer.WriteIndentedLine(3, "throw new InvalidOperationException(\"The IResult assigned to the Result property must not be null.\");");
+        writer.WriteIndentedLine(2, "}");
         writer.WriteLine();
-        writer.WriteLine("        await Result.ExecuteAsync(httpContext);");
-        writer.WriteLine("    }");
+        writer.WriteIndentedLine(2, "await Result.ExecuteAsync(httpContext);");
+        writer.WriteIndentedLine("}");
         writer.WriteLine();
 
         // Implicit converter operators
@@ -127,11 +127,11 @@ void GenerateClassFile(string classFilePath)
 
         for (int j = 1; j <= i; j++)
         {
-            writer.WriteLine("    /// <summary>");
-            writer.WriteLine($"    /// Converts the <typeparamref name=\"{typeArgName}{j}\"/> to a <see cref=\"{className}{{{typeArgsList}}}\" />.");
-            writer.WriteLine("    /// </summary>");
-            writer.WriteLine("    /// <param name=\"result\">The result.</param>");
-            writer.WriteLine($"    public static implicit operator {className}<{typeArgsList}>({typeArgName}{j} result) => new(result);");
+            writer.WriteIndentedLine("/// <summary>");
+            writer.WriteIndentedLine($"/// Converts the <typeparamref name=\"{typeArgName}{j}\"/> to a <see cref=\"{className}{{{typeArgsList}}}\" />.");
+            writer.WriteIndentedLine("/// </summary>");
+            writer.WriteIndentedLine("/// <param name=\"result\">The result.</param>");
+            writer.WriteIndentedLine($"public static implicit operator {className}<{typeArgsList}>({typeArgName}{j} result) => new(result);");
 
             if (i != j)
             {
@@ -565,7 +565,7 @@ static class StringExtensions
 
     public static void WriteIndent(this StreamWriter writer, int count, string? value = null)
     {
-        for (int i = 1; i <= count; i++)
+        for (var i = 1; i <= count; i++)
         {
             writer.Write("    ");
         }
