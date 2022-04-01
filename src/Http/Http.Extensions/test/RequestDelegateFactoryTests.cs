@@ -378,7 +378,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public async Task RequestDelegatePopulatesFromNullableOptionalParameter()
+    public async Task RequestDelegatePopulatesFromNullableOptionalParameterWithNullDefaultValue()
     {
         var httpContext = CreateHttpContext();
 
