@@ -29,16 +29,6 @@ internal sealed partial class RateLimitingMiddleware
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
 
-        if (options.Value.Limiter == null)
-        {
-            throw new ArgumentException("The value of 'options.Limiter' must not be null.", nameof(options));
-        }
-
-        if (options.Value.OnRejected == null)
-        {
-            throw new ArgumentException("The value of 'options.OnRejected' must not be null.", nameof(options));
-        }
-
         if (loggerFactory == null)
         {
             throw new ArgumentNullException(nameof(loggerFactory));

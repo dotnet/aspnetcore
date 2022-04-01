@@ -37,34 +37,6 @@ public class RateLimitingMiddlewareTests : LoggedTest
     }
 
     [Fact]
-    public void Ctor_ThrowsExceptionsWhenNullLimiter()
-    {
-        // Default Options instance has no limiter set
-        var ex = Assert.Throws<ArgumentException>(() => new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory(),
-        CreateOptionsAccessor()));
-        Assert.Contains("The value of 'options.Limiter' must not be null.", ex.Message);
-    }
-
-    [Fact]
-    public void Ctor_ThrowsExceptionsWhenNullOnRejected()
-    {
-        var options = CreateOptionsAccessor();
-        options.Value.OnRejected = null;
-        options.Value.Limiter =  new TestPartitionedRateLimiter<HttpContext>();
-        var ex = Assert.Throws<ArgumentException>(() => new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory(),
-        options));
-        Assert.Contains("The value of 'options.OnRejected' must not be null.", ex.Message);
-    }
-
-    [Fact]
     public async Task RequestsCallNextIfAccepted()
     {
         var flag = false;

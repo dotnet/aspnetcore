@@ -12,12 +12,16 @@ namespace Microsoft.AspNetCore.RateLimiting;
 public class RateLimitingOptions
 {
     // TODO - Provide a default?
-    private PartitionedRateLimiter<HttpContext>? _limiter;
+    private PartitionedRateLimiter<HttpContext> _limiter = new NoLimiter<HttpContext>();
+    private RequestDelegate _onRejected = context =>
+    {
+        return Task.CompletedTask;
+    };
 
     /// <summary>
     /// Gets the <see cref="PartitionedRateLimiter{TResource}"/>
     /// </summary>
-    public PartitionedRateLimiter<HttpContext>? Limiter
+    public PartitionedRateLimiter<HttpContext> Limiter
     {
         get => _limiter;
         set
@@ -34,8 +38,16 @@ public class RateLimitingOptions
     /// A <see cref="RequestDelegate"/> that handles requests rejected by this middleware.
     /// If it doesn't modify the response, an empty 503 response will be written.
     /// </summary>
-    public RequestDelegate OnRejected { get; set; } = context =>
+    public RequestDelegate OnRejected
     {
-        return Task.CompletedTask;
-    };
+        get => _onRejected;
+        set
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            _onRejected = value;
+        }
+    }
 }
