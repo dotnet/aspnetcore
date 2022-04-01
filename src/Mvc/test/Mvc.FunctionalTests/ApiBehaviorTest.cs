@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Hosting;
@@ -79,6 +80,73 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
                     Assert.Equal("traceId", kvp.Key);
                     Assert.NotNull(kvp.Value);
                 });
+        }
+    }
+
+    [Fact]
+    public virtual async Task ActionWithNonOptionalParameterReturnsNullIsNotPermited_WhenInvokedWithNullParameter()
+    {
+        // Arrange
+        using (new ActivityReplacer())
+        {
+            // Act
+            var response = await Client.PostAsJsonAsync<Contact>("/contact", default);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            Assert.Equal("application/problem+json", response.Content.Headers.ContentType.MediaType);
+            var problemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(
+                await response.Content.ReadAsStringAsync(),
+                new JsonSerializerSettings
+                {
+                    Converters = { new ValidationProblemDetailsConverter() }
+                });
+
+            Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+
+            Assert.Collection(
+                problemDetails.Errors.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    var error = Assert.Single(kvp.Value);
+                    Assert.Equal("The value 'null' is invalid.", error);
+                }
+            );
+        }
+    }
+
+    [Fact]
+    public virtual async Task ActionWithNonOptionalParameterReturnsBodyCannotBeEmpty_WhenInvokedWithEmptyBody()
+    {
+        // Arrange
+        using (new ActivityReplacer())
+        {
+            var content = new ByteArrayContent(Array.Empty<byte>());
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            var response = await Client.PostAsync("/contact", content);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            Assert.Equal("application/problem+json", response.Content.Headers.ContentType.MediaType);
+            var problemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(
+                await response.Content.ReadAsStringAsync(),
+                new JsonSerializerSettings
+                {
+                    Converters = { new ValidationProblemDetailsConverter() }
+                });
+
+            Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+
+            Assert.Collection(
+                problemDetails.Errors.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    var error = Assert.Single(kvp.Value);
+                    Assert.Equal("A non-empty request body is required.", error);
+                }
+            );
         }
     }
 
@@ -359,6 +427,18 @@ public class ApiBehaviorTest : ApiBehaviorTestBase<BasicWebSite.StartupWithSyste
     public override Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
     {
         return base.ActionsReturnBadRequest_WhenModelStateIsInvalid();
+    }
+    
+    [Fact]
+    public override Task ActionWithNonOptionalParameterReturnsNullIsNotPermited_WhenInvokedWithNullParameter()
+    {
+        return base.ActionWithNonOptionalParameterReturnsNullIsNotPermited_WhenInvokedWithNullParameter();
+    }
+    
+    [Fact]
+    public override Task ActionWithNonOptionalParameterReturnsBodyCannotBeEmpty_WhenInvokedWithEmptyBody()
+    {
+        return base.ActionWithNonOptionalParameterReturnsBodyCannotBeEmpty_WhenInvokedWithEmptyBody();
     }
 
     [Fact]

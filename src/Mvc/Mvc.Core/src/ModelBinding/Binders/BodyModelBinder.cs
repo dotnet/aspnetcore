@@ -183,11 +183,24 @@ public partial class BodyModelBinder : IModelBinder
                 // If instead the input formatter wants to treat the input as optional, it must do so by
                 // returning InputFormatterResult.Success(defaultForModelType), because input formatters
                 // are responsible for choosing a default value for the model type.
-                var message = bindingContext
-                    .ModelMetadata
-                    .ModelBindingMessageProvider
-                    .MissingRequestBodyRequiredValueAccessor();
-                bindingContext.ModelState.AddModelError(modelBindingKey, message);
+
+                // If request content length is 0 then request had empty body, if not null was provided in json
+                if ((httpContext.Request.ContentLength ?? 0) == 0)
+                {
+                    var message = bindingContext
+                        .ModelMetadata
+                        .ModelBindingMessageProvider
+                        .MissingRequestBodyRequiredValueAccessor();
+                    bindingContext.ModelState.AddModelError(modelBindingKey, message);
+                }
+                else
+                {
+                    var message = bindingContext
+                        .ModelMetadata
+                        .ModelBindingMessageProvider
+                        .ValueMustNotBeNullAccessor("null");
+                    bindingContext.ModelState.AddModelError(modelBindingKey, message);
+                }
             }
         }
         catch (Exception exception) when (exception is InputFormatterException || ShouldHandleException(formatter))
