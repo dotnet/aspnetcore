@@ -64,10 +64,54 @@ public class RateLimitingMiddlewareTests : LoggedTest
         Assert.Contains("The value of 'options.OnRejected' must not be null.", ex.Message);
     }
 
+    [Fact]
+    public async Task RequestsCallNextIfAccepted()
+    {
+        var flag = false;
+        var options = CreateOptionsAccessor();
+        options.Value.AddLimiter<HttpContext>(new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(true)));
+        var middleware = new RateLimitingMiddleware(c =>
+        {
+            flag = true;
+            return Task.CompletedTask;
+        },
+        new NullLoggerFactory(),
+        options);
+
+        await middleware.Invoke(new DefaultHttpContext());
+        Assert.True(flag);
+    }
+
+    [Fact]
+    public async Task RequestRejected_CallsOnRejectedAndGives503()
+    {
+        bool onRejectedInvoked = false;
+        var options = CreateOptionsAccessor();
+        options.Value.AddLimiter<HttpContext>(new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false)));
+        options.Value.OnRejected = httpContext =>
+        {
+            onRejectedInvoked = true;
+            return Task.CompletedTask;
+        };
+
+        var middleware = new RateLimitingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+        new NullLoggerFactory(),
+        options);
+
+        var context = new DefaultHttpContext();
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.True(onRejectedInvoked);
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
+    }
+
     private IOptions<RateLimitingOptions> CreateOptionsAccessor()
     {
         var options = new RateLimitingOptions();
         var optionsAccessor = Mock.Of<IOptions<RateLimitingOptions>>(o => o.Value == options);
         return optionsAccessor;
     }
+
 }
