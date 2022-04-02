@@ -440,6 +440,6 @@ public static class LinkGeneratorEndpointNameAddressExtensions
             throw new ArgumentException("A host must be provided.", nameof(host));
         }
 
-        return generator.GetUriByAddress<string>(endpointName, values ?? new(), scheme, host, pathBase, fragment, options);
+        return generator.GetUriByAddress<string>(endpointName, values, scheme, host, pathBase, fragment, options);
     }
 }
