@@ -21,7 +21,7 @@ public class PasswordHasherOptions
     public PasswordHasherCompatibilityMode CompatibilityMode { get; set; } = PasswordHasherCompatibilityMode.IdentityV3;
 
     /// <summary>
-    /// Gets or sets the number of iterations used when hashing passwords using PBKDF2. Default is 10,000.
+    /// Gets or sets the number of iterations used when hashing passwords using PBKDF2. Default is 100,000.
     /// </summary>
     /// <value>
     /// The number of iterations used when hashing passwords using PBKDF2.
@@ -30,7 +30,7 @@ public class PasswordHasherOptions
     /// This value is only used when the compatibility mode is set to 'V3'.
     /// The value must be a positive integer.
     /// </remarks>
-    public int IterationCount { get; set; } = 10000;
+    public int IterationCount { get; set; } = 100_000;
 
     // for unit testing
     internal RandomNumberGenerator Rng { get; set; } = _defaultRng;

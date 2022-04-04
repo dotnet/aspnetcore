@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
@@ -786,6 +787,7 @@ internal abstract class CertificateManager
     public class CertificateManagerEventSource : EventSource
     {
         [Event(1, Level = EventLevel.Verbose, Message = "Listing certificates from {0}\\{1}")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
         public void ListCertificatesStart(StoreLocation location, StoreName storeName) => WriteEvent(1, location, storeName);
 
         [Event(2, Level = EventLevel.Verbose, Message = "Found certificates: {0}")]
@@ -831,6 +833,7 @@ internal abstract class CertificateManager
         public void CreateDevelopmentCertificateError(string e) => WriteEvent(19, e);
 
         [Event(20, Level = EventLevel.Verbose, Message = "Saving certificate '{0}' to store {2}\\{1}.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
         public void SaveCertificateInStoreStart(string certificate, StoreName name, StoreLocation location) => WriteEvent(20, certificate, name, location);
 
         [Event(21, Level = EventLevel.Verbose, Message = "Finished saving certificate to the store.")]

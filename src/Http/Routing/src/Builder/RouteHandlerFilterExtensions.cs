@@ -32,11 +32,26 @@ public static class RouteHandlerFilterExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
     public static RouteHandlerBuilder AddFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this RouteHandlerBuilder builder) where TFilterType : IRouteHandlerFilter
     {
-        var filterFactory = ActivatorUtilities.CreateFactory(typeof(TFilterType), Type.EmptyTypes);
-        builder.RouteHandlerFilterFactories.Add((routeHandlerContext, next) => (context) =>
+        // We call `CreateFactory` twice here since the `CreateFactory` API does not support optional arguments.
+        // See https://github.com/dotnet/runtime/issues/67309 for more info.
+        ObjectFactory filterFactory;
+        try
         {
-            var filter = (IRouteHandlerFilter)filterFactory.Invoke(context.HttpContext.RequestServices, Array.Empty<object>());
-            return filter.InvokeAsync(context, next);
+            filterFactory = ActivatorUtilities.CreateFactory(typeof(TFilterType), new[] { typeof(RouteHandlerContext) });
+        }
+        catch (InvalidOperationException)
+        {
+            filterFactory = ActivatorUtilities.CreateFactory(typeof(TFilterType), Type.EmptyTypes);
+        }
+
+        builder.RouteHandlerFilterFactories.Add((routeHandlerContext, next) =>
+        {
+            var invokeArguments = new[] { routeHandlerContext };
+            return (context) =>
+            {
+                var filter = (IRouteHandlerFilter)filterFactory.Invoke(context.HttpContext.RequestServices, invokeArguments);
+                return filter.InvokeAsync(context, next);
+            };
         });
         return builder;
     }
