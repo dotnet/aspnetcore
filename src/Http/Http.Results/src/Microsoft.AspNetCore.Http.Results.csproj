@@ -29,13 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="ResultsCache.StatusCodes.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>ResultsCache.StatusCodes.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
@@ -44,11 +37,6 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>KnownStatusCodeHttpResults.tt</DependentUpon>
-    </Compile>
-    <Compile Update="ResultsCache.StatusCodes.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ResultsCache.StatusCodes.tt</DependentUpon>
     </Compile>
     <Compile Update="StatusCodeHttpResult.Cache.cs">
       <DesignTime>True</DesignTime>

@@ -18,7 +18,9 @@ public sealed class CreatedHttpResult : IResult
     /// </summary>
     /// <param name="location">The location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to format in the entity body.</param>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public CreatedHttpResult(string? location, object? value = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         Value = value;
         Location = location;
@@ -31,7 +33,9 @@ public sealed class CreatedHttpResult : IResult
     /// </summary>
     /// <param name="locationUri">The location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to format in the entity body.</param>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public CreatedHttpResult(Uri locationUri, object? value = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);

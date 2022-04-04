@@ -11,7 +11,7 @@ public class EmptyResultTest
     public async Task EmptyResult_DoesNothing()
     {
         // Arrange
-        var emptyResult = EmptyHttpResult.Instance;
+        var emptyResult = new EmptyHttpResult();
 
         // Act
         var httpContext = GetHttpContext();

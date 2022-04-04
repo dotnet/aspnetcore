@@ -19,7 +19,9 @@ public sealed partial class ChallengeHttpResult : IResult
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
     public ChallengeHttpResult(AuthenticationProperties? properties = null)
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
         : this(properties, authenticationSchemes: Array.Empty<string>())
     {
     }
