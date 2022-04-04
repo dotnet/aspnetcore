@@ -4597,31 +4597,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(metadata, m => m is CustomEndpointMetadata cem && cem.Source == MetadataSource.ReturnType);
     }
 
-    [Fact]
-    public void RequestDelegateFactory_ThrowsArgumentNullException_WhenNullReturnedFromIProvideEndpointMetadata_FromParameters()
-    {
-        var httpContext = CreateHttpContext();
-
-        var @delegate = (ProvidesNullParameterMetadata param1, ProvidesParameterMetadata param2) => { };
-
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            var factoryResult = RequestDelegateFactory.Create(@delegate);
-        });
-    }
-
-    [Fact]
-    public void RequestDelegateFactory_ThrowsArgumentNullException_WhenNullReturnedFromIProvideEndpointMetadata_FromReturnType()
-    {
-        var httpContext = CreateHttpContext();
-
-        var @delegate = () => new ProvidesNullEndpointResultMetadata();
-
-        Assert.Throws<ArgumentNullException>(() =>
-        {
-            var factoryResult = RequestDelegateFactory.Create(@delegate);
-        });
-    }
+    // TODO: Add tests for:
+    //       - Ordering of calls
+    //       - Removing metadata
+    //       - Accessing default metadata
 
     private DefaultHttpContext CreateHttpContext()
     {
@@ -4639,54 +4618,54 @@ public class RequestDelegateFactoryTests : LoggedTest
         };
     }
 
-    private class ProvidesEndpointResultMetadata : IProvideEndpointMetadata, IResult
+    private class ProvidesEndpointResultMetadata : IEndpointMetadataProvider, IResult
     {
-        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
+        public static void PopulateMetadata(EndpointMetadataContext context)
         {
-            yield return new CustomEndpointMetadata { Source = MetadataSource.ReturnType };
+            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
         }
 
         public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
     }
 
-    private class ProvidesNullEndpointResultMetadata : IProvideEndpointMetadata, IResult
+    private class ProvidesNullEndpointResultMetadata : IEndpointMetadataProvider, IResult
     {
-        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
+        public static void PopulateMetadata(EndpointMetadataContext context)
         {
-            return null!;
+
         }
 
         public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
     }
 
-    private class ProvidesParameterMetadata : IProvideEndpointParameterMetadata, IProvideEndpointMetadata
+    private class ProvidesParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
     {
-        public static IEnumerable<object> GetMetadata(ParameterInfo parameter, IServiceProvider services)
-        {
-            yield return new ParameterNameMetadata { Name = parameter.Name };
-        }
-
-        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
-        {
-            yield return new CustomEndpointMetadata { Source = MetadataSource.Parameter };
-        }
-
         public static ValueTask<ProvidesParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
+
+        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        {
+            parameterContext.EndpointMetadata.Add(new ParameterNameMetadata { Name = parameterContext.Parameter.Name });
+        }
+
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+        }
     }
 
-    private class ProvidesNullParameterMetadata : IProvideEndpointParameterMetadata, IProvideEndpointMetadata
+    private class ProvidesNullParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
     {
-        public static IEnumerable<object> GetMetadata(ParameterInfo parameter, IServiceProvider services)
-        {
-            return null!;
-        }
-
-        public static IEnumerable<object> GetMetadata(MethodInfo methodInfo, IServiceProvider services)
-        {
-            return null!;
-        }
-
         public static ValueTask<ProvidesNullParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
+
+        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        {
+
+        }
+
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+
+        }
     }
 
     private class ParameterNameMetadata
