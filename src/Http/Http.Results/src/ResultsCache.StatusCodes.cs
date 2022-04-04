@@ -11,7 +11,6 @@ using System.CodeDom.Compiler;
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal partial class ResultsCache
 {
-    private static StatusCodeHttpResult? _status100Continue;
     private static StatusCodeHttpResult? _status101SwitchingProtocols;
     private static StatusCodeHttpResult? _status102Processing;
     private static StatusCodeHttpResult? _status200OK;
@@ -85,7 +84,6 @@ internal partial class ResultsCache
 
         return statusCode switch
         {
-            StatusCodes.Status100Continue => _status100Continue ??= new(StatusCodes.Status100Continue),
             StatusCodes.Status101SwitchingProtocols => _status101SwitchingProtocols ??= new(StatusCodes.Status101SwitchingProtocols),
             StatusCodes.Status102Processing => _status102Processing ??= new(StatusCodes.Status102Processing),
             StatusCodes.Status200OK => _status200OK ??= new(StatusCodes.Status200OK),

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core types that implement Microsoft.AspNetCore.Http.IResult.</Description>
@@ -17,11 +17,6 @@
     <Compile Include="$(SharedSourceRoot)ResultsHelpers\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RangeHelper\RangeHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ProblemDetailsDefaults.cs" LinkBase="Shared" />
-    <Compile Update="ResultsCache.StatusCodes.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ResultsCache.StatusCodes.tt</DependentUpon>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -31,13 +26,6 @@
     <Reference Include="Microsoft.AspNetCore.Routing" />
 
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Results.Tests" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="ResultsCache.StatusCodes.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>ResultsCache.StatusCodes.cs</LastGenOutput>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

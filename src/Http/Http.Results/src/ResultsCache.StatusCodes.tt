@@ -6,7 +6,6 @@
 	/// <see href="http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml" >HTTP status codes</see >.
 	var statusCodes = new[]
 	{
-		new { StatusCode = 100, Name = "100Continue"},
 		new { StatusCode = 101, Name = "101SwitchingProtocols"},
 		new { StatusCode = 102, Name = "102Processing"},
 		new { StatusCode = 200, Name = "200OK"},
