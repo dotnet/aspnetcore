@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "..\\..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\Middleware\\OutputCaching.Abstractions\\src\\Microsoft.AspNetCore.OutputCaching.Abstractions.csproj",
+      "src\\Middleware\\OutputCaching\\samples\\OutputCachingSample\\OutputCachingSample.csproj",
+      "src\\Middleware\\OutputCaching\\src\\Microsoft.AspNetCore.OutputCaching.csproj"
+    ]
+  }
+}

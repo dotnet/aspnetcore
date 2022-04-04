@@ -69,6 +69,7 @@
       "src\\Mvc\\Mvc.ViewFeatures\\src\\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj",
       "src\\Razor\\Razor\\src\\Microsoft.AspNetCore.Razor.csproj",
       "src\\Razor\\Razor.Runtime\\src\\Microsoft.AspNetCore.Razor.Runtime.csproj",
+      "src\\Middleware\\OutputCaching.Abstractions\\src\\Microsoft.AspNetCore.OutputCaching.Abstractions.csproj",
       "src\\Middleware\\ResponseCaching.Abstractions\\src\\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",

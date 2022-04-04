@@ -10,6 +10,7 @@ public class HomeController : Controller
     [ModelBinder]
     public string Id { get; set; }
 
+    [OutputCache(Duration = 10, VaryByQueryKeys = new [] { "culture" })]
     public IActionResult Index()
     {
         return View();

@@ -77,6 +77,8 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization.Routing" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Localization" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.OutputCaching.Abstractions" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.OutputCaching" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCaching" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.ResponseCompression" />

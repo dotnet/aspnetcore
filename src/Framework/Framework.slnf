@@ -56,6 +56,8 @@
       "src\\Middleware\\HttpsPolicy\\src\\Microsoft.AspNetCore.HttpsPolicy.csproj",
       "src\\Middleware\\Localization.Routing\\src\\Microsoft.AspNetCore.Localization.Routing.csproj",
       "src\\Middleware\\Localization\\src\\Microsoft.AspNetCore.Localization.csproj",
+      "src\\Middleware\\OutputCaching.Abstractions\\src\\Microsoft.AspNetCore.OutputCaching.Abstractions.csproj",
+      "src\\Middleware\\OutputCaching\\src\\Microsoft.AspNetCore.OutputCaching.csproj",
       "src\\Middleware\\ResponseCaching.Abstractions\\src\\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj",
       "src\\Middleware\\ResponseCaching\\src\\Microsoft.AspNetCore.ResponseCaching.csproj",
       "src\\Middleware\\ResponseCompression\\src\\Microsoft.AspNetCore.ResponseCompression.csproj",

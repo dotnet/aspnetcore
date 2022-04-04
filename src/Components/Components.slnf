@@ -91,6 +91,7 @@
       "src\\Middleware\\HttpOverrides\\src\\Microsoft.AspNetCore.HttpOverrides.csproj",
       "src\\Middleware\\HttpsPolicy\\src\\Microsoft.AspNetCore.HttpsPolicy.csproj",
       "src\\Middleware\\Localization\\src\\Microsoft.AspNetCore.Localization.csproj",
+      "src\\Middleware\\OutputCaching.Abstractions\\src\\Microsoft.AspNetCore.OutputCaching.Abstractions.csproj",
       "src\\Middleware\\ResponseCaching.Abstractions\\src\\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj",
       "src\\Middleware\\ResponseCompression\\src\\Microsoft.AspNetCore.ResponseCompression.csproj",
       "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
