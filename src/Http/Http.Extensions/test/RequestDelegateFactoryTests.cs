@@ -387,7 +387,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         await requestDelegate(httpContext);
 
-        Assert.IsNull(httpContext.Items["input"]);
+        Assert.Null(httpContext.Items["input"]);
     }
 
     [Fact]
