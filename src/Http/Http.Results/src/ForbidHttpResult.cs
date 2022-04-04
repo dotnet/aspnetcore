@@ -14,20 +14,14 @@ namespace Microsoft.AspNetCore.Http;
 public sealed partial class ForbidHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the default sign out scheme.
-    /// </summary>
-    public ForbidHttpResult()
-        : this(properties: null, authenticationSchemes: Array.Empty<string>())
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified <paramref name="properties"/>.
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public ForbidHttpResult(AuthenticationProperties? properties)
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+    public ForbidHttpResult(AuthenticationProperties? properties = null)
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
         : this(properties, authenticationSchemes: Array.Empty<string>())
     {
     }

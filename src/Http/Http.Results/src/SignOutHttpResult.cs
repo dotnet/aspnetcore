@@ -14,20 +14,14 @@ namespace Microsoft.AspNetCore.Http;
 public sealed partial class SignOutHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the default sign out scheme.
-    /// </summary>
-    public SignOutHttpResult()
-        : this(properties: null, authenticationSchemes: Array.Empty<string>())
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
     /// specified <paramref name="properties"/>.
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    public SignOutHttpResult(AuthenticationProperties? properties)
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+    public SignOutHttpResult(AuthenticationProperties? properties = null)
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
         : this(properties, authenticationSchemes: Array.Empty<string>())
     {
     }

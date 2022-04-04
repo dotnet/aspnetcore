@@ -85,8 +85,7 @@ Microsoft.AspNetCore.Http.FileStreamHttpResult.LastModified.init -> void
 Microsoft.AspNetCore.Http.ForbidHttpResult
 Microsoft.AspNetCore.Http.ForbidHttpResult.AuthenticationSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Http.ForbidHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Http.ForbidHttpResult.ForbidHttpResult() -> void
-Microsoft.AspNetCore.Http.ForbidHttpResult.ForbidHttpResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> void
+Microsoft.AspNetCore.Http.ForbidHttpResult.ForbidHttpResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null) -> void
 Microsoft.AspNetCore.Http.ForbidHttpResult.ForbidHttpResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties, System.Collections.Generic.IList<string!>! authenticationSchemes) -> void
 Microsoft.AspNetCore.Http.ForbidHttpResult.ForbidHttpResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties, string! authenticationScheme) -> void
 Microsoft.AspNetCore.Http.ForbidHttpResult.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
@@ -180,8 +179,7 @@ Microsoft.AspNetCore.Http.SignOutHttpResult
 Microsoft.AspNetCore.Http.SignOutHttpResult.AuthenticationSchemes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Http.SignOutHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.SignOutHttpResult.Properties.get -> Microsoft.AspNetCore.Authentication.AuthenticationProperties?
-Microsoft.AspNetCore.Http.SignOutHttpResult.SignOutHttpResult() -> void
-Microsoft.AspNetCore.Http.SignOutHttpResult.SignOutHttpResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> void
+Microsoft.AspNetCore.Http.SignOutHttpResult.SignOutHttpResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null) -> void
 Microsoft.AspNetCore.Http.SignOutHttpResult.SignOutHttpResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties, System.Collections.Generic.IList<string!>! authenticationSchemes) -> void
 Microsoft.AspNetCore.Http.SignOutHttpResult.SignOutHttpResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties, string! authenticationScheme) -> void
 Microsoft.AspNetCore.Http.StatusCodeHttpResult
