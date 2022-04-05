@@ -1669,7 +1669,6 @@ public static partial class RequestDelegateFactory
     private class FactoryContext
     {
         // Options
-        public IServiceProvider? ServiceProvider { get; init; }
         public IServiceProviderIsService? ServiceProviderIsService { get; init; }
         public List<string>? RouteParameters { get; init; }
         public bool ThrowOnBadRequest { get; init; }
