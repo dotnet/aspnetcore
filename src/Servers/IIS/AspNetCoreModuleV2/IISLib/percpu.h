@@ -115,20 +115,23 @@ PER_CPU<T>::Create(
         ObjectCacheLineSize = CacheLineSize;
     }
 
-    //
-    // Calculate the size of the PER_CPU<T> object, including the array.
-    // The first cache line is for the member variables and the array
-    // starts in the next cache line.
-    //
-    SIZE_T Size = CacheLineSize + NumberOfProcessors * ObjectCacheLineSize;
-
-    pInstance = (PER_CPU<T>*) _aligned_malloc(Size, CacheLineSize);
-    if (pInstance == NULL)
     {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
+        //
+        // Calculate the size of the PER_CPU<T> object, including the array.
+        // The first cache line is for the member variables and the array
+        // starts in the next cache line.
+        //
+        SIZE_T Size = CacheLineSize + NumberOfProcessors * ObjectCacheLineSize;
+
+        pInstance = (PER_CPU<T>*) _aligned_malloc(Size, CacheLineSize);
+        if (pInstance == NULL)
+        {
+            hr = E_OUTOFMEMORY;
+            goto Finished;
+        }
+
+        ZeroMemory(pInstance, Size);
     }
-    ZeroMemory(pInstance, Size);
 
     //
     // The array start in the 2nd cache line.

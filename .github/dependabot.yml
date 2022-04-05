@@ -13,6 +13,16 @@ updates:
       include: scope
     labels:
       - area-infrastructure
+   - package-ecosystem: "github-actions"
+     directory: "/"
+     schedule:
+      # Weekly interval opens PRs on Monday.
+      interval: "weekly"
+     commit-message:
+       prefix: "[main] "
+       include: scope
+     labels:
+      - area-infrastructure
 
   # Keep submodules up to date in 'release/*' branches. (Unfortunately Dependabot security PRs can't target these.)
   # Monthly interval opens PRs on the first of each month.
@@ -64,3 +74,4 @@ updates:
     labels:
       - area-infrastructure
     target-branch: "release/6.0"
+   

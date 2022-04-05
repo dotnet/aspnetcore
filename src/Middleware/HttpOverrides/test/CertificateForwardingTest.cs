@@ -223,33 +223,4 @@ public class CertificateForwardingTests
             c.Request.Headers["X-Client-Cert"] = "OOPS" + Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
         });
     }
-
-    private static class Certificates
-    {
-        public static X509Certificate2 SelfSignedValidWithClientEku { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedClientEkuCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedValidWithNoEku { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedNoEkuCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedValidWithServerEku { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedServerEkuCertificate.cer"));
-
-        public static X509Certificate2 SelfSignedNotYetValid { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("selfSignedNoEkuCertificateNotValidYet.cer"));
-
-        public static X509Certificate2 SelfSignedExpired { get; private set; } =
-            new X509Certificate2(GetFullyQualifiedFilePath("selfSignedNoEkuCertificateExpired.cer"));
-
-        private static string GetFullyQualifiedFilePath(string filename)
-        {
-            var filePath = Path.Combine(AppContext.BaseDirectory, filename);
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException(filePath);
-            }
-            return filePath;
-        }
-    }
-
 }

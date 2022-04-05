@@ -135,7 +135,7 @@ public class IISMiddlewareTests
         request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", shutdownEvent);
         var response = await server.CreateClient().SendAsync(request);
 
-        await applicationStoppingFired.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
+        await applicationStoppingFired.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
         Assert.False(requestExecuted.Task.IsCompleted);
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
     }
@@ -195,7 +195,7 @@ public class IISMiddlewareTests
         var response = await server.CreateClient().SendAsync(request);
 
         Assert.False(applicationStoppingFired.Task.IsCompleted);
-        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
+        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(2));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -240,7 +240,7 @@ public class IISMiddlewareTests
         var response = await server.CreateClient().SendAsync(request);
 
         Assert.False(applicationStoppingFired.Task.IsCompleted);
-        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
+        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(2));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -285,7 +285,7 @@ public class IISMiddlewareTests
         var response = await server.CreateClient().SendAsync(request);
 
         Assert.False(applicationStoppingFired.Task.IsCompleted);
-        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
+        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(2));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 

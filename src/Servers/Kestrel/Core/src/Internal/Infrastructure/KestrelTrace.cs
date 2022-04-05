@@ -411,5 +411,5 @@ internal sealed partial class KestrelTrace : ILogger
 
     public bool IsEnabled(LogLevel logLevel) => _generalLogger.IsEnabled(logLevel);
 
-    public IDisposable BeginScope<TState>(TState state) => _generalLogger.BeginScope(state);
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => _generalLogger.BeginScope(state);
 }

@@ -43,7 +43,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <!-- Microsoft.Security.SystemsADM.10086 - SDL required warnings -->
       <WarningLevel>Level4</WarningLevel>
+      <TreatSpecificWarningsAsErrors>4018;4055;4146;4242;4244;4267;4302;4308;4509;4510;4532;4533;4610;4611;4700;4701;4703;4789;4995;4996</TreatSpecificWarningsAsErrors>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ShowIncludes>false</ShowIncludes>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>

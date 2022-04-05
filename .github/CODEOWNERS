@@ -22,6 +22,8 @@
 /src/Components/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @dotnet/aspnet-blazor-eng
 /src/DefaultBuilder/                                                              @tratcher @halter73
 /src/DefaultBuilder/**/PublicAPI.*Shipped.txt                                     @dotnet/aspnet-api-review @tratcher
+/src/Grpc/                                                                        @JamesNK @captainsafia
+/src/Grpc/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @JamesNK @captainsafia
 /src/Hosting/                                                                     @tratcher @halter73
 /src/Hosting/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher
 /src/Http/                                                                        @tratcher @BrennanConroy @halter73
@@ -39,8 +41,8 @@
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
 /src/Security/                                                                    @tratcher
 /src/Security/**/PublicAPI.*Shipped.txt                                           @dotnet/aspnet-api-review @tratcher
-/src/Servers/                                                                     @tratcher @halter73 @BrennanConroy
-/src/Servers/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher @halter73 @BrennanConroy
+/src/Servers/                                                                     @tratcher @halter73 @BrennanConroy @JamesNK
+/src/Servers/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher @halter73 @BrennanConroy @JamesNK
 /src/Shared/runtime/                                                              @dotnet/http
 /src/Shared/test/Shared.Tests/runtime/                                            @dotnet/http
 /src/SignalR/                                                                     @BrennanConroy @halter73

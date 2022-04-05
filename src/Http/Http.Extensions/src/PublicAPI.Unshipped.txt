@@ -1,5 +1,15 @@
 #nullable enable
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.RouteHandlerContext!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!>!>?
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.init -> void
 Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions
+static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Type! type, System.Text.Json.Serialization.JsonSerializerContext! context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
+static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! jsonTypeInfo, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<TValue?>
+static Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, object? value, System.Type! type, System.Text.Json.Serialization.JsonSerializerContext! context, string? contentType = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+static Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpResponse! response, TValue value, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! jsonTypeInfo, string? contentType = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 static Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions.ConfigureRouteHandlerJsonOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.Json.JsonOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilters.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.IRouteHandlerFilter!>?
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilters.init -> void
+Microsoft.AspNetCore.Http.EndpointDescriptionAttribute
+Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.EndpointDescriptionAttribute(string! description) -> void
+Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.Description.get -> string!
+Microsoft.AspNetCore.Http.EndpointSummaryAttribute
+Microsoft.AspNetCore.Http.EndpointSummaryAttribute.EndpointSummaryAttribute(string! summary) -> void
+Microsoft.AspNetCore.Http.EndpointSummaryAttribute.Summary.get -> string!

@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
     <PackageTags>aspnetcore;routing</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>annotations</Nullable>
+    <Trimmable>true</Trimmable>
   </PropertyGroup>
 
   <ItemGroup>

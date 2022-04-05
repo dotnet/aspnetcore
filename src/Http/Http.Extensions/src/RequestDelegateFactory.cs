@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -22,6 +24,11 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Creates <see cref="RequestDelegate"/> implementations from <see cref="Delegate"/> request handlers.
 /// </summary>
+[UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2077", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
 public static partial class RequestDelegateFactory
 {
     private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
@@ -79,13 +86,13 @@ public static partial class RequestDelegateFactory
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
     private static readonly UnaryExpression TempSourceStringIsNotNullOrEmptyExpr = Expression.Not(Expression.Call(StringIsNullOrEmptyMethod, TempSourceStringExpr));
 
-    private static readonly ConstructorInfo RouteHandlerFilterContextConstructor = typeof(RouteHandlerFilterContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
-    private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(RouteHandlerFilterContext), "context");
-    private static readonly MemberExpression FilterContextParametersExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerFilterContext).GetProperty(nameof(RouteHandlerFilterContext.Parameters))!);
-    private static readonly MemberExpression FilterContextHttpContextExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerFilterContext).GetProperty(nameof(RouteHandlerFilterContext.HttpContext))!);
+    private static readonly ConstructorInfo RouteHandlerInvocationContextConstructor = typeof(RouteHandlerInvocationContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
+    private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(RouteHandlerInvocationContext), "context");
+    private static readonly MemberExpression FilterContextParametersExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerInvocationContext).GetProperty(nameof(RouteHandlerInvocationContext.Parameters))!);
+    private static readonly MemberExpression FilterContextHttpContextExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerInvocationContext).GetProperty(nameof(RouteHandlerInvocationContext.HttpContext))!);
     private static readonly MemberExpression FilterContextHttpContextResponseExpr = Expression.Property(FilterContextHttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Response))!);
     private static readonly MemberExpression FilterContextHttpContextStatusCodeExpr = Expression.Property(FilterContextHttpContextResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
-    private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(RouteHandlerFilterContext), "filterContext");
+    private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(RouteHandlerInvocationContext), "filterContext");
 
     private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
@@ -96,9 +103,8 @@ public static partial class RequestDelegateFactory
     /// <param name="handler">A request handler with any number of custom parameters that often produces a response with its return value.</param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
     /// <returns>The <see cref="RequestDelegateResult"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    [RequiresUnreferencedCode("RequestDelegateFactory performs object creation, serialization and deserialization on the delegates and its parameters. This cannot be statically analyzed.")]
     public static RequestDelegateResult Create(Delegate handler, RequestDelegateFactoryOptions? options = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         if (handler is null)
         {
@@ -125,9 +131,9 @@ public static partial class RequestDelegateFactory
     /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method.</param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
     /// <returns>The <see cref="RequestDelegate"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+
+    [RequiresUnreferencedCode("RequestDelegateFactory performs object creation, serialization and deserialization on the delegates and its parameters. This cannot be statically analyzed.")]
     public static RequestDelegateResult Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         if (methodInfo is null)
         {
@@ -166,7 +172,7 @@ public static partial class RequestDelegateFactory
             RouteParameters = options?.RouteParameterNames?.ToList(),
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
-            Filters = options?.RouteHandlerFilters?.ToList()
+            Filters = options?.RouteHandlerFilterFactories?.ToList()
         };
 
     private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext)
@@ -196,15 +202,15 @@ public static partial class RequestDelegateFactory
         if (factoryContext.Filters is { Count: > 0 })
         {
             var filterPipeline = CreateFilterPipeline(methodInfo, targetExpression, factoryContext);
-            Expression<Func<RouteHandlerFilterContext, ValueTask<object?>>> invokePipeline = (context) => filterPipeline(context);
+            Expression<Func<RouteHandlerInvocationContext, ValueTask<object?>>> invokePipeline = (context) => filterPipeline(context);
             returnType = typeof(ValueTask<object?>);
-            // var filterContext = new RouteHandlerFilterContext(httpContext, new[] { (object)name_local, (object)int_local });
+            // var filterContext = new RouteHandlerInvocationContext(httpContext, new[] { (object)name_local, (object)int_local });
             // invokePipeline.Invoke(filterContext);
             factoryContext.MethodCall = Expression.Block(
                 new[] { InvokedFilterContextExpr },
                 Expression.Assign(
                     InvokedFilterContextExpr,
-                    Expression.New(RouteHandlerFilterContextConstructor,
+                    Expression.New(RouteHandlerInvocationContextConstructor,
                         new Expression[] { HttpContextExpr, Expression.NewArrayInit(typeof(object), factoryContext.BoxedArgs) })),
                     Expression.Invoke(invokePipeline, InvokedFilterContextExpr)
                 );
@@ -222,13 +228,13 @@ public static partial class RequestDelegateFactory
         return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
     }
 
-    private static Func<RouteHandlerFilterContext, ValueTask<object?>> CreateFilterPipeline(MethodInfo methodInfo, Expression? target, FactoryContext factoryContext)
+    private static RouteHandlerFilterDelegate CreateFilterPipeline(MethodInfo methodInfo, Expression? target, FactoryContext factoryContext)
     {
         Debug.Assert(factoryContext.Filters is not null);
         // httpContext.Response.StatusCode >= 400
         // ? Task.CompletedTask
         // : handler((string)context.Parameters[0], (int)context.Parameters[1])
-        var filteredInvocation = Expression.Lambda<Func<RouteHandlerFilterContext, ValueTask<object?>>>(
+        var filteredInvocation = Expression.Lambda<RouteHandlerFilterDelegate>(
             Expression.Condition(
                 Expression.GreaterThanOrEqual(FilterContextHttpContextStatusCodeExpr, Expression.Constant(400)),
                 CompletedValueTaskExpr,
@@ -240,12 +246,16 @@ public static partial class RequestDelegateFactory
                             : Expression.Call(target, methodInfo, factoryContext.ContextArgAccess))
                 )),
             FilterContextExpr).Compile();
+        var routeHandlerContext = new RouteHandlerContext(
+            methodInfo,
+            new EndpointMetadataCollection(factoryContext.Metadata));
 
         for (var i = factoryContext.Filters.Count - 1; i >= 0; i--)
         {
-            var currentFilter = factoryContext.Filters![i];
+            var currentFilterFactory = factoryContext.Filters[i];
             var nextFilter = filteredInvocation;
-            filteredInvocation = (RouteHandlerFilterContext context) => currentFilter.InvokeAsync(context, nextFilter);
+            var currentFilter = currentFilterFactory(routeHandlerContext, nextFilter);
+            filteredInvocation = (RouteHandlerInvocationContext context) => currentFilter(context);
 
         }
         return filteredInvocation;
@@ -264,7 +274,7 @@ public static partial class RequestDelegateFactory
         {
             args[i] = CreateArgument(parameters[i], factoryContext);
             // Register expressions containing the boxed and unboxed variants
-            // of the route handler's arguments for use in RouteHandlerFilterContext
+            // of the route handler's arguments for use in RouteHandlerInvocationContext
             // construction and route handler invocation.
             // (string)context.Parameters[0];
             factoryContext.ContextArgAccess.Add(
@@ -782,7 +792,7 @@ public static partial class RequestDelegateFactory
 
         static async Task<(object? FormValue, bool Successful)> TryReadBodyAsync(
             HttpContext httpContext,
-            Type bodyType,
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type bodyType,
             string parameterTypeName,
             string parameterName,
             bool allowEmptyRequestBody,
@@ -792,7 +802,7 @@ public static partial class RequestDelegateFactory
 
             if (allowEmptyRequestBody && bodyType.IsValueType)
             {
-                defaultBodyValue = Activator.CreateInstance(bodyType);
+                defaultBodyValue = CreateValueType(bodyType);
             }
 
             var bodyValue = defaultBodyValue;
@@ -826,6 +836,10 @@ public static partial class RequestDelegateFactory
             return (bodyValue, true);
         }
     }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2067:UnrecognizedReflectionPattern",
+        Justification = "CreateValueType is only called on a ValueType. You can always create an instance of a ValueType.")]
+    private static object? CreateValueType(Type t) => RuntimeHelpers.GetUninitializedObject(t);
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForForm(
         Expression responseWritingMethodCall,
@@ -1693,7 +1707,7 @@ public static partial class RequestDelegateFactory
         public List<Expression> ContextArgAccess { get; } = new();
         public Expression? MethodCall { get; set; }
         public List<Expression> BoxedArgs { get; } = new();
-        public List<IRouteHandlerFilter>? Filters { get; init; }
+        public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
     }
 
     private static class RequestDelegateFactoryConstants

@@ -41,6 +41,10 @@
     {
       "id": "PWA",
       "isVisible": "true"
+    },
+    {
+      "id": "UseProgramMain",
+      "isVisible": true
     }
   ]
 }

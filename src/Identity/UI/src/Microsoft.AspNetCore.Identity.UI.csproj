@@ -22,6 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="@(Content)" />
     <None Include="build\*" Pack="true" PackagePath="build\" />
     <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
     <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\" />

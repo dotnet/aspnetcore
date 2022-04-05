@@ -3,4 +3,10 @@
   "order": 300,
   "icon": "ide/Worker.png",
   "supportsDocker": true,
+  "symbolInfo": [
+    {
+      "id": "UseProgramMain",
+      "isVisible": true
+    }
+  ]
 }

@@ -8,7 +8,7 @@
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
-    <Nullable>enable</Nullable>
+    <Trimmable>true</Trimmable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -12,7 +12,7 @@ public class PushStreamResultTest
     [Fact]
     public async Task PushStreamResultsExposeTheResponseBody()
     {
-        var result = new PushStreamResult(body => body.WriteAsync(Encoding.UTF8.GetBytes("Hello World").AsMemory()).AsTask(), contentType: null);
+        var result = new PushStreamHttpResult(body => body.WriteAsync(Encoding.UTF8.GetBytes("Hello World").AsMemory()).AsTask(), contentType: null);
 
         var httpContext = new DefaultHttpContext
         {
@@ -37,7 +37,7 @@ public class PushStreamResultTest
         var callback = (Stream body) => body.WriteAsync(Encoding.UTF8.GetBytes("Hello World").AsMemory()).AsTask();
 
         // Act
-        var result = new PushStreamResult(callback, contentType);
+        var result = new PushStreamHttpResult(callback, contentType);
 
         // Assert
         Assert.Equal(expectedMediaType, result.ContentType);
@@ -55,7 +55,7 @@ public class PushStreamResultTest
         var callback = (Stream body) => body.WriteAsync(Encoding.UTF8.GetBytes("Hello World").AsMemory()).AsTask();
 
         // Act
-        var result = new PushStreamResult(callback, contentType)
+        var result = new PushStreamHttpResult(callback, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,

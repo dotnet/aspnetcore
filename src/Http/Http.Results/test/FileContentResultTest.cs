@@ -19,7 +19,7 @@ public class FileContentResultTest : FileContentResultTestBase
         EntityTagHeaderValue entityTag = null,
         bool enableRangeProcessing = false)
     {
-        var result = new FileContentResult(buffer, contentType)
+        var result = new FileContentHttpResult(buffer, contentType)
         {
             EntityTag = entityTag,
             LastModified = lastModified,
@@ -28,6 +28,7 @@ public class FileContentResultTest : FileContentResultTestBase
 
         httpContext.RequestServices = new ServiceCollection()
             .AddSingleton(typeof(ILogger<>), typeof(NullLogger<>))
+            .AddSingleton<ILoggerFactory, NullLoggerFactory>()
             .BuildServiceProvider();
 
         return result.ExecuteAsync(httpContext);

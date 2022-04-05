@@ -35,6 +35,21 @@
       ],
       "modifiers": [
         {
+          "condition": "(!UseProgramMain)",
+          "exclude": [
+            "Program.Main.cs"
+          ]
+        },
+        {
+          "condition": "(UseProgramMain)",
+          "exclude": [
+            "Program.cs"
+          ],
+          "rename": {
+            "Program.Main.cs": "Program.cs"
+          }
+        },
+        {
           "condition": "(!IndividualLocalAuth || UseLocalDB)",
           "exclude": [
             "app.db"
@@ -490,6 +505,13 @@
       "datatype": "bool",
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
+    },
+    "UseProgramMain": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Do not use top-level statements",
+      "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
     }
   },
   "primaryOutputs": [

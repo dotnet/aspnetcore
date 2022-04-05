@@ -115,8 +115,8 @@ internal sealed partial class Request
     internal ulong RawConnectionId { get; }
 
     // No ulongs in public APIs...
-    public long ConnectionId => (long)RawConnectionId;
-
+    public long ConnectionId => RawConnectionId != 0 ? (long)RawConnectionId : (long)UConnectionId;
+    
     internal ulong RequestId { get; }
 
     private SslStatus SslStatus { get; }

@@ -45,7 +45,10 @@
     }
   ],
   "symbolInfo": [
-    
+    {
+      "id": "UseProgramMain",
+      "isVisible": true
+    }
   ],
   "disableHttpsSymbol": "NoHttps"
 }
