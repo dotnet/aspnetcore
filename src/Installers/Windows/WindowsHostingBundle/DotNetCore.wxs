@@ -19,8 +19,6 @@
                             ProductCode="$(var.DotNetRedistLtsInstallerProductCodearm64)"
                             Result="version"
                             Variable="DotNetRedistLtsProductVersion_arm64" />
-        
-    </Fragment>
 
         <PackageGroup Id="PG_DOTNET_REDIST_LTS_BUNDLE">
             <RollbackBoundary Id="RB_DOTNET_REDIST_LTS_BUNDLE" />
