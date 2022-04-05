@@ -14,10 +14,13 @@ public sealed class EndpointMetadataContext
     /// Creates a new instance of the <see cref="EndpointMetadataContext"/>.
     /// </summary>
     /// <param name="method">The <see cref="MethodInfo"/> associated with the current route handler.</param>
-    /// <param name="services">The <see cref="IServiceProvider"/> instance used to access application services</param>
-    /// <param name="endpointMetadata">The objects that will be added to the endpoint's <see cref="EndpointMetadataCollection"/>.</param>
+    /// <param name="services">The <see cref="IServiceProvider"/> instance used to access application services.</param>
+    /// <param name="endpointMetadata">The objects that will be added to the metadata of the endpoint.</param>
     public EndpointMetadataContext(MethodInfo method, IServiceProvider? services, IList<object> endpointMetadata)
     {
+        ArgumentNullException.ThrowIfNull(method, nameof(method));
+        ArgumentNullException.ThrowIfNull(endpointMetadata, nameof(endpointMetadata));
+
         Method = method;
         Services = services;
         EndpointMetadata = endpointMetadata;
@@ -34,7 +37,7 @@ public sealed class EndpointMetadataContext
     public IServiceProvider? Services { get; }
 
     /// <summary>
-    /// Gets the objects that will be added to the endpoint's <see cref="EndpointMetadataCollection"/>.
+    /// Gets the objects that will be added to the metadata of the endpoint.
     /// </summary>
     public IList<object> EndpointMetadata { get; }
 }

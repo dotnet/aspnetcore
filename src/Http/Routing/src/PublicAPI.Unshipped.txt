@@ -7,10 +7,9 @@ Microsoft.AspNetCore.Http.EndpointMetadataContext.Services.get -> System.IServic
 Microsoft.AspNetCore.Http.EndpointParameterMetadataContext
 Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.EndpointMetadata.get -> System.Collections.Generic.IList<object!>!
 Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.EndpointMetadata.init -> void
-Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.EndpointParameterMetadataContext() -> void
+Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.EndpointParameterMetadataContext(System.Reflection.ParameterInfo! parameter, System.IServiceProvider? services, System.Collections.Generic.IList<object!>! endpointMetadata) -> void
 Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.Parameter.get -> System.Reflection.ParameterInfo!
 Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.Services.get -> System.IServiceProvider?
-Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.Services.init -> void
 Microsoft.AspNetCore.Http.IEndpointMetadataProvider
 Microsoft.AspNetCore.Http.IEndpointMetadataProvider.PopulateMetadata(Microsoft.AspNetCore.Http.EndpointMetadataContext! context) -> void
 Microsoft.AspNetCore.Http.IEndpointParameterMetadataProvider

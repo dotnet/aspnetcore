@@ -334,6 +334,46 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
     }
 
     [Fact]
+    public void Map_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointParameterMetadataProvider()
+    {
+        // Arrange
+        var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+        var @delegate = [Attribute1] (AddsCustomParameterMetadata param1) => "Hello";
+
+        // Act
+        builder.Map("/test", @delegate);
+
+        // Assert
+        var ds = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(ds.Endpoints);
+        var metadata = endpoint.Metadata;
+
+        Assert.Contains(metadata, m => m is MethodInfo);
+        Assert.Contains(metadata, m => m is Attribute1);
+        Assert.Contains(metadata, m => m is ParameterNameMetadata pnm);
+    }
+
+    [Fact]
+    public void Map_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+        var @delegate = [Attribute1] (AddsCustomParameterMetadata param1) => "Hello";
+
+        // Act
+        builder.Map("/test", @delegate);
+
+        // Assert
+        var ds = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(ds.Endpoints);
+        var metadata = endpoint.Metadata;
+
+        Assert.Contains(metadata, m => m is MethodInfo);
+        Assert.Contains(metadata, m => m is Attribute1);
+        Assert.Contains(metadata, m => m is CustomEndpointMetadata cem && cem.Source == MetadataSource.Parameter);
+    }
+
+    [Fact]
     public void Map_AllowsRemovalOfDefaultMetadata_ByReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -390,10 +430,37 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.DoesNotContain(metadata, m => m is Attribute2);
     }
 
-    // TODO: Add tests for:
-    //       - Ordering of calls
-    //       - Removing metadata
-    //       - Accessing default metadata
+    [Fact]
+    public void Map_CallsPopulateMetadata_InCorrectOrder()
+    {
+        // Arrange
+        var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new AddsCustomEndpointMetadataResult();
+
+        // Act
+        builder.Map("/test", @delegate);
+
+        // Assert
+        var ds = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(ds.Endpoints);
+        var metadata = endpoint.Metadata;
+
+        Assert.Collection(metadata,
+            m => Assert.IsAssignableFrom<MethodInfo>(m),
+            m => Assert.IsAssignableFrom<Attribute1>(m),
+            m => Assert.IsAssignableFrom<Attribute2>(m),
+            m => Assert.IsAssignableFrom<ParameterNameMetadata>(m),
+            m =>
+            {
+                Assert.IsAssignableFrom<CustomEndpointMetadata>(m);
+                Assert.Equal(MetadataSource.Parameter, ((CustomEndpointMetadata)m).Source);
+            },
+            m =>
+            {
+                Assert.IsAssignableFrom<CustomEndpointMetadata>(m);
+                Assert.Equal(MetadataSource.ReturnType, ((CustomEndpointMetadata)m).Source);
+            });
+    }
 
     [Attribute1]
     [Attribute2]
@@ -541,12 +608,12 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     private class ParameterNameMetadata
     {
-        public string? Name { get; init; }
+        public string Name { get; init; }
     }
 
     private class CustomEndpointMetadata
     {
-        public string? Data { get; init; }
+        public string Data { get; init; }
 
         public MetadataSource Source { get; init; }
     }
