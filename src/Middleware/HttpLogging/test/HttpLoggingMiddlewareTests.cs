@@ -3,6 +3,7 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -836,6 +837,251 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         await middleware.Invoke(httpContext);
 
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Unrecognized Content-Type for body."));
+    }
+
+    [Fact]
+    public async Task UpgradeToWebSocketLogsResponseStatusCodeWhenResponseIsFlushed()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseStatusCode;
+
+        var writtenHeaders = new TaskCompletionSource();
+        var letBodyFinish = new TaskCompletionSource();
+
+        var httpContext = new DefaultHttpContext();
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.Setup(m => m.IsUpgradableRequest).Returns(true);
+        upgradeFeatureMock
+            .Setup(m => m.UpgradeAsync())
+            .Callback(() =>
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
+                httpContext.Response.Headers[HeaderNames.Connection] = HeaderNames.Upgrade;
+            })
+            .ReturnsAsync(Stream.Null);
+        httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
+
+        var middleware = new HttpLoggingMiddleware(
+            async c =>
+            {
+                await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
+                writtenHeaders.SetResult();
+                await letBodyFinish.Task;
+            },
+            options,
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+        var middlewareTask = middleware.Invoke(httpContext);
+
+        await writtenHeaders.Task;
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 101"));
+
+        letBodyFinish.SetResult();
+
+        await middlewareTask;
+    }
+
+    [Fact]
+    public async Task UpgradeToWebSocketLogsResponseHeadersWhenResponseIsFlushed()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseHeaders;
+
+        var writtenHeaders = new TaskCompletionSource();
+        var letBodyFinish = new TaskCompletionSource();
+
+        var httpContext = new DefaultHttpContext();
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.Setup(m => m.IsUpgradableRequest).Returns(true);
+        upgradeFeatureMock
+            .Setup(m => m.UpgradeAsync())
+            .Callback(() =>
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
+                httpContext.Response.Headers[HeaderNames.Connection] = HeaderNames.Upgrade;
+            })
+            .ReturnsAsync(Stream.Null);
+        httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
+
+        var middleware = new HttpLoggingMiddleware(
+            async c =>
+            {
+                await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
+                writtenHeaders.SetResult();
+                await letBodyFinish.Task;
+            },
+            options,
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+        var middlewareTask = middleware.Invoke(httpContext);
+
+        await writtenHeaders.Task;
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: Upgrade"));
+
+        letBodyFinish.SetResult();
+
+        await middlewareTask;
+    }
+
+    [Fact]
+    public async Task UpgradeToWebSocketDoesNotLogWhenResponseIsFlushedIfLoggingOptionsAreOtherThanResponseStatusCodeOrResponseHeaders()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All ^ HttpLoggingFields.ResponsePropertiesAndHeaders;
+
+        var writtenHeaders = new TaskCompletionSource();
+        var letBodyFinish = new TaskCompletionSource();
+
+        var httpContext = new DefaultHttpContext();
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.Setup(m => m.IsUpgradableRequest).Returns(true);
+        upgradeFeatureMock
+            .Setup(m => m.UpgradeAsync())
+            .Callback(() =>
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
+                httpContext.Response.Headers[HeaderNames.Connection] = HeaderNames.Upgrade;
+            })
+            .ReturnsAsync(Stream.Null);
+        httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
+
+        var middleware = new HttpLoggingMiddleware(
+            async c =>
+            {
+                await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
+                writtenHeaders.SetResult();
+                await letBodyFinish.Task;
+            },
+            options,
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+        var middlewareTask = middleware.Invoke(httpContext);
+
+        await writtenHeaders.Task;
+
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("StatusCode: 101"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Connection: Upgrade"));
+
+        letBodyFinish.SetResult();
+
+        await middlewareTask;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LogsWrittenOutsideUpgradeWrapperIfUpgradeDoesNotOccur(bool isUpgradableRequest)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders;
+
+        var httpContext = new DefaultHttpContext();
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.Setup(m => m.IsUpgradableRequest).Returns(isUpgradableRequest);
+        httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
+
+        var middleware = new HttpLoggingMiddleware(
+            async c =>
+            {
+                c.Response.StatusCode = 200;
+                c.Response.Headers[HeaderNames.TransferEncoding] = "test";
+                c.Response.ContentType = "text/plain";
+                await c.Response.StartAsync();
+            },
+            options,
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+        var middlewareTask = middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Content-Type: text/plain"));
+        Assert.Null(
+            Record.Exception(() => upgradeFeatureMock.Verify(m => m.UpgradeAsync(), Times.Never)));
+
+        await middlewareTask;
+    }
+
+    [Theory]
+    [InlineData(HttpLoggingFields.ResponseStatusCode)]
+    [InlineData(HttpLoggingFields.ResponseHeaders)]
+    public async Task UpgradeToWebSocketLogsWrittenOnlyOnce(HttpLoggingFields loggingFields)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = loggingFields;
+
+        var httpContext = new DefaultHttpContext();
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.Setup(m => m.IsUpgradableRequest).Returns(true);
+        upgradeFeatureMock
+            .Setup(m => m.UpgradeAsync())
+            .Callback(() =>
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
+                httpContext.Response.Headers[HeaderNames.Connection] = HeaderNames.Upgrade;
+            })
+            .ReturnsAsync(Stream.Null);
+        httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
+
+        var writeCount = 0;
+        TestSink.MessageLogged += (context) => { writeCount++; };
+
+        var middleware = new HttpLoggingMiddleware(
+            async c =>
+            {
+                await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
+            },
+            options,
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Equal(1, writeCount);
+    }
+
+    [Theory]
+    [InlineData(HttpLoggingFields.ResponseStatusCode)]
+    [InlineData(HttpLoggingFields.ResponseHeaders)]
+    public async Task OriginalUpgradeFeatureIsRestoredBeforeMiddlewareCompletes(HttpLoggingFields loggingFields)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = loggingFields;
+
+        var letBodyFinish = new TaskCompletionSource();
+
+        var httpContext = new DefaultHttpContext();
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.Setup(m => m.IsUpgradableRequest).Returns(true);
+        upgradeFeatureMock.Setup(m => m.UpgradeAsync()).ReturnsAsync(Stream.Null);
+        httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
+
+        IHttpUpgradeFeature upgradeFeature = null;
+
+        var middleware = new HttpLoggingMiddleware(
+            async c =>
+            {
+                upgradeFeature = c.Features.Get<IHttpUpgradeFeature>();
+                await letBodyFinish.Task;
+            },
+            options,
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+        var middlewareTask = middleware.Invoke(httpContext);
+
+        Assert.True(upgradeFeature is UpgradeFeatureLoggingDecorator);
+
+        letBodyFinish.SetResult();
+        await middlewareTask;
+
+        Assert.False(httpContext.Features.Get<IHttpUpgradeFeature>() is UpgradeFeatureLoggingDecorator);
     }
 
     private IOptionsMonitor<HttpLoggingOptions> CreateOptionsAccessor()

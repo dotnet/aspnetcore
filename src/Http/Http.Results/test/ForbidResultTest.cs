@@ -22,7 +22,7 @@ public class ForbidResultTest
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new ForbidResult("", null);
+        var result = new ForbidHttpResult("", null);
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -46,7 +46,7 @@ public class ForbidResultTest
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new ForbidResult(new[] { "Scheme1", "Scheme2" }, authProperties);
+        var result = new ForbidHttpResult(new[] { "Scheme1", "Scheme2" }, authProperties);
         var routeData = new RouteData();
 
         // Act
@@ -73,7 +73,7 @@ public class ForbidResultTest
             .Setup(c => c.ForbidAsync(It.IsAny<HttpContext>(), null, expected))
             .Returns(Task.CompletedTask)
             .Verifiable();
-        var result = new ForbidResult(expected);
+        var result = new ForbidHttpResult(expected);
         var httpContext = GetHttpContext(auth.Object);
 
         // Act
@@ -95,7 +95,7 @@ public class ForbidResultTest
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new ForbidResult(expected)
+        var result = new ForbidHttpResult(expected)
         {
             AuthenticationSchemes = new string[0]
         };
@@ -121,6 +121,7 @@ public class ForbidResultTest
     {
         var services = new ServiceCollection();
         services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         return services;
     }
 }

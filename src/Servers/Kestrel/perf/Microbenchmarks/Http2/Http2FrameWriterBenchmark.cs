@@ -20,6 +20,7 @@ public class Http2FrameWriterBenchmark
     private Pipe _pipe;
     private Http2FrameWriter _frameWriter;
     private HttpResponseHeaders _responseHeaders;
+    private Http2Stream _stream;
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -45,6 +46,8 @@ public class Http2FrameWriterBenchmark
             _memoryPool,
             serviceContext);
 
+        _stream = new MockHttp2Stream(TestContextFactory.CreateHttp2StreamContext(streamId: 0));
+
         _responseHeaders = new HttpResponseHeaders();
         var headers = (IHeaderDictionary)_responseHeaders;
         headers.ContentType = "application/json";
@@ -54,7 +57,7 @@ public class Http2FrameWriterBenchmark
     [Benchmark]
     public void WriteResponseHeaders()
     {
-        _frameWriter.WriteResponseHeaders(0, 200, Http2HeadersFrameFlags.END_HEADERS, _responseHeaders);
+        _frameWriter.WriteResponseHeaders(_stream, 200, endStream: true, _responseHeaders);
     }
 
     [GlobalCleanup]
@@ -62,5 +65,17 @@ public class Http2FrameWriterBenchmark
     {
         _pipe.Writer.Complete();
         _memoryPool?.Dispose();
+    }
+
+    private class MockHttp2Stream : Http2Stream
+    {
+        public MockHttp2Stream(Http2StreamContext context)
+        {
+            Initialize(context);
+        }
+
+        public override void Execute()
+        {
+        }
     }
 }

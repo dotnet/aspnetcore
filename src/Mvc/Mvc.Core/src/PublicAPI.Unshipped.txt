@@ -3,6 +3,9 @@
 Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.DisableImplicitFromServicesParameters.get -> bool
 Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.DisableImplicitFromServicesParameters.set -> void
 Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.InferParameterBindingInfoConvention(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider, Microsoft.Extensions.DependencyInjection.IServiceProviderIsService! serviceProviderIsService) -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.TryParseModelBinderProvider() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateDisplayMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DisplayMetadataProviderContext! context) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext! context) -> void
@@ -25,3 +28,4 @@ Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor.ObjectResultExecuto
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.DefaultModelMetadataProvider(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ICompositeMetadataDetailsProvider! detailsProvider, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! optionsAccessor) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderFactory.ModelBinderFactory(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! metadataProvider, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! options, System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ParameterBinder.ParameterBinder(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderFactory! modelBinderFactory, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator! validator, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! mvcOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+static Microsoft.AspNetCore.Mvc.ControllerBase.Empty.get -> Microsoft.AspNetCore.Mvc.EmptyResult!

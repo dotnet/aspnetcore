@@ -95,6 +95,24 @@
           ]
         },
         {
+          "condition": "(!UseProgramMain)",
+          "exclude": [
+            "Server/Program.Main.cs",
+            "Client/Program.Main.cs"
+          ]
+        },
+        {
+          "condition": "(UseProgramMain)",
+          "exclude": [
+            "Server/Program.cs",
+            "Client/Program.cs"
+          ],
+          "rename": {
+            "Server/Program.Main.cs": "Server/Program.cs",
+            "Client/Program.Main.cs": "Client/Program.cs"
+          }
+        },
+        {
           "condition": "(!IndividualLocalAuth || UseLocalDB)",
           "exclude": [
             "Server/app.db"
@@ -593,6 +611,13 @@
     "GenerateApiOrGraph": {
         "type": "computed",
         "value": "(GenerateApi || GenerateGraph)"
+    },
+    "UseProgramMain": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Do not use top-level statements",
+      "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
     }
   },
   "tags": {

@@ -55,7 +55,8 @@
   "resolutions": {
     "lodash": ">=4.17.21",
     "url-parse": ">=1.5.6",
-    "ua-parser-js": "^0.7.30"
+    "ua-parser-js": "^0.7.30",
+    "minimist": ">=1.2.6"
   },
   "author": "",
   "license": "MIT"

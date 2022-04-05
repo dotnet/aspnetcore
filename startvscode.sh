@@ -20,7 +20,7 @@ if [ ! -f "$DOTNET_ROOT/dotnet" ]; then
     exit 1
 fi
 
-if [ $1 = "" ]; then
+if [[ $1 == "" ]]; then
   code .
 else
   code $1

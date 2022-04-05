@@ -155,7 +155,7 @@ internal static class TestContextFactory
             localEndPoint: localEndPoint,
             remoteEndPoint: remoteEndPoint,
             streamId: streamId ?? 0,
-            streamLifetimeHandler: streamLifetimeHandler,
+            streamLifetimeHandler: streamLifetimeHandler ?? new TestHttp2StreamLifetimeHandler(),
             clientPeerSettings: clientPeerSettings ?? new Http2PeerSettings(),
             serverPeerSettings: serverPeerSettings ?? new Http2PeerSettings(),
             frameWriter: frameWriter,
@@ -199,6 +199,17 @@ internal static class TestContextFactory
         context.Transport = transport;
 
         return context;
+    }
+
+    private class TestHttp2StreamLifetimeHandler : IHttp2StreamLifetimeHandler
+    {
+        public void DecrementActiveClientStreamCount()
+        {
+        }
+
+        public void OnStreamCompleted(Http2Stream stream)
+        {
+        }
     }
 
     private class TestMultiplexedConnectionContext : MultiplexedConnectionContext

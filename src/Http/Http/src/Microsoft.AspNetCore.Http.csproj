@@ -9,6 +9,7 @@
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+    <Trimmable>true</Trimmable>
   </PropertyGroup>
 
   <ItemGroup>

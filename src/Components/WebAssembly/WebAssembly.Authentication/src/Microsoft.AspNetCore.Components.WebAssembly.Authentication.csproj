@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <Sdk Name="Yarn.MSBuild" />
+  <Import Project="Sdk.props" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -92,5 +92,7 @@
       <FileWrites Include="$(_InteropBuildOutput)" />
     </ItemGroup>
   </Target>
+
+  <Import Project="Sdk.targets" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
 
 </Project>

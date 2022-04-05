@@ -115,8 +115,8 @@ internal sealed partial class Request
     internal ulong RawConnectionId { get; }
 
     // No ulongs in public APIs...
-    public long ConnectionId => (long)RawConnectionId;
-
+    public long ConnectionId => RawConnectionId != 0 ? (long)RawConnectionId : (long)UConnectionId;
+    
     internal ulong RequestId { get; }
 
     private SslStatus SslStatus { get; }
@@ -298,7 +298,8 @@ internal sealed partial class Request
         {
             Protocol |= SslProtocols.Ssl3;
         }
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or Prmember is obsolete
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         if ((Protocol & SslProtocols.Tls) != 0)
         {
             Protocol |= SslProtocols.Tls;
@@ -307,6 +308,7 @@ internal sealed partial class Request
         {
             Protocol |= SslProtocols.Tls11;
         }
+#pragma warning restore SYSLIB0039
         if ((Protocol & SslProtocols.Tls12) != 0)
         {
             Protocol |= SslProtocols.Tls12;

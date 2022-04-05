@@ -88,7 +88,7 @@ public class EventLogHelpers
         var processIdString = $"Process Id: {deploymentResult.HostProcess.Id}.";
 
         // Event log messages round down to the nearest second, so subtract 5 seconds to make sure we get event logs
-        var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-5);
+        var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-10);
         for (var i = eventLog.Entries.Count - 1; i >= 0; i--)
         {
             var eventLogEntry = eventLog.Entries[i];

@@ -21,7 +21,7 @@ public class IISExpressDeployer : IISDeployerBase
     private const string FailedToInitializeBindingsMessage = "Failed to initialize site bindings";
     private const string UnableToStartIISExpressMessage = "Unable to start iisexpress.";
     private const int MaximumAttempts = 5;
-    private readonly TimeSpan ShutdownTimeSpan = Debugger.IsAttached ? TimeSpan.FromMinutes(60) : TimeSpan.FromMinutes(1);
+    private readonly TimeSpan ShutdownTimeSpan = Debugger.IsAttached ? TimeSpan.FromMinutes(60) : TimeSpan.FromMinutes(2);
     private static readonly Regex UrlDetectorRegex = new Regex(@"^\s*Successfully registered URL ""(?<url>[^""]+)"" for site.*$");
 
     private Process _hostProcess;
@@ -234,10 +234,10 @@ public class IISExpressDeployer : IISDeployerBase
                 }
 
                 // Wait for the app to start
-                // The timeout here is large, because we don't know how long the test could need
-                // We cover a lot of error cases above, but I want to make sure we eventually give up and don't hang the build
+                // The timeout here is large, because we don't know how long the test could need. We cover a lot
+                // of error cases above, but I want to make sure we eventually give up and don't hang the build
                 // just in case we missed one -anurse
-                if (!await started.Task.TimeoutAfter(TimeSpan.FromMinutes(10)))
+                if (!await started.Task.TimeoutAfter(TimeSpan.FromMinutes(15)))
                 {
                     Logger.LogInformation("iisexpress Process {pid} failed to bind to port {port}, trying again", process.Id, port);
 

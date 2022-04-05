@@ -3,15 +3,19 @@
 
 import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
 
+const navigatorUA = navigator as MonoNavigatorUserAgent;
+const brands = navigatorUA.userAgentData && navigatorUA.userAgentData.brands;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const currentBrowserIsChrome = (window as any).chrome
-  && navigator.userAgent.indexOf('Edge') < 0; // Edge pretends to be Chrome
+const currentBrowserIsChromeOrEdge = brands
+  ? brands.some(b => b.brand === 'Google Chrome' || b.brand === 'Microsoft Edge')
+  : (window as any).chrome;
+const platform = navigatorUA.userAgentData ? navigatorUA.userAgentData.platform : navigator.platform;
 
 let hasReferencedPdbs = false;
 let debugBuild = false;
 
 export function hasDebuggingEnabled(): boolean {
-  return (hasReferencedPdbs || debugBuild) && currentBrowserIsChrome;
+  return (hasReferencedPdbs || debugBuild) && currentBrowserIsChromeOrEdge;
 }
 
 export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader): void {
@@ -19,7 +23,7 @@ export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader):
   debugBuild = resourceLoader.bootConfig.debugBuild;
   // Use the combination shift+alt+D because it isn't used by the major browsers
   // for anything else by default
-  const altKeyName = navigator.platform.match(/^Mac/i) ? 'Cmd' : 'Alt';
+  const altKeyName = platform.match(/^Mac/i) ? 'Cmd' : 'Alt';
   if (hasDebuggingEnabled()) {
     console.info(`Debugging hotkey: Shift+${altKeyName}+D (when application has focus)`);
   }
@@ -29,7 +33,7 @@ export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader):
     if (evt.shiftKey && (evt.metaKey || evt.altKey) && evt.code === 'KeyD') {
       if (!debugBuild && !hasReferencedPdbs) {
         console.error('Cannot start debugging, because the application was not compiled with debugging enabled.');
-      } else if (!currentBrowserIsChrome) {
+      } else if (!currentBrowserIsChromeOrEdge) {
         console.error('Currently, only Microsoft Edge (80+), or Google Chrome, are supported for debugging.');
       } else {
         launchDebugger();

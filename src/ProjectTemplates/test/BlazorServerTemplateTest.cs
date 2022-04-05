@@ -26,18 +26,26 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     [Fact]
     public Task BlazorServerTemplateWorks_NoAuth() => CreateBuildPublishAsync("blazorservernoauth");
 
+    [Fact]
+    public Task BlazorServerTemplateWorks_ProgamMainNoAuth() => CreateBuildPublishAsync("blazorservernoauth", args: new [] { "--use-program-main" });
+
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [InlineData(true, null)]
+    [InlineData(true, new string[] { "--use-program-main" })]
+    [InlineData(false, null)]
+    [InlineData(false, new string[] { "--use-program-main" })]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
-    public Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB) => CreateBuildPublishAsync("blazorserverindividual" + (useLocalDB ? "uld" : ""));
+    public Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB, string[] args) => CreateBuildPublishAsync("blazorserverindividual" + (useLocalDB ? "uld" : "", args: args));
 
     [Theory]
     [InlineData("IndividualB2C", null)]
     [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+    [InlineData("IndividualB2C", new string[] { "--use-program-main", "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     [InlineData("SingleOrg", null)]
     [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+    [InlineData("SingleOrg", new string[] { "--use-program-main --called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+    [InlineData("SingleOrg", new string[] { "--use-program-main --calls-graph" })]
     public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args)
         => CreateBuildPublishAsync("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), auth, args);
 

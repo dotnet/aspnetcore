@@ -31,4 +31,9 @@ public sealed class RequestDelegateFactoryOptions
     /// Prevent the <see cref="RequestDelegateFactory" /> from inferring a parameter should be bound from the request body without an attribute that implements <see cref="IFromBodyMetadata"/>.
     /// </summary>
     public bool DisableInferBodyFromParameters { get; init; }
+
+    /// <summary>
+    /// The list of filters that must run in the pipeline for a given route handler.
+    /// </summary>
+    public IReadOnlyList<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? RouteHandlerFilterFactories { get; init; }
 }

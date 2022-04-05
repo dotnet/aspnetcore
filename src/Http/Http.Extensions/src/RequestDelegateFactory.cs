@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -22,6 +24,11 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Creates <see cref="RequestDelegate"/> implementations from <see cref="Delegate"/> request handlers.
 /// </summary>
+[UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2077", Justification = "RequestDelegateFactory.Create requires unreferenced code.")]
 public static partial class RequestDelegateFactory
 {
     private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
@@ -39,6 +46,7 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringIsNullOrEmptyMethod = typeof(string).GetMethod(nameof(string.IsNullOrEmpty), BindingFlags.Static | BindingFlags.Public)!;
+    private static readonly MethodInfo WrapObjectAsValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WrapObjectAsValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
     // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
@@ -71,11 +79,20 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression FormFilesExpr = Expression.Property(FormExpr, typeof(IFormCollection).GetProperty(nameof(IFormCollection.Files))!);
     private static readonly MemberExpression StatusCodeExpr = Expression.Property(HttpResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly MemberExpression CompletedTaskExpr = Expression.Property(null, (PropertyInfo)GetMemberInfo<Func<Task>>(() => Task.CompletedTask));
+    private static readonly NewExpression CompletedValueTaskExpr = Expression.New(typeof(ValueTask<object>).GetConstructor(new[] { typeof(Task) })!, CompletedTaskExpr);
 
     private static readonly ParameterExpression TempSourceStringExpr = ParameterBindingMethodCache.TempSourceStringExpr;
     private static readonly BinaryExpression TempSourceStringNotNullExpr = Expression.NotEqual(TempSourceStringExpr, Expression.Constant(null));
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
     private static readonly UnaryExpression TempSourceStringIsNotNullOrEmptyExpr = Expression.Not(Expression.Call(StringIsNullOrEmptyMethod, TempSourceStringExpr));
+
+    private static readonly ConstructorInfo RouteHandlerInvocationContextConstructor = typeof(RouteHandlerInvocationContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
+    private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(RouteHandlerInvocationContext), "context");
+    private static readonly MemberExpression FilterContextParametersExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerInvocationContext).GetProperty(nameof(RouteHandlerInvocationContext.Parameters))!);
+    private static readonly MemberExpression FilterContextHttpContextExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerInvocationContext).GetProperty(nameof(RouteHandlerInvocationContext.HttpContext))!);
+    private static readonly MemberExpression FilterContextHttpContextResponseExpr = Expression.Property(FilterContextHttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Response))!);
+    private static readonly MemberExpression FilterContextHttpContextStatusCodeExpr = Expression.Property(FilterContextHttpContextResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
+    private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(RouteHandlerInvocationContext), "filterContext");
 
     private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
@@ -86,9 +103,8 @@ public static partial class RequestDelegateFactory
     /// <param name="handler">A request handler with any number of custom parameters that often produces a response with its return value.</param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
     /// <returns>The <see cref="RequestDelegateResult"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    [RequiresUnreferencedCode("RequestDelegateFactory performs object creation, serialization and deserialization on the delegates and its parameters. This cannot be statically analyzed.")]
     public static RequestDelegateResult Create(Delegate handler, RequestDelegateFactoryOptions? options = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         if (handler is null)
         {
@@ -102,6 +118,7 @@ public static partial class RequestDelegateFactory
         };
 
         var factoryContext = CreateFactoryContext(options);
+
         var targetableRequestDelegate = CreateTargetableRequestDelegate(handler.Method, targetExpression, factoryContext);
 
         return new RequestDelegateResult(httpContext => targetableRequestDelegate(handler.Target, httpContext), factoryContext.Metadata);
@@ -114,9 +131,9 @@ public static partial class RequestDelegateFactory
     /// <param name="targetFactory">Creates the <see langword="this"/> for the non-static method.</param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
     /// <returns>The <see cref="RequestDelegate"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+
+    [RequiresUnreferencedCode("RequestDelegateFactory performs object creation, serialization and deserialization on the delegates and its parameters. This cannot be statically analyzed.")]
     public static RequestDelegateResult Create(MethodInfo methodInfo, Func<HttpContext, object>? targetFactory = null, RequestDelegateFactoryOptions? options = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         if (methodInfo is null)
         {
@@ -155,6 +172,7 @@ public static partial class RequestDelegateFactory
             RouteParameters = options?.RouteParameterNames?.ToList(),
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
+            Filters = options?.RouteHandlerFilterFactories?.ToList()
         };
 
     private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext)
@@ -176,10 +194,31 @@ public static partial class RequestDelegateFactory
         // }
 
         var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
+        var returnType = methodInfo.ReturnType;
+        factoryContext.MethodCall = CreateMethodCall(methodInfo, targetExpression, arguments);
+
+        // If there are filters registered on the route handler, then we update the method call and
+        // return type associated with the request to allow for the filter invocation pipeline.
+        if (factoryContext.Filters is { Count: > 0 })
+        {
+            var filterPipeline = CreateFilterPipeline(methodInfo, targetExpression, factoryContext);
+            Expression<Func<RouteHandlerInvocationContext, ValueTask<object?>>> invokePipeline = (context) => filterPipeline(context);
+            returnType = typeof(ValueTask<object?>);
+            // var filterContext = new RouteHandlerInvocationContext(httpContext, new[] { (object)name_local, (object)int_local });
+            // invokePipeline.Invoke(filterContext);
+            factoryContext.MethodCall = Expression.Block(
+                new[] { InvokedFilterContextExpr },
+                Expression.Assign(
+                    InvokedFilterContextExpr,
+                    Expression.New(RouteHandlerInvocationContextConstructor,
+                        new Expression[] { HttpContextExpr, Expression.NewArrayInit(typeof(object), factoryContext.BoxedArgs) })),
+                    Expression.Invoke(invokePipeline, InvokedFilterContextExpr)
+                );
+        }
 
         var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
-            CreateParamCheckingResponseWritingMethodCall(methodInfo, targetExpression, arguments, factoryContext) :
-            CreateResponseWritingMethodCall(methodInfo, targetExpression, arguments);
+            CreateParamCheckingResponseWritingMethodCall(returnType, factoryContext) :
+            AddResponseWritingToMethodCall(factoryContext.MethodCall, returnType);
 
         if (factoryContext.UsingTempSourceString)
         {
@@ -187,6 +226,39 @@ public static partial class RequestDelegateFactory
         }
 
         return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
+    }
+
+    private static RouteHandlerFilterDelegate CreateFilterPipeline(MethodInfo methodInfo, Expression? target, FactoryContext factoryContext)
+    {
+        Debug.Assert(factoryContext.Filters is not null);
+        // httpContext.Response.StatusCode >= 400
+        // ? Task.CompletedTask
+        // : handler((string)context.Parameters[0], (int)context.Parameters[1])
+        var filteredInvocation = Expression.Lambda<RouteHandlerFilterDelegate>(
+            Expression.Condition(
+                Expression.GreaterThanOrEqual(FilterContextHttpContextStatusCodeExpr, Expression.Constant(400)),
+                CompletedValueTaskExpr,
+                Expression.Block(
+                    new[] { TargetExpr },
+                    Expression.Call(WrapObjectAsValueTaskMethod,
+                        target is null
+                            ? Expression.Call(methodInfo, factoryContext.ContextArgAccess)
+                            : Expression.Call(target, methodInfo, factoryContext.ContextArgAccess))
+                )),
+            FilterContextExpr).Compile();
+        var routeHandlerContext = new RouteHandlerContext(
+            methodInfo,
+            new EndpointMetadataCollection(factoryContext.Metadata));
+
+        for (var i = factoryContext.Filters.Count - 1; i >= 0; i--)
+        {
+            var currentFilterFactory = factoryContext.Filters[i];
+            var nextFilter = filteredInvocation;
+            var currentFilter = currentFilterFactory(routeHandlerContext, nextFilter);
+            filteredInvocation = (RouteHandlerInvocationContext context) => currentFilter(context);
+
+        }
+        return filteredInvocation;
     }
 
     private static Expression[] CreateArguments(ParameterInfo[]? parameters, FactoryContext factoryContext)
@@ -201,6 +273,16 @@ public static partial class RequestDelegateFactory
         for (var i = 0; i < parameters.Length; i++)
         {
             args[i] = CreateArgument(parameters[i], factoryContext);
+            // Register expressions containing the boxed and unboxed variants
+            // of the route handler's arguments for use in RouteHandlerInvocationContext
+            // construction and route handler invocation.
+            // (string)context.Parameters[0];
+            factoryContext.ContextArgAccess.Add(
+                Expression.Convert(
+                    Expression.Property(FilterContextParametersExpr, "Item", Expression.Constant(i)),
+                parameters[i].ParameterType));
+            // (object)name_local
+            factoryContext.BoxedArgs.Add(Expression.Convert(args[i], typeof(object)));
         }
 
         if (factoryContext.HasInferredBody && factoryContext.DisableInferredFromBody)
@@ -381,16 +463,14 @@ public static partial class RequestDelegateFactory
             Expression.Call(methodInfo, arguments) :
             Expression.Call(target, methodInfo, arguments);
 
-    private static Expression CreateResponseWritingMethodCall(MethodInfo methodInfo, Expression? target, Expression[] arguments)
+    private static ValueTask<object?> WrapObjectAsValueTask(object? obj)
     {
-        var callMethod = CreateMethodCall(methodInfo, target, arguments);
-        return AddResponseWritingToMethodCall(callMethod, methodInfo.ReturnType);
+        return ValueTask.FromResult<object?>(obj);
     }
 
     // If we're calling TryParse or validating parameter optionality and
     // wasParamCheckFailure indicates it failed, set a 400 StatusCode instead of calling the method.
-    private static Expression CreateParamCheckingResponseWritingMethodCall(
-        MethodInfo methodInfo, Expression? target, Expression[] arguments, FactoryContext factoryContext)
+    private static Expression CreateParamCheckingResponseWritingMethodCall(Type returnType, FactoryContext factoryContext)
     {
         // {
         //     string tempSourceString;
@@ -440,17 +520,40 @@ public static partial class RequestDelegateFactory
 
         localVariables[factoryContext.ExtraLocals.Count] = WasParamCheckFailureExpr;
 
-        var set400StatusAndReturnCompletedTask = Expression.Block(
-                Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
-                CompletedTaskExpr);
+        // If filters have been registered, we set the `wasParamCheckFailure` property
+        // but do not return from the invocation to allow the filters to run.
+        if (factoryContext.Filters is { Count: > 0 })
+        {
+            // if (wasParamCheckFailure)
+            // {
+            //   httpContext.Response.StatusCode = 400;
+            // }
+            // return RequestDelegateFactory.ExecuteObjectReturn(invocationPipeline.Invoke(context) as object);
+            var checkWasParamCheckFailureWithFilters = Expression.Block(
+                Expression.IfThen(
+                    WasParamCheckFailureExpr,
+                    Expression.Assign(StatusCodeExpr, Expression.Constant(400))),
+                AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType)
+            );
 
-        var methodCall = CreateMethodCall(methodInfo, target, arguments);
-
-        var checkWasParamCheckFailure = Expression.Condition(WasParamCheckFailureExpr,
-            set400StatusAndReturnCompletedTask,
-            AddResponseWritingToMethodCall(methodCall, methodInfo.ReturnType));
-
-        checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
+            checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailureWithFilters;
+        }
+        else
+        {
+            // wasParamCheckFailure ? {
+            //  httpContext.Response.StatusCode = 400;
+            //  return Task.CompletedTask;
+            // } : {
+            //  return RequestDelegateFactory.ExecuteObjectReturn(invocationPipeline.Invoke(context) as object);
+            // }
+            var checkWasParamCheckFailure = Expression.Condition(
+                WasParamCheckFailureExpr,
+                Expression.Block(
+                    Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
+                    CompletedTaskExpr),
+                AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType));
+            checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
+        }
 
         return Expression.Block(localVariables, checkParamAndCallMethod);
     }
@@ -689,7 +792,7 @@ public static partial class RequestDelegateFactory
 
         static async Task<(object? FormValue, bool Successful)> TryReadBodyAsync(
             HttpContext httpContext,
-            Type bodyType,
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type bodyType,
             string parameterTypeName,
             string parameterName,
             bool allowEmptyRequestBody,
@@ -699,7 +802,7 @@ public static partial class RequestDelegateFactory
 
             if (allowEmptyRequestBody && bodyType.IsValueType)
             {
-                defaultBodyValue = Activator.CreateInstance(bodyType);
+                defaultBodyValue = CreateValueType(bodyType);
             }
 
             var bodyValue = defaultBodyValue;
@@ -733,6 +836,10 @@ public static partial class RequestDelegateFactory
             return (bodyValue, true);
         }
     }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2067:UnrecognizedReflectionPattern",
+        Justification = "CreateValueType is only called on a ValueType. You can always create an instance of a ValueType.")]
+    private static object? CreateValueType(Type t) => RuntimeHelpers.GetUninitializedObject(t);
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegateForForm(
         Expression responseWritingMethodCall,
@@ -992,7 +1099,7 @@ public static partial class RequestDelegateFactory
                 HttpContextExpr, parameterTypeNameConstant, parameterNameConstant,
                 TempSourceStringExpr, Expression.Constant(factoryContext.ThrowOnBadRequest)));
 
-        var tryParseCall = tryParseMethodCall(parsedValue);
+        var tryParseCall = tryParseMethodCall(parsedValue, Expression.Constant(CultureInfo.InvariantCulture));
 
         // The following code is generated if the parameter is required and
         // the method should not be matched.
@@ -1596,6 +1703,11 @@ public static partial class RequestDelegateFactory
 
         public bool ReadForm { get; set; }
         public ParameterInfo? FirstFormRequestBodyParameter { get; set; }
+        // Properties for constructing and managing filters
+        public List<Expression> ContextArgAccess { get; } = new();
+        public Expression? MethodCall { get; set; }
+        public List<Expression> BoxedArgs { get; } = new();
+        public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
     }
 
     private static class RequestDelegateFactoryConstants

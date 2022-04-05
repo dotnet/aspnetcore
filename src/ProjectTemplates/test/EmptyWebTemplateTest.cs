@@ -38,17 +38,24 @@ public class EmptyWebTemplateTest : LoggedTest
         await EmtpyTemplateCore(languageOverride: null);
     }
 
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task EmptyWebTemplateProgramMainCSharp()
+    {
+        await EmtpyTemplateCore(languageOverride: null, args: new [] { "--use-program-main" });
+    }
+
     [Fact]
     public async Task EmptyWebTemplateFSharp()
     {
         await EmtpyTemplateCore("F#");
     }
 
-    private async Task EmtpyTemplateCore(string languageOverride)
+    private async Task EmtpyTemplateCore(string languageOverride, string[] args = null)
     {
         var project = await ProjectFactory.GetOrCreateProject("empty" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
 
-        var createResult = await project.RunDotNetNewAsync("web", language: languageOverride);
+        var createResult = await project.RunDotNetNewAsync("web", args: args, language: languageOverride);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
         // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022

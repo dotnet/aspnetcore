@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Testing;
@@ -108,7 +109,7 @@ public class FileSystemXmlRepositoryTests
             var filename = fileInfo.Name;
             Assert.EndsWith(".xml", filename, StringComparison.OrdinalIgnoreCase);
             var filenameNoSuffix = filename.Substring(0, filename.Length - ".xml".Length);
-            Guid parsedGuid = Guid.Parse(filenameNoSuffix);
+            Guid parsedGuid = Guid.Parse(filenameNoSuffix, CultureInfo.InvariantCulture);
             Assert.NotEqual(Guid.Empty, parsedGuid);
 
             // file contents should be "<element1 />"

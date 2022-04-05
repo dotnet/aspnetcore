@@ -30,7 +30,7 @@ public class ParameterBindingMethodCacheTests
 
         Assert.NotNull(methodFound);
 
-        var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+        var call = methodFound!(Expression.Variable(type, "parsedValue"), Expression.Constant(CultureInfo.InvariantCulture)) as MethodCallExpression;
         Assert.NotNull(call);
         var parameters = call!.Method.GetParameters();
 
@@ -53,7 +53,7 @@ public class ParameterBindingMethodCacheTests
 
         Assert.NotNull(methodFound);
 
-        var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+        var call = methodFound!(Expression.Variable(type, "parsedValue"), Expression.Constant(CultureInfo.InvariantCulture)) as MethodCallExpression;
         Assert.NotNull(call);
         var parameters = call!.Method.GetParameters();
 
@@ -85,7 +85,7 @@ public class ParameterBindingMethodCacheTests
 
         Assert.NotNull(methodFound);
 
-        var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+        var call = methodFound!(Expression.Variable(type, "parsedValue"), Expression.Constant(CultureInfo.InvariantCulture)) as MethodCallExpression;
         Assert.NotNull(call);
         var parameters = call!.Method.GetParameters();
 
@@ -109,7 +109,7 @@ public class ParameterBindingMethodCacheTests
         var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(@type);
         Assert.NotNull(methodFound);
 
-        var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+        var call = methodFound!(Expression.Variable(type, "parsedValue"), Expression.Constant(CultureInfo.InvariantCulture)) as MethodCallExpression;
         Assert.NotNull(call);
         var parameters = call!.Method.GetParameters();
 
@@ -155,7 +155,7 @@ public class ParameterBindingMethodCacheTests
 
         Assert.NotNull(methodFound);
 
-        var call = methodFound!(Expression.Variable(type, "parsedValue")) as MethodCallExpression;
+        var call = methodFound!(Expression.Variable(type, "parsedValue"), Expression.Constant(CultureInfo.InvariantCulture)) as MethodCallExpression;
         Assert.NotNull(call);
         var method = call!.Method;
         var parameters = method.GetParameters();
@@ -177,7 +177,7 @@ public class ParameterBindingMethodCacheTests
         Assert.NotNull(methodFound);
 
         var parsedValue = Expression.Variable(type, "parsedValue");
-        var block = methodFound!(parsedValue) as BlockExpression;
+        var block = methodFound!(parsedValue, Expression.Constant(CultureInfo.InvariantCulture)) as BlockExpression;
         Assert.NotNull(block);
         Assert.Equal(typeof(bool), block!.Type);
 
@@ -359,18 +359,29 @@ public class ParameterBindingMethodCacheTests
         Assert.Null(await parseHttpContext(httpContext));
     }
 
+    public static TheoryData<Type> InvalidTryParseStringTypesData
+    {
+        get
+        {
+            return new TheoryData<Type>
+            {
+                typeof(InvalidVoidReturnTryParseStruct),
+                typeof(InvalidVoidReturnTryParseClass),
+                typeof(InvalidWrongTypeTryParseStruct),
+                typeof(InvalidWrongTypeTryParseClass),
+                typeof(InvalidTryParseNullableStruct),
+                typeof(InvalidTooFewArgsTryParseStruct),
+                typeof(InvalidTooFewArgsTryParseClass),
+                typeof(InvalidNonStaticTryParseStruct),
+                typeof(InvalidNonStaticTryParseClass),
+                typeof(TryParseWrongTypeInheritClass),
+                typeof(TryParseWrongTypeFromInterface),
+            };
+        }
+    }
+
     [Theory]
-    [InlineData(typeof(InvalidVoidReturnTryParseStruct))]
-    [InlineData(typeof(InvalidVoidReturnTryParseClass))]
-    [InlineData(typeof(InvalidWrongTypeTryParseStruct))]
-    [InlineData(typeof(InvalidWrongTypeTryParseClass))]
-    [InlineData(typeof(InvalidTryParseNullableStruct))]
-    [InlineData(typeof(InvalidTooFewArgsTryParseStruct))]
-    [InlineData(typeof(InvalidTooFewArgsTryParseClass))]
-    [InlineData(typeof(InvalidNonStaticTryParseStruct))]
-    [InlineData(typeof(InvalidNonStaticTryParseClass))]
-    [InlineData(typeof(TryParseWrongTypeInheritClass))]
-    [InlineData(typeof(TryParseWrongTypeFromInterface))]
+    [MemberData(nameof(InvalidTryParseStringTypesData))]
     public void FindTryParseMethod_ThrowsIfInvalidTryParseOnType(Type type)
     {
         var ex = Assert.Throws<InvalidOperationException>(
@@ -380,12 +391,25 @@ public class ParameterBindingMethodCacheTests
         Assert.Contains($"bool TryParse(string, out {TypeNameHelper.GetTypeDisplayName(type, fullName: false)})", ex.Message);
     }
 
+    [Theory]
+    [MemberData(nameof(InvalidTryParseStringTypesData))]
+    public void FindTryParseMethod_DoesNotThrowIfInvalidTryParseOnType_WhenThrowOnInvalidFalse(Type type)
+    {
+        Assert.Null(new ParameterBindingMethodCache(throwOnInvalidMethod: false).FindTryParseMethod(type));
+    }
+
     [Fact]
     public void FindTryParseMethod_ThrowsIfMultipleInterfacesMatch()
     {
         var ex = Assert.Throws<InvalidOperationException>(
             () => new ParameterBindingMethodCache().FindTryParseMethod(typeof(TryParseFromMultipleInterfaces)));
         Assert.Equal("TryParseFromMultipleInterfaces implements multiple interfaces defining a static Boolean TryParse(System.String, TryParseFromMultipleInterfaces ByRef) method causing ambiguity.", ex.Message);
+    }
+
+    [Fact]
+    public void FindTryParseMethod_DoesNotThrowIfMultipleInterfacesMatch_WhenThrowOnInvalidFalse()
+    {
+        Assert.Null(new ParameterBindingMethodCache(throwOnInvalidMethod: false).FindTryParseMethod(typeof(TryParseFromMultipleInterfaces)));
     }
 
     [Theory]
@@ -397,15 +421,26 @@ public class ParameterBindingMethodCacheTests
         Assert.NotNull(method);
     }
 
+    public static TheoryData<Type> InvalidBindAsyncTypesData
+    {
+        get
+        {
+            return new TheoryData<Type>
+            {
+                typeof(InvalidWrongReturnBindAsyncStruct),
+                typeof(InvalidWrongReturnBindAsyncClass),
+                typeof(InvalidWrongParamBindAsyncStruct),
+                typeof(InvalidWrongParamBindAsyncClass),
+                typeof(BindAsyncWrongTypeInherit),
+                typeof(BindAsyncWithParameterInfoWrongTypeInherit),
+                typeof(BindAsyncWrongTypeFromInterface),
+                typeof(BindAsyncBothBadMethods),
+            };
+        }
+    }
+
     [Theory]
-    [InlineData(typeof(InvalidWrongReturnBindAsyncStruct))]
-    [InlineData(typeof(InvalidWrongReturnBindAsyncClass))]
-    [InlineData(typeof(InvalidWrongParamBindAsyncStruct))]
-    [InlineData(typeof(InvalidWrongParamBindAsyncClass))]
-    [InlineData(typeof(BindAsyncWrongTypeInherit))]
-    [InlineData(typeof(BindAsyncWithParameterInfoWrongTypeInherit))]
-    [InlineData(typeof(BindAsyncWrongTypeFromInterface))]
-    [InlineData(typeof(BindAsyncBothBadMethods))]
+    [MemberData(nameof(InvalidBindAsyncTypesData))]
     public void FindBindAsyncMethod_ThrowsIfInvalidBindAsyncOnType(Type type)
     {
         var cache = new ParameterBindingMethodCache();
@@ -419,6 +454,16 @@ public class ParameterBindingMethodCacheTests
         Assert.Contains($"ValueTask<{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}?> BindAsync(HttpContext context)", ex.Message);
     }
 
+    [Theory]
+    [MemberData(nameof(InvalidBindAsyncTypesData))]
+    public void FindBindAsyncMethod_DoesNotThrowIfInvalidBindAsyncOnType_WhenThrowOnInvalidFalse(Type type)
+    {
+        var cache = new ParameterBindingMethodCache(throwOnInvalidMethod: false);
+        var parameter = new MockParameterInfo(type, "anything");
+        var (expression, _) = cache.FindBindAsyncMethod(parameter);
+        Assert.Null(expression);
+    }
+
     [Fact]
     public void FindBindAsyncMethod_ThrowsIfMultipleInterfacesMatch()
     {
@@ -426,6 +471,15 @@ public class ParameterBindingMethodCacheTests
         var parameter = new MockParameterInfo(typeof(BindAsyncFromMultipleInterfaces), "anything");
         var ex = Assert.Throws<InvalidOperationException>(() => cache.FindBindAsyncMethod(parameter));
         Assert.Equal("BindAsyncFromMultipleInterfaces implements multiple interfaces defining a static System.Threading.Tasks.ValueTask`1[Microsoft.AspNetCore.Http.Extensions.Tests.ParameterBindingMethodCacheTests+BindAsyncFromMultipleInterfaces] BindAsync(Microsoft.AspNetCore.Http.HttpContext) method causing ambiguity.", ex.Message);
+    }
+
+    [Fact]
+    public void FindBindAsyncMethod_DoesNotThrowIfMultipleInterfacesMatch_WhenThrowOnInvalidFalse()
+    {
+        var cache = new ParameterBindingMethodCache(throwOnInvalidMethod: false);
+        var parameter = new MockParameterInfo(typeof(BindAsyncFromMultipleInterfaces), "anything");
+        var (expression, _) = cache.FindBindAsyncMethod(parameter);
+        Assert.Null(expression);
     }
 
     [Theory]

@@ -4200,6 +4200,366 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, badHttpRequestException.StatusCode);
     }
 
+    [Fact]
+    public async Task RequestDelegateFactory_InvokesFiltersButNotHandler_OnArgumentError()
+    {
+        var invoked = false;
+        // Arrange
+        string HelloName(string name)
+        {
+            invoked = true;
+            return $"Hello, {name}!";
+        };
+
+        var httpContext = CreateHttpContext();
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    context.Parameters[0] = context.Parameters[0] != null ? $"{((string)context.Parameters[0]!)}Prefix" : "NULL";
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        Assert.False(invoked);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_CanInvokeSingleEndpointFilter_ThatProvidesCustomErrorMessage()
+    {
+        // Arrange
+        string HelloName(string name)
+        {
+            return $"Hello, {name}!";
+        };
+
+        var httpContext = CreateHttpContext();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>() {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    if (context.HttpContext.Response.StatusCode == 400)
+                    {
+                        return Results.Problem("New response", statusCode: 400);
+                    }
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        var decodedResponseBody = JsonSerializer.Deserialize<Mvc.ProblemDetails>(responseBodyStream.ToArray());
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.Equal("New response", decodedResponseBody!.Detail);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_CanInvokeMultipleEndpointFilters_ThatTouchArguments()
+    {
+        // Arrange
+        string HelloName(string name, int age)
+        {
+            return $"Hello, {name}! You are {age} years old.";
+        };
+
+        var loggerInvoked = 0;
+        void Log(string arg) => loggerInvoked++;
+
+        var httpContext = CreateHttpContext();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "TestName",
+            ["age"] = "25"
+        });
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    context.Parameters[1] = ((int)context.Parameters[1]!) + 2;
+                    return await next(context);
+                },
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    foreach (var parameter in context.Parameters)
+                    {
+                        Log(parameter!.ToString() ?? "no arg");
+                    }
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("Hello, TestName! You are 27 years old.", responseBody);
+        Assert.Equal(2, loggerInvoked);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatUsesMethodInfo()
+    {
+        // Arrange
+        string HelloName(string name)
+        {
+            return $"Hello, {name}!.";
+        };
+
+        var httpContext = CreateHttpContext();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "TestName"
+        });
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) =>
+                {
+                    var parameters = routeHandlerContext.MethodInfo.GetParameters();
+                    var isInt = parameters.Length == 2 && parameters[1].ParameterType == typeof(int);
+                    return async (context) =>
+                    {
+                        if (isInt)
+                        {
+                            context.Parameters[1] = ((int)context.Parameters[1]!) + 2;
+                            return await next(context);
+                        }
+                        return "Is not an int.";
+                    };
+                },
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("Is not an int.", responseBody);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_CanInvokeEndpointFilter_ThatUsesEndpointMetadata()
+    {
+        // Arrange
+        string HelloName(IFormFileCollection formFiles)
+        {
+            return $"Got {formFiles.Count} files.";
+        };
+
+        var fileContent = new StringContent("hello", Encoding.UTF8, "application/octet-stream");
+        var form = new MultipartFormDataContent("some-boundary");
+        form.Add(fileContent, "file", "file.txt");
+
+        var stream = new MemoryStream();
+        await form.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) =>
+                {
+                    var acceptsMetadata = routeHandlerContext.EndpointMetadata.OfType<IAcceptsMetadata>();
+                    var contentType = acceptsMetadata.SingleOrDefault()?.ContentTypes.SingleOrDefault();
+
+                    return async (context) =>
+                    {
+                        if (contentType == "multipart/form-data")
+                        {
+                            return "I see you expect a form.";
+                        }
+                        return await next(context);
+                    };
+                },
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("I see you expect a form.", responseBody);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_CanInvokeSingleEndpointFilter_ThatModifiesBodyParameter()
+    {
+        // Arrange
+        Todo todo = new Todo() { Name = "Write tests", IsComplete = true };
+        string PrintTodo(Todo todo)
+        {
+            return $"{todo.Name} is {(todo.IsComplete ? "done" : "not done")}.";
+        };
+
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(todo);
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(PrintTodo, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    Todo originalTodo = (Todo)context.Parameters[0]!;
+                    originalTodo!.IsComplete = !originalTodo.IsComplete;
+                    context.Parameters[0] = originalTodo;
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("Write tests is not done.", responseBody);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_CanInvokeSingleEndpointFilter_ThatModifiesResult()
+    {
+        // Arrange
+        string HelloName(string name)
+        {
+            return $"Hello, {name}!";
+        };
+
+        var httpContext = CreateHttpContext();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "TestName"
+        });
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    var previousResult = await next(context);
+                    if (previousResult is string stringResult)
+                    {
+                        return stringResult.ToUpperInvariant();
+                    }
+                    return previousResult;
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("HELLO, TESTNAME!", responseBody);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_CanInvokeMultipleEndpointFilters_ThatModifyArgumentsAndResult()
+    {
+        // Arrange
+        string HelloName(string name)
+        {
+            return $"Hello, {name}!";
+        };
+
+        var httpContext = CreateHttpContext();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "TestName"
+        });
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    var previousResult = await next(context);
+                    if (previousResult is string stringResult)
+                    {
+                        return stringResult.ToUpperInvariant();
+                    }
+                    return previousResult;
+                },
+                (RouteHandlerContext, next) => async (context) =>
+                {
+                    context.Parameters[0] = context.Parameters[0] != null ? $"{((string)context.Parameters[0]!)}Prefix" : "NULL";
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("HELLO, TESTNAMEPREFIX!", responseBody);
+    }
+
     private DefaultHttpContext CreateHttpContext()
     {
         var responseFeature = new TestHttpResponseFeature();

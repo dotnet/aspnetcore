@@ -30,6 +30,11 @@ internal class WebViewJSRuntime : JSRuntime
 
     protected override void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
     {
+        if (_ipcSender is null)
+        {
+            throw new InvalidOperationException("Cannot invoke JavaScript outside of a WebView context.");
+        }
+
         _ipcSender.BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
     }
 
