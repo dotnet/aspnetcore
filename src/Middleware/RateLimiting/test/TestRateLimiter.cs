@@ -17,6 +17,7 @@ internal class TestRateLimiter : RateLimiter
     {
         _alwaysAccept = alwaysAccept;
     }
+
     public override int GetAvailablePermits()
     {
         throw new NotImplementedException();

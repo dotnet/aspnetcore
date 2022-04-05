@@ -27,6 +27,7 @@ internal class TestRateLimitLease : RateLimitLease
     {
         throw new NotImplementedException();
     }
+
     protected override void Dispose(bool disposing)
     {
         if (_leases != null)

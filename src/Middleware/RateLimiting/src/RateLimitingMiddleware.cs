@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// </summary>
 internal sealed partial class RateLimitingMiddleware
 {
-
     private readonly RequestDelegate _next;
     private readonly RequestDelegate _onRejected;
     private readonly ILogger _logger;
@@ -23,18 +22,18 @@ internal sealed partial class RateLimitingMiddleware
     /// Creates a new <see cref="RateLimitingMiddleware"/>.
     /// </summary>
     /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+    /// <param name="logger">The <see cref="ILogger"/> used for logging.</param>
     /// <param name="options">The options for the middleware.</param>
-    public RateLimitingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<RateLimitingOptions> options)
+    public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimitingOptions> options)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
 
-        if (loggerFactory == null)
+        if (logger == null)
         {
-            throw new ArgumentNullException(nameof(loggerFactory));
+            throw new ArgumentNullException(nameof(logger));
         }
 
-        _logger = loggerFactory.CreateLogger<RateLimitingMiddleware>();
+        _logger = logger;
         _limiter = options.Value.Limiter;
         _onRejected = options.Value.OnRejected;
     }
@@ -49,8 +48,6 @@ internal sealed partial class RateLimitingMiddleware
     {
         var acquireLeaseTask = TryAcquireAsync(context);
 
-        // Make sure we only ever call GetResult once on the TryEnterAsync ValueTask b/c it resets.
-        bool result;
         RateLimitLease lease;
 
         if (acquireLeaseTask.IsCompleted)
@@ -61,7 +58,8 @@ internal sealed partial class RateLimitingMiddleware
         {
             lease = await acquireLeaseTask;
         }
-        result = lease.IsAcquired;
+        // Make sure we only ever call GetResult once on the TryEnterAsync ValueTask b/c it resets.
+        var result = lease.IsAcquired;
 
         if (result)
         {
@@ -90,27 +88,10 @@ internal sealed partial class RateLimitingMiddleware
             return ValueTask.FromResult(lease);
         }
 
-        var task = _limiter.WaitAsync(context);
-        if (task.IsCompletedSuccessfully)
-        {
-            return task;
-        }
-
-        return Awaited(task);
+        return _limiter.WaitAsync(context, cancellationToken: context.RequestAborted);
     }
 
-    private static void OnCompletion(RateLimitLease lease)
-    {
-        if (lease != null)
-        {
-            lease.Dispose();
-        }
-    }
-
-    private static async ValueTask<RateLimitLease> Awaited(ValueTask<RateLimitLease> task)
-    {
-        return await task;
-    }
+    private static void OnCompletion(RateLimitLease lease) => lease?.Dispose();
 
     private static partial class RateLimiterLog
     {

@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// </summary>
 public static class RateLimitingServicesExtensions
 {
-
     /// <summary>
     /// Adds rate limiting services.
     /// </summary>

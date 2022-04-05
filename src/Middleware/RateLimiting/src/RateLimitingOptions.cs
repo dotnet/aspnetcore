@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.RateLimiting;
 
 /// <summary>
-/// Specifies options for the <see cref="RateLimitingMiddleware"/>.
+/// Specifies options for the rate limiting middleware.
 /// </summary>
-public class RateLimitingOptions
+public sealed class RateLimitingOptions
 {
     // TODO - Provide a default?
     private PartitionedRateLimiter<HttpContext> _limiter = new NoLimiter<HttpContext>();
@@ -24,14 +24,7 @@ public class RateLimitingOptions
     public PartitionedRateLimiter<HttpContext> Limiter
     {
         get => _limiter;
-        set
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-            _limiter = value;
-        }
+        set => _limiter = value ?? throw new ArgumentNullException(nameof(value));
     }
 
     /// <summary>
@@ -41,13 +34,6 @@ public class RateLimitingOptions
     public RequestDelegate OnRejected
     {
         get => _onRejected;
-        set
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-            _onRejected = value;
-        }
+        set => _onRejected = value ?? throw new ArgumentNullException(nameof(value));
     }
 }

@@ -25,7 +25,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
 
         Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(
             null,
-            new NullLoggerFactory(),
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options));
 
         Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(c =>
@@ -47,7 +47,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
             flag = true;
             return Task.CompletedTask;
         },
-        new NullLoggerFactory(),
+        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
         options);
 
         await middleware.Invoke(new DefaultHttpContext());
@@ -70,7 +70,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
         {
             return Task.CompletedTask;
         },
-        new NullLoggerFactory(),
+        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
         options);
 
         var context = new DefaultHttpContext();
