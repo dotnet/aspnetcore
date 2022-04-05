@@ -1,4 +1,20 @@
 #nullable enable
+Microsoft.AspNetCore.Http.EndpointMetadataContext
+Microsoft.AspNetCore.Http.EndpointMetadataContext.EndpointMetadata.get -> System.Collections.Generic.IList<object!>!
+Microsoft.AspNetCore.Http.EndpointMetadataContext.EndpointMetadataContext(System.Reflection.MethodInfo! method, System.IServiceProvider? services, System.Collections.Generic.IList<object!>! endpointMetadata) -> void
+Microsoft.AspNetCore.Http.EndpointMetadataContext.Method.get -> System.Reflection.MethodInfo!
+Microsoft.AspNetCore.Http.EndpointMetadataContext.Services.get -> System.IServiceProvider?
+Microsoft.AspNetCore.Http.EndpointParameterMetadataContext
+Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.EndpointMetadata.get -> System.Collections.Generic.IList<object!>!
+Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.EndpointParameterMetadataContext(System.Reflection.ParameterInfo! parameter, System.IServiceProvider? services, System.Collections.Generic.IList<object!>! endpointMetadata) -> void
+Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.Parameter.get -> System.Reflection.ParameterInfo!
+Microsoft.AspNetCore.Http.EndpointParameterMetadataContext.Services.get -> System.IServiceProvider?
+Microsoft.AspNetCore.Http.IEndpointMetadataProvider
+Microsoft.AspNetCore.Http.IEndpointMetadataProvider.PopulateMetadata(Microsoft.AspNetCore.Http.EndpointMetadataContext! context) -> void
+Microsoft.AspNetCore.Http.IEndpointParameterMetadataProvider
+Microsoft.AspNetCore.Http.IEndpointParameterMetadataProvider.PopulateMetadata(Microsoft.AspNetCore.Http.EndpointParameterMetadataContext! parameterContext) -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.DefaultEndpointMetadata.get -> System.Collections.Generic.IReadOnlyList<object!>?
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.DefaultEndpointMetadata.init -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.RouteHandlerContext!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!>!>?
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.init -> void
 Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions

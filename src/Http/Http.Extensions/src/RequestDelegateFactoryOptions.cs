@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 public sealed class RequestDelegateFactoryOptions
 {
     /// <summary>
-    /// The <see cref="IServiceProvider"/> instance used to detect if handler parameters are services.
+    /// The <see cref="IServiceProvider"/> instance used to access application services.
     /// </summary>
     public IServiceProvider? ServiceProvider { get; init; }
 
@@ -36,4 +36,14 @@ public sealed class RequestDelegateFactoryOptions
     /// The list of filters that must run in the pipeline for a given route handler.
     /// </summary>
     public IReadOnlyList<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? RouteHandlerFilterFactories { get; init; }
+
+    /// <summary>
+    /// The default endpoint metadata to add as part of the creation of the <see cref="RequestDelegateResult.RequestDelegate"/>.
+    /// </summary>
+    /// <remarks>
+    /// This metadata will be included in <see cref="RequestDelegateResult.EndpointMetadata" /> after any metadata inferred during creation of the
+    /// <see cref="RequestDelegateResult.RequestDelegate"/> but before any metadata provided by types in the delegate signature that implement
+    /// <see cref="IEndpointMetadataProvider" /> or <see cref="IEndpointParameterMetadataProvider" />.
+    /// </remarks>
+    public IReadOnlyList<object>? DefaultEndpointMetadata { get; init; }
 }
