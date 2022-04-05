@@ -61,11 +61,11 @@ public class OutputCacheAttribute : Attribute, IOrderedFilter, IPoliciesMetadata
     {
         var policies = new List<IOutputCachingPolicy>(5);
 
-        policies.Add(ConfigureCachingPolicy.Instance);
+        policies.Add(EnableCachingPolicy.Instance);
 
         if (_noStore != null && _noStore.Value)
         {
-            policies.Add(new NoCachingPolicy());
+            policies.Add(new NoStorePolicy());
         }
 
         if (Profile != null)
