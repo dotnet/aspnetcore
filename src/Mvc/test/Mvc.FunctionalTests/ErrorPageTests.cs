@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.TestHost;
@@ -16,7 +12,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -24,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     /// <summary>
     /// Functional test to verify the error reporting of Razor compilation by diagnostic middleware.
     /// </summary>
-    public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>>, IDisposable
+    public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>>
     {
         private static readonly string PreserveCompilationContextMessage = HtmlEncoder.Default.Encode(
             "One or more compilation references may be missing. " +
@@ -188,11 +183,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Contains(aggregateException, content);
             Assert.Contains(nullReferenceException, content);
             Assert.Contains(indexOutOfRangeException, content);
-        }
-
-        public void Dispose()
-        {
-            _assemblyTestLog.Dispose();
         }
     }
 }
