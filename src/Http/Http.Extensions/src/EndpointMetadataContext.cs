@@ -3,7 +3,7 @@
 
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.AspNetCore.Http.Metadata;
 
 /// <summary>
 /// Represents the information accessible during endpoint creation by types that implement <see cref="IEndpointMetadataProvider"/>.
@@ -11,33 +11,17 @@ namespace Microsoft.AspNetCore.Http;
 public sealed class EndpointMetadataContext
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="EndpointMetadataContext"/>.
-    /// </summary>
-    /// <param name="method">The <see cref="MethodInfo"/> associated with the current route handler.</param>
-    /// <param name="services">The <see cref="IServiceProvider"/> instance used to access application services.</param>
-    /// <param name="endpointMetadata">The objects that will be added to the metadata of the endpoint.</param>
-    public EndpointMetadataContext(MethodInfo method, IServiceProvider? services, IList<object> endpointMetadata)
-    {
-        ArgumentNullException.ThrowIfNull(method, nameof(method));
-        ArgumentNullException.ThrowIfNull(endpointMetadata, nameof(endpointMetadata));
-
-        Method = method;
-        Services = services;
-        EndpointMetadata = endpointMetadata;
-    }
-
-    /// <summary>
     /// Gets the <see cref="MethodInfo"/> associated with the current route handler.
     /// </summary>
-    public MethodInfo Method { get; }
+    public MethodInfo? Method { get; init; }
 
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance used to access application services.
     /// </summary>
-    public IServiceProvider? Services { get; }
+    public IServiceProvider? Services { get; init; }
 
     /// <summary>
     /// Gets the objects that will be added to the metadata of the endpoint.
     /// </summary>
-    public IList<object> EndpointMetadata { get; }
+    public IList<object>? EndpointMetadata { get; init; }
 }

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
@@ -239,8 +240,6 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
         Assert.Collection(metadata,
             m => Assert.IsAssignableFrom<MethodInfo>(m),
-            m => Assert.IsAssignableFrom<Attribute1>(m),
-            m => Assert.IsAssignableFrom<Attribute2>(m),
             m => Assert.IsAssignableFrom<ParameterNameMetadata>(m),
             m =>
             {
@@ -251,7 +250,9 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
             {
                 Assert.IsAssignableFrom<CustomEndpointMetadata>(m);
                 Assert.Equal(MetadataSource.ReturnType, ((CustomEndpointMetadata)m).Source);
-            });
+            },
+            m => Assert.IsAssignableFrom<Attribute1>(m),
+            m => Assert.IsAssignableFrom<Attribute2>(m));
     }
 
     [Attribute1]

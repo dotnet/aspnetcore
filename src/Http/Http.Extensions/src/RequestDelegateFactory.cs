@@ -170,7 +170,7 @@ public static partial class RequestDelegateFactory
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
             Filters = options?.RouteHandlerFilterFactories?.ToList(),
-            EndpointMetadata = options?.DefaultEndpointMetadata
+            AdditionalEndpointMetadata = options?.AdditionalEndpointMetadata
         };
 
     private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext)
@@ -191,22 +191,22 @@ public static partial class RequestDelegateFactory
         //     return default;
         // }
 
+        // Add MethodInfo as first metadata item
+        factoryContext.Metadata.Insert(0, methodInfo);
+
         // CreateArguments will add metadata inferred from parameter details
         var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
         var returnType = methodInfo.ReturnType;
         factoryContext.MethodCall = CreateMethodCall(methodInfo, targetExpression, arguments);
 
-        // Add metadata provided by the caller
-        if (factoryContext.EndpointMetadata is { Count: > 0 })
-        {
-            foreach (var m in factoryContext.EndpointMetadata)
-            {
-                factoryContext.Metadata.Add(m);
-            }
-        }
-
         // Add metadata provided by the delegate return type and parameter types
         AddTypeProvidedMetadata(methodInfo, factoryContext.Metadata, factoryContext.ServiceProvider);
+
+        // Add metadata provided by the caller last so it is the most specific, i.e. can override inferred metadata
+        if (factoryContext.AdditionalEndpointMetadata is not null)
+        {
+            factoryContext.Metadata.AddRange(factoryContext.AdditionalEndpointMetadata);
+        }
 
         // If there are filters registered on the route handler, then we update the method call and
         // return type associated with the request to allow for the filter invocation pipeline.
@@ -285,7 +285,11 @@ public static partial class RequestDelegateFactory
             if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IEndpointParameterMetadataProvider
-                parameterContext ??= new EndpointParameterMetadataContext(parameter, services, metadata);
+                parameterContext ??= new EndpointParameterMetadataContext
+                {
+                    EndpointMetadata = metadata,
+                    Services = services
+                };
                 parameterContext.Parameter = parameter;
                 invokeArgs ??= new object[1];
                 invokeArgs[0] = parameterContext;
@@ -295,7 +299,12 @@ public static partial class RequestDelegateFactory
             if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IEndpointMetadataProvider
-                context ??= new EndpointMetadataContext(methodInfo, services, metadata);
+                context ??= new EndpointMetadataContext
+                {
+                    Method = methodInfo,
+                    EndpointMetadata = metadata,
+                    Services = services
+                };
                 invokeArgs ??= new object[1];
                 invokeArgs[0] = context;
                 PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
@@ -306,7 +315,12 @@ public static partial class RequestDelegateFactory
         if (methodInfo.ReturnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(methodInfo.ReturnType))
         {
             // Return type implements IEndpointMetadataProvider
-            context ??= new EndpointMetadataContext(methodInfo, services, metadata);
+            context ??= new EndpointMetadataContext
+            {
+                Method = methodInfo,
+                EndpointMetadata = metadata,
+                Services = services
+            };
             invokeArgs ??= new object[1];
             invokeArgs[0] = context;
             PopulateMetadataForEndpointMethod.MakeGenericMethod(methodInfo.ReturnType).Invoke(null, invokeArgs);
@@ -1744,7 +1758,7 @@ public static partial class RequestDelegateFactory
         public List<string>? RouteParameters { get; init; }
         public bool ThrowOnBadRequest { get; init; }
         public bool DisableInferredFromBody { get; init; }
-        public IReadOnlyList<object>? EndpointMetadata { get; init; }
+        public IEnumerable<object>? AdditionalEndpointMetadata { get; init; }
 
         // Temporary State
         public ParameterInfo? JsonRequestBodyParameter { get; set; }
@@ -1759,7 +1773,7 @@ public static partial class RequestDelegateFactory
         public bool HasMultipleBodyParameters { get; set; }
         public bool HasInferredBody { get; set; }
 
-        public List<object> Metadata { get; } = new();
+        public List<object> Metadata { get; internal set; } = new();
 
         public NullabilityInfoContext NullabilityContext { get; } = new();
 
