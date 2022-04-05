@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <Target Name="SetLoggingTestingAssemblyAttributes"
-    BeforeTargets="GetAssemblyAttributes"
-    Condition="'$(GenerateLoggingTestingAssemblyAttributes)' != 'false'">
+      BeforeTargets="GetAssemblyAttributes"
+      Condition="'$(GenerateLoggingTestingAssemblyAttributes)' != 'false'">
     <PropertyGroup>
       <PreserveExistingLogsInOutput Condition="'$(PreserveExistingLogsInOutput)' == '' AND '$(ContinuousIntegrationBuild)' == 'true'">true</PreserveExistingLogsInOutput>
       <PreserveExistingLogsInOutput Condition="'$(PreserveExistingLogsInOutput)' == ''">false</PreserveExistingLogsInOutput>
@@ -24,6 +24,7 @@
         <_Parameter2>Microsoft.AspNetCore.Testing</_Parameter2>
       </AssemblyAttribute>
 
+      <AssemblyAttribute Include="Microsoft.AspNetCore.Testing.AssemblyTestLogFixtureAttribute" />
       <AssemblyAttribute Include="Microsoft.AspNetCore.Testing.TestFrameworkFileLoggerAttribute">
         <_Parameter1>$(PreserveExistingLogsInOutput)</_Parameter1>
         <_Parameter2>$(TargetFramework)</_Parameter2>

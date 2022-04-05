@@ -289,10 +289,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(destination.UrlPrefix)
                 };
 
+                // Passing 0 for delegateUrlGroupId allows http.sys to find the right group for the
+                // URL passed in via the property above. If we passed in the receiver's URL group id
+                // instead of 0, then delegation would fail if the receiver restarted.
                 statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
                                                                destination.Queue.Handle,
                                                                Request.RequestId,
-                                                               destination.Queue.UrlGroup.Id,
+                                                               delegateUrlGroupId: 0,
                                                                propertyInfoSetSize: 1,
                                                                &property);
             }
