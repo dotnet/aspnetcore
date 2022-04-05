@@ -62,7 +62,7 @@ internal sealed partial class RateLimitingMiddleware
         }
         finally
         {
-            OnCompletion(lease);
+            lease?.Dispose();
         }
     }
 
@@ -76,8 +76,6 @@ internal sealed partial class RateLimitingMiddleware
 
         return _limiter.WaitAsync(context, cancellationToken: context.RequestAborted);
     }
-
-    private static void OnCompletion(RateLimitLease lease) => lease?.Dispose();
 
     private static partial class RateLimiterLog
     {
