@@ -46,37 +46,23 @@ internal sealed partial class RateLimitingMiddleware
     /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
     public async Task Invoke(HttpContext context)
     {
-        var acquireLeaseTask = TryAcquireAsync(context);
-
-        RateLimitLease lease;
-
-        if (acquireLeaseTask.IsCompleted)
+        using var lease = await TryAcquireAsync(context);
+        try
         {
-            lease = acquireLeaseTask.Result;
-        }
-        else
-        {
-            lease = await acquireLeaseTask;
-        }
-        // Make sure we only ever call GetResult once on the TryEnterAsync ValueTask b/c it resets.
-        var result = lease.IsAcquired;
-
-        if (result)
-        {
-            try
+            if (lease.IsAcquired)
             {
                 await _next(context);
             }
-            finally
+            else
             {
-                OnCompletion(lease);
+                RateLimiterLog.RequestRejectedLimitsExceeded(_logger);
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                await _onRejected(context);
             }
         }
-        else
+        finally
         {
-            RateLimiterLog.RequestRejectedLimitsExceeded(_logger);
-            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-            await _onRejected(context);
+            OnCompletion(lease);
         }
     }
 
