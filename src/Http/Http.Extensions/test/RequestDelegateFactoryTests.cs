@@ -4560,48 +4560,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("HELLO, TESTNAMEPREFIX!", responseBody);
     }
 
-    [Fact]
-    public void RequestDelegateFactory_DiscoversEndpointParameterMetadata_FromParameters()
-    {
-        var httpContext = CreateHttpContext();
-
-        var @delegate = (ProvidesParameterMetadata param1, ProvidesParameterMetadata param2) => { };
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var metadata = factoryResult.EndpointMetadata;
-
-        Assert.Contains(metadata, m => m is ParameterNameMetadata pnm && string.Equals(pnm.Name, "param1", StringComparison.Ordinal));
-        Assert.Contains(metadata, m => m is ParameterNameMetadata pnm && string.Equals(pnm.Name, "param2", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void RequestDelegateFactory_DiscoversEndpointMetadata_FromParameters()
-    {
-        var httpContext = CreateHttpContext();
-
-        var @delegate = (ProvidesParameterMetadata param1) => { };
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var metadata = factoryResult.EndpointMetadata;
-
-        Assert.Contains(metadata, m => m is CustomEndpointMetadata cem && cem.Source == MetadataSource.Parameter);
-    }
-
-    [Fact]
-    public void RequestDelegateFactory_DiscoversEndpointMetadata_FromReturnType()
-    {
-        var httpContext = CreateHttpContext();
-
-        var @delegate = () => new ProvidesEndpointResultMetadata();
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var metadata = factoryResult.EndpointMetadata;
-
-        Assert.Contains(metadata, m => m is CustomEndpointMetadata cem && cem.Source == MetadataSource.ReturnType);
-    }
-
-    // TODO: Add tests for:
-    //       - Ordering of calls
-    //       - Removing metadata
-    //       - Accessing default metadata
-
     private DefaultHttpContext CreateHttpContext()
     {
         var responseFeature = new TestHttpResponseFeature();
@@ -4616,75 +4574,6 @@ public class RequestDelegateFactoryTests : LoggedTest
                     [typeof(IHttpRequestLifetimeFeature)] = new TestHttpRequestLifetimeFeature(),
                 }
         };
-    }
-
-    private class ProvidesEndpointResultMetadata : IEndpointMetadataProvider, IResult
-    {
-        public static void PopulateMetadata(EndpointMetadataContext context)
-        {
-            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
-        }
-
-        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
-    }
-
-    private class ProvidesNullEndpointResultMetadata : IEndpointMetadataProvider, IResult
-    {
-        public static void PopulateMetadata(EndpointMetadataContext context)
-        {
-
-        }
-
-        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
-    }
-
-    private class ProvidesParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
-    {
-        public static ValueTask<ProvidesParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
-
-        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
-        {
-            parameterContext.EndpointMetadata.Add(new ParameterNameMetadata { Name = parameterContext.Parameter.Name });
-        }
-
-        public static void PopulateMetadata(EndpointMetadataContext context)
-        {
-            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
-        }
-    }
-
-    private class ProvidesNullParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
-    {
-        public static ValueTask<ProvidesNullParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
-
-        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
-        {
-
-        }
-
-        public static void PopulateMetadata(EndpointMetadataContext context)
-        {
-
-        }
-    }
-
-    private class ParameterNameMetadata
-    {
-        public string? Name { get; init; }
-    }
-
-    private class CustomEndpointMetadata
-    {
-        public string? Data { get; init; }
-
-        public MetadataSource Source { get; init; }
-    }
-
-    private enum MetadataSource
-    {
-        Parameter,
-        ReturnType,
-        MethodAttribute
     }
 
     private class Todo : ITodo

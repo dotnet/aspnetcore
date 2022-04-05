@@ -5,11 +5,23 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Http;
 
-public sealed class EndpointMetadataContext
+/// <summary>
+/// 
+/// </summary>
+public class EndpointParameterMetadataContext
 {
-    public MethodInfo Method { get; init; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public ParameterInfo Parameter { get; internal set; } // internal set to allow re-use
 
+    /// <summary>
+    /// 
+    /// </summary>
     public IServiceProvider? Services { get; init; }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public IList<object> EndpointMetadata { get; init; }
 }

@@ -24,6 +24,8 @@ public static class EndpointRouteBuilderExtensions
     private static readonly string[] PutVerb = new[] { HttpMethods.Put };
     private static readonly string[] DeleteVerb = new[] { HttpMethods.Delete };
     private static readonly string[] PatchVerb = new[] { HttpMethods.Patch };
+    private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(EndpointRouteBuilderExtensions).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(EndpointRouteBuilderExtensions).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     /// <summary>
     /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
@@ -544,9 +546,81 @@ public static class EndpointRouteBuilderExtensions
                     endpointBuilder.Metadata.Add(attribute);
                 }
             }
+
+            // Add metadata provided by the delegate return type and parameter types
+            AddTypeProvidedMetadata(handler.Method, endpointBuilder.Metadata, endpoints.ServiceProvider);
+
             endpointBuilder.RequestDelegate = filteredRequestDelegateResult.RequestDelegate;
         });
 
         return routeHandlerBuilder;
+    }
+
+    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, IList<object> metadata, IServiceProvider? services)
+    {
+        EndpointParameterMetadataContext? parameterContext = null;
+        EndpointMetadataContext? context = null;
+        object?[]? invokeArgs = null;
+
+        // Get metadata from parameter types
+        var parameters = methodInfo.GetParameters();
+        foreach (var parameter in parameters)
+        {
+            if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
+            {
+                // Parameter type implements IEndpointParameterMetadataProvider
+                parameterContext ??= new EndpointParameterMetadataContext
+                {
+                    EndpointMetadata = metadata,
+                    Parameter = parameter,
+                    Services = services
+                };
+                parameterContext.Parameter = parameter;
+                invokeArgs ??= new object[1];
+                invokeArgs[0] = parameterContext;
+                PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
+            }
+
+            if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
+            {
+                // Parameter type implements IEndpointMetadataProvider
+                context ??= new EndpointMetadataContext
+                {
+                    EndpointMetadata = metadata,
+                    Method = methodInfo,
+                    Services = services
+                };
+                invokeArgs ??= new object[1];
+                invokeArgs[0] = context;
+                PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
+            }
+        }
+
+        // Get metadata from return type
+        if (methodInfo.ReturnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(methodInfo.ReturnType))
+        {
+            // Return type implements IEndpointMetadataProvider
+            context ??= new EndpointMetadataContext
+            {
+                EndpointMetadata = metadata,
+                Method = methodInfo,
+                Services = services
+            };
+            invokeArgs ??= new object[1];
+            invokeArgs[0] = context;
+            PopulateMetadataForEndpointMethod.MakeGenericMethod(methodInfo.ReturnType).Invoke(null, invokeArgs);
+        }
+    }
+
+    private static void PopulateMetadataForParameter<T>(EndpointParameterMetadataContext parameterContext)
+        where T : IEndpointParameterMetadataProvider
+    {
+        T.PopulateMetadata(parameterContext);
+    }
+
+    private static void PopulateMetadataForEndpoint<T>(EndpointMetadataContext context)
+        where T : IEndpointMetadataProvider
+    {
+        T.PopulateMetadata(context);
     }
 }

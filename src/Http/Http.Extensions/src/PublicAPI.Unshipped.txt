@@ -1,8 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Http.IEndpointMetadataProvider.PopulateMetadata(Microsoft.AspNetCore.Http.EndpointMetadataContext! context) -> void
-Microsoft.AspNetCore.Http.IEndpointParameterMetadataProvider
-Microsoft.AspNetCore.Http.IEndpointMetadataProvider
-Microsoft.AspNetCore.Http.IEndpointParameterMetadataProvider.PopulateMetadata(Microsoft.AspNetCore.Http.EndpointParameterMetadataContext! parameterContext) -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.RouteHandlerContext!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!>!>?
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.init -> void
 Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions
