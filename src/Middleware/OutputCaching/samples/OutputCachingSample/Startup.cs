@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.OutputCaching.Policies;
 using Microsoft.Net.Http.Headers;
@@ -41,7 +42,7 @@ app.MapPost("/purge/{tag}", async (IOutputCacheStore cache, string tag) =>
 // Cached entries will vary by culture, but any other additional query is ignored and returns the same cached content
 app.MapGet("/query", Gravatar.WriteGravatar).OutputCache(p => p.VaryByQuery("culture"));
 
-app.MapGet("/vary", Gravatar.WriteGravatar).OutputCache(c => c.VaryByValue(() => ("time", (DateTime.Now.Second % 2).ToString())));
+app.MapGet("/vary", Gravatar.WriteGravatar).OutputCache(c => c.VaryByValue(() => ("time", (DateTime.Now.Second % 2).ToString(CultureInfo.InvariantCulture))));
 
 long requests = 0;
 

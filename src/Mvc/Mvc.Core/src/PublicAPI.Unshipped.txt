@@ -13,6 +13,19 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataP
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.SystemTextJsonValidationMetadataProvider(System.Text.Json.JsonNamingPolicy! namingPolicy) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.get -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.set -> void
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Duration.get -> int
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Duration.set -> void
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.NoStore.get -> bool
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.NoStore.set -> void
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Order.get -> int
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Order.set -> void
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.OutputCacheAttribute() -> void
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Policies.get -> System.Collections.Generic.List<Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!>!
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Profile.get -> string?
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Profile.set -> void
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.VaryByQueryKeys.get -> string![]?
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.VaryByQueryKeys.set -> void
 virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.PostConfigure(string? name, TOptions! options) -> void
 *REMOVED*~Microsoft.AspNetCore.Mvc.Formatters.FormatFilter.FormatFilter(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Mvc.Formatters.FormatFilter.FormatFilter(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
