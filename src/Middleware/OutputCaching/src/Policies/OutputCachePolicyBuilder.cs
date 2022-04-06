@@ -192,7 +192,7 @@ public class OutputCachePolicyBuilder
     /// <param name="lockResponse">Whether the request should be locked.</param>
     public OutputCachePolicyBuilder Lock(bool lockResponse = true)
     {
-        Policies.Add(new LockingPolicy(lockResponse));
+        Policies.Add(lockResponse ? LockingPolicy.Enabled : LockingPolicy.Disabled);
         return this;
     }
 

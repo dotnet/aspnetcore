@@ -18,12 +18,12 @@ public class LockingPolicy : IOutputCachingPolicy
     /// <summary>
     /// A policy that enables locking.
     /// </summary>
-    public static LockingPolicy Enabled = new(true);
+    public static readonly LockingPolicy Enabled = new(true);
 
     /// <summary>
     /// A policy that disabled locking/
     /// </summary>
-    public static LockingPolicy Disabled = new(false);
+    public static readonly LockingPolicy Disabled = new(false);
 
     /// <inheritdoc /> 
     public Task OnRequestAsync(IOutputCachingContext context)

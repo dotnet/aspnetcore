@@ -118,10 +118,10 @@ Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy.VaryByValuePolicy(System.Fu
 Microsoft.Extensions.DependencyInjection.OutputCachingServicesExtensions
 static Microsoft.AspNetCore.Builder.OutputCachingExtensions.UseOutputCaching(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy.Instance -> Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy!
-static Microsoft.AspNetCore.OutputCaching.LockingPolicy.Disabled -> Microsoft.AspNetCore.OutputCaching.LockingPolicy!
-static Microsoft.AspNetCore.OutputCaching.LockingPolicy.Enabled -> Microsoft.AspNetCore.OutputCaching.LockingPolicy!
 static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.OutputCache<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.OutputCache<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! policy) -> TBuilder
 static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.OutputCache<TBuilder>(this TBuilder builder, params Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy![]! items) -> TBuilder
 static Microsoft.Extensions.DependencyInjection.OutputCachingServicesExtensions.AddOutputCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.OutputCachingServicesExtensions.AddOutputCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static readonly Microsoft.AspNetCore.OutputCaching.LockingPolicy.Disabled -> Microsoft.AspNetCore.OutputCaching.LockingPolicy!
+static readonly Microsoft.AspNetCore.OutputCaching.LockingPolicy.Enabled -> Microsoft.AspNetCore.OutputCaching.LockingPolicy!
