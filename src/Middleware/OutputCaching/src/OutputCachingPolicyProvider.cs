@@ -22,9 +22,9 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
             await policy.OnRequestAsync(context);
         }
 
-        var policiesMedata = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPoliciesMetadata>();
+        var policiesMetadata = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPoliciesMetadata>();
 
-        if (policiesMedata != null)
+        if (policiesMetadata != null)
         {
             // TODO: Log only?
 
@@ -33,7 +33,7 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
                 throw new InvalidOperationException("Can't define output caching policies after headers have been sent to client.");
             }
 
-            foreach (var policy in policiesMedata.Policies)
+            foreach (var policy in policiesMetadata.Policies)
             {
                 await policy.OnRequestAsync(context);
             }
@@ -59,11 +59,11 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
             }
         }
 
-        var policiesMedata = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPoliciesMetadata>();
+        var policiesMetadata = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPoliciesMetadata>();
 
-        if (policiesMedata != null)
+        if (policiesMetadata != null)
         {
-            foreach (var policy in policiesMedata.Policies)
+            foreach (var policy in policiesMetadata.Policies)
             {
                 await policy.OnServeFromCacheAsync(context);
             }
@@ -89,11 +89,11 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
             }
         }
 
-        var policiesMedata = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPoliciesMetadata>();
+        var policiesMetadata = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPoliciesMetadata>();
 
-        if (policiesMedata != null)
+        if (policiesMetadata != null)
         {
-            foreach (var policy in policiesMedata.Policies)
+            foreach (var policy in policiesMetadata.Policies)
             {
                 await policy.OnServeResponseAsync(context);
             }

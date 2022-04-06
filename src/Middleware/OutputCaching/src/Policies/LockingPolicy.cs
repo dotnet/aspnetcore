@@ -10,14 +10,20 @@ public class LockingPolicy : IOutputCachingPolicy
 {
     private readonly bool _lockResponse;
 
-    /// <summary>
-    /// Creates a new instance of <see cref="LockingPolicy"/>.
-    /// </summary>
-    /// <param name="lockResponse">Whether to lock responses or not.</param>
-    public LockingPolicy(bool lockResponse)
+    private LockingPolicy(bool lockResponse)
     {
         _lockResponse = lockResponse;
     }
+
+    /// <summary>
+    /// A policy that enables locking.
+    /// </summary>
+    public static LockingPolicy Enabled = new(true);
+
+    /// <summary>
+    /// A policy that disabled locking/
+    /// </summary>
+    public static LockingPolicy Disabled = new(false);
 
     /// <inheritdoc /> 
     public Task OnRequestAsync(IOutputCachingContext context)

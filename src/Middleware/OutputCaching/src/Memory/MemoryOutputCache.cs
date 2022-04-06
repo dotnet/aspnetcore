@@ -44,7 +44,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
                 StatusCode = memoryCachedResponse.StatusCode,
                 Headers = memoryCachedResponse.Headers,
                 Body = memoryCachedResponse.Body,
-                Tags = memoryCachedResponse.Tags.ToArray()
+                Tags = memoryCachedResponse.Tags
             };
 
             return ValueTask.FromResult<OutputCacheEntry?>(outputCacheEntry);

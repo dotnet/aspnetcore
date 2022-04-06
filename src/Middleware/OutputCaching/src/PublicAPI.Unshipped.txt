@@ -16,7 +16,6 @@ Microsoft.AspNetCore.OutputCaching.ExpirationPolicy.OnRequestAsync(Microsoft.Asp
 Microsoft.AspNetCore.OutputCaching.ExpirationPolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.ExpirationPolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.LockingPolicy
-Microsoft.AspNetCore.OutputCaching.LockingPolicy.LockingPolicy(bool lockResponse) -> void
 Microsoft.AspNetCore.OutputCaching.LockingPolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.LockingPolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.LockingPolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
@@ -119,6 +118,8 @@ Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy.VaryByValuePolicy(System.Fu
 Microsoft.Extensions.DependencyInjection.OutputCachingServicesExtensions
 static Microsoft.AspNetCore.Builder.OutputCachingExtensions.UseOutputCaching(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy.Instance -> Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy!
+static Microsoft.AspNetCore.OutputCaching.LockingPolicy.Disabled -> Microsoft.AspNetCore.OutputCaching.LockingPolicy!
+static Microsoft.AspNetCore.OutputCaching.LockingPolicy.Enabled -> Microsoft.AspNetCore.OutputCaching.LockingPolicy!
 static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.OutputCache<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.OutputCache<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! policy) -> TBuilder
 static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.OutputCache<TBuilder>(this TBuilder builder, params Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy![]! items) -> TBuilder
