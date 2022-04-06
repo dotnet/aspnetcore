@@ -185,7 +185,7 @@ public partial class BodyModelBinder : IModelBinder
                 // are responsible for choosing a default value for the model type.
 
                 // If request content length is 0 then request had empty body, if not null was provided in json
-                if ((httpContext.Request.ContentLength ?? 0) == 0)
+                if (httpContext.Request.ContentLength == 0)
                 {
                     var message = bindingContext
                         .ModelMetadata
