@@ -228,7 +228,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private static void TestOptionalNullableNull(HttpContext httpContext, double? value = null)
     {
-        httpContext.Items.Add("input", value);
+        httpContext.Items.Add("input", (object?)value ?? "Null");
     }
 
     private static void TestOptionalString(HttpContext httpContext, string value = "default")
@@ -259,7 +259,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         await requestDelegate(httpContext);
 
-        Assert.Null(httpContext.Items["input"]);
+        Assert.Equal("Null", httpContext.Items["input"]);
     }
 
     [Fact]
