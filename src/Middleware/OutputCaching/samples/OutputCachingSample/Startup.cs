@@ -14,23 +14,28 @@ builder.Services.AddOutputCaching(options =>
     options.Policies.Add(new EnableCachingPolicy());
 
     options.Profiles["NoCache"] = new OutputCachePolicyBuilder().NoStore().Build();
+
+    // Tag any request to "/blog**
+    options.Policies.Add(new OutputCachePolicyBuilder().Path("/blog").Tag("blog").Build());
 });
 
 var app = builder.Build();
 
 app.UseOutputCaching();
 
-app.MapGet("/", Gravatar.WriteGravatar).OutputCache(x => x.Tag("home"));
+app.MapGet("/", Gravatar.WriteGravatar);
 
-app.MapGet("/a", Gravatar.WriteGravatar).OutputCache();
-
-app.MapGet("/b", Gravatar.WriteGravatar);
+app.MapGet("/cached", Gravatar.WriteGravatar).OutputCache();
 
 app.MapGet("/nocache", Gravatar.WriteGravatar).OutputCache(x => x.NoStore());
 
 app.MapGet("/profile", Gravatar.WriteGravatar).OutputCache(x => x.Profile("NoCache"));
 
 app.MapGet("/attribute", [OutputCache(Profile = "NoCache")] (c) => Gravatar.WriteGravatar(c));
+
+// This is tagged with 'blog'
+app.MapGet("/blog", Gravatar.WriteGravatar).OutputCache();
+app.MapGet("/blog/post/{id}", Gravatar.WriteGravatar).OutputCache();
 
 app.MapPost("/purge/{tag}", async (IOutputCacheStore cache, string tag) =>
 {
