@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Text;
 
 var className = "Results";
-var typeArgCount = 16;
+var typeArgCount = 6;
 var typeArgName = "TResult";
 var pwd = Directory.GetCurrentDirectory();
 
@@ -207,13 +207,15 @@ void GenerateTestFiles(string testFilePath)
         GenerateTest_ExecuteResult_ExecutesAssignedResult(writer, i);
         GenerateTest_Throws_ArgumentNullException_WhenHttpContextIsNull(writer, i);
         GenerateTest_Throws_InvalidOperationException_WhenResultIsNull(writer, i);
+        Generate_AcceptsIResult_AsAnyTypeArg(writer, i);
+        Generate_AcceptsNestedResultsOfT_AsAnyTypeArg(writer, i);
     }
 
     Generate_ChecksumResultClass(writer);
 
     // CustomResult classes
     writer.WriteLine();
-    for (int i = 1; i <= typeArgCount; i++)
+    for (int i = 1; i <= typeArgCount + 1; i++)
     {
         Generate_ChecksumResultClass(writer, i);
 
@@ -245,7 +247,7 @@ void GenerateTest_Result_IsAssignedResult(StreamWriter writer, int typeArgNumber
     //[Theory]
     //[InlineData(1, typeof(ChecksumResult1))]
     //[InlineData(2, typeof(ChecksumResult2))]
-    //public void ResultsOfTResult1TResult2_Result_IsAssignedResult(int input, Type expectedResult)
+    //public void ResultsOfTResult1TResult2_Result_IsAssignedResult(int input, Type expectedResultType)
     //{
     //    // Arrange
     //    Results<CustomResult1, CustomResult2> MyApi(int id)
@@ -261,7 +263,7 @@ void GenerateTest_Result_IsAssignedResult(StreamWriter writer, int typeArgNumber
     //    var result = MyApi(input);
 
     //    // Assert
-    //    Assert.IsType(expectedResult, result.Result);
+    //    Assert.IsType(expectedResultType, result.Result);
     //}
 
     // Attributes
@@ -274,13 +276,12 @@ void GenerateTest_Result_IsAssignedResult(StreamWriter writer, int typeArgNumber
     }
 
     // Method
-    // public void ResultsOfTResult1TResult2_Result_IsAssignedResult(int input, Type expectedResult)
     writer.WriteIndent(1, "public void ResultsOf");
     for (int j = 1; j <= typeArgNumber; j++)
     {
         writer.Write($"TResult{j}");
     }
-    writer.WriteLine("_Result_IsAssignedResult(int input, Type expectedResult)");
+    writer.WriteLine("_Result_IsAssignedResult(int input, Type expectedResultType)");
     writer.WriteIndentedLine("{");
 
     // Arrange
@@ -320,7 +321,7 @@ void GenerateTest_Result_IsAssignedResult(StreamWriter writer, int typeArgNumber
 
     // Assert
     writer.WriteIndentedLine(2, "// Assert");
-    writer.WriteIndentedLine(2, "Assert.IsType(expectedResult, result.Result);");
+    writer.WriteIndentedLine(2, "Assert.IsType(expectedResultType, result.Result);");
 
     // End of method
     writer.WriteIndentedLine("}");
@@ -352,7 +353,7 @@ void GenerateTest_ExecuteResult_ExecutesAssignedResult(StreamWriter writer, int 
     //    await result.ExecuteAsync(httpContext);
 
     //    // Assert
-    //    Assert.Equal(expected, httpContext.Items[result.Result]);
+    //    Assert.Equal(expected, httpContext.Items[nameof(ChecksumResult.Checksum)]);
     //}
 
     // Attributes
@@ -363,7 +364,6 @@ void GenerateTest_ExecuteResult_ExecutesAssignedResult(StreamWriter writer, int 
     {
         writer.WriteIndentedLine($"[InlineData({j})]");
     }
-    //writer.WriteIndentedLine("[InlineData(-1, null)]");
 
     // Method
     // public void ResultsOfTResult1TResult2_ExecuteResult_ExecutesAssignedResult(int input, object expected)
@@ -414,7 +414,7 @@ void GenerateTest_ExecuteResult_ExecutesAssignedResult(StreamWriter writer, int 
 
     // Assert
     writer.WriteIndentedLine(2, "// Assert");
-    writer.WriteIndentedLine(2, "Assert.Equal(input, httpContext.Items[result.Result]);");
+    writer.WriteIndentedLine(2, "Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);");
 
     // End of method
     writer.WriteIndentedLine("}");
@@ -535,11 +535,227 @@ void GenerateTest_Throws_InvalidOperationException_WhenResultIsNull(StreamWriter
     writer.WriteIndentedLine();
 }
 
+void Generate_AcceptsIResult_AsAnyTypeArg(StreamWriter writer, int typeArgCount)
+{
+    for (int i = 1; i <= typeArgCount; i++)
+    {
+        Generate_AcceptsIResult_AsNthTypeArg(writer, typeArgCount, i);
+    }
+}
+
+void Generate_AcceptsIResult_AsNthTypeArg(StreamWriter writer, int typeArgCount, int typeArgNumber)
+{
+    //[Theory]
+    //[InlineData(1, typeof(ChecksumResult1))]
+    //[InlineData(2, typeof(ChecksumResult2))]
+    //public async Task ResultsOfTResult1TResult2_AcceptsIResult_AsFirstTypeArg(int input, Type expectedResultType)
+    //{
+    //    // Arrange
+    //    Results<IResult, ChecksumResult2> MyApi(int id)
+    //    {
+    //        return id switch
+    //        {
+    //            1 => new ChecksumResult1(1),
+    //            _ => new ChecksumResult2(2)
+    //        };
+    //    }
+    //    var httpContext = GetHttpContext();
+
+    //    // Act
+    //    var result = MyApi(input);
+    //    await result.ExecuteAsync(httpContext);
+
+    //    // Assert
+    //    Assert.IsType(expectedResultType, result.Result);
+    //    Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    //}
+
+    // Attributes
+    writer.WriteIndentedLine("[Theory]");
+
+    // InlineData
+    for (int j = 1; j <= typeArgCount; j++)
+    {
+        writer.WriteIndentedLine($"[InlineData({j}, typeof(ChecksumResult{j}))]");
+    }
+
+    // Start method
+    writer.WriteIndent(1, "public async Task ResultsOf");
+    for (int j = 1; j <= typeArgCount; j++)
+    {
+        writer.Write($"TResult{j}");
+    }
+    writer.WriteLine($"_AcceptsIResult_As{typeArgNumber.ToOrdinalWords().TitleCase()}TypeArg(int input, Type expectedResultType)");
+    writer.WriteIndentedLine("{");
+
+    // Arrange
+    writer.WriteIndentedLine(2, "// Arrange");
+    writer.WriteIndent(2, "Results<");
+    for (int j = 1; j <= typeArgCount; j++)
+    {
+        if (j == typeArgNumber)
+        {
+            writer.Write("IResult");
+        }
+        else
+        {
+            writer.Write($"ChecksumResult{j}");
+        }
+
+        if (j < typeArgCount)
+        {
+            writer.Write(", ");
+        }
+    }
+    writer.WriteLine("> MyApi(int id)");
+    writer.WriteIndentedLine(2, "{");
+    writer.WriteIndentedLine(3, "return id switch");
+    writer.WriteIndentedLine(3, "{");
+    for (int j = 1; j <= typeArgCount; j++)
+    {
+        if (j < typeArgCount)
+        {
+            writer.WriteIndentedLine(4, $"{j} => new ChecksumResult{j}({j}),");
+        }
+        else
+        {
+            writer.WriteIndentedLine(4, $"_ => new ChecksumResult{j}({j})");
+        }
+    }
+    writer.WriteIndentedLine(3, "};");
+    writer.WriteIndentedLine(2, "}");
+    writer.WriteIndentedLine(2, "var httpContext = GetHttpContext();");
+    writer.WriteLine();
+
+    // Act
+    writer.WriteIndentedLine(2, "// Act");
+    writer.WriteIndentedLine(2, "var result = MyApi(input);");
+    writer.WriteIndentedLine(2, "await result.ExecuteAsync(httpContext);");
+    writer.WriteIndentedLine(2);
+
+    // Assert
+    writer.WriteIndentedLine(2, "// Assert");
+    writer.WriteIndentedLine(2, "Assert.IsType(expectedResultType, result.Result);");
+    writer.WriteIndentedLine(2, "Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);");
+
+    // Close method
+    writer.WriteIndentedLine(1, "}");
+    writer.WriteIndentedLine();
+}
+
+void Generate_AcceptsNestedResultsOfT_AsAnyTypeArg(StreamWriter writer, int typeArgCount)
+{
+    for (int i = 1; i <= typeArgCount; i++)
+    {
+        Generate_AcceptsNestedResultsOfT_AsNthTypeArg(writer, typeArgCount, i);
+    }
+}
+
+void Generate_AcceptsNestedResultsOfT_AsNthTypeArg(StreamWriter writer, int typeArgCount, int typeArgNumber)
+{
+    //[Theory]
+    //[InlineData(1, typeof(Results<ChecksumResult1, ChecksumResult2>))]
+    //[InlineData(2, typeof(Results<ChecksumResult1, ChecksumResult2>))]
+    //[InlineData(3, typeof(ChecksumResult3))]
+    //public async Task ResultsOfTResult1TResult2_AcceptsNestedResultsOfT_AsFirstTypeArg(int input, Type expectedResultType)
+    //{
+    //    // Arrange
+    //    Results<Results<ChecksumResult1, ChecksumResult2>, ChecksumResult3> MyApi(int id)
+    //    {
+    //        return id switch
+    //        {
+    //            1 => (Results<ChecksumResult1, ChecksumResult2>)new ChecksumResult1(1),
+    //            2 => (Results<ChecksumResult1, ChecksumResult2>)new ChecksumResult2(2),
+    //            _ => new ChecksumResult3(3)
+    //        };
+    //    }
+    //    var httpContext = GetHttpContext();
+
+    //    // Act
+    //    var result = MyApi(input);
+    //    await result.ExecuteAsync(httpContext);
+
+    //    // Assert
+    //    Assert.IsType(expectedResultType, result.Result);
+    //    Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);
+    //}
+
+    var sb = new StringBuilder("Results<");
+    for (int j = 1; j <= typeArgCount; j++)
+    {
+        sb.Append($"ChecksumResult{j}");
+
+        if (j < typeArgCount)
+        {
+            sb.Append(", ");
+        }
+    }
+    sb.Append(">");
+    var nestedResultTypeName = sb.ToString();
+
+    // Attributes
+    writer.WriteIndentedLine("[Theory]");
+
+    // InlineData
+    for (int j = 1; j <= typeArgCount + 1; j++)
+    {
+        if (j <= typeArgCount)
+        {
+            writer.WriteIndentedLine($"[InlineData({j}, typeof({nestedResultTypeName}))]");
+        }
+        else
+        {
+            writer.WriteIndentedLine($"[InlineData({j}, typeof(ChecksumResult{j}))]");
+        }
+    }
+
+    // Start method
+    writer.WriteIndent(1, "public async Task ResultsOf");
+    for (int j = 1; j <= typeArgCount; j++)
+    {
+        writer.Write($"TResult{j}");
+    }
+    writer.WriteLine($"_AcceptsNestedResultsOfT_As{typeArgNumber.ToOrdinalWords().TitleCase()}TypeArg(int input, Type expectedResultType)");
+    writer.WriteIndentedLine("{");
+
+    // Arrange
+    writer.WriteIndentedLine(2, "// Arrange");
+    writer.WriteIndent(2, "Results<");
+    writer.WriteLine($"{nestedResultTypeName}, ChecksumResult{typeArgCount + 1}> MyApi(int id)");
+    writer.WriteIndentedLine(2, "{");
+    writer.WriteIndentedLine(3, "return id switch");
+    writer.WriteIndentedLine(3, "{");
+    for (int j = 1; j <= typeArgCount; j++)
+    {
+        writer.WriteIndentedLine(4, $"{j} => ({nestedResultTypeName})new ChecksumResult{j}({j}),");
+    }
+    writer.WriteIndentedLine(4, $"_ => new ChecksumResult{typeArgCount + 1}({typeArgCount + 1})");
+    writer.WriteIndentedLine(3, "};");
+    writer.WriteIndentedLine(2, "}");
+    writer.WriteIndentedLine(2, "var httpContext = GetHttpContext();");
+    writer.WriteLine();
+
+    // Act
+    writer.WriteIndentedLine(2, "// Act");
+    writer.WriteIndentedLine(2, "var result = MyApi(input);");
+    writer.WriteIndentedLine(2, "await result.ExecuteAsync(httpContext);");
+    writer.WriteIndentedLine(2);
+
+    // Assert
+    writer.WriteIndentedLine(2, "// Assert");
+    writer.WriteIndentedLine(2, "Assert.IsType(expectedResultType, result.Result);");
+    writer.WriteIndentedLine(2, "Assert.Equal(input, httpContext.Items[nameof(ChecksumResult.Checksum)]);");
+
+    // Close method
+    writer.WriteIndentedLine(1, "}");
+    writer.WriteIndentedLine();
+}
+
 void Generate_ChecksumResultClass(StreamWriter writer, int typeArgNumber = -1)
 {
     if (typeArgNumber <= 0)
     {
-        writer.WriteIndentedLine(1, "class ChecksumResult : IResult");
+        writer.WriteIndentedLine(1, "abstract class ChecksumResult : IResult");
         writer.WriteIndentedLine(1, "{");
         writer.WriteIndentedLine(2, "public ChecksumResult(int checksum = 0)");
         writer.WriteIndentedLine(2, "{");
@@ -550,7 +766,7 @@ void Generate_ChecksumResultClass(StreamWriter writer, int typeArgNumber = -1)
         writer.WriteLine();
         writer.WriteIndentedLine(2, "public Task ExecuteAsync(HttpContext httpContext)");
         writer.WriteIndentedLine(2, "{");
-        writer.WriteIndentedLine(3, "httpContext.Items[this] = Checksum;");
+        writer.WriteIndentedLine(3, "httpContext.Items[nameof(ChecksumResult.Checksum)] = Checksum;");
         writer.WriteIndentedLine(3, "return Task.CompletedTask;");
         writer.WriteIndentedLine(2, "}");
         writer.WriteIndentedLine(1, "}");
@@ -649,4 +865,11 @@ static class StringExtensions
         20 => "twentieth",
         _ => throw new NotImplementedException("Add more numbers")
     };
+
+    public static string TitleCase(this string value) => String.Create(value.Length, value, (c, s) =>
+        {
+            var origValueSpan = s.AsSpan();
+            c[0] = char.ToUpper(origValueSpan[0], CultureInfo.InvariantCulture);
+            origValueSpan.Slice(1).TryCopyTo(c.Slice(1));
+        });
 }
