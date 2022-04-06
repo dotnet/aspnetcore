@@ -38,6 +38,21 @@
           ]
         },
         {
+          "condition": "(!UseProgramMain)",
+          "exclude": [
+            "Program.Main.cs"
+          ]
+        },
+        {
+          "condition": "(UseProgramMain && !UseMinimalAPIs)",
+          "exclude": [
+            "Program.cs"
+          ],
+          "rename": {
+            "Program.Main.cs": "Program.cs"
+          }
+        },
+        {
           "condition": "(UseMinimalAPIs)",
           "exclude": [
             "Controllers/WeatherForecastController.cs",
@@ -364,6 +379,13 @@
     "UseControllers": {
       "type": "computed",
       "value": "(!UseMinimalAPIs)"
+    },
+    "UseProgramMain": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Do not use top-level statements",
+      "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
     }
   },
   "primaryOutputs": [
