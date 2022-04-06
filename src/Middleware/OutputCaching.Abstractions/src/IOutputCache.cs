@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 public interface IOutputCacheStore
 {
     /// <summary>
-    /// Evicts cache entries by tag.
+    /// Evicts cached responses by tag.
     /// </summary>
     /// <param name="tag">The tag to evict.</param>
     ValueTask EvictByTagAsync(string tag);

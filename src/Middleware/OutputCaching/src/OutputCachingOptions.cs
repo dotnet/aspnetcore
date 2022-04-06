@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 public class OutputCachingOptions
 {
     /// <summary>
-    /// The size limit for the response cache middleware in bytes. The default is set to 100 MB.
+    /// The size limit for the output cache middleware in bytes. The default is set to 100 MB.
     /// When this limit is exceeded, no new responses will be cached until older entries are
     /// evicted.
     /// </summary>
