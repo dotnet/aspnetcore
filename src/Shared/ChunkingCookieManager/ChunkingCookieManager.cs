@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Internal
             var chunksCount = ParseChunksCount(value);
             if (chunksCount > 0)
             {
-                var chunks = new string[chunksCount];
+                var chunks = new List<string>(10); // chunksCount may be wrong, don't trust it.
                 for (var chunkId = 1; chunkId <= chunksCount; chunkId++)
                 {
                     var chunk = requestCookies[key + ChunkKeySuffix + chunkId.ToString(CultureInfo.InvariantCulture)];
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Internal
                         return value;
                     }
 
-                    chunks[chunkId - 1] = chunk;
+                    chunks.Add(chunk);
                 }
 
                 return string.Join(string.Empty, chunks);
@@ -246,13 +246,22 @@ namespace Microsoft.AspNetCore.Internal
             var keys = new List<string>();
             keys.Add(key + "=");
 
-            var requestCookie = context.Request.Cookies[key];
-            var chunks = ParseChunksCount(requestCookie);
+            var requestCookies = context.Request.Cookies;
+            var requestCookie = requestCookies[key];
+            long chunks = ParseChunksCount(requestCookie);
             if (chunks > 0)
             {
                 for (int i = 1; i <= chunks + 1; i++)
                 {
                     var subkey = key + ChunkKeySuffix + i.ToString(CultureInfo.InvariantCulture);
+
+                    // Only delete cookies we received. We received the chunk count cookie so we should have received the others too.
+                    if (string.IsNullOrEmpty(requestCookies[subkey]))
+                    {
+                        chunks = i - 1;
+                        break;
+                    }
+
                     keys.Add(subkey + "=");
                 }
             }
