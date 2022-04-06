@@ -3,7 +3,6 @@
 
 namespace Microsoft.AspNetCore.Http.Result;
 
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -22,8 +21,10 @@ public partial class ResultsOfTTests
     {
         var services = CreateServices();
 
-        var httpContext = new DefaultHttpContext();
-        httpContext.RequestServices = services.BuildServiceProvider();
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = services.BuildServiceProvider()
+        };
 
         return httpContext;
     }

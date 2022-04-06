@@ -683,14 +683,14 @@ void Generate_AcceptsNestedResultsOfT_AsNthTypeArg(StreamWriter writer, int type
     var sb = new StringBuilder("Results<");
     for (int j = 1; j <= typeArgCount; j++)
     {
-        sb.Append($"ChecksumResult{j}");
+        sb.Append(CultureInfo.InvariantCulture, $"ChecksumResult{j}");
 
         if (j < typeArgCount)
         {
             sb.Append(", ");
         }
     }
-    sb.Append(">");
+    sb.Append('>');
     var nestedResultTypeName = sb.ToString();
 
     // Attributes
@@ -866,10 +866,10 @@ static class StringExtensions
         _ => throw new NotImplementedException("Add more numbers")
     };
 
-    public static string TitleCase(this string value) => String.Create(value.Length, value, (c, s) =>
+    public static string TitleCase(this string value) => string.Create(value.Length, value, (c, s) =>
         {
             var origValueSpan = s.AsSpan();
             c[0] = char.ToUpper(origValueSpan[0], CultureInfo.InvariantCulture);
-            origValueSpan.Slice(1).TryCopyTo(c.Slice(1));
+            origValueSpan[1..].TryCopyTo(c[1..]);
         });
 }
