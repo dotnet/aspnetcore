@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.OutputCaching.Policies;
+
 public class PredicatePolicy : IOutputCachingPolicy
 {
     // TODO: Accept a non async predicate too?
