@@ -47,6 +47,10 @@
         "text": "_Progressive Web Application"
       },
       "isVisible": "true"
+    },
+    {
+      "id": "UseProgramMain",
+      "isVisible": true
     }
   ]
 }
