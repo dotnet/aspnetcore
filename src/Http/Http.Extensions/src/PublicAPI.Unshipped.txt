@@ -12,6 +12,7 @@ Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.EndpointMeta
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.EndpointMetadata.init -> void
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.EndpointParameterMetadataContext() -> void
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.Parameter.get -> System.Reflection.ParameterInfo?
+Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.Parameter.set -> void
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.Services.get -> System.IServiceProvider?
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.Services.init -> void
 Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider

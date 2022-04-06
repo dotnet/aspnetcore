@@ -13,7 +13,7 @@ public class EndpointParameterMetadataContext
     /// <summary>
     /// Gets the parameter of the route handler delegate of the endpoint being created.
     /// </summary>
-    public ParameterInfo? Parameter { get; internal set; } // internal set to allow re-use
+    public ParameterInfo? Parameter { get; set; } // set to allow re-use
 
     /// <summary>
     /// Gets the <see cref="MethodInfo"/> associated with the current route handler.
