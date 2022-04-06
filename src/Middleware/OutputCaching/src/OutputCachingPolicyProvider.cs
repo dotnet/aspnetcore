@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.OutputCaching;
 
 internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 {
-    private readonly OutputCachingOptions options;
+    private readonly OutputCachingOptions _options;
 
     public OutputCachingPolicyProvider(IOptions<OutputCachingOptions> options)
     {
-        this.options = options.Value;
+        _options = options.Value;
     }
 
     public async Task OnRequestAsync(IOutputCachingContext context)
