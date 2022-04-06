@@ -14,5 +14,6 @@ public class OutputCacheEntry
     public IHeaderDictionary Headers { get; set; } = default!;
 
     public CachedResponseBody Body { get; set; } = default!;
+
     public string[]? Tags { get; set; }
 }

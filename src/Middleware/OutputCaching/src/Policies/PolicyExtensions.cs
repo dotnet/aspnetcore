@@ -13,7 +13,7 @@ public static class PolicyExtensions
         var policiesMetadata = new PoliciesMetadata();
 
         // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        policiesMetadata.Policies.Add(EnableCachingPolicy.Instance);
+        policiesMetadata.Add(EnableCachingPolicy.Instance);
 
         builder.Add(endpointBuilder =>
         {
@@ -30,9 +30,12 @@ public static class PolicyExtensions
         var policiesMetadata = new PoliciesMetadata();
 
         // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        policiesMetadata.Policies.Add(EnableCachingPolicy.Instance);
+        policiesMetadata.Add(EnableCachingPolicy.Instance);
 
-        policiesMetadata.Policies.AddRange(items);
+        foreach (var item in items)
+        {
+            policiesMetadata.Add(item);
+        }
 
         builder.Add(endpointBuilder =>
         {
@@ -51,9 +54,9 @@ public static class PolicyExtensions
         var policiesMetadata = new PoliciesMetadata();
 
         // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        policiesMetadata.Policies.Add(EnableCachingPolicy.Instance);
+        policiesMetadata.Add(EnableCachingPolicy.Instance);
 
-        policiesMetadata.Policies.Add(outputCachePolicyBuilder.Build());
+        policiesMetadata.Add(outputCachePolicyBuilder.Build());
 
         builder.Add(endpointBuilder =>
         {

@@ -5,5 +5,5 @@ namespace Microsoft.AspNetCore.OutputCaching;
 
 public interface IPoliciesMetadata
 {
-    List<IOutputCachingPolicy> Policies { get; }
+    IReadOnlyList<IOutputCachingPolicy> Policies { get; }
 }

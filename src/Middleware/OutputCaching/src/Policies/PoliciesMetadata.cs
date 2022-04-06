@@ -5,5 +5,9 @@ namespace Microsoft.AspNetCore.OutputCaching.Policies;
 
 internal sealed class PoliciesMetadata : IPoliciesMetadata
 {
-    public List<IOutputCachingPolicy> Policies { get; } = new();
+    private readonly List<IOutputCachingPolicy> _policies = new();
+
+    public IReadOnlyList<IOutputCachingPolicy> Policies => _policies;
+
+    public void Add(IOutputCachingPolicy policy) => _policies.Add(policy);
 }
