@@ -42,8 +42,8 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
-  <!-- TrimAnaylzer currently breaks when run on aspnetcore. Remove when trimming analyzers are fixed
-       https://github.com/dotnet/aspnetcore/issues/41016 -->
+  <!-- Trim analyzers are automatically enabled by IsTrimming=true. They currently break when run on aspnetcore.
+       Remove when trimming analyzers are fixed: https://github.com/dotnet/aspnetcore/issues/41016 -->
   <PropertyGroup>
     <EnableTrimAnalyzer Condition=" '$(EnableTrimAnalyzer)' == ''">false</EnableTrimAnalyzer>
   </PropertyGroup>
