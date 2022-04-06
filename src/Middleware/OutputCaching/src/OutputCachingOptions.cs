@@ -33,6 +33,9 @@ public class OutputCachingOptions
     /// </summary>
     public bool UseCaseSensitivePaths { get; set; }
 
+    /// <summary>
+    /// Gets the policies applied to all requests.
+    /// </summary>
     public List<IOutputCachingPolicy> Policies { get; } = new() { new DefaultOutputCachePolicy() };
 
     /// <summary>

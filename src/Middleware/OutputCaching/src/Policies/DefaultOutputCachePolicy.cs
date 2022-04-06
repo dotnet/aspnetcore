@@ -7,10 +7,11 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// Default policy.
+/// The default policy.
 /// </summary>
-public class DefaultOutputCachePolicy : IOutputCachingPolicy
+public sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
 {
+    /// <inheritdoc />
     public Task OnRequestAsync(IOutputCachingContext context)
     {
         context.AttemptResponseCaching = AttemptOutputCaching(context);
@@ -25,12 +26,14 @@ public class DefaultOutputCachePolicy : IOutputCachingPolicy
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task OnServeFromCacheAsync(IOutputCachingContext context)
     {
         context.IsCacheEntryFresh = true;
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task OnServeResponseAsync(IOutputCachingContext context)
     {
         context.IsResponseCacheable = true;

@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
-public class OutputCachingContext : IOutputCachingContext
+internal class OutputCachingContext : IOutputCachingContext
 {
     private DateTimeOffset? _responseDate;
     private bool _parsedResponseDate;

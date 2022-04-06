@@ -17,7 +17,7 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 
     public async Task OnRequestAsync(IOutputCachingContext context)
     {
-        foreach (var policy in options.Policies)
+        foreach (var policy in _options.Policies)
         {
             await policy.OnRequestAsync(context);
         }
@@ -42,7 +42,7 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 
     public async Task OnServeFromCacheAsync(IOutputCachingContext context)
     {
-        foreach (var policy in options.Policies)
+        foreach (var policy in _options.Policies)
         {
             await policy.OnServeFromCacheAsync(context);
         }
@@ -72,7 +72,7 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 
     public async Task OnServeResponseAsync(IOutputCachingContext context)
     {
-        foreach (var policy in options.Policies)
+        foreach (var policy in _options.Policies)
         {
             await policy.OnServeResponseAsync(context);
         }

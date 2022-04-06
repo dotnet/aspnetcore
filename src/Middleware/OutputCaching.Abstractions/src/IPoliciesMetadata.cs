@@ -3,7 +3,13 @@
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
+/// <summary>
+/// Represents policies metadata for an endpoint.
+/// </summary>
 public interface IPoliciesMetadata
 {
+    /// <summary>
+    /// Gets the policies.
+    /// </summary>
     IReadOnlyList<IOutputCachingPolicy> Policies { get; }
 }

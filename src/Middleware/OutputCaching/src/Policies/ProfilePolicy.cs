@@ -7,17 +7,22 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// A policy that prevents caching
+/// A policy represented by a named profile.
 /// </summary>
-public class ProfilePolicy : IOutputCachingPolicy
+public sealed class ProfilePolicy : IOutputCachingPolicy
 {
     private readonly string _profileName;
 
+    /// <summary>
+    /// Create a new <see cref="ProfilePolicy"/> instance.
+    /// </summary>
+    /// <param name="profileName">The name of the profile.</param>
     public ProfilePolicy(string profileName)
     {
         _profileName = profileName;
     }
 
+    /// <inheritdoc />
     public Task OnServeResponseAsync(IOutputCachingContext context)
     {
         var policy = GetProfilePolicy(context);
@@ -30,6 +35,7 @@ public class ProfilePolicy : IOutputCachingPolicy
         return policy.OnServeResponseAsync(context);
     }
 
+    /// <inheritdoc />
     public Task OnServeFromCacheAsync(IOutputCachingContext context)
     {
         var policy = GetProfilePolicy(context);
@@ -42,6 +48,7 @@ public class ProfilePolicy : IOutputCachingPolicy
         return policy.OnServeFromCacheAsync(context);
     }
 
+    /// <inheritdoc />
     public Task OnRequestAsync(IOutputCachingContext context)
     {
         var policy = GetProfilePolicy(context);
@@ -54,7 +61,7 @@ public class ProfilePolicy : IOutputCachingPolicy
         return policy.OnRequestAsync(context); ;
     }
 
-    internal IOutputCachingPolicy GetProfilePolicy(IOutputCachingContext context)
+    internal IOutputCachingPolicy? GetProfilePolicy(IOutputCachingContext context)
     {
         var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OutputCachingOptions>>();
 

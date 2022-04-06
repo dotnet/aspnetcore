@@ -8,7 +8,6 @@
     <PackageTags>aspnetcore;cache;caching</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

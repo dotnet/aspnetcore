@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
+/// <summary>
+/// Represents a store for cached responses.
+/// </summary>
 public interface IOutputCacheStore
 {
     /// <summary>

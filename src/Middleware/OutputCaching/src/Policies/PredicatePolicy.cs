@@ -3,19 +3,28 @@
 
 namespace Microsoft.AspNetCore.OutputCaching.Policies;
 
-public class PredicatePolicy : IOutputCachingPolicy
+/// <summary>
+/// A policy that adds a requirement to another policy.
+/// </summary>
+public sealed class PredicatePolicy : IOutputCachingPolicy
 {
     // TODO: Accept a non async predicate too?
 
     private readonly Func<IOutputCachingContext, Task<bool>> _predicate;
     private readonly IOutputCachingPolicy _policy;
 
+    /// <summary>
+    /// Creates a new <see cref="PredicatePolicy"/> instance.
+    /// </summary>
+    /// <param name="predicate">The predicate.</param>
+    /// <param name="policy">The policy.</param>
     public PredicatePolicy(Func<IOutputCachingContext, Task<bool>> predicate, IOutputCachingPolicy policy)
     {
         _predicate = predicate;
         _policy = policy;
     }
 
+    /// <inheritdoc />
     public Task OnRequestAsync(IOutputCachingContext context)
     {
         if (_predicate == null)
@@ -46,11 +55,13 @@ public class PredicatePolicy : IOutputCachingPolicy
         }
     }
 
+    /// <inheritdoc />
     public Task OnServeFromCacheAsync(IOutputCachingContext context)
     {
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task OnServeResponseAsync(IOutputCachingContext context)
     {
         return Task.CompletedTask;

@@ -4,8 +4,15 @@
 using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.OutputCaching.Policies;
+
+/// <summary>
+/// A set of endpoint extension methods.
+/// </summary>
 public static class PolicyExtensions
 {
+    /// <summary>
+    /// Marks an endpoint to be cached.
+    /// </summary>
     public static TBuilder OutputCache<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
@@ -22,6 +29,9 @@ public static class PolicyExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Marks an endpoint to be cached with the specified policies.
+    /// </summary>
     public static TBuilder OutputCache<TBuilder>(this TBuilder builder, params IOutputCachingPolicy[] items) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
@@ -42,8 +52,11 @@ public static class PolicyExtensions
             endpointBuilder.Metadata.Add(policiesMetadata);
         });
         return builder;
-    } 
+    }
 
+    /// <summary>
+    /// Marks an endpoint to be cached with the specified policies.
+    /// </summary>
     public static TBuilder OutputCache<TBuilder>(this TBuilder builder, Action<OutputCachePolicyBuilder> policy) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));

@@ -44,11 +44,10 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
                 StatusCode = memoryCachedResponse.StatusCode,
                 Headers = memoryCachedResponse.Headers,
                 Body = memoryCachedResponse.Body,
+                Tags = memoryCachedResponse.Tags.ToArray()
             };
 
-            outputCacheEntry.Tags = memoryCachedResponse.Tags.ToArray();
-
-            return ValueTask.FromResult(outputCacheEntry);
+            return ValueTask.FromResult<OutputCacheEntry?>(outputCacheEntry);
         }
 
         return ValueTask.FromResult(default(OutputCacheEntry));
@@ -56,16 +55,21 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
     public ValueTask SetAsync(string key, OutputCacheEntry cachedResponse, TimeSpan validFor)
     {
-        foreach (var tag in cachedResponse.Tags)
+        if (cachedResponse.Tags != null)
         {
-            var keys = _taggedEntries.GetOrAdd(tag, _ => new HashSet<string>());
+            foreach (var tag in cachedResponse.Tags)
+            {
+                var keys = _taggedEntries.GetOrAdd(tag, _ => new HashSet<string>());
 
-            // Copy the list of tags to prevent locking
+                // Copy the list of tags to prevent locking
 
-            var local = new HashSet<string>(keys);
-            local.Add(key);
+                var local = new HashSet<string>(keys)
+                {
+                    key
+                };
 
-            _taggedEntries[tag] = local;
+                _taggedEntries[tag] = local;
+            }
         }
 
         _cache.Set(
@@ -76,7 +80,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
                 StatusCode = cachedResponse.StatusCode,
                 Headers = cachedResponse.Headers,
                 Body = cachedResponse.Body,
-                Tags = cachedResponse.Tags
+                Tags = cachedResponse.Tags ?? Array.Empty<string>()
             },
             new MemoryCacheEntryOptions
             {

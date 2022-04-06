@@ -10,8 +10,9 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Provides the policy implemented by Response caching
 /// </summary>
-public class ResponseCachingPolicy : IOutputCachingPolicy
+public sealed class ResponseCachingPolicy : IOutputCachingPolicy
 {
+    /// <inheritdoc />
     public Task OnRequestAsync(IOutputCachingContext context)
     {
         context.AttemptResponseCaching = AttemptOutputCaching(context);
@@ -25,6 +26,7 @@ public class ResponseCachingPolicy : IOutputCachingPolicy
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task OnServeResponseAsync(IOutputCachingContext context)
     {
         context.IsResponseCacheable = IsResponseCacheable(context);
@@ -32,6 +34,7 @@ public class ResponseCachingPolicy : IOutputCachingPolicy
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task OnServeFromCacheAsync(IOutputCachingContext context)
     {
         context.IsCacheEntryFresh = IsCachedEntryFresh(context);
