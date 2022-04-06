@@ -55,7 +55,8 @@ public class OutputCacheAttribute : Attribute, IOrderedFilter, IPoliciesMetadata
     /// <inheritdoc />
     public int Order { get; set; }
 
-    public List<IOutputCachingPolicy> Policies => _policies ??= GetPolicies();
+    /// <inheritdoc />
+    public IReadOnlyList<IOutputCachingPolicy> Policies => _policies ??= GetPolicies();
 
     private List<IOutputCachingPolicy> GetPolicies()
     {
