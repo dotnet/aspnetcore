@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 internal partial class IISHttpContext
 {
+    const ushort MAX_CHUNKS = 65533;
+
     private long _consumedBytes;
     internal bool ClientDisconnected { get; private set; }
 
@@ -155,6 +157,7 @@ internal partial class IISHttpContext
     private async Task WriteBody(bool flush = false)
     {
         Exception? error = null;
+
         try
         {
             while (true)
@@ -162,11 +165,41 @@ internal partial class IISHttpContext
                 var result = await _bodyOutput.Reader.ReadAsync();
 
                 var buffer = result.Buffer;
+
                 try
                 {
                     if (!buffer.IsEmpty)
                     {
-                        await AsyncIO!.WriteAsync(buffer);
+                        if (buffer.IsSingleSegment)
+                        {
+                            await AsyncIO!.WriteAsync(buffer);
+                        }
+                        else
+                        {
+                            ushort chunksCount = 0;
+                            var start = 0;
+                            var length = 0;
+
+                            foreach (var chunks in buffer)
+                            {
+                                chunksCount++;
+                                length += chunks.Length;
+
+                                if (chunksCount == MAX_CHUNKS)
+                                {
+                                    await AsyncIO!.WriteAsync(buffer.Slice(start, length));
+
+                                    chunksCount = 0;
+                                    start = length;
+                                    length = 0;
+                                }
+                            }
+
+                            if (chunksCount > 0)
+                            {
+                                await AsyncIO!.WriteAsync(buffer.Slice(start, length));
+                            }
+                        }
                     }
 
                     // if request is done no need to flush, http.sys would do it for us
