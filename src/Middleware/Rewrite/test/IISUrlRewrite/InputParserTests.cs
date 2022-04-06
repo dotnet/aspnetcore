@@ -65,6 +65,7 @@ public class InputParserTests
 
     [Theory]
     [InlineData("hey/{UrlEncode:<hey>}", "hey/%3Chey%3E")]
+    [InlineData("hey/?returnUrl={UrlEncode:http://domain.com?query=résumé}", "hey/?returnUrl=http%3A%2F%2Fdomain.com%3Fquery%3Dr%C3%A9sum%C3%A9")]
     public void EvaluatUriEncodeRule(string testString, string expected)
     {
         var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
@@ -73,6 +74,7 @@ public class InputParserTests
     }
     [Theory]
     [InlineData("hey/{UrlDecode:%3Chey%3E}","hey/<hey>")]
+    [InlineData("{UrlDecode:http%3A%2F%2Fdomain.com%3Fquery%3Dr%C3%A9sum%C3%A9}", "http://domain.com?query=résumé")]
     public void EvaluateUriDecodeRule(string testString, string expected)
     {
         var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
