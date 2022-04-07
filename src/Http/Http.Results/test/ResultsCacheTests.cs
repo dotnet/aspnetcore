@@ -10,8 +10,8 @@ public class ResultsCacheTests
     [Fact]
     public void GeneratedCodeIsUpToData()
     {
-        var currentContentPath = Path.Combine(AppContext.BaseDirectory, "shared", "GeneratedContent", "ResultsCache.StatusCodes.cs");
-        var templatePath = Path.Combine(AppContext.BaseDirectory, "shared", "GeneratedContent", "ResultsCache.StatusCodes.tt");
+        var currentContentPath = Path.Combine(AppContext.BaseDirectory, "Shared", "GeneratedContent", "ResultsCache.StatusCodes.cs");
+        var templatePath = Path.Combine(AppContext.BaseDirectory, "Shared", "GeneratedContent", "ResultsCache.StatusCodes.tt");
 
         var generator = new TemplateGenerator();
         var compiledTemplate = generator.CompileTemplate(File.ReadAllText(templatePath));
