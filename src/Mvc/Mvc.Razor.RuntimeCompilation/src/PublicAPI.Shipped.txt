@@ -7,6 +7,8 @@ Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.FileProviderRazorProjectItem.F
 Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions
 Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions.AdditionalReferencePaths.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions.FileProviders.get -> System.Collections.Generic.IList<Microsoft.Extensions.FileProviders.IFileProvider!>!
+Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions.CacheAssemblyReferences.set -> void
+Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions.CacheAssemblyReferences.get -> bool
 Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.MvcRazorRuntimeCompilationOptions.MvcRazorRuntimeCompilationOptions() -> void
 Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcBuilderExtensions
 Microsoft.Extensions.DependencyInjection.RazorRuntimeCompilationMvcCoreBuilderExtensions

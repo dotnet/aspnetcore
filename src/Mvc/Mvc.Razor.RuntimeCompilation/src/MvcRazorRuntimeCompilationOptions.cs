@@ -29,4 +29,13 @@ public class MvcRazorRuntimeCompilationOptions
     /// uses to compile a Razor file. This API allows providing additional references to the compiler.
     /// </remarks>
     public IList<string> AdditionalReferencePaths { get; } = new List<string>();
+
+    /// <summary>
+    /// Configures whether assembly references should be cached or not.
+    /// </summary>
+    /// <remarks>
+    /// By default, all reference assemblies are cached. If set to false, this API
+    /// provides you with the option to use dynamically loaded assemblies.
+    /// </remarks>
+    public bool CacheAssemblyReferences { get; set; } = true;
 }

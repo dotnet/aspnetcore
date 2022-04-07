@@ -29,11 +29,11 @@ internal class RazorReferenceManager
     {
         get
         {
-            return LazyInitializer.EnsureInitialized(
+            return _options.CacheAssemblyReferences ? LazyInitializer.EnsureInitialized(
                 ref _compilationReferences,
                 ref _compilationReferencesInitialized,
                 ref _compilationReferencesLock,
-                GetCompilationReferences)!;
+                GetCompilationReferences)! : GetCompilationReferences();
         }
     }
 
