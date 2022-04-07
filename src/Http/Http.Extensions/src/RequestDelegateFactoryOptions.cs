@@ -38,13 +38,13 @@ public sealed class RequestDelegateFactoryOptions
     public IReadOnlyList<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? RouteHandlerFilterFactories { get; init; }
 
     /// <summary>
-    /// The additional endpoint metadata to add as part of the creation of the <see cref="RequestDelegateResult.RequestDelegate"/>.
+    /// The initial endpoint metadata to add as part of the creation of the <see cref="RequestDelegateResult.RequestDelegate"/>.
     /// </summary>
     /// <remarks>
-    /// This metadata will be included in <see cref="RequestDelegateResult.EndpointMetadata" /> <b>after</b> any metadata inferred during creation of the
-    /// <see cref="RequestDelegateResult.RequestDelegate"/> and <b>after</b> any metadata provided by types in the delegate signature that implement
-    /// <see cref="IEndpointMetadataProvider" /> or <see cref="IEndpointParameterMetadataProvider" />, i.e. this metadata will be more specific than any
+    /// This metadata will be included in <see cref="RequestDelegateResult.EndpointMetadata" /> <b>before</b> any metadata inferred during creation of the
+    /// <see cref="RequestDelegateResult.RequestDelegate"/> and <b>before</b> any metadata provided by types in the delegate signature that implement
+    /// <see cref="IEndpointMetadataProvider" /> or <see cref="IEndpointParameterMetadataProvider" />, i.e. this metadata will be less specific than any
     /// inferred by the call to <see cref="RequestDelegateFactory.Create(Delegate, RequestDelegateFactoryOptions?)"/>.
     /// </remarks>
-    public IEnumerable<object>? AdditionalEndpointMetadata { get; init; }
+    public IEnumerable<object>? InitialEndpointMetadata { get; init; }
 }

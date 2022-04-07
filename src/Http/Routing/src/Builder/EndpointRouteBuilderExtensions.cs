@@ -460,7 +460,7 @@ public static class EndpointRouteBuilderExtensions
         RoutePattern pattern,
         Delegate handler,
         bool disableInferBodyFromParameters,
-        IEnumerable<object>? additionalEndpointMetadata = null)
+        IEnumerable<object>? initialEndpointMetadata = null)
     {
         if (endpoints is null)
         {
@@ -479,8 +479,6 @@ public static class EndpointRouteBuilderExtensions
 
         const int defaultOrder = 0;
 
-        var additionalMetadata = new List<object>();
-
         var routeParams = new List<string>(pattern.Parameters.Count);
         foreach (var part in pattern.Parameters)
         {
@@ -496,25 +494,16 @@ public static class EndpointRouteBuilderExtensions
             DisplayName = pattern.RawText ?? pattern.DebuggerToString(),
         };
 
-        // REVIEW: Should we add an IActionMethodMetadata with just MethodInfo on it so we are
-        // explicit about the MethodInfo representing the "handler" and not the RequestDelegate?
+        //var attributes = handler.Method.GetCustomAttributes();
 
-        // Defer adding handler attributes as metadata to the call to RDF. RDF should add this metadata
-        // after any inferred metadata so that the additional metadata has a higher specificity.
-        var attributes = handler.Method.GetCustomAttributes();
-
-        // This can be null if the delegate is a dynamic method or compiled from an expression tree
-        if (attributes is not null)
-        {
-            additionalMetadata.AddRange(attributes);
-        }
-
-        // Add additional metadata provided by caller, deferred to the call to RDF. RDF should add this metadata
-        // after any inferred metadata so that the additional metadata has a higher specificity.
-        if (additionalEndpointMetadata is not null)
-        {
-            additionalMetadata.AddRange(additionalEndpointMetadata);
-        }
+        //// This can be null if the delegate is a dynamic method or compiled from an expression tree
+        //if (attributes is not null)
+        //{
+        //    foreach (var attr in attributes)
+        //    {
+        //        builder.Metadata.Add(attr);
+        //    }
+        //}
 
         // Methods defined in a top-level program are generated as statics so the delegate
         // target will be null. Inline lambdas are compiler generated method so they can
@@ -543,7 +532,7 @@ public static class EndpointRouteBuilderExtensions
                 ThrowOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false,
                 DisableInferBodyFromParameters = disableInferBodyFromParameters,
                 RouteHandlerFilterFactories = routeHandlerBuilder.RouteHandlerFilterFactories,
-                AdditionalEndpointMetadata = additionalMetadata
+                InitialEndpointMetadata = initialEndpointMetadata
             };
             var filteredRequestDelegateResult = RequestDelegateFactory.Create(handler, options);
 

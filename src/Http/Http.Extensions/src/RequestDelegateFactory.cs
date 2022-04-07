@@ -161,17 +161,25 @@ public static partial class RequestDelegateFactory
         return new RequestDelegateResult(httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext), factoryContext.Metadata);
     }
 
-    private static FactoryContext CreateFactoryContext(RequestDelegateFactoryOptions? options) =>
-        new()
+    private static FactoryContext CreateFactoryContext(RequestDelegateFactoryOptions? options)
+    {
+        var context = new FactoryContext
         {
             ServiceProvider = options?.ServiceProvider,
             ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>(),
             RouteParameters = options?.RouteParameterNames?.ToList(),
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
-            Filters = options?.RouteHandlerFilterFactories?.ToList(),
-            AdditionalEndpointMetadata = options?.AdditionalEndpointMetadata
+            Filters = options?.RouteHandlerFilterFactories?.ToList()
         };
+
+        if (options?.InitialEndpointMetadata is not null)
+        {
+            context.Metadata.AddRange(options.InitialEndpointMetadata);
+        }
+
+        return context;
+    }
 
     private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext)
     {
@@ -199,14 +207,11 @@ public static partial class RequestDelegateFactory
         var returnType = methodInfo.ReturnType;
         factoryContext.MethodCall = CreateMethodCall(methodInfo, targetExpression, arguments);
 
-        // Add metadata provided by the delegate return type and parameter types
+        // Add metadata provided by the delegate return type and parameter types next, this will be more specific than inferred metadata from above
         AddTypeProvidedMetadata(methodInfo, factoryContext.Metadata, factoryContext.ServiceProvider);
 
-        // Add metadata provided by the caller last so it is the most specific, i.e. can override inferred metadata
-        if (factoryContext.AdditionalEndpointMetadata is not null)
-        {
-            factoryContext.Metadata.AddRange(factoryContext.AdditionalEndpointMetadata);
-        }
+        // Add method attributes as metadata *after* any inferred metadata so that the attributes hava a higher specificity
+        AddMethodAttributesAsMetadata(methodInfo, factoryContext.Metadata);
 
         // If there are filters registered on the route handler, then we update the method call and
         // return type associated with the request to allow for the filter invocation pipeline.
@@ -272,10 +277,8 @@ public static partial class RequestDelegateFactory
         return filteredInvocation;
     }
 
-    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, IList<object> metadata, IServiceProvider? services)
+    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services)
     {
-        EndpointParameterMetadataContext? parameterContext = null;
-        EndpointMetadataContext? context = null;
         object?[]? invokeArgs = null;
 
         // Get metadata from parameter types
@@ -285,12 +288,12 @@ public static partial class RequestDelegateFactory
             if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IEndpointParameterMetadataProvider
-                parameterContext ??= new EndpointParameterMetadataContext
+                var parameterContext = new EndpointParameterMetadataContext
                 {
+                    Parameter = parameter,
                     EndpointMetadata = metadata,
                     Services = services
                 };
-                parameterContext.Parameter = parameter;
                 invokeArgs ??= new object[1];
                 invokeArgs[0] = parameterContext;
                 PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
@@ -299,7 +302,7 @@ public static partial class RequestDelegateFactory
             if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IEndpointMetadataProvider
-                context ??= new EndpointMetadataContext
+                var context = new EndpointMetadataContext
                 {
                     Method = methodInfo,
                     EndpointMetadata = metadata,
@@ -315,7 +318,7 @@ public static partial class RequestDelegateFactory
         if (methodInfo.ReturnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(methodInfo.ReturnType))
         {
             // Return type implements IEndpointMetadataProvider
-            context ??= new EndpointMetadataContext
+            var context = new EndpointMetadataContext
             {
                 Method = methodInfo,
                 EndpointMetadata = metadata,
@@ -337,6 +340,17 @@ public static partial class RequestDelegateFactory
         where T : IEndpointMetadataProvider
     {
         T.PopulateMetadata(context);
+    }
+
+    private static void AddMethodAttributesAsMetadata(MethodInfo methodInfo, List<object> metadata)
+    {
+        var attributes = methodInfo.GetCustomAttributes();
+
+        // This can be null if the delegate is a dynamic method or compiled from an expression tree
+        if (attributes is not null)
+        {
+            metadata.AddRange(attributes);
+        }
     }
 
     private static Expression[] CreateArguments(ParameterInfo[]? parameters, FactoryContext factoryContext)
@@ -1758,7 +1772,6 @@ public static partial class RequestDelegateFactory
         public List<string>? RouteParameters { get; init; }
         public bool ThrowOnBadRequest { get; init; }
         public bool DisableInferredFromBody { get; init; }
-        public IEnumerable<object>? AdditionalEndpointMetadata { get; init; }
 
         // Temporary State
         public ParameterInfo? JsonRequestBodyParameter { get; set; }

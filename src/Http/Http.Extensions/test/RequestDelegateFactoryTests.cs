@@ -4561,10 +4561,68 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public void Create_AddsDelegateMethodInfo_AsMetadata()
+    {
+        // Arrange
+        var @delegate = () => "Hello";
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is MethodInfo);
+    }
+
+    [Fact]
+    public void Create_AddsDelegateMethodInfo_AsFirstMetadata()
+    {
+        // Arrange
+        var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
+        var customMetadata = new CustomEndpointMetadata();
+        var options = new RequestDelegateFactoryOptions { InitialEndpointMetadata = new[] { customMetadata } };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        var firstMetadata = result.EndpointMetadata[0];
+        Assert.IsAssignableFrom<MethodInfo>(firstMetadata);
+    }
+
+    [Fact]
+    public void Create_AddsDelegateAttributes_AsMetadata()
+    {
+        // Arrange
+        var @delegate = [Attribute1, Attribute2] () => { };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is Attribute1);
+        Assert.Contains(result.EndpointMetadata, m => m is Attribute2);
+    }
+
+    [Fact]
+    public void Create_AddsDelegateAttributes_AsLastMetadata()
+    {
+        // Arrange
+        var @delegate = [Attribute1] (AddsCustomParameterMetadata param1) => { };
+        var options = new RequestDelegateFactoryOptions { InitialEndpointMetadata = new[] { new CustomEndpointMetadata() } };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        var lastMetadata = result.EndpointMetadata.Last();
+        Assert.IsAssignableFrom<Attribute1>(lastMetadata);
+    }
+
+    [Fact]
     public void Create_DiscoversMetadata_FromParametersImplementingIEndpointParameterMetadataProvider()
     {
         // Arrange
-        var @delegate = (AddsCustomParameterMetadata param1, AddsCustomParameterMetadata param2) => { };
+        var @delegate = (AddsCustomParameterMetadataBindable param1, AddsCustomParameterMetadata param2) => { };
 
         // Act
         var result = RequestDelegateFactory.Create(@delegate);
@@ -4607,10 +4665,9 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => new CountsDefaultEndpointMetadataResult();
         var options = new RequestDelegateFactoryOptions
         {
-            AdditionalEndpointMetadata = new List<object>
+            InitialEndpointMetadata = new List<object>
             {
-                new Attribute1(),
-                new Attribute2()
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }
         };
 
@@ -4618,16 +4675,9 @@ public class RequestDelegateFactoryTests : LoggedTest
         var result = RequestDelegateFactory.Create(@delegate, options);
 
         // Assert
-        Assert.Collection(result.EndpointMetadata,
-            m => Assert.IsAssignableFrom<MethodInfo>(m),
-            m =>
-            {
-                Assert.IsAssignableFrom<DefaultMetadataCountMetadata>(m);
-                // Expecting '1' as only the MethodInfo will be in the metadata list when this metadata item is added
-                Assert.Equal(1, ((DefaultMetadataCountMetadata)m).Count);
-            },
-            m => Assert.IsAssignableFrom<Attribute1>(m),
-            m => Assert.IsAssignableFrom<Attribute2>(m));
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        // Expecting '2' as only MethodInfo and initial metadata will be in the metadata list when this metadata item is added
+        Assert.Contains(result.EndpointMetadata, m => m is DefaultMetadataCountMetadata { Count: 2 });
     }
 
     [Fact]
@@ -4637,11 +4687,51 @@ public class RequestDelegateFactoryTests : LoggedTest
         var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
         var options = new RequestDelegateFactoryOptions
         {
-            AdditionalEndpointMetadata = new List<object>
+            InitialEndpointMetadata = new List<object>
             {
-                new CustomEndpointMetadata { Source = MetadataSource.Caller },
-                new Attribute1(),
-                new Attribute2()
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
+            }
+        };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param1" });
+    }
+
+    [Fact]
+    public void Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
+        var options = new RequestDelegateFactoryOptions
+        {
+            InitialEndpointMetadata = new List<object>
+            {
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
+            }
+        };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+    }
+
+    [Fact]
+    public void Create_CombinesAllMetadata_InCorrectOrder()
+    {
+        // Arrange
+        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
+        var options = new RequestDelegateFactoryOptions
+        {
+            InitialEndpointMetadata = new List<object>
+            {
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
             }
         };
 
@@ -4650,35 +4740,22 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Collection(result.EndpointMetadata,
+            // MethodInfo
             m => Assert.IsAssignableFrom<MethodInfo>(m),
-            m => Assert.IsAssignableFrom<ParameterNameMetadata>(m),
-            m =>
-            {
-                Assert.IsAssignableFrom<CustomEndpointMetadata>(m);
-                Assert.Equal(MetadataSource.Parameter, ((CustomEndpointMetadata)m).Source);
-            },
-            m =>
-            {
-                Assert.IsAssignableFrom<CustomEndpointMetadata>(m);
-                Assert.Equal(MetadataSource.Caller, ((CustomEndpointMetadata)m).Source);
-            },
-            m => Assert.IsAssignableFrom<Attribute1>(m),
-            m => Assert.IsAssignableFrom<Attribute2>(m));
-    }
-
-    [Fact]
-    public void Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider()
-    {
-        // Arrange
-        var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
-        var options = new RequestDelegateFactoryOptions { AdditionalEndpointMetadata = new List<object> { new Attribute1() } };
-
-        // Act
-        var result = RequestDelegateFactory.Create(@delegate, options);
-
-        // Assert
-        Assert.Contains(result.EndpointMetadata, m => m is Attribute1);
-        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+            // Initial metadata from RequestDelegateFactoryOptions.InitialEndpointMetadata
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }),
+            // Inferred AcceptsMetadata from RDF for complex type
+            m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
+            // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
+            m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
+            // Metadata provided by parameters implementing IEndpointMetadataProvider
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
+            // Metadata provided by return type implementing IEndpointMetadataProvider
+            m => Assert.True(m is DefaultMetadataCountMetadata { Count: 5 }),
+            // Handler delegate attributes
+            m => Assert.IsAssignableFrom<Attribute>(m), // NullableContextAttribute
+            m => Assert.IsType<Attribute1>(m),
+            m => Assert.IsType<Attribute2>(m));
     }
 
     [Fact]
@@ -4834,8 +4911,6 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
     {
-        public static ValueTask<AddsCustomParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
-
         public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
         {
             parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
@@ -4847,18 +4922,18 @@ public class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-    private class AddsNoCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
+    private class AddsCustomParameterMetadataBindable : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
     {
-        public static ValueTask<AddsNoCustomParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
+        public static ValueTask<AddsCustomParameterMetadataBindable> BindAsync(HttpContext context, ParameterInfo parameter) => default;
 
         public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
         {
-
+            parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
         }
 
         public static void PopulateMetadata(EndpointMetadataContext context)
         {
-
+            context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
         }
     }
 
