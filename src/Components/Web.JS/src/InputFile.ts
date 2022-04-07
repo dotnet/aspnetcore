@@ -105,7 +105,7 @@ export function getFileById(elem: InputElement, fileId: number): BrowserFile {
   const file = elem._blazorFilesById[fileId];
 
   if (!file) {
-    throw new Error(`There is no file with ID ${fileId}. The file list may have changed.`);
+    throw new Error(`There is no file with ID ${fileId}. The file list may have changed. Each selection of file(s) via the InputFile component replaces the prior file(s) selection, selections are not cumulative. For more information please see https://docs.microsoft.com/aspnet/core/blazor/file-uploads.`);
   }
 
   return file;
