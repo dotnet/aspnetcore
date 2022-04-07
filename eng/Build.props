@@ -98,21 +98,15 @@
         <!-- Build the SharedFramework installers -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=arm64" />
 
         <!-- Build the SharedFramework wixlib -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x86" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
 
         <!-- Windows hosting bundled -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-      </ItemGroup>
-
-      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'arm64' ">
-        <!-- We don't build the targeting pack installer here because it's built in the x86/x64 leg.
-        Instead we only provide the ARM64 SharedFramework MSI-->
-
-        <!-- Build the SharedFramework wixlib -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
       </ItemGroup>
 
       <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND ('$(TargetRuntimeIdentifier)' == 'linux-x64' OR '$(TargetRuntimeIdentifier)' == 'linux-arm64')">

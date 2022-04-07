@@ -1354,7 +1354,8 @@ public class StartupTests : IISFunctionalTestBase
         };
         var client = new HttpClient(handler)
         {
-            BaseAddress = new Uri(deploymentParameters.ApplicationBaseUriHint)
+            BaseAddress = new Uri(deploymentParameters.ApplicationBaseUriHint),
+            Timeout = TimeSpan.FromSeconds(200),
         };
 
         if (DeployerSelector.HasNewHandler)

@@ -41,7 +41,11 @@ public static class Helpers
     {
         async Task RunRequests()
         {
-            var connection = new HttpClient() { BaseAddress = httpClient.BaseAddress };
+            var connection = new HttpClient()
+            {
+                BaseAddress = httpClient.BaseAddress,
+                Timeout = TimeSpan.FromSeconds(200),
+            };
 
             for (int j = 0; j < 10; j++)
             {

@@ -10,7 +10,7 @@
     <IsPackable>false</IsPackable>
     <DefineConstants>$(DefineConstants);KESTREL</DefineConstants>
     <NoWarn>$(NoWarn);IDE0060</NoWarn><!-- APIs in HTTP3 are work in progress and produce these warnings frequently-->
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>

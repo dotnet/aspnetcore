@@ -8,6 +8,20 @@ namespace Microsoft.AspNetCore.Identity.Test;
 
 public class PasswordHasherTest
 {
+    // Password used in these tests
+    public const string Plaintext_Password = "my password";
+
+    // V2 Hashed versions of Plaintext_Password
+    public const string V2_SHA1_1000iter_128salt_256subkey = "AAABAgMEBQYHCAkKCwwNDg+ukCEMDf0yyQ29NYubggHIVY0sdEUfdyeM+E1LtH1uJg==";
+
+    // V3 Hashed versions of Plaintext_Password
+    public const string V3_SHA1_250iter_128salt_128subkey = "AQAAAAAAAAD6AAAAEAhftMyfTJylOlZT+eEotFXd1elee8ih5WsjXaR3PA9M";
+    public const string V3_SHA256_250000iter_256salt_256subkey = "AQAAAAEAA9CQAAAAIESkQuj2Du8Y+kbc5lcN/W/3NiAZFEm11P27nrSN5/tId+bR1SwV8CO1Jd72r4C08OLvplNlCDc3oQZ8efcW+jQ=";
+    public const string V3_SHA512_50iter_128salt_128subkey = "AQAAAAIAAAAyAAAAEOMwvh3+FZxqkdMBz2ekgGhwQ4B6pZWND6zgESBuWiHw";
+    public const string V3_SHA512_250iter_256salt_512subkey = "AQAAAAIAAAD6AAAAIJbVi5wbMR+htSfFp8fTw8N8GOS/Sje+S/4YZcgBfU7EQuqv4OkVYmc4VJl9AGZzmRTxSkP7LtVi9IWyUxX8IAAfZ8v+ZfhjCcudtC1YERSqE1OEdXLW9VukPuJWBBjLuw==";
+    public const string V3_SHA512_10000iter_128salt_256subkey = "AQAAAAIAACcQAAAAEAABAgMEBQYHCAkKCwwNDg9B0Oxwty+PGIDSp95gcCfzeDvA4sGapUIUov8usXfD6A==";
+    public const string V3_SHA512_100000iter_128salt_256subkey = "AQAAAAIAAYagAAAAEAABAgMEBQYHCAkKCwwNDg/Q8A0WMKbtHQJQ2DHCdoEeeFBrgNlldq6vH4qX/CGqGQ==";
+
     [Fact]
     public void Ctor_InvalidCompatMode_Throws()
     {
@@ -57,10 +71,10 @@ public class PasswordHasherTest
         var hasher = new PasswordHasher(compatMode: null);
 
         // Act
-        string retVal = hasher.HashPassword(null, "my password");
+        string retVal = hasher.HashPassword(null, Plaintext_Password);
 
         // Assert
-        Assert.Equal("AQAAAAEAACcQAAAAEAABAgMEBQYHCAkKCwwNDg+yWU7rLgUwPZb1Itsmra7cbxw2EFpwpVFIEtP+JIuUEw==", retVal);
+        Assert.Equal(V3_SHA512_100000iter_128salt_256subkey, retVal);
     }
 
     [Fact]
@@ -70,10 +84,10 @@ public class PasswordHasherTest
         var hasher = new PasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV2);
 
         // Act
-        string retVal = hasher.HashPassword(null, "my password");
+        string retVal = hasher.HashPassword(null, Plaintext_Password);
 
         // Assert
-        Assert.Equal("AAABAgMEBQYHCAkKCwwNDg+ukCEMDf0yyQ29NYubggHIVY0sdEUfdyeM+E1LtH1uJg==", retVal);
+        Assert.Equal(V2_SHA1_1000iter_128salt_256subkey, retVal);
     }
 
     [Fact]
@@ -83,10 +97,10 @@ public class PasswordHasherTest
         var hasher = new PasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV3);
 
         // Act
-        string retVal = hasher.HashPassword(null, "my password");
+        string retVal = hasher.HashPassword(null, Plaintext_Password);
 
         // Assert
-        Assert.Equal("AQAAAAEAACcQAAAAEAABAgMEBQYHCAkKCwwNDg+yWU7rLgUwPZb1Itsmra7cbxw2EFpwpVFIEtP+JIuUEw==", retVal);
+        Assert.Equal(V3_SHA512_100000iter_128salt_256subkey, retVal);
     }
 
     [Theory]
@@ -94,7 +108,7 @@ public class PasswordHasherTest
     [InlineData("AAABAgMEBQYHCAkKCwwNDg+uAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALtH1uJg==")] // incorrect password
     [InlineData("AAABAgMEBQYHCAkKCwwNDg+ukCEMDf0yyQ29NYubggE=")] // too short
     [InlineData("AAABAgMEBQYHCAkKCwwNDg+ukCEMDf0yyQ29NYubggHIVY0sdEUfdyeM+E1LtH1uJgAAAAAAAAAAAAA=")] // extra data at end
-                                                                                                     // Version 3 payloads
+    // Version 3 payloads
     [InlineData("AQAAAAAAAAD6AAAAEAhftMyfTJyAAAAAAAAAAAAAAAAAAAih5WsjXaR3PA9M")] // incorrect password
     [InlineData("AQAAAAIAAAAyAAAAEOMwvh3+FZxqkdMBz2ekgGhwQ4A=")] // too short
     [InlineData("AQAAAAIAAAAyAAAAEOMwvh3+FZxqkdMBz2ekgGhwQ4B6pZWND6zgESBuWiHwAAAAAAAAAAAA")] // extra data at end
@@ -104,7 +118,7 @@ public class PasswordHasherTest
         var hasher = new PasswordHasher();
 
         // Act
-        var result = hasher.VerifyHashedPassword(null, hashedPassword, "my password");
+        var result = hasher.VerifyHashedPassword(null, hashedPassword, Plaintext_Password);
 
         // Assert
         Assert.Equal(PasswordVerificationResult.Failed, result);
@@ -112,19 +126,18 @@ public class PasswordHasherTest
 
     [Theory]
     // Version 2 payloads
-    [InlineData("ANXrDknc7fGPpigibZXXZFMX4aoqz44JveK6jQuwY3eH/UyPhvr5xTPeGYEckLxz9A==")] // SHA1, 1000 iterations, 128-bit salt, 256-bit subkey
-                                                                                         // Version 3 payloads
-    [InlineData("AQAAAAIAAAAyAAAAEOMwvh3+FZxqkdMBz2ekgGhwQ4B6pZWND6zgESBuWiHw")] // SHA512, 50 iterations, 128-bit salt, 128-bit subkey
-    [InlineData("AQAAAAIAAAD6AAAAIJbVi5wbMR+htSfFp8fTw8N8GOS/Sje+S/4YZcgBfU7EQuqv4OkVYmc4VJl9AGZzmRTxSkP7LtVi9IWyUxX8IAAfZ8v+ZfhjCcudtC1YERSqE1OEdXLW9VukPuJWBBjLuw==")] // SHA512, 250 iterations, 256-bit salt, 512-bit subkey
-    [InlineData("AQAAAAAAAAD6AAAAEAhftMyfTJylOlZT+eEotFXd1elee8ih5WsjXaR3PA9M")] // SHA1, 250 iterations, 128-bit salt, 128-bit subkey
-    [InlineData("AQAAAAEAA9CQAAAAIESkQuj2Du8Y+kbc5lcN/W/3NiAZFEm11P27nrSN5/tId+bR1SwV8CO1Jd72r4C08OLvplNlCDc3oQZ8efcW+jQ=")] // SHA256, 250000 iterations, 256-bit salt, 256-bit subkey
+    [InlineData(V2_SHA1_1000iter_128salt_256subkey)]
+    // Version 3 payloads
+    [InlineData(V3_SHA512_50iter_128salt_128subkey)]
+    [InlineData(V3_SHA512_250iter_256salt_512subkey)]
+    [InlineData(V3_SHA512_100000iter_128salt_256subkey)]
     public void VerifyHashedPassword_Version2CompatMode_SuccessCases(string hashedPassword)
     {
         // Arrange
         var hasher = new PasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV2);
 
         // Act
-        var result = hasher.VerifyHashedPassword(null, hashedPassword, "my password");
+        var result = hasher.VerifyHashedPassword(null, hashedPassword, Plaintext_Password);
 
         // Assert
         Assert.Equal(PasswordVerificationResult.Success, result);
@@ -132,19 +145,21 @@ public class PasswordHasherTest
 
     [Theory]
     // Version 2 payloads
-    [InlineData("ANXrDknc7fGPpigibZXXZFMX4aoqz44JveK6jQuwY3eH/UyPhvr5xTPeGYEckLxz9A==", PasswordVerificationResult.SuccessRehashNeeded)] // SHA1, 1000 iterations, 128-bit salt, 256-bit subkey
-                                                                                                                                         // Version 3 payloads
-    [InlineData("AQAAAAIAAAAyAAAAEOMwvh3+FZxqkdMBz2ekgGhwQ4B6pZWND6zgESBuWiHw", PasswordVerificationResult.SuccessRehashNeeded)] // SHA512, 50 iterations, 128-bit salt, 128-bit subkey
-    [InlineData("AQAAAAIAAAD6AAAAIJbVi5wbMR+htSfFp8fTw8N8GOS/Sje+S/4YZcgBfU7EQuqv4OkVYmc4VJl9AGZzmRTxSkP7LtVi9IWyUxX8IAAfZ8v+ZfhjCcudtC1YERSqE1OEdXLW9VukPuJWBBjLuw==", PasswordVerificationResult.SuccessRehashNeeded)] // SHA512, 250 iterations, 256-bit salt, 512-bit subkey
-    [InlineData("AQAAAAAAAAD6AAAAEAhftMyfTJylOlZT+eEotFXd1elee8ih5WsjXaR3PA9M", PasswordVerificationResult.SuccessRehashNeeded)] // SHA1, 250 iterations, 128-bit salt, 128-bit subkey
-    [InlineData("AQAAAAEAA9CQAAAAIESkQuj2Du8Y+kbc5lcN/W/3NiAZFEm11P27nrSN5/tId+bR1SwV8CO1Jd72r4C08OLvplNlCDc3oQZ8efcW+jQ=", PasswordVerificationResult.Success)] // SHA256, 250000 iterations, 256-bit salt, 256-bit subkey
+    [InlineData(V2_SHA1_1000iter_128salt_256subkey, PasswordVerificationResult.SuccessRehashNeeded)]
+    // Version 3 payloads
+    [InlineData(V3_SHA1_250iter_128salt_128subkey, PasswordVerificationResult.SuccessRehashNeeded)]
+    [InlineData(V3_SHA256_250000iter_256salt_256subkey, PasswordVerificationResult.SuccessRehashNeeded)]
+    [InlineData(V3_SHA512_50iter_128salt_128subkey, PasswordVerificationResult.SuccessRehashNeeded)]
+    [InlineData(V3_SHA512_250iter_256salt_512subkey, PasswordVerificationResult.SuccessRehashNeeded)]
+    [InlineData(V3_SHA512_10000iter_128salt_256subkey, PasswordVerificationResult.SuccessRehashNeeded)]
+    [InlineData(V3_SHA512_100000iter_128salt_256subkey, PasswordVerificationResult.Success)]
     public void VerifyHashedPassword_Version3CompatMode_SuccessCases(string hashedPassword, PasswordVerificationResult expectedResult)
     {
         // Arrange
         var hasher = new PasswordHasher(compatMode: PasswordHasherCompatibilityMode.IdentityV3);
 
         // Act
-        var actualResult = hasher.VerifyHashedPassword(null, hashedPassword, "my password");
+        var actualResult = hasher.VerifyHashedPassword(null, hashedPassword, Plaintext_Password);
 
         // Assert
         Assert.Equal(expectedResult, actualResult);
@@ -191,5 +206,4 @@ public class PasswordHasherTest
     {
         public PasswordHasherOptions Value { get; } = new PasswordHasherOptions();
     }
-
 }

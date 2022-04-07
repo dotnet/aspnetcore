@@ -113,11 +113,14 @@ public static class WebHostBuilderExtensions
         return hostBuilder
             .ConfigureServices((context, services) =>
             {
-                services.AddSingleton(typeof(IStartup), sp =>
+                services.AddSingleton(typeof(IStartup), GetStartupInstance);
+
+                [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Startup type created by factory can't be determined statically.")]
+                object GetStartupInstance(IServiceProvider serviceProvider)
                 {
                     var instance = startupFactory(context) ?? throw new InvalidOperationException("The specified factory returned null startup instance.");
 
-                    var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
+                    var hostingEnvironment = serviceProvider.GetRequiredService<IHostEnvironment>();
 
                     // Check if the instance implements IStartup before wrapping
                     if (instance is IStartup startup)
@@ -125,8 +128,8 @@ public static class WebHostBuilderExtensions
                         return startup;
                     }
 
-                    return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, instance.GetType(), hostingEnvironment.EnvironmentName, instance));
-                });
+                    return new ConventionBasedStartup(StartupLoader.LoadMethods(serviceProvider, instance.GetType(), hostingEnvironment.EnvironmentName, instance));
+                }
             });
     }
 
@@ -153,19 +156,21 @@ public static class WebHostBuilderExtensions
 
         hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
+        var state = new UseStartupState(startupType);
+
         return hostBuilder
             .ConfigureServices(services =>
             {
-                if (typeof(IStartup).IsAssignableFrom(startupType))
+                if (typeof(IStartup).IsAssignableFrom(state.StartupType))
                 {
-                    services.AddSingleton(typeof(IStartup), startupType);
+                    services.AddSingleton(typeof(IStartup), state.StartupType);
                 }
                 else
                 {
                     services.AddSingleton(typeof(IStartup), sp =>
                     {
                         var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
-                        return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName));
+                        return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, state.StartupType, hostingEnvironment.EnvironmentName));
                     });
                 }
             });

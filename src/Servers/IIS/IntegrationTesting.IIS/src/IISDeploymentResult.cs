@@ -33,7 +33,8 @@ public class IISDeploymentResult : DeploymentResult
     {
         return new HttpClient(new LoggingHandler(messageHandler, Logger))
         {
-            BaseAddress = base.HttpClient.BaseAddress
+            BaseAddress = base.HttpClient.BaseAddress,
+            Timeout = TimeSpan.FromSeconds(200),
         };
     }
 

@@ -97,26 +97,32 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
             // Support UseStartup(assemblyName)
             if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
             {
-                try
-                {
-                    var startupType = StartupLoader.FindStartupType(webHostOptions.StartupAssembly, webhostContext.HostingEnvironment.EnvironmentName);
-                    UseStartup(startupType, context, services);
-                }
-                catch (Exception ex) when (webHostOptions.CaptureStartupErrors)
-                {
-                    var capture = ExceptionDispatchInfo.Capture(ex);
-
-                    services.Configure<GenericWebHostServiceOptions>(options =>
-                    {
-                        options.ConfigureApplication = app =>
-                        {
-                            // Throw if there was any errors initializing startup
-                            capture.Throw();
-                        };
-                    });
-                }
+                ScanAssemblyAndRegisterStartup(context, services, webhostContext, webHostOptions);
             }
         });
+    }
+
+    [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Finding startup type in assembly requires unreferenced code. Surfaced to user in UseStartup(assemblyName).")]
+    private void ScanAssemblyAndRegisterStartup(HostBuilderContext context, IServiceCollection services, WebHostBuilderContext webhostContext, WebHostOptions webHostOptions)
+    {
+        try
+        {
+            var startupType = StartupLoader.FindStartupType(webHostOptions.StartupAssembly!, webhostContext.HostingEnvironment.EnvironmentName);
+            UseStartup(startupType, context, services);
+        }
+        catch (Exception ex) when (webHostOptions.CaptureStartupErrors)
+        {
+            var capture = ExceptionDispatchInfo.Capture(ex);
+
+            services.Configure<GenericWebHostServiceOptions>(options =>
+            {
+                options.ConfigureApplication = app =>
+                {
+                    // Throw if there was any errors initializing startup
+                    capture.Throw();
+                };
+            });
+        }
     }
 
     private void ExecuteHostingStartups()
@@ -219,18 +225,22 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         // UseStartup can be called multiple times. Only run the last one.
         _startupObject = startupType;
 
+        var state = new UseStartupState(startupType);
+
         _builder.ConfigureServices((context, services) =>
         {
             // Run this delegate if the startup type matches
-            if (object.ReferenceEquals(_startupObject, startupType))
+            if (object.ReferenceEquals(_startupObject, state.StartupType))
             {
-                UseStartup(startupType, context, services);
+                UseStartup(state.StartupType, context, services);
             }
         });
 
         return this;
     }
 
+    // Note: This method isn't 100% compatible with trimming. It is possible for the factory to return a derived type from TStartup.
+    // RequiresUnreferencedCode isn't on this method because the majority of people won't do that.
     public IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
     {
         var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.Assembly.GetName().Name;
@@ -240,7 +250,10 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
         // Clear the startup type
         _startupObject = startupFactory;
 
-        _builder.ConfigureServices((context, services) =>
+        _builder.ConfigureServices(ConfigureStartup);
+
+        [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Startup type created by factory can't be determined statically.")]
+        void ConfigureStartup(HostBuilderContext context, IServiceCollection services)
         {
             // UseStartup can be called multiple times. Only run the last one.
             if (object.ReferenceEquals(_startupObject, startupFactory))
@@ -249,7 +262,7 @@ internal sealed class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup,
                 var instance = startupFactory(webHostBuilderContext) ?? throw new InvalidOperationException("The specified factory returned null startup instance.");
                 UseStartup(instance.GetType(), context, services, instance);
             }
-        });
+        }
 
         return this;
     }

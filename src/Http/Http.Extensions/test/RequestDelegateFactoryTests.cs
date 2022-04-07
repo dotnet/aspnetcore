@@ -226,6 +226,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         httpContext.Items.Add("input", value);
     }
 
+    private static void TestOptionalNullableNull(HttpContext httpContext, double? value = null)
+    {
+        httpContext.Items.Add("input", (object?)value ?? "Null");
+    }
+
     private static void TestOptionalString(HttpContext httpContext, string value = "default")
     {
         httpContext.Items.Add("input", value);
@@ -364,12 +369,25 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         var httpContext = CreateHttpContext();
 
-        var factoryResult = RequestDelegateFactory.Create(TestOptional);
+        var factoryResult = RequestDelegateFactory.Create(TestOptionalNullable);
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
 
         Assert.Equal(42, httpContext.Items["input"]);
+    }
+    
+    [Fact]
+    public async Task RequestDelegatePopulatesFromNullableNullOptionalParameter()
+    {
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestOptionalNullableNull);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal("Null", httpContext.Items["input"]);
     }
 
     [Fact]
@@ -4560,6 +4578,244 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("HELLO, TESTNAMEPREFIX!", responseBody);
     }
 
+    [Fact]
+    public void Create_AddsDelegateMethodInfo_AsMetadata()
+    {
+        // Arrange
+        var @delegate = () => "Hello";
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is MethodInfo);
+    }
+
+    [Fact]
+    public void Create_AddsDelegateMethodInfo_AsFirstMetadata()
+    {
+        // Arrange
+        var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
+        var customMetadata = new CustomEndpointMetadata();
+        var options = new RequestDelegateFactoryOptions { InitialEndpointMetadata = new[] { customMetadata } };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        var firstMetadata = result.EndpointMetadata[0];
+        Assert.IsAssignableFrom<MethodInfo>(firstMetadata);
+    }
+
+    [Fact]
+    public void Create_AddsDelegateAttributes_AsMetadata()
+    {
+        // Arrange
+        var @delegate = [Attribute1, Attribute2] () => { };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is Attribute1);
+        Assert.Contains(result.EndpointMetadata, m => m is Attribute2);
+    }
+
+    [Fact]
+    public void Create_AddsDelegateAttributes_AsLastMetadata()
+    {
+        // Arrange
+        var @delegate = [Attribute1] (AddsCustomParameterMetadata param1) => { };
+        var options = new RequestDelegateFactoryOptions { InitialEndpointMetadata = new[] { new CustomEndpointMetadata() } };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        var lastMetadata = result.EndpointMetadata.Last();
+        Assert.IsAssignableFrom<Attribute1>(lastMetadata);
+    }
+
+    [Fact]
+    public void Create_DiscoversMetadata_FromParametersImplementingIEndpointParameterMetadataProvider()
+    {
+        // Arrange
+        var @delegate = (AddsCustomParameterMetadataBindable param1, AddsCustomParameterMetadata param2) => { };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param1" });
+        Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param2" });
+    }
+
+    [Fact]
+    public void Create_DiscoversMetadata_FromParametersImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var @delegate = (AddsCustomParameterMetadata param1) => { };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+    }
+
+    [Fact]
+    public void Create_DiscoversEndpointMetadata_FromReturnTypeImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var @delegate = () => new AddsCustomEndpointMetadataResult();
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
+    }
+
+    [Fact]
+    public void Create_CombinesDefaultMetadata_AndMetadataFromReturnTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var @delegate = () => new CountsDefaultEndpointMetadataResult();
+        var options = new RequestDelegateFactoryOptions
+        {
+            InitialEndpointMetadata = new List<object>
+            {
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
+            }
+        };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        // Expecting '2' as only MethodInfo and initial metadata will be in the metadata list when this metadata item is added
+        Assert.Contains(result.EndpointMetadata, m => m is DefaultMetadataCountMetadata { Count: 2 });
+    }
+
+    [Fact]
+    public void Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointParameterMetadataProvider()
+    {
+        // Arrange
+        var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
+        var options = new RequestDelegateFactoryOptions
+        {
+            InitialEndpointMetadata = new List<object>
+            {
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
+            }
+        };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param1" });
+    }
+
+    [Fact]
+    public void Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var @delegate = (AddsCustomParameterMetadata param1) => "Hello";
+        var options = new RequestDelegateFactoryOptions
+        {
+            InitialEndpointMetadata = new List<object>
+            {
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
+            }
+        };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+    }
+
+    [Fact]
+    public void Create_CombinesAllMetadata_InCorrectOrder()
+    {
+        // Arrange
+        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
+        var options = new RequestDelegateFactoryOptions
+        {
+            InitialEndpointMetadata = new List<object>
+            {
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
+            }
+        };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.Collection(result.EndpointMetadata,
+            // MethodInfo
+            m => Assert.IsAssignableFrom<MethodInfo>(m),
+            // Initial metadata from RequestDelegateFactoryOptions.InitialEndpointMetadata
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }),
+            // Inferred AcceptsMetadata from RDF for complex type
+            m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
+            // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
+            m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
+            // Metadata provided by parameters implementing IEndpointMetadataProvider
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
+            // Metadata provided by return type implementing IEndpointMetadataProvider
+            m => Assert.True(m is DefaultMetadataCountMetadata { Count: 5 }),
+            // Handler delegate attributes
+            m => Assert.IsAssignableFrom<Attribute>(m), // NullableContextAttribute
+            m => Assert.IsType<Attribute1>(m),
+            m => Assert.IsType<Attribute2>(m));
+    }
+
+    [Fact]
+    public void Create_AllowsRemovalOfDefaultMetadata_ByReturnTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var @delegate = (Todo todo) => new RemovesAcceptsMetadataResult();
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IAcceptsMetadata);
+    }
+
+    [Fact]
+    public void Create_AllowsRemovalOfDefaultMetadata_ByParameterTypesImplementingIEndpointParameterMetadataProvider()
+    {
+        // Arrange
+        var @delegate = (RemovesAcceptsParameterMetadata param1) => "Hello";
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IAcceptsMetadata);
+    }
+
+    [Fact]
+    public void Create_AllowsRemovalOfDefaultMetadata_ByParameterTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var @delegate = (RemovesAcceptsParameterMetadata param1) => "Hello";
+        var options = new RequestDelegateFactoryOptions();
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IAcceptsMetadata);
+    }
+
     private DefaultHttpContext CreateHttpContext()
     {
         var responseFeature = new TestHttpResponseFeature();
@@ -4574,6 +4830,153 @@ public class RequestDelegateFactoryTests : LoggedTest
                     [typeof(IHttpRequestLifetimeFeature)] = new TestHttpRequestLifetimeFeature(),
                 }
         };
+    }
+
+    private class Attribute1 : Attribute
+    {
+    }
+
+    private class Attribute2 : Attribute
+    {
+    }
+
+    private class AddsCustomEndpointMetadataResult : IEndpointMetadataProvider, IResult
+    {
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
+        }
+
+        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
+    }
+
+    private class AddsNoEndpointMetadataResult : IEndpointMetadataProvider, IResult
+    {
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+
+        }
+
+        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
+    }
+
+    private class CountsDefaultEndpointMetadataResult : IEndpointMetadataProvider, IResult
+    {
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            var defaultMetadataCount = context.EndpointMetadata?.Count;
+            context.EndpointMetadata?.Add(new DefaultMetadataCountMetadata { Count = defaultMetadataCount ?? 0 });
+        }
+
+        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
+    }
+
+    private class RemovesAcceptsParameterMetadata : IEndpointParameterMetadataProvider
+    {
+        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        {
+            if (parameterContext.EndpointMetadata is not null)
+            {
+                for (int i = parameterContext.EndpointMetadata.Count - 1; i >= 0; i--)
+                {
+                    var metadata = parameterContext.EndpointMetadata[i];
+                    if (metadata is IAcceptsMetadata)
+                    {
+                        parameterContext.EndpointMetadata.RemoveAt(i);
+                    }
+                }
+            }
+        }
+    }
+
+    private class RemovesAcceptsMetadata : IEndpointMetadataProvider
+    {
+        public static void PopulateMetadata(EndpointMetadataContext parameterContext)
+        {
+            if (parameterContext.EndpointMetadata is not null)
+            {
+                for (int i = parameterContext.EndpointMetadata.Count - 1; i >= 0; i--)
+                {
+                    var metadata = parameterContext.EndpointMetadata[i];
+                    if (metadata is IAcceptsMetadata)
+                    {
+                        parameterContext.EndpointMetadata.RemoveAt(i);
+                    }
+                }
+            }
+        }
+    }
+
+    private class RemovesAcceptsMetadataResult : IEndpointMetadataProvider, IResult
+    {
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            if (context.EndpointMetadata is not null)
+            {
+                for (int i = context.EndpointMetadata.Count - 1; i >= 0; i--)
+                {
+                    var metadata = context.EndpointMetadata[i];
+                    if (metadata is IAcceptsMetadata)
+                    {
+                        context.EndpointMetadata.RemoveAt(i);
+                    }
+                }
+            }
+        }
+
+        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
+    }
+
+    private class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
+    {
+        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        {
+            parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
+        }
+
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+        }
+    }
+
+    private class AddsCustomParameterMetadataBindable : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
+    {
+        public static ValueTask<AddsCustomParameterMetadataBindable> BindAsync(HttpContext context, ParameterInfo parameter) => default;
+
+        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        {
+            parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
+        }
+
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+        }
+    }
+
+    private class DefaultMetadataCountMetadata
+    {
+        public int Count { get; init; }
+    }
+
+    private class ParameterNameMetadata
+    {
+        public string? Name { get; init; }
+    }
+
+    private class CustomEndpointMetadata
+    {
+        public string? Data { get; init; }
+
+        public MetadataSource Source { get; init; }
+    }
+
+    private enum MetadataSource
+    {
+        Caller,
+        Parameter,
+        ReturnType
     }
 
     private class Todo : ITodo

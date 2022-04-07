@@ -1343,10 +1343,17 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         const string badRequestEventName = "Microsoft.AspNetCore.Server.Kestrel.BadRequest";
         if (ServiceContext.DiagnosticSource?.IsEnabled(badRequestEventName) == true)
         {
-            ServiceContext.DiagnosticSource.Write(badRequestEventName, this);
+            WriteDiagnosticEvent(ServiceContext.DiagnosticSource, badRequestEventName, this);
         }
 
         _keepAlive = false;
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern",
+        Justification = "The values being passed into Write are being consumed by the application already.")]
+    private static void WriteDiagnosticEvent(DiagnosticSource diagnosticSource, string name, HttpProtocol value)
+    {
+        diagnosticSource.Write(name, value);
     }
 
     public void ReportApplicationError(Exception? ex)
