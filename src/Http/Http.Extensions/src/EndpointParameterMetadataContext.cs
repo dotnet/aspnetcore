@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Http.Metadata;
 /// <summary>
 /// Represents the information accessible during endpoint creation by types that implement <see cref="IEndpointParameterMetadataProvider"/>.
 /// </summary>
-public class EndpointParameterMetadataContext
+public sealed class EndpointParameterMetadataContext
 {
     /// <summary>
     /// Gets the parameter of the route handler delegate of the endpoint being created.
