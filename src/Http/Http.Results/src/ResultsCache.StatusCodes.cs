@@ -4,9 +4,9 @@
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Http;
-
 using System.CodeDom.Compiler;
+
+namespace Microsoft.AspNetCore.Http;
 
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal partial class ResultsCache
