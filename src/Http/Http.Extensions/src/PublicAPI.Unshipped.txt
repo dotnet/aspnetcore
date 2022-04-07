@@ -3,7 +3,7 @@ Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext
 Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext.EndpointMetadata.get -> System.Collections.Generic.IList<object!>!
 Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext.EndpointMetadata.init -> void
 Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext.EndpointMetadataContext() -> void
-Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext.Method.get -> System.Reflection.MethodInfo?
+Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext.Method.get -> System.Reflection.MethodInfo!
 Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext.Method.init -> void
 Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext.Services.get -> System.IServiceProvider?
 Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext.Services.init -> void
@@ -11,7 +11,7 @@ Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.EndpointMetadata.get -> System.Collections.Generic.IList<object!>!
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.EndpointMetadata.init -> void
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.EndpointParameterMetadataContext() -> void
-Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.Parameter.get -> System.Reflection.ParameterInfo?
+Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.Parameter.get -> System.Reflection.ParameterInfo!
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.Parameter.init -> void
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.Services.get -> System.IServiceProvider?
 Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext.Services.init -> void

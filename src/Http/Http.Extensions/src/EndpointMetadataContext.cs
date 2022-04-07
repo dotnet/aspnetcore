@@ -13,7 +13,7 @@ public sealed class EndpointMetadataContext
     /// <summary>
     /// Gets the <see cref="MethodInfo"/> associated with the current route handler.
     /// </summary>
-    public MethodInfo? Method { get; init; }
+    public MethodInfo Method { get; init; } = null!; // Is initialized when created by RequestDelegateFactory
 
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance used to access application services.
@@ -23,5 +23,5 @@ public sealed class EndpointMetadataContext
     /// <summary>
     /// Gets the list of objects that will be added to the metadata of the endpoint.
     /// </summary>
-    public IList<object> EndpointMetadata { get; init; } = new List<object>();
+    public IList<object> EndpointMetadata { get; init; } = null!; // Is initialized when created by RequestDelegateFactory
 }

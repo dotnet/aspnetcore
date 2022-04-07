@@ -13,7 +13,7 @@ public sealed class EndpointParameterMetadataContext
     /// <summary>
     /// Gets the parameter of the route handler delegate of the endpoint being created.
     /// </summary>
-    public ParameterInfo? Parameter { get; init; }
+    public ParameterInfo Parameter { get; init; } = null!; // Is initialized when created by RequestDelegateFactory
 
     /// <summary>
     /// Gets the <see cref="MethodInfo"/> associated with the current route handler.
@@ -23,5 +23,5 @@ public sealed class EndpointParameterMetadataContext
     /// <summary>
     /// Gets the list of objects that will be added to the metadata of the endpoint.
     /// </summary>
-    public IList<object> EndpointMetadata { get; init; } = new List<object>();
+    public IList<object> EndpointMetadata { get; init; } = null!; // Is initialized when created by RequestDelegateFactory
 }
