@@ -28,7 +28,7 @@ To run the code generation using [T4 Text Templates](https://docs.microsoft.com/
 
 ```powershell
 > dotnet tool install -g dotnet-t4
-> t4 Http.Results\ResultsCache.StatusCodes.cs
+> t4 Http.Results\ResultsCache.StatusCodes.tt
 ```
 
 ### Build
