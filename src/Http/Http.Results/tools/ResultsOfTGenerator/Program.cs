@@ -62,14 +62,9 @@ public class Program
         writer.WriteLine("namespace Microsoft.AspNetCore.Http;");
         writer.WriteLine();
 
-        for (int i = 1; i <= typeArgCount; i++)
+        // Skip 1 as we don't have a Results<TResult1> class
+        for (int i = 2; i <= typeArgCount; i++)
         {
-            // Skip first as we don't have a Results<TResult1> class
-            if (i == 1)
-            {
-                continue;
-            }
-
             // Class summary doc
             writer.WriteLine("/// <summary>");
             writer.WriteLine($"/// An <see cref=\"IResult\"/> that could be one of {i.ToWords()} different <see cref=\"IResult\"/> types. On execution will");
