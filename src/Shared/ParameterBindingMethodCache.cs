@@ -184,7 +184,35 @@ internal sealed class ParameterBindingMethodCache
     {
         (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
         {
+            // Check if parameter is bindable via static abstract method on IBindableFromHttpContext<TSelf>
+
+            var isBindableViaInterface = true;
+            try
+            {
+                var bindableType = typeof(IBindableFromHttpContext<>).MakeGenericType(nonNullableParameterType);
+            }
+            catch (ArgumentException)
+            {
+                isBindableViaInterface = false;
+            }
+
+            if (isBindableViaInterface)
+            {
+                var staticMethodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static)!;
+                return ((parameter) =>
+                {
+                    // parameter is being intentionally shadowed. We never want to use the outer ParameterInfo inside
+                    // this Func because the ParameterInfo varies after it's been cached for a given parameter type.
+                    MethodCallExpression typedCall = Expression.Call(staticMethodInfo, HttpContextExpr, Expression.Constant(parameter));
+                    return Expression.Call(GetGenericConvertValueTask(nonNullableParameterType), typedCall);
+                }, 2);
+
+                [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Linker workaround. The type is annotated with RequiresUnreferencedCode")]
+                static MethodInfo GetGenericConvertValueTask(Type nonNullableParameterType) => ConvertValueTaskMethod.MakeGenericMethod(nonNullableParameterType);
+            }
+
             var hasParameterInfo = true;
+
             // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
             var methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) }, ValidateReturnType);
             if (methodInfo is null)
