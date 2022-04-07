@@ -10,7 +10,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NativeAssetsTargetFramework>$(DefaultNetCoreTargetFramework)</NativeAssetsTargetFramework>
     <IsPackable>false</IsPackable>
-    <Trimmable>true</Trimmable>
+    <IsTrimmable>true</IsTrimmable>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
