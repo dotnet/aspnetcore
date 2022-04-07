@@ -22,5 +22,5 @@ internal class HostingApplicationDiscriminator : IApplicationDiscriminator
     }
 
     // Note: ContentRootPath behavior depends on the version, sometimes it has a trailing slash, we normalize by default by removing a trailing slash
-    public string? Discriminator => _hosting?.ContentRootPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+    public string? Discriminator => _hosting?.ContentRootPath?.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 }
