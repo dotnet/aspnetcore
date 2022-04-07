@@ -13,7 +13,7 @@ public class UnauthorizedResultTests
     public void UnauthorizedResult_InitializesStatusCode()
     {
         // Arrange & act
-        var result = new UnauthorizedHttpResult();
+        var result = new Unauthorized();
 
         // Assert
         Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
@@ -23,7 +23,7 @@ public class UnauthorizedResultTests
     public void UnauthorizedResult_ExecuteResultSetsResponseStatusCode()
     {
         // Arrange
-        var result = new UnauthorizedHttpResult();
+        var result = new Unauthorized();
 
         var httpContext = GetHttpContext();
 

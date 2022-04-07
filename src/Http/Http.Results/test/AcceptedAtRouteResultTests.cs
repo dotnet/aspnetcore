@@ -20,7 +20,7 @@ public class AcceptedAtRouteResultTests
             { "sample", "route" }
         });
         var obj = new HttpValidationProblemDetails();
-        var result = new AcceptedAtRouteHttpResult(routeValues, obj);
+        var result = new AcceptedAtRoute(routeValues, obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
@@ -45,7 +45,7 @@ public class AcceptedAtRouteResultTests
             });
 
         // Act
-        var result = new AcceptedAtRouteHttpResult(
+        var result = new AcceptedAtRoute(
             routeName: "sample",
             routeValues: routeValues,
             value: "Hello world");
@@ -87,7 +87,7 @@ public class AcceptedAtRouteResultTests
         var httpContext = GetHttpContext(linkGenerator);
 
         // Act
-        var result = new AcceptedAtRouteHttpResult(routeValues: values, value: null);
+        var result = new AcceptedAtRoute(routeValues: values, value: null);
         await result.ExecuteAsync(httpContext);
 
         // Assert
@@ -103,7 +103,7 @@ public class AcceptedAtRouteResultTests
         var httpContext = GetHttpContext(linkGenerator);
 
         // Act
-        var result = new AcceptedAtRouteHttpResult(
+        var result = new AcceptedAtRoute(
             routeName: null,
             routeValues: new Dictionary<string, object>(),
             value: null);

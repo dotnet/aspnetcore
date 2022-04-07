@@ -16,7 +16,7 @@ public class ConflictObjectResultTest
     {
         // Arrange & Act
         var obj = new object();
-        var conflictObjectResult = new ConflictObjectHttpResult(obj);
+        var conflictObjectResult = new Conflict(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status409Conflict, conflictObjectResult.StatusCode);
@@ -28,7 +28,7 @@ public class ConflictObjectResultTest
     {
         // Arrange & Act
         var obj = new ProblemDetails();
-        var conflictObjectResult = new ConflictObjectHttpResult(obj);
+        var conflictObjectResult = new Conflict(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status409Conflict, conflictObjectResult.StatusCode);
@@ -40,7 +40,7 @@ public class ConflictObjectResultTest
     public async Task ConflictObjectResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
-        var result = new ConflictObjectHttpResult("Hello");
+        var result = new Conflict("Hello");
         var httpContext = new DefaultHttpContext()
         {
             RequestServices = CreateServices(),
@@ -57,7 +57,7 @@ public class ConflictObjectResultTest
     public async Task ConflictObjectResult_ExecuteResultAsync_FormatsData()
     {
         // Arrange
-        var result = new ConflictObjectHttpResult("Hello");
+        var result = new Conflict("Hello");
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {

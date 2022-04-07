@@ -15,7 +15,7 @@ public class UnprocessableEntityObjectResultTests
     {
         // Arrange & Act
         var obj = new HttpValidationProblemDetails();
-        var result = new UnprocessableEntityObjectHttpResult(obj);
+        var result = new UnprocessableEntity(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
@@ -28,7 +28,7 @@ public class UnprocessableEntityObjectResultTests
     {
         // Arrange & Act
         var obj = new object();
-        var result = new UnprocessableEntityObjectHttpResult(obj);
+        var result = new UnprocessableEntity(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
@@ -39,7 +39,7 @@ public class UnprocessableEntityObjectResultTests
     public async Task UnprocessableEntityObjectResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
-        var result = new UnprocessableEntityObjectHttpResult("Hello");
+        var result = new UnprocessableEntity("Hello");
         var httpContext = new DefaultHttpContext()
         {
             RequestServices = CreateServices(),
@@ -56,7 +56,7 @@ public class UnprocessableEntityObjectResultTests
     public async Task UnprocessableEntityObjectResult_ExecuteResultAsync_FormatsData()
     {
         // Arrange
-        var result = new UnprocessableEntityObjectHttpResult("Hello");
+        var result = new UnprocessableEntity("Hello");
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {

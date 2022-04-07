@@ -16,7 +16,7 @@ public class AcceptedResultTests
         var stream = new MemoryStream();
         httpContext.Response.Body = stream;
         // Act
-        var result = new AcceptedHttpResult("my-location", value: "Hello world");
+        var result = new Accepted("my-location", value: "Hello world");
         await result.ExecuteAsync(httpContext);
 
         // Assert
@@ -32,7 +32,7 @@ public class AcceptedResultTests
         var httpContext = GetHttpContext();
 
         // Act
-        var result = new AcceptedHttpResult(expectedUrl, value: "some-value");
+        var result = new Accepted(expectedUrl, value: "some-value");
         await result.ExecuteAsync(httpContext);
 
         // Assert
@@ -46,7 +46,7 @@ public class AcceptedResultTests
         // Arrange & Act
         var expectedUrl = "testAction";
         var obj = new HttpValidationProblemDetails();
-        var result = new AcceptedHttpResult(expectedUrl, obj);
+        var result = new Accepted(expectedUrl, obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);

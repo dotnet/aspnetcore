@@ -10,25 +10,25 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
+
 internal static partial class HttpResultsHelper
 {
     private const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
-    public static Task WriteResultAsJsonAsync(
+    public static Task WriteResultAsJsonAsync<T>(
         HttpContext httpContext,
         ILogger logger,
-        object? value,
-        int? statusCode,
+        T? value,
         string? contentType = null,
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
-        Log.WritingResultAsJson(logger, value, statusCode);
+        //Log.WritingResultAsJson(logger, value, statusCode);
 
-        if (statusCode is { } code)
-        {
-            httpContext.Response.StatusCode = code;
-        }
+        //if (statusCode is { } code)
+        //{
+        //    httpContext.Response.StatusCode = code;
+        //}
 
         if (value is null)
         {

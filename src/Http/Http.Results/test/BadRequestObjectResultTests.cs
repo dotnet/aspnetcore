@@ -15,7 +15,7 @@ public class BadRequestObjectResultTests
     {
         // Arrange & Act
         var obj = new object();
-        var badRequestObjectResult = new BadRequestObjectHttpResult(obj);
+        var badRequestObjectResult = new BadRequest(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
@@ -27,7 +27,7 @@ public class BadRequestObjectResultTests
     {
         // Arrange & Act
         var obj = new HttpValidationProblemDetails();
-        var result = new BadRequestObjectHttpResult(obj);
+        var result = new BadRequest(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
@@ -39,7 +39,7 @@ public class BadRequestObjectResultTests
     public async Task BadRequestObjectResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
-        var result = new BadRequestObjectHttpResult("Hello");
+        var result = new BadRequest("Hello");
         var httpContext = new DefaultHttpContext()
         {
             RequestServices = CreateServices(),
@@ -56,7 +56,7 @@ public class BadRequestObjectResultTests
     public async Task BadRequestObjectResult_ExecuteResultAsync_FormatsData()
     {
         // Arrange
-        var result = new BadRequestObjectHttpResult("Hello");
+        var result = new BadRequest("Hello");
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {

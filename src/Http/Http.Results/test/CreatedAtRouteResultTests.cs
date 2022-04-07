@@ -21,7 +21,7 @@ public partial class CreatedAtRouteResultTests
             { "sample", "route" }
         });
         var obj = new HttpValidationProblemDetails();
-        var result = new CreatedAtRouteHttpResult(routeValues, obj);
+        var result = new CreatedAtRoute(routeValues, obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
@@ -56,7 +56,7 @@ public partial class CreatedAtRouteResultTests
         var httpContext = GetHttpContext(expectedUrl);
 
         // Act
-        var result = new CreatedAtRouteHttpResult(routeName: null, routeValues: values, value: null);
+        var result = new CreatedAtRoute(routeName: null, routeValues: values, value: null);
         await result.ExecuteAsync(httpContext);
 
         // Assert
@@ -70,7 +70,7 @@ public partial class CreatedAtRouteResultTests
         // Arrange
         var httpContext = GetHttpContext(expectedUrl: null);
 
-        var result = new CreatedAtRouteHttpResult(
+        var result = new CreatedAtRoute(
             routeName: null,
             routeValues: new Dictionary<string, object>(),
             value: null);

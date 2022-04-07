@@ -21,7 +21,7 @@ public class SignOutResultTest
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new SignOutHttpResult();
+        var result = new SignOut();
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -40,7 +40,7 @@ public class SignOutResultTest
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new SignOutHttpResult("", null);
+        var result = new SignOut("", null);
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -64,7 +64,7 @@ public class SignOutResultTest
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new SignOutHttpResult(new[] { "Scheme1", "Scheme2" }, authProperties);
+        var result = new SignOut(new[] { "Scheme1", "Scheme2" }, authProperties);
 
         // Act
         await result.ExecuteAsync(httpContext);

@@ -16,7 +16,7 @@ public class FileStreamResultTest : FileStreamResultTestBase
         EntityTagHeaderValue entityTag = null,
         bool enableRangeProcessing = false)
     {
-        var fileStreamResult = new FileStreamHttpResult(stream, contentType)
+        var fileStreamResult = new FileStream(stream, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,
@@ -33,7 +33,7 @@ public class FileStreamResultTest : FileStreamResultTestBase
         var stream = Stream.Null;
 
         // Act
-        var result = new FileStreamHttpResult(stream, "text/plain");
+        var result = new FileStream(stream, "text/plain");
 
         // Assert
         Assert.Equal(stream, result.FileStream);
@@ -48,7 +48,7 @@ public class FileStreamResultTest : FileStreamResultTestBase
         var expectedMediaType = contentType;
 
         // Act
-        var result = new FileStreamHttpResult(stream, contentType);
+        var result = new FileStream(stream, contentType);
 
         // Assert
         Assert.Equal(stream, result.FileStream);
@@ -66,7 +66,7 @@ public class FileStreamResultTest : FileStreamResultTestBase
         var entityTag = new EntityTagHeaderValue("\"Etag\"");
 
         // Act
-        var result = new FileStreamHttpResult(stream, contentType)
+        var result = new FileStream(stream, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,

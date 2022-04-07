@@ -14,7 +14,7 @@ public class OkObjectResultTest
     public async Task OkObjectResult_SetsStatusCodeAndValue()
     {
         // Arrange
-        var result = new OkObjectHttpResult("Hello world");
+        var result = new Ok("Hello world");
         var httpContext = GetHttpContext();
 
         // Act
@@ -29,7 +29,7 @@ public class OkObjectResultTest
     {
         // Arrange & Act
         var obj = new HttpValidationProblemDetails();
-        var result = new OkObjectHttpResult(obj);
+        var result = new Ok(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
@@ -41,7 +41,7 @@ public class OkObjectResultTest
     public async Task OkObjectResult_ExecuteAsync_FormatsData()
     {
         // Arrange
-        var result = new OkObjectHttpResult("Hello");
+        var result = new Ok("Hello");
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {

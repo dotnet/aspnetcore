@@ -14,7 +14,7 @@ public class NotFoundObjectResultTest
     {
         // Arrange & Act
         var obj = new HttpValidationProblemDetails();
-        var result = new NotFoundObjectHttpResult(obj);
+        var result = new NotFound(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
@@ -26,7 +26,7 @@ public class NotFoundObjectResultTest
     public void NotFoundObjectResult_InitializesStatusCode()
     {
         // Arrange & act
-        var notFound = new NotFoundObjectHttpResult(null);
+        var notFound = new NotFound(null);
 
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
@@ -36,7 +36,7 @@ public class NotFoundObjectResultTest
     public void NotFoundObjectResult_InitializesStatusCodeAndResponseContent()
     {
         // Arrange & act
-        var notFound = new NotFoundObjectHttpResult("Test Content");
+        var notFound = new NotFound("Test Content");
 
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
@@ -48,7 +48,7 @@ public class NotFoundObjectResultTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var result = new NotFoundObjectHttpResult("Test Content");
+        var result = new NotFound("Test Content");
 
         // Act
         await result.ExecuteAsync(httpContext);

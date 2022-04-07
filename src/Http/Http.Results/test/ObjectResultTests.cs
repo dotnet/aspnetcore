@@ -175,7 +175,7 @@ public class ObjectResultTests
         // Arrange
         var details = new ProblemDetails { Status = StatusCodes.Status422UnprocessableEntity, };
 
-        var result = new BadRequestObjectHttpResult(details);
+        var result = new BadRequest(details);
 
         var httpContext = new DefaultHttpContext()
         {
