@@ -3,9 +3,11 @@
 
 using System.IO.Pipelines;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
@@ -221,6 +223,38 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Throws<InvalidOperationException>(() => endpointBuilder.WithMetadata(new RouteNameMetadata("Foo")));
     }
 
+    [Fact]
+    public void Map_AddsMetadata_InCorrectOrder()
+    {
+        // Arrange
+        var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
+        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new AddsCustomEndpointMetadataResult();
+
+        // Act
+        builder.Map("/test", @delegate);
+
+        // Assert
+        var ds = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(ds.Endpoints);
+        var metadata = endpoint.Metadata;
+
+        Assert.Collection(metadata,
+            m => Assert.IsAssignableFrom<MethodInfo>(m),
+            m => Assert.IsAssignableFrom<ParameterNameMetadata>(m),
+            m =>
+            {
+                Assert.IsAssignableFrom<CustomEndpointMetadata>(m);
+                Assert.Equal(MetadataSource.Parameter, ((CustomEndpointMetadata)m).Source);
+            },
+            m =>
+            {
+                Assert.IsAssignableFrom<CustomEndpointMetadata>(m);
+                Assert.Equal(MetadataSource.ReturnType, ((CustomEndpointMetadata)m).Source);
+            },
+            m => Assert.IsAssignableFrom<Attribute1>(m),
+            m => Assert.IsAssignableFrom<Attribute2>(m));
+    }
+
     [Attribute1]
     [Attribute2]
     private static Task Handle(HttpContext context) => Task.CompletedTask;
@@ -246,5 +280,48 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     private class Attribute2 : Attribute
     {
+    }
+
+    private class AddsCustomEndpointMetadataResult : IEndpointMetadataProvider, IResult
+    {
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
+        }
+
+        public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
+    }
+
+    private class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
+    {
+        public static ValueTask<AddsCustomParameterMetadata> BindAsync(HttpContext context, ParameterInfo parameter) => default;
+
+        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        {
+            parameterContext.EndpointMetadata.Add(new ParameterNameMetadata { Name = parameterContext.Parameter.Name });
+        }
+
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+        }
+    }
+
+    private class ParameterNameMetadata
+    {
+        public string Name { get; init; }
+    }
+
+    private class CustomEndpointMetadata
+    {
+        public string Data { get; init; }
+
+        public MetadataSource Source { get; init; }
+    }
+
+    private enum MetadataSource
+    {
+        Parameter,
+        ReturnType
     }
 }
