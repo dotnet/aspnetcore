@@ -8,7 +8,7 @@ using Mono.TextTemplating;
 public class ResultsCacheTests
 {
     [Fact]
-    public void GeneratedCodeIsUpToData()
+    public void GeneratedCodeIsUpToDate()
     {
         var currentContentPath = Path.Combine(AppContext.BaseDirectory, "Shared", "GeneratedContent", "ResultsCache.StatusCodes.cs");
         var templatePath = Path.Combine(AppContext.BaseDirectory, "Shared", "GeneratedContent", "ResultsCache.StatusCodes.tt");
