@@ -45,28 +45,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Theory]
-        [InlineData("/")]
-        [InlineData("/.")]
-        [InlineData("/..")]
-        [InlineData("/./.")]
-        [InlineData("/./..")]
-        [InlineData("/../.")]
-        [InlineData("/../..")]
-        [InlineData("/path")]
-        [InlineData("/path?foo=1&bar=2")]
-        [InlineData("/hello%20world")]
-        [InlineData("/hello%20world?foo=1&bar=2")]
-        [InlineData("/base/path")]
-        [InlineData("/base/path?foo=1&bar=2")]
-        [InlineData("/base/hello%20world")]
-        [InlineData("/base/hello%20world?foo=1&bar=2")]
-        public async Task RequestFeatureContainsRawTarget(string requestTarget)
+        [InlineData("/", "/", "")]
+        [InlineData("/.", "/", "")]
+        [InlineData("/..", "/", "")]
+        [InlineData("/./.", "/", "")]
+        [InlineData("/./..", "/", "")]
+        [InlineData("/../.", "/", "")]
+        [InlineData("/../..", "/", "")]
+        [InlineData("/path", "/path", "")]
+        [InlineData("/path?foo=1&bar=2", "/path", "?foo=1&bar=2")]
+        [InlineData("/hello%20world", "/hello world", "")]
+        [InlineData("/hello%20world?foo=1&bar=2", "/hello world", "?foo=1&bar=2")]
+        [InlineData("/base/path", "/base/path", "")]
+        [InlineData("/base/path?foo=1&bar=2", "/base/path", "?foo=1&bar=2")]
+        [InlineData("/base/path?foo=1&bar=2", "/base/path", "?foo=1&bar=2", true)]
+        [InlineData("/base/hello%20world", "/base/hello world", "")]
+        [InlineData("/base/hello%20world", "/base/hello world", "", true)]
+        [InlineData("/base/hello%20world?foo=1&bar=2", "/base/hello world", "?foo=1&bar=2")]
+        [InlineData("/base/hello%20world?foo=1&bar=2", "/base/hello world", "?foo=1&bar=2", true)]
+        [InlineData("/a/\xFF/b", "/a/\xFF/b", "", true)]
+        [InlineData("/a/\xFF/b?\xFF", "/a/\xFF/b", "?\xFF", true)]
+        [InlineData("/a/\xFF/./b?\xFF", "/a/\xFF/b", "?\xFF", true)]
+        [InlineData("/a/\xFF/%3F/b", "/a/\xFF/?/b", "", true)]
+        [InlineData("/a/\xFF/%3F/b?\xFF", "/a/\xFF/?/b", "?\xFF", true)]
+        [InlineData("/a/../\xFF/%3F/b?\xFF", "/\xFF/?/b", "?\xFF", true)]
+        [InlineData("http://host/a/\xFF/b", "/a/\xFF/b", "", true)]
+        [InlineData("http://host/a/\xFF/b?\xFF", "/a/\xFF/b", "?\xFF", true)]
+        [InlineData("http://host/a/\xFF/./b?\xFF", "/a/\xFF/b", "?\xFF", true)]
+        [InlineData("http://host/a/\xFF/%3F/b", "/a/\xFF/?/b", "", true)]
+        [InlineData("http://host/a/\xFF/%3F/b?\xFF", "/a/\xFF/?/b", "?\xFF", true)]
+        [InlineData("http://host/a/../\xFF/%3F/b?\xFF", "/\xFF/?/b", "?\xFF", true)]
+        public async Task RequestFeatureContainsRawTarget(string requestTarget, string path, string query, bool useLatin1 = false)
         {
             var testContext = new TestServiceContext(LoggerFactory);
+            testContext.ServerOptions.EnableInsecureLatin1RequestTargets = useLatin1;
 
             await using (var server = new TestServer(async context =>
             {
                 Assert.Equal(requestTarget, context.Features.Get<IHttpRequestFeature>().RawTarget);
+                Assert.Equal(path, context.Request.Path.Value);
+                Assert.Equal(query, context.Request.QueryString.Value);
 
                 context.Response.Headers["Content-Length"] = new[] { "11" };
                 await context.Response.WriteAsync("Hello World");
@@ -76,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await connection.Send(
                         $"GET {requestTarget} HTTP/1.1",
-                        "Host:",
+                        "Host: host",
                         "",
                         "");
                     await connection.Receive(

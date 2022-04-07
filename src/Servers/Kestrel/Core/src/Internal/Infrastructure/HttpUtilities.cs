@@ -106,6 +106,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static string GetAsciiStringNonNullCharacters(this Span<byte> span)
             => StringUtilities.GetAsciiStringNonNullCharacters(span);
 
+        public static string GetLatin1StringNonNullCharacters(this Span<byte> span)
+            => StringUtilities.GetLatin1StringNonNullCharacters(span);
+
         public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
             => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, DefaultRequestHeaderEncoding);
 

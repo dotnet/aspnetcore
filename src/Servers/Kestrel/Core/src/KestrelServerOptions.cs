@@ -51,6 +51,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             set => _enableInsecureAbsoluteFormHostOverride = value;
         }
 
+        private bool? _enableInsecureLatin1RequestTargets;
+        internal bool EnableInsecureLatin1RequestTargets
+        {
+            get
+            {
+                if (!_enableInsecureLatin1RequestTargets.HasValue)
+                {
+                    _enableInsecureLatin1RequestTargets =
+                        AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.EnableInsecureLatin1RequestTargets", out var enabled) && enabled;
+                }
+                return _enableInsecureLatin1RequestTargets.Value;
+            }
+            set => _enableInsecureLatin1RequestTargets = value;
+        }
+
         // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
         internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
         internal List<ListenOptions> ConfigurationBackedListenOptions { get; } = new List<ListenOptions>();

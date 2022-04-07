@@ -350,12 +350,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
             // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
             // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
-
             try
             {
                 // The previous string does not match what the bytes would convert to,
                 // so we will need to generate a new string.
-                RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+                RawTarget = _parsedRawTarget = GetTargetString(target);
 
                 var queryLength = 0;
                 if (target.Length == targetPath.Length)
@@ -385,7 +384,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else
                 {
                     var path = target[..pathLength];
-                    Path = _parsedPath = PathNormalizer.DecodePath(path, targetPath.IsEncoded, RawTarget, queryLength);
+                    Path = _parsedPath = PathNormalizer.DecodePath(path, targetPath.IsEncoded, RawTarget, queryLength,
+                        _context.ServiceContext.ServerOptions.EnableInsecureLatin1RequestTargets);
                 }
             }
             catch (InvalidOperationException)
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // The previous string does not match what the bytes would convert to,
                 // so we will need to generate a new string.
-                QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
+                QueryString = _parsedQueryString = GetTargetString(query);
             }
             else
             {
@@ -449,9 +449,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 previousValue == null || previousValue.Length != target.Length ||
                 !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
             {
-                // The previous string does not match what the bytes would convert to,
-                // so we will need to generate a new string.
-                RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+                try
+                {
+                    // The previous string does not match what the bytes would convert to,
+                    // so we will need to generate a new string.
+                    RawTarget = _parsedRawTarget = GetTargetString(target);
+                }
+                catch (InvalidOperationException)
+                {
+                    ThrowRequestTargetRejected(target);
+                }
             }
             else
             {
@@ -507,34 +514,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 previousValue == null || previousValue.Length != target.Length ||
                 !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
             {
-                // The previous string does not match what the bytes would convert to,
-                // so we will need to generate a new string.
-                RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
-
-                // Validation of absolute URIs is slow, but clients
-                // should not be sending this form anyways, so perf optimization
-                // not high priority
-
-                if (!Uri.TryCreate(RawTarget, UriKind.Absolute, out var uri))
-                {
-                    ThrowRequestTargetRejected(target);
-                }
-
-                _absoluteRequestTarget = _parsedAbsoluteRequestTarget = uri;
-                Path = _parsedPath = uri.LocalPath;
-                // don't use uri.Query because we need the unescaped version
-                previousValue = _parsedQueryString;
-                if (disableStringReuse ||
-                    previousValue == null || previousValue.Length != query.Length ||
-                    !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
+                try
                 {
                     // The previous string does not match what the bytes would convert to,
                     // so we will need to generate a new string.
-                    QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
+                    RawTarget = _parsedRawTarget = GetTargetString(target);
+
+                    // Validation of absolute URIs is slow, but clients
+                    // should not be sending this form anyways, so perf optimization
+                    // not high priority
+
+                    if (!Uri.TryCreate(RawTarget, UriKind.Absolute, out var uri))
+                    {
+                        ThrowRequestTargetRejected(target);
+                    }
+
+                    _absoluteRequestTarget = _parsedAbsoluteRequestTarget = uri;
+                    Path = _parsedPath = uri.LocalPath;
+                    // don't use uri.Query because we need the unescaped version
+                    previousValue = _parsedQueryString;
+                    if (disableStringReuse ||
+                        previousValue == null || previousValue.Length != query.Length ||
+                        !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
+                    {
+                        // The previous string does not match what the bytes would convert to,
+                        // so we will need to generate a new string.
+                        QueryString = _parsedQueryString = GetTargetString(query);
+                    }
+                    else
+                    {
+                        QueryString = _parsedQueryString;
+                    }
                 }
-                else
+                catch (InvalidOperationException)
                 {
-                    QueryString = _parsedQueryString;
+                    ThrowRequestTargetRejected(target);
                 }
             }
             else
@@ -545,6 +559,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 QueryString = _parsedQueryString;
                 _absoluteRequestTarget = _parsedAbsoluteRequestTarget;
             }
+        }
+
+        private string GetTargetString(Span<byte> target)
+        {
+            if (_context.ServiceContext.ServerOptions.EnableInsecureLatin1RequestTargets)
+            {
+                return target.GetLatin1StringNonNullCharacters();
+            }
+
+            return target.GetAsciiStringNonNullCharacters();
         }
 
         internal void EnsureHostHeaderExists()
