@@ -532,7 +532,7 @@ public static class EndpointRouteBuilderExtensions
         var routeHandlerBuilder = new RouteHandlerBuilder(dataSource.AddEndpointBuilder(builder));
         routeHandlerBuilder.Add(RouteHandlerBuilderConvention);
 
-        [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "We surface a RequireUnreferencedCode in the call to enclosing Map method." +
+        [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "We surface a RequireUnreferencedCode in the call to enclosing Map method. " +
             "The trimmer is unable to infer this on the nested lambda.")]
         void RouteHandlerBuilderConvention(EndpointBuilder endpointBuilder)
         {
