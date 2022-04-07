@@ -12,6 +12,12 @@ public interface IEndpointMetadataProvider
     /// <summary>
     /// Populates metadata for the related <see cref="Endpoint"/>.
     /// </summary>
+    /// <remarks>
+    /// This method is called by <see cref="RequestDelegateFactory"/> when creating a <see cref="RequestDelegate"/>.
+    /// The <see cref="EndpointMetadataContext.EndpointMetadata"/> property of <paramref name="context"/> will contain
+    /// the initial metadata for the endpoint.<br />
+    /// Add or remove objects on <see cref="EndpointMetadataContext.EndpointMetadata"/> to affect the metadata of the endpoint.
+    /// </remarks>
     /// <param name="context">The <see cref="EndpointMetadataContext"/>.</param>
     static abstract void PopulateMetadata(EndpointMetadataContext context);
 }

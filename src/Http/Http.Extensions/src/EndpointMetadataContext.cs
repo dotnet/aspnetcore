@@ -21,7 +21,7 @@ public sealed class EndpointMetadataContext
     public IServiceProvider? Services { get; init; }
 
     /// <summary>
-    /// Gets the objects that will be added to the metadata of the endpoint.
+    /// Gets the list of objects that will be added to the metadata of the endpoint.
     /// </summary>
-    public IList<object>? EndpointMetadata { get; init; }
+    public IList<object> EndpointMetadata { get; init; } = new List<object>();
 }
