@@ -8,8 +8,12 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Mono.TextTemplating" />
 
     <Compile Include="$(SharedSourceRoot)ResultsTests\*.cs" LinkBase="Shared" />
+    
+    <Content  Include="$(HttpResultsSourceRoot)\ResultsCache.StatusCodes.tt" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Content  Include="$(HttpResultsSourceRoot)\ResultsCache.StatusCodes.cs" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
