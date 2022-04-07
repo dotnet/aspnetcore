@@ -494,17 +494,6 @@ public static class EndpointRouteBuilderExtensions
             DisplayName = pattern.RawText ?? pattern.DebuggerToString(),
         };
 
-        //var attributes = handler.Method.GetCustomAttributes();
-
-        //// This can be null if the delegate is a dynamic method or compiled from an expression tree
-        //if (attributes is not null)
-        //{
-        //    foreach (var attr in attributes)
-        //    {
-        //        builder.Metadata.Add(attr);
-        //    }
-        //}
-
         // Methods defined in a top-level program are generated as statics so the delegate
         // target will be null. Inline lambdas are compiler generated method so they can
         // be filtered that way.
