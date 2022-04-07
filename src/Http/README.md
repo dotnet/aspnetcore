@@ -15,6 +15,7 @@ The following contains a description of each sub-directory in the `Http` directo
 - [Http.Abstractions/](Http.Abstractions/): Contains HTTP object model for HTTP requests and responses and also common extension methods for registering middleware in an IApplicationBuilder.
 - [Http.Extensions/](Http.Extensions/): Contains common extension methods for HTTP abstractions, HTTP headers, HTTP request/response, and session state.
 - [Http.Features/](Http.Features/): Contains HTTP feature interface definitions.
+- [Http.Results/](Http.Results/): Contains implementations of `IResult` and related types.
 - [Metadata/](Metadata/): Contains ASP.NET Core metadata.
 - [Owin/](Owin/): Contains components for running OWIN middleware in an ASP.NET Core application, and to run ASP.NET Core middleware in an OWIN application.
 - [Routing/](Routing/): Contains middleware for routing requests to application logic and for generating links.

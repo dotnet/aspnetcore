@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -9,7 +9,12 @@
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
 
+    <ProjectReference Include="..\tools\ResultsOfTGenerator\ResultsOfTGenerator.csproj" />
+
     <Compile Include="$(SharedSourceRoot)ResultsTests\*.cs" LinkBase="Shared" />
+
+    <Content Include="..\src\ResultsOfT.cs" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Update="ResultsOfTTests.Generated.cs" Link="Shared\GeneratedContent\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
