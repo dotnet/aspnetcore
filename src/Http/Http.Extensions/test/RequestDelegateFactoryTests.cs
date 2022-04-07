@@ -226,6 +226,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         httpContext.Items.Add("input", value);
     }
 
+    private static void TestOptionalNullableNull(HttpContext httpContext, double? value = null)
+    {
+        httpContext.Items.Add("input", (object?)value ?? "Null");
+    }
+
     private static void TestOptionalString(HttpContext httpContext, string value = "default")
     {
         httpContext.Items.Add("input", value);
@@ -364,12 +369,25 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         var httpContext = CreateHttpContext();
 
-        var factoryResult = RequestDelegateFactory.Create(TestOptional);
+        var factoryResult = RequestDelegateFactory.Create(TestOptionalNullable);
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
 
         Assert.Equal(42, httpContext.Items["input"]);
+    }
+    
+    [Fact]
+    public async Task RequestDelegatePopulatesFromNullableNullOptionalParameter()
+    {
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestOptionalNullableNull);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal("Null", httpContext.Items["input"]);
     }
 
     [Fact]
