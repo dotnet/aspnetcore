@@ -22,14 +22,12 @@ app.MapGet("/hello/{name}", SayHello);
 
 app.MapGet("/null-result", IResult () => null);
 
-app.MapGet("/todo/{id}", Results<Ok<Todo>, NotFound> (int id) =>
-{
-    return id switch
+app.MapGet("/todo/{id}", Results<Ok<Todo>, NotFound, BadRequest> (int id) => id switch
     {
+        <= 0 => Results.Typed.BadRequest(),
         >= 1 and <= 10 => Results.Typed.Ok(new Todo(id, "Walk the dog")),
         _ => Results.Typed.NotFound()
-    };
-});
+    });
 
 var extensions = new Dictionary<string, object>() { { "traceId", "traceId123" } };
 
