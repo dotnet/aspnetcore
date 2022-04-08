@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -55,10 +56,16 @@ public sealed partial class Json<TValue> : IResult
     internal Json(TValue? value, int? statusCode, string? contentType, JsonSerializerOptions? jsonSerializerOptions)
     {
         Value = value;
-        StatusCode = statusCode;
         JsonSerializerOptions = jsonSerializerOptions;
         ContentType = contentType;
-        HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
+
+        if (value is ProblemDetails problemDetails)
+        {
+            HttpResultsHelper.ApplyProblemDetailsDefaults(problemDetails, statusCode);
+            statusCode ??= problemDetails.Status;
+        }
+
+        StatusCode = statusCode;
     }
 
     /// <summary>
