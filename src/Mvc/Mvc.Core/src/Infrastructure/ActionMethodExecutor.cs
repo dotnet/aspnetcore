@@ -19,7 +19,6 @@ internal abstract class ActionMethodExecutor
             new SyncObjectResultExecutor(),
 
             // Executors for async methods
-
             new TaskResultExecutor(),
             new AwaitableResultExecutor(),
             new TaskOfIActionResultExecutor(),

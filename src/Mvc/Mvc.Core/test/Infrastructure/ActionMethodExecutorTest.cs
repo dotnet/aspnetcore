@@ -22,7 +22,6 @@ public class ActionMethodExecutorTest
         var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
         // Assert
-
         Assert.Equal("VoidResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.True(controller.Executed);
         Assert.IsType<EmptyResult>(valueTask.Result);
@@ -41,7 +40,6 @@ public class ActionMethodExecutorTest
         var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
         // Assert
-
         Assert.Equal("SyncActionResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.True(valueTask.IsCompleted);
         Assert.IsType<ContentResult>(valueTask.Result);
@@ -172,12 +170,12 @@ public class ActionMethodExecutorTest
         var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
         // Act
-        var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
+        var awaitableResult = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
         // Assert
         Assert.Equal("AwaitableResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.True(controller.Executed);
-        Assert.IsType<EmptyResult>(valueTask.Result);
+        Assert.IsType<EmptyResult>(awaitableResult.Result);
     }
 
     [Fact]
