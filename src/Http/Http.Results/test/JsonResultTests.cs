@@ -52,7 +52,7 @@ public class JsonResultTests
     public async Task JsonResult_ExecuteAsync_JsonSerializesBody()
     {
         // Arrange
-        var result = new Json<object>(value: null, statusCode: 407, jsonSerializerOptions: null);
+        var result = new Json<string>(value: "Hello", statusCode: 407, jsonSerializerOptions: null);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
