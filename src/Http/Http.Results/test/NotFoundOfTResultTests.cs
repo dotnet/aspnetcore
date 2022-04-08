@@ -7,14 +7,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class NotFoundObjectResultTest
+public class NotFoundOfTResultTests
 {
     [Fact]
     public void NotFoundObjectResult_ProblemDetails_SetsStatusCodeAndValue()
     {
         // Arrange & Act
         var obj = new HttpValidationProblemDetails();
-        var result = new NotFound(obj);
+        var result = new NotFound<HttpValidationProblemDetails>(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
@@ -26,7 +26,7 @@ public class NotFoundObjectResultTest
     public void NotFoundObjectResult_InitializesStatusCode()
     {
         // Arrange & act
-        var notFound = new NotFound(null);
+        var notFound = new NotFound<object>(null);
 
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
@@ -36,7 +36,7 @@ public class NotFoundObjectResultTest
     public void NotFoundObjectResult_InitializesStatusCodeAndResponseContent()
     {
         // Arrange & act
-        var notFound = new NotFound("Test Content");
+        var notFound = new NotFound<string>("Test Content");
 
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, notFound.StatusCode);
@@ -48,7 +48,7 @@ public class NotFoundObjectResultTest
     {
         // Arrange
         var httpContext = GetHttpContext();
-        var result = new NotFound("Test Content");
+        var result = new NotFound<string>("Test Content");
 
         // Act
         await result.ExecuteAsync(httpContext);

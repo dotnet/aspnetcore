@@ -9,7 +9,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class ChallengeResultTest
+public class ChallengeResultTests
 {
     [Fact]
     public async Task ChallengeResult_ExecuteAsync()

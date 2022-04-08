@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class ContentResultTest
+public class ContentResultTests
 {
     [Fact]
     public async Task ContentResult_ExecuteAsync_Response_NullContent_SetsContentTypeAndEncoding()

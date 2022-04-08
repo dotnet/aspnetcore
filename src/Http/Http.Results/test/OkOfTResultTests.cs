@@ -8,20 +8,18 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class OkObjectResultTest
+public class OkOfTResultTests
 {
     [Fact]
-    public async Task OkObjectResult_SetsStatusCodeAndValue()
+    public void OkObjectResult_SetsStatusCodeAndValue()
     {
-        // Arrange
-        var result = new Ok("Hello world");
-        var httpContext = GetHttpContext();
-
-        // Act
-        await result.ExecuteAsync(httpContext);
+        // Arrange & Act
+        var value = "Hello world";
+        var result = new Ok<string>(value);
 
         // Assert
-        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        Assert.Equal(value, result.Value);
     }
 
     [Fact]
@@ -29,7 +27,7 @@ public class OkObjectResultTest
     {
         // Arrange & Act
         var obj = new HttpValidationProblemDetails();
-        var result = new Ok(obj);
+        var result = new Ok<HttpValidationProblemDetails>(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
@@ -41,7 +39,7 @@ public class OkObjectResultTest
     public async Task OkObjectResult_ExecuteAsync_FormatsData()
     {
         // Arrange
-        var result = new Ok("Hello");
+        var result = new Ok<string>("Hello");
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -59,13 +57,21 @@ public class OkObjectResultTest
         Assert.Equal("\"Hello\"", Encoding.UTF8.GetString(stream.ToArray()));
     }
 
-    private static HttpContext GetHttpContext()
+    [Fact]
+    public async Task OkObjectResult_ExecuteAsync_SetsStatusCode()
     {
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.PathBase = new PathString("");
-        httpContext.Response.Body = new MemoryStream();
-        httpContext.RequestServices = CreateServices();
-        return httpContext;
+        // Arrange
+        var result = new Ok<string>("Hello");
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = CreateServices()
+        };
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
     }
 
     private static IServiceProvider CreateServices()

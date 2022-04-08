@@ -8,14 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-public class UnprocessableEntityObjectResultTests
+public class UnprocessableEntityOfTResultTests
 {
     [Fact]
     public void NotFoundObjectResult_ProblemDetails_SetsStatusCodeAndValue()
     {
         // Arrange & Act
         var obj = new HttpValidationProblemDetails();
-        var result = new UnprocessableEntity(obj);
+        var result = new UnprocessableEntity<HttpValidationProblemDetails>(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
@@ -28,7 +28,7 @@ public class UnprocessableEntityObjectResultTests
     {
         // Arrange & Act
         var obj = new object();
-        var result = new UnprocessableEntity(obj);
+        var result = new UnprocessableEntity<object>(obj);
 
         // Assert
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
@@ -39,7 +39,7 @@ public class UnprocessableEntityObjectResultTests
     public async Task UnprocessableEntityObjectResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
-        var result = new UnprocessableEntity("Hello");
+        var result = new UnprocessableEntity<string>("Hello");
         var httpContext = new DefaultHttpContext()
         {
             RequestServices = CreateServices(),
@@ -56,7 +56,7 @@ public class UnprocessableEntityObjectResultTests
     public async Task UnprocessableEntityObjectResult_ExecuteResultAsync_FormatsData()
     {
         // Arrange
-        var result = new UnprocessableEntity("Hello");
+        var result = new UnprocessableEntity<string>("Hello");
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {

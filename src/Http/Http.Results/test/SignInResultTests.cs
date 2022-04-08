@@ -10,7 +10,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class SignInResultTest
+public class SignInResultTests
 {
     [Fact]
     public async Task ExecuteAsync_InvokesSignInAsyncOnAuthenticationManager()

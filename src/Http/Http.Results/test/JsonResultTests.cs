@@ -10,13 +10,13 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class ObjectResultTests
+public class JsonResultTests
 {
     [Fact]
-    public async Task ObjectResult_ExecuteAsync_WithNullValue_Works()
+    public async Task JsonResult_ExecuteAsync_WithNullValue_Works()
     {
         // Arrange
-        var result = new ObjectHttpResult(value: null, 411);
+        var result = new Json<object>(value: null, statusCode: 411, jsonSerializerOptions: null);
 
         var httpContext = new DefaultHttpContext()
         {
@@ -31,10 +31,10 @@ public class ObjectResultTests
     }
 
     [Fact]
-    public async Task ObjectResult_ExecuteAsync_SetsStatusCode()
+    public async Task JsonResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
-        var result = new ObjectHttpResult("Hello", 407);
+        var result = new Json<object>(value: null, statusCode: 407, jsonSerializerOptions: null);
 
         var httpContext = new DefaultHttpContext()
         {
@@ -49,10 +49,10 @@ public class ObjectResultTests
     }
 
     [Fact]
-    public async Task ObjectResult_ExecuteAsync_JsonSerializesBody()
+    public async Task JsonResult_ExecuteAsync_JsonSerializesBody()
     {
         // Arrange
-        var result = new ObjectHttpResult("Hello", 407);
+        var result = new Json<object>(value: null, statusCode: 407, jsonSerializerOptions: null);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -71,12 +71,49 @@ public class ObjectResultTests
     }
 
     [Fact]
+    public async Task JsonResult_ExecuteAsync_JsonSerializesBody_WitOptions()
+    {
+        // Arrange
+        var jsonOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
+        var value = new Todo(10, "MyName") { Description = null };
+        var result = new Json<object>(value, jsonSerializerOptions: jsonOptions);
+        var stream = new MemoryStream();
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = CreateServices(),
+            Response =
+                {
+                    Body = stream,
+                },
+        };
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+
+        stream.Position = 0;
+        var responseDetails = JsonSerializer.Deserialize<Todo>(stream);
+        Assert.Equal(value.Id, responseDetails.Id);
+        Assert.Equal(value.Title, responseDetails.Title);
+        Assert.Equal(value.Description, responseDetails.Description);
+
+        stream.Position = 0;
+        Assert.Equal(JsonSerializer.Serialize(value, options: jsonOptions), Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    [Fact]
     public async Task ExecuteAsync_UsesDefaults_ForProblemDetails()
     {
         // Arrange
         var details = new ProblemDetails();
 
-        var result = new ObjectHttpResult(details);
+        var result = new Json<ProblemDetails>(details, jsonSerializerOptions: null);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -105,7 +142,7 @@ public class ObjectResultTests
         // Arrange
         var details = new HttpValidationProblemDetails();
 
-        var result = new ObjectHttpResult(details);
+        var result = new Json<HttpValidationProblemDetails>(details, jsonSerializerOptions: null);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -134,7 +171,7 @@ public class ObjectResultTests
         // Arrange
         var details = new HttpValidationProblemDetails();
 
-        var result = new ObjectHttpResult(details, StatusCodes.Status422UnprocessableEntity);
+        var result = new Json<HttpValidationProblemDetails>(details, StatusCodes.Status422UnprocessableEntity, jsonSerializerOptions: null);
         var httpContext = new DefaultHttpContext()
         {
             RequestServices = CreateServices(),
@@ -153,7 +190,7 @@ public class ObjectResultTests
         // Arrange
         var details = new ProblemDetails { Status = StatusCodes.Status413RequestEntityTooLarge, };
 
-        var result = new ObjectHttpResult(details);
+        var result = new Json<ProblemDetails>(details, jsonSerializerOptions: null);
 
         var httpContext = new DefaultHttpContext()
         {
@@ -169,33 +206,16 @@ public class ObjectResultTests
         Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, httpContext.Response.StatusCode);
     }
 
-    [Fact]
-    public async Task ExecuteAsync_UsesStatusCodeFromResultTypeForProblemDetails()
-    {
-        // Arrange
-        var details = new ProblemDetails { Status = StatusCodes.Status422UnprocessableEntity, };
-
-        var result = new BadRequest(details);
-
-        var httpContext = new DefaultHttpContext()
-        {
-            RequestServices = CreateServices(),
-        };
-
-        // Act
-        await result.ExecuteAsync(httpContext);
-
-        // Assert
-        Assert.Equal(StatusCodes.Status422UnprocessableEntity, details.Status.Value);
-        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
-        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
-    }
-
     private static IServiceProvider CreateServices()
     {
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
         return services.BuildServiceProvider();
+    }
+
+    private record Todo(int Id, string Title)
+    {
+        public string Description { get; init; }
     }
 }

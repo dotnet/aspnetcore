@@ -6,7 +6,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class VirtualFileResultTest : VirtualFileResultTestBase
+public class VirtualFileResultTests : VirtualFileResultTestBase
 {
     protected override Task ExecuteAsync(HttpContext httpContext, string path, string contentType, DateTimeOffset? lastModified = null, EntityTagHeaderValue entityTag = null, bool enableRangeProcessing = false)
     {

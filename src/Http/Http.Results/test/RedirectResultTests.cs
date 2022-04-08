@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class RedirectResultTest : RedirectResultTestBase
+public class RedirectResultTests : RedirectResultTestBase
 {
     [Fact]
     public void RedirectResult_Constructor_WithParameterUrlPermanentAndPreservesMethod_SetsResultUrlPermanentAndPreservesMethod()

@@ -10,7 +10,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class ForbidResultTest
+public class ForbidResultTests
 {
     [Fact]
     public async Task ExecuteResultAsync_InvokesForbidAsyncOnAuthenticationService()

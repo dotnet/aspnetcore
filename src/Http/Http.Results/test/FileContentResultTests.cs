@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class FileContentResultTest : FileContentResultTestBase
+public class FileContentResultTests : FileContentResultTestBase
 {
     protected override Task ExecuteAsync(
         HttpContext httpContext,

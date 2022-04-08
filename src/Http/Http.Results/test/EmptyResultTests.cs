@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class EmptyResultTest
+public class EmptyResultTests
 {
     [Fact]
     public async Task EmptyResult_DoesNothing()

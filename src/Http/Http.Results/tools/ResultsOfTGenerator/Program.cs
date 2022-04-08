@@ -231,6 +231,7 @@ public class Program
         writer.WriteLine("using System.Reflection;");
         writer.WriteLine("using System.Threading.Tasks;");
         writer.WriteLine("using Microsoft.AspNetCore.Http.Metadata;");
+        writer.WriteLine("using Microsoft.AspNetCore.Http.HttpResults;");
         writer.WriteLine("using Microsoft.Extensions.DependencyInjection;");
         writer.WriteLine("using Microsoft.Extensions.Logging;");
         writer.WriteLine("using Microsoft.Extensions.Logging.Abstractions;");
@@ -388,13 +389,13 @@ public class Program
         //public async Task ResultsOfTResult1TResult2_ExecuteResult_ExecutesAssignedResult(int input, object expected)
         //{
         //    // Arrange
-        //    Results<ChecksumResult1, ChecksumResult2, NoContentHttpResult> MyApi(int checksum)
+        //    Results<ChecksumResult1, ChecksumResult2, NoContent> MyApi(int checksum)
         //    {
         //        return checksum switch
         //        {
         //            1 => new ChecksumResult1(checksum),
         //            2 => new ChecksumResult2(checksum),
-        //            _ => (NoContentHttpResult)Results.NoContent()
+        //            _ => (NoContent)Results.NoContent()
         //        };
         //    }
         //    var httpContext = GetHttpContext();
@@ -478,7 +479,7 @@ public class Program
         //public void ResultsOfTResult1TResult2_Throws_ArgumentNullException_WhenHttpContextIsNull()
         //{
         //    // Arrange
-        //    Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        //    Results<ChecksumResult1, NoContent> MyApi()
         //    {
         //        return new ChecksumResult1(1);
         //    }
@@ -507,7 +508,7 @@ public class Program
 
         // Arrange
         writer.WriteIndentedLine(2, "// Arrange");
-        writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContentHttpResult> MyApi()");
+        writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContent> MyApi()");
         writer.WriteIndentedLine(2, "{");
         writer.WriteIndentedLine(3, "return new ChecksumResult1(1);");
         writer.WriteIndentedLine(2, "}");
@@ -535,7 +536,7 @@ public class Program
         //public void ResultsOfTResult1TResult2_Throws_InvalidOperationException_WhenResultIsNull()
         //{
         //    // Arrange
-        //    Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        //    Results<ChecksumResult1, NoContent> MyApi()
         //    {
         //        return (ChecksumResult1)null;
         //    }
@@ -564,7 +565,7 @@ public class Program
 
         // Arrange
         writer.WriteIndentedLine(2, "// Arrange");
-        writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContentHttpResult> MyApi()");
+        writer.WriteIndentedLine(2, "Results<ChecksumResult1, NoContent> MyApi()");
         writer.WriteIndentedLine(2, "{");
         writer.WriteIndentedLine(3, "return new ChecksumResult1(1);");
         writer.WriteIndentedLine(2, "}");

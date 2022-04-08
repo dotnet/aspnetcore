@@ -4,6 +4,7 @@
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -72,6 +73,27 @@ public class BadRequestOfTResultTests
 
         // Assert
         Assert.Equal("\"Hello\"", Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    [Fact]
+    public async Task BadRequestObjectResult_ExecuteResultAsync_UsesStatusCodeFromResultTypeForProblemDetails()
+    {
+        // Arrange
+        var details = new ProblemDetails { Status = StatusCodes.Status422UnprocessableEntity, };
+        var result = new BadRequest<ProblemDetails>(details);
+
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = CreateServices(),
+        };
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, details.Status.Value);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
     }
 
     private static IServiceProvider CreateServices()

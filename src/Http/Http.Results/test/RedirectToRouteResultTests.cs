@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class RedirectToRouteResultTest
+public class RedirectToRouteResultTests
 {
     [Fact]
     public async Task RedirectToRoute_Execute_ThrowsOnNullUrl()

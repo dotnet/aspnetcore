@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-public class ConflictOfTResultTest
+public class ConflictOfTResultTests
 {
     [Fact]
     public void ConflictObjectResult_SetsStatusCodeAndValue()

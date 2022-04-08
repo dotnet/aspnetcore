@@ -1,41 +1,40 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.HttpResults;
-
 using System.Text;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-public class ConflictResultTest
+namespace Microsoft.AspNetCore.Http.HttpResults;
+
+public class OkResultTests
 {
     [Fact]
-    public void ConflictObjectResult_SetsStatusCode()
+    public void OkObjectResult_SetsStatusCodeAndValue()
     {
         // Arrange & Act
-        var conflictObjectResult = new Conflict();
+        var result = new Ok();
 
         // Assert
-        Assert.Equal(StatusCodes.Status409Conflict, conflictObjectResult.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
     }
 
     [Fact]
-    public async Task ConflictObjectResult_ExecuteAsync_SetsStatusCode()
+    public async Task OkObjectResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
-        var result = new Conflict();
+        var result = new Ok();
         var httpContext = new DefaultHttpContext()
         {
-            RequestServices = CreateServices(),
+            RequestServices = CreateServices()
         };
 
         // Act
         await result.ExecuteAsync(httpContext);
 
         // Assert
-        Assert.Equal(StatusCodes.Status409Conflict, httpContext.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
     }
 
     private static IServiceProvider CreateServices()

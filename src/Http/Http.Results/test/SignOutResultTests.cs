@@ -9,7 +9,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class SignOutResultTest
+public class SignOutResultTests
 {
     [Fact]
     public async Task ExecuteAsync_NoArgsInvokesDefaultSignOut()

@@ -1,30 +1,42 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class PushStreamResultTest
+public class HttpFileStreamResultTests : FileStreamResultTestBase
 {
-    [Fact]
-    public async Task PushStreamResultsExposeTheResponseBody()
+    protected override Task ExecuteAsync(
+        HttpContext httpContext,
+        Stream stream,
+        string contentType,
+        DateTimeOffset? lastModified = null,
+        EntityTagHeaderValue entityTag = null,
+        bool enableRangeProcessing = false)
     {
-        var result = new PushStream(body => body.WriteAsync(Encoding.UTF8.GetBytes("Hello World").AsMemory()).AsTask(), contentType: null);
-
-        var httpContext = new DefaultHttpContext
+        var fileStreamResult = new HttpFileStream(stream, contentType)
         {
-            RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider()
+            LastModified = lastModified,
+            EntityTag = entityTag,
+            EnableRangeProcessing = enableRangeProcessing
         };
-        var ms = new MemoryStream();
-        httpContext.Response.Body = ms;
 
-        await result.ExecuteAsync(httpContext);
+        return fileStreamResult.ExecuteAsync(httpContext);
+    }
 
-        Assert.Equal("Hello World", Encoding.UTF8.GetString(ms.ToArray()));
-        Assert.Equal("application/octet-stream", result.ContentType);
+    [Fact]
+    public void Constructor_SetsFileName()
+    {
+        // Arrange
+        var stream = Stream.Null;
+
+        // Act
+        var result = new HttpFileStream(stream, "text/plain");
+
+        // Assert
+        Assert.Equal(stream, result.FileStream);
     }
 
     [Fact]
@@ -34,12 +46,12 @@ public class PushStreamResultTest
         var stream = Stream.Null;
         var contentType = "text/plain; charset=us-ascii; p1=p1-value";
         var expectedMediaType = contentType;
-        var callback = (Stream body) => body.WriteAsync(Encoding.UTF8.GetBytes("Hello World").AsMemory()).AsTask();
 
         // Act
-        var result = new PushStream(callback, contentType);
+        var result = new HttpFileStream(stream, contentType);
 
         // Assert
+        Assert.Equal(stream, result.FileStream);
         Assert.Equal(expectedMediaType, result.ContentType);
     }
 
@@ -52,10 +64,9 @@ public class PushStreamResultTest
         var expectedMediaType = contentType;
         var lastModified = new DateTimeOffset();
         var entityTag = new EntityTagHeaderValue("\"Etag\"");
-        var callback = (Stream body) => body.WriteAsync(Encoding.UTF8.GetBytes("Hello World").AsMemory()).AsTask();
 
         // Act
-        var result = new PushStream(callback, contentType)
+        var result = new HttpFileStream(stream, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,
@@ -66,4 +77,5 @@ public class PushStreamResultTest
         Assert.Equal(entityTag, result.EntityTag);
         Assert.Equal(expectedMediaType, result.ContentType);
     }
+
 }

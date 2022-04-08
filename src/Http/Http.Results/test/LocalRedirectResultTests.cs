@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class LocalRedirectResultTest
+public class LocalRedirectResultTests
 {
     [Fact]
     public void Constructor_WithParameterUrl_SetsResultUrlAndNotPermanentOrPreserveMethod()
