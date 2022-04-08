@@ -383,12 +383,12 @@ internal sealed class ParameterBindingMethodCache
     private static MethodInfo? GetIBindableFromHttpContextMethod(Type type)
     {
         // Check if parameter is bindable via static abstract method on IBindableFromHttpContext<TSelf>
-        var isBindableViaInterface = type.GetInterfaces()
-            .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IBindableFromHttpContext<>) && i.GetGenericArguments()[0] == type);
-
-        if (isBindableViaInterface)
+        foreach (var i in type.GetInterfaces())
         {
-            return BindAsyncMethod.MakeGenericMethod(type);
+            if (i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IBindableFromHttpContext<>) && i.GetGenericArguments()[0] == type)
+            {
+                return BindAsyncMethod.MakeGenericMethod(type);
+            }
         }
 
         return null;
