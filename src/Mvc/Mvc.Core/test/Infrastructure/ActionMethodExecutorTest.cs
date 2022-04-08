@@ -136,7 +136,7 @@ public class ActionMethodExecutorTest
 
         // Act
         var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
-     
+
         // Assert
         Assert.Equal("SyncActionResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.IsType<ContentResult>(valueTask.Result);
