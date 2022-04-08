@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Result;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit.Abstractions;
+
+namespace Microsoft.AspNetCore.Http.Result;
 
 public partial class ResultsOfTTests
 {
@@ -82,5 +82,10 @@ public partial class ResultsOfTTests
             _output.WriteLine(actual);
             throw;
         }
+    }
+
+    private class ResultTypeProvidedMetadata
+    {
+        public string SourceTypeName { get; init; }
     }
 }
