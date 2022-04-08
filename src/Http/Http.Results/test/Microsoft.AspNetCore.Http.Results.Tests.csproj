@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -8,12 +8,14 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Mono.TextTemplating" />
 
     <ProjectReference Include="..\tools\ResultsOfTGenerator\ResultsOfTGenerator.csproj" />
 
     <Compile Include="$(SharedSourceRoot)ResultsTests\*.cs" LinkBase="Shared" />
-
-    <Content Include="..\src\ResultsOfT.cs" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(HttpResultsSourceRoot)\ResultsCache.StatusCodes.tt" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(HttpResultsSourceRoot)\ResultsCache.StatusCodes.cs" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(HttpResultsSourceRoot)\ResultsOfT.cs" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
     <Compile Update="ResultsOfTTests.Generated.cs" Link="Shared\GeneratedContent\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

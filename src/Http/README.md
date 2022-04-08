@@ -25,6 +25,13 @@ The following contains a description of each sub-directory in the `Http` directo
 
 ## Development Setup
 
+To run the code generation using [T4 Text Templates](https://docs.microsoft.com/en-us/visualstudio/modeling/code-generation-and-t4-text-templates), you can use an IDE that supports it (eg. Visual Studio or JetBrains Rider) or install the cross-platform open-source dotnet tool [Mono/T4](https://github.com/mono/t4).
+
+```powershell
+> dotnet tool install -g dotnet-t4
+> t4 Http.Results\ResultsCache.StatusCodes.tt
+```
+
 ### Build
 
 To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
