@@ -1,15 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.HttpResults;
+
 namespace Microsoft.AspNetCore.Http;
 
 internal static partial class ResultsCache
 {
-    public static NotFoundObjectHttpResult NotFound { get; } = new(null);
-    public static UnauthorizedHttpResult Unauthorized { get; } = new();
-    public static BadRequestObjectHttpResult BadRequest { get; } = new(null);
-    public static ConflictObjectHttpResult Conflict { get; } = new(null);
-    public static NoContentHttpResult NoContent { get; } = new();
-    public static OkObjectHttpResult Ok { get; } = new(null);
-    public static UnprocessableEntityObjectHttpResult UnprocessableEntity { get; } = new(null);
+    public static NotFound NotFound { get; } = new();
+    public static Unauthorized Unauthorized { get; } = new();
+    public static BadRequest BadRequest { get; } = new();
+    public static Conflict Conflict { get; } = new();
+    public static NoContent NoContent { get; } = new();
+    public static Ok Ok { get; } = new();
+    public static UnprocessableEntity UnprocessableEntity { get; } = new();
 }

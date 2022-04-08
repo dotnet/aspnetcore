@@ -76,6 +76,7 @@
 #nullable enable
 
 using System.CodeDom.Compiler;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -83,16 +84,16 @@ namespace Microsoft.AspNetCore.Http;
 internal partial class ResultsCache
 {
 <# foreach (var statusCode in statusCodes) { #>
-    private static StatusCodeHttpResult? _status<#= statusCode.Name #>;
+    private static Status? _status<#= statusCode.Name #>;
 <# } #>
 
-    internal static StatusCodeHttpResult StatusCode(int statusCode)
+    internal static Status StatusCode(int statusCode)
     {
         if (statusCode is (< 100) or (> 599))
         {
             // No HTTP status code assigned outside the 100..599 range
             // so, it will not be available in the cache
-            return new StatusCodeHttpResult(statusCode);
+            return new Status(statusCode);
         }
 
         return statusCode switch
@@ -100,7 +101,7 @@ internal partial class ResultsCache
 <# foreach (var statusCode in statusCodes) { #>
             StatusCodes.Status<#= statusCode.Name #> => _status<#= statusCode.Name #> ??= new(StatusCodes.Status<#= statusCode.Name #>),
 <# } #>
-            _ => new StatusCodeHttpResult(statusCode),
+            _ => new Status(statusCode),
         };
     }
 }

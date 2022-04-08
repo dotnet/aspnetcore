@@ -34,6 +34,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="ResultsCache.StatusCodes.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ResultsCache.StatusCodes.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="ResultsCache.StatusCodes.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>ResultsCache.StatusCodes.cs</LastGenOutput>

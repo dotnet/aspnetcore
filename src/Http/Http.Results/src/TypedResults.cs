@@ -518,13 +518,13 @@ public static partial class Results
         /// <param name="statusCode">The status code to set on the response.</param>
         /// <returns>The created <see cref="Http.StatusCode"/> object for the response.</returns>
         public static Status StatusCode(int statusCode)
-            => new(statusCode);
+            => ResultsCache.StatusCode(statusCode);
 
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
         /// </summary>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static NotFound NotFound() => new();
+        public static NotFound NotFound() => ResultsCache.NotFound;
 
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
@@ -537,13 +537,13 @@ public static partial class Results
         /// Produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
         /// </summary>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static Unauthorized Unauthorized() => new();
+        public static Unauthorized Unauthorized() => ResultsCache.Unauthorized;
 
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static BadRequest BadRequest() => new();
+        public static BadRequest BadRequest() => ResultsCache.BadRequest;
 
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
@@ -556,7 +556,7 @@ public static partial class Results
         /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
         /// </summary>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static Conflict Conflict() => new();
+        public static Conflict Conflict() => ResultsCache.Conflict;
 
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
@@ -569,13 +569,13 @@ public static partial class Results
         /// Produces a <see cref="StatusCodes.Status204NoContent"/> response.
         /// </summary>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static NoContent NoContent() => new();
+        public static NoContent NoContent() => ResultsCache.NoContent;
 
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status200OK"/> response.
         /// </summary>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static Ok Ok() => new();
+        public static Ok Ok() => ResultsCache.Ok;
 
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status200OK"/> response.
@@ -588,7 +588,7 @@ public static partial class Results
         /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
         /// </summary>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
-        public static UnprocessableEntity UnprocessableEntity() => new();
+        public static UnprocessableEntity UnprocessableEntity() => ResultsCache.UnprocessableEntity;
 
         /// <summary>
         /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
