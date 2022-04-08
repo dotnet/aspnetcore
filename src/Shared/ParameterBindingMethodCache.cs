@@ -184,41 +184,19 @@ internal sealed class ParameterBindingMethodCache
     {
         (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
         {
-            // Check if parameter is bindable via static abstract method on IBindableFromHttpContext<TSelf>
-
-            var isBindableViaInterface = true;
-            try
-            {
-                var bindableType = typeof(IBindableFromHttpContext<>).MakeGenericType(nonNullableParameterType);
-            }
-            catch (ArgumentException)
-            {
-                isBindableViaInterface = false;
-            }
-
-            if (isBindableViaInterface)
-            {
-                var staticMethodInfo = nonNullableParameterType.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static)!;
-                return ((parameter) =>
-                {
-                    // parameter is being intentionally shadowed. We never want to use the outer ParameterInfo inside
-                    // this Func because the ParameterInfo varies after it's been cached for a given parameter type.
-                    MethodCallExpression typedCall = Expression.Call(staticMethodInfo, HttpContextExpr, Expression.Constant(parameter));
-                    return Expression.Call(GetGenericConvertValueTask(nonNullableParameterType), typedCall);
-                }, 2);
-
-                [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Linker workaround. The type is annotated with RequiresUnreferencedCode")]
-                static MethodInfo GetGenericConvertValueTask(Type nonNullableParameterType) => ConvertValueTaskMethod.MakeGenericMethod(nonNullableParameterType);
-            }
-
             var hasParameterInfo = true;
+            var methodInfo = GetIBindableFromHttpContextMethod(nonNullableParameterType);
 
-            // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
-            var methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) }, ValidateReturnType);
             if (methodInfo is null)
             {
-                hasParameterInfo = false;
-                methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) }, ValidateReturnType);
+                // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
+                methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) }, ValidateReturnType);
+
+                if (methodInfo is null)
+                {
+                    hasParameterInfo = false;
+                    methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) }, ValidateReturnType);
+                }
             }
 
             // We're looking for a method with the following signatures:
@@ -399,6 +377,29 @@ internal sealed class ParameterBindingMethodCache
         }
 
         throw new InvalidOperationException($"No public parameterless constructor found for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.");
+    }
+
+    private static MethodInfo? GetIBindableFromHttpContextMethod(Type type)
+    {
+        // Check if parameter is bindable via static abstract method on IBindableFromHttpContext<TSelf>
+        // JonSkeet himself said this is the way (https://stackoverflow.com/a/4864565/405892)
+        // but if we find another less exceptiony way we should probably do that instead
+        var isBindableViaInterface = true;
+        try
+        {
+            var _ = typeof(IBindableFromHttpContext<>).MakeGenericType(type);
+        }
+        catch (ArgumentException)
+        {
+            isBindableViaInterface = false;
+        }
+
+        if (isBindableViaInterface)
+        {
+            return type.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static)!;
+        }
+
+        return null;
     }
 
     private MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
