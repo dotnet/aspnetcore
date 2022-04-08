@@ -24,6 +24,7 @@ internal sealed class ParameterBindingMethodCache
 {
     private static readonly MethodInfo ConvertValueTaskMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ConvertValueTaskOfNullableResultMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTaskOfNullableResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo BindAsyncMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(BindAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     internal static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
     internal static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
@@ -382,25 +383,23 @@ internal sealed class ParameterBindingMethodCache
     private static MethodInfo? GetIBindableFromHttpContextMethod(Type type)
     {
         // Check if parameter is bindable via static abstract method on IBindableFromHttpContext<TSelf>
-        // JonSkeet himself said this is the way (https://stackoverflow.com/a/4864565/405892)
-        // but if we find another less exceptiony way we should probably do that instead
-        var isBindableViaInterface = true;
-        try
-        {
-            var _ = typeof(IBindableFromHttpContext<>).MakeGenericType(type);
-        }
-        catch (ArgumentException)
-        {
-            isBindableViaInterface = false;
-        }
+        var isBindableViaInterface = type.GetInterfaces()
+            .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IBindableFromHttpContext<>) && i.GetGenericArguments()[0] == type);
 
         if (isBindableViaInterface)
         {
-            return type.GetMethod("BindAsync", BindingFlags.Public | BindingFlags.Static)!;
+            return BindAsyncMethod.MakeGenericMethod(type);
         }
 
         return null;
     }
+
+    private static ValueTask<TValue?> BindAsync<TValue>(HttpContext httpContext, ParameterInfo parameter)
+        where TValue : IBindableFromHttpContext<TValue>
+    {
+        return TValue.BindAsync(httpContext, parameter);
+    }
+        
 
     private MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
     {
