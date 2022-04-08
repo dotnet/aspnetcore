@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 var app = WebApplication.Create(args);
@@ -21,12 +22,12 @@ app.MapGet("/hello/{name}", SayHello);
 
 app.MapGet("/null-result", IResult () => null);
 
-app.MapGet("/todo/{id}", Results<OkObjectHttpResult, NotFoundObjectHttpResult> (int id) =>
+app.MapGet("/todo/{id}", Results<Ok<Todo>, NotFound> (int id) =>
 {
     return id switch
     {
-        >= 1 and <= 10 => (OkObjectHttpResult)Results.Ok(new { Id = id, Title = "Walk the dog" }),
-        _ => (NotFoundObjectHttpResult)Results.NotFound()
+        >= 1 and <= 10 => Results.Typed.Ok(new Todo(id, "Walk the dog")),
+        _ => Results.Typed.NotFound()
     };
 });
 
@@ -47,3 +48,5 @@ app.MapGet("/validation-problem-object", () =>
     Results.Problem(new HttpValidationProblemDetails(errors) { Status = 400, Extensions = { { "traceId", "traceId123" } } }));
 
 app.Run();
+
+internal record Todo(int Id, string Title);
