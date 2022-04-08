@@ -147,6 +147,7 @@ static Microsoft.AspNetCore.Http.Results<TResult1, TResult2, TResult3, TResult4>
 static Microsoft.AspNetCore.Http.Results<TResult1, TResult2, TResult3>.implicit operator Microsoft.AspNetCore.Http.Results<TResult1, TResult2, TResult3>!(TResult1 result) -> Microsoft.AspNetCore.Http.Results<TResult1, TResult2, TResult3>!
 static Microsoft.AspNetCore.Http.Results<TResult1, TResult2, TResult3>.implicit operator Microsoft.AspNetCore.Http.Results<TResult1, TResult2, TResult3>!(TResult2 result) -> Microsoft.AspNetCore.Http.Results<TResult1, TResult2, TResult3>!
 static Microsoft.AspNetCore.Http.Results<TResult1, TResult2, TResult3>.implicit operator Microsoft.AspNetCore.Http.Results<TResult1, TResult2, TResult3>!(TResult3 result) -> Microsoft.AspNetCore.Http.Results<TResult1, TResult2, TResult3>!
+static Microsoft.AspNetCore.Http.Results<TResult1, TResult2>.PopulateMetadata(Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext! context) -> void
 static Microsoft.AspNetCore.Http.Results<TResult1, TResult2>.implicit operator Microsoft.AspNetCore.Http.Results<TResult1, TResult2>!(TResult1 result) -> Microsoft.AspNetCore.Http.Results<TResult1, TResult2>!
 static Microsoft.AspNetCore.Http.Results<TResult1, TResult2>.implicit operator Microsoft.AspNetCore.Http.Results<TResult1, TResult2>!(TResult2 result) -> Microsoft.AspNetCore.Http.Results<TResult1, TResult2>!
 Microsoft.AspNetCore.Http.SignInHttpResult
