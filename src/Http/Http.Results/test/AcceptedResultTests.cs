@@ -4,26 +4,10 @@
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class AcceptedResultTests
 {
-    [Fact]
-    public async Task ExecuteResultAsync_FormatsData()
-    {
-        // Arrange
-        var httpContext = GetHttpContext();
-        var stream = new MemoryStream();
-        httpContext.Response.Body = stream;
-        // Act
-        var result = new Accepted("my-location", value: "Hello world");
-        await result.ExecuteAsync(httpContext);
-
-        // Assert
-        var response = Encoding.UTF8.GetString(stream.ToArray());
-        Assert.Equal("\"Hello world\"", response);
-    }
-
     [Fact]
     public async Task ExecuteResultAsync_SetsStatusCodeAndLocationHeader()
     {
@@ -32,26 +16,12 @@ public class AcceptedResultTests
         var httpContext = GetHttpContext();
 
         // Act
-        var result = new Accepted(expectedUrl, value: "some-value");
+        var result = new Accepted(expectedUrl);
         await result.ExecuteAsync(httpContext);
 
         // Assert
         Assert.Equal(StatusCodes.Status202Accepted, httpContext.Response.StatusCode);
         Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
-    }
-
-    [Fact]
-    public void AcceptedResult_ProblemDetails_SetsStatusCodeAndValue()
-    {
-        // Arrange & Act
-        var expectedUrl = "testAction";
-        var obj = new HttpValidationProblemDetails();
-        var result = new Accepted(expectedUrl, obj);
-
-        // Assert
-        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
-        Assert.Equal(StatusCodes.Status202Accepted, obj.Status);
-        Assert.Equal(obj, result.Value);
     }
 
     private static HttpContext GetHttpContext()

@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Internal;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class RedirectResultTest : RedirectResultTestBase
 {

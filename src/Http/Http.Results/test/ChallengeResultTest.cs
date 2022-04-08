@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class ChallengeResultTest
 {
@@ -15,7 +15,7 @@ public class ChallengeResultTest
     public async Task ChallengeResult_ExecuteAsync()
     {
         // Arrange
-        var result = new ChallengeHttpResult("", null);
+        var result = new Challenge("", null);
         var auth = new Mock<IAuthenticationService>();
         var httpContext = GetHttpContext(auth);
 
@@ -30,7 +30,7 @@ public class ChallengeResultTest
     public async Task ChallengeResult_ExecuteAsync_NoSchemes()
     {
         // Arrange
-        var result = new ChallengeHttpResult(new string[] { }, null);
+        var result = new Challenge(new string[] { }, null);
         var auth = new Mock<IAuthenticationService>();
         var httpContext = GetHttpContext(auth);
 

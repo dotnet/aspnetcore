@@ -1,46 +1,45 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 using System.Text;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-public class ConflictObjectResultTest
+public class BadRequestOfTResultTests
 {
     [Fact]
-    public void ConflictObjectResult_SetsStatusCodeAndValue()
+    public void BadRequestObjectResult_SetsStatusCodeAndValue()
     {
         // Arrange & Act
         var obj = new object();
-        var conflictObjectResult = new Conflict(obj);
+        var badRequestObjectResult = new BadRequest<object>(obj);
 
         // Assert
-        Assert.Equal(StatusCodes.Status409Conflict, conflictObjectResult.StatusCode);
-        Assert.Equal(obj, conflictObjectResult.Value);
+        Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
+        Assert.Equal(obj, badRequestObjectResult.Value);
     }
 
     [Fact]
-    public void ConflictObjectResult_ProblemDetails_SetsStatusCodeAndValue()
+    public void BadRequestObjectResult_ProblemDetails_SetsStatusCodeAndValue()
     {
         // Arrange & Act
-        var obj = new ProblemDetails();
-        var conflictObjectResult = new Conflict(obj);
+        var obj = new HttpValidationProblemDetails();
+        var result = new BadRequest<HttpValidationProblemDetails>(obj);
 
         // Assert
-        Assert.Equal(StatusCodes.Status409Conflict, conflictObjectResult.StatusCode);
-        Assert.Equal(StatusCodes.Status409Conflict, obj.Status);
-        Assert.Equal(obj, conflictObjectResult.Value);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, obj.Status);
+        Assert.Equal(obj, result.Value);
     }
 
     [Fact]
-    public async Task ConflictObjectResult_ExecuteAsync_SetsStatusCode()
+    public async Task BadRequestObjectResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
-        var result = new Conflict("Hello");
+        var result = new BadRequest<string>("Hello");
         var httpContext = new DefaultHttpContext()
         {
             RequestServices = CreateServices(),
@@ -50,14 +49,14 @@ public class ConflictObjectResultTest
         await result.ExecuteAsync(httpContext);
 
         // Assert
-        Assert.Equal(StatusCodes.Status409Conflict, httpContext.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
     }
 
     [Fact]
-    public async Task ConflictObjectResult_ExecuteResultAsync_FormatsData()
+    public async Task BadRequestObjectResult_ExecuteResultAsync_FormatsData()
     {
         // Arrange
-        var result = new Conflict("Hello");
+        var result = new BadRequest<string>("Hello");
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {

@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class EmptyResultTest
 {
@@ -11,7 +11,7 @@ public class EmptyResultTest
     public async Task EmptyResult_DoesNothing()
     {
         // Arrange
-        var emptyResult = EmptyHttpResult.Instance;
+        var emptyResult = Empty.Instance;
 
         // Act
         var httpContext = GetHttpContext();

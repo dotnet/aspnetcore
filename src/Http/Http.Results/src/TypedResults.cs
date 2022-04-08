@@ -632,7 +632,7 @@ public static partial class Results
                 }
             }
 
-            return new Problem(problemDetails);
+            return new(problemDetails);
         }
 
         /// <summary>
@@ -642,7 +642,7 @@ public static partial class Results
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
         public static Problem Problem(ProblemDetails problemDetails)
         {
-            return new Problem(problemDetails);
+            return new(problemDetails);
         }
 
         /// <summary>
@@ -684,7 +684,7 @@ public static partial class Results
                 }
             }
 
-            return new Problem(problemDetails);
+            return new(problemDetails);
         }
 
         /// <summary>

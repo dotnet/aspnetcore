@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class PushStreamResultTest
 {

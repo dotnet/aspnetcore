@@ -5,24 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class CreatedResultTests
 {
-    [Fact]
-    public void CreatedResult_ProblemDetails_SetsStatusCodeAndValue()
-    {
-        // Arrange & Act
-        var expectedUrl = "testAction";
-        var obj = new HttpValidationProblemDetails();
-        var result = new CreatedHttpResult(expectedUrl, obj);
-
-        // Assert
-        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
-        Assert.Equal(StatusCodes.Status201Created, obj.Status);
-        Assert.Equal(obj, result.Value);
-    }
-
     [Fact]
     public void CreatedResult_SetsLocation()
     {
@@ -30,7 +16,7 @@ public class CreatedResultTests
         var location = "http://test/location";
 
         // Act
-        var result = new CreatedHttpResult(location, "testInput");
+        var result = new Created(location);
 
         // Assert
         Assert.Same(location, result.Location);
@@ -42,7 +28,7 @@ public class CreatedResultTests
         // Arrange
         var location = "/test/";
         var httpContext = GetHttpContext();
-        var result = new CreatedHttpResult(location, "testInput");
+        var result = new Created(location);
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -59,7 +45,7 @@ public class CreatedResultTests
         var location = "/test/";
         var httpContext = GetHttpContext();
         httpContext.Response.Headers["Location"] = "/different/location/";
-        var result = new CreatedHttpResult(location, "testInput");
+        var result = new Created(location);
 
         // Act
         await result.ExecuteAsync(httpContext);

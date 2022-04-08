@@ -8,8 +8,54 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class AcceptedAtRouteResultTests
+public class AcceptedAtRouteOfTResultTests
 {
+    [Fact]
+    public void AcceptedAtRouteResult_ProblemDetails_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
+        {
+            { "test", "case" },
+            { "sample", "route" }
+        });
+        var obj = new HttpValidationProblemDetails();
+        var result = new AcceptedAtRoute<HttpValidationProblemDetails>(routeValues, obj);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(StatusCodes.Status202Accepted, obj.Status);
+        Assert.Equal(obj, result.Value);
+    }
+
+    [Fact]
+    public async Task ExecuteResultAsync_FormatsData()
+    {
+        // Arrange
+        var url = "testAction";
+        var linkGenerator = new TestLinkGenerator { Url = url };
+        var httpContext = GetHttpContext(linkGenerator);
+        var stream = new MemoryStream();
+        httpContext.Response.Body = stream;
+
+        var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
+            {
+                { "test", "case" },
+                { "sample", "route" }
+            });
+
+        // Act
+        var result = new AcceptedAtRoute<string>(
+            routeName: "sample",
+            routeValues: routeValues,
+            value: "Hello world");
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        var response = Encoding.UTF8.GetString(stream.ToArray());
+        Assert.Equal("\"Hello world\"", response);
+    }
+
     public static TheoryData<object> AcceptedAtRouteData
     {
         get
@@ -41,7 +87,7 @@ public class AcceptedAtRouteResultTests
         var httpContext = GetHttpContext(linkGenerator);
 
         // Act
-        var result = new AcceptedAtRoute(routeValues: values);
+        var result = new AcceptedAtRoute<object>(routeValues: values, value: null);
         await result.ExecuteAsync(httpContext);
 
         // Assert
@@ -57,9 +103,10 @@ public class AcceptedAtRouteResultTests
         var httpContext = GetHttpContext(linkGenerator);
 
         // Act
-        var result = new AcceptedAtRoute(
+        var result = new AcceptedAtRoute<object>(
             routeName: null,
-            routeValues: new Dictionary<string, object>());
+            routeValues: new Dictionary<string, object>(),
+            value: null);
 
         // Assert
         await ExceptionAssert.ThrowsAsync<InvalidOperationException>(() =>

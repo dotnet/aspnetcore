@@ -9,8 +9,25 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public partial class CreatedAtRouteResultTests
+public partial class CreatedAtRouteOfTResultTests
 {
+    [Fact]
+    public void CreatedAtRouteResult_ProblemDetails_SetsStatusCodeAndValue()
+    {
+        // Arrange & Act
+        var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
+        {
+            { "test", "case" },
+            { "sample", "route" }
+        });
+        var obj = new HttpValidationProblemDetails();
+        var result = new CreatedAtRoute<HttpValidationProblemDetails>(routeValues, obj);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(StatusCodes.Status201Created, obj.Status);
+        Assert.Equal(obj, result.Value);
+    }
     public static IEnumerable<object[]> CreatedAtRouteData
     {
         get
@@ -39,7 +56,7 @@ public partial class CreatedAtRouteResultTests
         var httpContext = GetHttpContext(expectedUrl);
 
         // Act
-        var result = new CreatedAtRoute(routeName: null, routeValues: values);
+        var result = new CreatedAtRoute<object>(routeName: null, routeValues: values, value: null);
         await result.ExecuteAsync(httpContext);
 
         // Assert
@@ -53,9 +70,10 @@ public partial class CreatedAtRouteResultTests
         // Arrange
         var httpContext = GetHttpContext(expectedUrl: null);
 
-        var result = new CreatedAtRoute(
+        var result = new CreatedAtRoute<object>(
             routeName: null,
-            routeValues: new Dictionary<string, object>());
+            routeValues: new Dictionary<string, object>(),
+            value: null);
 
         // Act & Assert
         await ExceptionAssert.ThrowsAsync<InvalidOperationException>(

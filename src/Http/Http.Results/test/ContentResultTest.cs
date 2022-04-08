@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class ContentResultTest
 {
@@ -20,7 +20,7 @@ public class ContentResultTest
             Encoding = Encoding.Unicode
         }.ToString();
 
-        var contentResult = new ContentHttpResult(null, contentType);
+        var contentResult = new Content(null, contentType);
         var httpContext = GetHttpContext();
 
         // Act
@@ -107,7 +107,7 @@ public class ContentResultTest
         byte[] expectedContentData)
     {
         // Arrange
-        var contentResult = new ContentHttpResult(content, contentType?.ToString());
+        var contentResult = new Content(content, contentType?.ToString());
         var httpContext = GetHttpContext();
         var memoryStream = new MemoryStream();
         httpContext.Response.Body = memoryStream;
