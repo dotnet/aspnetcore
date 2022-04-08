@@ -59,7 +59,7 @@ public sealed class Results<TResult1, TResult2> : IResult, IEndpointMetadataProv
     public static implicit operator Results<TResult1, TResult2>(TResult2 result) => new(result);
 
     /// <inheritdoc/>
-    public static void PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(context);
@@ -126,7 +126,7 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult, IEndpointMe
     public static implicit operator Results<TResult1, TResult2, TResult3>(TResult3 result) => new(result);
 
     /// <inheritdoc/>
-    public static void PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(context);
@@ -202,7 +202,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult, I
     public static implicit operator Results<TResult1, TResult2, TResult3, TResult4>(TResult4 result) => new(result);
 
     /// <inheritdoc/>
-    public static void PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(context);
@@ -287,7 +287,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
     public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5>(TResult5 result) => new(result);
 
     /// <inheritdoc/>
-    public static void PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(context);
@@ -381,7 +381,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     public static implicit operator Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6>(TResult6 result) => new(result);
 
     /// <inheritdoc/>
-    public static void PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(context);

@@ -177,7 +177,7 @@ public class Program
 
             // IEndpointMetadataProvider.PopulateMetadata
             writer.WriteIndentedLine("/// <inheritdoc/>");
-            writer.WriteIndentedLine("public static void PopulateMetadata(EndpointMetadataContext context)");
+            writer.WriteIndentedLine("static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)");
             writer.WriteIndentedLine("{");
             for (int j = 1; j <= i; j++)
             {
@@ -813,7 +813,7 @@ public class Program
         //    var context = new EndpointMetadataContext { Method = ((Delegate)MyApi).GetMethodInfo(), EndpointMetadata = metadata };
 
         //    // Act
-        //    Results<ProvidesMetadataResult1, ProvidesMetadataResult2>.PopulateMetadata(context);
+        //    PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(context);
 
         //    // Assert
         //    Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
@@ -851,7 +851,7 @@ public class Program
 
         // Act
         writer.WriteIndentedLine(2, "// Act");
-        writer.WriteIndent(2, "Results<");
+        writer.WriteIndent(2, "PopulateMetadata<Results<");
         for (int j = 1; j <= typeArgNumber; j++)
         {
             writer.Write($"ProvidesMetadataResult{j}");
@@ -861,7 +861,7 @@ public class Program
                 writer.Write(", ");
             }
         }
-        writer.WriteLine(">.PopulateMetadata(context);");
+        writer.WriteLine(">>(context);");
         writer.WriteLine();
 
         // Assert

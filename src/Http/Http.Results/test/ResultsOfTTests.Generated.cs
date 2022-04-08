@@ -210,7 +210,7 @@ public partial class ResultsOfTTests
         var context = new EndpointMetadataContext { Method = ((Delegate)MyApi).GetMethodInfo(), EndpointMetadata = metadata };
 
         // Act
-        Results<ProvidesMetadataResult1, ProvidesMetadataResult2>.PopulateMetadata(context);
+        PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(context);
 
         // Assert
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
@@ -482,7 +482,7 @@ public partial class ResultsOfTTests
         var context = new EndpointMetadataContext { Method = ((Delegate)MyApi).GetMethodInfo(), EndpointMetadata = metadata };
 
         // Act
-        Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3>.PopulateMetadata(context);
+        PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3>>(context);
 
         // Assert
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
@@ -831,7 +831,7 @@ public partial class ResultsOfTTests
         var context = new EndpointMetadataContext { Method = ((Delegate)MyApi).GetMethodInfo(), EndpointMetadata = metadata };
 
         // Act
-        Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4>.PopulateMetadata(context);
+        PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4>>(context);
 
         // Assert
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
@@ -1265,7 +1265,7 @@ public partial class ResultsOfTTests
         var context = new EndpointMetadataContext { Method = ((Delegate)MyApi).GetMethodInfo(), EndpointMetadata = metadata };
 
         // Act
-        Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5>.PopulateMetadata(context);
+        PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5>>(context);
 
         // Assert
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
@@ -1792,7 +1792,7 @@ public partial class ResultsOfTTests
         var context = new EndpointMetadataContext { Method = ((Delegate)MyApi).GetMethodInfo(), EndpointMetadata = metadata };
 
         // Act
-        Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6>.PopulateMetadata(context);
+        PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6>>(context);
 
         // Assert
         Assert.Contains(context.EndpointMetadata, m => m is ResultTypeProvidedMetadata { SourceTypeName: nameof(ProvidesMetadataResult1) });
