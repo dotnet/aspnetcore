@@ -11,17 +11,30 @@ namespace Microsoft.AspNetCore.Http.Metadata;
 public sealed class EndpointMetadataContext
 {
     /// <summary>
-    /// Gets the <see cref="MethodInfo"/> associated with the current route handler.
+    /// Creates a new instance of the <see cref="EndpointMetadataContext"/> class.
     /// </summary>
-    public MethodInfo Method { get; init; } = null!; // Is initialized when created by RequestDelegateFactory
+    /// <param name="method">The <see cref="MethodInfo"/> of the route handler delegate of the endpoint being created.</param>
+    /// <param name="endpointMetadata">The list of objects that will be added to the metadata of the endpoint.</param>
+    /// <param name="services">The <see cref="IServiceProvider"/> instance used to access application services.</param>
+    public EndpointMetadataContext(MethodInfo method, IList<object> endpointMetadata, IServiceProvider? services)
+    {
+        Method = method;
+        EndpointMetadata = endpointMetadata;
+        Services = services;
+    }
 
     /// <summary>
-    /// Gets the <see cref="IServiceProvider"/> instance used to access application services.
+    /// Gets the <see cref="MethodInfo"/> of the route handler delegate of the endpoint being created.
     /// </summary>
-    public IServiceProvider? Services { get; init; }
+    public MethodInfo Method { get; }
 
     /// <summary>
     /// Gets the list of objects that will be added to the metadata of the endpoint.
     /// </summary>
-    public IList<object> EndpointMetadata { get; init; } = null!; // Is initialized when created by RequestDelegateFactory
+    public IList<object> EndpointMetadata { get; }
+
+    /// <summary>
+    /// Gets the <see cref="IServiceProvider"/> instance used to access application services.
+    /// </summary>
+    public IServiceProvider? Services { get; }
 }

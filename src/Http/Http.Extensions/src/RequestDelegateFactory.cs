@@ -294,12 +294,7 @@ public static partial class RequestDelegateFactory
             if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IEndpointParameterMetadataProvider
-                var parameterContext = new EndpointParameterMetadataContext
-                {
-                    Parameter = parameter,
-                    EndpointMetadata = metadata,
-                    Services = services
-                };
+                var parameterContext = new EndpointParameterMetadataContext(parameter, metadata, services);
                 invokeArgs ??= new object[1];
                 invokeArgs[0] = parameterContext;
                 PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
@@ -308,12 +303,7 @@ public static partial class RequestDelegateFactory
             if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IEndpointMetadataProvider
-                var context = new EndpointMetadataContext
-                {
-                    Method = methodInfo,
-                    EndpointMetadata = metadata,
-                    Services = services
-                };
+                var context = new EndpointMetadataContext(methodInfo, metadata, services);
                 invokeArgs ??= new object[1];
                 invokeArgs[0] = context;
                 PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
@@ -324,12 +314,7 @@ public static partial class RequestDelegateFactory
         if (methodInfo.ReturnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(methodInfo.ReturnType))
         {
             // Return type implements IEndpointMetadataProvider
-            var context = new EndpointMetadataContext
-            {
-                Method = methodInfo,
-                EndpointMetadata = metadata,
-                Services = services
-            };
+            var context = new EndpointMetadataContext(methodInfo, metadata, services);
             invokeArgs ??= new object[1];
             invokeArgs[0] = context;
             PopulateMetadataForEndpointMethod.MakeGenericMethod(methodInfo.ReturnType).Invoke(null, invokeArgs);
