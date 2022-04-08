@@ -201,7 +201,7 @@ public class ActionMethodExecutorTest
         // Arrange
         var mapper = new ActionResultTypeMapper();
         var controller = new TestController();
-        var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnIActionResultAsync));
+        var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnActionResultAsync));
         var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
         // Act
@@ -209,8 +209,8 @@ public class ActionMethodExecutorTest
 
         // Assert
         await valueTask;
-        Assert.Equal("TaskOfIActionResultExecutor", actionMethodExecutor.GetType().Name);
-        Assert.IsType<StatusCodeResult>(valueTask.Result);
+        Assert.Equal("TaskOfActionResultExecutor", actionMethodExecutor.GetType().Name);
+        Assert.IsType<ViewResult>(valueTask.Result);
     }
 
 
@@ -351,6 +351,8 @@ public class ActionMethodExecutorTest
         }
 
         public Task<IActionResult> ReturnIActionResultAsync() => Task.FromResult((IActionResult)new StatusCodeResult(201));
+
+        public Task<ViewResult> ReturnActionResultAsync() => Task.FromResult(new ViewResult { StatusCode = 200});
 
         public Task<StatusCodeResult> ReturnsIActionResultSubTypeAsync() => Task.FromResult(new StatusCodeResult(200));
 
