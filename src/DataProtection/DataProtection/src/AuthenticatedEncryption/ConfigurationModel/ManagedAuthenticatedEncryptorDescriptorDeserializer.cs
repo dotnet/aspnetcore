@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 
@@ -16,6 +17,7 @@ public sealed class ManagedAuthenticatedEncryptorDescriptorDeserializer : IAuthe
     /// <summary>
     /// Imports the <see cref="ManagedAuthenticatedEncryptorDescriptor"/> from serialized XML.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
         if (element == null)
@@ -46,6 +48,7 @@ public sealed class ManagedAuthenticatedEncryptorDescriptorDeserializer : IAuthe
 
     // Any changes to this method should also be be reflected
     // in ManagedAuthenticatedEncryptorDescriptor.TypeToFriendlyName.
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private static Type FriendlyNameToType(string typeName)
     {
         if (typeName == nameof(Aes))

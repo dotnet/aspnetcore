@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ internal static class ActivatorExtensions
     /// Creates an instance of <paramref name="implementationTypeName"/> and ensures
     /// that it is assignable to <typeparamref name="T"/>.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public static T CreateInstance<T>(this IActivator activator, string implementationTypeName)
         where T : class
     {

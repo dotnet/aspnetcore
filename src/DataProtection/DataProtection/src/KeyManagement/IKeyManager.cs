@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
@@ -28,6 +29,7 @@ public interface IKeyManager
     /// Fetches all keys from the underlying repository.
     /// </summary>
     /// <returns>The collection of all keys.</returns>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     IReadOnlyCollection<IKey> GetAllKeys();
 
     /// <summary>

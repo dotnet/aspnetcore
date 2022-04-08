@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -75,6 +76,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
     }
 
     // allows decrypting payloads whose keys have been revoked
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
     {
         // argument & state checking
@@ -90,6 +92,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         return retVal;
     }
 
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public byte[] Protect(byte[] plaintext)
     {
         if (plaintext == null)
@@ -179,6 +182,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         }
     }
 
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public byte[] Unprotect(byte[] protectedData)
     {
         if (protectedData == null)
@@ -193,6 +197,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             wasRevoked: out _);
     }
 
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private byte[] UnprotectCore(byte[] protectedData, bool allowOperationsOnRevokedKeys, out UnprotectStatus status)
     {
         Debug.Assert(protectedData != null);

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -24,10 +25,12 @@ internal class TypeForwardingActivator : SimpleActivator
         _logger = loggerFactory.CreateLogger(typeof(TypeForwardingActivator));
     }
 
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public override object CreateInstance(Type expectedBaseType, string originalTypeName)
         => CreateInstance(expectedBaseType, originalTypeName, out var _);
 
     // for testing
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     internal object CreateInstance(Type expectedBaseType, string originalTypeName, out bool forwarded)
     {
         var forwardedTypeName = originalTypeName;
