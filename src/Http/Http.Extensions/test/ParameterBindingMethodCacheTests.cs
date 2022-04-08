@@ -550,6 +550,7 @@ public class ParameterBindingMethodCacheTests
                 typeof(BindAsyncWithParameterInfoWrongTypeInherit),
                 typeof(BindAsyncWrongTypeFromInterface),
                 typeof(BindAsyncBothBadMethods),
+                typeof(BindAsyncFromStaticAbstractInterfaceWrongType)
             };
         }
     }
@@ -691,6 +692,7 @@ public class ParameterBindingMethodCacheTests
     private static void BindAsyncBadMethodMethod(BindAsyncBadMethod? arg) { }
     private static void BindAsyncFromImplicitStaticAbstractInterfaceMethod(BindAsyncFromImplicitStaticAbstractInterface arg) { }
     private static void BindAsyncFromExplicitStaticAbstractInterfaceMethod(BindAsyncFromExplicitStaticAbstractInterface arg) { }
+    private static void BindAsyncFromStaticAbstractInterfaceWrongTypeMethod(BindAsyncFromStaticAbstractInterfaceWrongType arg) { }
 
     private static ParameterInfo GetFirstParameter<T>(Expression<Action<T>> expr)
     {
@@ -1412,6 +1414,14 @@ public class ParameterBindingMethodCacheTests
         static ValueTask<BindAsyncFromExplicitStaticAbstractInterface?> IBindableFromHttpContext<BindAsyncFromExplicitStaticAbstractInterface>.BindAsync(HttpContext context, ParameterInfo parameter)
         {
             return ValueTask.FromResult<BindAsyncFromExplicitStaticAbstractInterface?>(new());
+        }
+    }
+
+    private class BindAsyncFromStaticAbstractInterfaceWrongType : IBindableFromHttpContext<BindAsyncFromImplicitStaticAbstractInterface>
+    {
+        public static ValueTask<BindAsyncFromImplicitStaticAbstractInterface?> BindAsync(HttpContext context, ParameterInfo parameter)
+        {
+            return ValueTask.FromResult<BindAsyncFromImplicitStaticAbstractInterface?>(new());
         }
     }
 
