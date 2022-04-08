@@ -213,7 +213,6 @@ public class ActionMethodExecutorTest
         Assert.IsType<ViewResult>(valueTask.Result);
     }
 
-
     [Fact]
     public void ActionMethodExecutor_ExecutesActionsAsynchronouslyReturningModel()
     {
