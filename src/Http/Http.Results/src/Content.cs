@@ -7,13 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
-/// An <see cref="TypedResults.Content"/> that when executed
+/// An <see cref="Content"/> that when executed
 /// will produce a response with content.
 /// </summary>
 public sealed partial class Content : IResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="TypedResults.Content"/> class with the values.
+    /// Initializes a new instance of the <see cref="Content"/> class with the values.
     /// </summary>
     /// <param name="content">The value to format in the entity body.</param>
     /// <param name="contentType">The Content-Type header for the response</param>
@@ -23,7 +23,7 @@ public sealed partial class Content : IResult
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TypedResults.Content"/> class with the values
+    /// Initializes a new instance of the <see cref="Content"/> class with the values
     /// </summary>
     /// <param name="content">The value to format in the entity body.</param>
     /// <param name="statusCode">The HTTP status code of the response.</param>
@@ -61,6 +61,16 @@ public sealed partial class Content : IResult
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ContentResult");
 
-        return HttpResultsHelper.WriteResultAsContentAsync(httpContext, logger, ResponseContent, StatusCode, ContentType);
+        if (StatusCode is { } statusCode)
+        {
+            HttpResultsHelper.Log.WritingResultAsStatusCode(logger, statusCode);
+            httpContext.Response.StatusCode = statusCode;
+        }
+
+        return HttpResultsHelper.WriteResultAsContentAsync(
+            httpContext,
+            logger,
+            ResponseContent,
+            ContentType);
     }
 }

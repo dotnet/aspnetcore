@@ -134,7 +134,7 @@ public static partial class Results
     /// <param name="options">The serializer options to use when serializing the value.</param>
     /// <param name="contentType">The content-type to set on the response.</param>
     /// <param name="statusCode">The status code to set on the response.</param>
-    /// <returns>The created <see cref="Http.JsonOfT"/> that serializes the specified <paramref name="data"/>
+    /// <returns>The created <see cref="Json{TValue}"/> that serializes the specified <paramref name="data"/>
     /// as JSON format for the response.</returns>
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
@@ -491,10 +491,10 @@ public static partial class Results
             fragment: fragment);
 
     /// <summary>
-    /// Creates a <see cref="Http.StatusCode"/> object by specifying a <paramref name="statusCode"/>.
+    /// Creates a <see cref="IResult"/> object by specifying a <paramref name="statusCode"/>.
     /// </summary>
     /// <param name="statusCode">The status code to set on the response.</param>
-    /// <returns>The created <see cref="Http.StatusCode"/> object for the response.</returns>
+    /// <returns>The created <see cref="IResult"/> object for the response.</returns>
     public static IResult StatusCode(int statusCode)
         => ResultsCache.StatusCode(statusCode);
 

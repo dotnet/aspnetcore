@@ -18,6 +18,9 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public static partial class Results
 {
+    /// <summary>
+    /// A typed factory for <see cref="IResult"/>.
+    /// </summary>
     public static class Typed
     {
         /// <summary>
@@ -195,7 +198,9 @@ public static partial class Results
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static FileContent Bytes(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             byte[] contents,
             string? contentType = null,
             string? fileDownloadName = null,
@@ -304,7 +309,9 @@ public static partial class Results
         /// <remarks>
         /// The <paramref name="stream" /> parameter is disposed after the response is sent.
         /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static HttpFileStream Stream(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             Stream stream,
             string? contentType = null,
             string? fileDownloadName = null,
@@ -513,10 +520,10 @@ public static partial class Results
                 fragment: fragment);
 
         /// <summary>
-        /// Creates a <see cref="Http.StatusCode"/> object by specifying a <paramref name="statusCode"/>.
+        /// Creates a <see cref="Status"/> object by specifying a <paramref name="statusCode"/>.
         /// </summary>
         /// <param name="statusCode">The status code to set on the response.</param>
-        /// <returns>The created <see cref="Http.StatusCode"/> object for the response.</returns>
+        /// <returns>The created <see cref="Status"/> object for the response.</returns>
         public static Status StatusCode(int statusCode)
             => ResultsCache.StatusCode(statusCode);
 
@@ -755,7 +762,9 @@ public static partial class Results
         /// <param name="routeName">The name of the route to use for generating the URL.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static CreatedAtRoute CreatedAtRoute(string? routeName = null, object? routeValues = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             => new(routeName, routeValues);
 
         /// <summary>
@@ -765,7 +774,9 @@ public static partial class Results
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The value to be included in the HTTP response body.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static CreatedAtRoute<TValue> CreatedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             => new(routeName, routeValues, value);
 
         /// <summary>
@@ -836,7 +847,9 @@ public static partial class Results
         /// <param name="routeName">The name of the route to use for generating the URL.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static AcceptedAtRoute AcceptedAtRoute(string? routeName = null, object? routeValues = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             => new(routeName, routeValues);
 
         /// <summary>
@@ -846,7 +859,9 @@ public static partial class Results
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The value to be included in the HTTP response body.</param>
         /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static AcceptedAtRoute<TValue> AcceptedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             => new(routeName, routeValues, value);
     }
 }

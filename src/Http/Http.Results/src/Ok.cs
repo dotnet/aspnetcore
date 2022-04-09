@@ -16,7 +16,6 @@ public sealed class Ok : IResult
     /// <summary>
     /// Initializes a new instance of the <see cref="Ok"/> class with the values.
     /// </summary>
-    /// <param name="value">The value to format in the entity body.</param>
     internal Ok()
     {
     }

@@ -27,7 +27,6 @@ public sealed class Created : IResult
     /// provided.
     /// </summary>
     /// <param name="locationUri">The location at which the content has been created.</param>
-    /// <param name="value">The value to format in the entity body.</param>
     internal Created(Uri locationUri)
     {
         if (locationUri == null)

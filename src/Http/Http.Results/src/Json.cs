@@ -95,10 +95,10 @@ public sealed partial class Json<TValue> : IResult
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.JsonResult");
 
-        if (StatusCode is { } code)
+        if (StatusCode is { } statusCode)
         {
-            HttpResultsHelper.Log.WritingResultAsStatusCode(logger, code);
-            httpContext.Response.StatusCode = code;
+            HttpResultsHelper.Log.WritingResultAsStatusCode(logger, statusCode);
+            httpContext.Response.StatusCode = statusCode;
         }
 
         return HttpResultsHelper.WriteResultAsJsonAsync(
