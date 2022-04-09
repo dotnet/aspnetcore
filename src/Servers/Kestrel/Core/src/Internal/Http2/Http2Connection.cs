@@ -85,17 +85,6 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
         _input = new Pipe(GetInputPipeOptions());
 
-        _frameWriter = new Http2FrameWriter(
-            context.Transport.Output,
-            context.ConnectionContext,
-            this,
-            Http2PeerSettings.DefaultInitialWindowSize,
-            context.TimeoutControl,
-            httpLimits.MinResponseDataRate,
-            context.ConnectionId,
-            context.MemoryPool,
-            context.ServiceContext);
-
         _minAllocBufferSize = context.MemoryPool.GetMinimumAllocSize();
 
         _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
@@ -123,6 +112,18 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         _scheduleInline = context.ServiceContext.Scheduler == PipeScheduler.Inline;
 
         _inputTask = CopyPipeAsync(_context.Transport.Input, _input.Writer);
+
+        _frameWriter = new Http2FrameWriter(
+            context.Transport.Output,
+            context.ConnectionContext,
+            this,
+            MaxTrackedStreams,
+            http2Limits.MaxStreamsPerConnection,
+            context.TimeoutControl,
+            httpLimits.MinResponseDataRate,
+            context.ConnectionId,
+            context.MemoryPool,
+            context.ServiceContext);
     }
 
     public string ConnectionId => _context.ConnectionId;

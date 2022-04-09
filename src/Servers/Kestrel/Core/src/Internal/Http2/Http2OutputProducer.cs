@@ -32,6 +32,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     private bool _suffixSent;
     private bool _streamEnded;
     private bool _writerComplete;
+    private bool _isScheduled;
 
     // Internal for testing
     internal bool _disposed;
@@ -120,6 +121,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
+            _isScheduled = false;
             _observationState &= ~state;
             _unconsumedBytes -= bytes;
             return (_unconsumedBytes > 0, _observationState != State.None);
@@ -282,12 +284,18 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         }
     }
 
-    private void Schedule()
+    public void Schedule()
     {
         lock (_dataWriterLock)
         {
             // Lock here
+            if (_isScheduled)
+            {
+                return;
+            }
+
             _waitingForWindowUpdates = false;
+            _isScheduled = true;
         }
 
         _frameWriter.Schedule(this);
