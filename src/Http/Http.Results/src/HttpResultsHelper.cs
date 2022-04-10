@@ -28,7 +28,7 @@ internal static partial class HttpResultsHelper
             return Task.CompletedTask;
         }
 
-        Log.WritingResultAsJson(logger, value);
+        Log.WritingResultAsJson(logger, typeof(T).Name);
 
         return httpContext.Response.WriteAsJsonAsync(
             value,
@@ -152,22 +152,6 @@ internal static partial class HttpResultsHelper
 
     internal static partial class Log
     {
-        public static void WritingResultAsJson(ILogger logger, object value)
-        {
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                var valueType = value.GetType().FullName!;
-                WritingResultAsJson(logger, type: valueType);
-            }
-        }
-        public static void WritingResultAsFile(ILogger logger, string fileDownloadName)
-        {
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                WritingResultAsFileWithNoFileName(logger, fileDownloadName: fileDownloadName);
-            }
-        }
-
         [LoggerMessage(1, LogLevel.Information,
             "Setting HTTP status code {StatusCode}.",
             EventName = "WritingResultAsStatusCode")]
@@ -179,14 +163,12 @@ internal static partial class HttpResultsHelper
         public static partial void WritingResultAsContent(ILogger logger, string contentType);
 
         [LoggerMessage(3, LogLevel.Information, "Writing value of type '{Type}' as Json.",
-            EventName = "WritingResultAsJson",
-            SkipEnabledCheck = true)]
-        private static partial void WritingResultAsJson(ILogger logger, string type);
+            EventName = "WritingResultAsJson")]
+        public static partial void WritingResultAsJson(ILogger logger, string type);
 
         [LoggerMessage(5, LogLevel.Information,
             "Sending file with download name '{FileDownloadName}'.",
-            EventName = "WritingResultAsFileWithNoFileName",
-            SkipEnabledCheck = true)]
-        private static partial void WritingResultAsFileWithNoFileName(ILogger logger, string fileDownloadName);
+            EventName = "WritingResultAsFileWithNoFileName")]
+        public static partial void WritingResultAsFile(ILogger logger, string fileDownloadName);
     }
 }
