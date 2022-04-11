@@ -34,7 +34,10 @@
       Package downgrade errors may indicate mismatched transitive references in the PackageBaseline - if you see such errors in your project,
       try adding <UseLatestPackageReferences>true</UseLatestPackageReferences>
     -->
-    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' == 'true' AND ( '$(IsServicingBuild)' != 'true' OR '$(IsPackable)' == 'true' ) ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
 
     <!--
       Projects should use ProjectReferences if possible
