@@ -232,7 +232,7 @@ public class DictionaryAdapterTest
     }
 
     [Fact]
-    public void ReplaceUsesCustomConverter()
+    public void Replace_UsesCustomConverter()
     {
         // Arrange
         var nameKey = "Name";
