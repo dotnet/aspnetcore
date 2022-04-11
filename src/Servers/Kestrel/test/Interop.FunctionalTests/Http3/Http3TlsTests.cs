@@ -112,6 +112,7 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.DelayCertificate)]
     [MsQuicSupported]
     [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41131")]
     public async Task ClientCertificate_NoOrDelayed_Available_Ignored(ClientCertificateMode mode)
     {
         var builder = CreateHostBuilder(async context =>
