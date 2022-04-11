@@ -267,38 +267,3 @@ public class PocoAdapterTest
         public int Age { get; set; }
     }
 }
-
-public class RectangleContractResolver : DefaultContractResolver
-{
-    protected override JsonConverter ResolveContractConverter(Type objectType)
-    {
-        if (objectType == typeof(Rectangle))
-        {
-            return new RectangleJsonConverter();
-        }
-
-        return base.ResolveContractConverter(objectType);
-    }
-}
-
-public class RectangleJsonConverter : CustomCreationConverter<Rectangle>
-{
-    public override bool CanRead => true;
-
-    public override Rectangle Create(Type objectType)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override object ReadJson(
-        JsonReader reader,
-        Type objectType,
-        object existingValue,
-        JsonSerializer serializer)
-    {
-        return new Rectangle()
-        {
-            RectangleProperty = reader.Value.ToString()
-        };
-    }
-}

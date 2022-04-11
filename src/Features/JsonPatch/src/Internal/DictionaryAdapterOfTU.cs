@@ -120,7 +120,6 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
         }
 
         if (!TryConvertValue(value, contractResolver, out var convertedValue, out errorMessage))
-        //if (!TryConvertValue(value, out var convertedValue, out errorMessage))
         {
             return false;
         }
