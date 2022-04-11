@@ -54,7 +54,6 @@ internal class Http2FrameWriter
         PipeWriter outputPipeWriter,
         BaseConnectionContext connectionContext,
         Http2Connection http2Connection,
-        long initialConnectionWindowSize,
         int maxStreamsPerConnection,
         ITimeoutControl timeoutControl,
         MinDataRate? minResponseDataRate,
@@ -92,7 +91,7 @@ internal class Http2FrameWriter
             SingleReader = true
         });
 
-        _connectionWindow = initialConnectionWindowSize;
+        _connectionWindow = Http2PeerSettings.DefaultInitialWindowSize;
 
         _writeQueueTask = Task.Run(WriteToOutputPipe);
     }
