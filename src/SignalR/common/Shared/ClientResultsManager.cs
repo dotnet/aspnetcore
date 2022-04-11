@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 // Handles cancellation, cleanup, and completion, so any bugs or improvements can be made in a single place
 internal class ClientResultsManager : IInvocationBinder
 {
-    private readonly ConcurrentDictionary<string, (Type Type, string ConnectionId, object Tcs, Func<object, CompletionMessage, Task> Completion)> _pendingInvocations = new();
+    private readonly ConcurrentDictionary<string, (Type Type, string ConnectionId, object Tcs, Action<object, CompletionMessage> Complete)> _pendingInvocations = new();
 
     public Task<T> AddInvocation<T>(string connectionId, string invocationId, CancellationToken cancellationToken)
     {
@@ -29,7 +29,6 @@ internal class ClientResultsManager : IInvocationBinder
             {
                 tcs.SetException(new Exception(completionMessage.Error));
             }
-            return Task.CompletedTask;
         }
         ));
         Debug.Assert(result);
@@ -39,13 +38,13 @@ internal class ClientResultsManager : IInvocationBinder
         return tcs.Task;
     }
 
-    public void AddInvocation(string invocationId, (Type Type, string ConnectionId, object Tcs, Func<object, CompletionMessage, Task> Completion) invocationInfo)
+    public void AddInvocation(string invocationId, (Type Type, string ConnectionId, object Tcs, Action<object, CompletionMessage> Complete) invocationInfo)
     {
         var result = _pendingInvocations.TryAdd(invocationId, invocationInfo);
         Debug.Assert(result);
     }
 
-    public Task TryCompleteResult(string connectionId, CompletionMessage message)
+    public void TryCompleteResult(string connectionId, CompletionMessage message)
     {
         if (_pendingInvocations.TryGetValue(message.InvocationId!, out var item))
         {
@@ -59,17 +58,16 @@ internal class ClientResultsManager : IInvocationBinder
             // we'll ignore both cases
             if (_pendingInvocations.Remove(message.InvocationId!, out _))
             {
-                return item.Completion(item.Tcs, message);
+                item.Complete(item.Tcs, message);
             }
         }
         else
         {
             // connection was disconnected or someone else completed the invocation
         }
-        return Task.CompletedTask;
     }
 
-    public (Type Type, string ConnectionId, object Tcs, Func<object, CompletionMessage, Task> Completion)? RemoveInvocation(string invocationId)
+    public (Type Type, string ConnectionId, object Tcs, Action<object, CompletionMessage> Completion)? RemoveInvocation(string invocationId)
     {
         _pendingInvocations.Remove(invocationId, out var item);
         return item;
@@ -146,7 +144,7 @@ internal class ClientResultsManager : IInvocationBinder
         {
             // TODO: RedisHubLifetimeManager will want to notify the other server (if there is one) about the cancellation
             // so it can clean up state and potentially forward that info to the connection
-            _ = _clientResultsManager.TryCompleteResult(_connectionId, CompletionMessage.WithError(_invocationId, "Canceled"));
+            _clientResultsManager.TryCompleteResult(_connectionId, CompletionMessage.WithError(_invocationId, "Canceled"));
         }
 
         public new void SetResult(T result)

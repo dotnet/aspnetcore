@@ -422,7 +422,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                 var received = await PublishAsync(_channels.Connection(connectionId), m);
                 if (received < 1)
                 {
-                    throw new InvalidOperationException("Connection does not exist.");
+                    throw new IOException($"Connection '{connectionId}' does not exist.");
                 }
             }
             else
@@ -431,7 +431,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                 // Write message directly to connection without caching it in memory
                 var message = new InvocationMessage(invocationId, methodName, args);
 
-                await connection.WriteAsync(message, cancellationToken).AsTask();
+                await connection.WriteAsync(message, cancellationToken);
             }
         }
         catch
@@ -449,7 +449,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             // ConnectionAborted will trigger a generic "Canceled" exception from the task, let's convert it into a more specific message.
             if (connection?.ConnectionAborted.IsCancellationRequested == true)
             {
-                throw new Exception("Connection disconnected.");
+                throw new IOException($"Connection '{connectionId}' disconnected.");
             }
             throw;
         }
@@ -458,7 +458,8 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     /// <inheritdoc/>
     public override Task SetConnectionResultAsync(string connectionId, CompletionMessage result)
     {
-        return _clientResultsManager.TryCompleteResult(connectionId, result);
+        _clientResultsManager.TryCompleteResult(connectionId, result);
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -561,7 +562,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             {
                 CancellationTokenRegistration? tokenRegistration = null;
                 _clientResultsManager.AddInvocation(invocation.InvocationId,
-                    (typeof(RawResult), connection.ConnectionId, null!, (_, completionMessage) =>
+                    (typeof(RawResult), connection.ConnectionId, null!, async (_, completionMessage) =>
                 {
                     var protocolName = connection.Protocol.Name;
                     tokenRegistration?.Dispose();
@@ -572,14 +573,17 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                         connection.Protocol.WriteMessage(completionMessage, memoryBufferWriter);
                         // TODO: we can avoid this ToArray call
                         var message = RedisProtocol.WriteCompletionMessage(new ReadOnlySequence<byte>(memoryBufferWriter.ToArray()), protocolName);
-                        return PublishAsync(invocation.ReturnChannel!, message);
+                        await PublishAsync(invocation.ReturnChannel!, message);
+                    }
+                    catch (Exception ex)
+                    {
+                        RedisLog.ErrorForwardingResult(_logger, completionMessage.InvocationId, ex);
                     }
                     finally
                     {
                         memoryBufferWriter.Dispose();
                     }
-                }
-                ));
+                }));
 
                 // TODO: this isn't great
                 tokenRegistration = connection.ConnectionAborted.UnsafeRegister(_ =>
@@ -670,7 +674,14 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                     break;
                 }
             }
-            Debug.Assert(protocol is not null);
+
+            // Should only happen if you have different versions of servers and don't have the same protocols registered on both
+            if (protocol is null)
+            {
+                RedisLog.MismatchedServers(_logger, completion.ProtocolName);
+                return;
+            }
+
             var ros = completion.CompletionMessage;
             var parseSuccess = protocol.TryParseMessage(ref ros, _clientResultsManager, out var hubMessage);
             Debug.Assert(parseSuccess);

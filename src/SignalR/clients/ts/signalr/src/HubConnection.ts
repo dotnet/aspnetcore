@@ -675,13 +675,14 @@ export class HubConnection {
     }
 
     private async _invokeClientMethod(invocationMessage: InvocationMessage) {
-        const methods = this._methods[invocationMessage.target.toLowerCase()];
+        const methodName = invocationMessage.target.toLowerCase();
+        const methods = this._methods[methodName];
         if (!methods) {
-            this._logger.log(LogLevel.Warning, `No client method with the name '${invocationMessage.target.toLowerCase()}' found.`);
+            this._logger.log(LogLevel.Warning, `No client method with the name '${methodName}' found.`);
 
             // No handlers provided by client but the server is expecting a response still, so we send an error
             if (invocationMessage.invocationId) {
-                this._logger.log(LogLevel.Warning, `No result given for '${invocationMessage.target.toLowerCase()}' method and invocation ID '${invocationMessage.invocationId}'.`);
+                this._logger.log(LogLevel.Warning, `No result given for '${methodName}' method and invocation ID '${invocationMessage.invocationId}'.`);
                 await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, "Client didn't provide a result.", null));
             }
             return;
@@ -691,39 +692,43 @@ export class HubConnection {
         const methodsCopy = methods.slice();
 
         // Server expects a response
-        if (invocationMessage.invocationId) {
-            // We preserve the last result or exception but still call all handlers
-            let res;
-            let exception;
-            for (const m of methodsCopy) {
-                try {
-                    if (res || exception) {
-                        this._logger.log(LogLevel.Warning, `Result already provided for '${invocationMessage.target.toLowerCase()}' only the last one will be sent.`);
-                    }
-                    res = await m.apply(this, invocationMessage.arguments);
-                    // Ignore exception if we got a result after, the exception will be logged
-                    exception = undefined;
-                } catch (e) {
-                    exception = e;
-                    this._logger.log(LogLevel.Error, `A callback for the method '${invocationMessage.target.toLowerCase()}' threw error '${e}'.`);
-                }
-            }
-            // If there is an exception that means either no result was given or a handler after a result threw
-            // And since we prefer handlers registered later we'll use the exception to return to the server.
-            if (exception) {
-                await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, `${exception}`, null));
-            } else if (res !== undefined) {
-                await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, null, res));
-            } else {
-                this._logger.log(LogLevel.Warning, `No result given for '${invocationMessage.target.toLowerCase()}' method and invocation ID '${invocationMessage.invocationId}'.`);
-                // Client didn't provide a result or throw from a handler, server expects a response so we send an error
-                await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, "Client didn't provide a result.", null));
-            }
-        } else {
+        const expects_response = invocationMessage.invocationId ? true : false;
+        // We preserve the last result or exception but still call all handlers
+        let res;
+        let exception;
+        let completion_message;
+        for (const m of methodsCopy) {
             try {
-                methodsCopy.forEach((m) => m.apply(this, invocationMessage.arguments));
+                const prev_res = res;
+                res = await m.apply(this, invocationMessage.arguments);
+                if (expects_response && res && prev_res) {
+                    this._logger.log(LogLevel.Error, `Multiple results provided for '${methodName}'. Sending error to server.`);
+                    completion_message = this._createCompletionMessage(invocationMessage.invocationId!, `Client provided multiple results.`, null);
+                }
+                // Ignore exception if we got a result after, the exception will be logged
+                exception = undefined;
             } catch (e) {
-                this._logger.log(LogLevel.Error, `A callback for the method '${invocationMessage.target.toLowerCase()}' threw error '${e}'.`);
+                exception = e;
+                this._logger.log(LogLevel.Error, `A callback for the method '${methodName}' threw error '${e}'.`);
+            }
+        }
+        if (completion_message) {
+            await this._sendWithProtocol(completion_message);
+        } else if (expects_response) {
+            // If there is an exception that means either no result was given or a handler after a result threw
+            if (exception) {
+                completion_message = this._createCompletionMessage(invocationMessage.invocationId!, `${exception}`, null);
+            } else if (res !== undefined) {
+                completion_message = this._createCompletionMessage(invocationMessage.invocationId!, null, res);
+            } else {
+                this._logger.log(LogLevel.Warning, `No result given for '${methodName}' method and invocation ID '${invocationMessage.invocationId}'.`);
+                // Client didn't provide a result or throw from a handler, server expects a response so we send an error
+                completion_message = this._createCompletionMessage(invocationMessage.invocationId!, "Client didn't provide a result.", null);
+            }
+            await this._sendWithProtocol(completion_message);
+        } else {
+            if (res) {
+                this._logger.log(LogLevel.Error, `Result given for '${methodName}' method but server is not expecting a result.`);
             }
         }
     }

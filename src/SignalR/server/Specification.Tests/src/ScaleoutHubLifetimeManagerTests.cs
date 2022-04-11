@@ -544,7 +544,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
             await manager1.OnConnectedAsync(connection1).DefaultTimeout();
 
             // No client on any backplanes with this ID
-            await Assert.ThrowsAsync<InvalidOperationException>(() => manager1.InvokeConnectionAsync<int>("none", "Result", new object[] { "test" })).DefaultTimeout();
+            await Assert.ThrowsAsync<IOException>(() => manager1.InvokeConnectionAsync<int>("none", "Result", new object[] { "test" })).DefaultTimeout();
         }
     }
 
@@ -626,7 +626,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
         var manager1 = CreateNewHubLifetimeManager(backplane);
         var manager2 = CreateNewHubLifetimeManager(backplane);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => manager1.InvokeConnectionAsync<int>("1234", "Result", new object[] { "test" })).DefaultTimeout();
-        Assert.Equal("Connection does not exist.", ex.Message);
+        var ex = await Assert.ThrowsAsync<IOException>(() => manager1.InvokeConnectionAsync<int>("1234", "Result", new object[] { "test" })).DefaultTimeout();
+        Assert.Equal("Connection '1234' does not exist.", ex.Message);
     }
 }

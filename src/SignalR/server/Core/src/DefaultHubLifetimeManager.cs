@@ -332,7 +332,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
 
         if (connection == null)
         {
-            throw new InvalidOperationException("Connection does not exist.");
+            throw new IOException($"Connection '{connectionId}' does not exist.");
         }
 
         var invocationId = Interlocked.Increment(ref _lastInvocationId).ToString(NumberFormatInfo.InvariantInfo);
@@ -363,7 +363,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             // ConnectionAborted will trigger a generic "Canceled" exception from the task, let's convert it into a more specific message.
             if (connection.ConnectionAborted.IsCancellationRequested)
             {
-                throw new Exception("Connection disconnected.");
+                throw new IOException($"Connection '{connectionId}' disconnected.");
             }
             throw;
         }
@@ -372,7 +372,8 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc/>
     public override Task SetConnectionResultAsync(string connectionId, CompletionMessage result)
     {
-        return _clientResultsManager.TryCompleteResult(connectionId, result);
+        _clientResultsManager.TryCompleteResult(connectionId, result);
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>

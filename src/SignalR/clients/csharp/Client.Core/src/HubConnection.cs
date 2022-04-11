@@ -337,7 +337,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 lock (invocations)
                 {
-                    invocations.Add(invocationHandler);
+                    invocations.Add(methodName, invocationHandler);
                 }
                 return invocations;
             });
@@ -370,7 +370,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 lock (invocations)
                 {
-                    invocations.Add(invocationHandler);
+                    invocations.Add(methodName, invocationHandler);
                 }
                 return invocations;
             });
@@ -1027,11 +1027,14 @@ public partial class HubConnection : IAsyncDisposable
         // Find the handler
         if (!_handlers.TryGetValue(invocation.Target, out var invocationHandlerList))
         {
-            Log.MissingHandler(_logger, invocation.Target);
             if (expectsResult)
             {
-                Log.NoResultGiven(_logger, invocation.Target, invocation.InvocationId!);
+                Log.MissingResultHandler(_logger, invocation.Target);
                 await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
+            }
+            else
+            {
+                Log.MissingHandler(_logger, invocation.Target);
             }
             return;
         }
@@ -1048,14 +1051,8 @@ public partial class HubConnection : IAsyncDisposable
                 var task = handler.InvokeAsync(invocation.Arguments);
                 if (handler.HasResult && task is Task<object?> resultTask)
                 {
-                    if (hasResult)
-                    {
-                        Log.IgnoringPreviousResult(_logger, invocation.Target);
-                    }
-                    hasResult = true;
                     result = await resultTask.ConfigureAwait(false);
-                    // ignore previous results' exception, we prefer last .On handler for results
-                    resultException = null;
+                    hasResult = true;
                 }
                 else
                 {
@@ -1071,20 +1068,21 @@ public partial class HubConnection : IAsyncDisposable
                 }
             }
         }
+
         if (expectsResult)
         {
             if (resultException is not null)
             {
                 await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, resultException.Message), cancellationToken: default).ConfigureAwait(false);
             }
-            else if (!hasResult)
+            else if (hasResult)
             {
-                Log.NoResultGiven(_logger, invocation.Target, invocation.InvocationId!);
-                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
+                await SendWithLock(connectionState, CompletionMessage.WithResult(invocation.InvocationId!, result), cancellationToken: default).ConfigureAwait(false);
             }
             else
             {
-                await SendWithLock(connectionState, CompletionMessage.WithResult(invocation.InvocationId!, result), cancellationToken: default).ConfigureAwait(false);
+                Log.MissingResultHandler(_logger, invocation.Target);
+                await SendWithLock(connectionState, CompletionMessage.WithError(invocation.InvocationId!, "Client didn't provide a result."), cancellationToken: default).ConfigureAwait(false);
             }
         }
         else if (hasResult)
@@ -1700,10 +1698,20 @@ public partial class HubConnection : IAsyncDisposable
             return handlers;
         }
 
-        internal void Add(InvocationHandler handler)
+        internal void Add(string methodName, InvocationHandler handler)
         {
             lock (_invocationHandlers)
             {
+                if (handler.HasResult)
+                {
+                    foreach (var m in _invocationHandlers)
+                    {
+                        if (m.HasResult)
+                        {
+                            throw new InvalidOperationException($"'{methodName}' already has a value returning handler. Multiple return values are not supported.");
+                        }
+                    }
+                }
                 _invocationHandlers.Add(handler);
                 _copiedHandlers = null;
             }

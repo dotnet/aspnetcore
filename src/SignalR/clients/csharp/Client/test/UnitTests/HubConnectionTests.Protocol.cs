@@ -702,7 +702,7 @@ public partial class HubConnectionTests
         }
 
         [Fact]
-        public async Task ClientReturnResultUsesLastResult()
+        public async Task ThrowsWhenMultipleReturningHandlersRegistered()
         {
             var connection = new TestConnection();
             var hubConnection = CreateHubConnection(connection);
@@ -711,15 +711,9 @@ public partial class HubConnectionTests
                 await hubConnection.StartAsync().DefaultTimeout();
 
                 hubConnection.On("Result", () => 10);
-                hubConnection.On("Result", () => 11);
-                hubConnection.On("Result", () => 14);
-                hubConnection.On("Result", () => 3);
-
-                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
-
-                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
-
-                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"result\":3}", invokeMessage);
+                var ex = Assert.Throws<InvalidOperationException>(
+                    () => hubConnection.On("Result", () => 11));
+                Assert.Equal("'Result' already has a value returning handler. Multiple return values are not supported.", ex.Message);
             }
             finally
             {
@@ -791,7 +785,7 @@ public partial class HubConnectionTests
             {
                 await hubConnection.StartAsync().DefaultTimeout();
 
-                hubConnection.On("Result", int () =>
+                hubConnection.On("Result", () =>
                 {
                     throw new Exception("error from client");
                 });

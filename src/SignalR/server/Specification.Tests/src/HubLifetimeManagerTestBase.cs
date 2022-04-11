@@ -277,7 +277,7 @@ public abstract class HubLifetimeManagerTestsBase<THub> where THub : Hub
             await manager1.OnConnectedAsync(connection1).DefaultTimeout();
 
             // No client with this ID
-            await Assert.ThrowsAsync<InvalidOperationException>(() => manager1.InvokeConnectionAsync<int>("none", "Result", new object[] { "test" })).DefaultTimeout();
+            await Assert.ThrowsAsync<IOException>(() => manager1.InvokeConnectionAsync<int>("none", "Result", new object[] { "test" })).DefaultTimeout();
         }
     }
 
@@ -334,8 +334,8 @@ public abstract class HubLifetimeManagerTestsBase<THub> where THub : Hub
             connection1.Abort();
             await manager1.OnDisconnectedAsync(connection1).DefaultTimeout();
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => invoke1).DefaultTimeout();
-            Assert.Equal("Connection disconnected.", ex.Message);
+            var ex = await Assert.ThrowsAsync<IOException>(() => invoke1).DefaultTimeout();
+            Assert.Equal($"Connection '{connection1.ConnectionId}' disconnected.", ex.Message);
         }
     }
 

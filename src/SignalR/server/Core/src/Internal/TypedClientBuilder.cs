@@ -166,7 +166,7 @@ internal static class TypedClientBuilder<T>
         generator.Emit(OpCodes.Ldarg_0);
         generator.Emit(OpCodes.Ldfld, proxyField);
 
-        var notTypeLabel = generator.DefineLabel();
+        var isTypeLabel = generator.DefineLabel();
         if (isInvoke)
         {
             var singleClientProxyType = typeof(ISingleClientProxy);
@@ -178,8 +178,13 @@ internal static class TypedClientBuilder<T>
             throw new InvalidOperationException("InvokeAsync only works with Single clients.");
              */
             generator.Emit(OpCodes.Isinst, singleClientProxyType);
-            generator.Emit(OpCodes.Brfalse_S, notTypeLabel);
+            generator.Emit(OpCodes.Brtrue_S, isTypeLabel);
 
+            generator.Emit(OpCodes.Ldstr, "InvokeAsync only works with Single clients.");
+            generator.Emit(OpCodes.Newobj, typeof(InvalidOperationException).GetConstructor(new Type[] { typeof(string) })!);
+            generator.Emit(OpCodes.Throw);
+
+            generator.MarkLabel(isTypeLabel);
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Ldfld, proxyField);
             generator.Emit(OpCodes.Castclass, singleClientProxyType);
@@ -221,12 +226,6 @@ internal static class TypedClientBuilder<T>
         generator.Emit(OpCodes.Callvirt, invokeMethod);
 
         generator.Emit(OpCodes.Ret); // Return the Task returned by 'invokeMethod'
-
-        // Used by InvokeAsync to check if it's being called with ISingleClientProxy otherwise throws
-        generator.MarkLabel(notTypeLabel);
-        generator.Emit(OpCodes.Ldstr, "InvokeAsync only works with Single clients.");
-        generator.Emit(OpCodes.Newobj, typeof(InvalidOperationException).GetConstructor(new Type[] { typeof(string) })!);
-        generator.Emit(OpCodes.Throw);
     }
 
     private static void BuildFactoryMethod(TypeBuilder type, ConstructorInfo ctor)
