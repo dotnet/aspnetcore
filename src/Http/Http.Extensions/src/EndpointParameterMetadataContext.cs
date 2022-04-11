@@ -18,6 +18,9 @@ public sealed class EndpointParameterMetadataContext
     /// <param name="services">The <see cref="IServiceProvider"/> instance used to access application services.</param>
     public EndpointParameterMetadataContext(ParameterInfo parameter, IList<object> endpointMetadata, IServiceProvider? services)
     {
+        ArgumentNullException.ThrowIfNull(parameter, nameof(parameter));
+        ArgumentNullException.ThrowIfNull(endpointMetadata, nameof(endpointMetadata));
+
         Parameter = parameter;
         EndpointMetadata = endpointMetadata;
         Services = services;
