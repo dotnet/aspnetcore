@@ -497,6 +497,11 @@ public static class EndpointRouteBuilderExtensions
         // Add MethodInfo as metadata to assist with OpenAPI generation for the endpoint.
         builder.Metadata.Add(handler.Method);
 
+        if (endpoints.ServiceProvider is not null)
+        {
+            builder.Metadata.Add(endpoints.ServiceProvider);
+        }
+
         // Methods defined in a top-level program are generated as statics so the delegate
         // target will be null. Inline lambdas are compiler generated method so they can
         // be filtered that way.

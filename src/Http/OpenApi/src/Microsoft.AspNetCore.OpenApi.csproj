@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -6,6 +6,7 @@
     <PackageTags>aspnetcore;authorization</PackageTags>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
+    <NoWarn>IDE0060;CA1822;IDE0059;CA1305;RS0037;RS0016;CS8604;IDE2000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,8 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)RoslynUtils\TypeHelper.cs" />
-    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\TypeHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ParameterBindingMethodCache.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)TypeNameHelper\TypeNameHelper.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>
