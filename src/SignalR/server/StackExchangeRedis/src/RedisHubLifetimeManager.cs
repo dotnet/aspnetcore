@@ -90,6 +90,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     public override async Task OnConnectedAsync(HubConnectionContext connection)
     {
         await EnsureRedisServerConnection();
+
         var feature = new RedisFeature();
         connection.Features.Set<IRedisFeature>(feature);
 
@@ -112,11 +113,17 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     {
         _connections.Remove(connection);
 
-        var tasks = new List<Task>();
+        // If the bus is null then the Redis connection failed to be established and none of the other connection setup ran
+        if (_bus is null)
+        {
+            return Task.CompletedTask;
+        }
 
         var connectionChannel = _channels.Connection(connection.ConnectionId);
+        var tasks = new List<Task>();
+
         RedisLog.Unsubscribe(_logger, connectionChannel);
-        tasks.Add(_bus!.UnsubscribeAsync(connectionChannel));
+        tasks.Add(_bus.UnsubscribeAsync(connectionChannel));
 
         var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
         var groupNames = feature.Groups;
@@ -704,7 +711,15 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                 if (_redisServerConnection == null)
                 {
                     var writer = new LoggerTextWriter(_logger);
-                    _redisServerConnection = await _options.ConnectAsync(writer);
+                    try
+                    {
+                        _redisServerConnection = await _options.ConnectAsync(writer);
+                    }
+                    catch (Exception ex)
+                    {
+                        RedisLog.ErrorConnecting(_logger, ex);
+                        throw;
+                    }
                     _bus = _redisServerConnection.GetSubscriber();
 
                     _redisServerConnection.ConnectionRestored += (_, e) =>

@@ -7,8 +7,11 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Specification.Tests;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
+using Moq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -81,6 +84,48 @@ public class RedisHubLifetimeManagerTests : ScaleoutHubLifetimeManagerTests<Test
                         });
                 });
         }
+    }
+
+    [Fact]
+    public async Task ErrorFromConnectionFactoryLogsAndAllowsDisconnect()
+    {
+        var server = new TestRedisServer();
+
+        var testSink = new TestSink();
+        var logger = new TestLogger("", testSink, true);
+        var mockLoggerFactory = new Mock<ILoggerFactory>();
+        mockLoggerFactory
+            .Setup(m => m.CreateLogger(It.IsAny<string>()))
+            .Returns((string categoryName) => (ILogger)logger);
+        var loggerT = mockLoggerFactory.Object.CreateLogger<RedisHubLifetimeManager<Hub>>();
+
+        var manager = new RedisHubLifetimeManager<Hub>(
+            loggerT,
+            Options.Create(new RedisOptions()
+            {
+                ConnectionFactory = _ => throw new Exception("throw from connect")
+            }),
+            new DefaultHubProtocolResolver(new IHubProtocol[]
+            {
+            }, NullLogger<DefaultHubProtocolResolver>.Instance));
+
+        using (var client = new TestClient())
+        {
+            var connection = HubConnectionContextUtils.Create(client.Connection);
+
+            var ex = await Assert.ThrowsAsync<Exception>(() => manager.OnConnectedAsync(connection)).DefaultTimeout();
+            Assert.Equal("throw from connect", ex.Message);
+
+            await manager.OnDisconnectedAsync(connection).DefaultTimeout();
+        }
+
+        var logs = testSink.Writes.ToArray();
+        // Two of the same error logs, one for the pre-emptive attempt to connect to Redis in the ctor, and one during the OnConnectedAsync for the connection
+        Assert.Equal(2, logs.Length);
+        Assert.Equal("Error connecting to Redis.", logs[0].Message);
+        Assert.Equal("throw from connect", logs[0].Exception.Message);
+        Assert.Equal("Error connecting to Redis.", logs[1].Message);
+        Assert.Equal("throw from connect", logs[1].Exception.Message);
     }
 
     public override TestRedisServer CreateBackplane()
