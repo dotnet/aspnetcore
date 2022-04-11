@@ -504,7 +504,7 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult NotFound(object? value = null)
-        => value is null ? ResultsCache.NotFound : new NotFoundObjectHttpResult(value);
+        => value is null ? ResultsCache.NotFound : new NotFound<object>(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
@@ -519,7 +519,7 @@ public static partial class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult BadRequest(object? error = null)
-        => error is null ? ResultsCache.BadRequest : new BadRequestObjectHttpResult(error);
+        => error is null ? ResultsCache.BadRequest : new BadRequest<object>(error);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
@@ -527,7 +527,7 @@ public static partial class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Conflict(object? error = null)
-        => error is null ? ResultsCache.Conflict : new ConflictObjectHttpResult(error);
+        => error is null ? ResultsCache.Conflict : new Conflict<object>(error);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status204NoContent"/> response.
@@ -542,7 +542,7 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Ok(object? value = null)
-        => value is null ? ResultsCache.Ok : new OkObjectHttpResult(value);
+        => value is null ? ResultsCache.Ok : new Ok<object>(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
@@ -550,7 +550,7 @@ public static partial class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult UnprocessableEntity(object? error = null)
-        => error is null ? ResultsCache.UnprocessableEntity : new UnprocessableEntityObjectHttpResult(error);
+        => error is null ? ResultsCache.UnprocessableEntity : new UnprocessableEntity<object>(error);
 
     /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.

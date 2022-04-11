@@ -5,6 +5,7 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
