@@ -112,6 +112,7 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.34' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Mvc.Core;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
