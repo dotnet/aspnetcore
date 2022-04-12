@@ -110,8 +110,7 @@ public class AuthorizationPolicy
     /// </returns>
     public static Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
         IEnumerable<IAuthorizeData> authorizeData) => CombineAsync(policyProvider, authorizeData,
-            Enumerable.Empty<AuthorizationPolicy>(),
-            Enumerable.Empty<IAuthorizationRequirement>());
+            Enumerable.Empty<AuthorizationPolicy>());
 
     /// <summary>
     /// Combines the <see cref="AuthorizationPolicy"/> provided by the specified
@@ -120,15 +119,13 @@ public class AuthorizationPolicy
     /// <param name="policyProvider">A <see cref="IAuthorizationPolicyProvider"/> which provides the policies to combine.</param>
     /// <param name="authorizeData">A collection of authorization data used to apply authorization to a resource.</param>
     /// <param name="policies">A collection of <see cref="AuthorizationPolicy"/> policies to combine.</param>
-    /// <param name="requirements">A collection of <see cref="IAuthorizationRequirement"/>s to add to the auth policy.</param>
     /// <returns>
     /// A new <see cref="AuthorizationPolicy"/> which represents the combination of the
     /// authorization policies provided by the specified <paramref name="policyProvider"/>.
     /// </returns>
     public static async Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
         IEnumerable<IAuthorizeData> authorizeData,
-        IEnumerable<AuthorizationPolicy> policies,
-        IEnumerable<IAuthorizationRequirement> requirements)
+        IEnumerable<AuthorizationPolicy> policies)
     {
         if (policyProvider == null)
         {
@@ -141,7 +138,6 @@ public class AuthorizationPolicy
         }
 
         var anyPolicies = policies.Any();
-        var anyRequirements = requirements.Any();
 
         // Avoid allocating enumerator if the data is known to be empty
         var skipEnumeratingData = false;
@@ -160,7 +156,7 @@ public class AuthorizationPolicy
                     policyBuilder = new AuthorizationPolicyBuilder();
                 }
 
-                var useDefaultPolicy = !(anyPolicies || anyRequirements);
+                var useDefaultPolicy = !(anyPolicies);
                 if (!string.IsNullOrWhiteSpace(authorizeDatum.Policy))
                 {
                     var policy = await policyProvider.GetPolicyAsync(authorizeDatum.Policy).ConfigureAwait(false);
@@ -206,16 +202,6 @@ public class AuthorizationPolicy
             foreach (var policy in policies)
             {
                 policyBuilder.Combine(policy);
-            }
-        }
-
-        if (anyRequirements)
-        {
-            policyBuilder ??= new();
-
-            foreach (var requirement in requirements)
-            {
-                policyBuilder.Requirements.Add(requirement);
             }
         }
 

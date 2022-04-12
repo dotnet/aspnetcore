@@ -229,24 +229,6 @@ public class AuthorizationMiddlewareTests
         Assert.True(calledPolicy);
     }
 
-    [Fact]
-    public async Task CanApplyAdditonalRequirementsToEndpoint()
-    {
-        // Arrange
-        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
-        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
-        var next = new TestRequestDelegate();
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
-        var context = GetHttpContext(anonymous: false, registerServices: services =>
-        {
-            services.AddSingleton<IAuthorizationHandler, CustomAuthHandler>();
-        },
-        endpoint: CreateEndpoint(new AuthorizeAttribute(), new CustomRequirement("This")));
-
-        // Act & Assert
-        await middleware.Invoke(context);
-    }
-
     class CustomAuthHandler : AuthorizationHandler<CustomRequirement>
     {
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, CustomRequirement requirement)

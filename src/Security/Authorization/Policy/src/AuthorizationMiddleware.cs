@@ -59,9 +59,8 @@ public class AuthorizationMiddleware
         var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
 
         var policies = endpoint?.Metadata.GetOrderedMetadata<AuthorizationPolicy>() ?? Array.Empty<AuthorizationPolicy>();
-        var reqirements = endpoint?.Metadata.GetOrderedMetadata<IAuthorizationRequirement>() ?? Array.Empty<IAuthorizationRequirement>();
 
-        var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData, policies, reqirements);
+        var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData, policies);
 
         if (policy == null)
         {
