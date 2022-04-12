@@ -4796,14 +4796,14 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    public void IOExceptionDuringFrameProcessingIsNotLoggedHigherThanDebug()
+    public async Task IOExceptionDuringFrameProcessingIsNotLoggedHigherThanDebug()
     {
         CreateConnection();
 
         var ioException = new IOException();
         _pair.Application.Output.Complete(ioException);
 
-        Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
+        await _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).DefaultTimeout();
 
         Assert.All(LogMessages, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
 
