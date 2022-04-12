@@ -208,6 +208,64 @@ public class AuthorizationMiddlewareTests
     }
 
     [Fact]
+    public async Task CanApplyPolicyDirectlyToEndpoint()
+    {
+        // Arrange
+        var calledPolicy = false;
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ =>
+        {
+            calledPolicy = true;
+            return true;
+        }).Build();
+
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+        var next = new TestRequestDelegate();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var context = GetHttpContext(anonymous: false, endpoint: CreateEndpoint(new AuthorizeAttribute(), policy));
+
+        // Act & Assert
+        await middleware.Invoke(context);
+        Assert.True(calledPolicy);
+    }
+
+    [Fact]
+    public async Task CanApplyAdditonalRequirementsToEndpoint()
+    {
+        // Arrange
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+        var next = new TestRequestDelegate();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var context = GetHttpContext(anonymous: false, registerServices: services =>
+        {
+            services.AddSingleton<IAuthorizationHandler, CustomAuthHandler>();
+        },
+        endpoint: CreateEndpoint(new AuthorizeAttribute(), new CustomRequirement("This")));
+
+        // Act & Assert
+        await middleware.Invoke(context);
+    }
+
+    class CustomAuthHandler : AuthorizationHandler<CustomRequirement>
+    {
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, CustomRequirement requirement)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    class CustomRequirement : IAuthorizationRequirement
+    {
+        public string Data { get; init; }
+
+        public CustomRequirement(string data)
+        {
+            Data = data;
+        }
+    }
+
+    [Fact]
     public async Task Invoke_ValidClaimShouldNotFail()
     {
         // Arrange
