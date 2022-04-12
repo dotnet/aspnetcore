@@ -104,7 +104,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
-            var wasEmpty = _unconsumedBytes == 0;
             _unconsumedBytes += bytes;
         }
     }
