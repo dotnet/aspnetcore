@@ -126,8 +126,10 @@ internal class Http2FrameWriter
                     reader.TryRead(out var readResult);
 
                     var buffer = readResult.Buffer;
+                    var unobservedState = producer.UnobservedState;
+                    var flushHeaders = unobservedState.HasFlag(Http2OutputProducer.State.FlushHeaders);
 
-                    if (producer.WriteHeaders)
+                    if (flushHeaders)
                     {
                         observed |= Http2OutputProducer.State.FlushHeaders;
                     }
@@ -161,7 +163,7 @@ internal class Http2FrameWriter
                     if (readResult.IsCanceled)
                     {
                         // Response body is aborted, complete reader for this output producer.
-                        if (producer.WriteHeaders)
+                        if (flushHeaders)
                         {
                             // write headers
                             WriteResponseHeaders(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
@@ -177,7 +179,7 @@ internal class Http2FrameWriter
                         stream.DecrementActiveClientStreamCount();
 
                         // It is faster to write data and trailers together. Locking once reduces lock contention.
-                        flushResult = await WriteDataAndTrailersAsync(stream, buffer, producer.WriteHeaders, stream.ResponseTrailers);
+                        flushResult = await WriteDataAndTrailersAsync(stream, buffer, flushHeaders, stream.ResponseTrailers);
                     }
                     else if (readResult.IsCompleted && producer.StreamEnded)
                     {
@@ -190,7 +192,7 @@ internal class Http2FrameWriter
                             stream.DecrementActiveClientStreamCount();
 
                             // Headers have already been written and there is no other content to write
-                            flushResult = await FlushAsync(stream, producer.WriteHeaders, outputAborter: null, cancellationToken: default);
+                            flushResult = await FlushAsync(stream, flushHeaders, outputAborter: null, cancellationToken: default);
                         }
                     }
                     else
@@ -202,15 +204,13 @@ internal class Http2FrameWriter
                             stream.DecrementActiveClientStreamCount();
                         }
 
-                        flushResult = await WriteDataAsync(stream, buffer, buffer.Length, endStream, producer.WriteHeaders);
+                        flushResult = await WriteDataAsync(stream, buffer, buffer.Length, endStream, flushHeaders);
                     }
 
                     if (producer.IsTimingWrite)
                     {
                         _timeoutControl.StopTimingWrite();
                     }
-
-                    producer.WriteHeaders = false;
 
                     reader.AdvanceTo(buffer.End);
 

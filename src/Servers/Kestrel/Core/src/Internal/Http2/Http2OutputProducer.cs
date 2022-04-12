@@ -69,8 +69,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
     public bool IsTimingWrite { get; set; }
 
-    public bool WriteHeaders { get; set; }
-
     public bool StreamEnded => _streamEnded;
 
     public bool StreamCompleted
@@ -86,6 +84,17 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
     // Useful for debugging the scheduling state in the debugger
     internal (int, long, State, long) SchedulingState => (Stream.StreamId, _unconsumedBytes, _unobservedState, _streamWindow);
+
+    public State UnobservedState
+    {
+        get
+        {
+            lock (_dataWriterLock)
+            {
+                return _unobservedState;
+            }
+        }
+    }
 
     // Added bytes to the queue.
     // Returns a bool that represents whether we should schedule this producer to write
@@ -165,7 +174,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         _unobservedState = State.None;
         _completedResponse = false;
         _requestProcessingComplete = false;
-        WriteHeaders = false;
         IsTimingWrite = false;
     }
 
@@ -313,7 +321,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
                 _streamEnded = true;
             }
 
-            WriteHeaders = true;
+            EnqueueStateUpdate(State.FlushHeaders);
         }
     }
 
