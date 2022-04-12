@@ -17,6 +17,7 @@
   },
   "resolutions": {
     "tar": ">=4.4.18",
-    "minimist": ">=1.2.6"
+    "minimist": ">=1.2.6",
+    "ansi-regex": ">=4.1.1"
   }
 }

@@ -18,6 +18,7 @@
     "webpack-cli": "^3.1.0"
   },
   "resolutions": {
-    "minimist": ">=1.2.6"
+    "minimist": ">=1.2.6",
+    "ansi-regex": ">=4.1.1"
   }
 }

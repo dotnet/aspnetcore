@@ -33,7 +33,8 @@
     "rxjs": "^6.3.3",
     "ts-node": "^8.6.2",
     "typescript": "^3.7.5",
-    "ws": " ^6.0.0"
+    "ws": " ^6.0.0",
+    "yarn-audit-fix": "^9.2.2"
   },
   "scripts": {
     "preclean": "cd .. && yarn run build",
@@ -55,7 +56,8 @@
     "lodash": ">=4.7.14",
     "url-parse": ">=1.5.8",
     "minimist": ">=1.2.6",
-    "async": ">=3.2.2"
+    "async": ">=3.2.2",
+    "ansi-regex": ">=4.1.1"
   },
   "author": "",
   "license": "Apache-2.0"
