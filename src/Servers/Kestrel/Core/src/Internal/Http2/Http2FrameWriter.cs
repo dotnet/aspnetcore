@@ -184,7 +184,7 @@ internal class Http2FrameWriter
                     {
                         if (buffer.Length != 0)
                         {
-                            _log.Http2UnexpectedDataRemaining(stream.StreamId);
+                            _log.Http2UnexpectedDataRemaining(stream.StreamId, _connectionId);
                         }
                         else
                         {
@@ -217,7 +217,7 @@ internal class Http2FrameWriter
                     {
                         await reader.CompleteAsync();
 
-                        producer.CompleteResponse();
+                        await producer.CompleteResponseAsync();
                     }
                     // We're not going to schedule this again if there's no remaining window.
                     // When the window update is sent, the producer will be re-queued if needed.

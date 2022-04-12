@@ -538,29 +538,33 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         }
     }
 
-    internal void CompleteResponse()
+    internal ValueTask<FlushResult> CompleteResponseAsync()
     {
         lock (_dataWriterLock)
         {
             if (_completedResponse)
             {
                 // This should never be called twice
-                return;
+                return default;
             }
 
             _completedResponse = true;
+
+            ValueTask<FlushResult> task = default;
 
             if (_resetErrorCode is { } error)
             {
                 // If we have an error code to write, write it now that we're done with the response.
                 // Always send the reset even if the response body is completed. The request body may not have completed yet.
-                _ = _frameWriter.WriteRstStreamAsync(StreamId, error).Preserve();
+                task = _frameWriter.WriteRstStreamAsync(StreamId, error);
             }
 
             if (_requestProcessingComplete)
             {
                 Stream.CompleteStream(errored: false);
             }
+
+            return task;
         }
     }
 

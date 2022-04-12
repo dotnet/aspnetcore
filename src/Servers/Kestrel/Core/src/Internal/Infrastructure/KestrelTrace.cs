@@ -306,12 +306,12 @@ internal sealed partial class KestrelTrace : ILogger
         Http2QueueOperationsExceeded(_http2Logger, connectionId, ex);
     }
 
-    [LoggerMessage(61, LogLevel.Critical, @"Stream {StreamId} observed an unexpected state where the streams output ended with data still remaining in the pipe.", EventName = "Http2UnexpectedDataRemaining")]
-    private static partial void Http2UnexpectedDataRemaining(ILogger logger, int streamId);
+    [LoggerMessage(61, LogLevel.Critical, @"Stream {StreamId} on connection id ""{ConnectionId}"" observed an unexpected state where the streams output ended with data still remaining in the pipe.", EventName = "Http2UnexpectedDataRemaining")]
+    private static partial void Http2UnexpectedDataRemaining(ILogger logger, int streamId, string connectionId);
 
-    public void Http2UnexpectedDataRemaining(int streamId)
+    public void Http2UnexpectedDataRemaining(int streamId, string connectionId)
     {
-        Http2UnexpectedDataRemaining(_http2Logger, streamId);
+        Http2UnexpectedDataRemaining(_http2Logger, streamId, connectionId);
     }
 
     [LoggerMessage(62, LogLevel.Debug, @"The connection queue processing loop for {ConnectionId} completed.", EventName = "Http2ConnectionQueueProcessingCompleted")]
