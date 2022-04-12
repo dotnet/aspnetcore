@@ -637,8 +637,6 @@ public class HttpClientHttp2InteropTests : LoggedTest
     [MemberData(nameof(SupportedSchemes))]
     public async Task ServerReset_AfterEndStream_NoError(string scheme)
     {
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
         var hostBuilder = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {
@@ -648,7 +646,6 @@ public class HttpClientHttp2InteropTests : LoggedTest
                 {
                     await context.Response.WriteAsync("Hello World");
                     await context.Response.CompleteAsync();
-                    await tcs.Task;
                     context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
                 }));
             });
@@ -659,7 +656,6 @@ public class HttpClientHttp2InteropTests : LoggedTest
         var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadAsStringAsync().DefaultTimeout();
-        tcs.TrySetResult();
         Assert.Equal("Hello World", body);
         await host.StopAsync().DefaultTimeout();
     }
@@ -668,8 +664,6 @@ public class HttpClientHttp2InteropTests : LoggedTest
     [MemberData(nameof(SupportedSchemes))]
     public async Task ServerReset_AfterTrailers_NoError(string scheme)
     {
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
         var hostBuilder = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {
@@ -681,7 +675,6 @@ public class HttpClientHttp2InteropTests : LoggedTest
                     await context.Response.WriteAsync("Hello World");
                     context.Response.AppendTrailer("TestTrailer", "TestValue");
                     await context.Response.CompleteAsync();
-                    await tcs.Task;
                     context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
                 }));
             });
@@ -693,7 +686,6 @@ public class HttpClientHttp2InteropTests : LoggedTest
         Assert.Equal(HttpVersion.Version20, response.Version);
         Assert.Equal("TestTrailer", response.Headers.Trailer.Single());
         var responseBody = await response.Content.ReadAsStringAsync().DefaultTimeout();
-        tcs.TrySetResult();
         Assert.Equal("Hello World", responseBody);
         // The response is buffered, we must already have the trailers.
         Assert.Equal("TestValue", response.TrailingHeaders.GetValues("TestTrailer").Single());

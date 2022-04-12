@@ -44,6 +44,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     private State _unobservedState;
     private bool _completedResponse;
     private bool _requestProcessingComplete;
+    private Http2ErrorCode? _resetErrorCode;
 
     public Http2OutputProducer(Http2Stream stream, Http2StreamContext context)
     {
@@ -161,6 +162,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         _unobservedState = State.None;
         _completedResponse = false;
         _requestProcessingComplete = false;
+        _resetErrorCode = null;
         IsTimingWrite = false;
     }
 
@@ -370,7 +372,14 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
-            // Always send the reset even if the response body is _completed. The request body may not have completed yet.
+            // We queued the stream to complete but didn't complete the response yet
+            if (_streamCompleted && !_completedResponse)
+            {
+                // Set the error so that we can write the RST when the response completes.
+                _resetErrorCode = error;
+                return default;
+            }
+
             Stop();
 
             return _frameWriter.WriteRstStreamAsync(StreamId, error);
@@ -536,7 +545,20 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
+            if (_completedResponse)
+            {
+                // This should never be called twice
+                return;
+            }
+
             _completedResponse = true;
+
+            if (_resetErrorCode is { } error)
+            {
+                // If we have an error code to write, write it now that we're done with the response.
+                // Always send the reset even if the response body is completed. The request body may not have completed yet.
+                _ = _frameWriter.WriteRstStreamAsync(StreamId, error).Preserve();
+            }
 
             if (_requestProcessingComplete)
             {
