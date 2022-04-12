@@ -369,7 +369,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
             _streamCompleted = true;
             _suffixSent = true;
 
-            // Try to enqueue any unflushed bytes
             EnqueueStateUpdate(State.Completed);
 
             _pipeWriter.Complete();
@@ -519,7 +518,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
             _pipeReader.CancelPendingRead();
 
-            // We need to make sure the cancellation is observed by the code
             Schedule();
         }
     }
