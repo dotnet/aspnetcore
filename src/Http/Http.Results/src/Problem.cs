@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,8 +12,10 @@ using Microsoft.Extensions.Logging;
 /// An <see cref="IResult"/> that on execution will write Problem Details
 /// HTTP API responses based on https://tools.ietf.org/html/rfc7807
 /// </summary>
-public sealed class Problem : IResult
+public sealed class Problem : IResult, IEndpointMetadataProvider
 {
+    private static readonly int _defaultStatusCode = GetDefaultStatusCode();
+
     /// <summary>
     /// Creates a new <see cref="PhysicalFile"/> instance with
     /// the provided <paramref name="problemDetails"/>.
@@ -56,5 +59,18 @@ public sealed class Problem : IResult
                 logger,
                 value: ProblemDetails,
                 ContentType);
+    }
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    {
+        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(ProblemDetails), _defaultStatusCode, "application/json"));
+    }
+
+    private static int GetDefaultStatusCode()
+    {
+        var problemDetails = new ProblemDetails();
+        HttpResultsHelper.ApplyProblemDetailsDefaults(problemDetails, statusCode: null);
+        return problemDetails.Status ??= StatusCodes.Status500InternalServerError;
     }
 }

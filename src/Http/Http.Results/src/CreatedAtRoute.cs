@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ using Microsoft.Extensions.Logging;
 /// with status code Created (201) and Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed class CreatedAtRoute : IResult
+public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CreatedAtRoute"/> class with the values
@@ -78,5 +79,11 @@ public sealed class CreatedAtRoute : IResult
         httpContext.Response.StatusCode = StatusCode;
 
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    {
+        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created));
     }
 }

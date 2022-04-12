@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Logging;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with Conflict (409) status code.
 /// </summary>
-public sealed class Conflict : IResult
+public sealed class Conflict : IResult, IEndpointMetadataProvider
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Conflict"/> class with the values
@@ -36,5 +37,11 @@ public sealed class Conflict : IResult
         httpContext.Response.StatusCode = StatusCode;
 
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    {
+        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status409Conflict));
     }
 }

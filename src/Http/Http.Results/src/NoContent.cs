@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Logging;
 /// Represents an <see cref="IResult"/> that when executed will
 /// produce an HTTP response with the No Content (204) status code.
 /// </summary>
-public class NoContent : IResult
+public class NoContent : IResult, IEndpointMetadataProvider
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="NoContent"/> class.
@@ -36,5 +37,11 @@ public class NoContent : IResult
         httpContext.Response.StatusCode = StatusCode;
 
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    {
+        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status204NoContent));
     }
 }

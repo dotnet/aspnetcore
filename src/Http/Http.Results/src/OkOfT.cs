@@ -4,6 +4,7 @@
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Logging;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with Ok (200) status code.
 /// </summary>
-public sealed class Ok<TValue> : IResult
+public sealed class Ok<TValue> : IResult, IEndpointMetadataProvider
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Ok"/> class with the values.
@@ -47,5 +48,11 @@ public sealed class Ok<TValue> : IResult
                 httpContext,
                 logger: logger,
                 Value);
+    }
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    {
+        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status200OK, "application/json"));
     }
 }

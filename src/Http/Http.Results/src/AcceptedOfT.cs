@@ -4,6 +4,7 @@
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +13,7 @@ using Microsoft.Extensions.Logging;
 /// with status code Accepted (202) and Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed class Accepted<TValue> : IResult
+public sealed class Accepted<TValue> : IResult, IEndpointMetadataProvider
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Accepted"/> class with the values
@@ -87,5 +88,11 @@ public sealed class Accepted<TValue> : IResult
                 httpContext,
                 logger,
                 Value);
+    }
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
+    {
+        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status202Accepted, "application/json"));
     }
 }
