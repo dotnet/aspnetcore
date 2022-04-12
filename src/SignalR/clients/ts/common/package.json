@@ -23,5 +23,8 @@
     "uglify-js": "^3.3.5",
     "webpack": "^4.12.0",
     "webpack-cli": "^3.0.3"
+  },
+  "resolutions": {
+    "minimist": ">=1.2.6"
   }
 }

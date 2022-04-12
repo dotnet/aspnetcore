@@ -53,7 +53,9 @@
   },
   "resolutions": {
     "lodash": ">=4.7.14",
-    "url-parse": ">=1.5.8"
+    "url-parse": ">=1.5.8",
+    "minimist": ">=1.2.6",
+    "async": ">=3.2.2"
   },
   "author": "",
   "license": "Apache-2.0"
