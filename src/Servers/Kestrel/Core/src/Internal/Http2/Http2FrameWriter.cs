@@ -300,7 +300,7 @@ internal class Http2FrameWriter
             }
 
             _completed = true;
-            AbortFlowControl();
+            AbortConnectionFlowControl();
             _outputWriter.Abort();
         }
     }
@@ -843,7 +843,7 @@ internal class Http2FrameWriter
         }
     }
 
-    private void AbortFlowControl()
+    private void AbortConnectionFlowControl()
     {
         lock (_windowUpdateLock)
         {
