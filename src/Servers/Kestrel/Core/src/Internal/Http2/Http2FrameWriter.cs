@@ -47,7 +47,7 @@ internal class Http2FrameWriter
 
     private readonly object _windowUpdateLock = new();
     private long _connectionWindow;
-    private readonly Queue<Http2OutputProducer> _waitingForMoreWindow = new();
+    private readonly Queue<Http2OutputProducer> _waitingForMoreConnectionWindow = new();
     private readonly Task _writeQueueTask;
 
     public Http2FrameWriter(
@@ -101,8 +101,8 @@ internal class Http2FrameWriter
         if (!_channel.Writer.TryWrite(producer))
         {
             // It should not be possible to exceed the bound of the channel.
-            var ex = new ConnectionAbortedException("Http2FrameWriter._channel exceeded bounds.");
-            _log.LogCritical(ex, "Http2FrameWriter._channel exceeded bounds.", _connectionId);
+            var ex = new ConnectionAbortedException("HTTP/2 connection exceeded the output operations maximum queue size.");
+            _log.LogCritical(ex, "HTTP/2 connection exceeded the output operations maximum queue size on connection {ConnectionId}.", _connectionId);
             _http2Connection.Abort(ex);
         }
     }
@@ -230,7 +230,7 @@ internal class Http2FrameWriter
                         {
                             lock (_windowUpdateLock)
                             {
-                                _waitingForMoreWindow.Enqueue(producer);
+                                _waitingForMoreConnectionWindow.Enqueue(producer);
                             }
 
                             // Include waiting for window updates in timing writes
@@ -847,7 +847,7 @@ internal class Http2FrameWriter
     {
         lock (_windowUpdateLock)
         {
-            while (_waitingForMoreWindow.TryDequeue(out var producer))
+            while (_waitingForMoreConnectionWindow.TryDequeue(out var producer))
             {
                 if (!producer.StreamCompleted)
                 {
@@ -871,7 +871,7 @@ internal class Http2FrameWriter
 
             _connectionWindow += bytes;
 
-            while (_waitingForMoreWindow.TryDequeue(out var producer))
+            while (_waitingForMoreConnectionWindow.TryDequeue(out var producer))
             {
                 if (!producer.StreamCompleted)
                 {
