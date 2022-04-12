@@ -395,7 +395,7 @@ internal sealed class ParameterBindingMethodCache
     }
 
     private static ValueTask<TValue?> BindAsync<TValue>(HttpContext httpContext, ParameterInfo parameter)
-        where TValue : IBindableFromHttpContext<TValue>
+        where TValue : class?, IBindableFromHttpContext<TValue>
     {
         return TValue.BindAsync(httpContext, parameter);
     }

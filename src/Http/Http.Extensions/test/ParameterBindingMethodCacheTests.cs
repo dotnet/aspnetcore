@@ -336,20 +336,6 @@ public class ParameterBindingMethodCacheTests
     }
 
     [Fact]
-    public void HasBindAsyncMethod_ReturnsTrueForNonNullableStructImplicitlyImplementingIBindableFromHttpContext()
-    {
-        var parameterInfo = GetFirstParameter((BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct arg) => BindAsyncFromNonNullableStructImplicitStaticAbstractInterfaceMethod(arg));
-        Assert.True(new ParameterBindingMethodCache().HasBindAsyncMethod(parameterInfo));
-    }
-
-    [Fact]
-    public void HasBindAsyncMethod_ReturnsTrueForNonNullableStructExplicitlyImplementingIBindableFromHttpContext()
-    {
-        var parameterInfo = GetFirstParameter((BindAsyncFromStaticAbstractExplicitInterfaceNonNullableStruct arg) => BindAsyncFromNonNullableStructExplicitStaticAbstractInterfaceMethod(arg));
-        Assert.True(new ParameterBindingMethodCache().HasBindAsyncMethod(parameterInfo));
-    }
-
-    [Fact]
     public void FindBindAsyncMethod_FindsNonNullableReturningBindAsyncMethodGivenNullableType()
     {
         var parameterInfo = GetFirstParameter((BindAsyncStruct? arg) => BindAsyncNullableStructMethod(arg));
@@ -390,42 +376,6 @@ public class ParameterBindingMethodCacheTests
         var result = await parseHttpContext(httpContext);
         Assert.NotNull(result);
         Assert.IsType<BindAsyncFromExplicitStaticAbstractInterface>(result);
-    }
-
-    [Fact]
-    public async Task FindBindAsyncMethod_FindsForNonNullableStructImplicitlyImplementingIBindableFromHttpContext()
-    {
-        var parameterInfo = GetFirstParameter((BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct arg) => BindAsyncFromNonNullableStructImplicitStaticAbstractInterfaceMethod(arg));
-        var cache = new ParameterBindingMethodCache();
-        Assert.True(cache.HasBindAsyncMethod(parameterInfo));
-        var methodFound = cache.FindBindAsyncMethod(parameterInfo);
-
-        var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(methodFound.Expression!,
-            ParameterBindingMethodCache.HttpContextExpr).Compile();
-
-        var httpContext = new DefaultHttpContext();
-
-        var result = await parseHttpContext(httpContext);
-        Assert.NotNull(result);
-        Assert.IsType<BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct>(result);
-    }
-
-    [Fact]
-    public async Task FindBindAsyncMethod_FindsForNonNullableStructExplicitlyImplementingIBindableFromHttpContext()
-    {
-        var parameterInfo = GetFirstParameter((BindAsyncFromStaticAbstractExplicitInterfaceNonNullableStruct arg) => BindAsyncFromNonNullableStructExplicitStaticAbstractInterfaceMethod(arg));
-        var cache = new ParameterBindingMethodCache();
-        Assert.True(cache.HasBindAsyncMethod(parameterInfo));
-        var methodFound = cache.FindBindAsyncMethod(parameterInfo);
-
-        var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(methodFound.Expression!,
-            ParameterBindingMethodCache.HttpContextExpr).Compile();
-
-        var httpContext = new DefaultHttpContext();
-
-        var result = await parseHttpContext(httpContext);
-        Assert.NotNull(result);
-        Assert.IsType<BindAsyncFromStaticAbstractExplicitInterfaceNonNullableStruct>(result);
     }
 
     [Fact]
@@ -600,8 +550,7 @@ public class ParameterBindingMethodCacheTests
                 typeof(BindAsyncWithParameterInfoWrongTypeInherit),
                 typeof(BindAsyncWrongTypeFromInterface),
                 typeof(BindAsyncBothBadMethods),
-                typeof(BindAsyncFromStaticAbstractInterfaceWrongType),
-                typeof(NonNullableBindAsyncFromStaticAbstractInterfaceStructWrongType)
+                typeof(BindAsyncFromStaticAbstractInterfaceWrongType)
             };
         }
     }
@@ -744,8 +693,6 @@ public class ParameterBindingMethodCacheTests
     private static void BindAsyncFromImplicitStaticAbstractInterfaceMethod(BindAsyncFromImplicitStaticAbstractInterface arg) { }
     private static void BindAsyncFromExplicitStaticAbstractInterfaceMethod(BindAsyncFromExplicitStaticAbstractInterface arg) { }
     private static void BindAsyncFromStaticAbstractInterfaceWrongTypeMethod(BindAsyncFromStaticAbstractInterfaceWrongType arg) { }
-    private static void BindAsyncFromNonNullableStructImplicitStaticAbstractInterfaceMethod(BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct arg) { }
-    private static void BindAsyncFromNonNullableStructExplicitStaticAbstractInterfaceMethod(BindAsyncFromStaticAbstractExplicitInterfaceNonNullableStruct arg) { }
 
     private static ParameterInfo GetFirstParameter<T>(Expression<Action<T>> expr)
     {
@@ -1475,30 +1422,6 @@ public class ParameterBindingMethodCacheTests
         public static ValueTask<BindAsyncFromImplicitStaticAbstractInterface?> BindAsync(HttpContext context, ParameterInfo parameter)
         {
             return ValueTask.FromResult<BindAsyncFromImplicitStaticAbstractInterface?>(new());
-        }
-    }
-
-    private record struct BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct() : IBindableFromHttpContext<BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct>
-    {
-        public static ValueTask<BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct> BindAsync(HttpContext context, ParameterInfo parameter)
-        {
-            return ValueTask.FromResult<BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct>(new());
-        }
-    }
-
-    private record struct BindAsyncFromStaticAbstractExplicitInterfaceNonNullableStruct() : IBindableFromHttpContext<BindAsyncFromStaticAbstractExplicitInterfaceNonNullableStruct>
-    {
-        static ValueTask<BindAsyncFromStaticAbstractExplicitInterfaceNonNullableStruct> IBindableFromHttpContext<BindAsyncFromStaticAbstractExplicitInterfaceNonNullableStruct>.BindAsync(HttpContext context, ParameterInfo parameter)
-        {
-            return ValueTask.FromResult<BindAsyncFromStaticAbstractExplicitInterfaceNonNullableStruct>(new());
-        }
-    }
-
-    private record struct NonNullableBindAsyncFromStaticAbstractInterfaceStructWrongType() : IBindableFromHttpContext<BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct>
-    {
-        public static ValueTask<BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct> BindAsync(HttpContext context, ParameterInfo parameter)
-        {
-            return ValueTask.FromResult<BindAsyncFromStaticAbstractImplicitInterfaceNonNullableStruct>(new());
         }
     }
 
