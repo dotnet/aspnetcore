@@ -229,14 +229,6 @@ public class AuthorizationMiddlewareTests
         Assert.True(calledPolicy);
     }
 
-    class CustomAuthHandler : AuthorizationHandler<CustomRequirement>
-    {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, CustomRequirement requirement)
-        {
-            return Task.CompletedTask;
-        }
-    }
-
     class CustomRequirement : IAuthorizationRequirement
     {
         public string Data { get; init; }
