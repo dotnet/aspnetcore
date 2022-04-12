@@ -45,8 +45,13 @@ public class Http2RequestTests : LoggedTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41074")]
     public async Task GET_RequestReturnsLargeData_GracefulShutdownDuringRequest_RequestGracefullyCompletes(bool hasTrailers)
     {
+        // Enable client logging.
+        // Test failure on CI could be from HttpClient bug.
+        using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
+
         // Arrange
         const int DataLength = 500_000;
         var randomBytes = Enumerable.Range(1, DataLength).Select(i => (byte)((i % 10) + 48)).ToArray();
@@ -112,18 +117,29 @@ public class Http2RequestTests : LoggedTest
         request.Version = HttpVersion.Version20;
         request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
+        logger.LogInformation($"Sending request to '{request.RequestUri}'.");
         var responseMessage = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
         responseMessage.EnsureSuccessStatusCode();
 
         var responseStream = await responseMessage.Content.ReadAsStreamAsync();
 
+        logger.LogInformation($"Started reading response content");
         var data = new List<byte>();
         var buffer = new byte[1024 * 128];
         int readCount;
-        while ((readCount = await responseStream.ReadAsync(buffer)) != 0)
+        try
         {
-            data.AddRange(buffer.AsMemory(0, readCount).ToArray());
-            logger.LogInformation($"Received {readCount} bytes. Total {data.Count} bytes.");
+            while ((readCount = await responseStream.ReadAsync(buffer)) != 0)
+            {
+                data.AddRange(buffer.AsMemory(0, readCount).ToArray());
+                logger.LogInformation($"Received {readCount} bytes. Total {data.Count} bytes.");
+            }
+        }
+        catch
+        {
+            logger.LogInformation($"Error reading response. Total {data.Count} bytes.");
+
+            throw;
         }
         logger.LogInformation($"Finished reading response content");
 
