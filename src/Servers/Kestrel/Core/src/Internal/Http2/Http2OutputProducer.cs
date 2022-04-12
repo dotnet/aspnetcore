@@ -41,7 +41,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     private long _streamWindow;
 
     // For changes scheduling changes that don't affect the number of bytes written to the pipe, we need another state
-    private State _observationState;
+    private State _unobservedState;
     private bool _completedResponse;
     private bool _requestProcessingComplete;
 
@@ -85,7 +85,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     }
 
     // Useful for debugging the scheduling state in the debugger
-    internal (int, long, State, long) SchedulingState => (Stream.StreamId, _unconsumedBytes, _observationState, _streamWindow);
+    internal (int, long, State, long) SchedulingState => (Stream.StreamId, _unconsumedBytes, _unobservedState, _streamWindow);
 
     // Added bytes to the queue.
     // Returns a bool that represents whether we should schedule this producer to write
@@ -105,8 +105,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
-            var wasEnqueuedForObservation = _observationState != State.None;
-            _observationState |= state;
+            _unobservedState |= state;
         }
     }
 
@@ -118,9 +117,9 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         lock (_dataWriterLock)
         {
             _isScheduled = false;
-            _observationState &= ~state;
+            _unobservedState &= ~state;
             _unconsumedBytes -= bytes;
-            return (_unconsumedBytes > 0, _observationState != State.None);
+            return (_unconsumedBytes > 0, _unobservedState != State.None);
         }
     }
 
@@ -138,7 +137,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     // Adds more bytes to the stream's window
     // Returns a bool that represents whether we should schedule this producer to write
     // the remaining bytes.
-    private bool UpdateWindow(long bytes)
+    private bool UpdateStreamWindow(long bytes)
     {
         lock (_dataWriterLock)
         {
@@ -163,7 +162,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
         _streamWindow = initialWindowSize;
         _unconsumedBytes = 0;
-        _observationState = State.None;
+        _unobservedState = State.None;
         _completedResponse = false;
         _requestProcessingComplete = false;
         WriteHeaders = false;
@@ -609,7 +608,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
             }
         }
 
-        if (UpdateWindow(bytes))
+        if (UpdateStreamWindow(bytes))
         {
             Schedule();
         }

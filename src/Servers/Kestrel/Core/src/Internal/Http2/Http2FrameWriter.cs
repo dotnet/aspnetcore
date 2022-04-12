@@ -538,10 +538,7 @@ internal class Http2FrameWriter
 
                 WriteHeaderUnsynchronized();
 
-                foreach (var buffer in currentData)
-                {
-                    _outputWriter.Write(buffer.Span);
-                }
+                currentData.CopyTo(_outputWriter);
 
                 // Plus padding
                 dataLength -= dataPayloadLength;
@@ -558,10 +555,7 @@ internal class Http2FrameWriter
 
             WriteHeaderUnsynchronized();
 
-            foreach (var buffer in remainingData)
-            {
-                _outputWriter.Write(buffer.Span);
-            }
+            remainingData.CopyTo(_outputWriter);
 
             // Plus padding
         }
