@@ -6,6 +6,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="System.Diagnostics.DiagnosticSource" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
 </Project>
