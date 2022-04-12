@@ -130,6 +130,33 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public async Task WebApplicationWebHostUseUrls_OverridesDefaultHostingConfiguration()
+        {
+            var builder = new WebApplicationBuilder(new(), bootstrapBuilder =>
+            {
+                bootstrapBuilder.ConfigureHostConfiguration(configBuilder =>
+                {
+                    configBuilder.AddInMemoryCollection(new Dictionary<string, string>
+                    {
+                        [WebHostDefaults.ServerUrlsKey] = "http://localhost:5000",
+                    });
+                });
+            });
+
+            builder.WebHost.UseUrls("http://localhost:5001");
+
+            var urls = new List<string>();
+            var server = new MockAddressesServer(urls);
+            builder.Services.AddSingleton<IServer>(server);
+            await using var app = builder.Build();
+
+            await app.StartAsync();
+
+            var url = Assert.Single(urls);
+            Assert.Equal("http://localhost:5001", url);
+        }
+
+        [Fact]
         public async Task WebApplicationUrls_ThrowsInvalidOperationExceptionIfThereIsNoIServerAddressesFeature()
         {
             var builder = WebApplication.CreateBuilder();
