@@ -29,7 +29,8 @@
     "ts-loader": "^4.4.1",
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.11",
+    "yarn-audit-fix": "^9.2.2"
   },
   "resolutions": {
     "**/set-value": "^2.0.1",
