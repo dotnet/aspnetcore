@@ -37,6 +37,7 @@
     <BaselinePackageReference Include="IdentityServer4.EntityFramework.Storage" Version="[3.0.0, )" />
     <BaselinePackageReference Include="IdentityServer4.Storage" Version="[3.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[3.1.24, )" />
+    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.7.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.win-x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.win-x64' ">
@@ -134,7 +135,7 @@
     <BaselinePackageVersion>3.1.24</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.SiteExtension' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.Web.Xdt.Extensions" Version="[3.1.24-servicing.22123.12, )" />
+    <BaselinePackageReference Include="Microsoft.Web.Xdt.Extensions" Version="[3.1.24-servicing.22180.6, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServicesIntegration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' ">
@@ -200,6 +201,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Forms" Version="[3.1.24, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.24, )" />
     <BaselinePackageReference Include="Microsoft.JSInterop" Version="[3.1.24, )" />
+    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.7.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly' ">
@@ -404,6 +406,7 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[3.1.24, )" />
+    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.7.2, )" />
     <BaselinePackageReference Include="System.Text.Json" Version="[4.7.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Features-->
@@ -556,6 +559,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[3.1.24, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.24, )" />
+    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.7.2, )" />
     <BaselinePackageReference Include="System.Text.Json" Version="[4.7.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.Json-->
