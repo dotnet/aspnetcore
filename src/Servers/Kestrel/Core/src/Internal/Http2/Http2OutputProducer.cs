@@ -38,7 +38,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     internal bool _disposed;
 
     private long _unconsumedBytes;
-    private long _window;
+    private long _streamWindow;
 
     // For changes scheduling changes that don't affect the number of bytes written to the pipe, we need another state
     private State _observationState;
@@ -56,14 +56,13 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         _pipe = CreateDataPipe(_memoryPool);
 
         _pipeWriter = new ConcurrentPipeWriter(_pipe.Writer, _memoryPool, _dataWriterLock);
-        Debug.Assert(_pipeWriter.CanGetUnflushedBytes);
         _pipeReader = _pipe.Reader;
 
         // No need to pass in timeoutControl here, since no minDataRates are passed to the TimingPipeFlusher.
         // The minimum output data rate is enforced at the connection level by Http2FrameWriter.
         _flusher = new TimingPipeFlusher(timeoutControl: null, _log);
         _flusher.Initialize(_pipeWriter);
-        _window = context.ClientPeerSettings.InitialWindowSize;
+        _streamWindow = context.ClientPeerSettings.InitialWindowSize;
     }
 
     public Http2Stream Stream => _stream;
@@ -87,37 +86,35 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     }
 
     // Useful for debugging the scheduling state in the debugger
-    internal (int, long, State, long, bool) SchedulingState => (Stream.StreamId, _unconsumedBytes, _observationState, _window, _waitingForWindowUpdates);
+    internal (int, long, State, long, bool) SchedulingState => (Stream.StreamId, _unconsumedBytes, _observationState, _streamWindow, _waitingForWindowUpdates);
 
     // Added bytes to the queue.
     // Returns a bool that represents whether we should schedule this producer to write
     // the enqueued bytes
-    private bool Enqueue(long bytes)
+    private void EnqueueDataWrite(long bytes)
     {
         lock (_dataWriterLock)
         {
             var wasEmpty = _unconsumedBytes == 0;
             _unconsumedBytes += bytes;
-            return wasEmpty && _unconsumedBytes > 0 && _observationState == State.None;
         }
     }
 
     // Determines if we should schedule this producer to observe
     // any state changes made.
-    private bool EnqueueForObservation(State state)
+    private void EnqueueStateUpdate(State state)
     {
         lock (_dataWriterLock)
         {
             var wasEnqueuedForObservation = _observationState != State.None;
             _observationState |= state;
-            return (_unconsumedBytes == 0 || _waitingForWindowUpdates) && !wasEnqueuedForObservation;
         }
     }
 
     // Removes consumed bytes from the queue.
     // Returns a bool that represents whether we should schedule this producer to write
     // the remaining bytes.
-    internal (bool, bool) Dequeue(long bytes, State state)
+    internal (bool hasMoreData, bool reschedule) ObserveDataAndState(long bytes, State state)
     {
         lock (_dataWriterLock)
         {
@@ -129,13 +126,13 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     }
 
     // Consumes bytes from the stream's window and returns the remaining bytes and actual bytes consumed
-    internal (long, long) ConsumeWindow(long bytes)
+    internal (long actual, long remaining) ConsumeStreamWindow(long bytes)
     {
         lock (_dataWriterLock)
         {
-            var actual = Math.Min(bytes, _window);
-            var remaining = _window -= actual;
-            return (actual, remaining);
+            var actual = Math.Min(bytes, _streamWindow);
+            _streamWindow -= actual;
+            return (actual, _streamWindow);
         }
     }
 
@@ -146,9 +143,9 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
-            var wasDepleted = _window <= 0;
-            _window += bytes;
-            return wasDepleted && _window > 0 && _unconsumedBytes > 0;
+            var wasDepleted = _streamWindow <= 0;
+            _streamWindow += bytes;
+            return wasDepleted && _streamWindow > 0 && _unconsumedBytes > 0;
         }
     }
 
@@ -165,7 +162,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         _pipe.Reset();
         _pipeWriter.Reset();
 
-        _window = initialWindowSize;
+        _streamWindow = initialWindowSize;
         _unconsumedBytes = 0;
         _observationState = State.None;
         _waitingForWindowUpdates = false;
@@ -190,15 +187,12 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
             if (!_streamCompleted)
             {
-                var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation(State.Completed);
+                EnqueueStateUpdate(State.Completed);
 
                 // Make sure the writing side is completed.
                 _pipeWriter.Complete();
 
-                if (enqueue)
-                {
-                    Schedule();
-                }
+                Schedule();
             }
             else
             {
@@ -249,27 +243,19 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
             if (_startedWritingDataFrames)
             {
-                var enqueue = Enqueue(_pipeWriter.UnflushedBytes);
-
                 // If there's already been response data written to the stream, just wait for that. Any header
                 // should be in front of the data frames in the connection pipe. Trailers could change things.
                 var task = _flusher.FlushAsync(this, cancellationToken);
 
-                if (enqueue)
-                {
-                    Schedule();
-                }
+                Schedule();
 
                 return task;
             }
             else
             {
-                var enqueue = EnqueueForObservation(State.FlushHeaders);
+                EnqueueStateUpdate(State.FlushHeaders);
 
-                if (enqueue)
-                {
-                    Schedule();
-                }
+                Schedule();
 
                 return default;
             }
@@ -365,14 +351,11 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
             _pipeWriter.Write(data);
 
-            var enqueue = Enqueue(data.Length);
+            EnqueueDataWrite(data.Length);
 
             var task = _flusher.FlushAsync(this, cancellationToken).GetAsTask();
 
-            if (enqueue)
-            {
-                Schedule();
-            }
+            Schedule();
 
             return task;
         }
@@ -391,14 +374,11 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
             _suffixSent = true;
 
             // Try to enqueue any unflushed bytes
-            var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation(State.Completed);
+            EnqueueStateUpdate(State.Completed);
 
             _pipeWriter.Complete();
 
-            if (enqueue)
-            {
-                Schedule();
-            }
+            Schedule();
 
             return ValueTask.FromResult<FlushResult>(default);
         }
@@ -429,6 +409,8 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
             _startedWritingDataFrames = true;
 
             _pipeWriter.Advance(bytes);
+
+            EnqueueDataWrite(bytes);
         }
     }
 
@@ -497,13 +479,10 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
             _pipeWriter.Write(data);
 
-            var enqueue = Enqueue(data.Length);
+            EnqueueDataWrite(data.Length);
             var task = _flusher.FlushAsync(this, cancellationToken);
 
-            if (enqueue)
-            {
-                Schedule();
-            }
+            Schedule();
 
             return task;
         }
@@ -540,15 +519,12 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
             _streamCompleted = true;
 
-            var enqueue = Enqueue(_pipeWriter.UnflushedBytes) || EnqueueForObservation(State.Canceled);
+            EnqueueStateUpdate(State.Canceled);
 
             _pipeReader.CancelPendingRead();
 
-            if (enqueue)
-            {
-                // We need to make sure the cancellation is observed by the code
-                Schedule();
-            }
+            // We need to make sure the cancellation is observed by the code
+            Schedule();
         }
     }
 
@@ -636,7 +612,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
-            var maxUpdate = Http2PeerSettings.MaxWindowSize - _window;
+            var maxUpdate = Http2PeerSettings.MaxWindowSize - _streamWindow;
 
             if (bytes > maxUpdate)
             {

@@ -57,10 +57,6 @@ internal sealed class ConcurrentPipeWriter : PipeWriter
         _sync = sync;
     }
 
-    public override bool CanGetUnflushedBytes => true;
-
-    public override long UnflushedBytes => _currentFlushTcs is null && _head is null ? _innerPipeWriter.UnflushedBytes : _bytesBuffered;
-
     public void Reset()
     {
         Debug.Assert(_currentFlushTcs == null, "There should not be a pending flush.");

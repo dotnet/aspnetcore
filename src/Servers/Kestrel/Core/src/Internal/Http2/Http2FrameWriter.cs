@@ -109,164 +109,167 @@ internal class Http2FrameWriter
 
     private async Task WriteToOutputPipe()
     {
-        await foreach (var producer in _channel.Reader.ReadAllAsync())
+        while (await _channel.Reader.WaitToReadAsync())
         {
-            try
+            while (_channel.Reader.TryRead(out var producer))
             {
-                var reader = producer.PipeReader;
-                var stream = producer.Stream;
-
-                var observed = Http2OutputProducer.State.None;
-
-                // We don't need to check the result because it's either
-                // - true because we have a result
-                // - false because we're flushing headers
-                reader.TryRead(out var readResult);
-
-                var buffer = readResult.Buffer;
-
-                if (producer.WriteHeaders)
+                try
                 {
-                    observed |= Http2OutputProducer.State.FlushHeaders;
-                }
+                    var reader = producer.PipeReader;
+                    var stream = producer.Stream;
 
-                if (readResult.IsCanceled)
-                {
-                    observed |= Http2OutputProducer.State.Canceled;
-                }
+                    var observed = Http2OutputProducer.State.None;
 
-                if (readResult.IsCompleted)
-                {
-                    observed |= Http2OutputProducer.State.Completed;
-                }
+                    // We don't need to check the result because it's either
+                    // - true because we have a result
+                    // - false because we're flushing headers
+                    reader.TryRead(out var readResult);
 
-                // Check the stream window
-                var (actual, remainingStream) = producer.ConsumeWindow(buffer.Length);
+                    var buffer = readResult.Buffer;
 
-                // Now check the connection window
-                (actual, var remainingConnection) = ConsumeWindow(actual);
-
-                // Write what we can
-                if (actual < buffer.Length)
-                {
-                    buffer = buffer.Slice(0, actual);
-                }
-
-                var (hasMoreData, reschedule) = producer.Dequeue(buffer.Length, observed);
-
-                FlushResult flushResult = default;
-
-                if (readResult.IsCanceled)
-                {
-                    // Response body is aborted, complete reader for this output producer.
                     if (producer.WriteHeaders)
                     {
-                        // write headers
-                        WriteResponseHeaders(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
+                        observed |= Http2OutputProducer.State.FlushHeaders;
                     }
-                }
-                else if (readResult.IsCompleted && stream.ResponseTrailers is { Count: > 0 } && !hasMoreData)
-                {
-                    // Output is ending and there are trailers to write
-                    // Write any remaining content then write trailers and there's no
-                    // flow control back pressure being applied (hasMoreData)
 
-                    stream.ResponseTrailers.SetReadOnly();
-                    stream.DecrementActiveClientStreamCount();
-
-                    // It is faster to write data and trailers together. Locking once reduces lock contention.
-                    flushResult = await WriteDataAndTrailersAsync(stream, buffer, producer.WriteHeaders, stream.ResponseTrailers);
-                }
-                else if (readResult.IsCompleted && producer.StreamEnded)
-                {
-                    if (buffer.Length != 0)
+                    if (readResult.IsCanceled)
                     {
-                        _log.LogCritical("{StreamId} observed an unexpected state where the streams output ended with data still remaining in the pipe.", stream.StreamId);
+                        observed |= Http2OutputProducer.State.Canceled;
+                    }
+
+                    if (readResult.IsCompleted)
+                    {
+                        observed |= Http2OutputProducer.State.Completed;
+                    }
+
+                    // Check the stream window
+                    var (actual, remainingStream) = producer.ConsumeStreamWindow(buffer.Length);
+
+                    // Now check the connection window
+                    (actual, var remainingConnection) = ConsumeConnectionWindow(actual);
+
+                    // Write what we can
+                    if (actual < buffer.Length)
+                    {
+                        buffer = buffer.Slice(0, actual);
+                    }
+
+                    var (hasMoreData, reschedule) = producer.ObserveDataAndState(buffer.Length, observed);
+
+                    FlushResult flushResult = default;
+
+                    if (readResult.IsCanceled)
+                    {
+                        // Response body is aborted, complete reader for this output producer.
+                        if (producer.WriteHeaders)
+                        {
+                            // write headers
+                            WriteResponseHeaders(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
+                        }
+                    }
+                    else if (readResult.IsCompleted && stream.ResponseTrailers is { Count: > 0 } && !hasMoreData)
+                    {
+                        // Output is ending and there are trailers to write
+                        // Write any remaining content then write trailers and there's no
+                        // flow control back pressure being applied (hasMoreData)
+
+                        stream.ResponseTrailers.SetReadOnly();
+                        stream.DecrementActiveClientStreamCount();
+
+                        // It is faster to write data and trailers together. Locking once reduces lock contention.
+                        flushResult = await WriteDataAndTrailersAsync(stream, buffer, producer.WriteHeaders, stream.ResponseTrailers);
+                    }
+                    else if (readResult.IsCompleted && producer.StreamEnded)
+                    {
+                        if (buffer.Length != 0)
+                        {
+                            _log.LogCritical("{StreamId} observed an unexpected state where the streams output ended with data still remaining in the pipe.", stream.StreamId);
+                        }
+                        else
+                        {
+                            stream.DecrementActiveClientStreamCount();
+
+                            // Headers have already been written and there is no other content to write
+                            flushResult = await FlushAsync(stream, producer.WriteHeaders, outputAborter: null, cancellationToken: default);
+                        }
                     }
                     else
                     {
-                        stream.DecrementActiveClientStreamCount();
+                        var endStream = readResult.IsCompleted && !hasMoreData;
 
-                        // Headers have already been written and there is no other content to write
-                        flushResult = await FlushAsync(stream, producer.WriteHeaders, outputAborter: null, cancellationToken: default);
-                    }
-                }
-                else
-                {
-                    var endStream = readResult.IsCompleted && !hasMoreData;
-
-                    if (endStream)
-                    {
-                        stream.DecrementActiveClientStreamCount();
-                    }
-
-                    flushResult = await WriteDataAsync(stream, buffer, buffer.Length, endStream, producer.WriteHeaders);
-                }
-
-                if (producer.IsTimingWrite)
-                {
-                    _timeoutControl.StopTimingWrite();
-                }
-
-                producer.WriteHeaders = false;
-
-                reader.AdvanceTo(buffer.End);
-
-                if ((readResult.IsCompleted && !hasMoreData) || readResult.IsCanceled)
-                {
-                    await reader.CompleteAsync();
-
-                    producer.CompleteResponse();
-                }
-                // We're not going to schedule this again if there's no remaining window.
-                // When the window update is sent, the producer will be re-queued if needed.
-                else if (hasMoreData)
-                {
-                    // We have no more connection window, put this producer in a queue waiting for it to
-                    // a window update to resume the connection.
-                    if (remainingConnection == 0)
-                    {
-                        // Mark the output as waiting for a window upate to resume writing (there's still data)
-                        producer.MarkWaitingForWindowUpdates(true);
-
-                        lock (_windowUpdateLock)
+                        if (endStream)
                         {
-                            _waitingForMoreWindow.Enqueue(producer);
+                            stream.DecrementActiveClientStreamCount();
                         }
 
-                        // Include waiting for window updates in timing writes
-                        if (_minResponseDataRate != null)
+                        flushResult = await WriteDataAsync(stream, buffer, buffer.Length, endStream, producer.WriteHeaders);
+                    }
+
+                    if (producer.IsTimingWrite)
+                    {
+                        _timeoutControl.StopTimingWrite();
+                    }
+
+                    producer.WriteHeaders = false;
+
+                    reader.AdvanceTo(buffer.End);
+
+                    if ((readResult.IsCompleted && !hasMoreData) || readResult.IsCanceled)
+                    {
+                        await reader.CompleteAsync();
+
+                        producer.CompleteResponse();
+                    }
+                    // We're not going to schedule this again if there's no remaining window.
+                    // When the window update is sent, the producer will be re-queued if needed.
+                    else if (hasMoreData)
+                    {
+                        // We have no more connection window, put this producer in a queue waiting for it to
+                        // a window update to resume the connection.
+                        if (remainingConnection == 0)
                         {
-                            producer.IsTimingWrite = true;
-                            _timeoutControl.StartTimingWrite();
+                            // Mark the output as waiting for a window upate to resume writing (there's still data)
+                            producer.MarkWaitingForWindowUpdates(true);
+
+                            lock (_windowUpdateLock)
+                            {
+                                _waitingForMoreWindow.Enqueue(producer);
+                            }
+
+                            // Include waiting for window updates in timing writes
+                            if (_minResponseDataRate != null)
+                            {
+                                producer.IsTimingWrite = true;
+                                _timeoutControl.StartTimingWrite();
+                            }
+                        }
+                        else if (remainingStream > 0)
+                        {
+                            // Move this stream to the back of the queue so we're being fair to the other streams that have data
+                            producer.Schedule();
+                        }
+                        else
+                        {
+                            // Mark the output as waiting for a window upate to resume writing (there's still data)
+                            producer.MarkWaitingForWindowUpdates(true);
+
+                            // Include waiting for window updates in timing writes
+                            if (_minResponseDataRate != null)
+                            {
+                                producer.IsTimingWrite = true;
+                                _timeoutControl.StartTimingWrite();
+                            }
                         }
                     }
-                    else if (remainingStream > 0)
+                    else if (reschedule)
                     {
-                        // Move this stream to the back of the queue so we're being fair to the other streams that have data
                         producer.Schedule();
                     }
-                    else
-                    {
-                        // Mark the output as waiting for a window upate to resume writing (there's still data)
-                        producer.MarkWaitingForWindowUpdates(true);
-
-                        // Include waiting for window updates in timing writes
-                        if (_minResponseDataRate != null)
-                        {
-                            producer.IsTimingWrite = true;
-                            _timeoutControl.StartTimingWrite();
-                        }
-                    }
                 }
-                else if (reschedule)
+                catch (Exception ex)
                 {
-                    producer.Schedule();
+                    _log.LogCritical(ex, "The event loop in connection {ConnectionId} failed unexpectedly", _connectionId);
                 }
-            }
-            catch (Exception ex)
-            {
-                _log.LogCritical(ex, "The event loop in connection {ConnectionId} failed unexpectedly", _connectionId);
             }
         }
 
@@ -842,14 +845,13 @@ internal class Http2FrameWriter
         return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
     }
 
-    private (long, long) ConsumeWindow(long bytes)
+    private (long, long) ConsumeConnectionWindow(long bytes)
     {
         lock (_windowUpdateLock)
         {
             var actual = Math.Min(bytes, _connectionWindow);
-            var remaining = _connectionWindow -= actual;
-
-            return (actual, remaining);
+            _connectionWindow -= actual;
+            return (actual, _connectionWindow);
         }
     }
 

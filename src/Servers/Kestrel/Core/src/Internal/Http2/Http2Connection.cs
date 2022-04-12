@@ -117,7 +117,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             context.Transport.Output,
             context.ConnectionContext,
             this,
-            (int)MaxTrackedStreams,
+            (int)Math.Min(MaxTrackedStreams, int.MaxValue),
             context.TimeoutControl,
             httpLimits.MinResponseDataRate,
             context.ConnectionId,
