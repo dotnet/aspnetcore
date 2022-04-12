@@ -16,5 +16,6 @@
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\Microsoft.AspNetCore.Grpc.Swagger.Tests\Microsoft.AspNetCore.Grpc.Swagger.Tests.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\IntegrationTestsWebsite\IntegrationTestsWebsite.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\Sandbox\Sandbox.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Http\samples\MinimalSample\MinimalSample.csproj" />
   </ItemGroup>
 </Project>

@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Projects must be restored after App.Ref and App.Runtime layouts are complete. -->
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
+
+    <!-- Required because Swashbuckle.AspNetCore uses shared runtime -->
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +18,7 @@
     <!-- Mvc.Core is referenced only for its attributes -->
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Swashbuckle.AspNetCore" />
   </ItemGroup>
 
 </Project>
