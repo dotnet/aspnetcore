@@ -228,9 +228,6 @@ internal class Http2FrameWriter
                         // a window update to resume the connection.
                         if (remainingConnection == 0)
                         {
-                            // Mark the output as waiting for a window upate to resume writing (there's still data)
-                            producer.MarkWaitingForWindowUpdates(true);
-
                             lock (_windowUpdateLock)
                             {
                                 _waitingForMoreWindow.Enqueue(producer);
@@ -250,9 +247,6 @@ internal class Http2FrameWriter
                         }
                         else
                         {
-                            // Mark the output as waiting for a window upate to resume writing (there's still data)
-                            producer.MarkWaitingForWindowUpdates(true);
-
                             // Include waiting for window updates in timing writes
                             if (_minResponseDataRate != null)
                             {
@@ -887,9 +881,6 @@ internal class Http2FrameWriter
             {
                 if (!producer.StreamCompleted)
                 {
-                    // We're no longer waiting for the update
-                    producer.MarkWaitingForWindowUpdates(false);
-
                     producer.Schedule();
                 }
             }

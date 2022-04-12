@@ -42,7 +42,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
     // For changes scheduling changes that don't affect the number of bytes written to the pipe, we need another state
     private State _observationState;
-    private bool _waitingForWindowUpdates;
     private bool _completedResponse;
     private bool _requestProcessingComplete;
 
@@ -86,7 +85,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     }
 
     // Useful for debugging the scheduling state in the debugger
-    internal (int, long, State, long, bool) SchedulingState => (Stream.StreamId, _unconsumedBytes, _observationState, _streamWindow, _waitingForWindowUpdates);
+    internal (int, long, State, long) SchedulingState => (Stream.StreamId, _unconsumedBytes, _observationState, _streamWindow);
 
     // Added bytes to the queue.
     // Returns a bool that represents whether we should schedule this producer to write
@@ -165,7 +164,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         _streamWindow = initialWindowSize;
         _unconsumedBytes = 0;
         _observationState = State.None;
-        _waitingForWindowUpdates = false;
         _completedResponse = false;
         _requestProcessingComplete = false;
         WriteHeaders = false;
@@ -262,14 +260,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         }
     }
 
-    public void MarkWaitingForWindowUpdates(bool waitingForUpdates)
-    {
-        lock (_dataWriterLock)
-        {
-            _waitingForWindowUpdates = waitingForUpdates;
-        }
-    }
-
     public void Schedule()
     {
         lock (_dataWriterLock)
@@ -280,7 +270,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
                 return;
             }
 
-            _waitingForWindowUpdates = false;
             _isScheduled = true;
         }
 
