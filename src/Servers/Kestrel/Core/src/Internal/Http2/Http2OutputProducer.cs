@@ -143,19 +143,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         }
     }
 
-    // Adds more bytes to the stream's window
-    // Returns a bool that represents whether we should schedule this producer to write
-    // the remaining bytes.
-    private bool UpdateStreamWindow(long bytes)
-    {
-        lock (_dataWriterLock)
-        {
-            var wasDepleted = _streamWindow <= 0;
-            _streamWindow += bytes;
-            return wasDepleted && _streamWindow > 0 && _unconsumedBytes > 0;
-        }
-    }
-
     public void StreamReset(uint initialWindowSize)
     {
         // Response should have been completed.
@@ -604,6 +591,8 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
     public bool TryUpdateStreamWindow(int bytes)
     {
+        var schedule = false;
+
         lock (_dataWriterLock)
         {
             var maxUpdate = Http2PeerSettings.MaxWindowSize - _streamWindow;
@@ -612,14 +601,26 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
             {
                 return false;
             }
+
+            schedule = UpdateStreamWindow(bytes);
         }
 
-        if (UpdateStreamWindow(bytes))
+        if (schedule)
         {
             Schedule();
         }
 
         return true;
+
+        // Adds more bytes to the stream's window
+        // Returns a bool that represents whether we should schedule this producer to write
+        // the remaining bytes.
+        bool UpdateStreamWindow(long bytes)
+        {
+            var wasDepleted = _streamWindow <= 0;
+            _streamWindow += bytes;
+            return wasDepleted && _streamWindow > 0 && _unconsumedBytes > 0;
+        }
     }
 
     [StackTraceHidden]

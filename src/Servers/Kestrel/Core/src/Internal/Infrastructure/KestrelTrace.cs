@@ -298,6 +298,38 @@ internal sealed partial class KestrelTrace : ILogger
         Http2MaxConcurrentStreamsReached(_http2Logger, connectionId);
     }
 
+    [LoggerMessage(60, LogLevel.Critical, @"Connection id ""{ConnectionId}"" exceeded the output operations maximum queue size.", EventName = "Http2QueueOperationsExceeded")]
+    private static partial void Http2QueueOperationsExceeded(ILogger logger, string connectionId, ConnectionAbortedException ex);
+
+    public void Http2QueueOperationsExceeded(string connectionId, ConnectionAbortedException ex)
+    {
+        Http2QueueOperationsExceeded(_http2Logger, connectionId, ex);
+    }
+
+    [LoggerMessage(61, LogLevel.Critical, @"Stream {StreamId} observed an unexpected state where the streams output ended with data still remaining in the pipe.", EventName = "Http2UnexpectedDataRemaining")]
+    private static partial void Http2UnexpectedDataRemaining(ILogger logger, int streamId);
+
+    public void Http2UnexpectedDataRemaining(int streamId)
+    {
+        Http2UnexpectedDataRemaining(_http2Logger, streamId);
+    }
+
+    [LoggerMessage(62, LogLevel.Debug, @"The connection queue processing loop for {ConnectionId} completed.", EventName = "Http2ConnectionQueueProcessingCompleted")]
+    private static partial void Http2ConnectionQueueProcessingCompleted(ILogger logger, string connectionId);
+
+    public void Http2ConnectionQueueProcessingCompleted(string connectionId)
+    {
+        Http2ConnectionQueueProcessingCompleted(_http2Logger, connectionId);
+    }
+
+    [LoggerMessage(63, LogLevel.Critical, @"The event loop in connection {ConnectionId} failed unexpectedly.", EventName = "Http2UnexpectedConnectionQueueError")]
+    private static partial void Http2UnexpectedConnectionQueueError(ILogger logger, string connectionId, Exception ex);
+
+    public void Http2UnexpectedConnectionQueueError(string connectionId, Exception ex)
+    {
+        Http2UnexpectedConnectionQueueError(_http2Logger, connectionId, ex);
+    }
+
     [LoggerMessage(41, LogLevel.Warning, "One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'.", EventName = "InvalidResponseHeaderRemoved")]
     private static partial void InvalidResponseHeaderRemoved(ILogger logger);
 

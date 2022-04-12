@@ -102,7 +102,7 @@ internal class Http2FrameWriter
         {
             // It should not be possible to exceed the bound of the channel.
             var ex = new ConnectionAbortedException("HTTP/2 connection exceeded the output operations maximum queue size.");
-            _log.LogCritical(ex, "HTTP/2 connection exceeded the output operations maximum queue size on connection {ConnectionId}.", _connectionId);
+            _log.Http2QueueOperationsExceeded(_connectionId, ex);
             _http2Connection.Abort(ex);
         }
     }
@@ -185,7 +185,7 @@ internal class Http2FrameWriter
                     {
                         if (buffer.Length != 0)
                         {
-                            _log.LogCritical("{StreamId} observed an unexpected state where the streams output ended with data still remaining in the pipe.", stream.StreamId);
+                            _log.Http2UnexpectedDataRemaining(stream.StreamId);
                         }
                         else
                         {
@@ -262,12 +262,12 @@ internal class Http2FrameWriter
                 }
                 catch (Exception ex)
                 {
-                    _log.LogCritical(ex, "The event loop in connection {ConnectionId} failed unexpectedly", _connectionId);
+                    _log.Http2UnexpectedConnectionQueueError(_connectionId, ex);
                 }
             }
         }
 
-        _log.LogDebug("The connection processing loop for {ConnectionId} ended gracefully", _connectionId);
+        _log.Http2ConnectionQueueProcessingCompleted(_connectionId);
     }
 
     public void UpdateMaxHeaderTableSize(uint maxHeaderTableSize)
