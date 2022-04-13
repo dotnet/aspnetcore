@@ -39,6 +39,7 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
     /// </summary>
     public int StatusCode => StatusCodes.Status400BadRequest;
 
+    /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
