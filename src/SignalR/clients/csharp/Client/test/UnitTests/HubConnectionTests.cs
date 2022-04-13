@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
@@ -217,6 +218,104 @@ public partial class HubConnectionTests : VerifiableLoggedTest
 
             // Assert that SendAsync didn't send a message
             Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
+        }
+    }
+
+    internal class PipeReaderWrapper : PipeReader
+    {
+        private readonly PipeReader _originalPipeReader;
+        private TaskCompletionSource _waitToRead;
+        private readonly object _lock = new object();
+
+        public PipeReaderWrapper(PipeReader pipeReader)
+        {
+            _originalPipeReader = pipeReader;
+            _waitToRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        public override void AdvanceTo(SequencePosition consumed) =>
+            _originalPipeReader.AdvanceTo(consumed);
+
+        public override void AdvanceTo(SequencePosition consumed, SequencePosition examined) =>
+            _originalPipeReader.AdvanceTo(consumed, examined);
+
+        public override void CancelPendingRead() =>
+            _originalPipeReader.CancelPendingRead();
+
+        public override void Complete(Exception exception = null) =>
+            _originalPipeReader.Complete(exception);
+
+        public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            await _waitToRead.Task;
+
+            try
+            {
+                return await _originalPipeReader.ReadAsync(cancellationToken);
+            }
+            finally
+            {
+                lock (_lock)
+                {
+                    _waitToRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                }
+            }
+        }
+
+        public override bool TryRead(out ReadResult result) =>
+            _originalPipeReader.TryRead(out result);
+
+        public void UnblockRead()
+        {
+            lock (_lock)
+            {
+                _waitToRead.SetResult();
+            }
+        }
+    }
+
+    internal class CustomDuplex : IDuplexPipe
+    {
+        private readonly IDuplexPipe _originalDuplexPipe;
+        public readonly PipeReaderWrapper WrappedPipeReader;
+
+        public CustomDuplex(IDuplexPipe duplexPipe)
+        {
+            _originalDuplexPipe = duplexPipe;
+            WrappedPipeReader = new PipeReaderWrapper(_originalDuplexPipe.Input);
+        }
+
+        public PipeReader Input => WrappedPipeReader;
+
+        public PipeWriter Output => _originalDuplexPipe.Output;
+    }
+
+    [Fact]
+    public async Task SendAsyncCanceledWhenTokenCanceledDuringSend()
+    {
+        using (StartVerifiableLog())
+        {
+            // Use pause threshold to block FlushAsync when writing 100+ bytes
+            var connection = new TestConnection(pipeOptions: new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, pauseWriterThreshold: 100, useSynchronizationContext: false));
+            var wrappedTransport = new CustomDuplex(connection.Transport);
+            connection.Transport = wrappedTransport;
+            var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+
+            // Unblock handshake
+            wrappedTransport.WrappedPipeReader.UnblockRead();
+            await hubConnection.StartAsync().DefaultTimeout();
+
+            var cts = new CancellationTokenSource();
+            // Send 100+ bytes to trigger pauseWriterThreshold
+            var sendTask = hubConnection.SendAsync("testMethod", new byte[100], cts.Token);
+
+            cts.Cancel();
+            // unblock Read triggered by SendAsync, but after cancellation is requested so we test the token is passed to Pipe.FlushAsync in SendAsync
+            wrappedTransport.WrappedPipeReader.UnblockRead();
+
+            await Assert.ThrowsAsync<OperationCanceledException>(() => sendTask.DefaultTimeout());
+
+            await hubConnection.StopAsync().DefaultTimeout();
         }
     }
 
