@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 internal sealed partial class RateLimitingMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly RequestDelegate _onRejected;
+    private readonly Func<HttpContext, RateLimitLease, Task> _onRejected;
     private readonly ILogger _logger;
     private readonly PartitionedRateLimiter<HttpContext> _limiter;
 
@@ -55,7 +55,7 @@ internal sealed partial class RateLimitingMiddleware
         {
             RateLimiterLog.RequestRejectedLimitsExceeded(_logger);
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-            await _onRejected(context);
+            await _onRejected(context, lease);
         }
     }
 

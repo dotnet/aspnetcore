@@ -60,7 +60,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
         bool onRejectedInvoked = false;
         var options = CreateOptionsAccessor();
         options.Value.Limiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
-        options.Value.OnRejected = httpContext =>
+        options.Value.OnRejected = (httpContext, lease) =>
         {
             onRejectedInvoked = true;
             return Task.CompletedTask;
