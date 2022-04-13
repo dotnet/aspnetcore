@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
@@ -264,7 +265,11 @@ public class RedisProtocolTests
     {
         var testData = _completionMessageTestData[testName];
 
-        var encoded = RedisProtocol.WriteCompletionMessage(testData.Decoded.CompletionMessage, testData.Decoded.ProtocolName);
+        var writer = MemoryBufferWriter.Get();
+        writer.Write(testData.Decoded.CompletionMessage.ToArray());
+
+        var encoded = RedisProtocol.WriteCompletionMessage(writer, testData.Decoded.ProtocolName);
+        MemoryBufferWriter.Return(writer);
 
         Assert.Equal(testData.Encoded, encoded);
     }

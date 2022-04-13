@@ -692,18 +692,18 @@ export class HubConnection {
         const methodsCopy = methods.slice();
 
         // Server expects a response
-        const expects_response = invocationMessage.invocationId ? true : false;
+        const expectsResponse = invocationMessage.invocationId ? true : false;
         // We preserve the last result or exception but still call all handlers
         let res;
         let exception;
-        let completion_message;
+        let completionMessage;
         for (const m of methodsCopy) {
             try {
-                const prev_res = res;
+                const prevRes = res;
                 res = await m.apply(this, invocationMessage.arguments);
-                if (expects_response && res && prev_res) {
+                if (expectsResponse && res && prevRes) {
                     this._logger.log(LogLevel.Error, `Multiple results provided for '${methodName}'. Sending error to server.`);
-                    completion_message = this._createCompletionMessage(invocationMessage.invocationId!, `Client provided multiple results.`, null);
+                    completionMessage = this._createCompletionMessage(invocationMessage.invocationId!, `Client provided multiple results.`, null);
                 }
                 // Ignore exception if we got a result after, the exception will be logged
                 exception = undefined;
@@ -712,20 +712,20 @@ export class HubConnection {
                 this._logger.log(LogLevel.Error, `A callback for the method '${methodName}' threw error '${e}'.`);
             }
         }
-        if (completion_message) {
-            await this._sendWithProtocol(completion_message);
-        } else if (expects_response) {
+        if (completionMessage) {
+            await this._sendWithProtocol(completionMessage);
+        } else if (expectsResponse) {
             // If there is an exception that means either no result was given or a handler after a result threw
             if (exception) {
-                completion_message = this._createCompletionMessage(invocationMessage.invocationId!, `${exception}`, null);
+                completionMessage = this._createCompletionMessage(invocationMessage.invocationId!, `${exception}`, null);
             } else if (res !== undefined) {
-                completion_message = this._createCompletionMessage(invocationMessage.invocationId!, null, res);
+                completionMessage = this._createCompletionMessage(invocationMessage.invocationId!, null, res);
             } else {
                 this._logger.log(LogLevel.Warning, `No result given for '${methodName}' method and invocation ID '${invocationMessage.invocationId}'.`);
                 // Client didn't provide a result or throw from a handler, server expects a response so we send an error
-                completion_message = this._createCompletionMessage(invocationMessage.invocationId!, "Client didn't provide a result.", null);
+                completionMessage = this._createCompletionMessage(invocationMessage.invocationId!, "Client didn't provide a result.", null);
             }
-            await this._sendWithProtocol(completion_message);
+            await this._sendWithProtocol(completionMessage);
         } else {
             if (res) {
                 this._logger.log(LogLevel.Error, `Result given for '${methodName}' method but server is not expecting a result.`);

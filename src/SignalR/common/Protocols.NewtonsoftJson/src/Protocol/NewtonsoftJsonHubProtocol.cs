@@ -218,22 +218,20 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                         if (returnType == typeof(RawResult))
                                         {
                                             var token = JToken.Load(reader);
-                                            using var strm = new MemoryStream();
-                                            using var writer = new StreamWriter(strm);
-                                            using var jsonTextWriter = new JsonTextWriter(writer);
-                                            token.WriteTo(jsonTextWriter);
-                                            jsonTextWriter.Flush();
-                                            writer.Flush();
-                                            Memory<byte> buf;
-                                            if (strm.TryGetBuffer(out var segment))
+                                            var strm = MemoryBufferWriter.Get();
+                                            try
                                             {
-                                                buf = segment.Array.AsMemory(segment.Offset, segment.Count);
+                                                using var writer = new StreamWriter(strm);
+                                                using var jsonTextWriter = new JsonTextWriter(writer);
+                                                token.WriteTo(jsonTextWriter);
+                                                jsonTextWriter.Flush();
+                                                writer.Flush();
+                                                result = new RawResult(new ReadOnlySequence<byte>(strm.ToArray()));
                                             }
-                                            else
+                                            finally
                                             {
-                                                buf = strm.ToArray();
+                                                MemoryBufferWriter.Return(strm);
                                             }
-                                            result = new RawResult(new ReadOnlySequence<byte>(buf));
                                         }
                                         else
                                         {

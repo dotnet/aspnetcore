@@ -557,7 +557,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         {
             var invocation = RedisProtocol.ReadInvocation((byte[])channelMessage.Message);
 
-            // This is a Client result we need to setup state for the completion and send the message to the client
+            // This is a Client result we need to setup state for the completion and forward the message to the client
             if (!string.IsNullOrEmpty(invocation.InvocationId))
             {
                 CancellationTokenRegistration? tokenRegistration = null;
@@ -566,22 +566,25 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                 {
                     var protocolName = connection.Protocol.Name;
                     tokenRegistration?.Dispose();
-                    // TODO: acquiring this and then calling RedisProtocol.WriteCompletionMessage will allocate a new MemoryBufferWriter, we can avoid this
+
                     var memoryBufferWriter = AspNetCore.Internal.MemoryBufferWriter.Get();
+                    byte[] message;
                     try
                     {
-                        connection.Protocol.WriteMessage(completionMessage, memoryBufferWriter);
-                        // TODO: we can avoid this ToArray call
-                        var message = RedisProtocol.WriteCompletionMessage(new ReadOnlySequence<byte>(memoryBufferWriter.ToArray()), protocolName);
+                        try
+                        {
+                            connection.Protocol.WriteMessage(completionMessage, memoryBufferWriter);
+                            message = RedisProtocol.WriteCompletionMessage(memoryBufferWriter, protocolName);
+                        }
+                        finally
+                        {
+                            memoryBufferWriter.Dispose();
+                        }
                         await PublishAsync(invocation.ReturnChannel!, message);
                     }
                     catch (Exception ex)
                     {
                         RedisLog.ErrorForwardingResult(_logger, completionMessage.InvocationId, ex);
-                    }
-                    finally
-                    {
-                        memoryBufferWriter.Dispose();
                     }
                 }));
 

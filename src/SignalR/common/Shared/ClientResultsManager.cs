@@ -69,7 +69,7 @@ internal class ClientResultsManager : IInvocationBinder
 
     public (Type Type, string ConnectionId, object Tcs, Action<object, CompletionMessage> Completion)? RemoveInvocation(string invocationId)
     {
-        _pendingInvocations.Remove(invocationId, out var item);
+        _pendingInvocations.TryRemove(invocationId, out var item);
         return item;
     }
 

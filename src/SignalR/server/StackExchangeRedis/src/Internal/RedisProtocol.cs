@@ -143,30 +143,28 @@ internal class RedisProtocol
         }
     }
 
-    public static byte[] WriteCompletionMessage(ReadOnlySequence<byte> completionMessage, string protocolName)
+    public static byte[] WriteCompletionMessage(MemoryBufferWriter writer, string protocolName)
     {
         // Written as a MessagePack 'arr' containing at least these items:
         // * A 'str': The name of the HubProtocol used for the serialization of the Completion Message
         // * [A serialized Completion Message which is a 'bin']
         // Any additional items are discarded.
 
-        var memoryBufferWriter = MemoryBufferWriter.Get();
-        try
+        var completionMessage = writer.DetachAndReset();
+        var msgPackWriter = new MessagePackWriter(writer);
+
+        msgPackWriter.WriteArrayHeader(2);
+        msgPackWriter.Write(protocolName);
+
+        msgPackWriter.WriteBinHeader(completionMessage.ByteLength);
+        foreach (var segment in completionMessage.Segments)
         {
-            var writer = new MessagePackWriter(memoryBufferWriter);
-
-            writer.WriteArrayHeader(2);
-            writer.Write(protocolName);
-            writer.Write(completionMessage);
-
-            writer.Flush();
-
-            return memoryBufferWriter.ToArray();
+            msgPackWriter.WriteRaw(segment.Span);
         }
-        finally
-        {
-            MemoryBufferWriter.Return(memoryBufferWriter);
-        }
+        completionMessage.Dispose();
+
+        msgPackWriter.Flush();
+        return writer.ToArray();
     }
 
     public static RedisInvocation ReadInvocation(ReadOnlyMemory<byte> data)
