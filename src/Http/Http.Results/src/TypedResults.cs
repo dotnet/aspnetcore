@@ -267,7 +267,7 @@ public static class TypedResults
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static FileStreamHttpResult File(
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-            Stream fileStream,
+        Stream fileStream,
         string? contentType = null,
         string? fileDownloadName = null,
         DateTimeOffset? lastModified = null,
@@ -784,15 +784,8 @@ public static class TypedResults
     /// </summary>
     /// <param name="uri">The URI with the location at which the status of requested content can be monitored.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static Accepted Accepted(string uri)
-    {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        return new(uri);
-    }
+    public static Accepted Accepted(string? uri)
+        => new(uri);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
@@ -801,15 +794,8 @@ public static class TypedResults
     /// <param name="uri">The URI with the location at which the status of requested content can be monitored.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static Accepted<TValue> Accepted<TValue>(string uri, TValue? value)
-    {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
-
-        return new(uri, value);
-    }
+    public static Accepted<TValue> Accepted<TValue>(string? uri, TValue? value)
+        => new(uri, value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
@@ -866,4 +852,9 @@ public static class TypedResults
     public static AcceptedAtRoute<TValue> AcceptedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => new(routeName, routeValues, value);
+
+    /// <summary>
+    /// Produces an empty result response, that when executed will do nothing.
+    /// </summary>
+    public static EmptyHttpResult Empty { get; } = EmptyHttpResult.Instance;
 }
