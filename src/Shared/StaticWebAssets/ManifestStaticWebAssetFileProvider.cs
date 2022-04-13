@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.StaticWebAssets;
 
-internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
+internal sealed partial class ManifestStaticWebAssetFileProvider : IFileProvider
 {
     private static readonly StringComparison _fsComparison = OperatingSystem.IsWindows() ?
         StringComparison.OrdinalIgnoreCase :
@@ -322,8 +322,21 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
 
         internal static StaticWebAssetManifest Parse(Stream manifest)
         {
-            return JsonSerializer.Deserialize<StaticWebAssetManifest>(manifest)!;
+            return JsonSerializer.Deserialize(
+                manifest,
+                SourceGenerationContext.DefaultWithConverter.StaticWebAssetManifest)!;
         }
+    }
+
+    [JsonSourceGenerationOptions]
+    [JsonSerializable(typeof(StaticWebAssetManifest))]
+    [JsonSerializable(typeof(IDictionary<string, StaticWebAssetNode>))]
+    internal partial class SourceGenerationContext : JsonSerializerContext
+    {
+        public static readonly SourceGenerationContext DefaultWithConverter = new SourceGenerationContext(new JsonSerializerOptions
+        {
+            Converters = { new OSBasedCaseConverter() }
+        });
     }
 
     internal sealed class StaticWebAssetNode
@@ -366,7 +379,10 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
     {
         public override Dictionary<string, StaticWebAssetNode> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var parsed = JsonSerializer.Deserialize<IDictionary<string, StaticWebAssetNode>>(ref reader, options)!;
+            // Need to recursively deserialize `Dictionary<string, StaticWebAssetNode>` but can't deserialize
+            // that type directly because this converter will call into itself and stackoverflow.
+            // Workaround is to deserialize to IDictionary, and then perform custom convert logic on the result.
+            var parsed = JsonSerializer.Deserialize(ref reader, SourceGenerationContext.DefaultWithConverter.IDictionaryStringStaticWebAssetNode)!;
             var result = new Dictionary<string, StaticWebAssetNode>(StaticWebAssetManifest.PathComparer);
             MergeChildren(parsed, result);
             return result;
@@ -422,7 +438,7 @@ internal sealed class ManifestStaticWebAssetFileProvider : IFileProvider
 
         public override void Write(Utf8JsonWriter writer, Dictionary<string, StaticWebAssetNode> value, JsonSerializerOptions options)
         {
-            JsonSerializer.Serialize(writer, value, options);
+            throw new NotSupportedException();
         }
     }
 }

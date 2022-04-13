@@ -256,11 +256,16 @@ public static class RequestDelegateRouteBuilderExtensions
         string template,
         RequestDelegate handler)
     {
+        var constraints = new RouteValueDictionary
+        {
+            ["httpMethod"] = new HttpMethodRouteConstraint(verb),
+        };
+
         var route = new Route(
             new RouteHandler(handler),
             template,
             defaults: null,
-            constraints: new RouteValueDictionary(new { httpMethod = new HttpMethodRouteConstraint(verb) })!,
+            constraints: constraints!,
             dataTokens: null,
             inlineConstraintResolver: GetConstraintResolver(builder));
 

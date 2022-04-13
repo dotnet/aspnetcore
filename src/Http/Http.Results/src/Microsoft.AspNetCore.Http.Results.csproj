@@ -28,4 +28,16 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Results.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- This is the T4 template service and is added by VS anytime you modify a T4 template. Required for .tt files. -->
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ResultsCache.StatusCodes.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ResultsCache.StatusCodes.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
 </Project>

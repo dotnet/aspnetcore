@@ -46,7 +46,7 @@ public class StaticWebAssetsLoader
     {
         try
         {
-            var candidate = configuration.GetValue<string>(WebHostDefaults.StaticWebAssetsKey) ?? ResolveRelativeToAssembly(environment);
+            var candidate = configuration[WebHostDefaults.StaticWebAssetsKey] ?? ResolveRelativeToAssembly(environment);
             if (candidate != null && File.Exists(candidate))
             {
                 return File.OpenRead(candidate);

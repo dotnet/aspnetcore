@@ -1,7 +1,0 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license.
-
-#define RC_VERSION_INTERNAL_NAME        "Common.UnitTests\0"
-#define RC_VERSION_ORIGINAL_FILE_NAME   "Common.UnitTests.dll\0"
-#define RC_VERSION_FILE_DESCRIPTION     "Common.UnitTests0"
-#include <bldver.rc>

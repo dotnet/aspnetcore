@@ -152,7 +152,11 @@ public class TestServer : IServer
     /// </summary>
     public HttpClient CreateClient()
     {
-        return new HttpClient(CreateHandler()) { BaseAddress = BaseAddress };
+        return new HttpClient(CreateHandler())
+        {
+            BaseAddress = BaseAddress,
+            Timeout = TimeSpan.FromSeconds(200),
+        };
     }
 
     /// <summary>

@@ -63,13 +63,4 @@
     </PackageReference>
     <Reference Include="xunit.assert" />
   </ItemGroup>
-
-  <!-- Repeat Build target for win-x64 to allow later Publish w/ NoBuild=true. -->
-  <Target Name="BuildX64"
-      BeforeTargets="Build"
-      Condition=" '$(RuntimeIdentifier)' != 'win-x64' AND '$(TargetArchitecture)' != 'arm' ">
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-        Properties="RuntimeIdentifier=win-x64;ReferenceTestTasks=false"
-        Targets="Build" />
-  </Target>
 </Project>
