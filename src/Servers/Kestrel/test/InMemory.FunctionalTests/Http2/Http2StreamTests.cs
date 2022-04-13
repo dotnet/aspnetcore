@@ -2562,7 +2562,7 @@ public class Http2StreamTests : Http2TestBase
             context.Response.BodyWriter.Advance(windowSize + 1);
 
             context.Response.AppendTrailer("CustomName", "Custom Value");
-        }).DefaultTimeout();
+        });
 
         await StartStreamAsync(1, headers, endStream: true).DefaultTimeout();
 

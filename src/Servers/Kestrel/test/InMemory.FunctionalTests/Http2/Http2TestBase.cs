@@ -10,6 +10,7 @@ using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
@@ -495,7 +496,10 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _connectionTask = CompletePipeOnTaskCompletion();
     }
 
-    protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true)
+    protected ConfiguredTaskAwaitable InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true) =>
+        InitializeConnectionAsyncCore(application, expectedSettingsCount, expectedWindowUpdate).ConfigureAwait(false);
+
+    protected async Task InitializeConnectionAsyncCore(RequestDelegate application, int expectedSettingsCount, bool expectedWindowUpdate)
     {
         InitializeConnectionWithoutPreface(application);
 

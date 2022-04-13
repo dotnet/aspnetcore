@@ -1879,7 +1879,7 @@ public class Http2ConnectionTests : Http2TestBase
             {
                 requestAbortedTcs.SetException(ex);
             }
-        }).DefaultTimeout();
+        });
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true).DefaultTimeout();
 
@@ -4725,7 +4725,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41172")]
     public async Task AcceptNewStreamsDuringClosingConnection()
     {
         await InitializeConnectionAsync(_echoApplication);

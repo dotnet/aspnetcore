@@ -13,7 +13,7 @@ public class Http2KeepAliveTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = Timeout.InfiniteTimeSpan;
 
-        await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await InitializeConnectionAsync(_noopApplication);
 
         Assert.Null(_connection._keepAlive);
 
@@ -26,7 +26,7 @@ public class Http2KeepAliveTests : Http2TestBase
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = Timeout.InfiniteTimeSpan;
 
-        await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await InitializeConnectionAsync(_noopApplication);
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
 
@@ -56,7 +56,7 @@ public class Http2KeepAliveTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
-        await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await InitializeConnectionAsync(_noopApplication);
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
 
@@ -79,7 +79,7 @@ public class Http2KeepAliveTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
-        await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await InitializeConnectionAsync(_noopApplication);
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
 
@@ -103,7 +103,7 @@ public class Http2KeepAliveTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(5);
 
-        await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await InitializeConnectionAsync(_noopApplication);
 
         DateTimeOffset now = new DateTimeOffset(1, TimeSpan.Zero);
 
@@ -121,7 +121,7 @@ public class Http2KeepAliveTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
-        await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await InitializeConnectionAsync(_noopApplication);
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
 
@@ -145,7 +145,7 @@ public class Http2KeepAliveTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
-        await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await InitializeConnectionAsync(_noopApplication);
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
 
@@ -185,7 +185,7 @@ public class Http2KeepAliveTests : Http2TestBase
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(3);
 
-        await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await InitializeConnectionAsync(_noopApplication);
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
 
@@ -217,7 +217,7 @@ public class Http2KeepAliveTests : Http2TestBase
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(3);
 
-        await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await InitializeConnectionAsync(_noopApplication);
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
 
@@ -249,7 +249,7 @@ public class Http2KeepAliveTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
-        await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
+        await InitializeConnectionAsync(_noopApplication);
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
 
@@ -284,7 +284,7 @@ public class Http2KeepAliveTests : Http2TestBase
             await tcs.Task;
             // Send headers
             await c.Request.Body.FlushAsync();
-        }, expectedWindowUpdate: false).DefaultTimeout();
+        }, expectedWindowUpdate: false);
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
 
@@ -339,7 +339,7 @@ public class Http2KeepAliveTests : Http2TestBase
             await tcs.Task;
             // Send headers
             await c.Request.Body.FlushAsync();
-        }, expectedWindowUpdate: false).DefaultTimeout();
+        }, expectedWindowUpdate: false);
 
         DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
 
