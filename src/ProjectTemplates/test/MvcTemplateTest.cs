@@ -33,11 +33,11 @@ public class MvcTemplateTest : LoggedTest
     public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
     [ConditionalFact]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + "All.Ubuntu;" + HelixConstants.Windows10Arm64)]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
     [ConditionalFact]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + "All.Ubuntu;" + HelixConstants.Windows10Arm64)]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     public async Task MvcTemplate_ProgramMainNoAuthCSharp() => await MvcTemplateCore(languageOverride: null, new [] { "--use-program-main" });
 
     private async Task MvcTemplateCore(string languageOverride, string[] args = null)
@@ -117,7 +117,7 @@ public class MvcTemplateTest : LoggedTest
     [InlineData(true, true)]
     [InlineData(false, false)]
     [InlineData(false, true)]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + "All.Ubuntu;" + HelixConstants.Windows10Arm64)]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     public async Task MvcTemplate_IndividualAuth(bool useLocalDB, bool useProgramMain)
     {
         var project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
