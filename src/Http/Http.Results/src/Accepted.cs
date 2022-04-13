@@ -47,7 +47,7 @@ public sealed class Accepted : IResult, IEndpointMetadataProvider
     }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status202Accepted"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status202Accepted;
 

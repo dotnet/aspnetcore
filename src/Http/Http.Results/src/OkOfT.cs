@@ -30,7 +30,7 @@ public sealed class Ok<TValue> : IResult, IEndpointMetadataProvider
     public TValue? Value { get; }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status200OK"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status200OK;
 

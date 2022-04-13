@@ -21,7 +21,7 @@ public sealed class Ok : IResult, IEndpointMetadataProvider
     }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status200OK"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status200OK;
 

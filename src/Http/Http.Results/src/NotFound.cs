@@ -21,7 +21,7 @@ public sealed class NotFound : IResult, IEndpointMetadataProvider
     }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status404NotFound"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status404NotFound;
 

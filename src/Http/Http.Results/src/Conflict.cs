@@ -22,7 +22,7 @@ public sealed class Conflict : IResult, IEndpointMetadataProvider
     }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status409Conflict"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status409Conflict;
 

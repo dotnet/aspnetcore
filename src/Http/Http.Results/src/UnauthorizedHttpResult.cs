@@ -20,7 +20,7 @@ public sealed class UnauthorizedHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status401Unauthorized"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status401Unauthorized;
 

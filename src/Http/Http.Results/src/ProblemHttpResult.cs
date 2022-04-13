@@ -30,7 +30,7 @@ public sealed class ProblemHttpResult : IResult
     public ProblemDetails ProblemDetails { get; }
 
     /// <summary>
-    /// Gets the value for the <c>Content-Type</c> header.
+    /// Gets the value for the <c>Content-Type</c> header: <c>application/problem+json</c>
     /// </summary>
     public string ContentType => "application/problem+json";
 

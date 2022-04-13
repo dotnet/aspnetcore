@@ -31,7 +31,7 @@ public sealed class Conflict<TValue> : IResult, IEndpointMetadataProvider
     public TValue? Value { get; }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status409Conflict"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status409Conflict;
 

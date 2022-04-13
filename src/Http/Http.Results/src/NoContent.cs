@@ -21,7 +21,7 @@ public class NoContent : IResult, IEndpointMetadataProvider
     }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status204NoContent"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status204NoContent;
 

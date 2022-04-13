@@ -59,7 +59,7 @@ public sealed class Accepted<TValue> : IResult, IEndpointMetadataProvider
     public TValue? Value { get; }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status202Accepted"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status202Accepted;
 

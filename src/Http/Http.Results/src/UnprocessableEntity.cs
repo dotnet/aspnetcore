@@ -21,7 +21,9 @@ public sealed class UnprocessableEntity : IResult, IEndpointMetadataProvider
     {
     }
 
-    /// <inheritdoc />>
+    /// <summary>
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status422UnprocessableEntity"/>
+    /// </summary>
     public int StatusCode => StatusCodes.Status422UnprocessableEntity;
 
     /// <inheritdoc />

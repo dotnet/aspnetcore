@@ -30,12 +30,12 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
     public HttpValidationProblemDetails ProblemDetails { get; }
 
     /// <summary>
-    /// Gets the value for the <c>Content-Type</c> header.
+    /// Gets the value for the <c>Content-Type</c> header: <c>application/problem+json</c>.
     /// </summary>
     public string ContentType => "application/problem+json";
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status400BadRequest"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status400BadRequest;
 

@@ -25,10 +25,14 @@ public sealed class UnprocessableEntity<TValue> : IResult, IEndpointMetadataProv
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the object result.
+    /// </summary>
     public TValue? Value { get; }
 
-    /// <inheritdoc />>
+    /// <summary>
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status422UnprocessableEntity"/>
+    /// </summary>
     public int StatusCode => StatusCodes.Status422UnprocessableEntity;
 
     /// <inheritdoc />

@@ -61,7 +61,7 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     public RouteValueDictionary? RouteValues { get; }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status201Created"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status201Created;
 

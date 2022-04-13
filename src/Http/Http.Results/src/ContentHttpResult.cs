@@ -36,12 +36,12 @@ public sealed partial class ContentHttpResult : IResult
     }
 
     /// <summary>
-    /// Gets or set the content representing the body of the response.
+    /// Gets the content representing the body of the response.
     /// </summary>
     public string? ResponseContent { get; internal init; }
 
     /// <summary>
-    /// Gets or sets the Content-Type header for the response.
+    /// Gets the Content-Type header for the response.
     /// </summary>
     public string? ContentType { get; internal init; }
 

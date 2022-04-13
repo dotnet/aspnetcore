@@ -30,7 +30,7 @@ public sealed class NotFound<TValue> : IResult, IEndpointMetadataProvider
     public TValue? Value { get; internal init; }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status404NotFound"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status404NotFound;
 

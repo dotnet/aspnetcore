@@ -22,7 +22,7 @@ public sealed class BadRequest : IResult, IEndpointMetadataProvider
     }
 
     /// <summary>
-    /// Gets the HTTP status code.
+    /// Gets the HTTP status code: <see cref="StatusCodes.Status400BadRequest"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status400BadRequest;
 
