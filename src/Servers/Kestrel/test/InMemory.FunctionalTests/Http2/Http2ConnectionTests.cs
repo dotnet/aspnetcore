@@ -4814,14 +4814,14 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    public void UnexpectedExceptionDuringFrameProcessingLoggedAWarning()
+    public async Task UnexpectedExceptionDuringFrameProcessingLoggedAWarning()
     {
         CreateConnection();
 
         var exception = new Exception();
         _pair.Application.Output.Complete(exception);
 
-        Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
+        await _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).DefaultTimeout();
 
         var logMessage = LogMessages.Single(m => m.LogLevel >= LogLevel.Information);
 
