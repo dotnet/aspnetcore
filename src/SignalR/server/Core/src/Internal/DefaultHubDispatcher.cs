@@ -7,7 +7,9 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -549,21 +551,26 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
 
     private static Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, HubMethodDescriptor descriptor, object?[] hubMethodArguments, Hub hub)
     {
+        var endpoint = hubConnectionContext.Features.Get<IEndpointFeature>()?.Endpoint;
+        IReadOnlyList<AuthorizationPolicy> endpointPolicies = endpoint != null
+            ? endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>()
+            : Array.Empty<AuthorizationPolicy>();
+
         // If there are no policies we don't need to run auth
-        if (descriptor.Policies.Count == 0)
+        if (descriptor.AuthorizeData.Count == 0 && endpointPolicies.Count == 0)
         {
             return TaskCache.True;
         }
 
-        return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, descriptor.Policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
+        return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, descriptor.AuthorizeData, endpointPolicies, new HubInvocationContext(hubConnectionContext.HubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
     }
 
-    private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)
+    private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> authorizeData, IReadOnlyList<AuthorizationPolicy> endpointPolicies, HubInvocationContext resource)
     {
         var authService = provider.GetRequiredService<IAuthorizationService>();
         var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
-        var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, policies);
+        var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, authorizeData, endpointPolicies);
         // AuthorizationPolicy.CombineAsync only returns null if there are no policies and we check that above
         Debug.Assert(authorizePolicy != null);
 

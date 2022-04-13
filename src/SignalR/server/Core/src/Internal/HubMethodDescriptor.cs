@@ -99,7 +99,7 @@ internal class HubMethodDescriptor
             OriginalParameterTypes = methodExecutor.MethodParameters.Select(p => p.ParameterType).ToArray();
         }
 
-        Policies = policies.ToArray();
+        AuthorizeData = policies.ToArray();
     }
 
     public List<Type>? StreamingParameters { get; private set; }
@@ -116,7 +116,9 @@ internal class HubMethodDescriptor
 
     public Type? StreamReturnType { get; }
 
-    public IList<IAuthorizeData> Policies { get; }
+    public IList<IAuthorizeData> AuthorizeData { get; }
+
+    public IReadOnlyList<AuthorizationPolicy> EndpointPolicies { get; }
 
     public bool HasSyntheticArguments { get; private set; }
 
