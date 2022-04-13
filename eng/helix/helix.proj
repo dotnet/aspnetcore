@@ -10,7 +10,7 @@
     not HelixCorrelationPayload.
   -->
   <PropertyGroup>
-    <IsPublicRuntime>true</IsPublicRuntime>
+    <IsPublicRuntime>false</IsPublicRuntime>
   </PropertyGroup>
 
   <PropertyGroup>
