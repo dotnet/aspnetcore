@@ -24,7 +24,7 @@ public class SignInResultTests
             .Verifiable();
 
         var httpContext = GetHttpContext(auth.Object);
-        var result = new SignIn(principal, "", null);
+        var result = new SignInHttpResult(principal, "", null);
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -44,7 +44,7 @@ public class SignInResultTests
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new SignIn(principal);
+        var result = new SignInHttpResult(principal);
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -65,7 +65,7 @@ public class SignInResultTests
             .Returns(Task.CompletedTask)
             .Verifiable();
         var httpContext = GetHttpContext(auth.Object);
-        var result = new SignIn(principal, "Scheme1", authProperties);
+        var result = new SignInHttpResult(principal, "Scheme1", authProperties);
 
         // Act
         await result.ExecuteAsync(httpContext);

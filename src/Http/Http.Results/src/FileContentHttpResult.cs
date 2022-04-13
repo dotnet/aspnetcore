@@ -10,66 +10,57 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// Represents an <see cref="IResult"/> that when executed will
-/// write a file from a stream to the response.
+/// write a file from the content to the response.
 /// </summary>
-public sealed class HttpFileStream : IResult
+public sealed partial class FileContentHttpResult : IResult
 {
     /// <summary>
-    /// Creates a new <see cref="HttpFileStream"/> instance with
-    /// the provided <paramref name="fileStream"/> and the
+    /// Creates a new <see cref="FileContentHttpResult"/> instance with
+    /// the provided <paramref name="fileContents"/> and the
     /// provided <paramref name="contentType"/>.
     /// </summary>
-    /// <param name="fileStream">The stream with the file.</param>
+    /// <param name="fileContents">The bytes that represent the file contents.</param>
     /// <param name="contentType">The Content-Type of the file.</param>
-    internal HttpFileStream(Stream fileStream, string? contentType)
-        : this(fileStream, contentType, fileDownloadName: null)
+    internal FileContentHttpResult(ReadOnlyMemory<byte> fileContents, string? contentType)
+        : this(fileContents, contentType, fileDownloadName: null)
     {
     }
 
     /// <summary>
-    /// Creates a new <see cref="HttpFileStream"/> instance with
-    /// the provided <paramref name="fileStream"/>, the provided <paramref name="contentType"/>
+    /// Creates a new <see cref="FileContentHttpResult"/> instance with
+    /// the provided <paramref name="fileContents"/>, the provided <paramref name="contentType"/>
     /// and the provided <paramref name="fileDownloadName"/>.
     /// </summary>
-    /// <param name="fileStream">The stream with the file.</param>
+    /// <param name="fileContents">The bytes that represent the file contents.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
     /// <param name="fileDownloadName">The suggested file name.</param>
-    internal HttpFileStream(
-        Stream fileStream,
+    internal FileContentHttpResult(
+        ReadOnlyMemory<byte> fileContents,
         string? contentType,
         string? fileDownloadName)
-        : this(fileStream, contentType, fileDownloadName, enableRangeProcessing: false)
+        : this(fileContents, contentType, fileDownloadName, enableRangeProcessing: false)
     {
     }
 
     /// <summary>
-    /// Creates a new <see cref="HttpFileStream"/> instance with the provided values.
+    /// Creates a new <see cref="FileContentHttpResult"/> instance with the provided values.
     /// </summary>
-    /// <param name="fileStream">The stream with the file.</param>
+    /// <param name="fileContents">The bytes that represent the file contents.</param>
     /// <param name="contentType">The Content-Type of the file.</param>
     /// <param name="fileDownloadName">The suggested file name.</param>
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
-    internal HttpFileStream(
-        Stream fileStream,
+    internal FileContentHttpResult(
+        ReadOnlyMemory<byte> fileContents,
         string? contentType,
         string? fileDownloadName,
         bool enableRangeProcessing,
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
     {
-        if (fileStream == null)
-        {
-            throw new ArgumentNullException(nameof(fileStream));
-        }
-
-        FileStream = fileStream;
-        if (fileStream.CanSeek)
-        {
-            FileLength = fileStream.Length;
-        }
-
+        FileContents = fileContents;
+        FileLength = fileContents.Length;
         ContentType = contentType ?? "application/octet-stream";
         FileDownloadName = fileDownloadName;
         EnableRangeProcessing = enableRangeProcessing;
@@ -108,33 +99,29 @@ public sealed class HttpFileStream : IResult
     public long? FileLength { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the stream with the file that will be sent back as the response.
+    /// Gets or sets the file contents.
     /// </summary>
-    public Stream FileStream { get; }
+    public ReadOnlyMemory<byte> FileContents { get; internal init; }
 
     /// <inheritdoc/>
-    public async Task ExecuteAsync(HttpContext httpContext)
+    public Task ExecuteAsync(HttpContext httpContext)
     {
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.FileStreamResult");
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.FileContentResult");
 
-        await using (FileStream)
-        {
-            var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
-                httpContext,
-                logger,
-                FileDownloadName,
-                FileLength,
-                ContentType,
-                EnableRangeProcessing,
-                LastModified,
-                EntityTag);
+        var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
+            httpContext,
+            logger,
+            FileDownloadName,
+            FileLength,
+            ContentType,
+            EnableRangeProcessing,
+            LastModified,
+            EntityTag);
 
-            if (!completed)
-            {
-                await FileResultHelper.WriteFileAsync(httpContext, FileStream, range, rangeLength);
-            }
-        }
+        return completed ?
+            Task.CompletedTask :
+            FileResultHelper.WriteFileAsync(httpContext, FileContents, range, rangeLength);
     }
 }

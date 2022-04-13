@@ -13,7 +13,7 @@ public class StatusCodeResultTests
     public void StatusCodeResult_ExecuteResultSetsResponseStatusCode()
     {
         // Arrange
-        var result = new Status(StatusCodes.Status404NotFound);
+        var result = new StatusCodeHttpResult(StatusCodes.Status404NotFound);
 
         var httpContext = GetHttpContext();
 

@@ -15,7 +15,7 @@ public class ChallengeResultTests
     public async Task ChallengeResult_ExecuteAsync()
     {
         // Arrange
-        var result = new Challenge("", null);
+        var result = new ChallengeHttpResult("", null);
         var auth = new Mock<IAuthenticationService>();
         var httpContext = GetHttpContext(auth);
 
@@ -30,7 +30,7 @@ public class ChallengeResultTests
     public async Task ChallengeResult_ExecuteAsync_NoSchemes()
     {
         // Arrange
-        var result = new Challenge(new string[] { }, null);
+        var result = new ChallengeHttpResult(new string[] { }, null);
         var auth = new Mock<IAuthenticationService>();
         var httpContext = GetHttpContext(auth);
 

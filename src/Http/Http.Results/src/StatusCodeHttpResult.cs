@@ -3,44 +3,44 @@
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Represents an <see cref="IResult"/> that when executed will
-/// produce an HTTP response with the No Unauthorized (401) status code.
+/// produce an HTTP response with the given response status code.
 /// </summary>
-public sealed class Unauthorized : IResult, IEndpointMetadataProvider
+public sealed partial class StatusCodeHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Unauthorized"/> class.
+    /// Initializes a new instance of the <see cref="StatusCodeHttpResult"/> class
+    /// with the given <paramref name="statusCode"/>.
     /// </summary>
-    internal Unauthorized()
+    /// <param name="statusCode">The HTTP status code of the response.</param>
+    internal StatusCodeHttpResult(int statusCode)
     {
+        StatusCode = statusCode;
     }
 
     /// <summary>
     /// Gets the HTTP status code.
     /// </summary>
-    public int StatusCode => StatusCodes.Status401Unauthorized;
+    public int StatusCode { get; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Sets the status code on the HTTP response.
+    /// </summary>
+    /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
+    /// <returns>A task that represents the asynchronous execute operation.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.UnauthorizedResult");
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.StatusCodeResult");
         HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
 
         httpContext.Response.StatusCode = StatusCode;
 
         return Task.CompletedTask;
-    }
-
-    /// <inheritdoc/>
-    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
-    {
-        context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status401Unauthorized));
     }
 }

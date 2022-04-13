@@ -12,75 +12,75 @@ namespace Microsoft.AspNetCore.Http;
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal partial class ResultsCache
 {
-    private static Status? _status101SwitchingProtocols;
-    private static Status? _status102Processing;
-    private static Status? _status200OK;
-    private static Status? _status201Created;
-    private static Status? _status202Accepted;
-    private static Status? _status203NonAuthoritative;
-    private static Status? _status204NoContent;
-    private static Status? _status205ResetContent;
-    private static Status? _status206PartialContent;
-    private static Status? _status207MultiStatus;
-    private static Status? _status208AlreadyReported;
-    private static Status? _status226IMUsed;
-    private static Status? _status300MultipleChoices;
-    private static Status? _status301MovedPermanently;
-    private static Status? _status302Found;
-    private static Status? _status303SeeOther;
-    private static Status? _status304NotModified;
-    private static Status? _status305UseProxy;
-    private static Status? _status306SwitchProxy;
-    private static Status? _status307TemporaryRedirect;
-    private static Status? _status308PermanentRedirect;
-    private static Status? _status400BadRequest;
-    private static Status? _status401Unauthorized;
-    private static Status? _status402PaymentRequired;
-    private static Status? _status403Forbidden;
-    private static Status? _status404NotFound;
-    private static Status? _status405MethodNotAllowed;
-    private static Status? _status406NotAcceptable;
-    private static Status? _status407ProxyAuthenticationRequired;
-    private static Status? _status408RequestTimeout;
-    private static Status? _status409Conflict;
-    private static Status? _status410Gone;
-    private static Status? _status411LengthRequired;
-    private static Status? _status412PreconditionFailed;
-    private static Status? _status413RequestEntityTooLarge;
-    private static Status? _status414RequestUriTooLong;
-    private static Status? _status415UnsupportedMediaType;
-    private static Status? _status416RequestedRangeNotSatisfiable;
-    private static Status? _status417ExpectationFailed;
-    private static Status? _status418ImATeapot;
-    private static Status? _status419AuthenticationTimeout;
-    private static Status? _status421MisdirectedRequest;
-    private static Status? _status422UnprocessableEntity;
-    private static Status? _status423Locked;
-    private static Status? _status424FailedDependency;
-    private static Status? _status426UpgradeRequired;
-    private static Status? _status428PreconditionRequired;
-    private static Status? _status429TooManyRequests;
-    private static Status? _status431RequestHeaderFieldsTooLarge;
-    private static Status? _status451UnavailableForLegalReasons;
-    private static Status? _status500InternalServerError;
-    private static Status? _status501NotImplemented;
-    private static Status? _status502BadGateway;
-    private static Status? _status503ServiceUnavailable;
-    private static Status? _status504GatewayTimeout;
-    private static Status? _status505HttpVersionNotsupported;
-    private static Status? _status506VariantAlsoNegotiates;
-    private static Status? _status507InsufficientStorage;
-    private static Status? _status508LoopDetected;
-    private static Status? _status510NotExtended;
-    private static Status? _status511NetworkAuthenticationRequired;
+    private static StatusCodeHttpResult? _status101SwitchingProtocols;
+    private static StatusCodeHttpResult? _status102Processing;
+    private static StatusCodeHttpResult? _status200OK;
+    private static StatusCodeHttpResult? _status201Created;
+    private static StatusCodeHttpResult? _status202Accepted;
+    private static StatusCodeHttpResult? _status203NonAuthoritative;
+    private static StatusCodeHttpResult? _status204NoContent;
+    private static StatusCodeHttpResult? _status205ResetContent;
+    private static StatusCodeHttpResult? _status206PartialContent;
+    private static StatusCodeHttpResult? _status207MultiStatus;
+    private static StatusCodeHttpResult? _status208AlreadyReported;
+    private static StatusCodeHttpResult? _status226IMUsed;
+    private static StatusCodeHttpResult? _status300MultipleChoices;
+    private static StatusCodeHttpResult? _status301MovedPermanently;
+    private static StatusCodeHttpResult? _status302Found;
+    private static StatusCodeHttpResult? _status303SeeOther;
+    private static StatusCodeHttpResult? _status304NotModified;
+    private static StatusCodeHttpResult? _status305UseProxy;
+    private static StatusCodeHttpResult? _status306SwitchProxy;
+    private static StatusCodeHttpResult? _status307TemporaryRedirect;
+    private static StatusCodeHttpResult? _status308PermanentRedirect;
+    private static StatusCodeHttpResult? _status400BadRequest;
+    private static StatusCodeHttpResult? _status401Unauthorized;
+    private static StatusCodeHttpResult? _status402PaymentRequired;
+    private static StatusCodeHttpResult? _status403Forbidden;
+    private static StatusCodeHttpResult? _status404NotFound;
+    private static StatusCodeHttpResult? _status405MethodNotAllowed;
+    private static StatusCodeHttpResult? _status406NotAcceptable;
+    private static StatusCodeHttpResult? _status407ProxyAuthenticationRequired;
+    private static StatusCodeHttpResult? _status408RequestTimeout;
+    private static StatusCodeHttpResult? _status409Conflict;
+    private static StatusCodeHttpResult? _status410Gone;
+    private static StatusCodeHttpResult? _status411LengthRequired;
+    private static StatusCodeHttpResult? _status412PreconditionFailed;
+    private static StatusCodeHttpResult? _status413RequestEntityTooLarge;
+    private static StatusCodeHttpResult? _status414RequestUriTooLong;
+    private static StatusCodeHttpResult? _status415UnsupportedMediaType;
+    private static StatusCodeHttpResult? _status416RequestedRangeNotSatisfiable;
+    private static StatusCodeHttpResult? _status417ExpectationFailed;
+    private static StatusCodeHttpResult? _status418ImATeapot;
+    private static StatusCodeHttpResult? _status419AuthenticationTimeout;
+    private static StatusCodeHttpResult? _status421MisdirectedRequest;
+    private static StatusCodeHttpResult? _status422UnprocessableEntity;
+    private static StatusCodeHttpResult? _status423Locked;
+    private static StatusCodeHttpResult? _status424FailedDependency;
+    private static StatusCodeHttpResult? _status426UpgradeRequired;
+    private static StatusCodeHttpResult? _status428PreconditionRequired;
+    private static StatusCodeHttpResult? _status429TooManyRequests;
+    private static StatusCodeHttpResult? _status431RequestHeaderFieldsTooLarge;
+    private static StatusCodeHttpResult? _status451UnavailableForLegalReasons;
+    private static StatusCodeHttpResult? _status500InternalServerError;
+    private static StatusCodeHttpResult? _status501NotImplemented;
+    private static StatusCodeHttpResult? _status502BadGateway;
+    private static StatusCodeHttpResult? _status503ServiceUnavailable;
+    private static StatusCodeHttpResult? _status504GatewayTimeout;
+    private static StatusCodeHttpResult? _status505HttpVersionNotsupported;
+    private static StatusCodeHttpResult? _status506VariantAlsoNegotiates;
+    private static StatusCodeHttpResult? _status507InsufficientStorage;
+    private static StatusCodeHttpResult? _status508LoopDetected;
+    private static StatusCodeHttpResult? _status510NotExtended;
+    private static StatusCodeHttpResult? _status511NetworkAuthenticationRequired;
 
-    internal static Status StatusCode(int statusCode)
+    internal static StatusCodeHttpResult StatusCode(int statusCode)
     {
         if (statusCode is (< 100) or (> 599))
         {
             // No HTTP status code assigned outside the 100..599 range
             // so, it will not be available in the cache
-            return new Status(statusCode);
+            return new StatusCodeHttpResult(statusCode);
         }
 
         return statusCode switch
@@ -146,7 +146,7 @@ internal partial class ResultsCache
             StatusCodes.Status508LoopDetected => _status508LoopDetected ??= new(StatusCodes.Status508LoopDetected),
             StatusCodes.Status510NotExtended => _status510NotExtended ??= new(StatusCodes.Status510NotExtended),
             StatusCodes.Status511NetworkAuthenticationRequired => _status511NetworkAuthenticationRequired ??= new(StatusCodes.Status511NetworkAuthenticationRequired),
-            _ => new Status(statusCode),
+            _ => new StatusCodeHttpResult(statusCode),
         };
     }
 }

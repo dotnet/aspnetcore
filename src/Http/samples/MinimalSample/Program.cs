@@ -44,13 +44,16 @@ app.MapGet("/problem", () =>
 app.MapGet("/problem-object", () =>
     Results.Problem(new ProblemDetails() { Status = 500, Extensions = { { "traceId", "traceId123" } } }));
 
-var errors = new Dictionary<string, string[]>();
+var errors = new Dictionary<string, string[]>() { { "Title", new[] { "The Title field is required." } } };
 
 app.MapGet("/validation-problem", () =>
     Results.ValidationProblem(errors, statusCode: 400, extensions: extensions));
 
 app.MapGet("/validation-problem-object", () =>
     Results.Problem(new HttpValidationProblemDetails(errors) { Status = 400, Extensions = { { "traceId", "traceId123" } } }));
+
+app.MapGet("/validation-problem-typed", () =>
+    Results.Typed.ValidationProblem(errors, extensions: extensions));
 
 app.Run();
 

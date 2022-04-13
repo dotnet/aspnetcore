@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -9,57 +10,66 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// Represents an <see cref="IResult"/> that when executed will
-/// write a file from the writer callback to the response.
+/// write a file from a stream to the response.
 /// </summary>
-public sealed class PushStream : IResult
+public sealed class FileStreamHttpResult : IResult
 {
-    private readonly Func<Stream, Task> _streamWriterCallback;
-
     /// <summary>
-    /// Creates a new <see cref="PushStream"/> instance with
-    /// the provided <paramref name="streamWriterCallback"/> and the provided <paramref name="contentType"/>.
+    /// Creates a new <see cref="FileStreamHttpResult"/> instance with
+    /// the provided <paramref name="fileStream"/> and the
+    /// provided <paramref name="contentType"/>.
     /// </summary>
-    /// <param name="streamWriterCallback">The stream writer callback.</param>
-    /// <param name="contentType">The Content-Type header of the response.</param>
-    internal PushStream(Func<Stream, Task> streamWriterCallback, string? contentType)
-        : this(streamWriterCallback, contentType, fileDownloadName: null)
+    /// <param name="fileStream">The stream with the file.</param>
+    /// <param name="contentType">The Content-Type of the file.</param>
+    internal FileStreamHttpResult(Stream fileStream, string? contentType)
+        : this(fileStream, contentType, fileDownloadName: null)
     {
     }
 
     /// <summary>
-    /// Creates a new <see cref="PushStream"/> instance with
-    /// the provided <paramref name="streamWriterCallback"/>, the provided <paramref name="contentType"/>
+    /// Creates a new <see cref="FileStreamHttpResult"/> instance with
+    /// the provided <paramref name="fileStream"/>, the provided <paramref name="contentType"/>
     /// and the provided <paramref name="fileDownloadName"/>.
     /// </summary>
-    /// <param name="streamWriterCallback">The stream writer callback.</param>
+    /// <param name="fileStream">The stream with the file.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
     /// <param name="fileDownloadName">The suggested file name.</param>
-    internal PushStream(
-        Func<Stream, Task> streamWriterCallback,
+    internal FileStreamHttpResult(
+        Stream fileStream,
         string? contentType,
         string? fileDownloadName)
-        : this(streamWriterCallback, contentType, fileDownloadName, enableRangeProcessing: false)
+        : this(fileStream, contentType, fileDownloadName, enableRangeProcessing: false)
     {
     }
 
     /// <summary>
-    /// Creates a new <see cref="PushStream"/> instance with the provided values.
+    /// Creates a new <see cref="FileStreamHttpResult"/> instance with the provided values.
     /// </summary>
-    /// <param name="streamWriterCallback">The stream writer callback.</param>
-    /// <param name="contentType">The Content-Type header of the response.</param>
+    /// <param name="fileStream">The stream with the file.</param>
+    /// <param name="contentType">The Content-Type of the file.</param>
     /// <param name="fileDownloadName">The suggested file name.</param>
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
-    internal PushStream(
-        Func<Stream, Task> streamWriterCallback,
+    internal FileStreamHttpResult(
+        Stream fileStream,
         string? contentType,
         string? fileDownloadName,
         bool enableRangeProcessing,
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
     {
-        _streamWriterCallback = streamWriterCallback;
+        if (fileStream == null)
+        {
+            throw new ArgumentNullException(nameof(fileStream));
+        }
+
+        FileStream = fileStream;
+        if (fileStream.CanSeek)
+        {
+            FileLength = fileStream.Length;
+        }
+
         ContentType = contentType ?? "application/octet-stream";
         FileDownloadName = fileDownloadName;
         EnableRangeProcessing = enableRangeProcessing;
@@ -97,25 +107,34 @@ public sealed class PushStream : IResult
     /// </summary>
     public long? FileLength { get; internal set; }
 
+    /// <summary>
+    /// Gets or sets the stream with the file that will be sent back as the response.
+    /// </summary>
+    public Stream FileStream { get; }
+
     /// <inheritdoc/>
-    public Task ExecuteAsync(HttpContext httpContext)
+    public async Task ExecuteAsync(HttpContext httpContext)
     {
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.PushStreamResult");
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.FileStreamResult");
 
-        var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
-            httpContext,
-            logger,
-            FileDownloadName,
-            FileLength,
-            ContentType,
-            EnableRangeProcessing,
-            LastModified,
-            EntityTag);
+        await using (FileStream)
+        {
+            var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
+                httpContext,
+                logger,
+                FileDownloadName,
+                FileLength,
+                ContentType,
+                EnableRangeProcessing,
+                LastModified,
+                EntityTag);
 
-        return completed ?
-            Task.CompletedTask :
-            _streamWriterCallback(httpContext.Response.Body);
+            if (!completed)
+            {
+                await FileResultHelper.WriteFileAsync(httpContext, FileStream, range, rangeLength);
+            }
+        }
     }
 }

@@ -1,34 +1,34 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.HttpResults;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+namespace Microsoft.AspNetCore.Http.HttpResults;
+
 /// <summary>
-/// An <see cref="Content"/> that when executed
+/// An <see cref="ContentHttpResult"/> that when executed
 /// will produce a response with content.
 /// </summary>
-public sealed partial class Content : IResult
+public sealed partial class ContentHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Content"/> class with the values.
+    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values.
     /// </summary>
     /// <param name="content">The value to format in the entity body.</param>
     /// <param name="contentType">The Content-Type header for the response</param>
-    internal Content(string? content, string? contentType)
+    internal ContentHttpResult(string? content, string? contentType)
         : this(content, contentType, statusCode: null)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Content"/> class with the values
+    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values
     /// </summary>
     /// <param name="content">The value to format in the entity body.</param>
     /// <param name="statusCode">The HTTP status code of the response.</param>
     /// <param name="contentType">The Content-Type header for the response</param>
-    internal Content(string? content, string? contentType, int? statusCode)
+    internal ContentHttpResult(string? content, string? contentType, int? statusCode)
     {
         ResponseContent = content;
         StatusCode = statusCode;

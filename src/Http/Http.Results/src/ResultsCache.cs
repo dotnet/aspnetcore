@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Http;
 internal static partial class ResultsCache
 {
     public static NotFound NotFound { get; } = new();
-    public static Unauthorized Unauthorized { get; } = new();
+    public static UnauthorizedHttpResult Unauthorized { get; } = new();
     public static BadRequest BadRequest { get; } = new();
     public static Conflict Conflict { get; } = new();
     public static NoContent NoContent { get; } = new();

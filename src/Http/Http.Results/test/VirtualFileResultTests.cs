@@ -10,7 +10,7 @@ public class VirtualFileResultTests : VirtualFileResultTestBase
 {
     protected override Task ExecuteAsync(HttpContext httpContext, string path, string contentType, DateTimeOffset? lastModified = null, EntityTagHeaderValue entityTag = null, bool enableRangeProcessing = false)
     {
-        var result = new VirtualFile(path, contentType)
+        var result = new VirtualFileHttpResult(path, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,

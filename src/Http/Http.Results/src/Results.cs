@@ -33,7 +33,7 @@ public static partial class Results
     public static IResult Challenge(
         AuthenticationProperties? properties = null,
         IList<string>? authenticationSchemes = null)
-        => new Challenge(authenticationSchemes: authenticationSchemes ?? Array.Empty<string>(), properties);
+        => new ChallengeHttpResult(authenticationSchemes: authenticationSchemes ?? Array.Empty<string>(), properties);
 
     /// <summary>
     /// Creates a <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.ForbidAsync(HttpContext, string?, AuthenticationProperties?)"/>.
@@ -51,7 +51,7 @@ public static partial class Results
     /// a redirect to show a login page.
     /// </remarks>
     public static IResult Forbid(AuthenticationProperties? properties = null, IList<string>? authenticationSchemes = null)
-        => new Forbid(authenticationSchemes: authenticationSchemes ?? Array.Empty<string>(), properties);
+        => new ForbidHttpResult(authenticationSchemes: authenticationSchemes ?? Array.Empty<string>(), properties);
 
     /// <summary>
     /// Creates an <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignInAsync(HttpContext, string?, ClaimsPrincipal, AuthenticationProperties?)" />.
@@ -64,7 +64,7 @@ public static partial class Results
         ClaimsPrincipal principal,
         AuthenticationProperties? properties = null,
         string? authenticationScheme = null)
-        => new SignIn(principal, authenticationScheme, properties);
+        => new SignInHttpResult(principal, authenticationScheme, properties);
 
     /// <summary>
     /// Creates an <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, string?, AuthenticationProperties?)" />.
@@ -73,7 +73,7 @@ public static partial class Results
     /// <param name="authenticationSchemes">The authentication scheme to use for the sign-out operation.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult SignOut(AuthenticationProperties? properties = null, IList<string>? authenticationSchemes = null)
-        => new SignOut(authenticationSchemes ?? Array.Empty<string>(), properties);
+        => new SignOutHttpResult(authenticationSchemes ?? Array.Empty<string>(), properties);
 
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
@@ -115,7 +115,7 @@ public static partial class Results
             mediaTypeHeaderValue.Encoding = contentEncoding ?? mediaTypeHeaderValue.Encoding;
         }
 
-        return new Content(content, mediaTypeHeaderValue?.ToString());
+        return new ContentHttpResult(content, mediaTypeHeaderValue?.ToString());
     }
 
     /// <summary>
@@ -125,7 +125,7 @@ public static partial class Results
     /// <param name="contentType">The content type (MIME type).</param>
     /// <returns>The created <see cref="IResult"/> object for the response.</returns>
     public static IResult Content(string content, MediaTypeHeaderValue contentType)
-        => new Content(content, contentType.ToString());
+        => new ContentHttpResult(content, contentType.ToString());
 
     /// <summary>
     /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
@@ -134,12 +134,12 @@ public static partial class Results
     /// <param name="options">The serializer options to use when serializing the value.</param>
     /// <param name="contentType">The content-type to set on the response.</param>
     /// <param name="statusCode">The status code to set on the response.</param>
-    /// <returns>The created <see cref="Json{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
     /// as JSON format for the response.</returns>
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
     public static IResult Json(object? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
-        => new Json<object>(data, statusCode, options)
+        => new JsonHttpResult<object>(data, statusCode, options)
         {
             ContentType = contentType,
         };
@@ -169,7 +169,7 @@ public static partial class Results
         bool enableRangeProcessing = false,
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
-        => new FileContent(fileContents, contentType)
+        => new FileContentHttpResult(fileContents, contentType)
         {
             FileDownloadName = fileDownloadName,
             EnableRangeProcessing = enableRangeProcessing,
@@ -200,7 +200,7 @@ public static partial class Results
         bool enableRangeProcessing = false,
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
-        => new FileContent(contents, contentType)
+        => new FileContentHttpResult(contents, contentType)
         {
             FileDownloadName = fileDownloadName,
             EnableRangeProcessing = enableRangeProcessing,
@@ -231,7 +231,7 @@ public static partial class Results
         bool enableRangeProcessing = false,
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
-        => new FileContent(contents, contentType)
+        => new FileContentHttpResult(contents, contentType)
         {
             FileDownloadName = fileDownloadName,
             EnableRangeProcessing = enableRangeProcessing,
@@ -271,7 +271,7 @@ public static partial class Results
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
-        return new HttpFileStream(fileStream, contentType)
+        return new FileStreamHttpResult(fileStream, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,
@@ -310,7 +310,7 @@ public static partial class Results
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
-        return new HttpFileStream(stream, contentType)
+        return new FileStreamHttpResult(stream, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,
@@ -348,7 +348,7 @@ public static partial class Results
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
-        return new HttpFileStream(pipeReader.AsStream(), contentType)
+        return new FileStreamHttpResult(pipeReader.AsStream(), contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,
@@ -381,7 +381,7 @@ public static partial class Results
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
     {
-        return new PushStream(streamWriterCallback, contentType)
+        return new PushStreamHttpResult(streamWriterCallback, contentType)
         {
             LastModified = lastModified,
             EntityTag = entityTag,
@@ -415,7 +415,7 @@ public static partial class Results
     {
         if (Path.IsPathRooted(path))
         {
-            return new PhysicalFile(path, contentType)
+            return new PhysicalFileHttpResult(path, contentType)
             {
                 FileDownloadName = fileDownloadName,
                 LastModified = lastModified,
@@ -425,7 +425,7 @@ public static partial class Results
         }
         else
         {
-            return new VirtualFile(path, contentType)
+            return new VirtualFileHttpResult(path, contentType)
             {
                 FileDownloadName = fileDownloadName,
                 LastModified = lastModified,
@@ -449,7 +449,7 @@ public static partial class Results
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Redirect(string url, bool permanent = false, bool preserveMethod = false)
-        => new Redirect(url, permanent, preserveMethod);
+        => new RedirectHttpResult(url, permanent, preserveMethod);
 
     /// <summary>
     /// Redirects to the specified <paramref name="localUrl"/>.
@@ -465,7 +465,7 @@ public static partial class Results
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
-        => new Redirect(localUrl, acceptLocalUrlOnly: true, permanent, preserveMethod);
+        => new RedirectHttpResult(localUrl, acceptLocalUrlOnly: true, permanent, preserveMethod);
 
     /// <summary>
     /// Redirects to the specified route.
@@ -483,7 +483,7 @@ public static partial class Results
     /// <param name="fragment">The fragment to add to the URL.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult RedirectToRoute(string? routeName = null, object? routeValues = null, bool permanent = false, bool preserveMethod = false, string? fragment = null)
-        => new RedirectToRoute(
+        => new RedirectToRouteHttpResult(
             routeName: routeName,
             routeValues: routeValues,
             permanent: permanent,
@@ -587,7 +587,7 @@ public static partial class Results
             }
         }
 
-        return new Problem(problemDetails);
+        return new ProblemHttpResult(problemDetails);
     }
 
     /// <summary>
@@ -597,7 +597,7 @@ public static partial class Results
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Problem(ProblemDetails problemDetails)
     {
-        return new Problem(problemDetails);
+        return new ProblemHttpResult(problemDetails);
     }
 
     /// <summary>
@@ -639,7 +639,7 @@ public static partial class Results
             }
         }
 
-        return new Problem(problemDetails);
+        return new ProblemHttpResult(problemDetails);
     }
 
     /// <summary>
@@ -706,7 +706,7 @@ public static partial class Results
     /// <summary>
     /// Produces an empty result response, that when executed will do nothing.
     /// </summary>
-    public static IResult Empty { get; } = HttpResults.Empty.Instance;
+    public static IResult Empty { get; } = HttpResults.EmptyHttpResult.Instance;
 
     /// <summary>
     /// Provides a container for external libraries to extend

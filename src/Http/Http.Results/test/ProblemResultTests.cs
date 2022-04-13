@@ -17,7 +17,7 @@ public class ProblemResultTests
         // Arrange
         var details = new ProblemDetails();
 
-        var result = new Problem(details);
+        var result = new ProblemHttpResult(details);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -46,7 +46,7 @@ public class ProblemResultTests
         // Arrange
         var details = new HttpValidationProblemDetails();
 
-        var result = new Problem(details);
+        var result = new ProblemHttpResult(details);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -75,7 +75,7 @@ public class ProblemResultTests
         // Arrange
         var details = new ProblemDetails { Status = StatusCodes.Status413RequestEntityTooLarge, };
 
-        var result = new Problem(details);
+        var result = new ProblemHttpResult(details);
 
         var httpContext = new DefaultHttpContext()
         {

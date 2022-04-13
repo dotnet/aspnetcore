@@ -64,7 +64,7 @@ public class Program
         writer.WriteLine();
 
         // Namespace
-        writer.WriteLine("namespace Microsoft.AspNetCore.Http;");
+        writer.WriteLine("namespace Microsoft.AspNetCore.Http.HttpResults;");
         writer.WriteLine();
 
         // Skip 1 as we don't have a Results<TResult1> class

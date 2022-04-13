@@ -9,69 +9,69 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
-/// An <see cref="IResult"/> that on execution invokes <see cref="M:HttpContext.ForbidAsync"/>.
+/// An <see cref="IResult"/> that on execution invokes <see cref="M:HttpContext.ChallengeAsync"/>.
 /// </summary>
-public sealed partial class Forbid : IResult
+public sealed partial class ChallengeHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="Forbid"/>.
+    /// Initializes a new instance of <see cref="ChallengeHttpResult"/>.
     /// </summary>
-    internal Forbid()
+    internal ChallengeHttpResult()
         : this(Array.Empty<string>())
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="Forbid"/> with the
+    /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the
     /// specified authentication scheme.
     /// </summary>
     /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-    internal Forbid(string authenticationScheme)
+    internal ChallengeHttpResult(string authenticationScheme)
         : this(new[] { authenticationScheme })
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="Forbid"/> with the
+    /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the
     /// specified authentication schemes.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
-    internal Forbid(IList<string> authenticationSchemes)
+    internal ChallengeHttpResult(IList<string> authenticationSchemes)
         : this(authenticationSchemes, properties: null)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="Forbid"/> with the
+    /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the
     /// specified <paramref name="properties"/>.
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    internal Forbid(AuthenticationProperties? properties)
+    internal ChallengeHttpResult(AuthenticationProperties? properties)
         : this(Array.Empty<string>(), properties)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="Forbid"/> with the
+    /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
     /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    internal Forbid(string authenticationScheme, AuthenticationProperties? properties)
+    internal ChallengeHttpResult(string authenticationScheme, AuthenticationProperties? properties)
         : this(new[] { authenticationScheme }, properties)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="Forbid"/> with the
+    /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the
     /// specified authentication schemes and <paramref name="properties"/>.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
-    internal Forbid(IList<string> authenticationSchemes, AuthenticationProperties? properties)
+    internal ChallengeHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
         AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;
@@ -80,46 +80,46 @@ public sealed partial class Forbid : IResult
     /// <summary>
     /// Gets the authentication schemes that are challenged.
     /// </summary>
-    public IReadOnlyList<string> AuthenticationSchemes { get; internal init; }
+    public IReadOnlyList<string> AuthenticationSchemes { get; internal init; } = Array.Empty<string>();
 
     /// <summary>
-    /// Gets the <see cref="AuthenticationProperties"/> used to perform the authentication challenge.
+    /// Gets the <see cref="AuthenticationProperties"/> used to perform the sign-out operation.
     /// </summary>
     public AuthenticationProperties? Properties { get; internal init; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ForbidResult");
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ChallengeResult");
 
-        Log.ForbidResultExecuting(logger, AuthenticationSchemes);
+        Log.ChallengeResultExecuting(logger, AuthenticationSchemes);
 
         if (AuthenticationSchemes != null && AuthenticationSchemes.Count > 0)
         {
-            for (var i = 0; i < AuthenticationSchemes.Count; i++)
+            foreach (var scheme in AuthenticationSchemes)
             {
-                await httpContext.ForbidAsync(AuthenticationSchemes[i], Properties);
+                await httpContext.ChallengeAsync(scheme, Properties);
             }
         }
         else
         {
-            await httpContext.ForbidAsync(Properties);
+            await httpContext.ChallengeAsync(Properties);
         }
     }
 
     private static partial class Log
     {
-        public static void ForbidResultExecuting(ILogger logger, IReadOnlyList<string> authenticationSchemes)
+        public static void ChallengeResultExecuting(ILogger logger, IReadOnlyList<string> authenticationSchemes)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                ForbidResultExecuting(logger, authenticationSchemes.ToArray());
+                ChallengeResultExecuting(logger, authenticationSchemes.ToArray());
             }
         }
 
         [LoggerMessage(1, LogLevel.Information, "Executing ChallengeResult with authentication schemes ({Schemes}).", EventName = "ChallengeResultExecuting", SkipEnabledCheck = true)]
-        private static partial void ForbidResultExecuting(ILogger logger, string[] schemes);
+        private static partial void ChallengeResultExecuting(ILogger logger, string[] schemes);
     }
 }

@@ -11,43 +11,43 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that returns a Found (302), Moved Permanently (301), Temporary Redirect (307),
 /// or Permanent Redirect (308) response with a Location header to the supplied URL.
 /// </summary>
-public sealed partial class Redirect : IResult
+public sealed partial class RedirectHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Redirect"/> class with the values
+    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
-    internal Redirect(string url)
+    internal RedirectHttpResult(string url)
          : this(url, permanent: false)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Redirect"/> class with the values
+    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-    internal Redirect(string url, bool permanent)
+    internal RedirectHttpResult(string url, bool permanent)
         : this(url, permanent, preserveMethod: false)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Redirect"/> class with the values
+    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
     /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307)
     /// or permanent redirect (308) preserve the initial request method.</param>
-    internal Redirect(string url, bool permanent, bool preserveMethod)
+    internal RedirectHttpResult(string url, bool permanent, bool preserveMethod)
         : this(url, acceptLocalUrlOnly: false, permanent, preserveMethod)
     { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Redirect"/> class with the values
+    /// Initializes a new instance of the <see cref="RedirectHttpResult"/> class with the values
     /// provided.
     /// </summary>
     /// <param name="url">The URL to redirect to.</param>
@@ -56,7 +56,7 @@ public sealed partial class Redirect : IResult
     /// or permanent redirect (308) preserve the initial request method.</param>
     /// <param name="acceptLocalUrlOnly">If set to true, only local URLs are accepted
     /// and will throw an exception when the supplied URL is not considered local.</param>
-    internal Redirect(string url, bool acceptLocalUrlOnly, bool permanent, bool preserveMethod)
+    internal RedirectHttpResult(string url, bool acceptLocalUrlOnly, bool permanent, bool preserveMethod)
     {
         if (url == null)
         {

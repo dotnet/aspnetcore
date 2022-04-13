@@ -1,43 +1,38 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
-/// A <see cref="IResult" /> that on execution writes the file specified
-/// using a virtual path to the response using mechanisms provided by the host.
+/// A <see cref="PhysicalFileHttpResult"/> on execution will write a file from disk to the response
+/// using mechanisms provided by the host.
 /// </summary>
-public sealed class VirtualFile : IResult
+public sealed partial class PhysicalFileHttpResult : IResult
 {
-    private string _fileName;
-
     /// <summary>
-    /// Creates a new <see cref="VirtualFile"/> instance with
+    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
     /// the provided <paramref name="fileName"/> and the provided <paramref name="contentType"/>.
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    internal VirtualFile(string fileName, string? contentType)
+    internal PhysicalFileHttpResult(string fileName, string? contentType)
         : this(fileName, contentType, fileDownloadName: null)
     {
     }
 
     /// <summary>
-    /// Creates a new <see cref="VirtualFile"/> instance with
+    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with
     /// the provided <paramref name="fileName"/>, the provided <paramref name="contentType"/>
     /// and the provided <paramref name="fileDownloadName"/>.
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
     /// <param name="fileDownloadName">The suggested file name.</param>
-    internal VirtualFile(
+    internal PhysicalFileHttpResult(
         string fileName,
         string? contentType,
         string? fileDownloadName)
@@ -46,7 +41,7 @@ public sealed class VirtualFile : IResult
     }
 
     /// <summary>
-    /// Creates a new <see cref="VirtualFile"/> instance with the provided values.
+    /// Creates a new <see cref="PhysicalFileHttpResult"/> instance with the provided values.
     /// </summary>
     /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
     /// <param name="contentType">The Content-Type header of the response.</param>
@@ -54,7 +49,7 @@ public sealed class VirtualFile : IResult
     /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
-    internal VirtualFile(
+    internal PhysicalFileHttpResult(
         string fileName,
         string? contentType,
         string? fileDownloadName,
@@ -62,7 +57,7 @@ public sealed class VirtualFile : IResult
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
     {
-        FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
+        FileName = fileName;
         ContentType = contentType ?? "application/octet-stream";
         FileDownloadName = fileDownloadName;
         EnableRangeProcessing = enableRangeProcessing;
@@ -70,50 +65,60 @@ public sealed class VirtualFile : IResult
         EntityTag = entityTag;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the Content-Type header for the response.
+    /// </summary>
     public string ContentType { get; internal set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the file name that will be used in the Content-Disposition header of the response.
+    /// </summary>
     public string? FileDownloadName { get; internal set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the last modified information associated with the file result.
+    /// </summary>
     public DateTimeOffset? LastModified { get; internal set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the etag associated with the file result.
+    /// </summary>
     public EntityTagHeaderValue? EntityTag { get; internal init; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the value that enables range processing for the file result.
+    /// </summary>
     public bool EnableRangeProcessing { get; internal init; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets or sets the file length information .
+    /// </summary>
     public long? FileLength { get; internal set; }
 
     /// <summary>
     /// Gets or sets the path to the file that will be sent back as the response.
     /// </summary>
-    public string FileName
-    {
-        get => _fileName;
-        [MemberNotNull(nameof(_fileName))]
-        internal set => _fileName = value ?? throw new ArgumentNullException(nameof(value));
-    }
+    public string FileName { get; }
+
+    // For testing
+    internal Func<string, FileInfoWrapper> GetFileInfoWrapper { get; init; } =
+        static path => new FileInfoWrapper(path);
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        var hostingEnvironment = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
-
-        var fileInfo = GetFileInformation(hostingEnvironment.WebRootFileProvider);
+        var fileInfo = GetFileInfoWrapper(FileName);
         if (!fileInfo.Exists)
         {
-            throw new FileNotFoundException($"Could not find file: {FileName}.", FileName);
+            throw new FileNotFoundException($"Could not find file: {FileName}", FileName);
         }
-        LastModified = LastModified ?? fileInfo.LastModified;
+
+        LastModified ??= fileInfo.LastWriteTimeUtc;
         FileLength = fileInfo.Length;
 
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.VirtualFileResult");
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.PhysicalFileResult");
 
         var (range, rangeLength, completed) = HttpResultsHelper.WriteResultAsFileCore(
             httpContext,
@@ -127,12 +132,17 @@ public sealed class VirtualFile : IResult
 
         return completed ?
             Task.CompletedTask :
-            ExecuteCoreAsync(httpContext, range, rangeLength, fileInfo);
+            ExecuteCoreAsync(httpContext, range, rangeLength, FileName);
     }
 
-    private static Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength, IFileInfo fileInfo)
+    private static Task ExecuteCoreAsync(HttpContext httpContext, RangeItemHeaderValue? range, long rangeLength, string fileName)
     {
         var response = httpContext.Response;
+        if (!Path.IsPathRooted(fileName))
+        {
+            throw new NotSupportedException($"Path '{fileName}' was not rooted.");
+        }
+
         var offset = 0L;
         var count = (long?)null;
         if (range != null)
@@ -142,20 +152,33 @@ public sealed class VirtualFile : IResult
         }
 
         return response.SendFileAsync(
-            fileInfo!,
-            offset,
-            count);
+            fileName,
+            offset: offset,
+            count: count);
     }
 
-    internal IFileInfo GetFileInformation(IFileProvider fileProvider)
+    internal readonly struct FileInfoWrapper
     {
-        var normalizedPath = FileName;
-        if (normalizedPath.StartsWith("~", StringComparison.Ordinal))
+        public FileInfoWrapper(string path)
         {
-            normalizedPath = normalizedPath.Substring(1);
+            var fileInfo = new FileInfo(path);
+
+            // It means we are dealing with a symlink and need to get the information
+            // from the target file instead.
+            if (fileInfo.Exists && !string.IsNullOrEmpty(fileInfo.LinkTarget))
+            {
+                fileInfo = (FileInfo?)fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
+            }
+
+            Exists = fileInfo.Exists;
+            Length = fileInfo.Length;
+            LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
         }
 
-        var fileInfo = fileProvider.GetFileInfo(normalizedPath);
-        return fileInfo;
+        public bool Exists { get; init; }
+
+        public long Length { get; init; }
+
+        public DateTimeOffset LastWriteTimeUtc { get; init; }
     }
 }

@@ -18,7 +18,7 @@ public class RedirectToRouteResultTests
         var httpContext = new DefaultHttpContext();
         httpContext.RequestServices = CreateServices(null).BuildServiceProvider();
 
-        var result = new RedirectToRoute(null, new Dictionary<string, object>());
+        var result = new RedirectToRouteHttpResult(null, new Dictionary<string, object>());
 
         // Act & Assert
         await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
@@ -38,7 +38,7 @@ public class RedirectToRouteResultTests
 
         var httpContext = GetHttpContext(locationUrl);
 
-        var result = new RedirectToRoute(routeName, new { id = 10 });
+        var result = new RedirectToRouteHttpResult(routeName, new { id = 10 });
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -56,7 +56,7 @@ public class RedirectToRouteResultTests
         var expectedStatusCode = StatusCodes.Status301MovedPermanently;
         var httpContext = GetHttpContext(expectedUrl);
 
-        var result = new RedirectToRoute("Sample", null, true, "test");
+        var result = new RedirectToRouteHttpResult("Sample", null, true, "test");
 
         // Act
         await result.ExecuteAsync(httpContext);
@@ -74,7 +74,7 @@ public class RedirectToRouteResultTests
         var expectedStatusCode = StatusCodes.Status308PermanentRedirect;
 
         var httpContext = GetHttpContext(expectedUrl);
-        var result = new RedirectToRoute("Sample", null, true, true, "test");
+        var result = new RedirectToRouteHttpResult("Sample", null, true, true, "test");
 
         // Act
         await result.ExecuteAsync(httpContext);

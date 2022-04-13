@@ -11,26 +11,26 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// <summary>
 /// An <see cref="IResult"/> that on execution invokes <see cref="M:HttpContext.SignInAsync"/>.
 /// </summary>
-public sealed partial class SignIn : IResult
+public sealed partial class SignInHttpResult : IResult
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="SignIn"/> with the
+    /// Initializes a new instance of <see cref="SignInHttpResult"/> with the
     /// default authentication scheme.
     /// </summary>
     /// <param name="principal">The claims principal containing the user claims.</param>
-    internal SignIn(ClaimsPrincipal principal)
+    internal SignInHttpResult(ClaimsPrincipal principal)
         : this(principal, authenticationScheme: null, properties: null)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SignIn"/> with the
+    /// Initializes a new instance of <see cref="SignInHttpResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
     /// <param name="principal">The claims principal containing the user claims.</param>
     /// <param name="authenticationScheme">The authentication schemes to use when signing in the user.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
-    internal SignIn(ClaimsPrincipal principal, string? authenticationScheme, AuthenticationProperties? properties)
+    internal SignInHttpResult(ClaimsPrincipal principal, string? authenticationScheme, AuthenticationProperties? properties)
     {
         Principal = principal ?? throw new ArgumentNullException(nameof(principal));
         AuthenticationScheme = authenticationScheme;

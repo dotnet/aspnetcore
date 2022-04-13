@@ -16,7 +16,7 @@ public class JsonResultTests
     public async Task JsonResult_ExecuteAsync_WithNullValue_Works()
     {
         // Arrange
-        var result = new Json<object>(value: null, statusCode: 411, jsonSerializerOptions: null);
+        var result = new JsonHttpResult<object>(value: null, statusCode: 411, jsonSerializerOptions: null);
 
         var httpContext = new DefaultHttpContext()
         {
@@ -34,7 +34,7 @@ public class JsonResultTests
     public async Task JsonResult_ExecuteAsync_SetsStatusCode()
     {
         // Arrange
-        var result = new Json<object>(value: null, statusCode: 407, jsonSerializerOptions: null);
+        var result = new JsonHttpResult<object>(value: null, statusCode: 407, jsonSerializerOptions: null);
 
         var httpContext = new DefaultHttpContext()
         {
@@ -52,7 +52,7 @@ public class JsonResultTests
     public async Task JsonResult_ExecuteAsync_JsonSerializesBody()
     {
         // Arrange
-        var result = new Json<string>(value: "Hello", statusCode: 407, jsonSerializerOptions: null);
+        var result = new JsonHttpResult<string>(value: "Hello", statusCode: 407, jsonSerializerOptions: null);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -80,7 +80,7 @@ public class JsonResultTests
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
         var value = new Todo(10, "MyName") { Description = null };
-        var result = new Json<object>(value, jsonSerializerOptions: jsonOptions);
+        var result = new JsonHttpResult<object>(value, jsonSerializerOptions: jsonOptions);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -113,7 +113,7 @@ public class JsonResultTests
         // Arrange
         var details = new ProblemDetails();
 
-        var result = new Json<ProblemDetails>(details, jsonSerializerOptions: null);
+        var result = new JsonHttpResult<ProblemDetails>(details, jsonSerializerOptions: null);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -142,7 +142,7 @@ public class JsonResultTests
         // Arrange
         var details = new HttpValidationProblemDetails();
 
-        var result = new Json<HttpValidationProblemDetails>(details, jsonSerializerOptions: null);
+        var result = new JsonHttpResult<HttpValidationProblemDetails>(details, jsonSerializerOptions: null);
         var stream = new MemoryStream();
         var httpContext = new DefaultHttpContext()
         {
@@ -171,7 +171,7 @@ public class JsonResultTests
         // Arrange
         var details = new HttpValidationProblemDetails();
 
-        var result = new Json<HttpValidationProblemDetails>(details, StatusCodes.Status422UnprocessableEntity, jsonSerializerOptions: null);
+        var result = new JsonHttpResult<HttpValidationProblemDetails>(details, StatusCodes.Status422UnprocessableEntity, jsonSerializerOptions: null);
         var httpContext = new DefaultHttpContext()
         {
             RequestServices = CreateServices(),
@@ -190,7 +190,7 @@ public class JsonResultTests
         // Arrange
         var details = new ProblemDetails { Status = StatusCodes.Status413RequestEntityTooLarge, };
 
-        var result = new Json<ProblemDetails>(details, jsonSerializerOptions: null);
+        var result = new JsonHttpResult<ProblemDetails>(details, jsonSerializerOptions: null);
 
         var httpContext = new DefaultHttpContext()
         {

@@ -20,7 +20,7 @@ public class ContentResultTests
             Encoding = Encoding.Unicode
         }.ToString();
 
-        var contentResult = new Content(null, contentType);
+        var contentResult = new ContentHttpResult(null, contentType);
         var httpContext = GetHttpContext();
 
         // Act
@@ -107,7 +107,7 @@ public class ContentResultTests
         byte[] expectedContentData)
     {
         // Arrange
-        var contentResult = new Content(content, contentType?.ToString());
+        var contentResult = new ContentHttpResult(content, contentType?.ToString());
         var httpContext = GetHttpContext();
         var memoryStream = new MemoryStream();
         httpContext.Response.Body = memoryStream;
