@@ -229,16 +229,6 @@ public class AuthorizationMiddlewareTests
         Assert.True(calledPolicy);
     }
 
-    class CustomRequirement : IAuthorizationRequirement
-    {
-        public string Data { get; init; }
-
-        public CustomRequirement(string data)
-        {
-            Data = data;
-        }
-    }
-
     [Fact]
     public async Task Invoke_ValidClaimShouldNotFail()
     {
