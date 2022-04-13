@@ -3,11 +3,99 @@
 
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class ResultsTests
 {
+    [Fact]
+    public void Accepted_WithUrlAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var uri = "https://example.org";
+        var value = new { };
+
+        // Act
+        var result = Results.Accepted(uri, value) as Accepted<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(uri, result.Location);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void Accepted_WithUrl_ResultHasCorrectValues()
+    {
+        // Arrange
+        var uri = "https://example.org";
+
+        // Act
+        var result = Results.Accepted(uri) as Accepted;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(uri, result.Location);
+    }
+
+    [Fact]
+    public void Accepted_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Accepted() as Accepted;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Null(result.Location);
+    }
+
+    [Fact]
+    public void AcceptedAtRoute_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new { foo = 123 };
+        var value = new { };
+
+        // Act
+        var result = Results.AcceptedAtRoute(routeName, routeValues, value) as AcceptedAtRoute<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void AcceptedAtRoute_WithRouteNameAndRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new { foo = 123 };
+
+        // Act
+        var result = Results.AcceptedAtRoute(routeName, routeValues) as AcceptedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+    }
+
+    [Fact]
+    public void AcceptedAtRoute_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.AcceptedAtRoute() as AcceptedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.NotNull(result.RouteValues);
+    }
+
     [Theory]
     [MemberData(nameof(FactoryMethodsFromTuples))]
     public void FactoryMethod_ReturnsCorrectResultType(Expression<Func<IResult>> expression, Type expectedReturnType)
