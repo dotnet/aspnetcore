@@ -31,9 +31,9 @@ app.MapGet("/null-result", IResult () => null);
 
 app.MapGet("/todo/{id}", Results<Ok<Todo>, NotFound, BadRequest> (int id) => id switch
     {
-        <= 0 => Results.Typed.BadRequest(),
-        >= 1 and <= 10 => Results.Typed.Ok(new Todo(id, "Walk the dog")),
-        _ => Results.Typed.NotFound()
+        <= 0 => TypedResults.BadRequest(),
+        >= 1 and <= 10 => TypedResults.Ok(new Todo(id, "Walk the dog")),
+        _ => TypedResults.NotFound()
     });
 
 var extensions = new Dictionary<string, object>() { { "traceId", "traceId123" } };
@@ -53,7 +53,7 @@ app.MapGet("/validation-problem-object", () =>
     Results.Problem(new HttpValidationProblemDetails(errors) { Status = 400, Extensions = { { "traceId", "traceId123" } } }));
 
 app.MapGet("/validation-problem-typed", () =>
-    Results.Typed.ValidationProblem(errors, extensions: extensions));
+    TypedResults.ValidationProblem(errors, extensions: extensions));
 
 app.Run();
 
