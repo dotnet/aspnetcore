@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ internal sealed partial class RateLimitingMiddleware
     private readonly Func<HttpContext, RateLimitLease, Task> _onRejected;
     private readonly ILogger _logger;
     private readonly PartitionedRateLimiter<HttpContext> _limiter;
+    private readonly HttpStatusCode _rejectionStatusCode;
 
     /// <summary>
     /// Creates a new <see cref="RateLimitingMiddleware"/>.
@@ -36,6 +38,7 @@ internal sealed partial class RateLimitingMiddleware
         _logger = logger;
         _limiter = options.Value.Limiter;
         _onRejected = options.Value.OnRejected;
+        _rejectionStatusCode = options.Value.RejectionStatusCode;
     }
 
     // TODO - EventSource?
@@ -54,7 +57,7 @@ internal sealed partial class RateLimitingMiddleware
         else
         {
             RateLimiterLog.RequestRejectedLimitsExceeded(_logger);
-            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            context.Response.StatusCode = (int)_rejectionStatusCode;
             await _onRejected(context, lease);
         }
     }
