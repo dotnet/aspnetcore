@@ -195,7 +195,6 @@ Microsoft.AspNetCore.Http.HttpResults.VirtualFileHttpResult.FileDownloadName.get
 Microsoft.AspNetCore.Http.HttpResults.VirtualFileHttpResult.FileLength.get -> long?
 Microsoft.AspNetCore.Http.HttpResults.VirtualFileHttpResult.FileName.get -> string!
 Microsoft.AspNetCore.Http.HttpResults.VirtualFileHttpResult.LastModified.get -> System.DateTimeOffset?
-Microsoft.AspNetCore.Http.Results.Typed
 Microsoft.AspNetCore.Http.TypedResults
 static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
 static Microsoft.AspNetCore.Http.HttpResults.Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6>.implicit operator Microsoft.AspNetCore.Http.HttpResults.Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6>!(TResult1 result) -> Microsoft.AspNetCore.Http.HttpResults.Results<TResult1, TResult2, TResult3, TResult4, TResult5, TResult6>!
@@ -219,54 +218,6 @@ static Microsoft.AspNetCore.Http.HttpResults.Results<TResult1, TResult2, TResult
 static Microsoft.AspNetCore.Http.HttpResults.Results<TResult1, TResult2>.implicit operator Microsoft.AspNetCore.Http.HttpResults.Results<TResult1, TResult2>!(TResult1 result) -> Microsoft.AspNetCore.Http.HttpResults.Results<TResult1, TResult2>!
 static Microsoft.AspNetCore.Http.HttpResults.Results<TResult1, TResult2>.implicit operator Microsoft.AspNetCore.Http.HttpResults.Results<TResult1, TResult2>!(TResult2 result) -> Microsoft.AspNetCore.Http.HttpResults.Results<TResult1, TResult2>!
 static Microsoft.AspNetCore.Http.HttpResults.ValidationProblem.PopulateMetadata(Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext! context) -> void
-static Microsoft.AspNetCore.Http.Results.Typed.Accepted(System.Uri! uri) -> Microsoft.AspNetCore.Http.HttpResults.Accepted!
-static Microsoft.AspNetCore.Http.Results.Typed.Accepted(string! uri) -> Microsoft.AspNetCore.Http.HttpResults.Accepted!
-static Microsoft.AspNetCore.Http.Results.Typed.Accepted<TValue>(System.Uri! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Accepted<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.Accepted<TValue>(string! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Accepted<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.AcceptedAtRoute(string? routeName = null, object? routeValues = null) -> Microsoft.AspNetCore.Http.HttpResults.AcceptedAtRoute!
-static Microsoft.AspNetCore.Http.Results.Typed.AcceptedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null) -> Microsoft.AspNetCore.Http.HttpResults.AcceptedAtRoute<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.BadRequest() -> Microsoft.AspNetCore.Http.HttpResults.BadRequest!
-static Microsoft.AspNetCore.Http.Results.Typed.BadRequest<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.HttpResults.BadRequest<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.Bytes(System.ReadOnlyMemory<byte> contents, string? contentType = null, string? fileDownloadName = null, bool enableRangeProcessing = false, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.HttpResults.FileContent!
-static Microsoft.AspNetCore.Http.Results.Typed.Bytes(byte[]! contents, string? contentType = null, string? fileDownloadName = null, bool enableRangeProcessing = false, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.HttpResults.FileContent!
-static Microsoft.AspNetCore.Http.Results.Typed.Challenge(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, System.Collections.Generic.IList<string!>? authenticationSchemes = null) -> Microsoft.AspNetCore.Http.HttpResults.Challenge!
-static Microsoft.AspNetCore.Http.Results.Typed.Conflict() -> Microsoft.AspNetCore.Http.HttpResults.Conflict!
-static Microsoft.AspNetCore.Http.Results.Typed.Conflict<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.HttpResults.Conflict<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.Content(string! content, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! contentType) -> Microsoft.AspNetCore.Http.HttpResults.Content!
-static Microsoft.AspNetCore.Http.Results.Typed.Content(string! content, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.HttpResults.Content!
-static Microsoft.AspNetCore.Http.Results.Typed.Created(System.Uri! uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
-static Microsoft.AspNetCore.Http.Results.Typed.Created(string! uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
-static Microsoft.AspNetCore.Http.Results.Typed.Created<TValue>(System.Uri! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.Created<TValue>(string! uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.CreatedAtRoute(string? routeName = null, object? routeValues = null) -> Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute!
-static Microsoft.AspNetCore.Http.Results.Typed.CreatedAtRoute<TValue>(TValue? value, string? routeName = null, object? routeValues = null) -> Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.File(System.IO.Stream! fileStream, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.HttpResults.HttpFileStream!
-static Microsoft.AspNetCore.Http.Results.Typed.File(byte[]! fileContents, string? contentType = null, string? fileDownloadName = null, bool enableRangeProcessing = false, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.HttpResults.FileContent!
-static Microsoft.AspNetCore.Http.Results.Typed.Forbid(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, System.Collections.Generic.IList<string!>? authenticationSchemes = null) -> Microsoft.AspNetCore.Http.HttpResults.Forbid!
-static Microsoft.AspNetCore.Http.Results.Typed.Json<TValue>(TValue? data, System.Text.Json.JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.Json<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.LocalRedirect(string! localUrl, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.HttpResults.Redirect!
-static Microsoft.AspNetCore.Http.Results.Typed.NoContent() -> Microsoft.AspNetCore.Http.HttpResults.NoContent!
-static Microsoft.AspNetCore.Http.Results.Typed.NotFound() -> Microsoft.AspNetCore.Http.HttpResults.NotFound!
-static Microsoft.AspNetCore.Http.Results.Typed.NotFound<TValue>(TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.NotFound<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.Ok() -> Microsoft.AspNetCore.Http.HttpResults.Ok!
-static Microsoft.AspNetCore.Http.Results.Typed.Ok<TValue>(TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Ok<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.PhysicalFile(string! path, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.HttpResults.PhysicalFile!
-static Microsoft.AspNetCore.Http.Results.Typed.Problem(Microsoft.AspNetCore.Mvc.ProblemDetails! problemDetails) -> Microsoft.AspNetCore.Http.HttpResults.Problem!
-static Microsoft.AspNetCore.Http.Results.Typed.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.Problem!
-static Microsoft.AspNetCore.Http.Results.Typed.Redirect(string! url, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.HttpResults.Redirect!
-static Microsoft.AspNetCore.Http.Results.Typed.RedirectToRoute(string? routeName = null, object? routeValues = null, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.HttpResults.RedirectToRoute!
-static Microsoft.AspNetCore.Http.Results.Typed.SignIn(System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, string? authenticationScheme = null) -> Microsoft.AspNetCore.Http.HttpResults.SignIn!
-static Microsoft.AspNetCore.Http.Results.Typed.SignOut(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties = null, System.Collections.Generic.IList<string!>? authenticationSchemes = null) -> Microsoft.AspNetCore.Http.HttpResults.SignOut!
-static Microsoft.AspNetCore.Http.Results.Typed.StatusCode(int statusCode) -> Microsoft.AspNetCore.Http.HttpResults.Status!
-static Microsoft.AspNetCore.Http.Results.Typed.Stream(System.Func<System.IO.Stream!, System.Threading.Tasks.Task!>! streamWriterCallback, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.HttpResults.PushStream!
-static Microsoft.AspNetCore.Http.Results.Typed.Stream(System.IO.Pipelines.PipeReader! pipeReader, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.HttpResults.HttpFileStream!
-static Microsoft.AspNetCore.Http.Results.Typed.Stream(System.IO.Stream! stream, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.HttpResults.HttpFileStream!
-static Microsoft.AspNetCore.Http.Results.Typed.Text(string! content, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.HttpResults.Content!
-static Microsoft.AspNetCore.Http.Results.Typed.Unauthorized() -> Microsoft.AspNetCore.Http.HttpResults.Unauthorized!
-static Microsoft.AspNetCore.Http.Results.Typed.UnprocessableEntity() -> Microsoft.AspNetCore.Http.HttpResults.UnprocessableEntity!
-static Microsoft.AspNetCore.Http.Results.Typed.UnprocessableEntity<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.HttpResults.UnprocessableEntity<TValue>!
-static Microsoft.AspNetCore.Http.Results.Typed.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail = null, string? instance = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.BadRequest<Microsoft.AspNetCore.Http.HttpValidationProblemDetails!>!
-static Microsoft.AspNetCore.Http.Results.Typed.VirtualFile(string! path, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.HttpResults.VirtualFile!
 static Microsoft.AspNetCore.Http.Results.Bytes(System.ReadOnlyMemory<byte> contents, string? contentType = null, string? fileDownloadName = null, bool enableRangeProcessing = false, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Empty.get -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Stream(System.Func<System.IO.Stream!, System.Threading.Tasks.Task!>! streamWriterCallback, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null) -> Microsoft.AspNetCore.Http.IResult!
