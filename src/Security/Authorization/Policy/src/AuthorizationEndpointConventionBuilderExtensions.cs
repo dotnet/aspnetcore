@@ -98,12 +98,7 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             throw new ArgumentNullException(nameof(policy));
         }
 
-        // REVIEW: should we check if there already is any authorize attributes first?
-        builder.Add(endpointBuilder =>
-        {
-            endpointBuilder.Metadata.Add(new AuthorizeAttribute());
-            endpointBuilder.Metadata.Add(policy);
-        });
+        RequirePolicyCore(builder, policy);
         return builder;
     }
 
@@ -129,13 +124,7 @@ public static class AuthorizationEndpointConventionBuilderExtensions
 
         var policyBuilder = new AuthorizationPolicyBuilder();
         configurePolicy(policyBuilder);
-
-        // REVIEW: should we check if there already is any authorize attributes first?
-        builder.Add(endpointBuilder =>
-        {
-            endpointBuilder.Metadata.Add(new AuthorizeAttribute());
-            endpointBuilder.Metadata.Add(policyBuilder.Build());
-        });
+        RequirePolicyCore(builder, policyBuilder.Build());
         return builder;
     }
 
@@ -152,6 +141,20 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             endpointBuilder.Metadata.Add(_allowAnonymousMetadata);
         });
         return builder;
+    }
+
+    private static void RequirePolicyCore<TBuilder>(TBuilder builder, AuthorizationPolicy policy)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.Add(endpointBuilder =>
+        {
+            // Only add an authorize attribute if there isn't one
+            if (!endpointBuilder.Metadata.Any(meta => meta is IAuthorizeData))
+            {
+                endpointBuilder.Metadata.Add(new AuthorizeAttribute());
+            }
+            endpointBuilder.Metadata.Add(policy);
+        });
     }
 
     private static void RequireAuthorizationCore<TBuilder>(TBuilder builder, IEnumerable<IAuthorizeData> authorizeData)

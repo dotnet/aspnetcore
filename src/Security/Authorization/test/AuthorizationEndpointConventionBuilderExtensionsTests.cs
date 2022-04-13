@@ -165,6 +165,56 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
         Assert.Equal(requirement, policy.Requirements[0]);
     }
 
+    [Fact]
+    public void RequireAuthorization_PolicyCallbackWithAuthorize()
+    {
+        // Arrange
+        var builder = new TestEndpointConventionBuilder();
+        var authorize = new AuthorizeAttribute();
+        var requirement = new TestRequirement();
+
+        // Act
+        builder.RequireAuthorization(policyBuilder => policyBuilder.Requirements.Add(requirement));
+
+        // Assert
+        var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+        endpointModel.Metadata.Add(authorize);
+        convention(endpointModel);
+
+        // Confirm that we don't add another authorize if one already exists
+        Assert.Equal(2, endpointModel.Metadata.Count);
+        Assert.Equal(authorize, endpointModel.Metadata[0]);
+        var policy = Assert.IsAssignableFrom<AuthorizationPolicy>(endpointModel.Metadata[1]);
+        Assert.Equal(1, policy.Requirements.Count);
+        Assert.Equal(requirement, policy.Requirements[0]);
+    }
+
+    [Fact]
+    public void RequireAuthorization_PolicyWithAuthorize()
+    {
+        // Arrange
+        var builder = new TestEndpointConventionBuilder();
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var authorize = new AuthorizeAttribute();
+
+        // Act
+        builder.RequireAuthorization(policy);
+
+        // Assert
+        var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+        endpointModel.Metadata.Add(authorize);
+        convention(endpointModel);
+
+        // Confirm that we don't add another authorize if one already exists
+        Assert.Equal(2, endpointModel.Metadata.Count);
+        Assert.Equal(authorize, endpointModel.Metadata[0]);
+        Assert.Equal(policy, endpointModel.Metadata[1]);
+    }
+
     class TestRequirement : IAuthorizationRequirement { }
 
     [Fact]
