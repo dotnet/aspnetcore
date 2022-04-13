@@ -47,22 +47,15 @@ internal sealed partial class RateLimitingMiddleware
     public async Task Invoke(HttpContext context)
     {
         using var lease = await TryAcquireAsync(context);
-        try
+        if (lease.IsAcquired)
         {
-            if (lease.IsAcquired)
-            {
-                await _next(context);
-            }
-            else
-            {
-                RateLimiterLog.RequestRejectedLimitsExceeded(_logger);
-                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                await _onRejected(context);
-            }
+            await _next(context);
         }
-        finally
+        else
         {
-            lease?.Dispose();
+            RateLimiterLog.RequestRejectedLimitsExceeded(_logger);
+            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            await _onRejected(context);
         }
     }
 
