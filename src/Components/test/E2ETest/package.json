@@ -21,6 +21,8 @@
     "typescript": "^3.7.5"
   },
   "resolutions": {
-    "lodash": ">=4.17.21"
+    "lodash": ">=4.17.21",
+    "async": ">=3.2.2",
+    "minimist": ">=1.2.6"
   }
 }

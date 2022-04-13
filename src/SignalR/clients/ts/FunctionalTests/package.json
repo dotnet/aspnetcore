@@ -54,7 +54,10 @@
   "resolutions": {
     "lodash": ">=4.17.21",
     "url-parse": ">=1.5.8",
-    "node-fetch": ">=2.6.7"
+    "node-fetch": ">=2.6.7",
+    "async": ">=3.2.2",
+    "ansi-regex": ">=4.1.1",
+    "minimist": ">=1.2.6"
   },
   "author": "",
   "license": "Apache-2.0"
