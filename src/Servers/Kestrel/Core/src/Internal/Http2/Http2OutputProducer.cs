@@ -52,8 +52,9 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         _frameWriter = context.FrameWriter;
         _memoryPool = context.MemoryPool;
         _log = context.ServiceContext.Log;
+        var scheduleInline = context.ServiceContext.Scheduler == PipeScheduler.Inline;
 
-        _pipe = CreateDataPipe(_memoryPool);
+        _pipe = CreateDataPipe(_memoryPool, scheduleInline);
 
         _pipeWriter = new ConcurrentPipeWriter(_pipe.Writer, _memoryPool, _dataWriterLock);
         _pipeReader = _pipe.Reader;
@@ -121,14 +122,14 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     // Removes consumed bytes from the queue.
     // Returns a bool that represents whether we should schedule this producer to write
     // the remaining bytes.
-    internal (bool hasMoreData, bool reschedule) ObserveDataAndState(long bytes, State state)
+    internal (bool hasMoreData, State unobservedState) ObserveDataAndState(long bytes, State state)
     {
         lock (_dataWriterLock)
         {
             _isScheduled = false;
             _unobservedState &= ~state;
             _unconsumedBytes -= bytes;
-            return (_unconsumedBytes > 0, _unobservedState != State.None);
+            return (_unconsumedBytes > 0, _unobservedState);
         }
     }
 
@@ -500,8 +501,10 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
-            if (_streamCompleted)
+            if (_streamCompleted && _completedResponse)
             {
+                // We can overschedule as long as we haven't yet completed the response. This is important because
+                // we may need to abort the stream if it's waiting for a window update.
                 return;
             }
 
@@ -672,14 +675,17 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         throw new InvalidOperationException("Cannot write to response after the request has completed.");
     }
 
-    private static Pipe CreateDataPipe(MemoryPool<byte> pool)
+    private static Pipe CreateDataPipe(MemoryPool<byte> pool, bool scheduleInline)
         => new Pipe(new PipeOptions
         (
             pool: pool,
             readerScheduler: PipeScheduler.Inline,
             writerScheduler: PipeScheduler.ThreadPool,
-            pauseWriterThreshold: 1,
-            resumeWriterThreshold: 1,
+            // The unit tests rely on inline scheduling and the ability to control individual writes
+            // and assert individual frames. Setting the thresholds to 1 avoids frames being coaleased together
+            // and allows the test to assert them individually.
+            pauseWriterThreshold: scheduleInline ? 1 : 4096,
+            resumeWriterThreshold: scheduleInline ? 1 : 2048,
             useSynchronizationContext: false,
             minimumSegmentSize: pool.GetMinimumSegmentSize()
         ));

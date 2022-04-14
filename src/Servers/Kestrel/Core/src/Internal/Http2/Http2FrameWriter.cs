@@ -118,31 +118,19 @@ internal class Http2FrameWriter
                     var reader = producer.PipeReader;
                     var stream = producer.Stream;
 
-                    var observed = Http2OutputProducer.State.None;
-
                     // We don't need to check the result because it's either
                     // - true because we have a result
                     // - false because we're flushing headers
                     reader.TryRead(out var readResult);
-
                     var buffer = readResult.Buffer;
-                    var unobservedState = producer.UnobservedState;
-                    var flushHeaders = unobservedState.HasFlag(Http2OutputProducer.State.FlushHeaders);
 
-                    if (flushHeaders)
-                    {
-                        observed |= Http2OutputProducer.State.FlushHeaders;
-                    }
+                    // Stash the unobserved state, we're going to mark this snapshot as observed
+                    var observed = producer.UnobservedState;
+                    var flushHeaders = observed.HasFlag(Http2OutputProducer.State.FlushHeaders);
+                    var aborted = observed.HasFlag(Http2OutputProducer.State.Canceled);
 
-                    if (readResult.IsCanceled)
-                    {
-                        observed |= Http2OutputProducer.State.Canceled;
-                    }
-
-                    if (readResult.IsCompleted)
-                    {
-                        observed |= Http2OutputProducer.State.Completed;
-                    }
+                    // Completed is special because it's a terminal state that should ideally never be removed.
+                    var completed = observed.HasFlag(Http2OutputProducer.State.Completed) || readResult.IsCompleted;
 
                     // Check the stream window
                     var (actual, remainingStream) = producer.ConsumeStreamWindow(buffer.Length);
@@ -156,11 +144,14 @@ internal class Http2FrameWriter
                         buffer = buffer.Slice(0, actual);
                     }
 
-                    var (hasMoreData, reschedule) = producer.ObserveDataAndState(buffer.Length, observed);
+                    var (hasMoreData, nextState) = producer.ObserveDataAndState(buffer.Length, observed);
 
                     FlushResult flushResult = default;
 
-                    if (readResult.IsCanceled)
+                    // There are 2 cases where we abort if:
+                    // 1. We're done writing data and there's no more data to be written
+                    // 2. We're not done writing data but we got the abort message
+                    if ((aborted && completed && actual == 0) || (aborted && !completed))
                     {
                         // Response body is aborted, complete reader for this output producer.
                         if (flushHeaders)
@@ -169,7 +160,7 @@ internal class Http2FrameWriter
                             WriteResponseHeaders(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
                         }
                     }
-                    else if (readResult.IsCompleted && stream.ResponseTrailers is { Count: > 0 } && !hasMoreData)
+                    else if (completed && stream.ResponseTrailers is { Count: > 0 } && !hasMoreData)
                     {
                         // Output is ending and there are trailers to write
                         // Write any remaining content then write trailers and there's no
@@ -181,7 +172,7 @@ internal class Http2FrameWriter
                         // It is faster to write data and trailers together. Locking once reduces lock contention.
                         flushResult = await WriteDataAndTrailersAsync(stream, buffer, flushHeaders, stream.ResponseTrailers);
                     }
-                    else if (readResult.IsCompleted && producer.StreamEnded)
+                    else if (completed && producer.StreamEnded)
                     {
                         if (buffer.Length != 0)
                         {
@@ -197,7 +188,7 @@ internal class Http2FrameWriter
                     }
                     else
                     {
-                        var endStream = readResult.IsCompleted && !hasMoreData;
+                        var endStream = completed && !hasMoreData;
 
                         if (endStream)
                         {
@@ -214,7 +205,7 @@ internal class Http2FrameWriter
 
                     reader.AdvanceTo(buffer.End);
 
-                    if ((readResult.IsCompleted && !hasMoreData) || readResult.IsCanceled)
+                    if ((completed && !hasMoreData) || aborted)
                     {
                         await reader.CompleteAsync();
 
@@ -222,7 +213,7 @@ internal class Http2FrameWriter
                     }
                     // We're not going to schedule this again if there's no remaining window.
                     // When the window update is sent, the producer will be re-queued if needed.
-                    else if (hasMoreData)
+                    else if (hasMoreData && !nextState.HasFlag(Http2OutputProducer.State.Canceled))
                     {
                         // We have no more connection window, put this producer in a queue waiting for it to
                         // a window update to resume the connection.
@@ -267,7 +258,7 @@ internal class Http2FrameWriter
                             }
                         }
                     }
-                    else if (reschedule)
+                    else if (nextState != Http2OutputProducer.State.None)
                     {
                         producer.Schedule();
                     }
