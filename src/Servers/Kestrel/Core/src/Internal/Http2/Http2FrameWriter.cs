@@ -850,7 +850,15 @@ internal class Http2FrameWriter
     {
         lock (_windowUpdateLock)
         {
-            while (_waitingForMoreConnectionWindow.TryDequeue(out var producer))
+            if (_lastWindowConsumer is { } producer)
+            {
+                _lastWindowConsumer = null;
+
+                // Put the consumer of the connection window last
+                _waitingForMoreConnectionWindow.Enqueue(producer);
+            }
+
+            while (_waitingForMoreConnectionWindow.TryDequeue(out producer))
             {
                 if (!producer.CompletedResponse)
                 {
