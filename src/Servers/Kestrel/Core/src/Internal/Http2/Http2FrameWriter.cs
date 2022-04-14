@@ -112,7 +112,9 @@ internal class Http2FrameWriter
     {
         while (await _channel.Reader.WaitToReadAsync())
         {
-            while (_channel.Reader.TryRead(out var producer))
+            // We need to handle the case where aborts can be scheduled while this loop is running and might be on the way to complete
+            // the reader.
+            while (_channel.Reader.TryRead(out var producer) && !producer.CompletedResponse)
             {
                 try
                 {
@@ -149,10 +151,10 @@ internal class Http2FrameWriter
 
                     FlushResult flushResult = default;
 
-                    // There are 2 cases where we abort if:
-                    // 1. We're done writing data and there's no more data to be written
-                    // 2. We're not done writing data but we got the abort message
-                    if ((aborted && completed && actual == 0) || (aborted && !completed))
+                    // There are 2 cases where we abort:
+                    // 1. We're not complete but we got the abort.
+                    // 2. We're complete and there's no more response data to be written.
+                    if ((aborted && !completed) || (aborted && completed && actual == 0 && stream.ResponseTrailers is null or { Count: 0 }))
                     {
                         // Response body is aborted, complete reader for this output producer.
                         if (flushHeaders)
@@ -850,7 +852,7 @@ internal class Http2FrameWriter
         {
             while (_waitingForMoreConnectionWindow.TryDequeue(out var producer))
             {
-                if (!producer.StreamCompleted)
+                if (!producer.CompletedResponse)
                 {
                     // Stop the output
                     producer.Stop();
@@ -882,7 +884,7 @@ internal class Http2FrameWriter
 
             while (_waitingForMoreConnectionWindow.TryDequeue(out producer))
             {
-                if (!producer.StreamCompleted)
+                if (!producer.CompletedResponse)
                 {
                     producer.Schedule();
                 }

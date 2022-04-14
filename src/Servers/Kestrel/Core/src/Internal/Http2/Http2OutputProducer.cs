@@ -73,13 +73,13 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
     public bool StreamEnded => _streamEnded;
 
-    public bool StreamCompleted
+    public bool CompletedResponse
     {
         get
         {
             lock (_dataWriterLock)
             {
-                return _streamCompleted;
+                return _completedResponse;
             }
         }
     }
