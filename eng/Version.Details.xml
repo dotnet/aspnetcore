@@ -296,15 +296,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.17">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>5345a018949a810a5686597057da8c069c78807e</Sha>
+      <Sha>6a984143635bde23e728abaaccbde52f5ea8fa3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.17-servicing.22213.10">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.17-servicing.22213.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>5345a018949a810a5686597057da8c069c78807e</Sha>
+      <Sha>6a984143635bde23e728abaaccbde52f5ea8fa3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.17-servicing.22213.10">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.17-servicing.22213.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>5345a018949a810a5686597057da8c069c78807e</Sha>
+      <Sha>6a984143635bde23e728abaaccbde52f5ea8fa3e</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
