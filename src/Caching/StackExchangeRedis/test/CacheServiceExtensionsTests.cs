@@ -54,4 +54,20 @@ public class CacheServiceExtensionsTests
 
         Assert.Same(services, services.AddStackExchangeRedisCache(_ => { }));
     }
+
+    [Fact]
+    public void AddStackExchangeRedisCache_RegistersRedisCacheWithoutSetupAction()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddStackExchangeRedisCache();
+        var distributedCache = services.FirstOrDefault(x => x.ServiceType == typeof(IDistributedCache));
+
+        // Assert
+        Assert.NotNull(distributedCache);
+        Assert.Equal(typeof(RedisCache), distributedCache.ImplementationType);
+        Assert.Equal(ServiceLifetime.Singleton, distributedCache.Lifetime);
+    }
 }
