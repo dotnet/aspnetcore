@@ -1694,8 +1694,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildAfterTargetingPack", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildAfterTargetingPack", "src\BuildAfterTargetingPack\BuildAfterTargetingPack.csproj", "{8FED7E65-A7DD-4F13-8980-BF03E77B6C85}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src (2)", "src (2)", "{B5EA30F3-399A-466B-8C5B-F2EDF251CE6E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{85520C50-CF33-4A27-BEC9-272100870D9D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenApi", "OpenApi", "{2D2D1107-7389-473B-BDCE-BFA060EAC453}"

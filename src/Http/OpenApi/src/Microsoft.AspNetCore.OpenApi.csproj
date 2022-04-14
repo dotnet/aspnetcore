@@ -3,10 +3,9 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>aspnetcore;authorization</PackageTags>
+    <PackageTags>aspnetcore;openapi</PackageTags>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
-    <NoWarn>IDE0060;CA1822;IDE0059;CA1305;RS0037;RS0016;CS8604;IDE2000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

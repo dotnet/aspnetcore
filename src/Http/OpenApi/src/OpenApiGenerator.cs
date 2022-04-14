@@ -20,12 +20,21 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
+/// <summary>
+/// Defines a set of methods for generating OpenAPI definitions for endpoints.
+/// </summary>
 public class OpenApiGenerator
 {
     private readonly IHostEnvironment? _environment;
     private readonly IServiceProviderIsService? _serviceProviderIsService;
     private readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
 
+    /// <summary>
+    /// Creates an <see cref="OpenApiGenerator" /> instance given a <see cref="IHostEnvironment" />
+    /// and a <see cref="IServiceProviderIsService" /> instance.
+    /// </summary>
+    /// <param name="environment">The host environment.</param>
+    /// <param name="serviceProviderIsService">The service to determine if the a type is available from the <see cref="IServiceProvider"/>.</param>
     public OpenApiGenerator(
         IHostEnvironment? environment,
         IServiceProviderIsService? serviceProviderIsService)
@@ -34,7 +43,14 @@ public class OpenApiGenerator
         _serviceProviderIsService = serviceProviderIsService;
     }
 
-    internal OpenApiPathItem GetOpenApiPathItem(
+    /// <summary>
+    /// Generates an <see cref="OpenApiPathItem"/> for a given <see cref="Endpoint" />.
+    /// </summary>
+    /// <param name="methodInfo">The <see cref="MethodInfo"/> associated with the route handler of the endpoint.</param>
+    /// <param name="metadata">The endpoint <see cref="EndpointMetadataCollection"/>.</param>
+    /// <param name="pattern">The route pattern.</param>
+    /// <returns>An <see cref="OpenApiPathItem"/> annotation derived from the given inputs.</returns>
+    public OpenApiPathItem GetOpenApiPathItem(
         MethodInfo methodInfo,
         EndpointMetadataCollection metadata,
         RoutePattern pattern)
@@ -83,7 +99,7 @@ public class OpenApiGenerator
         }
     }
 
-    private OpenApiResponses GetOpenApiResponses(MethodInfo method, EndpointMetadataCollection metadata)
+    private static OpenApiResponses GetOpenApiResponses(MethodInfo method, EndpointMetadataCollection metadata)
     {
         var responses = new OpenApiResponses();
         var responseType = method.ReturnType;
@@ -103,7 +119,7 @@ public class OpenApiGenerator
         var responseProviderMetadata = metadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
         var producesResponseMetadata = metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>();
 
-        var eligibileAnnotations = new Dictionary<int, (Type, MediaTypeCollection)>();
+        var eligibileAnnotations = new Dictionary<int, (Type?, MediaTypeCollection)>();
 
         foreach (var responseMetadata in producesResponseMetadata)
         {
@@ -133,10 +149,9 @@ public class OpenApiGenerator
             {
                 GenerateDefaultContent(discoveredContentTypeAnnotation, discoveredTypeAnnotation);
                 eligibileAnnotations.Add(statusCode, (discoveredTypeAnnotation, discoveredContentTypeAnnotation));
-            }    
+            }
         }
 
-        
         foreach (var providerMetadata in responseProviderMetadata)
         {
             var statusCode = providerMetadata.StatusCode;
@@ -184,7 +199,7 @@ public class OpenApiGenerator
 
         foreach (var annotation in eligibileAnnotations)
         {
-            var statusCode = annotation.Key.ToString();
+            var statusCode = $"{annotation.Key}";
             var (type, contentTypes) = annotation.Value;
             var responseContent = new Dictionary<string, OpenApiMediaType>();
 
@@ -192,7 +207,7 @@ public class OpenApiGenerator
             {
                 responseContent[contentType] = new OpenApiMediaType
                 {
-                    Schema = new OpenApiSchema { Type = type.Name }
+                    Schema = new OpenApiSchema { Type = type?.Name }
                 };
             }
 
@@ -202,11 +217,11 @@ public class OpenApiGenerator
         return responses;
     }
 
-    private void GenerateDefaultContent(MediaTypeCollection discoveredContentTypeAnnotation, Type discoveredTypeAnnotation)
+    private static void GenerateDefaultContent(MediaTypeCollection discoveredContentTypeAnnotation, Type? discoveredTypeAnnotation)
     {
         if (discoveredContentTypeAnnotation.Count == 0)
         {
-            if (discoveredTypeAnnotation == typeof(void))
+            if (discoveredTypeAnnotation == typeof(void) || discoveredTypeAnnotation == null)
             {
                 return;
             }
@@ -221,7 +236,7 @@ public class OpenApiGenerator
         }
     }
 
-    private void GenerateDefaultResponses(Dictionary<int, (Type, MediaTypeCollection)> eligibleAnnotations, Type responseType)
+    private static void GenerateDefaultResponses(Dictionary<int, (Type?, MediaTypeCollection)> eligibleAnnotations, Type responseType)
     {
         if (responseType == typeof(void))
         {
@@ -272,7 +287,6 @@ public class OpenApiGenerator
             isRequired = !acceptsMetadata.IsOptional;
         }
 
-        
         if (!hasFormOrBodyParameter)
         {
             return new OpenApiRequestBody()
@@ -294,7 +308,7 @@ public class OpenApiGenerator
                     {
                         Schema = new OpenApiSchema
                         {
-                            Type = requestBodyParameter?.ParameterType.Name
+                            Type = requestBodyParameter.ParameterType.Name
                         }
                     };
                 }
@@ -304,7 +318,7 @@ public class OpenApiGenerator
                     {
                         Schema = new OpenApiSchema
                         {
-                            Type = requestBodyParameter?.ParameterType.Name
+                            Type = requestBodyParameter.ParameterType.Name
                         }
                     }; ;
                 }
@@ -368,7 +382,7 @@ public class OpenApiGenerator
     {
         var parameters = methodInfo.GetParameters();
         var openApiParameters = new List<OpenApiParameter>();
-        
+
         foreach (var parameter in parameters)
         {
             var (isBodyOrFormParameter, parameterLocation) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
@@ -388,7 +402,7 @@ public class OpenApiGenerator
             {
                 Name = parameter.Name,
                 In = parameterLocation,
-                Content = GetOpenApiParameterContent(parameter, metadata, pattern),
+                Content = GetOpenApiParameterContent(metadata),
                 Schema = new OpenApiSchema { Type = parameter.ParameterType.Name },
                 Required = !isOptional
 
@@ -399,8 +413,7 @@ public class OpenApiGenerator
         return openApiParameters;
     }
 
-
-    private static IDictionary<string, OpenApiMediaType> GetOpenApiParameterContent(ParameterInfo parameterInfo, EndpointMetadataCollection metadata, RoutePattern pattern)
+    private static IDictionary<string, OpenApiMediaType> GetOpenApiParameterContent(EndpointMetadataCollection metadata)
     {
         var openApiParameterContent = new Dictionary<string, OpenApiMediaType>();
         var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
@@ -409,7 +422,7 @@ public class OpenApiGenerator
             foreach (var contentType in acceptsMetadata.ContentTypes)
             {
                 openApiParameterContent.Add(contentType, new OpenApiMediaType());
-            }    
+            }
         }
 
         return openApiParameterContent;

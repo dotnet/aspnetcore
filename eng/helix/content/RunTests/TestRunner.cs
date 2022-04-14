@@ -8,7 +8,6 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-
 #if INSTALLPLAYWRIGHT
 using Microsoft.Playwright;
 #endif

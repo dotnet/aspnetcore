@@ -17,8 +17,4 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)RoutingMetadata\*.cs" LinkBase="Shared" />
-  </ItemGroup>
-
 </Project>
