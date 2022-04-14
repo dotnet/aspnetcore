@@ -74,7 +74,10 @@ Building ASP.NET Core on Windows (10, version 1803 or newer) requires that you h
 
 #### [Visual Studio 2022](https://visualstudio.com)
 
-Visual Studio 2022 (17.1 or above) is required to build the repo locally. If you don't have Visual Studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
+Visual Studio 2022 (17.1 or above) is required to build the repo locally.
+
+If you don't have Visual Studio installed you can run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1) to install the exact required dependencies.
+If you do have Visual Studio installed, you can [import the configuration](https://docs.microsoft.com/en-us/visualstudio/install/import-export-installation-configurations?view=vs-2022#import-a-configuration) from the `.vsconfig` file at the root of the repository to ensure you have all of the required components.
 
 > :bulb: By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
 > :bulb: To install Visual Studio from the preview channel, you can use the `-Channel` flag to set the channel (`-Channel Preview`).

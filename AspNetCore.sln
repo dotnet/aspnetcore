@@ -1706,6 +1706,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OpenAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.OpenApi.Tests", "src\Http\OpenApi\test\Microsoft.AspNetCore.OpenApi.Tests.csproj", "{77305727-1A53-402A-A4E8-4CFA0DBFACC6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResultsOfTGenerator", "src\Http\Http.Results\tools\ResultsOfTGenerator\ResultsOfTGenerator.csproj", "{9716D0D0-2251-44DD-8596-67D253EEF41C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10179,6 +10181,22 @@ Global
 		{77305727-1A53-402A-A4E8-4CFA0DBFACC6}.Release|x64.Build.0 = Release|Any CPU
 		{77305727-1A53-402A-A4E8-4CFA0DBFACC6}.Release|x86.ActiveCfg = Release|Any CPU
 		{77305727-1A53-402A-A4E8-4CFA0DBFACC6}.Release|x86.Build.0 = Release|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Debug|arm64.Build.0 = Debug|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Debug|x64.Build.0 = Debug|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Debug|x86.Build.0 = Debug|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Release|arm64.ActiveCfg = Release|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Release|arm64.Build.0 = Release|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Release|x64.ActiveCfg = Release|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Release|x64.Build.0 = Release|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Release|x86.ActiveCfg = Release|Any CPU
+		{9716D0D0-2251-44DD-8596-67D253EEF41C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11023,6 +11041,7 @@ Global
 		{25642C23-0BB8-4FF7-9181-9599489679EB} = {2D2D1107-7389-473B-BDCE-BFA060EAC453}
 		{EF5062E5-93FA-48B3-B8DB-7B7B263A64D4} = {E47D1385-64B3-429B-9B1D-B0D0B7B6E506}
 		{77305727-1A53-402A-A4E8-4CFA0DBFACC6} = {25642C23-0BB8-4FF7-9181-9599489679EB}
+		{9716D0D0-2251-44DD-8596-67D253EEF41C} = {323C3EB6-1D15-4B3D-918D-699D7F64DED9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

@@ -39,6 +39,32 @@ public class DatabaseDeveloperPageExceptionFilterTests
     }
 
     [Fact]
+    public async Task Wrapped_DbExceptions_HandlingFails_InvokesNextFilter()
+    {
+        var sink = new TestSink();
+        var filter = new DatabaseDeveloperPageExceptionFilter(
+            new TestLogger<DatabaseDeveloperPageExceptionFilter>(new TestLoggerFactory(sink, true)),
+            Options.Create(new DatabaseErrorPageOptions()));
+        var context = new DefaultHttpContext();
+        var exception = new InvalidOperationException("Bang!", new Mock<DbException>().Object);
+        var nextFilterInvoked = false;
+
+        await filter.HandleExceptionAsync(
+            new ErrorContext(context, exception),
+            context =>
+            {
+                nextFilterInvoked = true;
+                return Task.CompletedTask;
+            });
+
+        Assert.True(nextFilterInvoked);
+        Assert.Equal(1, sink.Writes.Count);
+        var message = sink.Writes.Single();
+        Assert.Equal(LogLevel.Error, message.LogLevel);
+        Assert.Contains("An exception occurred while calculating the database error page content.", message.Message);
+    }
+
+    [Fact]
     public async Task DbExceptions_HandlingFails_InvokesNextFilter()
     {
         var sink = new TestSink();
