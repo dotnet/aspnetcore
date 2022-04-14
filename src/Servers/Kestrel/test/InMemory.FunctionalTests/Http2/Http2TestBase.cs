@@ -497,9 +497,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     }
 
     protected ConfiguredTaskAwaitable InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true) =>
-        InitializeConnectionAsyncCore(application, expectedSettingsCount, expectedWindowUpdate).ConfigureAwait(false);
+        InnerInitializeConnectionAsync(application, expectedSettingsCount, expectedWindowUpdate).ConfigureAwait(false);
 
-    protected async Task InitializeConnectionAsyncCore(RequestDelegate application, int expectedSettingsCount, bool expectedWindowUpdate)
+    private async Task InnerInitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount, bool expectedWindowUpdate)
     {
         InitializeConnectionWithoutPreface(application);
 
