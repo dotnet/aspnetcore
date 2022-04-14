@@ -4,7 +4,9 @@
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
@@ -126,13 +128,17 @@ public class ResultsTests
 
     [Theory]
     [MemberData(nameof(Bytes_ResultHasCorrectValues_Data))]
-    public void Bytes_ResultHasCorrectValues(string contentType, string fileDownloadName, bool enableRangeProcessing, DateTimeOffset lastModified, EntityTagHeaderValue entityTag)
+    public void BytesOrFile_ResultHasCorrectValues(int bytesOrFile, string contentType, string fileDownloadName, bool enableRangeProcessing, DateTimeOffset lastModified, EntityTagHeaderValue entityTag)
     {
         // Arrange
         var contents = new byte[0];
 
         // Act
-        var result = Results.Bytes(contents, contentType, fileDownloadName, enableRangeProcessing, lastModified, entityTag) as FileContentHttpResult;
+        var result = bytesOrFile switch
+        {
+            0 => Results.Bytes(contents, contentType, fileDownloadName, enableRangeProcessing, lastModified, entityTag),
+            _ => Results.File(contents, contentType, fileDownloadName, enableRangeProcessing, lastModified, entityTag)
+        } as FileContentHttpResult;
 
         // Assert
         Assert.Equal(contents, result.FileContents);
@@ -145,12 +151,14 @@ public class ResultsTests
 
     public static IEnumerable<object[]> Bytes_ResultHasCorrectValues_Data => new List<object[]>
     {
-        new object[] { "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
-        new object[] { default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) },
+        new object[] { 0, "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
+        new object[] { 0, default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) },
+        new object[] { 1, "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
+        new object[] { 1, default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) },
     };
 
     [Theory]
-    [MemberData(nameof(Challenge_ResultHasCorrectValues_Data))]
+    [MemberData(nameof(ChallengeForbidSignInOut_ResultHasCorrectValues_Data))]
     public void Challenge_ResultHasCorrectValues(AuthenticationProperties properties, IList<string> authenticationSchemes)
     {
         // Act
@@ -161,13 +169,59 @@ public class ResultsTests
         Assert.Equal(authenticationSchemes ?? new ReadOnlyCollection<string>(new List<string>()), result.AuthenticationSchemes);
     }
 
-    public static IEnumerable<object[]> Challenge_ResultHasCorrectValues_Data => new List<object[]>
+    [Theory]
+    [MemberData(nameof(ChallengeForbidSignInOut_ResultHasCorrectValues_Data))]
+    public void Forbid_ResultHasCorrectValues(AuthenticationProperties properties, IList<string> authenticationSchemes)
+    {
+        // Act
+        var result = Results.Forbid(properties, authenticationSchemes) as ForbidHttpResult;
+
+        // Assert
+        Assert.Equal(properties, result.Properties);
+        Assert.Equal(authenticationSchemes ?? new ReadOnlyCollection<string>(new List<string>()), result.AuthenticationSchemes);
+    }
+
+    [Theory]
+    [MemberData(nameof(ChallengeForbidSignInOut_ResultHasCorrectValues_Data))]
+    public void SignOut_ResultHasCorrectValues(AuthenticationProperties properties, IList<string> authenticationSchemes)
+    {
+        // Act
+        var result = Results.SignOut(properties, authenticationSchemes) as SignOutHttpResult;
+
+        // Assert
+        Assert.Equal(properties, result.Properties);
+        Assert.Equal(authenticationSchemes ?? new ReadOnlyCollection<string>(new List<string>()), result.AuthenticationSchemes);
+    }
+
+    [Theory]
+    [MemberData(nameof(ChallengeForbidSignInOut_ResultHasCorrectValues_Data))]
+    public void SignIn_ResultHasCorrectValues(AuthenticationProperties properties, IList<string> authenticationSchemes)
+    {
+        // Arrange
+        var principal = new ClaimsPrincipal();
+
+        // Act
+        var result = Results.SignIn(principal, properties, authenticationSchemes?.First()) as SignInHttpResult;
+
+        // Assert
+        Assert.Equal(principal, result.Principal);
+        Assert.Equal(properties, result.Properties);
+        Assert.Equal(authenticationSchemes?.First(), result.AuthenticationScheme);
+    }
+
+    public static IEnumerable<object[]> ChallengeForbidSignInOut_ResultHasCorrectValues_Data => new List<object[]>
     {
         new object[] { new AuthenticationProperties(), new List<string> { "TestScheme" } },
         new object[] { new AuthenticationProperties(), default(IList<string>) },
         new object[] { default(AuthenticationProperties), new List<string> { "TestScheme" } },
         new object[] { default(AuthenticationProperties), default(IList<string>) },
     };
+
+    [Fact]
+    public void SignIn_WithNullPrincipal_ThrowsArgNullException()
+    {
+        Assert.Throws<ArgumentNullException>("principal", () => Results.SignIn(null));
+    }
 
     [Fact]
     public void Conflict_WithValue_ResultHasCorrectValues()
@@ -296,6 +350,179 @@ public class ResultsTests
     public void Created_WithNullUri_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("uri", () => Results.Created(default(Uri), null));
+    }
+
+    [Fact]
+    public void CreatedAtRoute_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new { foo = 123 };
+        var value = new { };
+
+        // Act
+        var result = Results.CreatedAtRoute(routeName, routeValues, value) as CreatedAtRoute<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRoute_WithRouteNameAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var value = new { };
+
+        // Act
+        var result = Results.CreatedAtRoute(routeName, null, value) as CreatedAtRoute<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRoute_WithRouteName_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+
+        // Act
+        var result = Results.CreatedAtRoute(routeName, null, null) as CreatedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
+    public void CreatedAtRoute_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.CreatedAtRoute() as CreatedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
+    public void Empty_IsEmptyInstance()
+    {
+        // Act
+        var result = Results.Empty as EmptyHttpResult;
+
+        // Assert
+        Assert.Equal(EmptyHttpResult.Instance, result);
+    }
+
+    [Fact]
+    public void Json_WithAllArgs_ResultHasCorrectValues()
+    {
+        // Arrange
+        var data = new { };
+        var options = new JsonSerializerOptions();
+        var contentType = "application/custom+json";
+        var statusCode = StatusCodes.Status208AlreadyReported;
+            
+        // Act
+        var result = Results.Json(data, options, contentType, statusCode) as JsonHttpResult<object>;
+
+        // Assert
+        Assert.Equal(data, result.Value);
+        Assert.Equal(options, result.JsonSerializerOptions);
+        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+    }
+
+    [Fact]
+    public void Json_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Json(null) as JsonHttpResult<object>;
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+    }
+
+    [Fact]
+    public void LocalRedirect_WithUrl_ResultHasCorrectValues()
+    {
+        // Arrange
+        var localUrl = "test/path";
+
+        // Act
+        var result = Results.LocalRedirect(localUrl) as RedirectHttpResult;
+
+        // Assert
+        Assert.Equal(localUrl, result.Url);
+        Assert.True(result.AcceptLocalUrlOnly);
+        Assert.False(result.Permanent);
+        Assert.False(result.PreserveMethod);
+    }
+
+    [Fact]
+    public void LocalRedirect_WithUrlAndPermanentTrue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var localUrl = "test/path";
+        var permanent = true;
+
+        // Act
+        var result = Results.LocalRedirect(localUrl, permanent) as RedirectHttpResult;
+
+        // Assert
+        Assert.Equal(localUrl, result.Url);
+        Assert.True(result.AcceptLocalUrlOnly);
+        Assert.True(result.Permanent);
+        Assert.False(result.PreserveMethod);
+    }
+
+    [Fact]
+    public void LocalRedirect_WithUrlAndPermanentTrueAndPreserveTrue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var localUrl = "test/path";
+        var permanent = true;
+        var preserveMethod = true;
+
+        // Act
+        var result = Results.LocalRedirect(localUrl, permanent, preserveMethod) as RedirectHttpResult;
+
+        // Assert
+        Assert.Equal(localUrl, result.Url);
+        Assert.True(result.AcceptLocalUrlOnly);
+        Assert.True(result.Permanent);
+        Assert.True(result.PreserveMethod);
+    }
+
+    [Fact]
+    public void LocalRedirect_WithNonLocalUrlAndPermanentTrueAndPreserveTrue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var localUrl = "https://example.com/non-local-url/example";
+        var permanent = true;
+        var preserveMethod = true;
+
+        // Act
+        var result = Results.LocalRedirect(localUrl, permanent, preserveMethod) as RedirectHttpResult;
+
+        // Assert
+        Assert.Equal(localUrl, result.Url);
+        Assert.True(result.AcceptLocalUrlOnly);
+        Assert.True(result.Permanent);
+        Assert.True(result.PreserveMethod);
     }
 
     [Theory]
