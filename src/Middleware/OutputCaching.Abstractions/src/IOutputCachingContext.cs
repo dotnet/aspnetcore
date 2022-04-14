@@ -72,37 +72,37 @@ public interface IOutputCachingContext
     ILogger Logger { get; }
 
     /// <summary>
-    /// Determine whether the output caching logic should is configured for the incoming HTTP request.
+    /// Determines whether the output caching logic should be configured for the incoming HTTP request.
     /// </summary>
     bool EnableOutputCaching { get; set; }
 
     /// <summary>
-    /// Determine whether the output caching logic should be attempted for the incoming HTTP request.
+    /// Determines whether the output caching logic should be attempted for the incoming HTTP request.
     /// </summary>
     bool AttemptResponseCaching { get; set; }
 
     /// <summary>
-    /// Determine whether a cache lookup is allowed for the incoming HTTP request.
+    /// Determines whether a cache lookup is allowed for the incoming HTTP request.
     /// </summary>
     bool AllowCacheLookup { get; set; }
 
     /// <summary>
-    /// Determine whether storage of the response is allowed for the incoming HTTP request.
+    /// Determines whether storage of the response is allowed for the incoming HTTP request.
     /// </summary>
     bool AllowCacheStorage { get; set; }
 
     /// <summary>
-    /// Determine whether request should be locked.
+    /// Determines whether the request should be locked.
     /// </summary>
     bool AllowLocking { get; set; }
 
     /// <summary>
-    /// Determine whether the response received by the middleware can be cached for future requests.
+    /// Determines whether the response received by the middleware can be cached for future requests.
     /// </summary>
     bool IsResponseCacheable { get; set; }
 
     /// <summary>
-    /// Determine whether the response retrieved from the response cache is fresh and can be served.
+    /// Determines whether the response retrieved from the response cache is fresh and can be served.
     /// </summary>
     bool IsCacheEntryFresh { get; set; }
 }
