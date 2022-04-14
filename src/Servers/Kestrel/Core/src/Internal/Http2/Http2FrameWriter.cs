@@ -46,8 +46,9 @@ internal class Http2FrameWriter
 
     private readonly object _windowUpdateLock = new();
     private long _connectionWindow;
-    private readonly QueueWithMovableHead<Http2OutputProducer> _waitingForMoreConnectionWindow = new();
-    private int? _waitingForMoreConnectionWindowStart;
+    private readonly Queue<Http2OutputProducer> _waitingForMoreConnectionWindow = new();
+    // This is the stream that consumed the last set of connection window
+    private Http2OutputProducer? _lastWindowConsumer;
     private readonly Task _writeQueueTask;
 
     public Http2FrameWriter(
@@ -222,13 +223,10 @@ internal class Http2FrameWriter
                             lock (_windowUpdateLock)
                             {
                                 // In order to make scheduling more fair we want to make sure that streams that have data get a chance to run in a round robin manner.
-                                // To do this we will store everything in the queue waiting for the connection update
-                                // but will store the index of the first element that had something to write but didn't write anything. This is the index that we will start dequeuing
-                                // items from instead of the start of the queue.
-                                if (actual == 0 && _waitingForMoreConnectionWindowStart is null)
+                                // To do this we will store the producer that consumed the window in a field and put it to the back of the queue.
+                                if (actual != 0 && _lastWindowConsumer is null)
                                 {
-                                    // This index will be stable until we start dequeueing everything
-                                    _waitingForMoreConnectionWindowStart = _waitingForMoreConnectionWindow.Enqueue(producer);
+                                    _lastWindowConsumer = producer;
                                 }
                                 else
                                 {
@@ -874,20 +872,15 @@ internal class Http2FrameWriter
 
             _connectionWindow += bytes;
 
-            if (_waitingForMoreConnectionWindowStart is { } start)
+            if (_lastWindowConsumer is { } producer)
             {
-                // Reset the index
-                _waitingForMoreConnectionWindowStart = null;
+                _lastWindowConsumer = null;
 
-                // Set the head of the queue to the start so that we can start dequeueing from that position.
-
-                // WARNING: Setting the head must be called once and then the queue must be drained. Interleaving
-                // calls to Enqueue/Dequeue will mutate the underlying data structure and will invalidate indexes
-                // returned from Enqueue.
-                _waitingForMoreConnectionWindow.SetHead(start);
+                // Put the consumer of the connection window last
+                _waitingForMoreConnectionWindow.Enqueue(producer);
             }
 
-            while (_waitingForMoreConnectionWindow.TryDequeue(out var producer))
+            while (_waitingForMoreConnectionWindow.TryDequeue(out producer))
             {
                 if (!producer.StreamCompleted)
                 {
