@@ -4,6 +4,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -94,6 +95,53 @@ public class ResultsTests
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
         Assert.Null(result.RouteName);
         Assert.NotNull(result.RouteValues);
+    }
+
+    [Fact]
+    public void BadRequest_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new { };
+
+        // Act
+        var result = Results.BadRequest(value) as BadRequest<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void BadRequest_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.BadRequest() as BadRequest;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+    }
+
+    [Fact]
+    public void Bytes_WithRouteNameAndRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+        var contents = new byte[0];
+        var contentType = "text/plain";
+        var fileDownloadName = "testfile";
+        var enableRangeProcessing = true;
+        var lastModified = new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8));
+        var entityTag = EntityTagHeaderValue.Any;
+
+        // Act
+        var result = Results.Bytes(contents, contentType, fileDownloadName, enableRangeProcessing, lastModified, entityTag) as FileContentHttpResult;
+
+        // Assert
+        Assert.Equal(contents, result.FileContents);
+        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal(fileDownloadName, result.FileDownloadName);
+        Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
+        Assert.Equal(lastModified, result.LastModified);
+        Assert.Equal(entityTag, result.EntityTag);
     }
 
     [Theory]
