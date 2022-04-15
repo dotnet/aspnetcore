@@ -15,7 +15,6 @@ RUN echo '${USER} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 # With the User Change, we need to change permssions on these directories
 RUN chmod -R a+rwx /usr/local
 RUN chmod -R a+rwx /home
-RUN chown root:root /usr/bin/sudo && chmod 4755 /usr/bin/sudo
 
 # Set user to the one we just created
 USER $USER_ID
