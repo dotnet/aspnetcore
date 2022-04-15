@@ -127,14 +127,6 @@ internal class Http2FrameWriter
                     reader.TryRead(out var readResult);
                     var buffer = readResult.Buffer;
 
-                    // Stash the unobserved state, we're going to mark this snapshot as observed
-                    var observed = producer.UnobservedState;
-                    var flushHeaders = observed.HasFlag(Http2OutputProducer.State.FlushHeaders);
-                    var aborted = observed.HasFlag(Http2OutputProducer.State.Canceled);
-
-                    // Completed is special because it's a terminal state that should ideally never be removed.
-                    var completed = observed.HasFlag(Http2OutputProducer.State.Completed) || readResult.IsCompleted;
-
                     // Check the stream window
                     var (actual, remainingStream) = producer.ConsumeStreamWindow(buffer.Length);
 
@@ -147,7 +139,17 @@ internal class Http2FrameWriter
                         buffer = buffer.Slice(0, actual);
                     }
 
-                    var (hasMoreData, nextState) = producer.ObserveDataAndState(buffer.Length, observed);
+                    // Stash the unobserved state, we're going to mark this snapshot as observed
+                    var observed = producer.UnobservedState;
+                    var currentState = producer.CurrentState;
+
+                    // Check if we need to write headers
+                    var flushHeaders = observed.HasFlag(Http2OutputProducer.State.FlushHeaders) && !currentState.HasFlag(Http2OutputProducer.State.FlushHeaders);
+
+                    (var hasMoreData, var reschedule, currentState) = producer.ObserveDataAndState(buffer.Length, observed);
+
+                    var aborted = currentState.HasFlag(Http2OutputProducer.State.Aborted);
+                    var completed = currentState.HasFlag(Http2OutputProducer.State.Completed);
 
                     FlushResult flushResult = default;
 
@@ -175,7 +177,7 @@ internal class Http2FrameWriter
                         // It is faster to write data and trailers together. Locking once reduces lock contention.
                         flushResult = await WriteDataAndTrailersAsync(stream, buffer, flushHeaders, stream.ResponseTrailers);
                     }
-                    else if (completed && producer.StreamEnded)
+                    else if (completed && producer.AppCompletedWithNoResponseBodyOrTrailers)
                     {
                         if (buffer.Length != 0)
                         {
@@ -216,7 +218,7 @@ internal class Http2FrameWriter
                     }
                     // We're not going to schedule this again if there's no remaining window.
                     // When the window update is sent, the producer will be re-queued if needed.
-                    else if (hasMoreData && !nextState.HasFlag(Http2OutputProducer.State.Canceled))
+                    else if (hasMoreData && !aborted)
                     {
                         // We have no more connection window, put this producer in a queue waiting for it to
                         // a window update to resume the connection.
@@ -258,7 +260,7 @@ internal class Http2FrameWriter
                             }
                         }
                     }
-                    else if (nextState != Http2OutputProducer.State.None)
+                    else if (reschedule)
                     {
                         producer.Schedule();
                     }

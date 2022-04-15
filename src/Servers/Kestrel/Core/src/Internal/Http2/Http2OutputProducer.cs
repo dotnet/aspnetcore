@@ -30,7 +30,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     private bool _startedWritingDataFrames;
     private bool _streamCompleted;
     private bool _suffixSent;
-    private bool _streamEnded;
+    private bool _appCompletedWithNoResponseBodyOrTrailers;
     private bool _writerComplete;
     private bool _isScheduled;
 
@@ -40,8 +40,11 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     private long _unconsumedBytes;
     private long _streamWindow;
 
-    // For changes scheduling changes that don't affect the number of bytes written to the pipe, we need another state
+    // For scheduling changes that don't affect the number of bytes written to the pipe, we need another state.
     private State _unobservedState;
+
+    // This reflects the current state of the output, the current state becomes the unobserved state after it has been observed.
+    private State _currentState;
     private bool _completedResponse;
     private bool _requestProcessingComplete;
     private Http2ErrorCode? _resetErrorCode;
@@ -71,7 +74,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
     public bool IsTimingWrite { get; set; }
 
-    public bool StreamEnded => _streamEnded;
+    public bool AppCompletedWithNoResponseBodyOrTrailers => _appCompletedWithNoResponseBodyOrTrailers;
 
     public bool CompletedResponse
     {
@@ -85,7 +88,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     }
 
     // Useful for debugging the scheduling state in the debugger
-    internal (int, long, State, long) SchedulingState => (Stream.StreamId, _unconsumedBytes, _unobservedState, _streamWindow);
+    internal (int, long, State, State, long) SchedulingState => (Stream.StreamId, _unconsumedBytes, _unobservedState, _currentState, _streamWindow);
 
     public State UnobservedState
     {
@@ -94,6 +97,17 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
             lock (_dataWriterLock)
             {
                 return _unobservedState;
+            }
+        }
+    }
+
+    public State CurrentState
+    {
+        get
+        {
+            lock (_dataWriterLock)
+            {
+                return _currentState;
             }
         }
     }
@@ -122,14 +136,15 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     // Removes consumed bytes from the queue.
     // Returns a bool that represents whether we should schedule this producer to write
     // the remaining bytes.
-    internal (bool hasMoreData, State unobservedState) ObserveDataAndState(long bytes, State state)
+    internal (bool hasMoreData, bool reschedule, State currentState) ObserveDataAndState(long bytes, State state)
     {
         lock (_dataWriterLock)
         {
             _isScheduled = false;
             _unobservedState &= ~state;
+            _currentState |= state;
             _unconsumedBytes -= bytes;
-            return (_unconsumedBytes > 0, _unobservedState);
+            return (_unconsumedBytes > 0, _unobservedState != State.None, _currentState);
         }
     }
 
@@ -149,7 +164,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         // Response should have been completed.
         Debug.Assert(_completedResponse);
 
-        _streamEnded = false;
+        _appCompletedWithNoResponseBodyOrTrailers = false;
         _suffixSent = false;
         _startedWritingDataFrames = false;
         _streamCompleted = false;
@@ -160,6 +175,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         _streamWindow = initialWindowSize;
         _unconsumedBytes = 0;
         _unobservedState = State.None;
+        _currentState = State.None;
         _completedResponse = false;
         _requestProcessingComplete = false;
         _resetErrorCode = null;
@@ -305,7 +321,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
             // 2. There is no trailing HEADERS frame.
             if (appCompleted && !_startedWritingDataFrames && (_stream.ResponseTrailers == null || _stream.ResponseTrailers.Count == 0))
             {
-                _streamEnded = true;
+                _appCompletedWithNoResponseBodyOrTrailers = true;
             }
 
             EnqueueStateUpdate(State.FlushHeaders);
@@ -371,7 +387,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         lock (_dataWriterLock)
         {
             Stop();
-
             // We queued the stream to complete but didn't complete the response yet
             if (_streamCompleted && !_completedResponse)
             {
@@ -510,9 +525,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
             _streamCompleted = true;
 
-            EnqueueStateUpdate(State.Canceled);
-
-            _pipeReader.CancelPendingRead();
+            EnqueueStateUpdate(State.Aborted);
 
             Schedule();
         }
@@ -704,7 +717,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         None = 0,
         FlushHeaders = 1,
-        Canceled = 2,
+        Aborted = 2,
         Completed = 4
     }
 }
