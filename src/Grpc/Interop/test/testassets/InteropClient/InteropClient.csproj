@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,6 +11,8 @@
     <Protobuf Include="..\Proto\grpc\testing\empty.proto" GrpcServices="None" Link="Protos\empty.proto" />
     <Protobuf Include="..\Proto\grpc\testing\messages.proto" GrpcServices="None" Link="Protos\messages.proto" />
 
+    <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" />
+    
     <Reference Include="CommandLineParser" />
     <Reference Include="Google.Protobuf" />
     <Reference Include="Grpc.Auth" />
