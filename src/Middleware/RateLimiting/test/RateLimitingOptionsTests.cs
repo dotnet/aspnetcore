@@ -11,13 +11,13 @@ public class RateLimitingOptionsTests
     public void ThrowsOnNullLimiter()
     {
         var options = new RateLimitingOptions();
-        var ex = Assert.Throws<ArgumentNullException>(() => options.Limiter = null);
+        Assert.Throws<ArgumentNullException>(() => options.Limiter = null);
     }
 
     [Fact]
     public void ThrowsOnNullOnRejected()
     {
         var options = new RateLimitingOptions();
-        var ex = Assert.Throws<ArgumentNullException>(() => options.OnRejected = null);
+        Assert.Throws<ArgumentNullException>(() => options.OnRejected = null);
     }
 }

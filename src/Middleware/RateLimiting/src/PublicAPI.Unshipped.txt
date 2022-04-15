@@ -7,5 +7,6 @@ Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.OnRejected.set -> void
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.RateLimitingOptions() -> void
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.RejectionStatusCode.get -> System.Net.HttpStatusCode
 Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.RejectionStatusCode.set -> void
+Microsoft.AspNetCore.RateLimiting.RateLimitingServicesExtensions
 static Microsoft.AspNetCore.RateLimiting.RateLimitingExtensions.UseRateLimiting(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.RateLimiting.RateLimitingExtensions.UseRateLimiting(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.RateLimiting.RateLimitingOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.RateLimiting.RateLimitingServicesExtensions.ConfigureRateLimiting(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

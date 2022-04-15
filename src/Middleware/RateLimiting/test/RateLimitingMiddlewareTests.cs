@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Microsoft.AspNetCore.RateLimiting;
+
 public class RateLimitingMiddlewareTests : LoggedTest
 {
     [Fact]
@@ -57,7 +58,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
     [Fact]
     public async Task RequestRejected_CallsOnRejectedAndGives503()
     {
-        bool onRejectedInvoked = false;
+        var onRejectedInvoked = false;
         var options = CreateOptionsAccessor();
         options.Value.Limiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
         options.Value.OnRejected = (httpContext, lease) =>
