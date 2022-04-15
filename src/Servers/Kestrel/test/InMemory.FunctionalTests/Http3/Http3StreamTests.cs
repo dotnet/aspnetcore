@@ -802,6 +802,77 @@ public class Http3StreamTests : Http3TestBase
     }
 
     [Fact]
+    public async Task FlushPipeAsync_OnStoppedHttp3Stream_ReturnsFlushResultWithIsCompletedTrue()
+    {
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        KeyValuePair<string, string>[] requestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+        };
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(async context =>
+        {
+            try
+            {
+                context.Abort();
+
+                var payload = Encoding.ASCII.GetBytes("hello world");
+                var result = await context.Response.BodyWriter.WriteAsync(payload);
+
+                Assert.True(result.IsCompleted);
+                appTcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                appTcs.SetException(ex);
+            }
+        });
+        await requestStream.SendHeadersAsync(requestHeaders, endStream: true);
+
+        await requestStream.ExpectReceiveEndOfStream();
+        await appTcs.Task;
+    }
+
+    [Fact]
+    public async Task FlushPipeAsync_OnCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
+    {
+        KeyValuePair<string, string>[] requestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+        };
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(async context =>
+        {
+            context.Response.BodyWriter.CancelPendingFlush();
+            var payload = Encoding.ASCII.GetBytes("hello,");
+            var cancelledResult = await context.Response.BodyWriter.WriteAsync(payload);
+            Assert.True(cancelledResult.IsCanceled);
+
+            var secondPayload = Encoding.ASCII.GetBytes(" world");
+            var goodResult = await context.Response.BodyWriter.WriteAsync(secondPayload);
+            Assert.False(goodResult.IsCanceled);
+        });
+        await requestStream.SendHeadersAsync(requestHeaders, endStream:true);
+        await requestStream.ExpectHeadersAsync();
+
+        var response = await requestStream.ExpectDataAsync();
+        Assert.Equal("hello,", Encoding.UTF8.GetString(response.Span));
+
+        var secondResponse = await requestStream.ExpectDataAsync();
+        Assert.Equal(" world", Encoding.UTF8.GetString(secondResponse.Span));
+
+        await requestStream.ExpectReceiveEndOfStream();
+    }
+
+    [Fact]
     public async Task ResponseTrailers_WithoutData_Sent()
     {
         var headers = new[]

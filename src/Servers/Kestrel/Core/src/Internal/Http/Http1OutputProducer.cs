@@ -143,7 +143,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         {
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             if (_autoChunk)
@@ -486,7 +486,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false,true));
             }
 
             // Uses same BufferWriter to write response headers and response
@@ -506,7 +506,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             // Uses same BufferWriter to write response headers and chunk
@@ -544,7 +544,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             var writer = new BufferWriter<PipeWriter>(_pipeWriter);

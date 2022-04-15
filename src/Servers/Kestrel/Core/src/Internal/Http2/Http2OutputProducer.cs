@@ -88,7 +88,6 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         _startedWritingDataFrames = false;
         _streamCompleted = false;
         _writerComplete = false;
-
         _pipe.Reset();
         _pipeWriter.Reset();
         _responseCompleteTaskSource.Reset();
@@ -149,10 +148,9 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         lock (_dataWriterLock)
         {
             ThrowIfSuffixSentOrCompleted();
-
             if (_streamCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             if (_startedWritingDataFrames)
@@ -339,7 +337,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             // frame will actually be written causing the headers to be flushed.
             if (_streamCompleted || data.Length == 0)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             _startedWritingDataFrames = true;
