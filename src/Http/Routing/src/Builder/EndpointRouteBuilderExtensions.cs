@@ -509,12 +509,10 @@ public static class EndpointRouteBuilderExtensions
             DisplayName = pattern.RawText ?? pattern.DebuggerToString(),
         };
 
-        // REVIEW: Should we add an IActionMethodMetadata with just MethodInfo on it so we are
-        // explicit about the MethodInfo representing the "handler" and not the RequestDelegate?
-
-        // Add MethodInfo as metadata to assist with OpenAPI generation for the endpoint.
-        builder.Metadata.Add(handler.Method);
-
+        
+        // Add the ServiceProvider to metadata so that it can be resolved
+        // by extension methods that need accesses to the same services that
+        // are registered by the target endpoint.
         if (endpoints.ServiceProvider is not null)
         {
             builder.Metadata.Add(endpoints.ServiceProvider);

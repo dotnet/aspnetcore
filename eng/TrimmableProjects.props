@@ -18,7 +18,6 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Features" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http" />
     <TrimmableProject Include="Microsoft.AspNetCore.Metadata" />
-    <TrimmableProject Include="Microsoft.AspNetCore.OpenApi" />
     <TrimmableProject Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Routing" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />
