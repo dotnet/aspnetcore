@@ -13,13 +13,14 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// </summary>
 public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
 {
-    /// <summary>
-    /// Creates a new <see cref="ValidationProblem"/> instance with
-    /// the provided <paramref name="problemDetails"/>.
-    /// </summary>
-    /// <param name="problemDetails">The <see cref="HttpValidationProblemDetails"/> instance to format in the entity body.</param>
     internal ValidationProblem(HttpValidationProblemDetails problemDetails)
     {
+        ArgumentNullException.ThrowIfNull(problemDetails, nameof(problemDetails));
+        if (problemDetails is { Status: not null and not StatusCodes.Status400BadRequest })
+        {
+            throw new ArgumentException($"{nameof(ValidationProblem)} only supports a 400 Bad Request response status code.", nameof(problemDetails));
+        }
+
         ProblemDetails = problemDetails;
         HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: StatusCodes.Status400BadRequest);
     }
