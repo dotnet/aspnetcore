@@ -189,6 +189,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="MessagePackAnalyzer" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />
     <LatestPackageReference Include="Mono.Cecil" />
+    <LatestPackageReference Include="Mono.TextTemplating" />
     <LatestPackageReference Include="Moq" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />

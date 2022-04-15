@@ -3,7 +3,7 @@
 
   This file contains a complete list of projects annotated for trimming.
 
-  This file is generated using the <Trimmable> properties from each .csproj in this repository.
+  This file is generated using the <IsTrimmable> properties from each .csproj in this repository.
 -->
 <Project>
   <ItemGroup>
@@ -19,6 +19,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Http" />
     <TrimmableProject Include="Microsoft.AspNetCore.Metadata" />
     <TrimmableProject Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Routing" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />
     <TrimmableProject Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.HttpSys" />

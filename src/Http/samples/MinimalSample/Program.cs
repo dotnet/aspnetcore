@@ -19,6 +19,17 @@ app.MapGet("/json", Json);
 string SayHello(string name) => $"Hello, {name}!";
 app.MapGet("/hello/{name}", SayHello);
 
+app.MapGet("/null-result", IResult () => null);
+
+app.MapGet("/todo/{id}", Results<OkObjectHttpResult, NotFoundObjectHttpResult> (int id) =>
+{
+    return id switch
+    {
+        >= 1 and <= 10 => (OkObjectHttpResult)Results.Ok(new { Id = id, Title = "Walk the dog" }),
+        _ => (NotFoundObjectHttpResult)Results.NotFound()
+    };
+});
+
 var extensions = new Dictionary<string, object>() { { "traceId", "traceId123" } };
 
 app.MapGet("/problem", () =>

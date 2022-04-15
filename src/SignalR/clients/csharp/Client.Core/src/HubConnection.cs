@@ -869,19 +869,14 @@ public partial class HubConnection : IAsyncDisposable
         }
     }
 
-#pragma warning disable IDE0060 // Remove unused parameter. Resolving tracked via https://github.com/dotnet/aspnetcore/issues/40475
     private async Task SendHubMessage(ConnectionState connectionState, HubMessage hubMessage, CancellationToken cancellationToken = default)
-#pragma warning restore IDE0060 // Remove unused parameter
     {
         _state.AssertConnectionValid();
         _protocol.WriteMessage(hubMessage, connectionState.Connection.Transport.Output);
 
         Log.SendingMessage(_logger, hubMessage);
 
-#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
-        // REVIEW: If a token is passed in and is canceled during FlushAsync it seems to break .Complete()...
-        await connectionState.Connection.Transport.Output.FlushAsync().ConfigureAwait(false);
-#pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
+        await connectionState.Connection.Transport.Output.FlushAsync(cancellationToken).ConfigureAwait(false);
         Log.MessageSent(_logger, hubMessage);
 
         // We've sent a message, so don't ping for a while
