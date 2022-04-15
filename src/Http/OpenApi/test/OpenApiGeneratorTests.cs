@@ -117,8 +117,8 @@ public class OpenApiOperationGeneratorTests
 
         Assert.Equal(2, request.Content.Count);
 
-        Assert.Equal("InferredJsonClass", request.Content.First().Value.Schema.Type);
-        Assert.Equal("InferredJsonClass", request.Content.Last().Value.Schema.Type);
+        Assert.Equal("object", request.Content.First().Value.Schema.Type);
+        Assert.Equal("object", request.Content.Last().Value.Schema.Type);
         Assert.False(request.Required);
     }
 
@@ -136,7 +136,7 @@ public class OpenApiOperationGeneratorTests
         var request = operation.Value.RequestBody;
         Assert.NotNull(request);
 
-        Assert.Equal("InferredJsonClass", request.Content.First().Value.Schema.Type);
+        Assert.Equal("object", request.Content.First().Value.Schema.Type);
         Assert.True(request.Required);
     }
 
@@ -145,19 +145,19 @@ public class OpenApiOperationGeneratorTests
     [Fact]
     public void AddsJsonResponseFormatWhenFromBodyInferred()
     {
-        static void AssertJsonResponse(OpenApiPathItem pathItem, Type expectedType)
+        static void AssertJsonResponse(OpenApiPathItem pathItem, string expectedType)
         {
             var operation = Assert.Single(pathItem.Operations);
             var response = Assert.Single(operation.Value.Responses);
             Assert.Equal("200", response.Key);
             var formats = Assert.Single(response.Value.Content);
-            Assert.Equal(expectedType.Name, formats.Value.Schema.Type);
+            Assert.Equal(expectedType, formats.Value.Schema.Type);
 
             Assert.Equal("application/json", formats.Key);
         }
 
-        AssertJsonResponse(GetOpenApiPathItem(() => new InferredJsonClass()), typeof(InferredJsonClass));
-        AssertJsonResponse(GetOpenApiPathItem(() => (IInferredJsonInterface)null), typeof(IInferredJsonInterface));
+        AssertJsonResponse(GetOpenApiPathItem(() => new InferredJsonClass()), "object");
+        AssertJsonResponse(GetOpenApiPathItem(() => (IInferredJsonInterface)null), "object");
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class OpenApiOperationGeneratorTests
         var response = Assert.Single(operation.Value.Responses);
         Assert.Equal("200", response.Key);
         var formats = Assert.Single(response.Value.Content);
-        Assert.Equal(typeof(string).Name, formats.Value.Schema.Type);
+        Assert.Equal("string", formats.Value.Schema.Type);
         Assert.Equal("text/plain", formats.Key);
     }
 
@@ -206,13 +206,13 @@ public class OpenApiOperationGeneratorTests
         var content = Assert.Single(createdResponseType.Content);
 
         Assert.NotNull(createdResponseType);
-        Assert.Equal(typeof(TimeSpan).Name, content.Value.Schema.Type);
+        Assert.Equal("object", content.Value.Schema.Type);
         Assert.Equal("application/json", createdResponseType.Content.Keys.First());
 
         var badRequestResponseType = responses["400"];
 
         Assert.NotNull(badRequestResponseType);
-        Assert.Equal(typeof(InferredJsonClass).Name, badRequestResponseType.Content.Values.First().Schema.Type);
+        Assert.Equal("object", badRequestResponseType.Content.Values.First().Schema.Type);
         Assert.Equal("application/json", badRequestResponseType.Content.Keys.First());
     }
 
@@ -231,7 +231,7 @@ public class OpenApiOperationGeneratorTests
         var createdResponseContent = Assert.Single(createdResponseType.Content);
 
         Assert.NotNull(createdResponseType);
-        Assert.Equal(typeof(InferredJsonClass).Name, createdResponseContent.Value.Schema.Type);
+        Assert.Equal("object", createdResponseContent.Value.Schema.Type);
         Assert.Equal("application/json", createdResponseContent.Key);
 
         var badRequestResponseType = operation.Value.Responses["400"];
@@ -247,7 +247,7 @@ public class OpenApiOperationGeneratorTests
         {
             var operation = Assert.Single(pathItem.Operations);
             var param = Assert.Single(operation.Value.Parameters);
-            Assert.Equal(typeof(int).Name, param.Schema.Type);
+            Assert.Equal("number", param.Schema.Type);
             Assert.Equal(ParameterLocation.Path, param.In);
         }
 
@@ -262,7 +262,7 @@ public class OpenApiOperationGeneratorTests
         {
             var operation = Assert.Single(pathItem.Operations);
             var param = Assert.Single(operation.Value.Parameters);
-            Assert.Equal(typeof(TryParseStringRecord).Name, param.Schema.Type);
+            Assert.Equal("object", param.Schema.Type);
             Assert.Equal(ParameterLocation.Path, param.In);
         }
         AssertPathParameter(GetOpenApiPathItem((TryParseStringRecord foo) => { }, pattern: "/{foo}"));
@@ -275,7 +275,7 @@ public class OpenApiOperationGeneratorTests
         {
             var operation = Assert.Single(pathItem.Operations);
             var param = Assert.Single(operation.Value.Parameters);
-            Assert.Equal(typeof(int?).Name, param.Schema.Type);
+            Assert.Equal("number", param.Schema.Type);
             Assert.Equal(ParameterLocation.Path, param.In);
         }
 
@@ -290,7 +290,7 @@ public class OpenApiOperationGeneratorTests
         {
             var operation = Assert.Single(pathItem.Operations);
             var param = Assert.Single(operation.Value.Parameters);
-            Assert.Equal(typeof(TryParseStringRecordStruct).Name, param.Schema.Type);
+            Assert.Equal("object", param.Schema.Type);
             Assert.Equal(ParameterLocation.Path, param.In);
         }
         AssertPathParameter(GetOpenApiPathItem((TryParseStringRecordStruct foo) => { }, pattern: "/{foo}"));
@@ -299,21 +299,21 @@ public class OpenApiOperationGeneratorTests
     [Fact]
     public void AddsFromQueryParameterAsQuery()
     {
-        static void AssertQueryParameter<T>(OpenApiPathItem pathItem)
+        static void AssertQueryParameter(OpenApiPathItem pathItem, string type)
         {
             var operation = Assert.Single(pathItem.Operations);
             var param = Assert.Single(operation.Value.Parameters); ;
-            Assert.Equal(typeof(T).Name, param.Schema.Type);
+            Assert.Equal(type, param.Schema.Type);
             Assert.Equal(ParameterLocation.Query, param.In);
         }
 
-        AssertQueryParameter<int>(GetOpenApiPathItem((int foo) => { }, "/"));
-        AssertQueryParameter<int>(GetOpenApiPathItem(([FromQuery] int foo) => { }));
-        AssertQueryParameter<TryParseStringRecordStruct>(GetOpenApiPathItem(([FromQuery] TryParseStringRecordStruct foo) => { }));
-        AssertQueryParameter<int[]>(GetOpenApiPathItem((int[] foo) => { }, "/"));
-        AssertQueryParameter<string[]>(GetOpenApiPathItem((string[] foo) => { }, "/"));
-        AssertQueryParameter<StringValues>(GetOpenApiPathItem((StringValues foo) => { }, "/"));
-        AssertQueryParameter<TryParseStringRecordStruct[]>(GetOpenApiPathItem((TryParseStringRecordStruct[] foo) => { }, "/"));
+        AssertQueryParameter(GetOpenApiPathItem((int foo) => { }, "/"), "number");
+        AssertQueryParameter(GetOpenApiPathItem(([FromQuery] int foo) => { }), "number");
+        AssertQueryParameter(GetOpenApiPathItem(([FromQuery] TryParseStringRecordStruct foo) => { }), "object");
+        AssertQueryParameter(GetOpenApiPathItem((int[] foo) => { }, "/"), "array");
+        AssertQueryParameter(GetOpenApiPathItem((string[] foo) => { }, "/"), "array");
+        AssertQueryParameter(GetOpenApiPathItem((StringValues foo) => { }, "/"), "object");
+        AssertQueryParameter(GetOpenApiPathItem((TryParseStringRecordStruct[] foo) => { }, "/"), "array");
     }
 
     [Theory]
@@ -321,17 +321,17 @@ public class OpenApiOperationGeneratorTests
     [InlineData("Post")]
     public void BodyIsInferredForArraysInsteadOfQuerySomeHttpMethods(string httpMethod)
     {
-        static void AssertBody<T>(OpenApiPathItem pathItem)
+        static void AssertBody(OpenApiPathItem pathItem, string expectedType)
         {
             var operation = Assert.Single(pathItem.Operations);
             var requestBody = operation.Value.RequestBody;
             var content = Assert.Single(requestBody.Content);
-            Assert.Equal(typeof(T).Name, content.Value.Schema.Type);
+            Assert.Equal(expectedType, content.Value.Schema.Type);
         }
 
-        AssertBody<int[]>(GetOpenApiPathItem((int[] foo) => { }, "/", httpMethods: new[] { httpMethod }));
-        AssertBody<string[]>(GetOpenApiPathItem((string[] foo) => { }, "/", httpMethods: new[] { httpMethod }));
-        AssertBody<TryParseStringRecordStruct[]>(GetOpenApiPathItem((TryParseStringRecordStruct[] foo) => { }, "/", httpMethods: new[] { httpMethod }));
+        AssertBody(GetOpenApiPathItem((int[] foo) => { }, "/", httpMethods: new[] { httpMethod }), "array");
+        AssertBody(GetOpenApiPathItem((string[] foo) => { }, "/", httpMethods: new[] { httpMethod }), "array");
+        AssertBody(GetOpenApiPathItem((TryParseStringRecordStruct[] foo) => { }, "/", httpMethods: new[] { httpMethod }), "array");
     }
 
     [Fact]
@@ -341,7 +341,7 @@ public class OpenApiOperationGeneratorTests
         var operation = Assert.Single(pathItem.Operations);
         var param = Assert.Single(operation.Value.Parameters);
 
-        Assert.Equal(typeof(int).Name, param.Schema.Type);
+        Assert.Equal("number", param.Schema.Type);
         Assert.Equal(ParameterLocation.Header, param.In);
     }
 
@@ -361,16 +361,16 @@ public class OpenApiOperationGeneratorTests
     [Fact]
     public void AddsBodyParameterInTheParameterDescription()
     {
-        static void AssertBodyParameter(OpenApiPathItem pathItem, string expectedName, Type expectedType)
+        static void AssertBodyParameter(OpenApiPathItem pathItem, string expectedName, string expectedType)
         {
             var operation = Assert.Single(pathItem.Operations);
             var requestBody = operation.Value.RequestBody;
             var content = Assert.Single(requestBody.Content);
-            Assert.Equal(expectedType.Name, content.Value.Schema.Type);
+            Assert.Equal(expectedType, content.Value.Schema.Type);
         }
 
-        AssertBodyParameter(GetOpenApiPathItem((InferredJsonClass foo) => { }), "foo", typeof(InferredJsonClass));
-        AssertBodyParameter(GetOpenApiPathItem(([FromBody] int bar) => { }), "bar", typeof(int));
+        AssertBodyParameter(GetOpenApiPathItem((InferredJsonClass foo) => { }), "foo", "object");
+        AssertBodyParameter(GetOpenApiPathItem(([FromBody] int bar) => { }), "bar", "number");
     }
 
 #nullable enable
@@ -384,18 +384,18 @@ public class OpenApiOperationGeneratorTests
 
         var fooParam = operation.Value.Parameters[0];
         Assert.Equal("foo", fooParam.Name);
-        Assert.Equal(typeof(int).Name, fooParam.Schema.Type);
+        Assert.Equal("number", fooParam.Schema.Type);
         Assert.Equal(ParameterLocation.Path, fooParam.In);
         Assert.True(fooParam.Required);
 
         var barParam = operation.Value.Parameters[1];
         Assert.Equal("bar", barParam.Name);
-        Assert.Equal(typeof(int).Name, barParam.Schema.Type);
+        Assert.Equal("number", barParam.Schema.Type);
         Assert.Equal(ParameterLocation.Query, barParam.In);
         Assert.True(barParam.Required);
 
         var fromBodyParam = operation.Value.RequestBody;
-        Assert.Equal(typeof(InferredJsonClass).Name, fromBodyParam.Content.First().Value.Schema.Type);
+        Assert.Equal("object", fromBodyParam.Content.First().Value.Schema.Type);
         Assert.True(fromBodyParam.Required);
     }
 
@@ -410,13 +410,13 @@ public class OpenApiOperationGeneratorTests
 
         var fooParam = operation.Value.Parameters[0];
         Assert.Equal("foo", fooParam.Name);
-        Assert.Equal(typeof(int).Name, fooParam.Schema.Type);
+        Assert.Equal("number", fooParam.Schema.Type);
         Assert.Equal(ParameterLocation.Path, fooParam.In);
         Assert.True(fooParam.Required);
 
         var barParam = operation.Value.Parameters[1];
         Assert.Equal("bar", barParam.Name);
-        Assert.Equal(typeof(int?).Name, barParam.Schema.Type);
+        Assert.Equal("number", barParam.Schema.Type);
         Assert.Equal(ParameterLocation.Query, barParam.In);
         Assert.False(barParam.Required);
     }
@@ -431,12 +431,12 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(2, operation.Value.Parameters.Count);
 
         var fooParam = operation.Value.Parameters[0];
-        Assert.Equal(typeof(string).Name, fooParam.Schema.Type);
+        Assert.Equal("string", fooParam.Schema.Type);
         Assert.Equal(ParameterLocation.Query, fooParam.In);
         Assert.False(fooParam.Required);
 
         var barParam = operation.Value.Parameters[1];
-        Assert.Equal(typeof(int).Name, barParam.Schema.Type);
+        Assert.Equal("number", barParam.Schema.Type);
         Assert.Equal(ParameterLocation.Query, barParam.In);
         Assert.True(barParam.Required);
     }
@@ -453,7 +453,7 @@ public class OpenApiOperationGeneratorTests
         var operation = Assert.Single(pathItem.Operations);
         var responses = Assert.Single(operation.Value.Responses);
         var content = Assert.Single(responses.Value.Content);
-        Assert.Equal(typeof(ProblemDetails).Name, content.Value.Schema.Type);
+        Assert.Equal("object", content.Value.Schema.Type);
     }
 
     [Fact]
@@ -471,7 +471,7 @@ public class OpenApiOperationGeneratorTests
         var operation = Assert.Single(pathItem.Operations);
         var responses = Assert.Single(operation.Value.Responses);
         var content = Assert.Single(responses.Value.Content);
-        Assert.Equal(typeof(InferredJsonClass).Name, content.Value.Schema.Type);
+        Assert.Equal("object", content.Value.Schema.Type);
     }
 
     [Fact]
@@ -509,28 +509,28 @@ public class OpenApiOperationGeneratorTests
             responseType =>
             {
                 var content = Assert.Single(responseType.Value.Content);
-                Assert.Equal(typeof(InferredJsonClass).Name, content.Value.Schema.Type);
+                Assert.Equal("object", content.Value.Schema.Type);
                 Assert.Equal("200", responseType.Key);
                 Assert.Equal("application/json", content.Key);
             },
             responseType =>
             {
                 var content = Assert.Single(responseType.Value.Content);
-                Assert.Equal(typeof(HttpValidationProblemDetails).Name, content.Value.Schema.Type);
+                Assert.Equal("object", content.Value.Schema.Type);
                 Assert.Equal("400", responseType.Key);
                 Assert.Equal("application/problem+json", content.Key);
             },
             responseType =>
             {
                 var content = Assert.Single(responseType.Value.Content);
-                Assert.Equal(typeof(ProblemDetails).Name, content.Value.Schema.Type);
+                Assert.Equal("object", content.Value.Schema.Type);
                 Assert.Equal("404", responseType.Key);
                 Assert.Equal("application/problem+json", content.Key);
             },
             responseType =>
             {
                 var content = Assert.Single(responseType.Value.Content);
-                Assert.Equal(typeof(ProblemDetails).Name, content.Value.Schema.Type);
+                Assert.Equal("object", content.Value.Schema.Type);
                 Assert.Equal("409", responseType.Key);
                 Assert.Equal("application/problem+json", content.Key);
             });
@@ -556,14 +556,14 @@ public class OpenApiOperationGeneratorTests
         responseType =>
         {
             var content = Assert.Single(responseType.Value.Content);
-            Assert.Equal(typeof(InferredJsonClass).Name, content.Value.Schema.Type);
+            Assert.Equal("object", content.Value.Schema.Type);
             Assert.Equal("200", responseType.Key);
             Assert.Equal("application/json", content.Key);
         },
         responseType =>
         {
             var content = Assert.Single(responseType.Value.Content);
-            Assert.Equal(typeof(InferredJsonClass).Name, content.Value.Schema.Type);
+            Assert.Equal("object", content.Value.Schema.Type);
             Assert.Equal("201", responseType.Key);
             Assert.Equal("application/json", content.Key);
         });
@@ -572,27 +572,27 @@ public class OpenApiOperationGeneratorTests
     [Fact]
     public void HandleAcceptsMetadata()
     {
-            // Arrange
-            var pathItem = GetOpenApiPathItem(() => "",
-                    additionalMetadata: new[]
-                    {
-                    new AcceptsMetadata(typeof(string), true, new string[] { "application/json", "application/xml"})
-                    });
+        // Arrange
+        var pathItem = GetOpenApiPathItem(() => "",
+                additionalMetadata: new[]
+                {
+                new AcceptsMetadata(typeof(string), true, new string[] { "application/json", "application/xml"})
+                });
 
-            var operation = Assert.Single(pathItem.Operations);
+        var operation = Assert.Single(pathItem.Operations);
         var requestBody = operation.Value.RequestBody;
 
-            // Assert
-            Assert.Collection(
-            requestBody.Content,
-            parameter =>
-            {
-                Assert.Equal("application/json", parameter.Key);
-            },
-            parameter =>
-            {
-                Assert.Equal("application/xml", parameter.Key);
-            });
+        // Assert
+        Assert.Collection(
+        requestBody.Content,
+        parameter =>
+        {
+            Assert.Equal("application/json", parameter.Key);
+        },
+        parameter =>
+        {
+            Assert.Equal("application/xml", parameter.Key);
+        });
     }
 
     [Fact]
@@ -609,7 +609,7 @@ public class OpenApiOperationGeneratorTests
         var operation = Assert.Single(pathItem.Operations);
         var requestBody = operation.Value.RequestBody;
         var content = Assert.Single(requestBody.Content);
-        Assert.Equal(typeof(InferredJsonClass).Name, content.Value.Schema.Type);
+        Assert.Equal("object", content.Value.Schema.Type);
         Assert.False(requestBody.Required);
     }
 
@@ -626,7 +626,7 @@ public class OpenApiOperationGeneratorTests
         var requestBody = operation.Value.RequestBody;
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("application/json", content.Key);
-        Assert.Equal(typeof(InferredJsonClass).Name, content.Value.Schema.Type);
+        Assert.Equal("object", content.Value.Schema.Type);
         Assert.True(requestBody.Required);
     }
 
@@ -641,7 +641,7 @@ public class OpenApiOperationGeneratorTests
         var requestBody = operation.Value.RequestBody;
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("application/json", content.Key);
-        Assert.Equal(typeof(InferredJsonClass).Name, content.Value.Schema.Type);
+        Assert.Equal("object", content.Value.Schema.Type);
         Assert.False(requestBody.Required);
     }
 
@@ -656,7 +656,7 @@ public class OpenApiOperationGeneratorTests
         var requestBody = operation.Value.RequestBody;
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("application/xml", content.Key);
-        Assert.Equal(typeof(InferredJsonClass).Name, content.Value.Schema.Type);
+        Assert.Equal("object", content.Value.Schema.Type);
         Assert.False(requestBody.Required);
     }
 
@@ -671,7 +671,7 @@ public class OpenApiOperationGeneratorTests
         var requestBody = operation.Value.RequestBody;
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("multipart/form-data", content.Key);
-        Assert.Equal(typeof(IFormFile).Name, content.Value.Schema.Type);
+        Assert.Equal("object", content.Value.Schema.Type);
         Assert.True(requestBody.Required);
     }
 
@@ -686,7 +686,7 @@ public class OpenApiOperationGeneratorTests
         var requestBody = operation.Value.RequestBody;
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("multipart/form-data", content.Key);
-        Assert.Equal(typeof(IFormFile).Name, content.Value.Schema.Type);
+        Assert.Equal("object", content.Value.Schema.Type);
         Assert.False(requestBody.Required);
     }
 
@@ -701,7 +701,7 @@ public class OpenApiOperationGeneratorTests
         var requestBody = operation.Value.RequestBody;
         var content = Assert.Single(requestBody.Content);
         Assert.Equal("multipart/form-data", content.Key);
-        Assert.Equal(typeof(IFormFile).Name, content.Value.Schema.Type);
+        Assert.Equal("object", content.Value.Schema.Type);
         Assert.True(requestBody.Required);
     }
 
@@ -733,28 +733,28 @@ public class OpenApiOperationGeneratorTests
         Assert.NotNull(operation1.Value.RequestBody);
 
         var fromFileParam0 = operation0.Value.RequestBody;
-        Assert.Equal(typeof(IFormFile).Name, fromFileParam0.Content.Values.Single().Schema.Type);
+        Assert.Equal("object", fromFileParam0.Content.Values.Single().Schema.Type);
         Assert.True(fromFileParam0.Required);
 
         var fromFileParam1 = operation1.Value.RequestBody;
-        Assert.Equal(typeof(IFormFile).Name, fromFileParam1.Content.Values.Single().Schema.Type);
+        Assert.Equal("object", fromFileParam1.Content.Values.Single().Schema.Type);
         Assert.False(fromFileParam1.Required);
     }
 
     [Fact]
     public void AddsFromFormParameterAsFormFile()
     {
-        static void AssertFormFileParameter(OpenApiPathItem pathItem, Type expectedType, string expectedName)
+        static void AssertFormFileParameter(OpenApiPathItem pathItem, string expectedType, string expectedName)
         {
             var operation = Assert.Single(pathItem.Operations);
             var requestBody = operation.Value.RequestBody;
             var content = Assert.Single(requestBody.Content);
-            Assert.Equal(expectedType.Name, content.Value.Schema.Type);
+            Assert.Equal(expectedType, content.Value.Schema.Type);
             Assert.Equal("multipart/form-data", content.Key);
         }
 
-        AssertFormFileParameter(GetOpenApiPathItem((IFormFile file) => { }), typeof(IFormFile), "file");
-        AssertFormFileParameter(GetOpenApiPathItem(([FromForm(Name = "file_name")] IFormFile file) => { }), typeof(IFormFile), "file_name");
+        AssertFormFileParameter(GetOpenApiPathItem((IFormFile file) => { }), "object", "file");
+        AssertFormFileParameter(GetOpenApiPathItem(([FromForm(Name = "file_name")] IFormFile file) => { }), "object", "file_name");
     }
 
     [Fact]
@@ -773,7 +773,7 @@ public class OpenApiOperationGeneratorTests
             var requestBody = operation.Value.RequestBody;
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("multipart/form-data", content.Key);
-            Assert.Equal(typeof(IFormFileCollection).Name, content.Value.Schema.Type);
+            Assert.Equal("object", content.Value.Schema.Type);
             Assert.True(requestBody.Required);
         }
     }
