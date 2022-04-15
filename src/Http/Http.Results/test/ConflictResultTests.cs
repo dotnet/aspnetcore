@@ -3,7 +3,9 @@
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
+using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -37,6 +39,25 @@ public class ConflictResultTests
         // Assert
         Assert.Equal(StatusCodes.Status409Conflict, httpContext.Response.StatusCode);
     }
+
+    [Fact]
+    public void PopulateMetadata_AddsResponseTypeMetadata()
+    {
+        // Arrange
+        Conflict MyApi() { throw new NotImplementedException(); }
+        var metadata = new List<object>();
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+
+        // Act
+        PopulateMetadata<Conflict>(context);
+
+        // Assert
+        var producesResponseTypeMetadata = context.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status409Conflict, producesResponseTypeMetadata.StatusCode);
+    }
+
+    private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
+        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 
     private static IServiceProvider CreateServices()
     {

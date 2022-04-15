@@ -3,7 +3,9 @@
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
+using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -74,6 +76,29 @@ public class ConflictOfTResultTests
         // Assert
         Assert.Equal("\"Hello\"", Encoding.UTF8.GetString(stream.ToArray()));
     }
+
+    [Fact]
+    public void PopulateMetadata_AddsResponseTypeMetadata()
+    {
+        // Arrange
+        Conflict<Todo> MyApi() { throw new NotImplementedException(); }
+        var metadata = new List<object>();
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+
+        // Act
+        PopulateMetadata<Conflict<Todo>>(context);
+
+        // Assert
+        var producesResponseTypeMetadata = context.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status409Conflict, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(Todo), producesResponseTypeMetadata.Type);
+        Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
+    }
+
+    private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
+        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
+
+    private record Todo(int Id, string Title);
 
     private static IServiceProvider CreateServices()
     {

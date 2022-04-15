@@ -3,7 +3,9 @@
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
+using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -36,6 +38,25 @@ public class UnprocessableEntityResultTests
         // Assert
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, httpContext.Response.StatusCode);
     }
+
+    [Fact]
+    public void PopulateMetadata_AddsResponseTypeMetadata()
+    {
+        // Arrange
+        UnprocessableEntity MyApi() { throw new NotImplementedException(); }
+        var metadata = new List<object>();
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+
+        // Act
+        PopulateMetadata<UnprocessableEntity>(context);
+
+        // Assert
+        var producesResponseTypeMetadata = context.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, producesResponseTypeMetadata.StatusCode);
+    }
+
+    private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
+        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 
     private static IServiceProvider CreateServices()
     {

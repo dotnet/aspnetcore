@@ -3,7 +3,9 @@
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
+using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -95,6 +97,29 @@ public class BadRequestOfTResultTests
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
     }
+
+    [Fact]
+    public void PopulateMetadata_AddsResponseTypeMetadata()
+    {
+        // Arrange
+        BadRequest<Todo> MyApi() { throw new NotImplementedException(); }
+        var metadata = new List<object>();
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+
+        // Act
+        PopulateMetadata<BadRequest<Todo>>(context);
+
+        // Assert
+        var producesResponseTypeMetadata = context.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status400BadRequest, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(Todo), producesResponseTypeMetadata.Type);
+        Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
+    }
+
+    private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
+        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
+
+    private record Todo(int Id, string Title);
 
     private static IServiceProvider CreateServices()
     {

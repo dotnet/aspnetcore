@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -113,6 +115,29 @@ public class AcceptedAtRouteOfTResultTests
             result.ExecuteAsync(httpContext),
             "No route matches the supplied values.");
     }
+
+    [Fact]
+    public void PopulateMetadata_AddsResponseTypeMetadata()
+    {
+        // Arrange
+        AcceptedAtRoute<Todo> MyApi() { throw new NotImplementedException(); }
+        var metadata = new List<object>();
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+
+        // Act
+        PopulateMetadata<AcceptedAtRoute<Todo>>(context);
+
+        // Assert
+        var producesResponseTypeMetadata = context.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status202Accepted, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(Todo), producesResponseTypeMetadata.Type);
+        Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
+    }
+
+    private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
+        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
+
+    private record Todo(int Id, string Title);
 
     private static HttpContext GetHttpContext(LinkGenerator linkGenerator)
     {
