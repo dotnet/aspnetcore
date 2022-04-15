@@ -118,6 +118,8 @@ internal class HubMethodDescriptor
 
     public IList<IAuthorizeData> AuthorizeData { get; }
 
+    public IReadOnlyList<AuthorizationPolicy> EndpointPolicies { get; }
+
     public bool HasSyntheticArguments { get; private set; }
 
     public bool IsServiceArgument(int argumentIndex)
