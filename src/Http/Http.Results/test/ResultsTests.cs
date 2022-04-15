@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
 
@@ -523,6 +524,136 @@ public class ResultsTests
         Assert.True(result.AcceptLocalUrlOnly);
         Assert.True(result.Permanent);
         Assert.True(result.PreserveMethod);
+    }
+
+    [Fact]
+    public void NoContent_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.NoContent() as NoContent;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
+    }
+
+    [Fact]
+    public void NotFound_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new { };
+
+        // Act
+        var result = Results.NotFound(value) as NotFound<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void NotFound_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.NotFound() as NotFound;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+    }
+
+    [Fact]
+    public void Ok_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new { };
+
+        // Act
+        var result = Results.Ok(value) as Ok<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void Ok_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Ok() as Ok;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+    }
+
+    [Fact]
+    public void Problem_WithArgs_ResultHasCorrectValues()
+    {
+        // Arrange
+        var detail = "test detail";
+        var instance = "test instance";
+        var statusCode = StatusCodes.Status409Conflict;
+        var title = "test title";
+        var type = "test type";
+        var extensions = new Dictionary<string, object> { { "test", "value" } };
+
+        // Act
+        var result = Results.Problem(detail, instance, statusCode, title, type, extensions) as ProblemHttpResult;
+
+        // Assert
+        Assert.Equal(detail, result.ProblemDetails.Detail);
+        Assert.Equal(instance, result.ProblemDetails.Instance);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
+    public void Problem_WithNoArgs_ResultHasCorrectValues()
+    {
+        /// Act
+        var result = Results.Problem() as ProblemHttpResult;
+
+        // Assert
+        Assert.Null(result.ProblemDetails.Detail);
+        Assert.Null(result.ProblemDetails.Instance);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        Assert.Equal("An error occurred while processing your request.", result.ProblemDetails.Title);
+        Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", result.ProblemDetails.Type);
+        Assert.Empty(result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
+    public void Problem_WithProblemArg_ResultHasCorrectValues()
+    {
+        // Arrange
+        var problem = new ProblemDetails { Title = "Test title" };
+
+        // Act
+        var result = Results.Problem(problem) as ProblemHttpResult;
+
+        // Assert
+        Assert.Equal(problem, result.ProblemDetails);
+        Assert.Equal("Test title", result.ProblemDetails.Title);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+    }
+
+    [Fact]
+    public void Problem_WithValidationProblemArg_ResultHasCorrectValues()
+    {
+        // Arrange
+        var problem = new HttpValidationProblemDetails { Title = "Test title" };
+
+        // Act
+        var result = Results.Problem(problem) as ProblemHttpResult;
+
+        // Assert
+        Assert.Equal(problem, result.ProblemDetails);
+        Assert.Equal("Test title", result.ProblemDetails.Title);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
     }
 
     [Theory]
