@@ -146,7 +146,7 @@ internal class Http2FrameWriter
                     // Check if we need to write headers
                     var flushHeaders = observed.HasFlag(Http2OutputProducer.State.FlushHeaders) && !currentState.HasFlag(Http2OutputProducer.State.FlushHeaders);
 
-                    (var hasMoreData, var reschedule, currentState) = producer.ObserveDataAndState(buffer.Length, observed);
+                    (var hasMoreData, var reschedule, currentState, var waitingForWindowUpdates) = producer.ObserveDataAndState(buffer.Length, observed);
 
                     var aborted = currentState.HasFlag(Http2OutputProducer.State.Aborted);
                     var completed = currentState.HasFlag(Http2OutputProducer.State.Completed);
@@ -163,6 +163,15 @@ internal class Http2FrameWriter
                         {
                             // write headers
                             WriteResponseHeaders(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.NONE, (HttpResponseHeaders)stream.ResponseHeaders);
+                        }
+
+                        if (actual > 0)
+                        {
+                            // If we got here it means we're going to cancel the write. Restore any consumed bytes to the connection window.
+                            lock (_windowUpdateLock)
+                            {
+                                _connectionWindow += actual;
+                            }
                         }
                     }
                     else if (completed && stream.ResponseTrailers is { Count: > 0 } && !hasMoreData)
@@ -218,7 +227,7 @@ internal class Http2FrameWriter
                     }
                     // We're not going to schedule this again if there's no remaining window.
                     // When the window update is sent, the producer will be re-queued if needed.
-                    else if (hasMoreData && !aborted)
+                    else if (hasMoreData && !aborted && !waitingForWindowUpdates)
                     {
                         // We have no more connection window, put this producer in a queue waiting for it to
                         // a window update to resume the connection.
@@ -238,6 +247,8 @@ internal class Http2FrameWriter
                                 }
                             }
 
+                            producer.SetWaitingForWindowUpdates();
+
                             // Include waiting for window updates in timing writes
                             if (_minResponseDataRate != null)
                             {
@@ -252,6 +263,8 @@ internal class Http2FrameWriter
                         }
                         else
                         {
+                            producer.SetWaitingForWindowUpdates();
+
                             // Include waiting for window updates in timing writes
                             if (_minResponseDataRate != null)
                             {
@@ -862,11 +875,8 @@ internal class Http2FrameWriter
 
             while (_waitingForMoreConnectionWindow.TryDequeue(out producer))
             {
-                if (!producer.CompletedResponse)
-                {
-                    // Stop the output
-                    producer.Stop();
-                }
+                // Abort the stream
+                producer.Stop();
             }
         }
     }
@@ -894,10 +904,7 @@ internal class Http2FrameWriter
 
             while (_waitingForMoreConnectionWindow.TryDequeue(out producer))
             {
-                if (!producer.CompletedResponse)
-                {
-                    producer.Schedule();
-                }
+                producer.ScheduleResumeFromWindowUpdate();
             }
         }
         return true;

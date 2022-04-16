@@ -47,6 +47,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     private State _currentState;
     private bool _completedResponse;
     private bool _requestProcessingComplete;
+    private bool _waitingForWindowUpdates;
     private Http2ErrorCode? _resetErrorCode;
 
     public Http2OutputProducer(Http2Stream stream, Http2StreamContext context)
@@ -133,10 +134,18 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         }
     }
 
+    public void SetWaitingForWindowUpdates()
+    {
+        lock (_dataWriterLock)
+        {
+            _waitingForWindowUpdates = true;
+        }
+    }
+
     // Removes consumed bytes from the queue.
     // Returns a bool that represents whether we should schedule this producer to write
     // the remaining bytes.
-    internal (bool hasMoreData, bool reschedule, State currentState) ObserveDataAndState(long bytes, State state)
+    internal (bool hasMoreData, bool reschedule, State currentState, bool waitingForWindowUpdates) ObserveDataAndState(long bytes, State state)
     {
         lock (_dataWriterLock)
         {
@@ -144,7 +153,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
             _unobservedState &= ~state;
             _currentState |= state;
             _unconsumedBytes -= bytes;
-            return (_unconsumedBytes > 0, _unobservedState != State.None, _currentState);
+            return (_unconsumedBytes > 0, _unobservedState != State.None, _currentState, _waitingForWindowUpdates);
         }
     }
 
@@ -178,6 +187,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         _currentState = State.None;
         _completedResponse = false;
         _requestProcessingComplete = false;
+        _waitingForWindowUpdates = false;
         _resetErrorCode = null;
         IsTimingWrite = false;
     }
@@ -284,6 +294,21 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         }
 
         _frameWriter.Schedule(this);
+    }
+
+    public void ScheduleResumeFromWindowUpdate()
+    {
+        if (_completedResponse)
+        {
+            return;
+        }
+
+        lock (_dataWriterLock)
+        {
+            _waitingForWindowUpdates = false;
+        }
+
+        Schedule();
     }
 
     public ValueTask<FlushResult> Write100ContinueAsync()
@@ -516,6 +541,8 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
+            _waitingForWindowUpdates = false;
+
             if (_streamCompleted && _completedResponse)
             {
                 // We can overschedule as long as we haven't yet completed the response. This is important because
@@ -646,7 +673,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
         if (schedule)
         {
-            Schedule();
+            ScheduleResumeFromWindowUpdate();
         }
 
         return true;
