@@ -918,7 +918,7 @@ public class ResultsTests
         (() => Results.Empty, typeof(EmptyHttpResult)),
         (() => Results.File(new byte[0], null, null, false, null, null), typeof(FileContentHttpResult)),
         (() => Results.File(new MemoryStream(), null, null, null, null, false), typeof(FileStreamHttpResult)),
-        (() => Results.File("C:\\path", null, null, null, null, false), typeof(PhysicalFileHttpResult)),
+        (() => Results.File(Path.Join(Path.DirectorySeparatorChar.ToString(), "rooted", "path"), null, null, null, null, false), typeof(PhysicalFileHttpResult)),
         (() => Results.File("path", null, null, null, null, false), typeof(VirtualFileHttpResult)),
         (() => Results.Forbid(null, null), typeof(ForbidHttpResult)),
         (() => Results.Json(new(), null, null, null), typeof(JsonHttpResult<object>)),
