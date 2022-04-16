@@ -28,7 +28,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     private IMemoryOwner<byte>? _fakeMemoryOwner;
     private byte[]? _fakeMemory;
     private bool _startedWritingDataFrames;
-    private bool _streamCompleted;
+    private bool _completeScheduled;
     private bool _suffixSent;
     private bool _appCompletedWithNoResponseBodyOrTrailers;
     private bool _writerComplete;
@@ -176,7 +176,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         _appCompletedWithNoResponseBodyOrTrailers = false;
         _suffixSent = false;
         _startedWritingDataFrames = false;
-        _streamCompleted = false;
+        _completeScheduled = false;
         _writerComplete = false;
         _pipe.Reset();
         _pipeWriter.Reset();
@@ -205,7 +205,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
             Stop();
 
-            if (!_streamCompleted)
+            if (!_completeScheduled)
             {
                 EnqueueStateUpdate(State.Completed);
 
@@ -256,7 +256,8 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         lock (_dataWriterLock)
         {
             ThrowIfSuffixSentOrCompleted();
-            if (_streamCompleted)
+
+            if (_completeScheduled)
             {
                 return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
@@ -317,7 +318,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         {
             ThrowIfSuffixSentOrCompleted();
 
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return default;
             }
@@ -332,7 +333,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         {
             // The HPACK header compressor is stateful, if we compress headers for an aborted stream we must send them.
             // Optimize for not compressing or sending them.
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return;
             }
@@ -366,7 +367,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
             // This length check is important because we don't want to set _startedWritingDataFrames unless a data
             // frame will actually be written causing the headers to be flushed.
-            if (_streamCompleted || data.Length == 0)
+            if (_completeScheduled || data.Length == 0)
             {
                 return Task.CompletedTask;
             }
@@ -389,12 +390,12 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return ValueTask.FromResult<FlushResult>(default);
             }
 
-            _streamCompleted = true;
+            _completeScheduled = true;
             _suffixSent = true;
 
             EnqueueStateUpdate(State.Completed);
@@ -413,7 +414,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         {
             Stop();
             // We queued the stream to complete but didn't complete the response yet
-            if (_streamCompleted && !_completedResponse)
+            if (_completeScheduled && !_completedResponse)
             {
                 // Set the error so that we can write the RST when the response completes.
                 _resetErrorCode = error;
@@ -430,7 +431,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         {
             ThrowIfSuffixSentOrCompleted();
 
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return;
             }
@@ -449,7 +450,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         {
             ThrowIfSuffixSentOrCompleted();
 
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return GetFakeMemory(sizeHint).Span;
             }
@@ -464,7 +465,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         {
             ThrowIfSuffixSentOrCompleted();
 
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return GetFakeMemory(sizeHint);
             }
@@ -477,7 +478,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
     {
         lock (_dataWriterLock)
         {
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return;
             }
@@ -499,7 +500,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
 
             // This length check is important because we don't want to set _startedWritingDataFrames unless a data
             // frame will actually be written causing the headers to be flushed.
-            if (_streamCompleted || data.Length == 0)
+            if (_completeScheduled || data.Length == 0)
             {
                 return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
@@ -543,14 +544,14 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         {
             _waitingForWindowUpdates = false;
 
-            if (_streamCompleted && _completedResponse)
+            if (_completeScheduled && _completedResponse)
             {
                 // We can overschedule as long as we haven't yet completed the response. This is important because
                 // we may need to abort the stream if it's waiting for a window update.
                 return;
             }
 
-            _streamCompleted = true;
+            _completeScheduled = true;
 
             EnqueueStateUpdate(State.Aborted);
 

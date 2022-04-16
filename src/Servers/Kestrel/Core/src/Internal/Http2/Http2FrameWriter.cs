@@ -149,7 +149,7 @@ internal class Http2FrameWriter
                     (var hasMoreData, var reschedule, currentState, var waitingForWindowUpdates) = producer.ObserveDataAndState(buffer.Length, observed);
 
                     var aborted = currentState.HasFlag(Http2OutputProducer.State.Aborted);
-                    var completed = currentState.HasFlag(Http2OutputProducer.State.Completed);
+                    var completed = currentState.HasFlag(Http2OutputProducer.State.Completed) && !hasMoreData;
 
                     FlushResult flushResult = default;
 
@@ -174,7 +174,7 @@ internal class Http2FrameWriter
                             }
                         }
                     }
-                    else if (completed && stream.ResponseTrailers is { Count: > 0 } && !hasMoreData)
+                    else if (completed && stream.ResponseTrailers is { Count: > 0 })
                     {
                         // Output is ending and there are trailers to write
                         // Write any remaining content then write trailers and there's no
@@ -202,7 +202,7 @@ internal class Http2FrameWriter
                     }
                     else
                     {
-                        var endStream = completed && !hasMoreData;
+                        var endStream = completed;
 
                         if (endStream)
                         {
@@ -219,7 +219,7 @@ internal class Http2FrameWriter
 
                     reader.AdvanceTo(buffer.End);
 
-                    if ((completed && !hasMoreData) || aborted)
+                    if (completed || aborted)
                     {
                         await reader.CompleteAsync();
 
