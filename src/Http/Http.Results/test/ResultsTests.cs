@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
+using System.IO.Pipelines;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
@@ -128,7 +129,7 @@ public class ResultsTests
     }
 
     [Theory]
-    [MemberData(nameof(Bytes_ResultHasCorrectValues_Data))]
+    [MemberData(nameof(BytesOrFile_ResultHasCorrectValues_Data))]
     public void BytesOrFile_ResultHasCorrectValues(int bytesOrFile, string contentType, string fileDownloadName, bool enableRangeProcessing, DateTimeOffset lastModified, EntityTagHeaderValue entityTag)
     {
         // Arrange
@@ -150,12 +151,62 @@ public class ResultsTests
         Assert.Equal(entityTag, result.EntityTag);
     }
 
-    public static IEnumerable<object[]> Bytes_ResultHasCorrectValues_Data => new List<object[]>
+    public static IEnumerable<object[]> BytesOrFile_ResultHasCorrectValues_Data => new List<object[]>
+    {
+        new object[] { 0, "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
+        new object[] { 0, default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) },
+        new object[] { 1, "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
+        new object[] { 1, default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) }
+    };
+
+    [Theory]
+    [MemberData(nameof(Stream_ResultHasCorrectValues_Data))]
+    public void Stream_ResultHasCorrectValues(int overload, string contentType, string fileDownloadName, bool enableRangeProcessing, DateTimeOffset lastModified, EntityTagHeaderValue entityTag)
+    {
+        // Arrange
+        var stream = new MemoryStream();
+
+        // Act
+        var result = overload switch
+        {
+            0 => Results.Stream(stream, contentType, fileDownloadName, lastModified, entityTag, enableRangeProcessing),
+            1 => Results.Stream(PipeReader.Create(stream), contentType, fileDownloadName, lastModified, entityTag, enableRangeProcessing),
+            _ => Results.Stream((s) => Task.CompletedTask, contentType, fileDownloadName, lastModified, entityTag)
+        };
+
+        // Assert
+        switch (overload)
+        {
+            case <= 1:
+                var fileStreamResult = result as FileStreamHttpResult;
+                Assert.NotNull(fileStreamResult.FileStream);
+                Assert.Equal(contentType ?? "application/octet-stream", fileStreamResult.ContentType);
+                Assert.Equal(fileDownloadName, fileStreamResult.FileDownloadName);
+                Assert.Equal(enableRangeProcessing, fileStreamResult.EnableRangeProcessing);
+                Assert.Equal(lastModified, fileStreamResult.LastModified);
+                Assert.Equal(entityTag, fileStreamResult.EntityTag);
+                break;
+
+            default:
+                var pushStreamResult = result as PushStreamHttpResult;
+                Assert.Equal(contentType ?? "application/octet-stream", pushStreamResult.ContentType);
+                Assert.Equal(fileDownloadName, pushStreamResult.FileDownloadName);
+                Assert.False(pushStreamResult.EnableRangeProcessing);
+                Assert.Equal(lastModified, pushStreamResult.LastModified);
+                Assert.Equal(entityTag, pushStreamResult.EntityTag);
+                break;
+        }
+
+    }
+
+    public static IEnumerable<object[]> Stream_ResultHasCorrectValues_Data => new List<object[]>
     {
         new object[] { 0, "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
         new object[] { 0, default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) },
         new object[] { 1, "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
         new object[] { 1, default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) },
+        new object[] { 2, "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
+        new object[] { 2, default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) }
     };
 
     [Theory]
@@ -654,6 +705,167 @@ public class ResultsTests
         Assert.Equal("Test title", result.ProblemDetails.Title);
         Assert.Equal("application/problem+json", result.ContentType);
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+    }
+
+    [Fact]
+    public void ValidationProblem_WithValidationProblemArg_ResultHasCorrectValues()
+    {
+        // Arrange
+        var errors = new Dictionary<string, string[]>() { { "testField", new[] { "test error" } } };
+        var detail = "test detail";
+        var instance = "test instance";
+        var statusCode = StatusCodes.Status412PreconditionFailed; // obscure for the test on purpose
+        var title = "test title";
+        var type = "test type";
+        var extensions = new Dictionary<string, object>() { { "testExtension", "test value" } };
+
+        // Act
+        // Note: Results.ValidationProblem returns ProblemHttpResult instead of ValidationProblem by design as
+        //       as ValidationProblem doesn't allow setting a custom status code so that it can accurately report
+        //       a single status code in endpoint metadata via its implementation of IEndpointMetadataProvider
+        var result = Results.ValidationProblem(errors, detail, instance, statusCode, title, type, extensions) as ProblemHttpResult;
+
+        // Assert
+        Assert.IsType<HttpValidationProblemDetails>(result.ProblemDetails);
+        Assert.Equal(errors, ((HttpValidationProblemDetails)result.ProblemDetails).Errors);
+        Assert.Equal(detail, result.ProblemDetails.Detail);
+        Assert.Equal(instance, result.ProblemDetails.Instance);
+        Assert.Equal(statusCode, result.ProblemDetails.Status);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
+    public void Redirect_WithDefaults_ResultHasCorrectValues()
+    {
+        // Arrange
+        var url = "https://example.com";
+
+        // Act
+        var result = Results.Redirect(url) as RedirectHttpResult;
+
+        // Assert
+        Assert.Equal(url, result.Url);
+        Assert.False(result.PreserveMethod);
+        Assert.False(result.Permanent);
+        Assert.False(result.AcceptLocalUrlOnly);
+    }
+
+    [Fact]
+    public void Redirect_WithPermanentTrue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var url = "https://example.com";
+
+        // Act
+        var result = Results.Redirect(url, true) as RedirectHttpResult;
+
+        // Assert
+        Assert.Equal(url, result.Url);
+        Assert.False(result.PreserveMethod);
+        Assert.True(result.Permanent);
+        Assert.False(result.AcceptLocalUrlOnly);
+    }
+
+    [Fact]
+    public void Redirect_WithPreserveMethodTrue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var url = "https://example.com";
+
+        // Act
+        var result = Results.Redirect(url, false, true) as RedirectHttpResult;
+
+        // Assert
+        Assert.Equal(url, result.Url);
+        Assert.True(result.PreserveMethod);
+        Assert.False(result.Permanent);
+        Assert.False(result.AcceptLocalUrlOnly);
+    }
+
+    [Fact]
+    public void RedirectToRoute_WithRouteNameAndRouteValuesAndFragment_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new { foo = 123 };
+        var fragment = "test";
+
+        // Act
+        var result = Results.RedirectToRoute(routeName, routeValues, true, true, fragment) as RedirectToRouteHttpResult;
+
+        // Assert
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+        Assert.True(result.Permanent);
+        Assert.True(result.PreserveMethod);
+        Assert.Equal(fragment, result.Fragment);
+    }
+
+    [Fact]
+    public void RedirectToRoute_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.RedirectToRoute() as RedirectToRouteHttpResult;
+
+        // Assert
+        Assert.Null(result.RouteName);
+        Assert.Null(result.RouteValues);
+    }
+
+    [Fact]
+    public void StatusCode_ResultHasCorrectValues()
+    {
+        // Arrange
+        var statusCode = StatusCodes.Status412PreconditionFailed;
+
+        // Act
+        var result = Results.StatusCode(statusCode) as StatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(statusCode, result.StatusCode);
+    }
+
+    [Fact]
+    public void Text_WithContentAndContentTypeAndEncoding_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content";
+        var contentType = "text/plain";
+        var encoding = Encoding.ASCII;
+
+        // Act
+        var result = Results.Text(content, contentType, encoding) as ContentHttpResult;
+
+        // Assert
+        Assert.Null(result.StatusCode);
+        Assert.Equal(content, result.ResponseContent);
+        var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
+        expectedMediaType.Encoding = encoding;
+        Assert.Equal(expectedMediaType.ToString(), result.ContentType);
+    }
+
+    [Fact]
+    public void Unauthorized_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Unauthorized() as UnauthorizedHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public void UnprocessableEntity_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.UnprocessableEntity() as UnprocessableEntity;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
     }
 
     [Theory]
