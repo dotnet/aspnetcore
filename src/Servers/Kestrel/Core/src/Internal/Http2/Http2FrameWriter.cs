@@ -143,13 +143,17 @@ internal class Http2FrameWriter
                     var observed = producer.UnobservedState;
                     var currentState = producer.CurrentState;
 
+                    // Avoid boxing the enum (though the JIT optimizes this eventually)
+                    static bool HasStateFlag(Http2OutputProducer.State state, Http2OutputProducer.State flags)
+                        => (state & flags) == flags;
+
                     // Check if we need to write headers
-                    var flushHeaders = observed.HasFlag(Http2OutputProducer.State.FlushHeaders) && !currentState.HasFlag(Http2OutputProducer.State.FlushHeaders);
+                    var flushHeaders = HasStateFlag(observed, Http2OutputProducer.State.FlushHeaders) && !HasStateFlag(currentState, Http2OutputProducer.State.FlushHeaders);
 
                     (var hasMoreData, var reschedule, currentState, var waitingForWindowUpdates) = producer.ObserveDataAndState(buffer.Length, observed);
 
-                    var aborted = currentState.HasFlag(Http2OutputProducer.State.Aborted);
-                    var completed = currentState.HasFlag(Http2OutputProducer.State.Completed) && !hasMoreData;
+                    var aborted = HasStateFlag(currentState, Http2OutputProducer.State.Aborted);
+                    var completed = HasStateFlag(currentState, Http2OutputProducer.State.Completed) && !hasMoreData;
 
                     FlushResult flushResult = default;
 
