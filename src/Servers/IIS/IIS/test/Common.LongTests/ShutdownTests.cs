@@ -405,6 +405,7 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41207")]
     public async Task ConfigurationChangeCanBeIgnoredInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);

@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\HttpEventSourceListener.cs" Link="shared\HttpEventSourceListener.cs" />
+    <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" Link="shared\HttpEventSourceListener.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" Link="shared\TestResources.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\StreamExtensions.cs" Link="shared\StreamExtensions.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\KestrelTestLoggerProvider.cs" Link="shared\KestrelTestLoggerProvider.cs" />

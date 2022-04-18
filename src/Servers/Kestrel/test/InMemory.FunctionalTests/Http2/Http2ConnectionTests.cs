@@ -424,9 +424,6 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-        var output = (Http2OutputProducer)stream.Output;
-        await output._dataWriteProcessingTask.DefaultTimeout();
     }
 
     [Fact]
@@ -567,17 +564,22 @@ public class Http2ConnectionTests : Http2TestBase
             throw new InvalidOperationException("Put the stream into an invalid state by throwing after writing to response.");
         });
 
+        var streamCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _connection._onStreamCompleted =  _ => streamCompletedTcs.TrySetResult();
+
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
         var stream = _connection._streams[1];
         serverTcs.SetResult();
+
+        // Wait for the stream to be completed
+        await streamCompletedTcs.Task;
 
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
 
         var output = (Http2OutputProducer)stream.Output;
         Assert.True(output._disposed);
-        await output._dataWriteProcessingTask.DefaultTimeout();
 
         // Stream is not returned to the pool
         Assert.Equal(0, _connection.StreamPool.Count);
@@ -3804,6 +3806,7 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
 
+        TriggerTick();
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         await _closedStateReached.Task.DefaultTimeout();
     }
@@ -4168,7 +4171,7 @@ public class Http2ConnectionTests : Http2TestBase
                 for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
                 {
                     await expectingDataSem.WaitAsync();
-                    Assert.True(context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length).IsCompleted);
+                    await context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length);
                 }
 
                 await expectingDataSem.WaitAsync();
@@ -4720,6 +4723,7 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 1);
 
+        TriggerTick();
         await _closedStateReached.Task.DefaultTimeout();
         VerifyGoAway(await ReceiveFrameAsync(), 1, Http2ErrorCode.NO_ERROR);
     }
@@ -4740,7 +4744,7 @@ public class Http2ConnectionTests : Http2TestBase
         await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
         await SendDataAsync(1, _helloBytes, true);
-        var f = await ExpectAsync(Http2FrameType.HEADERS,
+        await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 32,
             withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
             withStreamId: 1);
@@ -4766,6 +4770,8 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
 
+        TriggerTick();
+
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
 
@@ -4790,14 +4796,14 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    public void IOExceptionDuringFrameProcessingIsNotLoggedHigherThanDebug()
+    public async Task IOExceptionDuringFrameProcessingIsNotLoggedHigherThanDebug()
     {
         CreateConnection();
 
         var ioException = new IOException();
         _pair.Application.Output.Complete(ioException);
 
-        Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
+        await _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).DefaultTimeout();
 
         Assert.All(LogMessages, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
 
@@ -4808,14 +4814,14 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    public void UnexpectedExceptionDuringFrameProcessingLoggedAWarning()
+    public async Task UnexpectedExceptionDuringFrameProcessingLoggedAWarning()
     {
         CreateConnection();
 
         var exception = new Exception();
         _pair.Application.Output.Complete(exception);
 
-        Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
+        await _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).DefaultTimeout();
 
         var logMessage = LogMessages.Single(m => m.LogLevel >= LogLevel.Information);
 
