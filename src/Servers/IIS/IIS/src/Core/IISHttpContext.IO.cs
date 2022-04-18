@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 internal partial class IISHttpContext
 {
-    const ushort MAX_CHUNKS = 65533;
+    const ushort RESPONSE_BODY_MAX_CHUNKS = 65533;
 
     private long _consumedBytes;
     internal bool ClientDisconnected { get; private set; }
@@ -185,7 +185,7 @@ internal partial class IISHttpContext
                                 chunksCount++;
                                 length += chunks.Length;
 
-                                if (chunksCount == MAX_CHUNKS)
+                                if (chunksCount == RESPONSE_BODY_MAX_CHUNKS)
                                 {
                                     await AsyncIO!.WriteAsync(buffer.Slice(start, length));
 
