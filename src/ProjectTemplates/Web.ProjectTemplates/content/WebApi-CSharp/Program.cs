@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 #if (WindowsAuth)
 using Microsoft.AspNetCore.Authentication.Negotiate;
 #endif
+#if (EnableOpenAPI)
+using Microsoft.AspNetCore.OpenApi;
+#endif
 #if (GenerateGraph)
 using Graph = Microsoft.Graph;
 #endif
