@@ -167,12 +167,10 @@ public class InteropClient : IDisposable
             httpClientHandler.ClientCertificates.Add(cert);
         }
 
-        var httpClient = new HttpClient(httpClientHandler);
-
         var channel = GrpcChannel.ForAddress($"{scheme}://{options.ServerHost}:{options.ServerPort}", new GrpcChannelOptions
         {
             Credentials = credentials,
-            HttpClient = httpClient,
+            HttpHandler = httpClientHandler,
             LoggerFactory = loggerFactory
         });
 
