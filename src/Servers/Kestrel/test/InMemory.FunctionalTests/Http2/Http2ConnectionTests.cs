@@ -564,16 +564,13 @@ public class Http2ConnectionTests : Http2TestBase
             throw new InvalidOperationException("Put the stream into an invalid state by throwing after writing to response.");
         });
 
-        var streamCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        _connection._onStreamCompleted =  _ => streamCompletedTcs.TrySetResult();
-
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
         var stream = _connection._streams[1];
         serverTcs.SetResult();
 
         // Wait for the stream to be completed
-        await streamCompletedTcs.Task;
+        await WaitForStreamAsync(stream.StreamId).DefaultTimeout();
 
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
