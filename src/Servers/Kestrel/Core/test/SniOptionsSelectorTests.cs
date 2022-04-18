@@ -187,6 +187,51 @@ public class SniOptionsSelectorTests
     }
 
     [Fact]
+    public void MultipleWildcardPrefixServerNamesOfSameLengthAreAllowed()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
+            {
+                {
+                    "*.a.example.org",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "a"
+                        }
+                    }
+                },
+                {
+                    "*.b.example.org",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "b"
+                        }
+                    }
+                }
+            };
+
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (baSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "c.a.example.org");
+        Assert.Equal("a", pathDictionary[baSubdomainOptions.ServerCertificate]);
+
+        var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "c.b.example.org");
+        Assert.Equal("b", pathDictionary[aSubdomainOptions.ServerCertificate]);
+    }
+
+    [Fact]
     public void GetOptionsThrowsAnAuthenticationExceptionIfThereIsNoMatchingSniSection()
     {
         var sniOptionsSelector = new SniOptionsSelector(
