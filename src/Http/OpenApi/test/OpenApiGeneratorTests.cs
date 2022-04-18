@@ -30,8 +30,8 @@ public class OpenApiOperationGeneratorTests
     public void UsesDeclaringTypeAsOperationTags()
     {
         var operation = GetOpenApiOperation(TestAction);
-
         var declaringTypeName = typeof(OpenApiOperationGeneratorTests).Name;
+
         var tag = Assert.Single(operation.Tags);
 
         Assert.Equal(declaringTypeName, tag.Name);
@@ -60,23 +60,17 @@ public class OpenApiOperationGeneratorTests
         }
 
         AssertCustomRequestFormat(GetOpenApiOperation(
-            [Consumes("application/custom")]
-        (InferredJsonClass fromBody) =>
-            { }));
+            [Consumes("application/custom")] (InferredJsonClass fromBody) => { }));
 
         AssertCustomRequestFormat(GetOpenApiOperation(
-            [Consumes("application/custom")]
-        ([FromBody] int fromBody) =>
-            { }));
+            [Consumes("application/custom")] ([FromBody] int fromBody) => { }));
     }
 
     [Fact]
     public void AddsMultipleRequestFormatsFromMetadata()
     {
         var operation = GetOpenApiOperation(
-            [Consumes("application/custom0", "application/custom1")]
-        (InferredJsonClass fromBody) =>
-            { });
+            [Consumes("application/custom0", "application/custom1")] (InferredJsonClass fromBody) => { });
 
         var request = Assert.Single(operation.Parameters);
 
@@ -88,9 +82,7 @@ public class OpenApiOperationGeneratorTests
     public void AddsMultipleRequestFormatsFromMetadataWithRequestTypeAndOptionalBodyParameter()
     {
         var operation = GetOpenApiOperation(
-            [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = true)]
-        () =>
-            { }); ;
+            [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = true)] () => { });
         var request = operation.RequestBody;
         Assert.NotNull(request);
 
@@ -107,9 +99,7 @@ public class OpenApiOperationGeneratorTests
     public void AddsMultipleRequestFormatsFromMetadataWithRequiredBodyParameter()
     {
         var operation = GetOpenApiOperation(
-            [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = false)]
-        (InferredJsonClass fromBody) =>
-            { });
+            [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = false)] (InferredJsonClass fromBody) => { });
 
         var request = operation.RequestBody;
         Assert.NotNull(request);
@@ -154,7 +144,6 @@ public class OpenApiOperationGeneratorTests
     {
         static void AssertVoid(OpenApiOperation operation)
         {
-            ;
             var response = Assert.Single(operation.Responses);
             Assert.Equal("200", response.Key);
             Assert.Empty(response.Value.Content);
@@ -170,8 +159,8 @@ public class OpenApiOperationGeneratorTests
     {
         var operation = GetOpenApiOperation(
             [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        () => new InferredJsonClass());
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
+            () => new InferredJsonClass());
 
         var responses = operation.Responses;
 
@@ -196,8 +185,8 @@ public class OpenApiOperationGeneratorTests
     {
         var operation = GetOpenApiOperation(
             [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        () => Results.Ok(new InferredJsonClass()));
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
+            () => Results.Ok(new InferredJsonClass()));
 
         Assert.Equal(2, operation.Responses.Count);
 
@@ -511,21 +500,21 @@ public class OpenApiOperationGeneratorTests
 
         // Assert
         Assert.Collection(
-        responses.OrderBy(response => response.Key),
-        responseType =>
-        {
-            var content = Assert.Single(responseType.Value.Content);
-            Assert.Equal("object", content.Value.Schema.Type);
-            Assert.Equal("200", responseType.Key);
-            Assert.Equal("application/json", content.Key);
-        },
-        responseType =>
-        {
-            var content = Assert.Single(responseType.Value.Content);
-            Assert.Equal("object", content.Value.Schema.Type);
-            Assert.Equal("201", responseType.Key);
-            Assert.Equal("application/json", content.Key);
-        });
+            responses.OrderBy(response => response.Key),
+            responseType =>
+            {
+                var content = Assert.Single(responseType.Value.Content);
+                Assert.Equal("object", content.Value.Schema.Type);
+                Assert.Equal("200", responseType.Key);
+                Assert.Equal("application/json", content.Key);
+            },
+            responseType =>
+            {
+                var content = Assert.Single(responseType.Value.Content);
+                Assert.Equal("object", content.Value.Schema.Type);
+                Assert.Equal("201", responseType.Key);
+                Assert.Equal("application/json", content.Key);
+            });
     }
 
     [Fact]
@@ -533,24 +522,24 @@ public class OpenApiOperationGeneratorTests
     {
         // Arrange
         var operation = GetOpenApiOperation(() => "",
-                additionalMetadata: new[]
-                {
+            additionalMetadata: new[]
+            {
                 new AcceptsMetadata(typeof(string), true, new string[] { "application/json", "application/xml"})
-                });
+            });
 
         var requestBody = operation.RequestBody;
 
         // Assert
         Assert.Collection(
-        requestBody.Content,
-        parameter =>
-        {
-            Assert.Equal("application/json", parameter.Key);
-        },
-        parameter =>
-        {
-            Assert.Equal("application/xml", parameter.Key);
-        });
+            requestBody.Content,
+            parameter =>
+            {
+                Assert.Equal("application/json", parameter.Key);
+            },
+            parameter =>
+            {
+                Assert.Equal("application/xml", parameter.Key);
+            });
     }
 
     [Fact]
@@ -767,12 +756,13 @@ public class OpenApiOperationGeneratorTests
     {
     }
 
-    private class ServiceProviderIsService : IServiceProviderIsService
+    // Shared with OpenApiRouteHandlerExtensionsTests
+    internal class ServiceProviderIsService : IServiceProviderIsService
     {
         public bool IsService(Type serviceType) => serviceType == typeof(IInferredServiceInterface);
     }
 
-    private class HostEnvironment : IHostEnvironment
+    internal class HostEnvironment : IHostEnvironment
     {
         public string EnvironmentName { get; set; }
         public string ApplicationName { get; set; }

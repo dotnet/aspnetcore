@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -27,7 +28,8 @@ internal class OpenApiGenerator
 {
     private readonly IHostEnvironment? _environment;
     private readonly IServiceProviderIsService? _serviceProviderIsService;
-    private readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
+
+    private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
 
     /// <summary>
     /// Creates an <see cref="OpenApiGenerator" /> instance given a <see cref="IHostEnvironment" />
@@ -190,7 +192,7 @@ internal class OpenApiGenerator
 
         foreach (var annotation in eligibileAnnotations)
         {
-            var statusCode = $"{annotation.Key}";
+            var statusCode = annotation.Key.ToString(CultureInfo.InvariantCulture);
             var (type, contentTypes) = annotation.Value;
             var responseContent = new Dictionary<string, OpenApiMediaType>();
 
@@ -311,7 +313,7 @@ internal class OpenApiGenerator
                         {
                             Type = SchemaGenerator.GetOpenApiSchemaType(requestBodyParameter.ParameterType)
                         }
-                    }; ;
+                    };
                 }
             }
 
@@ -332,7 +334,7 @@ internal class OpenApiGenerator
         return null;
     }
 
-    private IList<OpenApiTag> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
+    private List<OpenApiTag> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
     {
         var tags = metadata.GetMetadata<ITagsMetadata>();
         string controllerName;
@@ -353,7 +355,7 @@ internal class OpenApiGenerator
             : new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
     }
 
-    private IList<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
+    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
     {
         var parameters = methodInfo.GetParameters();
         var openApiParameters = new List<OpenApiParameter>();
@@ -388,7 +390,7 @@ internal class OpenApiGenerator
         return openApiParameters;
     }
 
-    private static IDictionary<string, OpenApiMediaType> GetOpenApiParameterContent(EndpointMetadataCollection metadata)
+    private static Dictionary<string, OpenApiMediaType> GetOpenApiParameterContent(EndpointMetadataCollection metadata)
     {
         var openApiParameterContent = new Dictionary<string, OpenApiMediaType>();
         var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
