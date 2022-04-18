@@ -198,7 +198,7 @@ internal class OpenApiGenerator
             {
                 responseContent[contentType] = new OpenApiMediaType
                 {
-                    Schema = new OpenApiSchema { Type = GetOpenApiSchemaType(type) }
+                    Schema = new OpenApiSchema { Type = SchemaGenerator.GetOpenApiSchemaType(type) }
                 };
             }
 
@@ -271,7 +271,7 @@ internal class OpenApiGenerator
                 {
                     Schema = new OpenApiSchema
                     {
-                        Type = GetOpenApiSchemaType(acceptsMetadata.RequestType ?? requestBodyParameter?.ParameterType)
+                        Type = SchemaGenerator.GetOpenApiSchemaType(acceptsMetadata.RequestType ?? requestBodyParameter?.ParameterType)
                     }
                 };
             }
@@ -299,7 +299,7 @@ internal class OpenApiGenerator
                     {
                         Schema = new OpenApiSchema
                         {
-                            Type = GetOpenApiSchemaType(requestBodyParameter.ParameterType)
+                            Type = SchemaGenerator.GetOpenApiSchemaType(requestBodyParameter.ParameterType)
                         }
                     };
                 }
@@ -309,7 +309,7 @@ internal class OpenApiGenerator
                     {
                         Schema = new OpenApiSchema
                         {
-                            Type = GetOpenApiSchemaType(requestBodyParameter.ParameterType)
+                            Type = SchemaGenerator.GetOpenApiSchemaType(requestBodyParameter.ParameterType)
                         }
                     }; ;
                 }
@@ -378,7 +378,7 @@ internal class OpenApiGenerator
                 Name = parameter.Name,
                 In = parameterLocation,
                 Content = GetOpenApiParameterContent(metadata),
-                Schema = new OpenApiSchema { Type = GetOpenApiSchemaType(parameter.ParameterType) },
+                Schema = new OpenApiSchema { Type = SchemaGenerator.GetOpenApiSchemaType(parameter.ParameterType) },
                 Required = !isOptional
 
             };
@@ -467,43 +467,6 @@ internal class OpenApiGenerator
         else
         {
             return (true, null);
-        }
-    }
-
-    private static string GetOpenApiSchemaType(Type? inputType)
-    {
-        if (inputType == null)
-        {
-            throw new ArgumentNullException(nameof(inputType));
-        }
-
-        var type = Nullable.GetUnderlyingType(inputType) ?? inputType;
-
-        if (typeof(string).IsAssignableFrom(type))
-        {
-            return "string";
-        }
-        else if (typeof(bool).IsAssignableFrom(type))
-        {
-            return "boolean";
-        }
-        else if (typeof(int).IsAssignableFrom(type)
-            || typeof(double).IsAssignableFrom(type)
-            || typeof(float).IsAssignableFrom(type))
-        {
-            return "number";
-        }
-        else if (typeof(long).IsAssignableFrom(type))
-        {
-            return "integer";
-        }
-        else if (type.IsArray)
-        {
-            return "array";
-        }
-        else
-        {
-            return "object";
         }
     }
 }
