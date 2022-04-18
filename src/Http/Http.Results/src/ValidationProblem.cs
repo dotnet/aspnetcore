@@ -57,7 +57,7 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
     }
 
     /// <inheritdoc/>
-    public static void PopulateMetadata(EndpointMetadataContext context)
+    static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
         context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json"));
     }

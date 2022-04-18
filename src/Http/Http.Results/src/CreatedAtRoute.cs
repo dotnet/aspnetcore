@@ -47,7 +47,7 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider
     /// <summary>
     /// Gets the route data to use for generating the URL.
     /// </summary>
-    public RouteValueDictionary? RouteValues { get; }
+    public RouteValueDictionary RouteValues { get; }
 
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status201Created"/>
