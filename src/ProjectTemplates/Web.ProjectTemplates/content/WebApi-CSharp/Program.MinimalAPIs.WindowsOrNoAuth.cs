@@ -1,3 +1,7 @@
+#if (EnableOpenAPI)
+using Microsoft.AspNetCore.OpenApi;
+
+#endif
 #if (WindowsAuth)
 using Microsoft.AspNetCore.Authentication.Negotiate;
 
@@ -57,7 +61,8 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 #if (EnableOpenAPI)
 })
-.WithName("GetWeatherForecast");
+.WithName("GetWeatherForecast")
+.WithOpenApi();
 #else
 });
 #endif
