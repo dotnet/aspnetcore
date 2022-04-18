@@ -65,6 +65,26 @@ internal sealed partial class KestrelTrace : ILogger
         Http2Log.Http2MaxConcurrentStreamsReached(_http2Logger, connectionId);
     }
 
+    public void Http2QueueOperationsExceeded(string connectionId, ConnectionAbortedException ex)
+    {
+        Http2Log.Http2QueueOperationsExceeded(_http2Logger, connectionId, ex);
+    }
+
+    public void Http2UnexpectedDataRemaining(int streamId, string connectionId)
+    {
+        Http2Log.Http2UnexpectedDataRemaining(_http2Logger, streamId, connectionId);
+    }
+
+    public void Http2ConnectionQueueProcessingCompleted(string connectionId)
+    {
+        Http2Log.Http2ConnectionQueueProcessingCompleted(_http2Logger, connectionId);
+    }
+
+    public void Http2UnexpectedConnectionQueueError(string connectionId, Exception ex)
+    {
+        Http2Log.Http2UnexpectedConnectionQueueError(_http2Logger, connectionId, ex);
+    }
+
     public static partial class Http2Log
     {
         [LoggerMessage(29, LogLevel.Debug, @"Connection id ""{ConnectionId}"": HTTP/2 connection error.", EventName = "Http2ConnectionError")]
@@ -96,5 +116,17 @@ internal sealed partial class KestrelTrace : ILogger
 
         [LoggerMessage(40, LogLevel.Debug, @"Connection id ""{ConnectionId}"" reached the maximum number of concurrent HTTP/2 streams allowed.", EventName = "Http2MaxConcurrentStreamsReached")]
         public static partial void Http2MaxConcurrentStreamsReached(ILogger logger, string connectionId);
+
+        [LoggerMessage(60, LogLevel.Critical, @"Connection id ""{ConnectionId}"" exceeded the output operations maximum queue size.", EventName = "Http2QueueOperationsExceeded")]
+        public static partial void Http2QueueOperationsExceeded(ILogger logger, string connectionId, ConnectionAbortedException ex);
+
+        [LoggerMessage(61, LogLevel.Critical, @"Stream {StreamId} on connection id ""{ConnectionId}"" observed an unexpected state where the streams output ended with data still remaining in the pipe.", EventName = "Http2UnexpectedDataRemaining")]
+        public static partial void Http2UnexpectedDataRemaining(ILogger logger, int streamId, string connectionId);
+
+        [LoggerMessage(62, LogLevel.Debug, @"The connection queue processing loop for {ConnectionId} completed.", EventName = "Http2ConnectionQueueProcessingCompleted")]
+        public static partial void Http2ConnectionQueueProcessingCompleted(ILogger logger, string connectionId);
+
+        [LoggerMessage(63, LogLevel.Critical, @"The event loop in connection {ConnectionId} failed unexpectedly.", EventName = "Http2UnexpectedConnectionQueueError")]
+        public static partial void Http2UnexpectedConnectionQueueError(ILogger logger, string connectionId, Exception ex);
     }
 }
