@@ -1,8 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.OpenApi.OpenApiGenerator
-Microsoft.AspNetCore.OpenApi.OpenApiGenerator.GetOpenApiPathItem(System.Reflection.MethodInfo! methodInfo, Microsoft.AspNetCore.Http.EndpointMetadataCollection! metadata, Microsoft.AspNetCore.Routing.Patterns.RoutePattern! pattern) -> Microsoft.OpenApi.Models.OpenApiPathItem!
-Microsoft.AspNetCore.OpenApi.OpenApiGenerator.OpenApiGenerator(Microsoft.Extensions.Hosting.IHostEnvironment? environment, Microsoft.Extensions.DependencyInjection.IServiceProviderIsService? serviceProviderIsService) -> void
 Microsoft.AspNetCore.OpenApi.OpenApiRouteHandlerBuilderExtensions
-Microsoft.AspNetCore.OpenApi.OpenApiServicesExtensions
-static Microsoft.AspNetCore.OpenApi.OpenApiRouteHandlerBuilderExtensions.WithApiDescription(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, System.Action<Microsoft.OpenApi.Models.OpenApiPathItem!>? configureDescription = null) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
-static Microsoft.AspNetCore.OpenApi.OpenApiServicesExtensions.AddOpenApiGenerator(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.OpenApi.OpenApiRouteHandlerBuilderExtensions.WithOpenApi(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static Microsoft.AspNetCore.OpenApi.OpenApiRouteHandlerBuilderExtensions.WithOpenApi(this Microsoft.AspNetCore.Builder.RouteHandlerBuilder! builder, System.Func<Microsoft.OpenApi.Models.OpenApiOperation!, Microsoft.OpenApi.Models.OpenApiOperation!>! configureOperation) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!

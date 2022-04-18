@@ -85,7 +85,7 @@ public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProv
     /// default in the constructor
     /// </summary>
     /// <value></value>
-    public bool IsResponseTypeSetByDefault { get; }
+    internal bool IsResponseTypeSetByDefault { get; }
 
     // Internal for testing
     internal MediaTypeCollection? ContentTypes => _contentTypes;

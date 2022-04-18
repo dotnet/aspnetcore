@@ -507,16 +507,8 @@ public static class EndpointRouteBuilderExtensions
             defaultOrder)
         {
             DisplayName = pattern.RawText ?? pattern.DebuggerToString(),
+            ServiceProvider = endpoints.ServiceProvider,
         };
-
-        
-        // Add the ServiceProvider to metadata so that it can be resolved
-        // by extension methods that need accesses to the same services that
-        // are registered by the target endpoint.
-        if (endpoints.ServiceProvider is not null)
-        {
-            builder.Metadata.Add(endpoints.ServiceProvider);
-        }
 
         // Methods defined in a top-level program are generated as statics so the delegate
         // target will be null. Inline lambdas are compiler generated method so they can

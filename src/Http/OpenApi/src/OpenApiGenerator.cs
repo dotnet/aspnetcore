@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// <summary>
 /// Defines a set of methods for generating OpenAPI definitions for endpoints.
 /// </summary>
-public class OpenApiGenerator
+internal class OpenApiGenerator
 {
     private readonly IHostEnvironment? _environment;
     private readonly IServiceProviderIsService? _serviceProviderIsService;
@@ -35,7 +35,7 @@ public class OpenApiGenerator
     /// </summary>
     /// <param name="environment">The host environment.</param>
     /// <param name="serviceProviderIsService">The service to determine if the a type is available from the <see cref="IServiceProvider"/>.</param>
-    public OpenApiGenerator(
+    internal OpenApiGenerator(
         IHostEnvironment? environment,
         IServiceProviderIsService? serviceProviderIsService)
     {
@@ -50,31 +50,25 @@ public class OpenApiGenerator
     /// <param name="metadata">The endpoint <see cref="EndpointMetadataCollection"/>.</param>
     /// <param name="pattern">The route pattern.</param>
     /// <returns>An <see cref="OpenApiPathItem"/> annotation derived from the given inputs.</returns>
-    public OpenApiPathItem GetOpenApiPathItem(
+    internal OpenApiOperation? GetOpenApiOperation(
         MethodInfo methodInfo,
         EndpointMetadataCollection metadata,
         RoutePattern pattern)
     {
-        var pathItem = new OpenApiPathItem();
-
         if (metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata &&
+            httpMethodMetadata.HttpMethods.SingleOrDefault() is { } method &&
             metadata.GetMetadata<IExcludeFromDescriptionMetadata>() is null or { ExcludeFromDescription: false })
         {
-            foreach (var httpMethod in httpMethodMetadata.HttpMethods)
-            {
-                var (operationType, operation) = GetOperation(httpMethod, methodInfo, metadata, pattern);
-                pathItem.AddOperation(operationType, operation);
-            }
+            return GetOperation(method, methodInfo, metadata, pattern);
         }
 
-        return pathItem;
+        return null;
     }
 
-    private (OperationType, OpenApiOperation) GetOperation(string httpMethod, MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern)
+    private OpenApiOperation GetOperation(string httpMethod, MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern)
     {
-        var operationType = MapHttpMethodToOperationType(httpMethod);
         var disableInferredBody = ShouldDisableInferredBody(httpMethod);
-        var operation = new OpenApiOperation
+        return new OpenApiOperation
         {
             OperationId = metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName,
             Summary = metadata.GetMetadata<IEndpointSummaryMetadata>()?.Summary,
@@ -84,8 +78,6 @@ public class OpenApiGenerator
             RequestBody = GetOpenApiRequestBody(methodInfo, metadata, pattern),
             Responses = GetOpenApiResponses(methodInfo, metadata)
         };
-
-        return (operationType, operation);
 
         static bool ShouldDisableInferredBody(string method)
         {
@@ -114,7 +106,7 @@ public class OpenApiGenerator
         }
 
         var errorMetadata = metadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
-        var defaultErrorType = errorMetadata?.Type ?? typeof(void);
+        var defaultErrorType = errorMetadata?.Type;
 
         var responseProviderMetadata = metadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
         var producesResponseMetadata = metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>();
@@ -172,9 +164,8 @@ public class OpenApiGenerator
                 else if (statusCode >= 400 && statusCode < 500)
                 {
                     // Determine whether or not the type was provided by the user. If so, favor it over the default
-                    // error type for 4xx client errors if no response type is specified..
-                    var setByDefault = providerMetadata is ProducesResponseTypeAttribute { IsResponseTypeSetByDefault: true };
-                    discoveredTypeAnnotation = setByDefault ? defaultErrorType : discoveredTypeAnnotation;
+                    // error type for 4xx client errors if no response type is specified.
+                    discoveredTypeAnnotation = defaultErrorType is not null ? defaultErrorType : discoveredTypeAnnotation;
                 }
                 else if (providerMetadata is IApiDefaultResponseMetadataProvider)
                 {
@@ -360,22 +351,6 @@ public class OpenApiGenerator
         return tags is not null
             ? tags.Tags.Select(tag => new OpenApiTag() { Name = tag }).ToList()
             : new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
-    }
-
-    private static OperationType MapHttpMethodToOperationType(string httpMethod)
-    {
-        return httpMethod switch
-        {
-            "GET" => OperationType.Get,
-            "PUT" => OperationType.Put,
-            "POST" => OperationType.Post,
-            "DELETE" => OperationType.Delete,
-            "OPTIONS" => OperationType.Options,
-            "HEAD" => OperationType.Head,
-            "PATCH" => OperationType.Patch,
-            "TRACE" => OperationType.Trace,
-            _ => throw new InvalidOperationException($"Cannot create OperationType from {httpMethod}"),
-        };
     }
 
     private IList<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
