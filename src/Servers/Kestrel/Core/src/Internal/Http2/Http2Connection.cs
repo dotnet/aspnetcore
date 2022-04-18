@@ -71,7 +71,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     internal readonly Http2KeepAlive? _keepAlive;
     internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
     internal PooledStreamStack<Http2Stream> StreamPool;
-    internal Action<Http2Stream>? _onStreamCompleted;
+    internal IHttp2StreamLifetimeHandler _streamLifetimeHandler;
 
     public Http2Connection(HttpConnectionContext context)
     {
@@ -79,6 +79,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         var http2Limits = httpLimits.Http2;
 
         _context = context;
+        _streamLifetimeHandler = this;
 
         // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
         _context.InitialExecutionContext = ExecutionContext.Capture();
@@ -753,7 +754,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             _context.LocalEndPoint,
             _context.RemoteEndPoint,
             _incomingFrame.StreamId,
-            streamLifetimeHandler: this,
+            _streamLifetimeHandler,
             _clientSettings,
             _serverSettings,
             _frameWriter,
@@ -1230,7 +1231,6 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     {
         _completedStreams.Enqueue(stream);
         _streamCompletionAwaitable.Complete();
-        _onStreamCompleted?.Invoke(stream);
     }
 
     private void UpdateCompletedStreams()
