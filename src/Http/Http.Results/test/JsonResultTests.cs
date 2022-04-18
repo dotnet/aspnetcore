@@ -71,7 +71,7 @@ public class JsonResultTests
     }
 
     [Fact]
-    public async Task JsonResult_ExecuteAsync_JsonSerializesBody_WitOptions()
+    public async Task JsonResult_ExecuteAsync_JsonSerializesBody_WithOptions()
     {
         // Arrange
         var jsonOptions = new JsonSerializerOptions()

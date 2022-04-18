@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 public class BadRequestResultTests
 {
     [Fact]
-    public void BadRequestObjectResult_SetsStatusCodeA()
+    public void BadRequestObjectResult_SetsStatusCode()
     {
         // Arrange & Act
         var badRequestResult = new BadRequest();

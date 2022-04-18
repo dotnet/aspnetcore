@@ -32,7 +32,6 @@ internal static partial class HttpResultsHelper
 
         return httpContext.Response.WriteAsJsonAsync(
             value,
-            value.GetType(),
             options: jsonSerializerOptions,
             contentType: contentType);
     }

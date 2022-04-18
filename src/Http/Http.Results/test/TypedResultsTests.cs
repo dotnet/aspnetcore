@@ -623,7 +623,7 @@ public class TypedResultsTests
     public void NoContent_ResultHasCorrectValues()
     {
         // Act
-        var result = TypedResults.NoContent() as NoContent;
+        var result = TypedResults.NoContent();
 
         // Assert
         Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);

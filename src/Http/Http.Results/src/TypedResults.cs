@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Http;
 public static class TypedResults
 {
     /// <summary>
-    /// Creates an <see cref="ChallengeHttpResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.ChallengeAsync(HttpContext, string?, AuthenticationProperties?)" />.
+    /// Creates a <see cref="ChallengeHttpResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.ChallengeAsync(HttpContext, string?, AuthenticationProperties?)" />.
     /// <para>
     /// The behavior of this method depends on the <see cref="IAuthenticationService"/> in use.
     /// <see cref="StatusCodes.Status401Unauthorized"/> and <see cref="StatusCodes.Status403Forbidden"/>
@@ -54,7 +54,7 @@ public static class TypedResults
         => new(authenticationSchemes: authenticationSchemes ?? Array.Empty<string>(), properties);
 
     /// <summary>
-    /// Creates an <see cref="SignInHttpResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignInAsync(HttpContext, string?, ClaimsPrincipal, AuthenticationProperties?)" />.
+    /// Creates a <see cref="SignInHttpResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignInAsync(HttpContext, string?, ClaimsPrincipal, AuthenticationProperties?)" />.
     /// </summary>
     /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
@@ -67,7 +67,7 @@ public static class TypedResults
         => new(principal, authenticationScheme, properties);
 
     /// <summary>
-    /// Creates an <see cref="SignOutHttpResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, string?, AuthenticationProperties?)" />.
+    /// Creates a <see cref="SignOutHttpResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, string?, AuthenticationProperties?)" />.
     /// </summary>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
     /// <param name="authenticationSchemes">The authentication scheme to use for the sign-out operation.</param>
@@ -164,7 +164,7 @@ public static class TypedResults
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static FileContentHttpResult File(
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-            byte[] fileContents,
+        byte[] fileContents,
         string? contentType = null,
         string? fileDownloadName = null,
         bool enableRangeProcessing = false,
@@ -325,7 +325,7 @@ public static class TypedResults
     }
 
     /// <summary>
-    /// Writes the contents of specified <see cref="System.IO.Pipelines.PipeReader"/> to the response.
+    /// Writes the contents of the specified <see cref="System.IO.Pipelines.PipeReader"/> to the response.
     /// <para>
     /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
     /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
@@ -411,7 +411,7 @@ public static class TypedResults
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static PhysicalFileHttpResult PhysicalFile(
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-            string path,
+        string path,
         string? contentType = null,
         string? fileDownloadName = null,
         DateTimeOffset? lastModified = null,
@@ -444,7 +444,7 @@ public static class TypedResults
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static VirtualFileHttpResult VirtualFile(
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
-            string path,
+        string path,
         string? contentType = null,
         string? fileDownloadName = null,
         DateTimeOffset? lastModified = null,

@@ -406,7 +406,7 @@ public static partial class Results
         => TypedResults.RedirectToRoute(routeName, routeValues, permanent, preserveMethod, fragment);
 
     /// <summary>
-    /// Creates a <see cref="IResult"/> object by specifying a <paramref name="statusCode"/>.
+    /// Creates an <see cref="IResult"/> object by specifying a <paramref name="statusCode"/>.
     /// </summary>
     /// <param name="statusCode">The status code to set on the response.</param>
     /// <returns>The created <see cref="IResult"/> object for the response.</returns>
