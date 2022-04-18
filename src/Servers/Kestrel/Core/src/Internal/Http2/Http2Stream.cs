@@ -21,7 +21,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     private Http2StreamContext _context = default!;
     private Http2OutputProducer _http2Output = default!;
     private StreamInputFlowControl _inputFlowControl = default!;
-    private StreamOutputFlowControl _outputFlowControl = default!;
     private Http2MessageBody? _messageBody;
 
     private bool _decrementCalled;
@@ -56,11 +55,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                 context.ServerPeerSettings.InitialWindowSize,
                 context.ServerPeerSettings.InitialWindowSize / 2);
 
-            _outputFlowControl = new StreamOutputFlowControl(
-                context.ConnectionOutputFlowControl,
-                context.ClientPeerSettings.InitialWindowSize);
-
-            _http2Output = new Http2OutputProducer(this, context, _outputFlowControl);
+            _http2Output = new Http2OutputProducer(this, context);
 
             RequestBodyPipe = CreateRequestBodyPipe();
 
@@ -69,8 +64,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         else
         {
             _inputFlowControl.Reset();
-            _outputFlowControl.Reset(context.ClientPeerSettings.InitialWindowSize);
-            _http2Output.StreamReset();
+            _http2Output.StreamReset(context.ClientPeerSettings.InitialWindowSize);
             RequestBodyPipe.Reset();
         }
     }
@@ -129,7 +123,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
     protected override void OnRequestProcessingEnded()
     {
-        CompleteStream(errored: false);
+        _http2Output.OnRequestProcessingEnded();
     }
 
     public void CompleteStream(bool errored)
@@ -506,7 +500,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
     public bool TryUpdateOutputWindow(int bytes)
     {
-        return _context.FrameWriter.TryUpdateStreamWindow(_outputFlowControl, bytes);
+        return _http2Output.TryUpdateStreamWindow(bytes);
     }
 
     public void AbortRstStreamReceived()
