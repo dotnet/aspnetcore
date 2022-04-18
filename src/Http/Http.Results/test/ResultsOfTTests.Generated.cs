@@ -5,6 +5,7 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -63,7 +64,7 @@ public partial class ResultsOfTTests
     public void ResultsOfTResult1TResult2_Throws_ArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
-        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        Results<ChecksumResult1, NoContent> MyApi()
         {
             return new ChecksumResult1(1);
         }
@@ -82,7 +83,7 @@ public partial class ResultsOfTTests
     public void ResultsOfTResult1TResult2_Throws_InvalidOperationException_WhenResultIsNull()
     {
         // Arrange
-        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        Results<ChecksumResult1, NoContent> MyApi()
         {
             return new ChecksumResult1(1);
         }
@@ -271,7 +272,7 @@ public partial class ResultsOfTTests
     public void ResultsOfTResult1TResult2TResult3_Throws_ArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
-        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        Results<ChecksumResult1, NoContent> MyApi()
         {
             return new ChecksumResult1(1);
         }
@@ -290,7 +291,7 @@ public partial class ResultsOfTTests
     public void ResultsOfTResult1TResult2TResult3_Throws_InvalidOperationException_WhenResultIsNull()
     {
         // Arrange
-        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        Results<ChecksumResult1, NoContent> MyApi()
         {
             return new ChecksumResult1(1);
         }
@@ -548,7 +549,7 @@ public partial class ResultsOfTTests
     public void ResultsOfTResult1TResult2TResult3TResult4_Throws_ArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
-        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        Results<ChecksumResult1, NoContent> MyApi()
         {
             return new ChecksumResult1(1);
         }
@@ -567,7 +568,7 @@ public partial class ResultsOfTTests
     public void ResultsOfTResult1TResult2TResult3TResult4_Throws_InvalidOperationException_WhenResultIsNull()
     {
         // Arrange
-        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        Results<ChecksumResult1, NoContent> MyApi()
         {
             return new ChecksumResult1(1);
         }
@@ -902,7 +903,7 @@ public partial class ResultsOfTTests
     public void ResultsOfTResult1TResult2TResult3TResult4TResult5_Throws_ArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
-        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        Results<ChecksumResult1, NoContent> MyApi()
         {
             return new ChecksumResult1(1);
         }
@@ -921,7 +922,7 @@ public partial class ResultsOfTTests
     public void ResultsOfTResult1TResult2TResult3TResult4TResult5_Throws_InvalidOperationException_WhenResultIsNull()
     {
         // Arrange
-        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        Results<ChecksumResult1, NoContent> MyApi()
         {
             return new ChecksumResult1(1);
         }
@@ -1341,7 +1342,7 @@ public partial class ResultsOfTTests
     public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6_Throws_ArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
-        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        Results<ChecksumResult1, NoContent> MyApi()
         {
             return new ChecksumResult1(1);
         }
@@ -1360,7 +1361,7 @@ public partial class ResultsOfTTests
     public void ResultsOfTResult1TResult2TResult3TResult4TResult5TResult6_Throws_InvalidOperationException_WhenResultIsNull()
     {
         // Arrange
-        Results<ChecksumResult1, NoContentHttpResult> MyApi()
+        Results<ChecksumResult1, NoContent> MyApi()
         {
             return new ChecksumResult1(1);
         }
