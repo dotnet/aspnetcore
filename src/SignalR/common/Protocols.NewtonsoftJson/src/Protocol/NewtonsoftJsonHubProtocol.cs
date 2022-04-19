@@ -218,20 +218,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                         if (returnType == typeof(RawResult))
                                         {
                                             var token = JToken.Load(reader);
-                                            var strm = MemoryBufferWriter.Get();
-                                            try
-                                            {
-                                                using var writer = new StreamWriter(strm);
-                                                using var jsonTextWriter = new JsonTextWriter(writer);
-                                                token.WriteTo(jsonTextWriter);
-                                                jsonTextWriter.Flush();
-                                                writer.Flush();
-                                                result = new RawResult(new ReadOnlySequence<byte>(strm.ToArray()));
-                                            }
-                                            finally
-                                            {
-                                                MemoryBufferWriter.Return(strm);
-                                            }
+                                            result = GetRawResult(token);
                                         }
                                         else
                                         {
@@ -412,22 +399,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                         var returnType = binder.GetReturnType(invocationId);
                         if (returnType == typeof(RawResult))
                         {
-                            using var strm = new MemoryStream();
-                            using var writer = new StreamWriter(strm);
-                            using var jsonTextWriter = new JsonTextWriter(writer);
-                            resultToken.WriteTo(jsonTextWriter);
-                            jsonTextWriter.Flush();
-                            writer.Flush();
-                            Memory<byte> buf;
-                            if (strm.TryGetBuffer(out var segment))
-                            {
-                                buf = segment.Array.AsMemory(segment.Offset, segment.Count);
-                            }
-                            else
-                            {
-                                buf = strm.ToArray();
-                            }
-                            result = new RawResult(new ReadOnlySequence<byte>(buf));
+                            result = GetRawResult(resultToken);
                         }
                         else
                         {
@@ -878,6 +850,23 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return message;
     }
 
+    private static RawResult GetRawResult(JToken token)
+    {
+        var strm = MemoryBufferWriter.Get();
+        try
+        {
+            using var writer = new StreamWriter(strm);
+            using var jsonTextWriter = new JsonTextWriter(writer);
+            token.WriteTo(jsonTextWriter);
+            jsonTextWriter.Flush();
+            writer.Flush();
+            return new RawResult(new ReadOnlySequence<byte>(strm.ToArray()));
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(strm);
+        }
+    }
     internal static JsonSerializerSettings CreateDefaultSerializerSettings()
     {
         return new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };

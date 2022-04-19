@@ -738,8 +738,9 @@ public sealed class JsonHubProtocol : IHubProtocol
             reader.Skip();
             var end = reader.BytesConsumed;
             var sequence = input.Slice(start, end - start);
-            // Review: Technically we could pass the sequence without copying into a new array
+            // Review: Technically the sequence doesn't need to be copied to a new array in RawResult
             // but in the future we could break this if we dispatched the CompletionMessage and the underlying Pipe read would be advanced
+            // instead we could try pooling in RawResult, but it would need release/dispose semantics
             return new RawResult(sequence);
         }
         return BindType(ref reader, type);

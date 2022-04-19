@@ -31,7 +31,7 @@ public static partial class HubConnectionExtensions
     /// <returns>A subscription that can be disposed to unsubscribe from the hub method.</returns>
     public static IDisposable On<TResult>(this HubConnection hubConnection, string methodName, Type[] parameterTypes, Func<object?[], Task<TResult>> handler)
     {
-        return hubConnection.On(methodName, parameterTypes, async (parameters, state) =>
+        return hubConnection.On(methodName, parameterTypes, static async (parameters, state) =>
         {
             var currentHandler = (Func<object?[], Task<TResult>>)state;
             return await currentHandler(parameters).ConfigureAwait(false);

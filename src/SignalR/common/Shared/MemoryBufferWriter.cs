@@ -328,19 +328,14 @@ internal sealed class MemoryBufferWriter : Stream, IBufferWriter<byte>
 
     public WrittenBuffers DetachAndReset()
     {
-        WrittenBuffers written;
+        _completedSegments ??= new List<CompletedBuffer>();
 
-        if (_currentSegment != null)
+        if (_currentSegment is not null)
         {
-            if (_completedSegments is null)
-            {
-                _completedSegments = new List<CompletedBuffer>();
-            }
             _completedSegments.Add(new CompletedBuffer(_currentSegment, _position));
         }
 
-        _completedSegments ??= new List<CompletedBuffer>();
-        written = new WrittenBuffers(_completedSegments, _bytesWritten);
+        var written = new WrittenBuffers(_completedSegments, _bytesWritten);
 
         _currentSegment = null;
         _completedSegments = null;

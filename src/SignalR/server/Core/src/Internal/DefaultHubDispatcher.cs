@@ -174,7 +174,6 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
                 {
                     Log.CompletingStream(_logger, completionMessage);
                 }
-                // TODO: this relies on the lifetime manager keeping state for the return type after deserializing the message, is that ok?
                 // InvocationId is always required on CompletionMessage, it's nullable because of the base type
                 else if (_hubLifetimeManager.TryGetReturnType(completionMessage.InvocationId!, out _))
                 {

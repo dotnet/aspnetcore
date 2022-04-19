@@ -851,5 +851,30 @@ public partial class HubConnectionTests
                 await connection.DisposeAsync().DefaultTimeout();
             }
         }
+
+        [Fact]
+        public async Task ClientResultCanReturnNullResult()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                // No result provided
+                hubConnection.On("Result", object () => null);
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"result\":null}", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
     }
 }

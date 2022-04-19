@@ -269,7 +269,7 @@ internal static class TypedClientBuilder<T>
 
     private static void VerifyMethod(MethodInfo interfaceMethod)
     {
-        if (interfaceMethod.ReturnType != typeof(Task) && interfaceMethod.ReturnType?.BaseType != typeof(Task))
+        if (!typeof(Task).IsAssignableFrom(interfaceMethod.ReturnType))
         {
             throw new InvalidOperationException(
                 $"Cannot generate proxy implementation for '{typeof(T).FullName}.{interfaceMethod.Name}'. All client proxy methods must return '{typeof(Task).FullName}' or '{typeof(Task).FullName}<T>'.");
