@@ -22,7 +22,7 @@ public static class FacebookDefaults
     /// The default endpoint used to perform Facebook authentication.
     /// </summary>
     /// <remarks>
-    /// For more details about this endpoint, see https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow#login.
+    /// For more details about this endpoint, see <see href="https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow#login"/>.
     /// </remarks>
     public static readonly string AuthorizationEndpoint = "https://www.facebook.com/v11.0/dialog/oauth";
 

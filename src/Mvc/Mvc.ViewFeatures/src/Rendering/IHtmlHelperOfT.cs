@@ -372,7 +372,7 @@ public interface IHtmlHelper<TModel> : IHtmlHelper
     /// </summary>
     /// <param name="expression">An expression to be evaluated against the current model.</param>
     /// <param name="format">
-    /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the
+    /// The format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) used to format the
     /// <paramref name="expression"/> value when using that in the "value" attribute.
     /// </param>
     /// <param name="htmlAttributes">
@@ -429,7 +429,7 @@ public interface IHtmlHelper<TModel> : IHtmlHelper
     /// </summary>
     /// <param name="expression">An expression to be evaluated against the current model.</param>
     /// <param name="format">
-    /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the
+    /// The format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) used to format the
     /// <paramref name="expression"/> value when returning that value.
     /// </param>
     /// <typeparam name="TResult">The type of the <paramref name="expression"/> result.</typeparam>

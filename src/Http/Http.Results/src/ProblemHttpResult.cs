@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// An <see cref="IResult"/> that on execution will write Problem Details
-/// HTTP API responses based on https://tools.ietf.org/html/rfc7807
+/// HTTP API responses based on <see href="https://tools.ietf.org/html/rfc7807"/>
 /// </summary>
 public sealed class ProblemHttpResult : IResult
 {
