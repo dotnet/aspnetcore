@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 
@@ -15,5 +16,6 @@ public interface ICacheableKeyRingProvider
     /// This API supports infrastructure and is not intended to be used
     /// directly from your code. This API may change or be removed in future releases.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now);
 }

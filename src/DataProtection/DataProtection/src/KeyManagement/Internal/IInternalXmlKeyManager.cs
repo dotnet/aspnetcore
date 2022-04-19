@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -23,6 +24,7 @@ public interface IInternalXmlKeyManager
     /// This API supports infrastructure and is not intended to be used
     /// directly from your code. This API may change or be removed in future releases.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     IAuthenticatedEncryptorDescriptor DeserializeDescriptorFromKeyElement(XElement keyElement);
 
     /// <summary>
