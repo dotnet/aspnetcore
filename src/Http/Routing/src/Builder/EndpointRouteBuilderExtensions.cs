@@ -29,6 +29,41 @@ public static class EndpointRouteBuilderExtensions
     private static readonly string[] PatchVerb = new[] { HttpMethods.Patch };
 
     /// <summary>
+    /// Create a <see cref="GroupRouteBuilder"/> for defining endpoints all prefixed with the specified <paramref name="prefixPattern"/>.
+    /// </summary>
+    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the group to.</param>
+    /// <param name="prefixPattern">The pattern that prefixes all routes in this group.</param>
+    /// <returns>
+    /// A <see cref="GroupRouteBuilder"/> that is both a <see cref="IEndpointRouteBuilder"/> and a <see cref="IEndpointConventionBuilder"/>.
+    /// The same builder can be used to add endpoints with the given <paramref name="prefixPattern"/>, and to customize those endpoints using conventions.
+    /// </returns>
+    public static GroupRouteBuilder MapGroup(this IEndpointRouteBuilder endpoints, string prefixPattern) =>
+        endpoints.MapGroup(RoutePatternFactory.Parse(prefixPattern ?? throw new ArgumentNullException(nameof(prefixPattern))));
+
+    /// <summary>
+    /// Create a <see cref="GroupRouteBuilder"/> for defining endpoints all prefixed with the specified <paramref name="prefixPattern"/>.
+    /// </summary>
+    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the group to.</param>
+    /// <param name="prefixPattern">The pattern that prefixes all routes in this group.</param>
+    /// <returns>
+    /// A <see cref="GroupRouteBuilder"/> that is both a <see cref="IEndpointRouteBuilder"/> and a <see cref="IEndpointConventionBuilder"/>.
+    /// The same builder can be used to add endpoints with the given <paramref name="prefixPattern"/>, and to customize those endpoints using conventions.
+    /// </returns>
+    public static GroupRouteBuilder MapGroup(this IEndpointRouteBuilder endpoints, RoutePattern prefixPattern)
+    {
+        if (endpoints is null)
+        {
+            throw new ArgumentNullException(nameof(endpoints));
+        }
+        if (prefixPattern is null)
+        {
+            throw new ArgumentNullException(nameof(prefixPattern));
+        }
+
+        return new(endpoints, prefixPattern);
+    }
+
+    /// <summary>
     /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
     /// for the specified pattern.
     /// </summary>
@@ -494,19 +529,18 @@ public static class EndpointRouteBuilderExtensions
 
         const int defaultOrder = 0;
 
-        var routeParams = new List<string>(pattern.Parameters.Count);
-        foreach (var part in pattern.Parameters)
-        {
-            routeParams.Add(part.Name);
-        }
+        var fullPattern = pattern;
 
-        var routeHandlerOptions = endpoints.ServiceProvider?.GetService<IOptions<RouteHandlerOptions>>();
+        if (endpoints is GroupRouteBuilder group)
+        {
+            fullPattern = RoutePatternFactory.Combine(group.GroupPrefix, pattern);
+        }
 
         var builder = new RouteEndpointBuilder(
             pattern,
             defaultOrder)
         {
-            DisplayName = pattern.RawText ?? pattern.DebuggerToString(),
+            DisplayName = fullPattern.RawText ?? fullPattern.DebuggerToString(),
             ServiceProvider = endpoints.ServiceProvider,
         };
 
@@ -534,6 +568,13 @@ public static class EndpointRouteBuilderExtensions
             "The trimmer is unable to infer this on the nested lambda.")]
         void RouteHandlerBuilderConvention(EndpointBuilder endpointBuilder)
         {
+            var routeParams = new List<string>(fullPattern.Parameters.Count);
+            foreach (var part in fullPattern.Parameters)
+            {
+                routeParams.Add(part.Name);
+            }
+
+            var routeHandlerOptions = endpoints.ServiceProvider?.GetService<IOptions<RouteHandlerOptions>>();
             var options = new RequestDelegateFactoryOptions
             {
                 ServiceProvider = endpoints.ServiceProvider,
