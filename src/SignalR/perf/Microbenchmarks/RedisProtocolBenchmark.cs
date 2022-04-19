@@ -45,8 +45,8 @@ public class RedisProtocolBenchmark
         _writtenAck = RedisProtocol.WriteAck(42);
         _writtenGroupCommand = RedisProtocol.WriteGroupCommand(_groupCommand);
         _writtenInvocationNoExclusions = _protocol.WriteInvocation(_methodName, _args, null);
-        _writtenInvocationSmallExclusions = _protocol.WriteInvocation(_methodName, _args, _excludedConnectionIdsSmall);
-        _writtenInvocationLargeExclusions = _protocol.WriteInvocation(_methodName, _args, _excludedConnectionIdsLarge);
+        _writtenInvocationSmallExclusions = _protocol.WriteInvocation(_methodName, _args, excludedConnectionIds: _excludedConnectionIdsSmall);
+        _writtenInvocationLargeExclusions = _protocol.WriteInvocation(_methodName, _args, excludedConnectionIds: _excludedConnectionIdsLarge);
     }
 
     [Benchmark]
@@ -70,13 +70,13 @@ public class RedisProtocolBenchmark
     [Benchmark]
     public void WriteInvocationSmallExclusions()
     {
-        _protocol.WriteInvocation(_methodName, _args, _excludedConnectionIdsSmall);
+        _protocol.WriteInvocation(_methodName, _args, excludedConnectionIds: _excludedConnectionIdsSmall);
     }
 
     [Benchmark]
     public void WriteInvocationLargeExclusions()
     {
-        _protocol.WriteInvocation(_methodName, _args, _excludedConnectionIdsLarge);
+        _protocol.WriteInvocation(_methodName, _args, excludedConnectionIds: _excludedConnectionIdsLarge);
     }
 
     [Benchmark]

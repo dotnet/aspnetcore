@@ -52,6 +52,12 @@ internal static partial class RedisLog
     [LoggerMessage(11, LogLevel.Warning, "Error processing message for internal server message.", EventName = "InternalMessageFailed")]
     public static partial void InternalMessageFailed(ILogger logger, Exception exception);
 
+    [LoggerMessage(12, LogLevel.Error, "Received a client result for protocol {HubProtocol} which is not supported by this server. This likely means you have different versions of your server deployed.", EventName = "MismatchedServers")]
+    public static partial void MismatchedServers(ILogger logger, string hubProtocol);
+
+    [LoggerMessage(13, LogLevel.Error, "Error forwarding client result with ID '{InvocationID}' to server.", EventName = "ErrorForwardingResult")]
+    public static partial void ErrorForwardingResult(ILogger logger, string invocationId, Exception ex);
+
     // This isn't DefineMessage-based because it's just the simple TextWriter logging from ConnectionMultiplexer
     public static void ConnectionMultiplexerMessage(ILogger logger, string? message)
     {

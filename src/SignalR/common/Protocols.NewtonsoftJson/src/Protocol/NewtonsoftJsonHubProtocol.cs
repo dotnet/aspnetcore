@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -214,7 +215,15 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                             throw new JsonReaderException("Unexpected end when reading JSON");
                                         }
 
-                                        result = PayloadSerializer.Deserialize(reader, returnType);
+                                        if (returnType == typeof(RawResult))
+                                        {
+                                            var token = JToken.Load(reader);
+                                            result = GetRawResult(token);
+                                        }
+                                        else
+                                        {
+                                            result = PayloadSerializer.Deserialize(reader, returnType);
+                                        }
                                     }
                                     break;
                                 case ItemPropertyName:
@@ -388,7 +397,14 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                     if (resultToken != null)
                     {
                         var returnType = binder.GetReturnType(invocationId);
-                        result = resultToken.ToObject(returnType, PayloadSerializer);
+                        if (returnType == typeof(RawResult))
+                        {
+                            result = GetRawResult(resultToken);
+                        }
+                        else
+                        {
+                            result = resultToken.ToObject(returnType, PayloadSerializer);
+                        }
                     }
 
                     message = BindCompletionMessage(invocationId, error, result, hasResult);
@@ -531,7 +547,18 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         else if (message.HasResult)
         {
             writer.WritePropertyName(ResultPropertyName);
-            PayloadSerializer.Serialize(writer, message.Result);
+            if (message.Result is RawResult result)
+            {
+#if NETCOREAPP2_1_OR_GREATER
+                writer.WriteRawValue(Encoding.UTF8.GetString(result.RawSerializedData));
+#else
+                writer.WriteRawValue(Encoding.UTF8.GetString(result.RawSerializedData.ToArray()));
+#endif
+            }
+            else
+            {
+                PayloadSerializer.Serialize(writer, message.Result);
+            }
         }
     }
 
@@ -823,6 +850,23 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return message;
     }
 
+    private static RawResult GetRawResult(JToken token)
+    {
+        var strm = MemoryBufferWriter.Get();
+        try
+        {
+            using var writer = new StreamWriter(strm);
+            using var jsonTextWriter = new JsonTextWriter(writer);
+            token.WriteTo(jsonTextWriter);
+            jsonTextWriter.Flush();
+            writer.Flush();
+            return new RawResult(new ReadOnlySequence<byte>(strm.ToArray()));
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(strm);
+        }
+    }
     internal static JsonSerializerSettings CreateDefaultSerializerSettings()
     {
         return new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
