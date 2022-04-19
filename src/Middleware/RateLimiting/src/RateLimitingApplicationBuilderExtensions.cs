@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.RateLimiting;
 
@@ -42,6 +43,6 @@ public static class RateLimitingApplicationBuilderExtensions
             throw new ArgumentNullException(nameof(options));
         }
 
-        return app.UseMiddleware<RateLimitingMiddleware>();
+        return app.UseMiddleware<RateLimitingMiddleware>(Options.Create(options));
     }
 }

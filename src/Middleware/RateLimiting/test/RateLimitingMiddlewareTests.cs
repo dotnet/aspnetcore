@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Moq;
 
 namespace Microsoft.AspNetCore.RateLimiting;
 
@@ -100,11 +99,6 @@ public class RateLimitingMiddlewareTests : LoggedTest
         Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
     }
 
-    private IOptions<RateLimiterOptions> CreateOptionsAccessor()
-    {
-        var options = new RateLimiterOptions();
-        var optionsAccessor = Mock.Of<IOptions<RateLimiterOptions>>(o => o.Value == options);
-        return optionsAccessor;
-    }
+    private IOptions<RateLimiterOptions> CreateOptionsAccessor() => Options.Create(new RateLimiterOptions());
 
 }
