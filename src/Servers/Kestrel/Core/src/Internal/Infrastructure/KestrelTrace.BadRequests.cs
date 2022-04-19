@@ -52,5 +52,7 @@ internal sealed partial class KestrelTrace : ILogger
 
         [LoggerMessage(54, LogLevel.Debug, @"Connection id ""{ConnectionId}"": Invalid content received on connection. Possible incorrect HTTP version detected. Expected {ExpectedHttpVersion} but received {DetectedHttpVersion}.", EventName = "PossibleInvalidHttpVersionDetected", SkipEnabledCheck = true)]
         public static partial void PossibleInvalidHttpVersionDetected(ILogger logger, string connectionId, string expectedHttpVersion, string detectedHttpVersion);
+
+        // Highest shared ID is 63. New consecutive IDs start at 64
     }
 }

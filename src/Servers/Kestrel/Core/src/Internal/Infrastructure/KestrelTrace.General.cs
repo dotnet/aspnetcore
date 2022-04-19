@@ -81,5 +81,7 @@ internal sealed partial class KestrelTrace : ILogger
 
         [LoggerMessage(41, LogLevel.Warning, "One or more of the following response headers have been removed because they are invalid for HTTP/2 and HTTP/3 responses: 'Connection', 'Transfer-Encoding', 'Keep-Alive', 'Upgrade' and 'Proxy-Connection'.", EventName = "InvalidResponseHeaderRemoved")]
         public static partial void InvalidResponseHeaderRemoved(ILogger logger);
+
+        // Highest shared ID is 63. New consecutive IDs start at 64
     }
 }
