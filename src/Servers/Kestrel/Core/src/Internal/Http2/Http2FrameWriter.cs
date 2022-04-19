@@ -267,8 +267,8 @@ internal class Http2FrameWriter
             // Check the connection window under a lock so that we don't miss window updates
             if (_connectionWindow == 0)
             {
-                // We have no more connection window, put this producer in a queue waiting for it to
-                // a window update to resume the connection.
+                // We have no more connection window, put this producer in a queue waiting for
+                // a window update to resume the producer.
 
                 // In order to make scheduling more fair we want to make sure that streams that have data get a chance to run in a round robin manner.
                 // To do this we will store the producer that consumed the window in a field and put it to the back of the queue.
