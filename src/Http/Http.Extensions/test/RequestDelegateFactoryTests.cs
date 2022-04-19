@@ -4306,7 +4306,6 @@ public class RequestDelegateFactoryTests : LoggedTest
             {
                 (routeHandlerContext, next) => (context) =>
                 {
-                    Console.WriteLine(context.Parameters[0]);
                     return ValueTask.FromResult<object?>(Results.Created("/foo", "Great!"));
                 }
             }
@@ -4316,6 +4315,48 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Equal(201, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_InvokesFilters_OnMethodInfoWithProvidedTargetFactory()
+    {
+        // Arrange
+        var invoked = false;
+        var methodInfo = typeof(RequestDelegateFactoryTests).GetMethod(
+            nameof(GetString),
+            BindingFlags.NonPublic | BindingFlags.Instance,
+            new[] { typeof(string) });
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "foo"
+        });
+
+        // Act
+        Func<HttpContext, object?> targetFactory = (context) =>
+        {
+            invoked = true;
+            context.Items["invoked"] = true;
+            return methodInfo!.DeclaringType!;
+        };
+        var factoryResult = RequestDelegateFactory.Create(methodInfo!, targetFactory, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => (context) =>
+                {
+                    return ValueTask.FromResult<object?>(Results.Created("/foo", "Great!"));
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        Assert.Equal(201, httpContext.Response.StatusCode);
+        Assert.True(invoked);
+        var invokedInContext = Assert.IsType<bool>(httpContext.Items["invoked"]);
+        Assert.True(invokedInContext);
     }
 
     [Fact]

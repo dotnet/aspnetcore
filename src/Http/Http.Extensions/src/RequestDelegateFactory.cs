@@ -259,6 +259,7 @@ public static partial class RequestDelegateFactory
         // ? Task.CompletedTask
         // : {
         //  target = targetFactory(httpContext);
+        //  // handler is ((Type)target).MethodName(parameters);
         //  handler((string)context.Parameters[0], (int)context.Parameters[1]);
         // }
         var filteredInvocation = Expression.Lambda<RouteHandlerFilterDelegate>(
@@ -266,10 +267,10 @@ public static partial class RequestDelegateFactory
                 Expression.GreaterThanOrEqual(FilterContextHttpContextStatusCodeExpr, Expression.Constant(400)),
                 CompletedValueTaskExpr,
                 Expression.Block(
-                    new[] { TargetExpr, HttpContextExpr },
+                    new[] { TargetExpr },
                     targetFactory == null
                         ? Expression.Empty()
-                        : Expression.Assign(TargetExpr, Expression.Invoke(targetFactory, HttpContextExpr)),
+                        : Expression.Assign(TargetExpr, Expression.Invoke(targetFactory, FilterContextHttpContextExpr)),
                     Expression.Call(WrapObjectAsValueTaskMethod,
                         targetExpression is null
                             ? Expression.Call(methodInfo, factoryContext.ContextArgAccess)
