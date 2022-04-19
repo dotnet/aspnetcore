@@ -21,12 +21,13 @@ using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestExceptio
 public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
 {
     private readonly bool _showErrorDetails;
+    private readonly bool _enableLineFeedTerminator;
 
     /// <summary>
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
-    public HttpParser() : this(showErrorDetails: true)
+    public HttpParser() : this(showErrorDetails: true, enableLineFeedTerminator: false)
     {
     }
 
@@ -34,11 +35,16 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
-    public HttpParser(bool showErrorDetails)
+    public HttpParser(bool showErrorDetails) : this(showErrorDetails, enableLineFeedTerminator: false)
+    {
+    }
+
+    internal HttpParser(bool showErrorDetails, bool enableLineFeedTerminator)
     {
         _showErrorDetails = showErrorDetails;
+        _enableLineFeedTerminator = enableLineFeedTerminator;
     }
-
+    
     // byte types don't have a data type annotation so we pre-cast them; to avoid in-place casts
     private const byte ByteCR = (byte)'\r';
     private const byte ByteLF = (byte)'\n';
