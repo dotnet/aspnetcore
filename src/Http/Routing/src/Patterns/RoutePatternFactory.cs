@@ -1084,6 +1084,108 @@ public static class RoutePatternFactory
         return ParameterPolicyCore(parameterPolicy);
     }
 
+    internal static RoutePattern Combine(RoutePattern left, RoutePattern right)
+    {
+        static IReadOnlyList<T> CombineLists<T>(
+            IReadOnlyList<T> leftList,
+            IReadOnlyList<T> rightList,
+            Func<int, string, Action<T>>? checkDuplicates = null,
+            string? rawText = null)
+        {
+            if (leftList.Count is 0)
+            {
+                return rightList;
+            }
+            if (rightList.Count is 0)
+            {
+                return leftList;
+            }
+
+            var combinedCount = leftList.Count + rightList.Count;
+            var combinedList = new List<T>(combinedCount);
+            // If checkDuplicates is set, so is rawText so the right exception can be thrown from check.
+            var check = checkDuplicates?.Invoke(combinedCount, rawText!);
+            foreach (var item in leftList)
+            {
+                check?.Invoke(item);
+                combinedList.Add(item);
+            }
+            foreach (var item in rightList)
+            {
+                check?.Invoke(item);
+                combinedList.Add(item);
+            }
+            return combinedList;
+        }
+
+        // Technically, the ParameterPolicies could probably be merged because it's a list, but it makes little sense to add policy
+        // for the same parameter in both the left and right part of the combined pattern. Defaults and Required values cannot be
+        // merged because the `TValue` is `object?`, but over-setting a Default or RequiredValue (which may not be in the parameter list)
+        // seems okay as long as the values are the same for a given key in both the left and right pattern. There's already similar logic
+        // in PatternCore for when defaults come from both the `defaults` and `segements` param. `requiredValues` cannot be defined in
+        // `segements` so there's no equivalent to merging these until now.
+        static IReadOnlyDictionary<string, TValue> CombineDictionaries<TValue>(
+            IReadOnlyDictionary<string, TValue> leftDictionary,
+            IReadOnlyDictionary<string, TValue> rightDictionary,
+            string rawText,
+            string dictionaryName)
+        {
+            if (leftDictionary.Count is 0)
+            {
+                return rightDictionary;
+            }
+            if (rightDictionary.Count is 0)
+            {
+                return leftDictionary;
+            }
+
+            var combinedDictionary = new Dictionary<string, TValue>(leftDictionary.Count + rightDictionary.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, value) in leftDictionary)
+            {
+                combinedDictionary.Add(key, value);
+            }
+            foreach (var (key, value) in rightDictionary)
+            {
+                if (combinedDictionary.TryGetValue(key, out var leftValue))
+                {
+                    if (!Equals(leftValue, value))
+                    {
+                        throw new InvalidOperationException(Resources.FormatMapGroup_RepeatedDictionaryEntry(rawText, dictionaryName, key));
+                    }
+                }
+                else
+                {
+                    combinedDictionary.Add(key, value);
+                }
+            }
+            return combinedDictionary;
+        }
+
+        static Action<RoutePatternParameterPart> CheckDuplicateParameters(int parameterCount, string rawText)
+        {
+            var parameterNameSet = new HashSet<string>(parameterCount, StringComparer.OrdinalIgnoreCase);
+            return parameterPart =>
+            {
+                if (!parameterNameSet.Add(parameterPart.Name))
+                {
+                    var errorText = Resources.FormatTemplateRoute_RepeatedParameter(parameterPart.Name);
+                    throw new RoutePatternException(rawText, errorText);
+                }
+            };
+        }
+
+        var rawText = $"{left.RawText?.TrimEnd('/')}/{right.RawText?.TrimStart('/')}";
+
+        var parameters = CombineLists(left.Parameters, right.Parameters, CheckDuplicateParameters, rawText);
+        var pathSegments = CombineLists(left.PathSegments, right.PathSegments);
+
+        var defaults = CombineDictionaries(left.Defaults, right.Defaults, rawText, nameof(RoutePattern.Defaults));
+        var requiredValues = CombineDictionaries(left.RequiredValues, right.RequiredValues, rawText, nameof(RoutePattern.RequiredValues));
+        var parameterPolicies = CombineDictionaries(left.ParameterPolicies, right.ParameterPolicies, rawText, nameof(RoutePattern.ParameterPolicies));
+
+        return new RoutePattern(rawText, defaults, parameterPolicies, requiredValues, parameters, pathSegments);
+    }
+
     private static RoutePatternParameterPolicyReference ParameterPolicyCore(string parameterPolicy)
     {
         return new RoutePatternParameterPolicyReference(parameterPolicy);

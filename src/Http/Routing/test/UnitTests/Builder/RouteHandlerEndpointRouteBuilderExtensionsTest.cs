@@ -6,6 +6,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,11 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     private ModelEndpointDataSource GetBuilderEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
     {
         return Assert.IsType<ModelEndpointDataSource>(Assert.Single(endpointRouteBuilder.DataSources));
+    }
+
+    private EndpointDataSource GetEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
+    {
+        return Assert.IsAssignableFrom<EndpointDataSource>(Assert.Single(endpointRouteBuilder.DataSources));
     }
 
     private RouteEndpointBuilder GetRouteEndpointBuilder(IEndpointRouteBuilder endpointRouteBuilder)
@@ -129,7 +135,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
-    public async Task MapGetWithRouteParameter_BuildsEndpointWithRouteSpecificBinding()
+    public async Task MapGet_WithRouteParameter_BuildsEndpointWithRouteSpecificBinding()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
         _ = builder.MapGet("/{id}", (int? id, HttpContext httpContext) =>
@@ -167,7 +173,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
-    public async Task MapGetWithoutRouteParameter_BuildsEndpointWithQuerySpecificBinding()
+    public async Task MapGet_WithoutRouteParameter_BuildsEndpointWithQuerySpecificBinding()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
         _ = builder.MapGet("/", (int? id, HttpContext httpContext) =>
@@ -972,6 +978,231 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("loggerErrorIsEnabled: True, parentName: RouteHandlerEndpointRouteBuilderExtensionsTest", body);
     }
 
+    [Fact]
+    public async Task MapGroup_WithRouteParameter_CanUseParameter()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var group = builder.MapGroup("/{org}");
+        Assert.Equal("/{org}", group.GroupPrefix.RawText);
+
+        group.MapGet("/{id}", (string org, int id, HttpContext httpContext) =>
+        {
+            httpContext.Items["org"] = org;
+            httpContext.Items["id"] = id;
+        });
+
+        var dataSource = GetEndpointDataSource(builder);
+
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+        var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
+
+        var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+        Assert.NotNull(methodMetadata);
+        var method = Assert.Single(methodMetadata!.HttpMethods);
+        Assert.Equal("GET", method);
+
+        Assert.Equal("HTTP: GET /{org}/{id}", endpoint.DisplayName);
+        Assert.Equal("/{org}/{id}", routeEndpoint.RoutePattern.RawText);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.RouteValues["org"] = "dotnet";
+        httpContext.Request.RouteValues["id"] = "42";
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal("dotnet", httpContext.Items["org"]);
+        Assert.Equal(42, httpContext.Items["id"]);
+    }
+
+    [Fact]
+    public async Task MapGroup_NestedWithRouteParameters_CanUseParameters()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var group = builder.MapGroup("/{org}").MapGroup("/{id}");
+        Assert.Equal("/{org}/{id}", group.GroupPrefix.RawText);
+
+        group.MapGet("/", (string org, int id, HttpContext httpContext) =>
+        {
+            httpContext.Items["org"] = org;
+            httpContext.Items["id"] = id;
+        });
+
+        var dataSource = GetEndpointDataSource(builder);
+
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+        var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
+
+        var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+        Assert.NotNull(methodMetadata);
+        var method = Assert.Single(methodMetadata!.HttpMethods);
+        Assert.Equal("GET", method);
+
+        Assert.Equal("HTTP: GET /{org}/{id}/", endpoint.DisplayName);
+        Assert.Equal("/{org}/{id}/", routeEndpoint.RoutePattern.RawText);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.RouteValues["org"] = "dotnet";
+        httpContext.Request.RouteValues["id"] = "42";
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal("dotnet", httpContext.Items["org"]);
+        Assert.Equal(42, httpContext.Items["id"]);
+    }
+
+    [Fact]
+    public void MapGroup_WithRepeatedRouteParameter_ThrowsRoutePatternException()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var ex = Assert.Throws<RoutePatternException>(() => builder.MapGroup("/{ID}").MapGroup("/{id}"));
+
+        Assert.Equal("/{ID}/{id}", ex.Pattern);
+        Assert.Equal("The route parameter name 'id' appears more than one time in the route template.", ex.Message);
+    }
+
+    [Fact]
+    public void MapGroup_WithNullParameters_ThrowsArgumentNullException()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var ex = Assert.Throws<ArgumentNullException>(() => builder.MapGroup((string)null!));
+        Assert.Equal("prefixPattern", ex.ParamName);
+        ex = Assert.Throws<ArgumentNullException>(() => builder.MapGroup((RoutePattern)null!));
+        Assert.Equal("prefixPattern", ex.ParamName);
+
+        builder = null;
+
+        ex = Assert.Throws<ArgumentNullException>(() => builder!.MapGroup(RoutePatternFactory.Parse("/")));
+        Assert.Equal("endpoints", ex.ParamName);
+        ex = Assert.Throws<ArgumentNullException>(() => builder!.MapGroup("/"));
+        Assert.Equal("endpoints", ex.ParamName);
+    }
+
+    [Fact]
+    public void MapGroup_RoutePatternInConvention_IncludesFullGroupPrefix()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var outer = builder.MapGroup("/outer");
+        var inner = outer.MapGroup("/inner");
+        inner.MapGet("/foo", () => "Hello World!");
+
+        RoutePattern? outerPattern = null;
+        RoutePattern? innerPattern = null;
+
+        ((IEndpointConventionBuilder)outer).Add(builder =>
+        {
+            outerPattern = ((RouteEndpointBuilder)builder).RoutePattern;
+        });
+        ((IEndpointConventionBuilder)inner).Add(builder =>
+        {
+            innerPattern = ((RouteEndpointBuilder)builder).RoutePattern;
+        });
+
+        var dataSource = GetEndpointDataSource(builder);
+        Assert.Single(dataSource.Endpoints);
+
+        Assert.Equal("/outer/inner/foo", outerPattern?.RawText);
+        Assert.Equal("/outer/inner/foo", innerPattern?.RawText);
+    }
+
+    [Fact]
+    public async Task MapGroup_BuildingEndpointInConvention_Works()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var group = builder.MapGroup("/group");
+        var mapGetCalled = false;
+
+        group.MapGet("/", () =>
+        {
+            mapGetCalled = true;
+        });
+
+        Endpoint? conventionBuiltEndpoint = null;
+
+        ((IEndpointConventionBuilder)group).Add(builder =>
+        {
+            conventionBuiltEndpoint = builder.Build();
+        });
+
+        var dataSource = GetEndpointDataSource(builder);
+
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext();
+
+        Assert.NotNull(conventionBuiltEndpoint);
+        Assert.False(mapGetCalled);
+        await conventionBuiltEndpoint!.RequestDelegate!(httpContext);
+        Assert.True(mapGetCalled);
+
+        mapGetCalled = false;
+        await endpoint.RequestDelegate!(httpContext);
+        Assert.True(mapGetCalled);
+    }
+
+    [Fact]
+    public void MapGroup_ModifyingRoutePatternInConvention_ThrowsNotSupportedException()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var group = builder.MapGroup("/group");
+        group.MapGet("/foo", () => "Hello World!");
+
+        ((IEndpointConventionBuilder)group).Add(builder =>
+        {
+            ((RouteEndpointBuilder)builder).RoutePattern = RoutePatternFactory.Parse("/bar");
+        });
+
+        var dataSource = GetEndpointDataSource(builder);
+        var ex = Assert.Throws<NotSupportedException>(() => dataSource.Endpoints);
+        Assert.Equal("MapGroup does not support mutating RouteEndpointBuilder.RoutePattern from '/group/foo' to '/bar' via conventions.", ex.Message);
+    }
+
+    [Fact]
+    public void MapGroup_GivenNonRouteEndpoint_ThrowsNotSupportedException()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var group = builder.MapGroup("/group");
+        ((IEndpointRouteBuilder)group).DataSources.Add(new TestCustomEndpintDataSource());
+
+        var dataSource = GetEndpointDataSource(builder);
+        var ex = Assert.Throws<NotSupportedException>(() => dataSource.Endpoints);
+        Assert.Equal(
+            "MapGroup does not support custom Endpoint type 'Microsoft.AspNetCore.Builder.RouteHandlerEndpointRouteBuilderExtensionsTest+TestCustomEndpoint'. " +
+            "Only RouteEndpoints can be grouped.",
+            ex.Message);
+    }
+
+    [Fact]
+    public void MapGroup_AddsOutermostGroupMetadataFirst()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var outer = builder.MapGroup("/outer");
+        var inner = outer.MapGroup("/inner");
+        inner.MapGet("/foo", () => "Hello World!").WithMetadata("/foo");
+
+        inner.WithMetadata("/inner");
+        outer.WithMetadata("/outer");
+
+        var dataSource = GetEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        Assert.True(endpoint.Metadata.Count >= 3);
+        Assert.Equal("/outer", endpoint.Metadata[0]);
+        Assert.Equal("/inner", endpoint.Metadata[1]);
+        Assert.Equal("/foo", endpoint.Metadata[^1]);
+    }
+
     class ServiceAccessingRouteHandlerFilter : IRouteHandlerFilter
     {
         private ILogger _logger;
@@ -1090,5 +1321,16 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
             return null;
         }
+    }
+
+    private sealed class TestCustomEndpoint : Endpoint
+    {
+        public TestCustomEndpoint() : base(null, null, null) { }
+    }
+
+    private sealed class TestCustomEndpintDataSource : EndpointDataSource
+    {
+        public override IReadOnlyList<Endpoint> Endpoints => new[] { new TestCustomEndpoint() };
+        public override IChangeToken GetChangeToken() => throw new NotImplementedException();
     }
 }
