@@ -99,6 +99,24 @@ public class RateLimitingMiddlewareTests : LoggedTest
         Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
     }
 
+    [Fact]
+    public async Task RequestAborted_ThrowsTaskCanceledException()
+    {
+        var options = CreateOptionsAccessor();
+        options.Value.Limiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
+
+        var middleware = new RateLimitingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+        options);
+
+        var context = new DefaultHttpContext();
+        context.RequestAborted = new CancellationToken(true);
+        await Assert.ThrowsAsync<TaskCanceledException>(() => middleware.Invoke(context)).DefaultTimeout();
+    }
+
     private IOptions<RateLimiterOptions> CreateOptionsAccessor() => Options.Create(new RateLimiterOptions());
 
 }
