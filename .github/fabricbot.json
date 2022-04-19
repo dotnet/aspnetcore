@@ -1533,8 +1533,7 @@
             "src/Mvc/Mvc.Testing.Tasks/src/",
             "src/Mvc/Mvc.Testing/",
             "src/Mvc/Mvc/",
-            "src/Mvc/perf/",
-            "src/Mvc/"
+            "src/Mvc/perf/"
           ]
         }
       ]
