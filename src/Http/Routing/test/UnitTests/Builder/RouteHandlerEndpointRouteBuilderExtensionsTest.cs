@@ -979,7 +979,42 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
-    public async Task MapGroup_WithRouteParameter_CanUseParameter()
+    public async Task MapGroup_Prefix_CanBeEmpty()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var group = builder.MapGroup("");
+        Assert.Equal("", group.GroupPrefix.RawText);
+
+        group.MapGet("/{id}", (int id, HttpContext httpContext) =>
+        {
+            httpContext.Items["id"] = id;
+        });
+
+        var dataSource = GetEndpointDataSource(builder);
+
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+        var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
+
+        var methodMetadata = endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+        Assert.NotNull(methodMetadata);
+        var method = Assert.Single(methodMetadata!.HttpMethods);
+        Assert.Equal("GET", method);
+
+        Assert.Equal("HTTP: GET /{id}", endpoint.DisplayName);
+        Assert.Equal("/{id}", routeEndpoint.RoutePattern.RawText);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.RouteValues["id"] = "42";
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal(42, httpContext.Items["id"]);
+    }
+
+    [Fact]
+    public async Task MapGroup_PrefixWithRouteParameter_CanBeUsed()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
 
@@ -1017,7 +1052,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
-    public async Task MapGroup_NestedWithRouteParameters_CanUseParameters()
+    public async Task MapGroup_NestedPrefixWithRouteParameters_CanBeUsed()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
 
