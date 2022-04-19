@@ -4256,13 +4256,15 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         // Arrange
         var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
         {
             ["name"] = "TestName"
         });
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create((string name) => "Hello, {name}!", new RequestDelegateFactoryOptions()
+        var factoryResult = RequestDelegateFactory.Create((string name) => $"Hello, {name}!", new RequestDelegateFactoryOptions()
         {
             RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
@@ -4276,7 +4278,10 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         // Assert
+        
         Assert.Equal(200, httpContext.Response.StatusCode);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("Hello, TestName!", decodedResponseBody);
     }
 
     string GetString(string name)
@@ -4293,6 +4298,8 @@ public class RequestDelegateFactoryTests : LoggedTest
             BindingFlags.NonPublic | BindingFlags.Instance,
             new[] { typeof(string) });
         var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
         {
             ["name"] = "TestName"
@@ -4314,6 +4321,8 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Equal(200, httpContext.Response.StatusCode);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("Hello, TestName!", decodedResponseBody);
     }
 
     [Fact]
@@ -4326,9 +4335,11 @@ public class RequestDelegateFactoryTests : LoggedTest
             BindingFlags.NonPublic | BindingFlags.Instance,
             new[] { typeof(string) });
         var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
         {
-            ["name"] = "foo"
+            ["name"] = "TestName"
         });
 
         // Act
@@ -4356,6 +4367,8 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.True(invoked);
         var invokedInContext = Assert.IsType<bool>(httpContext.Items["invoked"]);
         Assert.True(invokedInContext);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("Hello, TestName!", decodedResponseBody);
     }
 
     [Fact]
