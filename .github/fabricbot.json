@@ -1478,7 +1478,7 @@
             "src/Razor/",
             "src/Mvc/Mvc.Localization/",
             "src/Mvc/Mvc.DataAnnotations/",
-            "src/Mvcv/Mvc.Razor.RuntimeCompilation/",
+            "src/Mvc/Mvc.Razor.RuntimeCompilation/",
             "src/Mvc/Mvc.Razor/",
             "src/Mvc/Mvc.RazorPages/",
             "src/Mvc/Mvc.TagHelpers/",
