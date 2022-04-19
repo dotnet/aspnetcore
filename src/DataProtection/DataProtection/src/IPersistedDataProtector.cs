@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.DataProtection;
 
 /// <summary>
@@ -29,5 +31,6 @@ public interface IPersistedDataProtector : IDataProtector
     /// Implementations should throw CryptographicException if the protected data is
     /// invalid or malformed.
     /// </remarks>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked);
 }

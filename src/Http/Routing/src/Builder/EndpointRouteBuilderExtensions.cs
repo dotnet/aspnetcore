@@ -507,6 +507,7 @@ public static class EndpointRouteBuilderExtensions
             defaultOrder)
         {
             DisplayName = pattern.RawText ?? pattern.DebuggerToString(),
+            ServiceProvider = endpoints.ServiceProvider,
         };
 
         // Methods defined in a top-level program are generated as statics so the delegate

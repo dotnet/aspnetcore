@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -15,6 +16,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
 internal static unsafe class XmlEncryptionExtensions
 {
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public static XElement DecryptElement(this XElement element, IActivator activator)
     {
         // If no decryption necessary, return original element.

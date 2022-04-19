@@ -5,7 +5,7 @@
 
 using Microsoft.AspNetCore.Http.Metadata;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// An <see cref="IResult"/> that could be one of two different <see cref="IResult"/> types. On execution will

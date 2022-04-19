@@ -198,6 +198,7 @@
                           $(RepoRoot)src\submodules\spa-templates\src\*.csproj;
                           $(RepoRoot)src\Extensions\**\*.csproj;
                           $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
+                          $(RepoRoot)src\OpenApi\**\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
@@ -238,6 +239,7 @@
                           $(RepoRoot)src\Testing\**\src\*.csproj;
                           $(RepoRoot)src\Extensions\**\src\*.csproj;
                           $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
+                          $(RepoRoot)src\OpenApi\**\src\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);

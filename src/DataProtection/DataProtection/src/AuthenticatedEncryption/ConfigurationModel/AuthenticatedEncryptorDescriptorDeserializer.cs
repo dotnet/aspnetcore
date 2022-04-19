@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -16,6 +17,7 @@ public sealed class AuthenticatedEncryptorDescriptorDeserializer : IAuthenticate
     /// <summary>
     /// Imports the <see cref="AuthenticatedEncryptorDescriptor"/> from serialized XML.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
         if (element == null)
