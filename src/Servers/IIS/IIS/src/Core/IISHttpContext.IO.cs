@@ -9,8 +9,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 internal partial class IISHttpContext
 {
-    const ushort RESPONSE_BODY_MAX_CHUNKS = 65533;
-
     private long _consumedBytes;
     internal bool ClientDisconnected { get; private set; }
 
@@ -170,36 +168,7 @@ internal partial class IISHttpContext
                 {
                     if (!buffer.IsEmpty)
                     {
-                        if (buffer.IsSingleSegment)
-                        {
-                            await AsyncIO!.WriteAsync(buffer);
-                        }
-                        else
-                        {
-                            ushort chunksCount = 0;
-                            var start = 0;
-                            var length = 0;
-
-                            foreach (var chunks in buffer)
-                            {
-                                chunksCount++;
-                                length += chunks.Length;
-
-                                if (chunksCount == RESPONSE_BODY_MAX_CHUNKS)
-                                {
-                                    await AsyncIO!.WriteAsync(buffer.Slice(start, length));
-
-                                    chunksCount = 0;
-                                    start = length;
-                                    length = 0;
-                                }
-                            }
-
-                            if (chunksCount > 0)
-                            {
-                                await AsyncIO!.WriteAsync(buffer.Slice(start, length));
-                            }
-                        }
+                        await AsyncIO!.WriteAsync(buffer);
                     }
 
                     // if request is done no need to flush, http.sys would do it for us

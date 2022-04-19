@@ -8,6 +8,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
 internal partial class AsyncIOEngine : IAsyncIOEngine
 {
+    private const ushort responseMaxChunkBytes = 65533;
+
     private readonly IISHttpContext _context;
     private readonly NativeSafeHandle _handler;
 
@@ -34,7 +36,45 @@ internal partial class AsyncIOEngine : IAsyncIOEngine
         return new ValueTask<int>(read, 0);
     }
 
-    public ValueTask<int> WriteAsync(ReadOnlySequence<byte> data)
+    public async ValueTask<int> WriteAsync(ReadOnlySequence<byte> data)
+    {
+        if (data.IsSingleSegment)
+        {
+            return await WriteImplAsync(data);
+        }
+        else
+        {
+            ushort chunksCount = 0;
+            var start = 0;
+            var length = 0;
+
+            var result = 0;
+
+            foreach (var chunk in data)
+            {
+                chunksCount++;
+                length += chunk.Length;
+
+                if (chunksCount == responseMaxChunkBytes)
+                {
+                    result += await WriteImplAsync(data.Slice(start, length));
+
+                    chunksCount = 0;
+                    start = length;
+                    length = 0;
+                }
+            }
+
+            if (chunksCount > 0)
+            {
+                result += await WriteImplAsync(data.Slice(start, length));
+            }
+
+            return result;
+        }
+    }
+
+    private ValueTask<int> WriteImplAsync(ReadOnlySequence<byte> data)
     {
         var write = GetWriteOperation();
         write.Initialize(_handler, data);
