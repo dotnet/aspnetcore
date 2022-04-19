@@ -697,6 +697,39 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
+    public async void BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCompletedTrue()
+    {
+        var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
+        var writer = _application.Output;
+
+        var successResult = await writer.WriteAsync(payload);
+        Assert.False(successResult.IsCompleted);
+
+        _http1Connection.Abort(new ConnectionAbortedException());
+        var failResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.True(failResult.IsCompleted);
+    }
+
+    [Fact]
+    public async void BodyWriter_OnConnectionWithCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
+    {
+        var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
+        var writer = _application.Output;
+
+        var successResult = await writer.WriteAsync(payload);
+        Assert.False(successResult.IsCanceled);
+
+        _http1Connection.CancelPendingFlush();
+
+        var canceledResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.True(canceledResult.IsCanceled);
+
+        //Cancel pending should cancel only next flush
+        var goodResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
+        Assert.False(goodResult.IsCanceled);
+    }
+
+    [Fact]
     public async Task RequestAbortedTokenIsResetBeforeLastWriteAsyncAwaitedWithContentLength()
     {
         _http1Connection.ResponseHeaders["Content-Length"] = "12";

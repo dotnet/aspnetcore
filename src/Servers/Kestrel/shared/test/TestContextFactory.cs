@@ -141,7 +141,6 @@ internal static class TestContextFactory
         Http2PeerSettings serverPeerSettings = null,
         Http2FrameWriter frameWriter = null,
         InputFlowControl connectionInputFlowControl = null,
-        OutputFlowControl connectionOutputFlowControl = null,
         ITimeoutControl timeoutControl = null)
     {
         var context = new Http2StreamContext
@@ -159,8 +158,7 @@ internal static class TestContextFactory
             clientPeerSettings: clientPeerSettings ?? new Http2PeerSettings(),
             serverPeerSettings: serverPeerSettings ?? new Http2PeerSettings(),
             frameWriter: frameWriter,
-            connectionInputFlowControl: connectionInputFlowControl,
-            connectionOutputFlowControl: connectionOutputFlowControl
+            connectionInputFlowControl: connectionInputFlowControl
         );
         context.TimeoutControl = timeoutControl;
 

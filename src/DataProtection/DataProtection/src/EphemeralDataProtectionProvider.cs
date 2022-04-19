@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -94,6 +95,7 @@ public sealed class EphemeralDataProtectionProvider : IDataProtectionProvider
             return (keyId == default(Guid)) ? DefaultAuthenticatedEncryptor : null;
         }
 
+        [RequiresUnreferencedCode(TrimmerWarning.Message)]
         public IKeyRing GetCurrentKeyRing()
         {
             return this;

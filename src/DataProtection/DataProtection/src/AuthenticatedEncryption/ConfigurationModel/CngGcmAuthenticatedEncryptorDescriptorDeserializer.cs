@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Xml.Linq;
 
@@ -17,6 +18,7 @@ public sealed class CngGcmAuthenticatedEncryptorDescriptorDeserializer : IAuthen
     /// <summary>
     /// Imports the <see cref="CngCbcAuthenticatedEncryptorDescriptor"/> from serialized XML.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
         if (element == null)
