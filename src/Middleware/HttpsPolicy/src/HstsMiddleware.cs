@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy;
 
 /// <summary>
 /// Enables HTTP Strict Transport Security (HSTS)
-/// See https://tools.ietf.org/html/rfc6797.
+/// See <see href="https://tools.ietf.org/html/rfc6797"/>.
 /// </summary>
 public class HstsMiddleware
 {

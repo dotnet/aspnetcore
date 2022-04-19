@@ -51,7 +51,7 @@ public class KestrelServerOptions
     /// <summary>
     /// Gets or sets a value that controls whether dynamic compression of response headers is allowed.
     /// For more information about the security considerations of HPack dynamic header compression, visit
-    /// https://tools.ietf.org/html/rfc7541#section-7.
+    /// <see href="https://tools.ietf.org/html/rfc7541#section-7"/>.
     /// </summary>
     /// <remarks>
     /// Defaults to true.
@@ -72,8 +72,8 @@ public class KestrelServerOptions
     /// If <c>false</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests must exactly match the transport (e.g. https for TLS
     /// connections, http for non-TLS). If <c>true</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests can be set to alternate values
     /// and this will be reflected by `HttpRequest.Scheme`. The Scheme must still be valid according to
-    /// https://datatracker.ietf.org/doc/html/rfc3986/#section-3.1. Only enable this when working with a trusted proxy. This can be used in
-    /// scenarios such as proxies converting from alternate protocols. See https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.3.
+    /// <see href="https://datatracker.ietf.org/doc/html/rfc3986/#section-3.1"/>. Only enable this when working with a trusted proxy. This can be used in
+    /// scenarios such as proxies converting from alternate protocols. See <see href="https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.3"/>.
     /// Applications that enable this should validate an expected scheme is provided before using it.
     /// </para>
     /// </summary>
