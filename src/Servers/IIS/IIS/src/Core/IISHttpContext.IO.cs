@@ -161,14 +161,14 @@ internal partial class IISHttpContext
             {
                 var result = await _bodyOutput.Reader.ReadAsync();
 
-                if (_bodyOutput.Aborted)
-                {
-                    break;
-                }
-
                 var buffer = result.Buffer;
                 try
                 {
+                    if (_bodyOutput.Aborted)
+                    {
+                        break;
+                    }
+
                     if (!buffer.IsEmpty)
                     {
                         await AsyncIO!.WriteAsync(buffer);
