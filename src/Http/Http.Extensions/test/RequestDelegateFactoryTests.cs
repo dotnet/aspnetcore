@@ -4268,7 +4268,6 @@ public class RequestDelegateFactoryTests : LoggedTest
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
-                    Console.WriteLine(context.Parameters[0]);
                     return await next(context);
                 }
             }
@@ -4286,7 +4285,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public async Task RequestDelegateFactory_InvokesFilters_OnMethodInfoWithTargetFactory()
+    public async Task RequestDelegateFactory_InvokesFilters_OnMethodInfoWithNullTargetFactory()
     {
         // Arrange
         var methodInfo = typeof(RequestDelegateFactoryTests).GetMethod(
@@ -4304,9 +4303,9 @@ public class RequestDelegateFactoryTests : LoggedTest
         {
             RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
-                (routeHandlerContext, next) => (context) =>
+                (routeHandlerContext, next) => async (context) =>
                 {
-                    return ValueTask.FromResult<object?>(Results.Created("/foo", "Great!"));
+                    return await next(context);
                 }
             }
         });
@@ -4314,7 +4313,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         // Assert
-        Assert.Equal(201, httpContext.Response.StatusCode);
+        Assert.Equal(200, httpContext.Response.StatusCode);
     }
 
     [Fact]
@@ -4337,15 +4336,15 @@ public class RequestDelegateFactoryTests : LoggedTest
         {
             invoked = true;
             context.Items["invoked"] = true;
-            return methodInfo!.DeclaringType!;
+            return Activator.CreateInstance(methodInfo!.DeclaringType!);
         };
         var factoryResult = RequestDelegateFactory.Create(methodInfo!, targetFactory, new RequestDelegateFactoryOptions()
         {
             RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
-                (routeHandlerContext, next) => (context) =>
+                (routeHandlerContext, next) => async (context) =>
                 {
-                    return ValueTask.FromResult<object?>(Results.Created("/foo", "Great!"));
+                    return await next(context);
                 }
             }
         });
@@ -4353,7 +4352,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         // Assert
-        Assert.Equal(201, httpContext.Response.StatusCode);
+        Assert.Equal(200, httpContext.Response.StatusCode);
         Assert.True(invoked);
         var invokedInContext = Assert.IsType<bool>(httpContext.Items["invoked"]);
         Assert.True(invokedInContext);

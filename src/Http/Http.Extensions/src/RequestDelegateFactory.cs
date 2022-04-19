@@ -164,7 +164,7 @@ public static partial class RequestDelegateFactory
         }
 
         var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
-        var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression, factoryContext, context => targetFactory);
+        var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression, factoryContext, context => targetFactory(context));
 
         return new RequestDelegateResult(httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext), factoryContext.Metadata);
     }
@@ -259,7 +259,7 @@ public static partial class RequestDelegateFactory
         // ? Task.CompletedTask
         // : {
         //  target = targetFactory(httpContext);
-        //  // handler is ((Type)target).MethodName(parameters);
+        //  handler is ((Type)target).MethodName(parameters);
         //  handler((string)context.Parameters[0], (int)context.Parameters[1]);
         // }
         var filteredInvocation = Expression.Lambda<RouteHandlerFilterDelegate>(
