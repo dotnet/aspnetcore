@@ -7,11 +7,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 internal sealed partial class KestrelTrace : ILogger
 {
-    public void ConnectionAccepted(string connectionId)
-    {
-        ConnectionsLog.ConnectionAccepted(_connectionsLogger, connectionId);
-    }
-
     public void ConnectionStart(string connectionId)
     {
         ConnectionsLog.ConnectionStart(_connectionsLogger, connectionId);
@@ -37,11 +32,6 @@ internal sealed partial class KestrelTrace : ILogger
         ConnectionsLog.ConnectionKeepAlive(_connectionsLogger, connectionId);
     }
 
-    public void ConnectionRejected(string connectionId)
-    {
-        ConnectionsLog.ConnectionRejected(_connectionsLogger, connectionId);
-    }
-
     public void ConnectionDisconnect(string connectionId)
     {
         ConnectionsLog.ConnectionDisconnect(_connectionsLogger, connectionId);
@@ -57,16 +47,23 @@ internal sealed partial class KestrelTrace : ILogger
         ConnectionsLog.NotAllConnectionsAborted(_connectionsLogger);
     }
 
+    public void ConnectionRejected(string connectionId)
+    {
+        ConnectionsLog.ConnectionRejected(_connectionsLogger, connectionId);
+    }
+
     public void ApplicationAbortedConnection(string connectionId, string traceIdentifier)
     {
         ConnectionsLog.ApplicationAbortedConnection(_connectionsLogger, connectionId, traceIdentifier);
     }
 
+    public void ConnectionAccepted(string connectionId)
+    {
+        ConnectionsLog.ConnectionAccepted(_connectionsLogger, connectionId);
+    }
+
     private static partial class ConnectionsLog
     {
-        [LoggerMessage(39, LogLevel.Debug, @"Connection id ""{ConnectionId}"" accepted.", EventName = "ConnectionAccepted")]
-        public static partial void ConnectionAccepted(ILogger logger, string connectionId);
-
         [LoggerMessage(1, LogLevel.Debug, @"Connection id ""{ConnectionId}"" started.", EventName = "ConnectionStart")]
         public static partial void ConnectionStart(ILogger logger, string connectionId);
 
@@ -82,9 +79,6 @@ internal sealed partial class KestrelTrace : ILogger
         [LoggerMessage(9, LogLevel.Debug, @"Connection id ""{ConnectionId}"" completed keep alive response.", EventName = "ConnectionKeepAlive")]
         public static partial void ConnectionKeepAlive(ILogger logger, string connectionId);
 
-        [LoggerMessage(24, LogLevel.Warning, @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.", EventName = "ConnectionRejected")]
-        public static partial void ConnectionRejected(ILogger logger, string connectionId);
-
         [LoggerMessage(10, LogLevel.Debug, @"Connection id ""{ConnectionId}"" disconnecting.", EventName = "ConnectionDisconnect")]
         public static partial void ConnectionDisconnect(ILogger logger, string connectionId);
 
@@ -94,7 +88,13 @@ internal sealed partial class KestrelTrace : ILogger
         [LoggerMessage(21, LogLevel.Debug, "Some connections failed to abort during server shutdown.", EventName = "NotAllConnectionsAborted")]
         public static partial void NotAllConnectionsAborted(ILogger logger);
 
+        [LoggerMessage(24, LogLevel.Warning, @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.", EventName = "ConnectionRejected")]
+        public static partial void ConnectionRejected(ILogger logger, string connectionId);
+
         [LoggerMessage(34, LogLevel.Information, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.", EventName = "ApplicationAbortedConnection")]
         public static partial void ApplicationAbortedConnection(ILogger logger, string connectionId, string traceIdentifier);
+
+        [LoggerMessage(39, LogLevel.Debug, @"Connection id ""{ConnectionId}"" accepted.", EventName = "ConnectionAccepted")]
+        public static partial void ConnectionAccepted(ILogger logger, string connectionId);
     }
 }
