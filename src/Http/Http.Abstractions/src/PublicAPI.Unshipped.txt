@@ -1,5 +1,6 @@
 #nullable enable
 *REMOVED*abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string!
+*REMOVED*Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object?
 Microsoft.AspNetCore.Builder.EndpointBuilder.ServiceProvider.get -> System.IServiceProvider?
 Microsoft.AspNetCore.Builder.EndpointBuilder.ServiceProvider.set -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!
