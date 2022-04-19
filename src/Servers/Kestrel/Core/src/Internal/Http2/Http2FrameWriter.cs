@@ -269,7 +269,7 @@ internal class Http2FrameWriter
         lock (_windowUpdateLock)
         {
             // Check the connection window under a lock so that we don't miss window updates
-            if (_connectionWindow <= 0)
+            if (_connectionWindow == 0)
             {
                 // We have no more connection window, put this producer in a queue waiting for
                 // a window update to resume the producer.
