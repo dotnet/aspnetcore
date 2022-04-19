@@ -80,6 +80,55 @@ public static class AuthorizationEndpointConventionBuilderExtensions
     }
 
     /// <summary>
+    /// Adds an authorization policy to the endpoint(s).
+    /// </summary>
+    /// <param name="builder">The endpoint convention builder.</param>
+    /// <param name="policy">The <see cref="AuthorizationPolicy"/> policy.</param>
+    /// <returns>The original convention builder parameter.</returns>
+    public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder, AuthorizationPolicy policy)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        if (builder == null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (policy == null)
+        {
+            throw new ArgumentNullException(nameof(policy));
+        }
+
+        RequirePolicyCore(builder, policy);
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an new authorization policy configured by a callback to the endpoint(s).
+    /// </summary>
+    /// <typeparam name="TBuilder"></typeparam>
+    /// <param name="builder">The endpoint convention builder.</param>
+    /// <param name="configurePolicy">The callback used to configure the policy.</param>
+    /// <returns>The original convention builder parameter.</returns>
+    public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder, Action<AuthorizationPolicyBuilder> configurePolicy)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        if (builder == null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        if (configurePolicy == null)
+        {
+            throw new ArgumentNullException(nameof(configurePolicy));
+        }
+
+        var policyBuilder = new AuthorizationPolicyBuilder();
+        configurePolicy(policyBuilder);
+        RequirePolicyCore(builder, policyBuilder.Build());
+        return builder;
+    }
+
+    /// <summary>
     /// Allows anonymous access to the endpoint by adding <see cref="AllowAnonymousAttribute" /> to the endpoint metadata. This will bypass
     /// all authorization checks for the endpoint including the default authorization policy and fallback authorization policy.
     /// </summary>
@@ -94,6 +143,20 @@ public static class AuthorizationEndpointConventionBuilderExtensions
         return builder;
     }
 
+    private static void RequirePolicyCore<TBuilder>(TBuilder builder, AuthorizationPolicy policy)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.Add(endpointBuilder =>
+        {
+            // Only add an authorize attribute if there isn't one
+            if (!endpointBuilder.Metadata.Any(meta => meta is IAuthorizeData))
+            {
+                endpointBuilder.Metadata.Add(new AuthorizeAttribute());
+            }
+            endpointBuilder.Metadata.Add(policy);
+        });
+    }
+
     private static void RequireAuthorizationCore<TBuilder>(TBuilder builder, IEnumerable<IAuthorizeData> authorizeData)
         where TBuilder : IEndpointConventionBuilder
     {
@@ -105,4 +168,5 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             }
         });
     }
+
 }
