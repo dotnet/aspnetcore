@@ -85,7 +85,7 @@ internal sealed partial class KestrelTrace : ILogger
         Http2Log.Http2UnexpectedConnectionQueueError(_http2Logger, connectionId, ex);
     }
 
-    public static partial class Http2Log
+    private static partial class Http2Log
     {
         [LoggerMessage(29, LogLevel.Debug, @"Connection id ""{ConnectionId}"": HTTP/2 connection error.", EventName = "Http2ConnectionError")]
         public static partial void Http2ConnectionError(ILogger logger, string connectionId, Http2ConnectionErrorException ex);

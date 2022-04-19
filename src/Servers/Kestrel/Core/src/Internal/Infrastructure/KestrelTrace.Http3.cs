@@ -69,7 +69,7 @@ internal sealed partial class KestrelTrace : ILogger
         Http3Log.Http3GoAwayStreamId(_http3Logger, connectionId, goAwayStreamId);
     }
 
-    public static partial class Http3Log
+    private static partial class Http3Log
     {
         [LoggerMessage(42, LogLevel.Debug, @"Connection id ""{ConnectionId}"": HTTP/3 connection error.", EventName = "Http3ConnectionError")]
         public static partial void Http3ConnectionError(ILogger logger, string connectionId, Http3ConnectionErrorException ex);

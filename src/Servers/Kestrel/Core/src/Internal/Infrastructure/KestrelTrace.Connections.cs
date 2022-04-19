@@ -62,7 +62,7 @@ internal sealed partial class KestrelTrace : ILogger
         ConnectionsLog.ApplicationAbortedConnection(_connectionsLogger, connectionId, traceIdentifier);
     }
 
-    public static partial class ConnectionsLog
+    private static partial class ConnectionsLog
     {
         [LoggerMessage(39, LogLevel.Debug, @"Connection id ""{ConnectionId}"" accepted.", EventName = "ConnectionAccepted")]
         public static partial void ConnectionAccepted(ILogger logger, string connectionId);

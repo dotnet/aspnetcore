@@ -36,7 +36,7 @@ internal sealed partial class KestrelTrace : ILogger
         }
     }
 
-    public static partial class BadRequestsLog
+    private static partial class BadRequestsLog
     {
         [LoggerMessage(17, LogLevel.Debug, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""", EventName = "ConnectionBadRequest")]
         public static partial void ConnectionBadRequest(ILogger logger, string connectionId, string message, Microsoft.AspNetCore.Http.BadHttpRequestException ex);

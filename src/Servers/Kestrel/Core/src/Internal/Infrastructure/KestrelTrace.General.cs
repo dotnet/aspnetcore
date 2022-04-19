@@ -53,7 +53,7 @@ internal sealed partial class KestrelTrace : ILogger
         GeneralLog.InvalidResponseHeaderRemoved(_generalLogger);
     }
 
-    public static partial class GeneralLog
+    private static partial class GeneralLog
     {
         [LoggerMessage(13, LogLevel.Error, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": An unhandled exception was thrown by the application.", EventName = "ApplicationError")]
         public static partial void ApplicationError(ILogger logger, string connectionId, string traceIdentifier, Exception ex);
