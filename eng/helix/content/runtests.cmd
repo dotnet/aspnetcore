@@ -23,8 +23,8 @@ echo.
 
 set exit_code=0
 
-echo "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
-dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
+echo "Restore: dotnet restore RunTests\RunTests.csproj"
+dotnet restore RunTests\RunTests.csproj
 
 if not errorlevel 0 (
     set exit_code=%errorlevel%

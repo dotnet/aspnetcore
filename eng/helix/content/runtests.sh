@@ -75,10 +75,10 @@ sync
 
 exit_code=0
 
-echo "Restore: dotnet restore RunTests/RunTests.csproj --ignore-failed-sources"
+echo "Restore: dotnet restore RunTests/RunTests.csproj"
 
 # --verbosity diagnostic can be removed when random failures are identified
-dotnet restore RunTests/RunTests.csproj --ignore-failed-sources --verbosity diagnostic
+dotnet restore RunTests/RunTests.csproj --verbosity diagnostic
 
 exit_code=$?
 
