@@ -537,8 +537,15 @@ public sealed class JsonHubProtocol : IHubProtocol
             {
                 if (message.Result is RawResult result)
                 {
-                    Debug.Assert(result.RawSerializedData.IsSingleSegment);
-                    writer.WriteRawValue(result.RawSerializedData.First.Span, skipInputValidation: true);
+                    if (result.RawSerializedData.IsSingleSegment)
+                    {
+                        writer.WriteRawValue(result.RawSerializedData.First.Span, skipInputValidation: true);
+                    }
+                    else
+                    {
+                        // https://github.com/dotnet/runtime/issues/68223
+                        writer.WriteRawValue(result.RawSerializedData.ToArray(), skipInputValidation: true);
+                    }
                 }
                 else
                 {
