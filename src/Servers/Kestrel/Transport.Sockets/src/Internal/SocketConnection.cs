@@ -201,10 +201,10 @@ internal sealed partial class SocketConnection : TransportConnection
                         return true;
                     }
 
-                    if (IsConnectionResetError(result.SocketError!.SocketErrorCode))
+                    if (IsConnectionResetError(result.SocketError.SocketErrorCode))
                     {
                         // This could be ignored if _shutdownReason is already set.
-                        var ex = result.SocketError!;
+                        var ex = result.SocketError;
                         error = new ConnectionResetException(ex.Message, ex);
 
                         // There's still a small chance that both DoReceive() and DoSend() can log the same connection reset.
@@ -217,10 +217,10 @@ internal sealed partial class SocketConnection : TransportConnection
                         return false;
                     }
 
-                    if (IsConnectionAbortError(result.SocketError!.SocketErrorCode))
+                    if (IsConnectionAbortError(result.SocketError.SocketErrorCode))
                     {
                         // This exception should always be ignored because _shutdownReason should be set.
-                        error = result.SocketError!;
+                        error = result.SocketError;
 
                         if (!_socketDisposed)
                         {
@@ -285,20 +285,25 @@ internal sealed partial class SocketConnection : TransportConnection
                     _sender = _socketSenderPool.Rent();
                     var transferResult = await _sender.SendAsync(_socket, buffer);
 
-                    if (transferResult.HasError && IsConnectionResetError(transferResult.SocketError!.SocketErrorCode))
+                    if (transferResult.HasError)
                     {
-                        var ex = transferResult.SocketError!;
-                        shutdownReason = new ConnectionResetException(ex.Message, ex);
-                        SocketsLog.ConnectionReset(_logger, this);
+                        if (IsConnectionResetError(transferResult.SocketError.SocketErrorCode))
+                        {
+                            var ex = transferResult.SocketError;
+                            shutdownReason = new ConnectionResetException(ex.Message, ex);
+                            SocketsLog.ConnectionReset(_logger, this);
 
-                        break;
-                    }
+                            break;
+                        }
 
-                    if (transferResult.HasError && IsConnectionAbortError(transferResult.SocketError!.SocketErrorCode))
-                    {
-                        shutdownReason = transferResult.SocketError!;
+                        if (IsConnectionAbortError(transferResult.SocketError.SocketErrorCode))
+                        {
+                            shutdownReason = transferResult.SocketError;
 
-                        break;
+                            break;
+                        }
+
+                        unexpectedError = shutdownReason = transferResult.SocketError;
                     }
 
                     // We don't return to the pool if there was an exception, and
