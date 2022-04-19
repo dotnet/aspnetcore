@@ -128,16 +128,20 @@ internal class Http2FrameWriter
                     var buffer = readResult.Buffer;
 
                     // Check the stream window
-                    var actual = producer.ConsumeStreamWindow(buffer.Length);
+                    var actual = producer.CheckStreamWindow(buffer.Length);
 
                     // Now check the connection window
-                    actual = ConsumeConnectionWindow(actual);
+                    actual = CheckConnectionWindow(actual);
 
                     // Write what we can
                     if (actual < buffer.Length)
                     {
                         buffer = buffer.Slice(0, actual);
                     }
+
+                    // Consume the actual bytes resolved after checking both connection and stream windows
+                    producer.ConsumeStreamWindow(actual);
+                    ConsumeConnectionWindow(actual);
 
                     // Stash the unobserved state, we're going to mark this snapshot as observed
                     var observed = producer.UnobservedState;
@@ -265,7 +269,7 @@ internal class Http2FrameWriter
         lock (_windowUpdateLock)
         {
             // Check the connection window under a lock so that we don't miss window updates
-            if (_connectionWindow == 0)
+            if (_connectionWindow <= 0)
             {
                 // We have no more connection window, put this producer in a queue waiting for
                 // a window update to resume the producer.
@@ -854,13 +858,19 @@ internal class Http2FrameWriter
         return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
     }
 
-    private long ConsumeConnectionWindow(long bytes)
+    private long CheckConnectionWindow(long bytes)
     {
         lock (_windowUpdateLock)
         {
-            var actual = Math.Min(bytes, _connectionWindow);
-            _connectionWindow -= actual;
-            return actual;
+            return Math.Min(bytes, _connectionWindow);
+        }
+    }
+
+    private void ConsumeConnectionWindow(long bytes)
+    {
+        lock (_windowUpdateLock)
+        {
+            _connectionWindow -= bytes;
         }
     }
 

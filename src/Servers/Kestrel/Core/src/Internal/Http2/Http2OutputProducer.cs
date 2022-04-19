@@ -157,14 +157,19 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         }
     }
 
-    // Consumes bytes from the stream's window and returns the remaining bytes and actual bytes consumed
-    internal long ConsumeStreamWindow(long bytes)
+    internal long CheckStreamWindow(long bytes)
     {
         lock (_dataWriterLock)
         {
-            var actual = Math.Min(bytes, _streamWindow);
-            _streamWindow -= actual;
-            return actual;
+            return Math.Min(bytes, _streamWindow);
+        }
+    }
+
+    internal void ConsumeStreamWindow(long bytes)
+    {
+        lock (_dataWriterLock)
+        {
+            _streamWindow -= bytes;
         }
     }
 
