@@ -1,12 +1,11 @@
-Microsoft.AspNetCore.RateLimiting.RateLimitingExtensions
-Microsoft.AspNetCore.RateLimiting.RateLimitingOptions
-Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.Limiter.get -> System.Threading.RateLimiting.PartitionedRateLimiter<Microsoft.AspNetCore.Http.HttpContext!>!
-Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.Limiter.set -> void
-Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.OnRejected.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.RateLimiting.RateLimitLease!, System.Threading.Tasks.Task!>!
-Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.OnRejected.set -> void
-Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.RateLimitingOptions() -> void
-Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.RejectionStatusCode.get -> System.Net.HttpStatusCode
-Microsoft.AspNetCore.RateLimiting.RateLimitingOptions.RejectionStatusCode.set -> void
-Microsoft.AspNetCore.RateLimiting.RateLimitingServicesExtensions
-static Microsoft.AspNetCore.RateLimiting.RateLimitingExtensions.UseRateLimiting(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.RateLimiting.RateLimitingServicesExtensions.ConfigureRateLimiting(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.RateLimiting.RateLimitingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.DefaultRejectionStatusCode.get -> int
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.DefaultRejectionStatusCode.set -> void
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.Limiter.get -> System.Threading.RateLimiting.PartitionedRateLimiter<Microsoft.AspNetCore.Http.HttpContext!>!
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.Limiter.set -> void
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.OnRejected.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.RateLimiting.RateLimitLease!, System.Threading.Tasks.Task!>!
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.OnRejected.set -> void
+Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.RateLimiterOptions() -> void
+Microsoft.AspNetCore.RateLimiting.RateLimitingApplicationBuilderExtensions
+static Microsoft.AspNetCore.RateLimiting.RateLimitingApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.RateLimiting.RateLimitingApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

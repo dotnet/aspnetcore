@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// <summary>
 /// Specifies options for the rate limiting middleware.
 /// </summary>
-public sealed class RateLimitingOptions
+public sealed class RateLimiterOptions
 {
     // TODO - Provide a default?
     private PartitionedRateLimiter<HttpContext> _limiter = new NoLimiter<HttpContext>();
@@ -18,6 +18,7 @@ public sealed class RateLimitingOptions
     {
         return Task.CompletedTask;
     };
+    private int _defaultOnRejectionStatusCode = (int)HttpStatusCode.ServiceUnavailable;
 
     /// <summary>
     /// Gets or sets the <see cref="PartitionedRateLimiter{TResource}"/>
@@ -38,8 +39,23 @@ public sealed class RateLimitingOptions
     }
 
     /// <summary>
-    /// Gets or sets the <see cref="HttpStatusCode"/> to set on the response when a request is rejected.
+    /// Gets or sets the default <see cref="HttpStatusCode"/> to set on the response when a request is rejected.
     /// Defaults to <see cref="HttpStatusCode.ServiceUnavailable"/>.
     /// </summary>
-    public HttpStatusCode RejectionStatusCode { get; set; } = HttpStatusCode.ServiceUnavailable;
+    /// <remarks>
+    /// This status code will be set before <see cref="OnRejected"/> is called, so any status code set by
+    /// <see cref="OnRejected"/> will "win" over this default.
+    /// </remarks>
+    public int DefaultRejectionStatusCode
+    {
+        get => _defaultOnRejectionStatusCode;
+        set
+        {
+            if (!Enum.IsDefined(typeof(HttpStatusCode), value))
+            {
+                throw new ArgumentException("Value must be a valid HTTP status code", nameof(value));
+            }
+            _defaultOnRejectionStatusCode = value;
+        }
+    }
 }

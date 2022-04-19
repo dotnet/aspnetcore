@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -18,7 +17,7 @@ internal sealed partial class RateLimitingMiddleware
     private readonly Func<HttpContext, RateLimitLease, Task> _onRejected;
     private readonly ILogger _logger;
     private readonly PartitionedRateLimiter<HttpContext> _limiter;
-    private readonly HttpStatusCode _rejectionStatusCode;
+    private readonly int _rejectionStatusCode;
 
     /// <summary>
     /// Creates a new <see cref="RateLimitingMiddleware"/>.
@@ -26,7 +25,7 @@ internal sealed partial class RateLimitingMiddleware
     /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
     /// <param name="logger">The <see cref="ILogger"/> used for logging.</param>
     /// <param name="options">The options for the middleware.</param>
-    public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimitingOptions> options)
+    public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimiterOptions> options)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
 
@@ -38,7 +37,7 @@ internal sealed partial class RateLimitingMiddleware
         _logger = logger;
         _limiter = options.Value.Limiter;
         _onRejected = options.Value.OnRejected;
-        _rejectionStatusCode = options.Value.RejectionStatusCode;
+        _rejectionStatusCode = options.Value.DefaultRejectionStatusCode;
     }
 
     // TODO - EventSource?
@@ -57,7 +56,9 @@ internal sealed partial class RateLimitingMiddleware
         else
         {
             RateLimiterLog.RequestRejectedLimitsExceeded(_logger);
-            context.Response.StatusCode = (int)_rejectionStatusCode;
+            // OnRejected "wins" over DefaultRejectionStatusCode - we set DefaultRejectionStatusCode first,
+            // then call OnRejected in case it wants to do any further modification of the status code.
+            context.Response.StatusCode = _rejectionStatusCode;
             await _onRejected(context, lease);
         }
     }
@@ -75,7 +76,7 @@ internal sealed partial class RateLimitingMiddleware
 
     private static partial class RateLimiterLog
     {
-        [LoggerMessage(1, LogLevel.Debug, "Rate limits exceeded, rejecting this request with a '503 server not available' error", EventName = "RequestRejectedLimitsExceeded")]
+        [LoggerMessage(1, LogLevel.Debug, "Rate limits exceeded, rejecting this request", EventName = "RequestRejectedLimitsExceeded")]
         internal static partial void RequestRejectedLimitsExceeded(ILogger logger);
     }
 }
