@@ -4252,6 +4252,73 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegateFactory_InvokesFilters_OnDelegateWithTarget()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "TestName"
+        });
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create((string name) => "Hello, {name}!", new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    Console.WriteLine(context.Parameters[0]);
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    string GetString(string name)
+    {
+        return $"Hello, {name}!";
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_InvokesFilters_OnMethodInfoWithTargetFactory()
+    {
+        // Arrange
+        var methodInfo = typeof(RequestDelegateFactoryTests).GetMethod(
+            nameof(GetString),
+            BindingFlags.NonPublic | BindingFlags.Instance,
+            new[] { typeof(string) });
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "TestName"
+        });
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(methodInfo!, null, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => (context) =>
+                {
+                    Console.WriteLine(context.Parameters[0]);
+                    return ValueTask.FromResult<object?>(Results.Created("/foo", "Great!"));
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        // Assert
+        Assert.Equal(201, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
     public async Task RequestDelegateFactory_CanInvokeSingleEndpointFilter_ThatProvidesCustomErrorMessage()
     {
         // Arrange
