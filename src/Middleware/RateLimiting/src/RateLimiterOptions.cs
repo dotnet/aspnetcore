@@ -39,23 +39,12 @@ public sealed class RateLimiterOptions
     }
 
     /// <summary>
-    /// Gets or sets the default <see cref="HttpStatusCode"/> to set on the response when a request is rejected.
-    /// Defaults to <see cref="HttpStatusCode.ServiceUnavailable"/>.
+    /// Gets or sets the default status code to set on the response when a request is rejected.
+    /// Defaults to <see cref="StatusCodes.Status503ServiceUnavailable"/>.
     /// </summary>
     /// <remarks>
     /// This status code will be set before <see cref="OnRejected"/> is called, so any status code set by
     /// <see cref="OnRejected"/> will "win" over this default.
     /// </remarks>
-    public int DefaultRejectionStatusCode
-    {
-        get => _defaultOnRejectionStatusCode;
-        set
-        {
-            if (!Enum.IsDefined(typeof(HttpStatusCode), value))
-            {
-                throw new ArgumentException("Value must be a valid HTTP status code", nameof(value));
-            }
-            _defaultOnRejectionStatusCode = value;
-        }
-    }
+    public int DefaultRejectionStatusCode { get; set; } = StatusCodes.Status503ServiceUnavailable;
 }

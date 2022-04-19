@@ -29,12 +29,8 @@ internal sealed partial class RateLimitingMiddleware
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
 
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        _logger = logger;
         _limiter = options.Value.Limiter;
         _onRejected = options.Value.OnRejected;
         _rejectionStatusCode = options.Value.DefaultRejectionStatusCode;
@@ -76,7 +72,7 @@ internal sealed partial class RateLimitingMiddleware
 
     private static partial class RateLimiterLog
     {
-        [LoggerMessage(1, LogLevel.Debug, "Rate limits exceeded, rejecting this request", EventName = "RequestRejectedLimitsExceeded")]
+        [LoggerMessage(1, LogLevel.Debug, "Rate limits exceeded, rejecting this request.", EventName = "RequestRejectedLimitsExceeded")]
         internal static partial void RequestRejectedLimitsExceeded(ILogger logger);
     }
 }
