@@ -5,7 +5,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;openapi</PackageTags>
     <Description>Provides APIs for annotating route handler endpoints in ASP.NET Core with OpenAPI annotations.</Description>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

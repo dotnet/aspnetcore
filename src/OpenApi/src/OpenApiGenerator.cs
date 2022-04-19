@@ -29,14 +29,14 @@ internal class OpenApiGenerator
     private readonly IHostEnvironment? _environment;
     private readonly IServiceProviderIsService? _serviceProviderIsService;
 
-    private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
+    internal static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
 
     /// <summary>
-    /// Creates an <see cref="OpenApiGenerator" /> instance given a <see cref="IHostEnvironment" />
-    /// and a <see cref="IServiceProviderIsService" /> instance.
+    /// Creates an <see cref="OpenApiGenerator" /> instance given an <see cref="IHostEnvironment" />
+    /// and an <see cref="IServiceProviderIsService" /> instance.
     /// </summary>
     /// <param name="environment">The host environment.</param>
-    /// <param name="serviceProviderIsService">The service to determine if the a type is available from the <see cref="IServiceProvider"/>.</param>
+    /// <param name="serviceProviderIsService">The service to determine if the type is available from the <see cref="IServiceProvider"/>.</param>
     internal OpenApiGenerator(
         IHostEnvironment? environment,
         IServiceProviderIsService? serviceProviderIsService)
@@ -405,7 +405,7 @@ internal class OpenApiGenerator
         return openApiParameterContent;
     }
 
-    private (bool, ParameterLocation?) GetOpenApiParameterLocation(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
+    private (bool isBodyOrForm, ParameterLocation? locatedIn) GetOpenApiParameterLocation(ParameterInfo parameter, RoutePattern pattern, bool disableInferredBody)
     {
         var attributes = parameter.GetCustomAttributes();
 

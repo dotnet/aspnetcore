@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -10,10 +10,10 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.OpenApi" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.OpenApi" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 
 </Project>

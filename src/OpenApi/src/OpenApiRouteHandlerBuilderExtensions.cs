@@ -37,7 +37,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
             };
         });
         return builder;
-
     }
 
     /// <summary>
@@ -58,7 +57,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
                 {
                     routeEndpointBuilder.Metadata.Add(configureOperation(openApiOperation));
                 }
-
             };
         });
         return builder;
