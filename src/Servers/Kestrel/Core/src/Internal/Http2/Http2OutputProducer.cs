@@ -302,7 +302,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         _frameWriter.Schedule(this);
     }
 
-    public bool TryScheduleNextWrite()
+    public bool TryScheduleNextWriteIfStreamWindowHasSpace()
     {
         lock (_dataWriterLock)
         {

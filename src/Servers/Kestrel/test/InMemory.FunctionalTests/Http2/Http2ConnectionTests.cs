@@ -1971,7 +1971,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1).DefaultTimeout();
 
         // Send more than enough bytes for the window update
-        await SendWindowUpdateAsync(0, (int)Http2PeerSettings.DefaultInitialWindowSize);
+        await SendWindowUpdateAsync(0, 1);
 
         // Expect the last frame
         await ExpectAsync(Http2FrameType.DATA,

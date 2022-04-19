@@ -239,7 +239,8 @@ internal class Http2FrameWriter
                     {
                         // If we queued the connection for a window update or we were unable to schedule the next write
                         // then we're waiting for a window update to resume the scheduling.
-                        if (TryQueueProducerForConnectionWindowUpdate(actual, producer) || !producer.TryScheduleNextWrite())
+                        if (TryQueueProducerForConnectionWindowUpdate(actual, producer) ||
+                            !producer.TryScheduleNextWriteIfStreamWindowHasSpace())
                         {
                             // Include waiting for window updates in timing writes
                             if (_minResponseDataRate != null)
