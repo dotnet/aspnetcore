@@ -159,12 +159,12 @@ internal partial class IISHttpContext
         {
             while (true)
             {
+                var result = await _bodyOutput.Reader.ReadAsync();
+
                 if (_bodyOutput.Aborted)
                 {
                     break;
                 }
-
-                var result = await _bodyOutput.Reader.ReadAsync();
 
                 var buffer = result.Buffer;
                 try

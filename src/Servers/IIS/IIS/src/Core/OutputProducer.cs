@@ -12,7 +12,7 @@ internal class OutputProducer
     // This locks access to _completed and _aborted.
     private readonly object _contextLock = new object();
     private bool _completed;
-    private bool _aborted;
+    private volatile bool _aborted;
 
     private readonly Pipe _pipe;
 
