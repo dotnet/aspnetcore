@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.RateLimiting;
@@ -21,11 +22,13 @@ public class RateLimitingApplicationBuilderExtensionsTests
         // These are the options that should get used
         var options = new RateLimiterOptions();
         options.DefaultRejectionStatusCode = 429;
+        options.Limiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
 
         // These should not get used
         var services = new ServiceCollection();
         services.Configure<RateLimiterOptions>(options =>
         {
+            options.Limiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
             options.DefaultRejectionStatusCode = 404;
         });
         var serviceProvider = services.BuildServiceProvider();
@@ -33,7 +36,9 @@ public class RateLimitingApplicationBuilderExtensionsTests
 
         // Act
         appBuilder.UseRateLimiter(options);
-        var configuredOptions = appBuilder.ApplicationServices.GetRequiredService<RateLimiterOptions>();
-        Assert.Equal(429, configuredOptions.DefaultRejectionStatusCode);
+        var app = appBuilder.Build();
+        var context = new DefaultHttpContext();
+        app.Invoke(context);
+        Assert.Equal(429, context.Response.StatusCode);
     }
 }

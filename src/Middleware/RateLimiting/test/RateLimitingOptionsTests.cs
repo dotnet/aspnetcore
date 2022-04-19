@@ -20,11 +20,4 @@ public class RateLimitingOptionsTests
         var options = new RateLimiterOptions();
         Assert.Throws<ArgumentNullException>(() => options.OnRejected = null);
     }
-
-    [Fact]
-    public void ThrowsOnInvalidStatusCode()
-    {
-        var options = new RateLimiterOptions();
-        Assert.Throws<ArgumentException>(() => options.DefaultRejectionStatusCode = -1);
-    }
 }
