@@ -4332,11 +4332,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         });
 
         // Act
-        Func<HttpContext, object?> targetFactory = (context) =>
+        Func<HttpContext, object> targetFactory = (context) =>
         {
             invoked = true;
             context.Items["invoked"] = true;
-            return Activator.CreateInstance(methodInfo!.DeclaringType!);
+            return Activator.CreateInstance(methodInfo!.DeclaringType!)!;
         };
         var factoryResult = RequestDelegateFactory.Create(methodInfo!, targetFactory, new RequestDelegateFactoryOptions()
         {
