@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http;
 
 public static class HttpResponseWritingExtensions
 {
-+   public Task WriteAsync(this HttpResponse response, StringBuilder builder);
++    public Task WriteAsync(this HttpResponse response, StringBuilder builder);
 }
 ```
 You may find the [Framework Design Guidelines](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/framework-design-guidelines-digest.md) helpful.
