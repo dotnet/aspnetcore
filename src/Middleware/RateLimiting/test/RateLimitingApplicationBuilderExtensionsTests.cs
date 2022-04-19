@@ -3,12 +3,20 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.RateLimiting;
 
-public class RateLimitingApplicationBuilderExtensionsTests
+public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
 {
+
+    [Fact]
+    public void UseRateLimiter_ThrowsOnNullAppBuilder()
+    {
+        Assert.Throws<ArgumentNullException>(() => RateLimitingApplicationBuilderExtensions.UseRateLimiter(null));
+    }
+
     [Fact]
     public void UseRateLimiter_ThrowsOnNullOptions()
     {
@@ -31,6 +39,7 @@ public class RateLimitingApplicationBuilderExtensionsTests
             options.Limiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
             options.DefaultRejectionStatusCode = 404;
         });
+        services.AddLogging();
         var serviceProvider = services.BuildServiceProvider();
         var appBuilder = new ApplicationBuilder(serviceProvider);
 
