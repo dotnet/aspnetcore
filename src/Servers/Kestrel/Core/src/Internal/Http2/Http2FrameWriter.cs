@@ -128,10 +128,10 @@ internal class Http2FrameWriter
                     var buffer = readResult.Buffer;
 
                     // Check the stream window
-                    var (actual, remainingStream) = producer.ConsumeStreamWindow(buffer.Length);
+                    var actual = producer.ConsumeStreamWindow(buffer.Length);
 
                     // Now check the connection window
-                    (actual, var remainingConnection) = ConsumeConnectionWindow(actual);
+                    actual = ConsumeConnectionWindow(actual);
 
                     // Write what we can
                     if (actual < buffer.Length)
@@ -233,42 +233,10 @@ internal class Http2FrameWriter
                     // When the window update is sent, the producer will be re-queued if needed.
                     else if (hasMoreData && !aborted && !waitingForWindowUpdates)
                     {
-                        // We have no more connection window, put this producer in a queue waiting for it to
-                        // a window update to resume the connection.
-                        if (remainingConnection == 0)
+                        // If we queued the connection for a window update or we were unable to schedule the next write
+                        // then we're waiting for a window update to resume the scheduling.
+                        if (TryQueueProducerForConnectionWindowUpdate(actual, producer) || !producer.TryScheduleNextWrite())
                         {
-                            lock (_windowUpdateLock)
-                            {
-                                // In order to make scheduling more fair we want to make sure that streams that have data get a chance to run in a round robin manner.
-                                // To do this we will store the producer that consumed the window in a field and put it to the back of the queue.
-                                if (actual != 0 && _lastWindowConsumer is null)
-                                {
-                                    _lastWindowConsumer = producer;
-                                }
-                                else
-                                {
-                                    _waitingForMoreConnectionWindow.Enqueue(producer);
-                                }
-                            }
-
-                            producer.SetWaitingForWindowUpdates();
-
-                            // Include waiting for window updates in timing writes
-                            if (_minResponseDataRate != null)
-                            {
-                                producer.IsTimingWrite = true;
-                                _timeoutControl.StartTimingWrite();
-                            }
-                        }
-                        else if (remainingStream > 0)
-                        {
-                            // Move this stream to the back of the queue so we're being fair to the other streams that have data
-                            producer.Schedule();
-                        }
-                        else
-                        {
-                            producer.SetWaitingForWindowUpdates();
-
                             // Include waiting for window updates in timing writes
                             if (_minResponseDataRate != null)
                             {
@@ -290,6 +258,37 @@ internal class Http2FrameWriter
         }
 
         _log.Http2ConnectionQueueProcessingCompleted(_connectionId);
+    }
+
+    private bool TryQueueProducerForConnectionWindowUpdate(long actual, Http2OutputProducer producer)
+    {
+        lock (_windowUpdateLock)
+        {
+            // Check the connection window under a lock so that we don't miss window updates
+            if (_connectionWindow == 0)
+            {
+                // We have no more connection window, put this producer in a queue waiting for it to
+                // a window update to resume the connection.
+
+                // In order to make scheduling more fair we want to make sure that streams that have data get a chance to run in a round robin manner.
+                // To do this we will store the producer that consumed the window in a field and put it to the back of the queue.
+
+                producer.SetWaitingForWindowUpdates();
+
+                if (actual != 0 && _lastWindowConsumer is null)
+                {
+                    _lastWindowConsumer = producer;
+                }
+                else
+                {
+                    _waitingForMoreConnectionWindow.Enqueue(producer);
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void UpdateMaxHeaderTableSize(uint maxHeaderTableSize)
@@ -855,13 +854,13 @@ internal class Http2FrameWriter
         return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
     }
 
-    private (long, long) ConsumeConnectionWindow(long bytes)
+    private long ConsumeConnectionWindow(long bytes)
     {
         lock (_windowUpdateLock)
         {
             var actual = Math.Min(bytes, _connectionWindow);
             _connectionWindow -= actual;
-            return (actual, _connectionWindow);
+            return actual;
         }
     }
 
