@@ -47,6 +47,8 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringIsNullOrEmptyMethod = typeof(string).GetMethod(nameof(string.IsNullOrEmpty), BindingFlags.Static | BindingFlags.Public)!;
     private static readonly MethodInfo WrapObjectAsValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WrapObjectAsValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo TaskToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(TaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo ValueTaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ValueTaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
 
@@ -262,20 +264,23 @@ public static partial class RequestDelegateFactory
         //  handler is ((Type)target).MethodName(parameters);
         //  handler((string)context.Parameters[0], (int)context.Parameters[1]);
         // }
-        var filteredInvocation = Expression.Lambda<RouteHandlerFilterDelegate>(
-            Expression.Condition(
-                Expression.GreaterThanOrEqual(FilterContextHttpContextStatusCodeExpr, Expression.Constant(400)),
-                CompletedValueTaskExpr,
-                Expression.Block(
+        var handlerReturnMapping = MapHandlerReturnTypeToValueTask(
+                        targetExpression is null
+                            ? Expression.Call(methodInfo, factoryContext.ContextArgAccess)
+                            : Expression.Call(targetExpression, methodInfo, factoryContext.ContextArgAccess),
+                        methodInfo.ReturnType);
+        var handlerInvocation = Expression.Block(
                     new[] { TargetExpr },
                     targetFactory == null
                         ? Expression.Empty()
                         : Expression.Assign(TargetExpr, Expression.Invoke(targetFactory, FilterContextHttpContextExpr)),
-                    Expression.Call(WrapObjectAsValueTaskMethod,
-                        targetExpression is null
-                            ? Expression.Call(methodInfo, factoryContext.ContextArgAccess)
-                            : Expression.Call(targetExpression, methodInfo, factoryContext.ContextArgAccess))
-                )),
+                    handlerReturnMapping
+                );
+        var filteredInvocation = Expression.Lambda<RouteHandlerFilterDelegate>(
+            Expression.Condition(
+                Expression.GreaterThanOrEqual(FilterContextHttpContextStatusCodeExpr, Expression.Constant(400)),
+                CompletedValueTaskExpr,
+                handlerInvocation),
             FilterContextExpr).Compile();
         var routeHandlerContext = new RouteHandlerContext(
             methodInfo,
@@ -290,6 +295,48 @@ public static partial class RequestDelegateFactory
 
         }
         return filteredInvocation;
+    }
+
+    private static Expression MapHandlerReturnTypeToValueTask(Expression methodCall, Type returnType)
+    {
+        if (returnType == typeof(void) || returnType == typeof(Task) || returnType == typeof(ValueTask))
+        {
+            return Expression.Block(methodCall, Expression.Constant(new ValueTask<object?>(EmptyHttpResult.Instance)));
+        }
+        else if (returnType.IsGenericType &&
+                     returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+        {
+            var typeArg = returnType.GetGenericArguments()[0];
+            return Expression.Call(ValueTaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
+        }
+        else if (returnType.IsGenericType &&
+                    returnType.GetGenericTypeDefinition() == typeof(Task<>))
+        {
+            var typeArg = returnType.GetGenericArguments()[0];
+            return Expression.Call(TaskToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
+        }
+        else
+        {
+            return Expression.Call(WrapObjectAsValueTaskMethod, methodCall);
+        }
+    }
+
+    private static ValueTask<object?> ValueTaskOfTToValueTaskOfObject<T>(ValueTask<T> task)
+    {
+        if (task.IsCompletedSuccessfully)
+        {
+            return new ValueTask<object?>(task.Result);
+        }
+        return new ValueTask<object?>(task);
+    }
+
+    private static ValueTask<object?> TaskOfTToValueTaskOfObject<T>(Task<T> task)
+    {
+        if (task.IsCompletedSuccessfully)
+        {
+            return new ValueTask<object?>(task.Result);
+        }
+        return new ValueTask<object?>(task);
     }
 
     private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services)
@@ -2039,6 +2086,24 @@ public static partial class RequestDelegateFactory
         foreach (var kv in factoryContext.TrackedParameters)
         {
             errorMessage.AppendLine(FormattableString.Invariant($"{kv.Key,-19} | {kv.Value,-15}"));
+        }
+    }
+
+    // Due to cyclic references between Http.Extensions and
+    // Http.Results, we define our own instance of the `EmptyHttpResult`
+    // type here.
+    private sealed class EmptyHttpResult : IResult
+    {
+        private EmptyHttpResult()
+        {
+        }
+
+        public static EmptyHttpResult Instance { get; } = new();
+
+        /// <inheritdoc/>
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            return Task.CompletedTask;
         }
     }
 }

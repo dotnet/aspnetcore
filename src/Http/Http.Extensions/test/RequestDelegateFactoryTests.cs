@@ -4699,6 +4699,175 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task CanInvokeFilter_OnVoidReturningHandler()
+    {
+        // Arrange
+        var invoked = false;
+        void VoidMethod()
+        {
+            invoked = true;
+        }
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(VoidMethod, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.True(invoked);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal(string.Empty, decodedResponseBody);
+    }
+
+    [Fact]
+    public async Task CanInvokeFilter_OnTaskOfTReturningHandler()
+    {
+        // Arrange
+        var invoked = false;
+        Task<string> TaskOfTMethod()
+        {
+            invoked = true;
+            return Task.FromResult("foo");
+        }
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(TaskOfTMethod, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.True(invoked);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("foo", decodedResponseBody);
+    }
+
+    [Fact]
+    public async Task CanInvokeFilter_OnValueTaskOfTReturningHandler()
+    {
+        // Arrange
+        var invoked = false;
+        ValueTask<string> ValueTaskOfTMethod()
+        {
+            invoked = true;
+            return ValueTask.FromResult("foo");
+        }
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(ValueTaskOfTMethod, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.True(invoked);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("foo", decodedResponseBody);
+    }
+
+    [Fact]
+    public async Task CanInvokeFilter_OnValueTaskReturningHandler()
+    {
+        // Arrange
+        var invoked = false;
+        ValueTask ValueTaskMethod()
+        {
+            invoked = true;
+            return new ValueTask();
+        }
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(ValueTaskMethod, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.True(invoked);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal(String.Empty, decodedResponseBody);
+    }
+
+    [Fact]
+    public async Task CanInvokeFilter_OnTaskReturningHandler()
+    {
+        // Arrange
+        var invoked = false;
+        Task TaskMethod()
+        {
+            invoked = true;
+            return Task.CompletedTask;
+        }
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(TaskMethod, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.True(invoked);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal(string.Empty, decodedResponseBody);
+    }
+
+    [Fact]
     public void Create_AddsDelegateMethodInfo_AsMetadata()
     {
         // Arrange
