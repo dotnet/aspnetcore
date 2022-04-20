@@ -617,7 +617,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     // This method should only be called from the end of request processing, this lets use avoid most
     // of the rentrancy issues with using indicate completion.
-    public void CompleteHttpRequest(NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
+    public void CompleteHttpRequest(IntPtr handle, NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
     {
         // Mark the requst as complete to avoid calling back into managed code from native code
         NativeMethods.HttpSetManagedRequestComplete(_requestNativeHandle);
@@ -635,7 +635,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         },
         // We use the native handle because we're going to dispose the safe handle by the time this runs.
         // We don't want to hold onto it since managed code is unwinding.
-        (_requestNativeHandle.DangerousGetHandle(), requestNotificationStatus), preferLocal: true);
+        (handle, requestNotificationStatus), preferLocal: true);
     }
 
     internal void OnAsyncCompletion(int hr, int bytes)
@@ -719,8 +719,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         }
         finally
         {
-            // Post completion after completing the request to resume the state machine
-            CompleteHttpRequest(ConvertRequestCompletionResults(successfulRequest));
+            var nativeHandle = _requestNativeHandle.DangerousGetHandle();
 
             // After disposing a safe handle, Dispose() will not block waiting for the pinvokes to finish.
             // Instead Safehandle will call ReleaseHandle on the pinvoke thread when the pinvokes complete
@@ -735,6 +734,9 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
             // Dispose the context
             Dispose();
+
+            // Post completion after completing the request to resume the IIS state machine
+            CompleteHttpRequest(nativeHandle, ConvertRequestCompletionResults(successfulRequest));
         }
     }
 
