@@ -212,6 +212,15 @@ http_indicate_completion(
 
 EXTERN_C __declspec(dllexport)
 VOID
+http_set_managed_request_complete(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler
+)
+{
+    pInProcessHandler->IndicateManagedRequestComplete();
+}
+
+EXTERN_C __declspec(dllexport)
+VOID
 http_get_completion_info(
     _In_ IHttpCompletionInfo2* info,
     _Out_ DWORD* cbBytes,

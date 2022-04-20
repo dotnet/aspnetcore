@@ -617,8 +617,11 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     // This method should only be called from the end of request processing, this lets use avoid most
     // of the rentrancy issues with using indicate completion.
-    public void PostCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
+    public void CompleteHttpRequest(NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
     {
+        // Mark the requst as complete to avoid calling back into managed code from native code
+        NativeMethods.HttpSetManagedRequestComplete(_requestNativeHandle);
+
         // We post completion to the thread pool instead of the IIS thread pool to avoid having
         // new requests compete with existing threads for IIS threads.
         // We're going to use the local queue so that we can resume the state machine on this thread after
@@ -717,7 +720,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         finally
         {
             // Post completion after completing the request to resume the state machine
-            PostCompletion(ConvertRequestCompletionResults(successfulRequest));
+            CompleteHttpRequest(ConvertRequestCompletionResults(successfulRequest));
 
             // After disposing a safe handle, Dispose() will not block waiting for the pinvokes to finish.
             // Instead Safehandle will call ReleaseHandle on the pinvoke thread when the pinvokes complete

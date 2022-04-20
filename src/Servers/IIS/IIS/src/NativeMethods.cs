@@ -45,6 +45,9 @@ internal static class NativeMethods
     private static extern void http_indicate_completion(IntPtr pInProcessHandler, REQUEST_NOTIFICATION_STATUS notificationStatus);
 
     [DllImport(AspNetCoreModuleDll)]
+    private static extern void http_set_managed_request_complete(NativeSafeHandle pInProcessHandler);
+
+    [DllImport(AspNetCoreModuleDll)]
     private static extern unsafe int register_callbacks(NativeSafeHandle pInProcessApplication,
         delegate* unmanaged<IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> requestCallback,
         delegate* unmanaged<IntPtr, int> shutdownCallback,
@@ -153,6 +156,11 @@ internal static class NativeMethods
     public static void HttpIndicateCompletion(IntPtr pInProcessHandler, REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
     {
         http_indicate_completion(pInProcessHandler, requestNotificationStatus);
+    }
+
+    public static void HttpSetManagedRequestComplete(NativeSafeHandle pInProcessHandler)
+    {
+        http_set_managed_request_complete(pInProcessHandler);
     }
 
     public static void HttpSetCompletionStatus(NativeSafeHandle pInProcessHandler, REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
