@@ -164,6 +164,11 @@ internal partial class IISHttpContext
                 var buffer = result.Buffer;
                 try
                 {
+                    if (_bodyOutput.Aborted)
+                    {
+                        break;
+                    }
+
                     if (!buffer.IsEmpty)
                     {
                         await AsyncIO!.WriteAsync(buffer);
