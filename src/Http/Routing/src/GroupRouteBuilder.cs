@@ -86,9 +86,10 @@ public sealed class GroupRouteBuilder : IEndpointRouteBuilder, IEndpointConventi
                         var routeEndpointBuilder = new RouteEndpointBuilder(routeEndpoint.RequestDelegate!, fullRoutePattern, routeEndpoint.Order)
                         {
                             DisplayName = routeEndpoint.DisplayName,
+                            ServiceProvider = _groupRouteBuilder._outerEndpointRouteBuilder.ServiceProvider,
                         };
 
-                        // Apply group conventions to each endpoint in the group at a lower precedent than Metadata already.
+                        // Apply group conventions to each endpoint in the group at a lower precedent than metadata already on the endpoint.
                         foreach (var convention in _groupRouteBuilder._conventions)
                         {
                             convention(routeEndpointBuilder);
