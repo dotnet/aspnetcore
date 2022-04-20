@@ -1,22 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.OutputCaching.Policies;
-using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOutputCaching(options =>
 {
-    // options.Policies.Clear();
     options.Policies.Add(new EnableCachingPolicy());
 
     options.Profiles["NoCache"] = new OutputCachePolicyBuilder().NoStore().Build();
 
     // Tag any request to "/blog**
     options.Policies.Add(new OutputCachePolicyBuilder().Path("/blog").Tag("blog").Build());
+
 });
 
 var app = builder.Build();
@@ -33,9 +31,8 @@ app.MapGet("/profile", Gravatar.WriteGravatar).OutputCache(x => x.Profile("NoCac
 
 app.MapGet("/attribute", [OutputCache(Profile = "NoCache")] (c) => Gravatar.WriteGravatar(c));
 
-// This is tagged with 'blog'
-app.MapGet("/blog", Gravatar.WriteGravatar).OutputCache();
-app.MapGet("/blog/post/{id}", Gravatar.WriteGravatar).OutputCache();
+app.MapGet("/blog", Gravatar.WriteGravatar);
+app.MapGet("/blog/post/{id}", Gravatar.WriteGravatar);
 
 app.MapPost("/purge/{tag}", async (IOutputCacheStore cache, string tag) =>
 {
@@ -62,8 +59,8 @@ app.MapGet("/lock", async (context) =>
 app.MapGet("/headers", async context =>
 {
     // From a browser this endpoint won't be cached because of max-age: 0
-    context.Response.Headers.CacheControl = CacheControlHeaderValue.PublicString;
-    await context.Response.WriteAsync("Headers " + DateTime.UtcNow.ToString("o"));
+    context.Response.Headers.CacheControl = "public";
+    await Gravatar.WriteGravatar(context);
 }).OutputCache(new ResponseCachingPolicy());
 
 // Etag
@@ -75,7 +72,7 @@ app.MapGet("/etag", async (context) =>
     var etag = $"\"{Guid.NewGuid().ToString("n")}\"";
     context.Response.Headers.ETag = etag;
 
-    await context.Response.WriteAsync("Hello");
+    await Gravatar.WriteGravatar(context);
 }).OutputCache();
 
 // When the request header If-Modified-Since is provided, return 304 if the cached entry is older
