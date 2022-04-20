@@ -1147,6 +1147,28 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
+    public void MapGroup_ServiceProviderInConvention_IsSet()
+    {
+        var serviceProvider = new EmptyServiceProvider();
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+
+        var group = builder.MapGroup("/group");
+        group.MapGet("/foo", () => "Hello World!");
+
+        IServiceProvider? endpointBuilderServiceProvider = null;
+
+        ((IEndpointConventionBuilder)group).Add(builder =>
+        {
+            endpointBuilderServiceProvider = builder.ServiceProvider;
+        });
+
+        var dataSource = GetEndpointDataSource(builder);
+        Assert.Single(dataSource.Endpoints);
+
+        Assert.Same(serviceProvider, endpointBuilderServiceProvider);
+    }
+
+    [Fact]
     public async Task MapGroup_BuildingEndpointInConvention_Works()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
