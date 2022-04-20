@@ -147,11 +147,35 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // Consume space
         offset++;
 
-        // Version + CR is 9 bytes which should take us to .Length
-        // LF should have been dropped prior to method call
-        if ((uint)offset + 9 != (uint)requestLine.Length || requestLine[offset + sizeof(ulong)] != ByteCR)
+        if (!_enableLineFeedTerminator)
         {
-            RejectRequestLine(requestLine);
+            // Version + CR is 9 bytes which should take us to .Length
+            // LF should have been dropped prior to method call
+            if ((uint)offset + 9 != (uint)requestLine.Length || requestLine[offset + 8] != ByteCR)
+            {
+                RejectRequestLine(requestLine);
+            }
+        }
+        else
+        {
+            // LF should have been dropped prior to method call
+            // If offset + 8 is .Length then requestLine is valid since it mean LF was the next char
+            if ((uint)offset + 8 != (uint)requestLine.Length)
+            {
+                // Version + CR is 9 bytes which should take us to .Length
+                if ((uint)offset + 9 != (uint)requestLine.Length || requestLine[offset + 8] != ByteCR)
+                {
+                    RejectRequestLine(requestLine);
+                }
+            }
+            else
+            {
+                // e.g., GET / HTTP1.\r\n
+                if (requestLine[offset + 7] == ByteCR)
+                {
+                    RejectRequestLine(requestLine);
+                }
+            }
         }
 
         // Version
@@ -194,7 +218,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 else if (reader.TryRead(out ch1)) // Possibly split across spans
                 {
                     // Note if we read ahead by 1 or 2 bytes
-                    readAhead = (reader.TryRead(out ch2)) ? 2 : 1;
+                    readAhead = reader.TryRead(out ch2) ? 2 : 1;
                 }
 
                 if (ch1 == ByteCR)
@@ -237,44 +261,60 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                     // the bounds check for the next lookup of span[length]
                     if ((uint)length < (uint)span.Length)
                     {
-                        // Early memory read to hide latency
-                        var expectedCR = span[length];
-                        // Correctly has a CR, move to next
-                        length++;
+                        var headerSpan = span[..length];
 
-                        if (expectedCR != ByteCR)
+                        if (length < 4)
                         {
-                            // Sequence needs to be CRLF not LF first.
-                            RejectRequestHeader(span[..length]);
+                            // Less than min possible headerSpan of 3 bytes a:b
+                            RejectRequestHeader(headerSpan);
                         }
 
-                        if ((uint)length < (uint)span.Length)
-                        {
-                            // Early memory read to hide latency
-                            var expectedLF = span[length];
-                            // Correctly has a LF, move to next
-                            length++;
+                        // Early memory read to hide latency
+                        var lineTerminator = span[length];
+                        // Correctly has a CR/LF, move to next
+                        length++;
 
-                            if (expectedLF != ByteLF ||
-                                length < 5 ||
-                                // Exclude the CRLF from the headerLine and parse the header name:value pair
-                                !TryTakeSingleHeader(handler, span[..(length - 2)]))
+                        if (lineTerminator == ByteLF)
+                        {
+                            if (!_enableLineFeedTerminator)
                             {
-                                // Sequence needs to be CRLF and not contain an inner CR not part of terminator.
-                                // Less than min possible headerSpan of 5 bytes a:b\r\n
-                                // Not parsable as a valid name:value header pair.
+                                // Sequence needs to be CRLF not LF first.
                                 RejectRequestHeader(span[..length]);
                             }
 
-                            // Read the header successfully, skip the reader forward past the headerSpan.
-                            span = span.Slice(length);
-                            reader.Advance(length);
                         }
                         else
                         {
-                            // No enough data, set length to 0.
-                            length = 0;
+                            if ((uint)length < (uint)span.Length)
+                            {
+                                // Early memory read to hide latency
+                                var expectedLF = span[length];
+                                // Correctly has a LF, move to next
+                                length++;
+
+                                if (expectedLF != ByteLF)
+                                {
+                                    // Sequence needs to be CRLF not LF first.
+                                    RejectRequestHeader(span[..length]);
+                                }
+                            }
+                            else
+                            {
+                                // No enough data, set length to 0.
+                                length = 0;
+                            }
                         }
+
+                        if (length != 0 && !TryTakeSingleHeader(handler, headerSpan))
+                        {
+                            // Sequence needs to be CRLF and not contain an inner CR not part of terminator.
+                            // Not parsable as a valid name:value header pair.
+                            RejectRequestHeader(span[..length]);
+                        }
+
+                        // Read the header successfully, skip the reader forward past the headerSpan.
+                        span = span[length..];
+                        reader.Advance(length);
                     }
                 }
 
@@ -323,14 +363,17 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         if (currentSlice.Slice(reader.Position, lineEndPosition.Value).Length == currentSlice.Length - 1)
         {
             // No enough data, so CRLF can't currently be there.
-            // However, we need to check the found char is CR and not LF
+            // However, we need to check the found char is CR and not LF (unless quirk mode)
 
             // Advance 1 to include CR/LF in lineEnd
             lineEnd = currentSlice.GetPosition(1, lineEndPosition.Value);
             headerSpan = currentSlice.Slice(reader.Position, lineEnd).ToSpan();
             if (headerSpan[^1] != ByteCR)
             {
-                RejectRequestHeader(headerSpan);
+                if (!_enableLineFeedTerminator || headerSpan[^1] != ByteLF)
+                {
+                    RejectRequestHeader(headerSpan);
+                }
             }
             return -1;
         }
@@ -341,14 +384,36 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
         if (headerSpan.Length < 5)
         {
-            // Less than min possible headerSpan is 5 bytes a:b\r\n
-            RejectRequestHeader(headerSpan);
+            if (!_enableLineFeedTerminator || headerSpan.Length < 4)
+            {
+                // Less than min possible headerSpan is 4 bytes a:b\n or 5 bytes a:b\r\n
+                RejectRequestHeader(headerSpan);
+            }
         }
 
         if (headerSpan[^2] != ByteCR)
         {
-            // Sequence needs to be CRLF not LF first.
-            RejectRequestHeader(headerSpan[..^1]);
+            if (!_enableLineFeedTerminator)
+            {
+                // Sequence needs to be CRLF.
+                RejectRequestHeader(headerSpan[..^1]);
+            }
+            else if (headerSpan[^2] != ByteLF)
+            {
+                RejectRequestHeader(headerSpan[..^1]);
+            }
+            else
+            {
+                // Line ends with LF and quirk mode is enabled, try to parse the header
+                if (!TryTakeSingleHeader(handler, headerSpan[..^1]))
+                {
+                    // Not parsable as a valid name:value header pair.
+                    RejectRequestHeader(headerSpan);
+                }
+
+                // Omit last byte since the header is a valid LF terminated line
+                return headerSpan.Length - 1;
+            }
         }
 
         if (headerSpan[^1] != ByteLF ||

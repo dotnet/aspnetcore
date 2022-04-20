@@ -22,8 +22,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 public class HttpParserTests : LoggedTest
 {
     private static readonly KestrelTrace _nullTrace = new KestrelTrace(NullLoggerFactory.Instance);
+    private readonly bool _allowLineFeedTerminator;
     private KestrelTrace CreateEnabledTrace() => new KestrelTrace(LoggerFactory);
 
+    public HttpParserTests() : this(false)
+    {            
+    }
+
+    protected HttpParserTests(bool allowLineFeedTerminator)
+    {
+        _allowLineFeedTerminator = allowLineFeedTerminator;
+    }
+    
     [Theory]
     [MemberData(nameof(RequestLineValidData))]
     public void ParsesRequestLine(
@@ -83,6 +93,48 @@ public class HttpParserTests : LoggedTest
     [MemberData(nameof(RequestLineInvalidData))]
     public void ParseRequestLineThrowsOnInvalidRequestLine(string requestLine)
     {
+        // These should fail with or without quirk mode
+            
+        var parser = CreateParser(CreateEnabledTrace());
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+            ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
+
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()), exception.Message);
+        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(RequestLineInvalidDataLineFeedTerminator))]
+    public void ParseRequestSucceedsOnInvalidRequestLineQuirkMode(string requestLine)
+    {
+        // Skip test when quirk mode is not enabled
+        if (!_allowLineFeedTerminator)
+        {
+            return;
+        }
+
+        var parser = CreateParser(CreateEnabledTrace());
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
+        var requestHandler = new RequestHandler();
+
+        Assert.True(ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
+    }
+
+    [Theory]
+    [MemberData(nameof(RequestLineInvalidDataLineFeedTerminator))]
+    public void ParseRequestLineThrowsOnInvalidRequestLineQuirkMode(string requestLine)
+    {
+        // Skip test when quirk mode is enabled
+        if (_allowLineFeedTerminator)
+        {
+            return;
+        }
+        
         var parser = CreateParser(CreateEnabledTrace());
         var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
         var requestHandler = new RequestHandler();
@@ -242,6 +294,76 @@ public class HttpParserTests : LoggedTest
     }
 
     [Theory]
+    [InlineData("Cookie: \n\r\n", "Cookie", "", null, null)]
+    [InlineData("Cookie:\n\r\n", "Cookie", "", null, null)]
+    [InlineData("Cookie: \nConnection: close\r\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie: \r\nConnection: close\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie:\nConnection: close\r\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie:\r\nConnection: close\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Connection: close\nCookie: \r\n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\r\nCookie: \n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\nCookie:\r\n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\r\nCookie:\n\r\n", "Connection", "close", "Cookie", "")]
+    public void ParseHeadersCanParseSingleLineFeedInQuirkMode(
+        string rawHeaders,
+        string expectedHeaderName1,
+        string expectedHeaderValue1,
+        string expectedHeaderName2,
+        string expectedHeaderValue2)
+    {
+        // Skip test when quirk mode is enabled
+        if (_allowLineFeedTerminator)
+        {
+            return;
+        }
+
+        var expectedHeaderNames = expectedHeaderName2 == null
+            ? new[] { expectedHeaderName1 }
+            : new[] { expectedHeaderName1, expectedHeaderName2 };
+        var expectedHeaderValues = expectedHeaderValue2 == null
+            ? new[] { expectedHeaderValue1 }
+            : new[] { expectedHeaderValue1, expectedHeaderValue2 };
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Throws<BadHttpRequestException>(() => VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues));
+#pragma warning restore CS0618 // Type or member is obsolete
+    }
+
+    [Theory]
+    [InlineData("Cookie: \n\r\n", "Cookie", "", null, null)]
+    [InlineData("Cookie:\n\r\n", "Cookie", "", null, null)]
+    [InlineData("Cookie: \nConnection: close\r\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie: \r\nConnection: close\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie:\nConnection: close\r\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Cookie:\r\nConnection: close\n\r\n", "Cookie", "", "Connection", "close")]
+    [InlineData("Connection: close\nCookie: \r\n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\r\nCookie: \n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\nCookie:\r\n\r\n", "Connection", "close", "Cookie", "")]
+    [InlineData("Connection: close\r\nCookie:\n\r\n", "Connection", "close", "Cookie", "")]
+    public void ParseHeadersCantParseSingleLineFeedWithoutQuirkMode(
+        string rawHeaders,
+        string expectedHeaderName1,
+        string expectedHeaderValue1,
+        string expectedHeaderName2,
+        string expectedHeaderValue2)
+    {
+        // Skip test when quirk mode is not enabled
+        if (!_allowLineFeedTerminator)
+        {
+            return;
+        }
+
+        var expectedHeaderNames = expectedHeaderName2 == null
+            ? new[] { expectedHeaderName1 }
+            : new[] { expectedHeaderName1, expectedHeaderName2 };
+        var expectedHeaderValues = expectedHeaderValue2 == null
+            ? new[] { expectedHeaderValue1 }
+            : new[] { expectedHeaderValue1, expectedHeaderValue2 };
+
+        VerifyRawHeaders(rawHeaders, expectedHeaderNames, expectedHeaderValues);
+    }
+    
+    [Theory]
     [InlineData(" value")]
     [InlineData("  value")]
     [InlineData("\tvalue")]
@@ -328,9 +450,40 @@ public class HttpParserTests : LoggedTest
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
+    [Theory]
+    [MemberData(nameof(RequestHeaderInvalidDataLineFeedTerminator))]
+    public void ParseHeadersThrowsOnInvalidRequestHeadersQuirkMode(string rawHeaders, string expectedExceptionMessage)
+    {
+        if (_allowLineFeedTerminator)
+        {
+            return;
+        }
+
+        var parser = CreateParser(CreateEnabledTrace());
+
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(rawHeaders));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var reader = new SequenceReader<byte>(buffer);
+            parser.ParseHeaders(requestHandler, ref reader);
+        });
+
+        Assert.Equal(expectedExceptionMessage, exception.Message);
+        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+    }
+
     [Fact]
     public void ExceptionDetailNotIncludedWhenLogLevelInformationNotEnabled()
     {
+        if (_allowLineFeedTerminator)
+        {
+            return;
+        }
+
         var parser = CreateParser(_nullTrace);
 
         // Invalid request line
@@ -356,19 +509,22 @@ public class HttpParserTests : LoggedTest
         Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(string.Empty), exception.Message);
         Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
 
-        // Invalid request header
-        buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("Header: value\n\r\n"));
+        if (!_allowLineFeedTerminator)
+        {
+            // Invalid request header
+            buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("Header: value\n\r\n"));
 
 #pragma warning disable CS0618 // Type or member is obsolete
-        exception = Assert.Throws<BadHttpRequestException>(() =>
+            exception = Assert.Throws<BadHttpRequestException>(() =>
 #pragma warning restore CS0618 // Type or member is obsolete
-        {
-            var reader = new SequenceReader<byte>(buffer);
-            parser.ParseHeaders(requestHandler, ref reader);
-        });
+            {
+                var reader = new SequenceReader<byte>(buffer);
+                parser.ParseHeaders(requestHandler, ref reader);
+            });
 
-        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(string.Empty), exception.Message);
-        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(string.Empty), exception.Message);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+        }
     }
 
     [Fact]
@@ -426,11 +582,39 @@ public class HttpParserTests : LoggedTest
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
-    [Fact]
-    public void ParseHeadersWithGratuitouslySplitBuffers()
+    [Theory]
+    [MemberData(nameof(RequestHeaderInvalidDataLineFeedTerminator))]
+    public void ParseHeadersThrowsOnInvalidRequestHeadersWithGratuitouslySplitBuffersQuirkMode(string rawHeaders, string expectedExceptionMessage)
+    {
+        if (_allowLineFeedTerminator)
+        {
+            return;
+        }
+
+        var parser = CreateParser(CreateEnabledTrace());
+
+        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(rawHeaders);
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var reader = new SequenceReader<byte>(buffer);
+            parser.ParseHeaders(requestHandler, ref reader);
+        });
+
+        Assert.Equal(expectedExceptionMessage, exception.Message);
+        Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+    } 
+
+    [Theory]
+    [InlineData("Host:\r\nConnection: keep-alive\r\n\r\n")]
+    [InlineData("A:B\r\nB: C\r\n\r\n")]
+    public void ParseHeadersWithGratuitouslySplitBuffers(string headers)
     {
         var parser = CreateParser(_nullTrace);
-        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent("Host:\r\nConnection: keep-alive\r\n\r\n");
+        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(headers);
 
         var requestHandler = new RequestHandler();
         var reader = new SequenceReader<byte>(buffer);
@@ -439,11 +623,21 @@ public class HttpParserTests : LoggedTest
         Assert.True(result);
     }
 
-    [Fact]
-    public void ParseHeadersWithGratuitouslySplitBuffers2()
+    [Theory]
+    [InlineData("Host:\nConnection: keep-alive\r\n\r\n")]
+    [InlineData("Host:\r\nConnection: keep-alive\n\r\n")]
+    [InlineData("A:B\nB: C\r\n\r\n")]
+    [InlineData("A:B\r\nB: C\n\r\n")]
+    public void ParseHeadersWithGratuitouslySplitBuffersQuirkMode(string headers)
     {
+        // Skip test when quirk mode is not enabled
+        if (!_allowLineFeedTerminator)
+        {
+            return;
+        }
+        
         var parser = CreateParser(_nullTrace);
-        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent("A:B\r\nB: C\r\n\r\n");
+        var buffer = BytePerSegmentTestSequenceFactory.Instance.CreateWithContent(headers);
 
         var requestHandler = new RequestHandler();
         var reader = new SequenceReader<byte>(buffer);
@@ -451,7 +645,6 @@ public class HttpParserTests : LoggedTest
 
         Assert.True(result);
     }
-
     private bool ParseRequestLine(IHttpParser<RequestHandler> parser, RequestHandler requestHandler, ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
     {
         var reader = new SequenceReader<byte>(readableBuffer);
@@ -507,10 +700,12 @@ public class HttpParserTests : LoggedTest
         Assert.True(buffer.Slice(reader.Position).IsEmpty);
     }
 
-    private IHttpParser<RequestHandler> CreateParser(KestrelTrace log) => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information));
+    private IHttpParser<RequestHandler> CreateParser(KestrelTrace log) => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information), _allowLineFeedTerminator);
 
     public static IEnumerable<object[]> RequestLineValidData => HttpParsingData.RequestLineValidData;
 
+    public static IEnumerable<object[]> RequestLineInvalidDataLineFeedTerminator => HttpParsingData.RequestLineInvalidDataLineFeedTerminator.Select(requestLine => new[] { requestLine });
+    
     public static IEnumerable<object[]> RequestLineIncompleteData => HttpParsingData.RequestLineIncompleteData.Select(requestLine => new[] { requestLine });
 
     public static IEnumerable<object[]> RequestLineInvalidData => HttpParsingData.RequestLineInvalidData.Select(requestLine => new[] { requestLine });
@@ -521,6 +716,8 @@ public class HttpParserTests : LoggedTest
 
     public static IEnumerable<object[]> RequestHeaderInvalidData => HttpParsingData.RequestHeaderInvalidData;
 
+    public static IEnumerable<object[]> RequestHeaderInvalidDataLineFeedTerminator => HttpParsingData.RequestHeaderInvalidDataLineFeedTerminator;
+        
     private class RequestHandler : IHttpRequestLineHandler, IHttpHeadersHandler
     {
         public string Method { get; set; }
@@ -604,5 +801,13 @@ public class HttpParserTests : LoggedTest
 
             return CreateSegments(segments.ToArray());
         }
+    }
+}
+
+// Ensure that all common tests are still passing when the AcceptLineFeedAsLineTerminator quirk mode is enabled.
+public class HttpParserQuirkModeTests : HttpParserTests
+{
+    public HttpParserQuirkModeTests() : base(true)
+    {
     }
 }

@@ -126,7 +126,7 @@ internal class KestrelServerImpl : IServer
         {
             Log = trace,
             Scheduler = PipeScheduler.ThreadPool,
-            HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information)),
+            HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information), serverOptions.AllowLineFeedTerminator),
             SystemClock = heartbeatManager,
             DateHeaderValueManager = dateHeaderValueManager,
             ConnectionManager = connectionManager,
