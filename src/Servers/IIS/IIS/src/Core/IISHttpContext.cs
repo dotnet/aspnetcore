@@ -615,10 +615,24 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, ((IHttpRequestIdentifierFeature)this).TraceIdentifier, ex);
     }
 
+    // This method should only be called from the end of request processing, this lets use avoid most
+    // of the rentrancy issues with using indicate completion.
     public void PostCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
     {
-        NativeMethods.HttpSetCompletionStatus(_requestNativeHandle, requestNotificationStatus);
-        NativeMethods.HttpPostCompletion(_requestNativeHandle, 0);
+        // We post completion to the thread pool instead of the IIS thread pool to avoid having
+        // new requests compete with existing threads for IIS threads.
+        // We're going to use the local queue so that we can resume the state machine on this thread after
+        // unwinding.
+        ThreadPool.UnsafeQueueUserWorkItem(static state =>
+        {
+            var (handle, status) = state;
+
+            // This will resume the IIS state machine inline
+            NativeMethods.HttpIndicateCompletion(handle, status);
+        },
+        // We use the native handle because we're going to dispose the safe handle by the time this runs.
+        // We don't want to hold onto it since managed code is unwinding.
+        (_requestNativeHandle.DangerousGetHandle(), requestNotificationStatus), preferLocal: true);
     }
 
     internal void OnAsyncCompletion(int hr, int bytes)

@@ -39,13 +39,10 @@ internal static class NativeMethods
     }
 
     [DllImport(AspNetCoreModuleDll)]
-    private static extern int http_post_completion(NativeSafeHandle pInProcessHandler, int cbBytes);
-
-    [DllImport(AspNetCoreModuleDll)]
     private static extern int http_set_completion_status(NativeSafeHandle pInProcessHandler, REQUEST_NOTIFICATION_STATUS rquestNotificationStatus);
 
     [DllImport(AspNetCoreModuleDll)]
-    private static extern void http_indicate_completion(NativeSafeHandle pInProcessHandler, REQUEST_NOTIFICATION_STATUS notificationStatus);
+    private static extern void http_indicate_completion(IntPtr pInProcessHandler, REQUEST_NOTIFICATION_STATUS notificationStatus);
 
     [DllImport(AspNetCoreModuleDll)]
     private static extern unsafe int register_callbacks(NativeSafeHandle pInProcessApplication,
@@ -153,14 +150,14 @@ internal static class NativeMethods
     [DllImport(AspNetCoreModuleDll)]
     private static extern unsafe int http_set_startup_error_page_content(byte* content, int contentLength);
 
-    public static void HttpPostCompletion(NativeSafeHandle pInProcessHandler, int cbBytes)
+    public static void HttpIndicateCompletion(IntPtr pInProcessHandler, REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
     {
-        Validate(http_post_completion(pInProcessHandler, cbBytes));
+        http_indicate_completion(pInProcessHandler, requestNotificationStatus);
     }
 
-    public static void HttpSetCompletionStatus(NativeSafeHandle pInProcessHandler, REQUEST_NOTIFICATION_STATUS rquestNotificationStatus)
+    public static void HttpSetCompletionStatus(NativeSafeHandle pInProcessHandler, REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
     {
-        Validate(http_set_completion_status(pInProcessHandler, rquestNotificationStatus));
+        Validate(http_set_completion_status(pInProcessHandler, requestNotificationStatus));
     }
 
     public static unsafe void HttpRegisterCallbacks(NativeSafeHandle pInProcessApplication,
