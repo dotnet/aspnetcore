@@ -42,8 +42,6 @@ public class FrebTests : IISFunctionalTestBase
         var list = new List<FrebLogItem>();
         list.Add(new FrebLogItem("ANCM_INPROC_EXECUTE_REQUEST_START"));
         list.Add(new FrebLogItem("ANCM_INPROC_EXECUTE_REQUEST_COMPLETION", "1"));
-        list.Add(new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_START"));
-        list.Add(new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "0"));
         list.Add(new FrebLogItem("ANCM_INPROC_MANAGED_REQUEST_COMPLETION"));
         return list;
     }
@@ -55,6 +53,9 @@ public class FrebTests : IISFunctionalTestBase
         var result = await SetupFrebApp();
 
         await result.HttpClient.GetAsync("HelloWorld");
+
+        // Dispose the client to speed up tests
+        result.HttpClient.Dispose();
 
         StopServer();
 
@@ -72,22 +73,11 @@ public class FrebTests : IISFunctionalTestBase
 
         await result.HttpClient.GetAsync("HelloWorld");
 
+        result.HttpClient.Dispose();
+
         StopServer();
 
         AssertFrebLogs(result, new FrebLogItem("ANCM_HRESULT_FAILED"), new FrebLogItem("ANCM_EXCEPTION_CAUGHT"));
-    }
-
-    [ConditionalFact]
-    [RequiresIIS(IISCapability.FailedRequestTracingModule)]
-    public async Task CheckFailedRequestEvents()
-    {
-        var result = await SetupFrebApp();
-
-        await result.HttpClient.GetAsync("Throw");
-
-        StopServer();
-
-        AssertFrebLogs(result, new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "2"));
     }
 
     [ConditionalFact]
@@ -106,6 +96,8 @@ public class FrebTests : IISFunctionalTestBase
                 "");
             await result.HttpClient.RetryRequestAsync("/WaitingRequestCount", async message => await message.Content.ReadAsStringAsync() == "1");
         }
+
+        result.HttpClient.Dispose();
 
         StopServer();
 
