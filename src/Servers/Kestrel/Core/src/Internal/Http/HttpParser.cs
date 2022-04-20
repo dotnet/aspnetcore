@@ -21,13 +21,13 @@ using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestExceptio
 public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
 {
     private readonly bool _showErrorDetails;
-    private readonly bool _enableLineFeedTerminator;
+    private readonly bool _allowLineFeedTerminator;
 
     /// <summary>
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
-    public HttpParser() : this(showErrorDetails: true, enableLineFeedTerminator: false)
+    public HttpParser() : this(showErrorDetails: true, allowLineFeedTerminator: false)
     {
     }
 
@@ -35,14 +35,14 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
-    public HttpParser(bool showErrorDetails) : this(showErrorDetails, enableLineFeedTerminator: false)
+    public HttpParser(bool showErrorDetails) : this(showErrorDetails, allowLineFeedTerminator: false)
     {
     }
 
-    internal HttpParser(bool showErrorDetails, bool enableLineFeedTerminator)
+    internal HttpParser(bool showErrorDetails, bool allowLineFeedTerminator)
     {
         _showErrorDetails = showErrorDetails;
-        _enableLineFeedTerminator = enableLineFeedTerminator;
+        _allowLineFeedTerminator = allowLineFeedTerminator;
     }
     
     // byte types don't have a data type annotation so we pre-cast them; to avoid in-place casts
@@ -147,7 +147,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // Consume space
         offset++;
 
-        if (!_enableLineFeedTerminator)
+        if (!_allowLineFeedTerminator)
         {
             // Version + CR is 9 bytes which should take us to .Length
             // LF should have been dropped prior to method call
@@ -276,7 +276,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
                         if (lineTerminator == ByteLF)
                         {
-                            if (!_enableLineFeedTerminator)
+                            if (!_allowLineFeedTerminator)
                             {
                                 // Sequence needs to be CRLF not LF first.
                                 RejectRequestHeader(span[..length]);
@@ -370,7 +370,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             headerSpan = currentSlice.Slice(reader.Position, lineEnd).ToSpan();
             if (headerSpan[^1] != ByteCR)
             {
-                if (!_enableLineFeedTerminator || headerSpan[^1] != ByteLF)
+                if (!_allowLineFeedTerminator || headerSpan[^1] != ByteLF)
                 {
                     RejectRequestHeader(headerSpan);
                 }
@@ -384,7 +384,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
         if (headerSpan.Length < 5)
         {
-            if (!_enableLineFeedTerminator || headerSpan.Length < 4)
+            if (!_allowLineFeedTerminator || headerSpan.Length < 4)
             {
                 // Less than min possible headerSpan is 4 bytes a:b\n or 5 bytes a:b\r\n
                 RejectRequestHeader(headerSpan);
@@ -393,7 +393,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
         if (headerSpan[^2] != ByteCR)
         {
-            if (!_enableLineFeedTerminator)
+            if (!_allowLineFeedTerminator)
             {
                 // Sequence needs to be CRLF.
                 RejectRequestHeader(headerSpan[..^1]);
