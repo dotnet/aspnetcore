@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
@@ -50,6 +51,8 @@ public class MultipartReader
         {
             throw new ArgumentNullException(nameof(boundary));
         }
+
+        boundary = HeaderUtilities.RemoveQuotes(new StringSegment(boundary)).ToString();
 
         if (stream == null)
         {
