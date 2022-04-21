@@ -199,6 +199,7 @@
                           $(RepoRoot)src\Extensions\**\*.csproj;
                           $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
                           $(RepoRoot)src\OpenApi\**\*.csproj;
+                          $(RepoRoot)eng\helix\content\RunTests\RunTests.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
@@ -240,6 +241,7 @@
                           $(RepoRoot)src\Extensions\**\src\*.csproj;
                           $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
                           $(RepoRoot)src\OpenApi\**\src\*.csproj;
+                          $(RepoRoot)eng\helix\content\RunTests\RunTests.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
