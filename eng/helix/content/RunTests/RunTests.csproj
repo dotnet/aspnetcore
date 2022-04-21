@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <DefineConstants Condition=" '$(InstallPlaywright)' == 'true' ">$(DefineConstants);INSTALLPLAYWRIGHT</DefineConstants>
-    <NoWarn>$(NoWarn);CA2007</NoWarn>
+    <NoWarn>$(NoWarn);CA2007;NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
