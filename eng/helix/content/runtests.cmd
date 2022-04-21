@@ -23,15 +23,6 @@ echo.
 
 set exit_code=0
 
-echo "Run without building: dotnet run --no-build RunTests\RunTests.csproj --ignore-failed-sources"
-dotnet run --no-build RunTests\RunTests.csproj --ignore-failed-sources
-
-if not errorlevel 0 (
-    set exit_code=%errorlevel%
-    echo "Run without building runtests failed: exit_code=%exit_code%"
-    EXIT /b %exit_code%
-)
-
 echo "Running tests: dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%"
 dotnet run --no-restore --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%
 if not errorlevel 0 (
