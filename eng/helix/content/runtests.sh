@@ -75,8 +75,8 @@ sync
 
 exit_code=0
 
-echo "Running tests: dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --ef $6 --helixTimeout $7"
-dotnet run --no-restore --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --ef $6 --helixTimeout $7
+echo "Running tests: dotnet run --no-build --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --ef $6 --helixTimeout $7"
+dotnet run --no-build --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --ef $6 --helixTimeout $7
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 
