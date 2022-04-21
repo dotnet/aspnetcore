@@ -75,15 +75,15 @@ sync
 
 exit_code=0
 
-echo "Restore: dotnet restore RunTests/RunTests.csproj --ignore-failed-sources"
+echo "Run without building: dotnet run --no-build RunTests/RunTests.csproj --ignore-failed-sources"
 
 # --verbosity diagnostic can be removed when random failures are identified
-dotnet restore RunTests/RunTests.csproj --ignore-failed-sources --verbosity diagnostic
+dotnet run --no-build RunTests/RunTests.csproj --ignore-failed-sources --verbosity diagnostic
 
 exit_code=$?
 
 if [[ $exit_code != 0 ]]; then
-    echo "Restore runtests failed: exit_code=$exit_code"
+    echo "Run without building runtests failed: exit_code=$exit_code"
     exit $exit_code
 fi
 

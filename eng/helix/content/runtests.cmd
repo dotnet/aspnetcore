@@ -23,12 +23,12 @@ echo.
 
 set exit_code=0
 
-echo "Restore: dotnet restore RunTests\RunTests.csproj --ignore-failed-sources"
-dotnet restore RunTests\RunTests.csproj --ignore-failed-sources
+echo "Run without building: dotnet run --no-build RunTests\RunTests.csproj --ignore-failed-sources"
+dotnet run --no-build RunTests\RunTests.csproj --ignore-failed-sources
 
 if not errorlevel 0 (
     set exit_code=%errorlevel%
-    echo "Restore runtests failed: exit_code=%exit_code%"
+    echo "Run without building runtests failed: exit_code=%exit_code%"
     EXIT /b %exit_code%
 )
 
