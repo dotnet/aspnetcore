@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection.Infrastructure;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -16,6 +17,28 @@ namespace Microsoft.AspNetCore.DataProtection.Test;
 
 public class HostingTests
 {
+    [Fact]
+    public void DefaultApplicationDiscriminatorTrimsTrailingSlash()
+    {
+        var builder = new WebHostBuilder()
+            .UseStartup<TestStartup>()
+            .ConfigureServices(s => s.AddDataProtection());
+
+        using (var host = builder.Build())
+        {
+            var contentRootPath = host.Services.GetRequiredService<IWebHostEnvironment>().ContentRootPath;
+            Assert.True(contentRootPath.EndsWith(Path.DirectorySeparatorChar), "expected contentRootPath to end with a slash");
+
+            var appDisc = host.Services.GetRequiredService<IApplicationDiscriminator>().Discriminator;
+            Assert.False(appDisc.EndsWith(Path.DirectorySeparatorChar), "expected appDiscriminator to have slash trimmed");
+            Assert.False(appDisc.EndsWith(Path.AltDirectorySeparatorChar), "expected appDiscriminator to have slash trimmed");
+
+            var appId = host.Services.GetApplicationUniqueIdentifier();
+            Assert.False(appId.EndsWith(Path.DirectorySeparatorChar), "expected appId to have slash trimmed");
+            Assert.False(appId.EndsWith(Path.AltDirectorySeparatorChar), "expected appId to have slash trimmed");
+        }
+    }
+
     [Fact]
     public async Task WebhostLoadsKeyRingBeforeServerStarts()
     {
