@@ -147,7 +147,7 @@ internal class IISHttpServer : IServer
                 return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
             }
 
-            var safehandle = new NativeSafeHandle(pInProcessHandler);
+            var safehandle = new IISHttpContextSafeHandle(pInProcessHandler);
 
             Debug.Assert(server._iisContextFactory != null, "StartAsync must be called first.");
             var context = server._iisContextFactory.CreateHttpContext(safehandle);
@@ -280,7 +280,7 @@ internal class IISHttpServer : IServer
             AppContext.TryGetSwitch(Latin1Suppport, out _useLatin1);
         }
 
-        public IISHttpContext CreateHttpContext(NativeSafeHandle pInProcessHandler)
+        public IISHttpContext CreateHttpContext(IISHttpContextSafeHandle pInProcessHandler)
         {
             return new IISHttpContextOfT<T>(_memoryPool, _application, pInProcessHandler, _options, _server, _logger, _useLatin1);
         }
@@ -290,5 +290,5 @@ internal class IISHttpServer : IServer
 // Over engineering to avoid allocations...
 internal interface IISContextFactory
 {
-    IISHttpContext CreateHttpContext(NativeSafeHandle pInProcessHandler);
+    IISHttpContext CreateHttpContext(IISHttpContextSafeHandle pInProcessHandler);
 }

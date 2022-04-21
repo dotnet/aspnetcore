@@ -28,7 +28,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 {
     private const int MinAllocBufferSize = 2048;
 
-    protected readonly NativeSafeHandle _requestNativeHandle;
+    protected readonly IISHttpContextSafeHandle _requestNativeHandle;
 
     private readonly IISServerOptions _options;
 
@@ -70,7 +70,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     internal unsafe IISHttpContext(
         MemoryPool<byte> memoryPool,
-        NativeSafeHandle pInProcessHandler,
+        IISHttpContextSafeHandle pInProcessHandler,
         IISServerOptions options,
         IISHttpServer server,
         ILogger logger,
@@ -82,6 +82,9 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         _options = options;
         _server = server;
         _logger = logger;
+
+        // Associate the managed context with the native safe handle for clean up
+        _requestNativeHandle.Context = this;
 
         ((IHttpBodyControlFeature)this).AllowSynchronousIO = _options.AllowSynchronousIO;
     }
@@ -615,29 +618,6 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, ((IHttpRequestIdentifierFeature)this).TraceIdentifier, ex);
     }
 
-    // This method should only be called from the end of request processing, this lets use avoid most
-    // of the rentrancy issues with using indicate completion.
-    public void CompleteHttpRequest(IntPtr handle, NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)
-    {
-        // Mark the requst as complete to avoid calling back into managed code from native code
-        NativeMethods.HttpSetManagedRequestComplete(_requestNativeHandle);
-
-        // We post completion to the thread pool instead of the IIS thread pool to avoid having
-        // new requests compete with existing threads for IIS threads.
-        // We're going to use the local queue so that we can resume the state machine on this thread after
-        // unwinding.
-        ThreadPool.UnsafeQueueUserWorkItem(static state =>
-        {
-            var (handle, status) = state;
-
-            // This will resume the IIS state machine inline
-            NativeMethods.HttpIndicateCompletion(handle, status);
-        },
-        // We use the native handle because we're going to dispose the safe handle by the time this runs.
-        // We don't want to hold onto it since managed code is unwinding.
-        (handle, requestNotificationStatus), preferLocal: true);
-    }
-
     internal void OnAsyncCompletion(int hr, int bytes)
     {
         AsyncIO!.NotifyCompletion(hr, bytes);
@@ -719,30 +699,14 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         }
         finally
         {
-            var nativeHandle = _requestNativeHandle.DangerousGetHandle();
+            _requestNativeHandle.Status = successfulRequest
+                ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
+                : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
 
             // After disposing a safe handle, Dispose() will not block waiting for the pinvokes to finish.
             // Instead Safehandle will call ReleaseHandle on the pinvoke thread when the pinvokes complete
-            // and the reference count goes to zero.
-
-            // What this means is we need to wait until ReleaseHandle is called to finish disposal.
-            // This is to make sure it is safe to return back to native.
-            // The handle implements IValueTaskSource
+            // and the reference count goes to zero. When this happens, we'll clean resume the IIS pipeline.
             _requestNativeHandle.Dispose();
-
-            await new ValueTask<object?>(_requestNativeHandle, _requestNativeHandle.Version);
-
-            // Dispose the context
-            Dispose();
-
-            // Post completion after completing the request to resume the IIS state machine
-            CompleteHttpRequest(nativeHandle, ConvertRequestCompletionResults(successfulRequest));
         }
-    }
-
-    private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
-    {
-        return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
-                       : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
     }
 }
