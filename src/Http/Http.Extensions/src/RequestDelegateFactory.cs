@@ -348,7 +348,7 @@ public static partial class RequestDelegateFactory
     {
         static async ValueTask<object?> ExecuteAwaited(ValueTask<T> valueTask)
         {
-            return await new ValueTask<object?>(await valueTask);
+            return await valueTask;
         }
 
         if (valueTask.IsCompletedSuccessfully)
@@ -363,7 +363,7 @@ public static partial class RequestDelegateFactory
     {
         static async ValueTask<object?> ExecuteAwaited(Task<T> task)
         {
-            return await new ValueTask<object?>(await task);
+            return await task;
         }
 
         if (task.IsCompletedSuccessfully)
@@ -1794,7 +1794,7 @@ public static partial class RequestDelegateFactory
         static async ValueTask<object?> ExecuteAwaited(Task task)
         {
             await task;
-            return await new ValueTask<object?>(EmptyHttpResult.Instance);
+            return EmptyHttpResult.Instance;
         }
 
         if (task.IsCompletedSuccessfully)
@@ -1811,7 +1811,7 @@ public static partial class RequestDelegateFactory
         static async ValueTask<object?> ExecuteAwaited(ValueTask task)
         {
             await task;
-            return await new ValueTask<object?>(EmptyHttpResult.Instance);
+            return EmptyHttpResult.Instance;
         }
 
         if (valueTask.IsCompletedSuccessfully)

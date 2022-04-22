@@ -4889,22 +4889,28 @@ public class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-    [Theory]
-    [MemberData(nameof(AwaitedTaskReturningMethods))]
-    public async Task CanInvokeFilter_OnTaskModifyingHttpContext(Delegate @delegate)
+    [Fact]
+    public async Task CanInvokeFilter_OnTaskModifyingHttpContext()
     {
         // Arrange
+        var tcs = new TaskCompletionSource();
+        async Task HandlerWithTaskAwait(HttpContext c)
+        {
+            await tcs.Task;
+            c.Response.StatusCode = 400;
+        };
         var responseBodyStream = new MemoryStream();
         var httpContext = CreateHttpContext();
         httpContext.Response.Body = responseBodyStream;
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
+        var factoryResult = RequestDelegateFactory.Create(HandlerWithTaskAwait, new RequestDelegateFactoryOptions()
         {
             RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
+                    tcs.SetResult();
                     return await next(context);
                 }
             }
@@ -4914,7 +4920,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(400, httpContext.Response.StatusCode);
         var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
-        Assert.Equal(String.Empty, decodedResponseBody);
+        Assert.Equal(string.Empty, decodedResponseBody);
     }
 
     public static object[][] TasksOfTypesMethods
