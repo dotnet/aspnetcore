@@ -33,7 +33,9 @@ public static partial class RequestDelegateFactory
 {
     private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
 
-    private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTask), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo ExecuteTaskWithEmptyResultMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskWithEmptyResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo ExecuteValueTaskWithEmptyResultMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskWithEmptyResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteValueTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -299,9 +301,17 @@ public static partial class RequestDelegateFactory
 
     private static Expression MapHandlerReturnTypeToValueTask(Expression methodCall, Type returnType)
     {
-        if (returnType == typeof(void) || returnType == typeof(Task) || returnType == typeof(ValueTask))
+        if (returnType == typeof(void))
         {
             return Expression.Block(methodCall, Expression.Constant(new ValueTask<object?>(EmptyHttpResult.Instance)));
+        }
+        else if (returnType == typeof(Task))
+        {
+            return Expression.Call(ExecuteTaskWithEmptyResultMethod, methodCall);
+        }
+        else if (returnType == typeof(ValueTask))
+        {
+            return Expression.Call(ExecuteValueTaskWithEmptyResultMethod, methodCall);
         }
         else if (returnType.IsGenericType &&
                      returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
@@ -1708,7 +1718,7 @@ public static partial class RequestDelegateFactory
         }
     }
 
-    private static Task ExecuteTask<T>(Task<T> task, HttpContext httpContext)
+    private static Task ExecuteTaskOfT<T>(Task<T> task, HttpContext httpContext)
     {
         EnsureRequestTaskNotNull(task);
 
@@ -1764,6 +1774,40 @@ public static partial class RequestDelegateFactory
         }
 
         return ExecuteAwaited(task);
+    }
+
+    private static ValueTask<object?> ExecuteTaskWithEmptyResult(Task task)
+    {
+        static async ValueTask<object?> ExecuteAwaited(Task task)
+        {
+            await task;
+            return await new ValueTask<object?>(EmptyHttpResult.Instance);
+        }
+
+        if (task.IsCompletedSuccessfully)
+        {
+            task.GetAwaiter().GetResult();
+            return new ValueTask<object?>(EmptyHttpResult.Instance);
+        }
+
+        return ExecuteAwaited(task);
+    }
+
+    private static ValueTask<object?> ExecuteValueTaskWithEmptyResult(ValueTask valueTask)
+    {
+        static async ValueTask<object?> ExecuteAwaited(ValueTask task)
+        {
+            await task;
+            return await new ValueTask<object?>(EmptyHttpResult.Instance);
+        }
+
+        if (valueTask.IsCompletedSuccessfully)
+        {
+            valueTask.GetAwaiter().GetResult();
+            return new ValueTask<object?>(EmptyHttpResult.Instance);
+        }
+
+        return ExecuteAwaited(valueTask);
     }
 
     private static Task ExecuteValueTaskOfT<T>(ValueTask<T> task, HttpContext httpContext)

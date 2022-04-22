@@ -4865,6 +4865,58 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(String.Empty, decodedResponseBody);
     }
 
+    public static object[][] AwaitedTaskReturningMethods
+    {
+        get
+        {
+            async Task HandlerWithTaskAwait(HttpContext c)
+            {
+                await Task.Delay(1000);
+                c.Response.StatusCode = 400;
+            };
+
+            async ValueTask HandlerWithValueTaskAwait(HttpContext c)
+            {
+                await Task.Delay(1000);
+                c.Response.StatusCode = 400;
+            };
+
+            return new object[][]
+            {
+                new object[] { (Func<HttpContext, Task>)HandlerWithTaskAwait },
+                new object[] { (Func<HttpContext, ValueTask>)HandlerWithValueTaskAwait },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(AwaitedTaskReturningMethods))]
+    public async Task CanInvokeFilter_OnTaskModifyingHttpContext(Delegate @delegate)
+    {
+        // Arrange
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal(String.Empty, decodedResponseBody);
+    }
+
     public static object[][] TasksOfTypesMethods
     {
         get
