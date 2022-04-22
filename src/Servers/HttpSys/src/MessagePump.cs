@@ -53,7 +53,7 @@ internal partial class MessagePump : IServer
 
         if (HttpApi.SupportsDelegation)
         {
-            var delegationProperty = new ServerDelegationPropertyFeature(Listener.RequestQueue, _logger);
+            var delegationProperty = new ServerDelegationPropertyFeature(Listener.UrlGroup, _logger);
             Features.Set<IServerDelegationFeature>(delegationProperty);
         }
 

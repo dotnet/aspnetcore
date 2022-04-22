@@ -77,9 +77,9 @@ internal partial class HttpSysListener : IDisposable
         {
             _serverSession = new ServerSession();
 
-            _urlGroup = new UrlGroup(_serverSession, Logger);
+            _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode, Logger);
 
-            _requestQueue = new RequestQueue(_urlGroup, options.RequestQueueName, options.RequestQueueMode, Logger);
+            _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
 
             _disconnectListener = new DisconnectListener(_requestQueue, Logger);
         }
@@ -152,7 +152,7 @@ internal partial class HttpSysListener : IDisposable
                 {
                     Options.Apply(UrlGroup, _requestQueue.Created ? RequestQueue : null);
 
-                    _requestQueue.AttachToUrlGroup();
+                    UrlGroup.AttachToQueue();
 
                     // All resources are set up correctly. Now add all prefixes.
                     try
@@ -162,7 +162,7 @@ internal partial class HttpSysListener : IDisposable
                     catch (HttpSysException)
                     {
                         // If an error occurred while adding prefixes, free all resources allocated by previous steps.
-                        _requestQueue.DetachFromUrlGroup();
+                        UrlGroup.DetachFromQueue();
                         throw;
                     }
                 }
@@ -198,7 +198,7 @@ internal partial class HttpSysListener : IDisposable
                 if (Options.RequestQueueMode == RequestQueueMode.Create || Options.RequestQueueMode == RequestQueueMode.CreateOrAttach)
                 {
                     Options.UrlPrefixes.UnregisterAllPrefixes();
-                    _requestQueue.DetachFromUrlGroup();
+                    UrlGroup.DetachFromQueue();
                 }
 
                 _state = State.Stopped;
