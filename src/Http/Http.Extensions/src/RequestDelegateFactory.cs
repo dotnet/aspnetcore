@@ -1156,7 +1156,6 @@ public static partial class RequestDelegateFactory
                     var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext);
                     bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));
                     factoryContext.SurrogatedParameters.Add(parameterInfo);
-
                 }
             }
 
