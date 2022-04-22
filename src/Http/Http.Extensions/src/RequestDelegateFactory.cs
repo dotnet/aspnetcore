@@ -408,8 +408,7 @@ public static partial class RequestDelegateFactory
 
         var parameterCustomAttributes = parameter.GetCustomAttributes();
 
-        if (parameterCustomAttributes.OfType<ParametersAttribute>().FirstOrDefault() is { } ||
-            parameter.ParameterType.GetCustomAttributes().OfType<ParametersAttribute>().FirstOrDefault() is { })
+        if (parameterCustomAttributes.OfType<ParametersAttribute>().FirstOrDefault() is { })
         {
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.SurrogatedParameter);
 
