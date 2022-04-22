@@ -1087,52 +1087,85 @@ public static partial class RequestDelegateFactory
 
     private static Expression BindSurrogatedArgument(ParameterInfo parameter, FactoryContext factoryContext)
     {
-        if (factoryContext.SurrogatedParameter is { })
-        {
-            var errorMessage = BuildErrorMessageForMultipleSurrogatedParameters(factoryContext);
-            throw new InvalidOperationException(errorMessage);
-        }
-
-        factoryContext.SurrogatedParameter = parameter;
-
         var properties = parameter.ParameterType.GetProperties();
-
-        // Only the parameterless constructor is supported
-        var constructor = parameter.ParameterType.GetConstructor(Array.Empty<Type>());
-        if (constructor is null)
-        {
-            throw new InvalidOperationException("A type declared with [Parameters] attribute must have a parameterless constructor.");
-        }
-
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
-        // {
-        //  arg_local = new T();
-        //  arg_local.Property[0] = expression[0];
-        //  arg_local.Property[n] = expression[n];
-        // }
-
-        var expressions = new Expression[properties.Length + 1];
-        expressions[0] = Expression.Assign(argumentExpression, Expression.New(constructor));
-
-        for (var i = 0; i < properties.Length; i++)
+        ConstructorInfo? GetConstructor()
         {
-            expressions[i + 1] = Expression.Empty();
-
-            // we DON'T support read-only or init properties
-            if (properties[i].CanWrite)
+            if (parameter.ParameterType.IsValueType)
             {
-                var propertyExpression = Expression.Property(argumentExpression, properties[i].Name);
-                var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext);
+                // Value types always have a default constructor, we will use
+                // the parameter type during the NewExpression creation
+                return null;
+            }
 
-                expressions[i + 1] = Expression.Assign(propertyExpression, CreateArgument(parameterInfo, factoryContext));
+            // Try to find the parameterless constructor
+            var constructor = parameter.ParameterType.GetConstructor(Array.Empty<Type>());
+            if (constructor is { })
+            {
+                return constructor;
+            }
+
+            // If a parameterless ctor is not defined
+            // we will try to find a ctor that includes all the property types.
+            var types = new Type[properties.Length];
+            for (var i = 0; i < properties.Length; i++)
+            {
+                types[i] = properties[i].PropertyType;
+            }
+            constructor = parameter.ParameterType.GetConstructor(types);
+
+            if (constructor is { })
+            {
+                return constructor;
+            }
+
+            throw new InvalidOperationException($"No '{parameter.ParameterType}' public parameterless constructor found for {parameter.Name}.");
+        }
+
+        var constructor = GetConstructor();
+        if (constructor?.GetParameters() is { Length: > 0 } parameters)
+        {
+            //  arg_local = new T(....)
+            var constructorArguments = new Expression[properties.Length];
+
+            for (var i = 0; i < properties.Length; i++)
+            {
+                var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext);
+                constructorArguments[i] = CreateArgument(parameterInfo, factoryContext);
                 factoryContext.SurrogatedParameters.Add(parameterInfo);
             }
+
+            factoryContext.ParamCheckExpressions.Add(Expression.Assign(argumentExpression, Expression.New(constructor, constructorArguments)));
+        }
+        else
+        {
+            //  arg_local = new T()
+            //  {
+            //      arg_local.Property[0] = expression[0],
+            //      arg_local.Property[n] = expression[n],
+            //  }
+
+            var bindings = new List<MemberBinding>(properties.Length);
+
+            for (var i = 0; i < properties.Length; i++)
+            {
+                // For parameterless ctor we will init only writable properties.
+                if (properties[i].CanWrite)
+                {
+                    var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext);
+                    bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));
+                    factoryContext.SurrogatedParameters.Add(parameterInfo);
+
+                }
+            }
+
+            var newExpression = constructor is null ? Expression.New(parameter.ParameterType) : Expression.New(constructor);
+            factoryContext.ParamCheckExpressions.Add(Expression.Assign(argumentExpression, Expression.MemberInit(newExpression, bindings)));
         }
 
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.SurrogatedParameter);
         factoryContext.ExtraLocals.Add(argumentExpression);
-        factoryContext.ParamCheckExpressions.Add(Expression.Block(expressions));
 
         return argumentExpression;
     }
@@ -1865,7 +1898,6 @@ public static partial class RequestDelegateFactory
         public List<Expression> BoxedArgs { get; } = new();
         public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
 
-        public ParameterInfo? SurrogatedParameter { get; set; }
         public List<ParameterInfo> SurrogatedParameters { get; } = new();
     }
 
@@ -2136,20 +2168,6 @@ public static partial class RequestDelegateFactory
     {
         var errorMessage = new StringBuilder();
         errorMessage.AppendLine("An action cannot use both form and JSON body parameters.");
-        errorMessage.AppendLine("Below is the list of parameters that we found: ");
-        errorMessage.AppendLine();
-        errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
-        errorMessage.AppendLine("---------------------------------------------------------------------------------");
-
-        FormatTrackedParameters(factoryContext, errorMessage);
-
-        return errorMessage.ToString();
-    }
-
-    private static string BuildErrorMessageForMultipleSurrogatedParameters(FactoryContext factoryContext)
-    {
-        var errorMessage = new StringBuilder();
-        errorMessage.AppendLine("An action cannot use more than one parameter decorated with [ParametersAttribute].");
         errorMessage.AppendLine("Below is the list of parameters that we found: ");
         errorMessage.AppendLine();
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
