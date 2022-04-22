@@ -410,16 +410,7 @@ public static partial class RequestDelegateFactory
 
         if (parameterCustomAttributes.OfType<ParametersAttribute>().FirstOrDefault() is { })
         {
-            factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.SurrogatedParameter);
-
-            if (factoryContext.SurrogatedParameter is { })
-            {
-                var errorMessage = BuildErrorMessageForMultipleSurrogatedParameters(factoryContext);
-                throw new InvalidOperationException(errorMessage);
-            }
-
-            factoryContext.SurrogatedParameter = parameter;
-            return CreateSurrogatedArgument(parameter, factoryContext);
+            return BindSurrogatedArgument(parameter, factoryContext);
         }
         else if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
         {
@@ -562,47 +553,6 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyParameter);
             return BindParameterFromBody(parameter, allowEmpty: false, factoryContext);
         }
-    }
-
-    private static Expression CreateSurrogatedArgument(ParameterInfo parameter, FactoryContext factoryContext)
-    {
-        var properties = parameter.ParameterType.GetProperties();
-
-        // Only the parameterless constructor is supported
-        var constructor = parameter.ParameterType.GetConstructor(Array.Empty<Type>());
-        if (constructor is null)
-        {
-            throw new InvalidOperationException("A parameter's type declared with [Parameters] attribute must have a parameterless constructor.");
-        }
-
-        var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
-
-        // arg_local = new T();
-        // arg_local.Property[0] = expression[0];
-        // arg_local.Property[n] = expression[n];
-        // arg_local
-
-        var expressions = new Expression[properties.Length + 2];
-        expressions[0] = Expression.Assign(argumentExpression, Expression.New(constructor));
-        expressions[^1] = argumentExpression;
-
-        for (var i = 0; i < properties.Length; i++)
-        {
-            expressions[i + 1] = Expression.Empty();
-
-            // we DON'T support read-only or init properties
-            if (properties[i].CanWrite)
-            {
-                var propertyExpression = Expression.Property(argumentExpression, properties[i].Name);
-                var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext);
-
-                expressions[i + 1] = Expression.Assign(propertyExpression, CreateArgument(parameterInfo, factoryContext));
-                factoryContext.SurrogatedParameters.Add(parameterInfo);
-            }
-        }
-
-        factoryContext.ExtraLocals.Add(argumentExpression);
-        return Expression.Block(expressions);
     }
 
     private static Expression CreateMethodCall(MethodInfo methodInfo, Expression? target, Expression[] arguments) =>
@@ -1132,6 +1082,57 @@ public static partial class RequestDelegateFactory
         var indexArguments = new[] { Expression.Constant(key) };
         var indexExpression = Expression.MakeIndex(sourceExpression, itemProperty, indexArguments);
         return Expression.Convert(indexExpression, returnType ?? typeof(string));
+    }
+
+    private static Expression BindSurrogatedArgument(ParameterInfo parameter, FactoryContext factoryContext)
+    {
+        if (factoryContext.SurrogatedParameter is { })
+        {
+            var errorMessage = BuildErrorMessageForMultipleSurrogatedParameters(factoryContext);
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        factoryContext.SurrogatedParameter = parameter;
+
+        var properties = parameter.ParameterType.GetProperties();
+
+        // Only the parameterless constructor is supported
+        var constructor = parameter.ParameterType.GetConstructor(Array.Empty<Type>());
+        if (constructor is null)
+        {
+            throw new InvalidOperationException("A type declared with [Parameters] attribute must have a parameterless constructor.");
+        }
+
+        var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
+
+        // arg_local = new T();
+        // arg_local.Property0 = expression[0];
+        // arg_local.PropertyN = expression[n];
+        // arg_local
+
+        var expressions = new Expression[properties.Length + 2];
+        expressions[0] = Expression.Assign(argumentExpression, Expression.New(constructor));
+        expressions[^1] = argumentExpression;
+
+        for (var i = 0; i < properties.Length; i++)
+        {
+            expressions[i + 1] = Expression.Empty();
+
+            // we DON'T support read-only or init properties
+            if (properties[i].CanWrite)
+            {
+                var propertyExpression = Expression.Property(argumentExpression, properties[i].Name);
+                var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext);
+
+                expressions[i + 1] = Expression.Assign(propertyExpression, CreateArgument(parameterInfo, factoryContext));
+                factoryContext.SurrogatedParameters.Add(parameterInfo);
+            }
+        }
+
+        factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.SurrogatedParameter);
+        factoryContext.ExtraLocals.Add(argumentExpression);
+
+        return Expression.Block(expressions);
     }
 
     private static Expression BindParameterFromService(ParameterInfo parameter, FactoryContext factoryContext)
