@@ -134,8 +134,6 @@ Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AddServerHeader.ge
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AddServerHeader.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowAlternateSchemes.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowAlternateSchemes.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowLineFeedTerminator.get -> bool
-Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowLineFeedTerminator.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowResponseHeaderCompression.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowResponseHeaderCompression.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowSynchronousIO.get -> bool
