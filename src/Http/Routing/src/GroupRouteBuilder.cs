@@ -71,7 +71,7 @@ public sealed class GroupRouteBuilder : IEndpointRouteBuilder, IEndpointConventi
                 {
                     foreach (var endpoint in dataSource.Endpoints)
                     {
-                        // Endpoint does not provide a RoutePattern but RouteEndpoint does. So it's impossible to apply a prefix custom Endpoints.
+                        // Endpoint does not provide a RoutePattern but RouteEndpoint does. So it's impossible to apply a prefix for custom Endpoints.
                         // Supporting arbitrary Endpoints just to add group metadata would require changing the Endpoint type breaking any real scenario.
                         if (endpoint is not RouteEndpoint routeEndpoint)
                         {
