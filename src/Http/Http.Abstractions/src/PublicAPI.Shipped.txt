@@ -220,6 +220,7 @@ Microsoft.AspNetCore.Http.EndpointMetadataCollection.Count.get -> int
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.EndpointMetadataCollection(params object![]! items) -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.EndpointMetadataCollection(System.Collections.Generic.IEnumerable<object!>! items) -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object?
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Dispose() -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.MoveNext() -> bool
@@ -235,6 +236,7 @@ Microsoft.AspNetCore.Http.Features.IRouteValuesFeature
 Microsoft.AspNetCore.Http.Features.IRouteValuesFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
 Microsoft.AspNetCore.Http.Features.IRouteValuesFeature.RouteValues.set -> void
 Microsoft.AspNetCore.Http.FragmentString
+Microsoft.AspNetCore.Http.FragmentString.FragmentString() -> void
 Microsoft.AspNetCore.Http.FragmentString.Equals(Microsoft.AspNetCore.Http.FragmentString other) -> bool
 Microsoft.AspNetCore.Http.FragmentString.FragmentString(string! value) -> void
 Microsoft.AspNetCore.Http.FragmentString.HasValue.get -> bool
@@ -242,6 +244,7 @@ Microsoft.AspNetCore.Http.FragmentString.ToUriComponent() -> string!
 Microsoft.AspNetCore.Http.FragmentString.Value.get -> string!
 Microsoft.AspNetCore.Http.HeaderDictionaryExtensions
 Microsoft.AspNetCore.Http.HostString
+Microsoft.AspNetCore.Http.HostString.HostString() -> void
 Microsoft.AspNetCore.Http.HostString.Equals(Microsoft.AspNetCore.Http.HostString other) -> bool
 Microsoft.AspNetCore.Http.HostString.HasValue.get -> bool
 Microsoft.AspNetCore.Http.HostString.Host.get -> string!
@@ -292,6 +295,7 @@ Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Type.get -> Sys
 Microsoft.AspNetCore.Http.Metadata.ITagsMetadata
 Microsoft.AspNetCore.Http.Metadata.ITagsMetadata.Tags.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Http.PathString
+Microsoft.AspNetCore.Http.PathString.PathString() -> void
 Microsoft.AspNetCore.Http.PathString.Add(Microsoft.AspNetCore.Http.PathString other) -> Microsoft.AspNetCore.Http.PathString
 Microsoft.AspNetCore.Http.PathString.Add(Microsoft.AspNetCore.Http.QueryString other) -> string!
 Microsoft.AspNetCore.Http.PathString.Equals(Microsoft.AspNetCore.Http.PathString other) -> bool
@@ -307,6 +311,7 @@ Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Htt
 Microsoft.AspNetCore.Http.PathString.ToUriComponent() -> string!
 Microsoft.AspNetCore.Http.PathString.Value.get -> string?
 Microsoft.AspNetCore.Http.QueryString
+Microsoft.AspNetCore.Http.QueryString.QueryString() -> void
 Microsoft.AspNetCore.Http.QueryString.Add(Microsoft.AspNetCore.Http.QueryString other) -> Microsoft.AspNetCore.Http.QueryString
 Microsoft.AspNetCore.Http.QueryString.Add(string! name, string! value) -> Microsoft.AspNetCore.Http.QueryString
 Microsoft.AspNetCore.Http.QueryString.Equals(Microsoft.AspNetCore.Http.QueryString other) -> bool

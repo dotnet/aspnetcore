@@ -728,6 +728,7 @@ Microsoft.AspNetCore.Mvc.Diagnostics.BeforeResultFilterOnResultExecutionEventDat
 Microsoft.AspNetCore.Mvc.Diagnostics.BeforeResultFilterOnResultExecutionEventData.ResultExecutingContext.get -> Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext!
 Microsoft.AspNetCore.Mvc.Diagnostics.EventData
 Microsoft.AspNetCore.Mvc.Diagnostics.EventData.Enumerator
+Microsoft.AspNetCore.Mvc.Diagnostics.EventData.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Mvc.Diagnostics.EventData.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, object!>
 Microsoft.AspNetCore.Mvc.Diagnostics.EventData.Enumerator.Dispose() -> void
 Microsoft.AspNetCore.Mvc.Diagnostics.EventData.Enumerator.MoveNext() -> bool
@@ -824,6 +825,7 @@ Microsoft.AspNetCore.Mvc.Formatters.InputFormatterException.InputFormatterExcept
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterException.InputFormatterException(string! message) -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterException.InputFormatterException(string! message, System.Exception! innerException) -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
 Microsoft.AspNetCore.Mvc.Formatters.MediaType
+Microsoft.AspNetCore.Mvc.Formatters.MediaType.MediaType() -> void
 Microsoft.AspNetCore.Mvc.Formatters.MediaType.Charset.get -> Microsoft.Extensions.Primitives.StringSegment
 Microsoft.AspNetCore.Mvc.Formatters.MediaType.Encoding.get -> System.Text.Encoding?
 Microsoft.AspNetCore.Mvc.Formatters.MediaType.GetParameter(Microsoft.Extensions.Primitives.StringSegment parameterName) -> Microsoft.Extensions.Primitives.StringSegment
@@ -846,6 +848,7 @@ Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Insert(int index, Micros
 Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.MediaTypeCollection() -> void
 Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection.Remove(Microsoft.Net.Http.Headers.MediaTypeHeaderValue! item) -> bool
 Microsoft.AspNetCore.Mvc.Formatters.MediaTypeSegmentWithQuality
+Microsoft.AspNetCore.Mvc.Formatters.MediaTypeSegmentWithQuality.MediaTypeSegmentWithQuality() -> void
 Microsoft.AspNetCore.Mvc.Formatters.MediaTypeSegmentWithQuality.MediaType.get -> Microsoft.Extensions.Primitives.StringSegment
 Microsoft.AspNetCore.Mvc.Formatters.MediaTypeSegmentWithQuality.MediaTypeSegmentWithQuality(Microsoft.Extensions.Primitives.StringSegment mediaType, double quality) -> void
 Microsoft.AspNetCore.Mvc.Formatters.MediaTypeSegmentWithQuality.Quality.get -> double
@@ -1526,6 +1529,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Model.get -> 
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Model.set -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.ModelState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.StateManager
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.StateManager.StateManager() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.StateManager.Dispose() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.StateManager.StateManager(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor! visitor, object? newModel) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Strategy.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IValidationStrategy?

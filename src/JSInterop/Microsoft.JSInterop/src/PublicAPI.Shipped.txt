@@ -50,12 +50,14 @@ Microsoft.JSInterop.Implementation.JSStreamReference
 Microsoft.JSInterop.Implementation.JSStreamReference.Length.get -> long
 Microsoft.JSInterop.Infrastructure.DotNetDispatcher
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo
+Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.DotNetInvocationInfo() -> void
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.AssemblyName.get -> string?
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.CallId.get -> string?
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.DotNetInvocationInfo(string? assemblyName, string! methodIdentifier, long dotNetObjectId, string? callId) -> void
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.DotNetObjectId.get -> long
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.MethodIdentifier.get -> string!
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult
+Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.DotNetInvocationResult() -> void
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.ErrorKind.get -> string?
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.Exception.get -> System.Exception?
 Microsoft.JSInterop.Infrastructure.DotNetInvocationResult.ResultJson.get -> string?

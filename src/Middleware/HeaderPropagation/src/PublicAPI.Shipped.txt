@@ -33,6 +33,7 @@
 ~static Microsoft.Extensions.DependencyInjection.HeaderPropagationServiceCollectionExtensions.AddHeaderPropagation(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions> configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
 Microsoft.AspNetCore.Builder.HeaderPropagationApplicationBuilderExtensions
 Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext
+Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext.HeaderPropagationContext() -> void
 Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext.HeaderName.get -> string!
 Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext.HeaderPropagationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, string! headerName, Microsoft.Extensions.Primitives.StringValues headerValue) -> void
 Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext.HeaderValue.get -> Microsoft.Extensions.Primitives.StringValues

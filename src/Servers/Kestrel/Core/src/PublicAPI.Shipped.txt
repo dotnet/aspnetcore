@@ -78,6 +78,7 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion.Http2 = 2 -> 
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion.Http3 = 3 -> Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion.Unknown = -1 -> Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod.HttpVersionAndMethod() -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod.HttpVersionAndMethod(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, int methodEnd) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod.Method.get -> Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod.MethodEnd.get -> int
@@ -91,6 +92,7 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler.OnSta
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler.OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersionAndMethod versionAndMethod, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength targetPath, System.Span<byte> startLine) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength.TargetOffsetPathLength() -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength.IsEncoded.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength.Length.get -> int
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TargetOffsetPathLength.Offset.get -> int

@@ -932,6 +932,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.ContainsKey(string! ke
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.CopyTo(System.Collections.Generic.KeyValuePair<string!, string?>[]! array, int arrayIndex) -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Count.get -> int
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, string?>
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Dispose() -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Enumerator(Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary! attributes) -> void
@@ -948,6 +949,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.TryGetValue(string! ke
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Values.get -> System.Collections.Generic.ICollection<string?>!
 Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.IViewBufferScope
 Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.ViewBufferValue
+Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.ViewBufferValue.ViewBufferValue() -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.CookieTempDataProvider
 Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultHtmlGenerator
 Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultHtmlGenerator.AllowRenderingMaxLengthAttribute.get -> bool

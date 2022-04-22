@@ -148,11 +148,13 @@ Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.TempData.get -> Microsoft.AspNetCor
 Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.ViewBag.get -> dynamic!
 Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.WriteAttributeValue(string! prefix, int prefixOffset, object? value, int valueOffset, int valueLength, bool isLiteral) -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult
+Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.RazorPageFactoryResult() -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.RazorPageFactory.get -> System.Func<Microsoft.AspNetCore.Mvc.Razor.IRazorPage!>?
 Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.RazorPageFactoryResult(Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor! viewDescriptor, System.Func<Microsoft.AspNetCore.Mvc.Razor.IRazorPage!>? razorPageFactory) -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.Success.get -> bool
 Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.ViewDescriptor.get -> Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor?
 Microsoft.AspNetCore.Mvc.Razor.RazorPageResult
+Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.RazorPageResult() -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.Name.get -> string!
 Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.Page.get -> Microsoft.AspNetCore.Mvc.Razor.IRazorPage?
 Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.RazorPageResult(string! name, Microsoft.AspNetCore.Mvc.Razor.IRazorPage! page) -> void

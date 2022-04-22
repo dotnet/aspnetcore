@@ -87,6 +87,7 @@ Microsoft.AspNetCore.SignalR.HubConnectionStore
 Microsoft.AspNetCore.SignalR.HubConnectionStore.Add(Microsoft.AspNetCore.SignalR.HubConnectionContext! connection) -> void
 Microsoft.AspNetCore.SignalR.HubConnectionStore.Count.get -> int
 Microsoft.AspNetCore.SignalR.HubConnectionStore.Enumerator
+Microsoft.AspNetCore.SignalR.HubConnectionStore.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.SignalR.HubConnectionStore.Enumerator.Current.get -> Microsoft.AspNetCore.SignalR.HubConnectionContext!
 Microsoft.AspNetCore.SignalR.HubConnectionStore.Enumerator.Dispose() -> void
 Microsoft.AspNetCore.SignalR.HubConnectionStore.Enumerator.Enumerator(Microsoft.AspNetCore.SignalR.HubConnectionStore! hubConnectionList) -> void
@@ -186,6 +187,7 @@ Microsoft.AspNetCore.SignalR.SerializedHubMessage.Message.get -> Microsoft.AspNe
 Microsoft.AspNetCore.SignalR.SerializedHubMessage.SerializedHubMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message) -> void
 Microsoft.AspNetCore.SignalR.SerializedHubMessage.SerializedHubMessage(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.SignalR.SerializedMessage>! messages) -> void
 Microsoft.AspNetCore.SignalR.SerializedMessage
+Microsoft.AspNetCore.SignalR.SerializedMessage.SerializedMessage() -> void
 Microsoft.AspNetCore.SignalR.SerializedMessage.ProtocolName.get -> string!
 Microsoft.AspNetCore.SignalR.SerializedMessage.Serialized.get -> System.ReadOnlyMemory<byte>
 Microsoft.AspNetCore.SignalR.SerializedMessage.SerializedMessage(string! protocolName, System.ReadOnlyMemory<byte> serialized) -> void
