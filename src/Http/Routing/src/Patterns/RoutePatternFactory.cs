@@ -1122,8 +1122,8 @@ public static class RoutePatternFactory
         // for the same parameter in both the left and right part of the combined pattern. Defaults and Required values cannot be
         // merged because the `TValue` is `object?`, but over-setting a Default or RequiredValue (which may not be in the parameter list)
         // seems okay as long as the values are the same for a given key in both the left and right pattern. There's already similar logic
-        // in PatternCore for when defaults come from both the `defaults` and `segements` param. `requiredValues` cannot be defined in
-        // `segements` so there's no equivalent to merging these until now.
+        // in PatternCore for when defaults come from both the `defaults` and `segments` param. `requiredValues` cannot be defined in
+        // `segments` so there's no equivalent to merging these until now.
         static IReadOnlyDictionary<string, TValue> CombineDictionaries<TValue>(
             IReadOnlyDictionary<string, TValue> leftDictionary,
             IReadOnlyDictionary<string, TValue> rightDictionary,
