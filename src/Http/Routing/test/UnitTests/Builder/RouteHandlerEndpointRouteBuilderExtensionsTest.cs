@@ -1106,9 +1106,9 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
 
         var ex = Assert.Throws<ArgumentNullException>(() => builder.MapGroup((string)null!));
-        Assert.Equal("prefixPattern", ex.ParamName);
+        Assert.Equal("prefix", ex.ParamName);
         ex = Assert.Throws<ArgumentNullException>(() => builder.MapGroup((RoutePattern)null!));
-        Assert.Equal("prefixPattern", ex.ParamName);
+        Assert.Equal("prefix", ex.ParamName);
 
         builder = null;
 
