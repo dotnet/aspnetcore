@@ -323,21 +323,32 @@ public static partial class RequestDelegateFactory
 
     private static ValueTask<object?> ValueTaskOfTToValueTaskOfObject<T>(ValueTask<T> valueTask)
     {
+        static async ValueTask<object?> ExecuteAwait(ValueTask<T> valueTask)
+        {
+            return await new ValueTask<object?>(await valueTask);
+        }
+
         if (valueTask.IsCompletedSuccessfully)
         {
             return new ValueTask<object?>(valueTask.Result);
         }
 
-        return new ValueTask<object?>(valueTask.GetAwaiter().GetResult());
+        return ExecuteAwait(valueTask);
     }
 
     private static ValueTask<object?> TaskOfTToValueTaskOfObject<T>(Task<T> task)
     {
+        static async ValueTask<object?> ExecuteAwait(Task<T> task)
+        {
+            return await new ValueTask<object?>(await task);
+        }
+
         if (task.IsCompletedSuccessfully)
         {
             return new ValueTask<object?>(task.Result);
         }
-        return new ValueTask<object?>(task.GetAwaiter().GetResult());
+
+        return ExecuteAwait(task);
     }
 
     private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services)
