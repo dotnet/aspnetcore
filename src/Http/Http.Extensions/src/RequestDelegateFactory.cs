@@ -1131,7 +1131,7 @@ public static partial class RequestDelegateFactory
 
             for (var i = 0; i < properties.Length; i++)
             {
-                var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext);
+                var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext.NullabilityContext);
                 constructorArguments[i] = CreateArgument(parameterInfo, factoryContext);
                 factoryContext.SurrogatedParameters.Add(parameterInfo);
             }
@@ -1153,7 +1153,7 @@ public static partial class RequestDelegateFactory
                 // For parameterless ctor we will init only writable properties.
                 if (properties[i].CanWrite)
                 {
-                    var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext);
+                    var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext.NullabilityContext);
                     bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));
                     factoryContext.SurrogatedParameters.Add(parameterInfo);
                 }
@@ -1915,51 +1915,6 @@ public static partial class RequestDelegateFactory
         public const string RouteOrQueryStringParameter = "Route or Query String (Inferred)";
         public const string FormFileParameter = "Form File (Inferred)";
         public const string SurrogatedParameter = "Surrogate (Attribute)";
-    }
-
-    private class SurrogatedParameterInfo : ParameterInfo
-    {
-        private readonly PropertyInfo _underlyingProperty;
-        private readonly NullabilityInfo _nullabilityInfo;
-
-        public SurrogatedParameterInfo(PropertyInfo propertyInfo, FactoryContext factoryContext)
-        {
-            Debug.Assert(null != propertyInfo);
-
-            AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
-            MemberImpl = propertyInfo;
-            NameImpl = propertyInfo.Name;
-            ClassImpl = propertyInfo.PropertyType;
-            PositionImpl = -1;//parameter.Position;
-
-            _nullabilityInfo = factoryContext.NullabilityContext.Create(propertyInfo);
-            _underlyingProperty = propertyInfo;
-        }
-
-        public override bool HasDefaultValue => false;
-        public override object? DefaultValue => null;
-        public override int MetadataToken => _underlyingProperty.MetadataToken;
-        public override object? RawDefaultValue => null;
-
-        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
-            => _underlyingProperty.GetCustomAttributes(attributeType, inherit);
-
-        public override object[] GetCustomAttributes(bool inherit)
-            => _underlyingProperty.GetCustomAttributes(inherit);
-
-        public override IList<CustomAttributeData> GetCustomAttributesData()
-            => _underlyingProperty.GetCustomAttributesData();
-
-        public override Type[] GetOptionalCustomModifiers()
-            => _underlyingProperty.GetOptionalCustomModifiers();
-
-        public override Type[] GetRequiredCustomModifiers()
-            => _underlyingProperty.GetRequiredCustomModifiers();
-
-        public override bool IsDefined(Type attributeType, bool inherit)
-            => _underlyingProperty.IsDefined(attributeType, inherit);
-
-        public new bool IsOptional => _nullabilityInfo.ReadState != NullabilityState.NotNull;
     }
 
     private static partial class Log

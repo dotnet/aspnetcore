@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core common extension methods for HTTP abstractions, HTTP headers, HTTP request/response, and session state.</Description>
@@ -13,6 +13,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)ParameterBindingMethodCache.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)SurrogatedParameterInfo.cs" LinkBase="Shared"/>
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)HttpValidationProblemDetailsJsonConverter.cs" LinkBase="Shared" />
