@@ -4698,55 +4698,40 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("HELLO, TESTNAMEPREFIX!", responseBody);
     }
 
-    [Fact]
-    public async Task CanInvokeFilter_OnVoidReturningHandler()
+    public static object[][] TaskOfTMethods
     {
-        // Arrange
-        var invoked = false;
-        void VoidMethod()
+        get
         {
-            invoked = true;
-        }
-        var responseBodyStream = new MemoryStream();
-        var httpContext = CreateHttpContext();
-        httpContext.Response.Body = responseBodyStream;
-
-        // Act
-        var factoryResult = RequestDelegateFactory.Create(VoidMethod, new RequestDelegateFactoryOptions()
-        {
-            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            Task<string> TaskOfTMethod()
             {
-                (routeHandlerContext, next) => async (context) =>
-                {
-                    return await next(context);
-                }
+                return Task.FromResult("foo");
             }
-        });
-        var requestDelegate = factoryResult.RequestDelegate;
-        await requestDelegate(httpContext);
 
-        Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.True(invoked);
-        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
-        Assert.Equal(string.Empty, decodedResponseBody);
+            async Task<string> TaskOfTWithYieldMethod()
+            {
+                await Task.Yield();
+                return "foo";
+            }
+
+            return new object[][]
+            {
+                new object[] { (Func<Task<string>>)TaskOfTMethod },
+                new object[] { (Func<Task<string>>)TaskOfTWithYieldMethod }
+            };
+        }
     }
 
-    [Fact]
-    public async Task CanInvokeFilter_OnTaskOfTReturningHandler()
+    [Theory]
+    [MemberData(nameof(TaskOfTMethods))]
+    public async Task CanInvokeFilter_OnTaskOfTReturningHandler(Delegate @delegate)
     {
         // Arrange
-        var invoked = false;
-        Task<string> TaskOfTMethod()
-        {
-            invoked = true;
-            return Task.FromResult("foo");
-        }
         var responseBodyStream = new MemoryStream();
         var httpContext = CreateHttpContext();
         httpContext.Response.Body = responseBodyStream;
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(TaskOfTMethod, new RequestDelegateFactoryOptions()
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
             RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
@@ -4760,27 +4745,44 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.True(invoked);
         var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         Assert.Equal("foo", decodedResponseBody);
     }
 
-    [Fact]
-    public async Task CanInvokeFilter_OnValueTaskOfTReturningHandler()
+    public static object[][] ValueTaskOfTMethods
+    {
+        get
+        {
+            ValueTask<string> ValueTaskOfTMethod()
+            {
+                return ValueTask.FromResult("foo");
+            }
+
+            async ValueTask<string> ValueTaskOfTWithYieldMethod()
+            {
+                await Task.Yield();
+                return "foo";
+            }
+
+            return new object[][]
+            {
+                new object[] { (Func<ValueTask<string>>)ValueTaskOfTMethod },
+                new object[] { (Func<ValueTask<string>>)ValueTaskOfTWithYieldMethod }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ValueTaskOfTMethods))]
+    public async Task CanInvokeFilter_OnValueTaskOfTReturningHandler(Delegate @delegate)
     {
         // Arrange
-        var invoked = false;
-        ValueTask<string> ValueTaskOfTMethod()
-        {
-            invoked = true;
-            return ValueTask.FromResult("foo");
-        }
         var responseBodyStream = new MemoryStream();
         var httpContext = CreateHttpContext();
         httpContext.Response.Body = responseBodyStream;
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(ValueTaskOfTMethod, new RequestDelegateFactoryOptions()
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
             RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
@@ -4794,27 +4796,58 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.True(invoked);
         var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         Assert.Equal("foo", decodedResponseBody);
     }
 
-    [Fact]
-    public async Task CanInvokeFilter_OnValueTaskReturningHandler()
+    public static object[][] VoidReturningMethods
+    {
+        get
+        {
+            void VoidMethod() { }
+
+            ValueTask ValueTaskMethod()
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            Task TaskMethod()
+            {
+                return Task.CompletedTask;
+            }
+
+            async ValueTask ValueTaskWithYieldMethod()
+            {
+                await Task.Yield();
+            }
+
+            async Task TaskWithYieldMethod()
+            {
+                await Task.Yield();
+            }
+
+            return new object[][]
+            {
+                new object[] { (Action)VoidMethod },
+                new object[] { (Func<ValueTask>)ValueTaskMethod },
+                new object[] { (Func<Task>)TaskMethod },
+                new object[] { (Func<ValueTask>)ValueTaskWithYieldMethod },
+                new object[] { (Func<Task>)TaskWithYieldMethod}
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(VoidReturningMethods))]
+    public async Task CanInvokeFilter_OnVoidReturningHandler(Delegate @delegate)
     {
         // Arrange
-        var invoked = false;
-        ValueTask ValueTaskMethod()
-        {
-            invoked = true;
-            return new ValueTask();
-        }
         var responseBodyStream = new MemoryStream();
         var httpContext = CreateHttpContext();
         httpContext.Response.Body = responseBodyStream;
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(ValueTaskMethod, new RequestDelegateFactoryOptions()
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
             RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
@@ -4828,27 +4861,57 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.True(invoked);
         var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         Assert.Equal(String.Empty, decodedResponseBody);
     }
 
-    [Fact]
-    public async Task CanInvokeFilter_OnTaskReturningHandler()
+    public static object[][] TasksOfTypesMethods
+    {
+        get
+        {
+            ValueTask<TodoStruct> ValueTaskOfStructMethod()
+            {
+                return ValueTask.FromResult(new TodoStruct {  Name = "Test todo"});
+            }
+
+            async ValueTask<TodoStruct> ValueTaskOfStructWithYieldMethod()
+            {
+                await Task.Yield();
+                return new TodoStruct {  Name = "Test todo" };
+            }
+
+            Task<TodoStruct> TaskOfStructMethod()
+            {
+                return Task.FromResult(new TodoStruct { Name = "Test todo" });
+            }
+
+            async Task<TodoStruct> TaskOfStructWithYieldMethod()
+            {
+                await Task.Yield();
+                return new TodoStruct { Name = "Test todo" };
+            }
+
+            return new object[][]
+            {
+                new object[] { (Func<ValueTask<TodoStruct>>)ValueTaskOfStructMethod },
+                new object[] { (Func<ValueTask<TodoStruct>>)ValueTaskOfStructWithYieldMethod },
+                new object[] { (Func<Task<TodoStruct>>)TaskOfStructMethod },
+                new object[] { (Func<Task<TodoStruct>>)TaskOfStructWithYieldMethod }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(TasksOfTypesMethods))]
+    public async Task CanInvokeFilter_OnHandlerReturningTasksOfStruct(Delegate @delegate)
     {
         // Arrange
-        var invoked = false;
-        Task TaskMethod()
-        {
-            invoked = true;
-            return Task.CompletedTask;
-        }
         var responseBodyStream = new MemoryStream();
         var httpContext = CreateHttpContext();
         httpContext.Response.Body = responseBodyStream;
 
         // Act
-        var factoryResult = RequestDelegateFactory.Create(TaskMethod, new RequestDelegateFactoryOptions()
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
         {
             RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
             {
@@ -4862,9 +4925,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         Assert.Equal(200, httpContext.Response.StatusCode);
-        Assert.True(invoked);
-        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
-        Assert.Equal(string.Empty, decodedResponseBody);
+        var deserializedResponseBody = JsonSerializer.Deserialize<TodoStruct>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+        Assert.Equal("Test todo", deserializedResponseBody.Name);
     }
 
     [Fact]

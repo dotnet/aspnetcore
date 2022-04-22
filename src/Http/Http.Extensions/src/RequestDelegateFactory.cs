@@ -47,7 +47,7 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringIsNullOrEmptyMethod = typeof(string).GetMethod(nameof(string.IsNullOrEmpty), BindingFlags.Static | BindingFlags.Public)!;
     private static readonly MethodInfo WrapObjectAsValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WrapObjectAsValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo TaskToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(TaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo TaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(TaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ValueTaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ValueTaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -313,7 +313,7 @@ public static partial class RequestDelegateFactory
                     returnType.GetGenericTypeDefinition() == typeof(Task<>))
         {
             var typeArg = returnType.GetGenericArguments()[0];
-            return Expression.Call(TaskToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
+            return Expression.Call(TaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
         }
         else
         {
@@ -321,13 +321,14 @@ public static partial class RequestDelegateFactory
         }
     }
 
-    private static ValueTask<object?> ValueTaskOfTToValueTaskOfObject<T>(ValueTask<T> task)
+    private static ValueTask<object?> ValueTaskOfTToValueTaskOfObject<T>(ValueTask<T> valueTask)
     {
-        if (task.IsCompletedSuccessfully)
+        if (valueTask.IsCompletedSuccessfully)
         {
-            return new ValueTask<object?>(task.Result);
+            return new ValueTask<object?>(valueTask.Result);
         }
-        return new ValueTask<object?>(task);
+
+        return new ValueTask<object?>(valueTask.GetAwaiter().GetResult());
     }
 
     private static ValueTask<object?> TaskOfTToValueTaskOfObject<T>(Task<T> task)
@@ -336,7 +337,7 @@ public static partial class RequestDelegateFactory
         {
             return new ValueTask<object?>(task.Result);
         }
-        return new ValueTask<object?>(task);
+        return new ValueTask<object?>(task.GetAwaiter().GetResult());
     }
 
     private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services)
