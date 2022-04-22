@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace RoutingWebSite;
 
@@ -13,11 +11,7 @@ public class StartupForGroups
     // Set up application services
     public void ConfigureServices(IServiceCollection services)
     {
-        var pageRouteTransformerConvention = new PageRouteTransformerConvention(new SlugifyParameterTransformer());
-
-        services
-            .AddMvc()
-            .AddNewtonsoftJson();
+        services.AddMvc().AddNewtonsoftJson();
 
         // Used by some controllers defined in this project.
         services.Configure<RouteOptions>(options => options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer));
