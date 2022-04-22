@@ -1090,7 +1090,7 @@ public static partial class RequestDelegateFactory
         var properties = parameter.ParameterType.GetProperties();
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
-        ConstructorInfo? GetConstructor()
+        static ConstructorInfo? GetConstructor(ParameterInfo parameter, PropertyInfo[] properties)
         {
             if (parameter.ParameterType.IsValueType)
             {
@@ -1123,7 +1123,7 @@ public static partial class RequestDelegateFactory
             throw new InvalidOperationException($"No '{parameter.ParameterType}' public parameterless constructor found for {parameter.Name}.");
         }
 
-        var constructor = GetConstructor();
+        var constructor = GetConstructor(parameter, properties);
         if (constructor?.GetParameters() is { Length: > 0 } parameters)
         {
             //  arg_local = new T(....)
