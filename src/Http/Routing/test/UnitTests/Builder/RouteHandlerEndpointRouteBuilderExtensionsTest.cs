@@ -1305,6 +1305,33 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
+    public void MapGroup_SupportsMultipleEndpoints()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var group = builder.MapGroup("/group");
+        group.MapGet("/foo", () => "foo");
+        group.MapGet("/bar", () => "bar");
+
+        group.WithMetadata("/group");
+
+        var dataSource = GetEndpointDataSource(builder);
+        Assert.Collection(dataSource.Endpoints.OfType<RouteEndpoint>(),
+            routeEndpoint =>
+            {
+                Assert.Equal("/group/foo", routeEndpoint.RoutePattern.RawText);
+                Assert.True(routeEndpoint.Metadata.Count >= 1);
+                Assert.Equal("/group", routeEndpoint.Metadata[0]);
+            },
+            routeEndpoint =>
+            {
+                Assert.Equal("/group/bar", routeEndpoint.RoutePattern.RawText);
+                Assert.True(routeEndpoint.Metadata.Count >= 1);
+                Assert.Equal("/group", routeEndpoint.Metadata[0]);
+            });
+    }
+
+    [Fact]
     public void MapGroup_DataSourceFiresChangeToken_WhenInnerDataSourceFiresChangeToken()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
