@@ -401,14 +401,15 @@ public static partial class RequestDelegateFactory
 
     private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext)
     {
+        var parameterCustomAttributes = parameter.GetCustomAttributes();
+
         if (parameter.Name is null)
         {
             throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
         }
 
-        var parameterCustomAttributes = parameter.GetCustomAttributes();
-
-        if (parameterCustomAttributes.OfType<ParametersAttribute>().FirstOrDefault() is { })
+        if (parameterCustomAttributes.OfType<ParametersAttribute>().FirstOrDefault() is { } ||
+            parameter.ParameterType.GetCustomAttributes().OfType<ParametersAttribute>().FirstOrDefault() is { })
         {
             return BindSurrogatedArgument(parameter, factoryContext);
         }
@@ -1105,14 +1106,14 @@ public static partial class RequestDelegateFactory
 
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
 
-        // arg_local = new T();
-        // arg_local.Property0 = expression[0];
-        // arg_local.PropertyN = expression[n];
-        // arg_local
+        // {
+        //  arg_local = new T();
+        //  arg_local.Property[0] = expression[0];
+        //  arg_local.Property[n] = expression[n];
+        // }
 
-        var expressions = new Expression[properties.Length + 2];
+        var expressions = new Expression[properties.Length + 1];
         expressions[0] = Expression.Assign(argumentExpression, Expression.New(constructor));
-        expressions[^1] = argumentExpression;
 
         for (var i = 0; i < properties.Length; i++)
         {
@@ -1131,8 +1132,9 @@ public static partial class RequestDelegateFactory
 
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.SurrogatedParameter);
         factoryContext.ExtraLocals.Add(argumentExpression);
+        factoryContext.ParamCheckExpressions.Add(Expression.Block(expressions));
 
-        return Expression.Block(expressions);
+        return argumentExpression;
     }
 
     private static Expression BindParameterFromService(ParameterInfo parameter, FactoryContext factoryContext)
