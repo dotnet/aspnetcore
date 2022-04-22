@@ -1225,6 +1225,49 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
+    public async Task MapGroup_ChangingMostEndpointBuilderPropertiesInConvention_Works()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+
+        var group = builder.MapGroup("/group");
+        var mapGetCalled = false;
+        var replacementCalled = false;
+
+        group.MapGet("/", () =>
+        {
+            mapGetCalled = true;
+        });
+
+        ((IEndpointConventionBuilder)group).Add(builder =>
+        {
+            builder.DisplayName = "Replaced!";
+            builder.RequestDelegate = ctx =>
+            {
+                replacementCalled = true;
+                return Task.CompletedTask;
+            };
+
+            ((RouteEndpointBuilder)builder).Order = 42;
+        });
+
+        var dataSource = GetEndpointDataSource(builder);
+
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext();
+
+        await endpoint!.RequestDelegate!(httpContext);
+
+        Assert.False(mapGetCalled);
+        Assert.True(replacementCalled);
+        Assert.Equal("Replaced!", endpoint.DisplayName);
+
+        var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
+        Assert.Equal(42, routeEndpoint.Order);
+    }
+
+    [Fact]
     public void MapGroup_GivenNonRouteEndpoint_ThrowsNotSupportedException()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
