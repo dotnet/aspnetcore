@@ -29,6 +29,9 @@ public class IISFunctionalTestBase : FunctionalTestsBase
         return await DeployAsync(deploymentParameters);
     }
 
+    public Task RunTest(HostingModel hostingModel, Action<IISDeploymentResult> testCode)
+        => RunTest(Fixture.GetBaseDeploymentParameters(hostingModel: hostingModel), testCode);
+
     public void AddAppOffline(string appPath, string content = "The app is offline.")
     {
         File.WriteAllText(Path.Combine(appPath, "app_offline.htm"), content);
