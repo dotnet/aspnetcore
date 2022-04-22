@@ -118,18 +118,35 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
         foreach (var parameter in methodInfo.GetParameters())
         {
-            var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern, disableInferredBody);
-
-            if (parameterDescription is null)
+            void DummyMethod(ParameterInfo parameterInfo)
             {
-                continue;
+                var parameterDescription = CreateApiParameterDescription(parameterInfo, routeEndpoint.RoutePattern, disableInferredBody);
+
+                if (parameterDescription is { })
+                {
+                    apiDescription.ParameterDescriptions.Add(parameterDescription);
+
+                    hasBodyOrFormFileParameter |=
+                        parameterDescription.Source == BindingSource.Body ||
+                        parameterDescription.Source == BindingSource.FormFile;
+                }
             }
 
-            apiDescription.ParameterDescriptions.Add(parameterDescription);
+            if (parameter.GetCustomAttributes().OfType<ParametersAttribute>() is { })
+            {
+                var properties = parameter.ParameterType.GetProperties();
+                var nullabilityContext = new NullabilityInfoContext();
 
-            hasBodyOrFormFileParameter |=
-                parameterDescription.Source == BindingSource.Body ||
-                parameterDescription.Source == BindingSource.FormFile;
+                for (var i = 0; i < properties.Length; i++)
+                {
+                    var parameterInfo = new SurrogatedParameterInfo(properties[i], nullabilityContext);
+                    DummyMethod(parameterInfo);
+                }
+            }
+            else
+            {
+                DummyMethod(parameter);
+            }
         }
 
         // Get IAcceptsMetadata.
