@@ -262,9 +262,22 @@ public static partial class RequestDelegateFactory
         // httpContext.Response.StatusCode >= 400
         // ? Task.CompletedTask
         // : {
-        //  target = targetFactory(httpContext);
-        //  handler is ((Type)target).MethodName(parameters);
-        //  handler((string)context.Parameters[0], (int)context.Parameters[1]);
+        //   handlerInvocation
+        // }
+        // To generate the handler invocation, we first create the
+        // target of the handler provided to the route.
+        //      target = targetFactory(httpContext);
+        // This target is then used to generate the handler invocation like so;
+        //      ((Type)target).MethodName(parameters);
+        //  When `handler` returns an object, we generate the following wrapper
+        //  to convert it to `ValueTask<object?>` as expected in the filter
+        //  pipeline.
+        //      ValueTask<object?>.FromResult(handler((string)context.Parameters[0], (int)context.Parameters[1]));
+        //  When the `handler` is a generic Task or ValueTask we await the task and
+        //  create a `ValueTask<object?> from the resulting value.
+        //      new ValueTask<object?>(await handler((string)context.Parameters[0], (int)context.Parameters[1]));
+        //  When the `handler` returns a void or a void-returning Task, then we return an EmptyHttpResult
+        //  to as a ValueTask<object?>
         // }
         var handlerReturnMapping = MapHandlerReturnTypeToValueTask(
                         targetExpression is null
