@@ -23,12 +23,22 @@ echo.
 
 set exit_code=0
 
+echo "Trace: dotnet tool install --global dotnet-trace"
+dotnet tool install --global dotnet-trace
+
+if not errorlevel 0 (
+    set exit_code=%errorlevel%
+    echo "dotnet tool install failed: exit_code=$exit_code"
+    EXIT /b %exit_code%
+)
+
 echo "Restore: dotnet restore RunTests\RunTests.csproj"
-dotnet restore RunTests\RunTests.csproj
+dotnet trace collect --providers "System.Net.Http,System.Net.Sockets,System.Net.Security,System.Net.NameResolution" -- dotnet restore RunTests\RunTests.csproj --verbosity detailed
 
 if not errorlevel 0 (
     set exit_code=%errorlevel%
     echo "Restore runtests failed: exit_code=%exit_code%"
+    COPY *.nettrace %HELIX_WORKITEM_UPLOAD_ROOT%\\
     EXIT /b %exit_code%
 )
 

@@ -9,7 +9,8 @@ YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Prevent fallback to global .NET locations. This ensures our tests use the shared frameworks we specify and don't rollforward to something else that might be installed on the machine
+# Prevent fallback to global .NET locations. This ensures our tests use the shared frameworks we specify and don't
+# rollforward to something else that might be installed on the machine.
 export DOTNET_MULTILEVEL_LOOKUP=0
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
@@ -70,20 +71,29 @@ if [ -e /proc/self/coredump_filter ]; then
   echo -n 0x3F > /proc/self/coredump_filter
 fi
 
-# dotnet-install.sh seems to affect the Linux filesystem and causes test flakiness unless we sync the filesystem before running tests
-sync
-
 exit_code=0
 
+echo "Trace: dotnet tool install --global dotnet-trace"
+dotnet tool install --global dotnet-trace
+exit_code=$?
+
+if [[ $exit_code != 0]]; then
+    echo "dotnet tool install failed: exit_code=$exit_code"
+    exit $exit_code
+fi
+
+# dotnet-install.sh and perhaps 'dotnet tool install' seem to affect the Linux filesystem and cause test flakiness
+# unless we sync the filesystem before running tests.
+sync
+
 echo "Restore: dotnet restore RunTests/RunTests.csproj"
-
-# --verbosity diagnostic can be removed when random failures are identified
-dotnet restore RunTests/RunTests.csproj --verbosity diagnostic
-
+# '--verbosity detailed' can be removed when random failures are identified.
+dotnet trace collect --providers 'System.Net.Http,System.Net.Sockets,System.Net.Security,System.Net.NameResolution' -- dotnet restore RunTests/RunTests.csproj --verbosity detailed
 exit_code=$?
 
 if [[ $exit_code != 0 ]]; then
     echo "Restore runtests failed: exit_code=$exit_code"
+    cp *.nettrace $HELIX_WORKITEM_UPLOAD_ROOT/
     exit $exit_code
 fi
 
