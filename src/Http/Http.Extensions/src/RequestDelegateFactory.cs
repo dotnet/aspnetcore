@@ -214,7 +214,10 @@ public static partial class RequestDelegateFactory
         factoryContext.MethodCall = CreateMethodCall(methodInfo, targetExpression, arguments);
 
         // Add metadata provided by the delegate return type and parameter types next, this will be more specific than inferred metadata from above
-        AddTypeProvidedMetadata(methodInfo, factoryContext.Metadata, factoryContext.ServiceProvider);
+        AddTypeProvidedMetadata(methodInfo,
+            factoryContext.Metadata,
+            factoryContext.ServiceProvider,
+            factoryContext.SurrogatedParameters.ToArray());
 
         // Add method attributes as metadata *after* any inferred metadata so that the attributes hava a higher specificity
         AddMethodAttributesAsMetadata(methodInfo, factoryContext.Metadata);
@@ -283,32 +286,39 @@ public static partial class RequestDelegateFactory
         return filteredInvocation;
     }
 
-    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services)
+    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, ParameterInfo[] surrogatedParameters)
     {
         object?[]? invokeArgs = null;
 
-        // Get metadata from parameter types
-        var parameters = methodInfo.GetParameters();
-        foreach (var parameter in parameters)
+        void AddMetadata(ParameterInfo[] parameters)
         {
-            if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
+            foreach (var parameter in parameters)
             {
-                // Parameter type implements IEndpointParameterMetadataProvider
-                var parameterContext = new EndpointParameterMetadataContext(parameter, metadata, services);
-                invokeArgs ??= new object[1];
-                invokeArgs[0] = parameterContext;
-                PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
-            }
+                if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
+                {
+                    // Parameter type implements IEndpointParameterMetadataProvider
+                    var parameterContext = new EndpointParameterMetadataContext(parameter, metadata, services);
+                    invokeArgs ??= new object[1];
+                    invokeArgs[0] = parameterContext;
+                    PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
+                }
 
-            if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
-            {
-                // Parameter type implements IEndpointMetadataProvider
-                var context = new EndpointMetadataContext(methodInfo, metadata, services);
-                invokeArgs ??= new object[1];
-                invokeArgs[0] = context;
-                PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
+                if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
+                {
+                    // Parameter type implements IEndpointMetadataProvider
+                    var context = new EndpointMetadataContext(methodInfo, metadata, services);
+                    invokeArgs ??= new object[1];
+                    invokeArgs[0] = context;
+                    PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
+                }
             }
         }
+
+        // Get metadata from parameter types
+        AddMetadata(methodInfo.GetParameters());
+
+        // Get metadata from surrogated parameter types
+        AddMetadata(surrogatedParameters);
 
         // Get metadata from return type
         if (methodInfo.ReturnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(methodInfo.ReturnType))
@@ -391,14 +401,28 @@ public static partial class RequestDelegateFactory
 
     private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext)
     {
+        var parameterCustomAttributes = parameter.GetCustomAttributes();
+
         if (parameter.Name is null)
         {
             throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
         }
 
-        var parameterCustomAttributes = parameter.GetCustomAttributes();
+        if (parameterCustomAttributes.OfType<ParametersAttribute>().FirstOrDefault() is { } ||
+            parameter.ParameterType.GetCustomAttributes().OfType<ParametersAttribute>().FirstOrDefault() is { })
+        {
+            factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.SurrogatedParameter);
 
-        if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
+            if (factoryContext.SurrogatedParameter is { })
+            {
+                var errorMessage = BuildErrorMessageForMultipleSurrogatedParameters(factoryContext);
+                throw new InvalidOperationException(errorMessage);
+            }
+
+            factoryContext.SurrogatedParameter = parameter;
+            return CreateSurrogatedArgument(parameter, factoryContext);
+        }
+        else if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
         {
             var routeName = routeAttribute.Name ?? parameter.Name;
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteAttribute);
@@ -539,6 +563,47 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyParameter);
             return BindParameterFromBody(parameter, allowEmpty: false, factoryContext);
         }
+    }
+
+    private static Expression CreateSurrogatedArgument(ParameterInfo parameter, FactoryContext factoryContext)
+    {
+        var properties = parameter.ParameterType.GetProperties();
+
+        // Only the parameterless constructor is supported
+        var constructor = parameter.ParameterType.GetConstructor(Array.Empty<Type>());
+        if (constructor is null)
+        {
+            throw new InvalidOperationException("A parameter's type declared with [Parameters] attribute must have a parameterless constructor.");
+        }
+
+        var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
+
+        // arg_local = new T();
+        // arg_local.Property[0] = expression[0];
+        // arg_local.Property[n] = expression[n];
+        // arg_local
+
+        var expressions = new Expression[properties.Length + 2];
+        expressions[0] = Expression.Assign(argumentExpression, Expression.New(constructor));
+        expressions[^1] = argumentExpression;
+
+        for (var i = 0; i < properties.Length; i++)
+        {
+            expressions[i + 1] = Expression.Empty();
+
+            // we DON'T support read-only or init properties
+            if (properties[i].CanWrite)
+            {
+                var propertyExpression = Expression.Property(argumentExpression, properties[i].Name);
+                var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext);
+
+                expressions[i + 1] = Expression.Assign(propertyExpression, CreateArgument(parameterInfo, factoryContext));
+                factoryContext.SurrogatedParameters.Add(parameterInfo);
+            }
+        }
+
+        factoryContext.ExtraLocals.Add(argumentExpression);
+        return Expression.Block(expressions);
     }
 
     private static Expression CreateMethodCall(MethodInfo methodInfo, Expression? target, Expression[] arguments) =>
@@ -1560,15 +1625,20 @@ public static partial class RequestDelegateFactory
 
     private static bool IsOptionalParameter(ParameterInfo parameter, FactoryContext factoryContext)
     {
+        if (parameter is SurrogatedParameterInfo argument)
+        {
+            return argument.IsOptional;
+        }
+
         // - Parameters representing value or reference types with a default value
         // under any nullability context are treated as optional.
         // - Value type parameters without a default value in an oblivious
         // nullability context are required.
         // - Reference type parameters without a default value in an oblivious
         // nullability context are optional.
-        var nullability = factoryContext.NullabilityContext.Create(parameter);
+        var nullabilityInfo = factoryContext.NullabilityContext.Create(parameter);
         return parameter.HasDefaultValue
-            || nullability.ReadState != NullabilityState.NotNull;
+            || nullabilityInfo.ReadState != NullabilityState.NotNull;
     }
 
     private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
@@ -1792,6 +1862,9 @@ public static partial class RequestDelegateFactory
         public Expression? MethodCall { get; set; }
         public List<Expression> BoxedArgs { get; } = new();
         public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
+
+        public ParameterInfo? SurrogatedParameter { get; set; }
+        public List<ParameterInfo> SurrogatedParameters { get; } = new();
     }
 
     private static class RequestDelegateFactoryConstants
@@ -1808,6 +1881,52 @@ public static partial class RequestDelegateFactory
         public const string BodyParameter = "Body (Inferred)";
         public const string RouteOrQueryStringParameter = "Route or Query String (Inferred)";
         public const string FormFileParameter = "Form File (Inferred)";
+        public const string SurrogatedParameter = "Surrogate (Attribute)";
+    }
+
+    private class SurrogatedParameterInfo : ParameterInfo
+    {
+        private readonly PropertyInfo _underlyingProperty;
+        private readonly NullabilityInfo _nullabilityInfo;
+
+        public SurrogatedParameterInfo(PropertyInfo propertyInfo, FactoryContext factoryContext)
+        {
+            Debug.Assert(null != propertyInfo);
+
+            AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
+            MemberImpl = propertyInfo;
+            NameImpl = propertyInfo.Name;
+            ClassImpl = propertyInfo.PropertyType;
+            PositionImpl = -1;//parameter.Position;
+
+            _nullabilityInfo = factoryContext.NullabilityContext.Create(propertyInfo);
+            _underlyingProperty = propertyInfo;
+        }
+
+        public override bool HasDefaultValue => false;
+        public override object? DefaultValue => null;
+        public override int MetadataToken => _underlyingProperty.MetadataToken;
+        public override object? RawDefaultValue => null;
+
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+            => _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+
+        public override object[] GetCustomAttributes(bool inherit)
+            => _underlyingProperty.GetCustomAttributes(inherit);
+
+        public override IList<CustomAttributeData> GetCustomAttributesData()
+            => _underlyingProperty.GetCustomAttributesData();
+
+        public override Type[] GetOptionalCustomModifiers()
+            => _underlyingProperty.GetOptionalCustomModifiers();
+
+        public override Type[] GetRequiredCustomModifiers()
+            => _underlyingProperty.GetRequiredCustomModifiers();
+
+        public override bool IsDefined(Type attributeType, bool inherit)
+            => _underlyingProperty.IsDefined(attributeType, inherit);
+
+        public new bool IsOptional => _nullabilityInfo.ReadState != NullabilityState.NotNull;
     }
 
     private static partial class Log
@@ -2015,6 +2134,20 @@ public static partial class RequestDelegateFactory
     {
         var errorMessage = new StringBuilder();
         errorMessage.AppendLine("An action cannot use both form and JSON body parameters.");
+        errorMessage.AppendLine("Below is the list of parameters that we found: ");
+        errorMessage.AppendLine();
+        errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
+        errorMessage.AppendLine("---------------------------------------------------------------------------------");
+
+        FormatTrackedParameters(factoryContext, errorMessage);
+
+        return errorMessage.ToString();
+    }
+
+    private static string BuildErrorMessageForMultipleSurrogatedParameters(FactoryContext factoryContext)
+    {
+        var errorMessage = new StringBuilder();
+        errorMessage.AppendLine("An action cannot use more than one parameter decorated with [ParametersAttribute].");
         errorMessage.AppendLine("Below is the list of parameters that we found: ");
         errorMessage.AppendLine();
         errorMessage.AppendLine(FormattableString.Invariant($"{"Parameter",-20}| {"Source",-30}"));
