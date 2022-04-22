@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
@@ -153,20 +153,5 @@ public class CompositeEndpointDataSourceTest
             order,
             EndpointMetadataCollection.Empty,
             null);
-    }
-
-    private class CustomEndpointDataSource : EndpointDataSource
-    {
-        private readonly CancellationTokenSource _cts;
-        private readonly CancellationChangeToken _token;
-
-        public CustomEndpointDataSource()
-        {
-            _cts = new CancellationTokenSource();
-            _token = new CancellationChangeToken(_cts.Token);
-        }
-
-        public override IChangeToken GetChangeToken() => _token;
-        public override IReadOnlyList<Endpoint> Endpoints => Array.Empty<Endpoint>();
     }
 }

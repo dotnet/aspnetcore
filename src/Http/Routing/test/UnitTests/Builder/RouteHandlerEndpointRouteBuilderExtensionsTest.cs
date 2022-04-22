@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1258,6 +1259,31 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("/outer", endpoint.Metadata[0]);
         Assert.Equal("/inner", endpoint.Metadata[1]);
         Assert.Equal("/foo", endpoint.Metadata[^1]);
+    }
+
+    [Fact]
+    public void MapGroup_DataSourceFiresChangeToken_WhenInnerDataSourceFiresChangeToken()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
+        var dynamicDataSource = new DynamicEndpointDataSource();
+
+        var group = builder.MapGroup("/group");
+        ((IEndpointRouteBuilder)group).DataSources.Add(dynamicDataSource);
+
+        var groupDataSource = GetEndpointDataSource(builder);
+
+        var groupChangeToken = groupDataSource.GetChangeToken();
+        Assert.False(groupChangeToken.HasChanged);
+
+        dynamicDataSource.AddEndpoint(new RouteEndpoint(
+            TestConstants.EmptyRequestDelegate,
+            RoutePatternFactory.Parse("/foo"),
+            0, null, null));
+
+        Assert.True(groupChangeToken.HasChanged);
+
+        var prefixedEndpoint = Assert.IsType<RouteEndpoint>(Assert.Single(groupDataSource.Endpoints));
+        Assert.Equal("/group/foo", prefixedEndpoint.RoutePattern.RawText);
     }
 
     class ServiceAccessingRouteHandlerFilter : IRouteHandlerFilter
