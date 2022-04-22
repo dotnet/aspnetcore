@@ -96,7 +96,8 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors,
             disableImplicitFromServiceParameters,
             new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
-            hubFilters);
+            hubFilters,
+            lifetimeManager);
     }
 
     /// <inheritdoc />
@@ -240,7 +241,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         var protocol = connection.Protocol;
         connection.BeginClientTimeout();
 
-        var binder = new HubConnectionBinder<THub>(_dispatcher, connection);
+        var binder = new HubConnectionBinder<THub>(_dispatcher, _lifetimeManager, connection);
 
         while (true)
         {

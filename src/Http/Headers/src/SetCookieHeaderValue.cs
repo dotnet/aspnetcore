@@ -110,7 +110,7 @@ public class SetCookieHeaderValue
     /// represented as the date and time at which the cookie expires.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.1</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.1"/>.</remarks>
     public DateTimeOffset? Expires { get; set; }
 
     /// <summary>
@@ -120,7 +120,7 @@ public class SetCookieHeaderValue
     /// represented as the number of seconds until the cookie expires.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.2</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.2"/>.</remarks>
     public TimeSpan? MaxAge { get; set; }
 
     /// <summary>
@@ -130,7 +130,7 @@ public class SetCookieHeaderValue
     /// be sent.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.3</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.3"/>.</remarks>
     public StringSegment Domain { get; set; }
 
     /// <summary>
@@ -140,7 +140,7 @@ public class SetCookieHeaderValue
     /// be sent.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.4</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.4"/>.</remarks>
     public StringSegment Path { get; set; }
 
     /// <summary>
@@ -150,7 +150,7 @@ public class SetCookieHeaderValue
     /// channels.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.5</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.5"/>.</remarks>
     public bool Secure { get; set; }
 
     /// <summary>
@@ -160,7 +160,7 @@ public class SetCookieHeaderValue
     /// deployed in strict mode, and when supported by the client.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-05#section-8.8</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-05#section-8.8"/>.</remarks>
     public SameSiteMode SameSite { get; set; } = SameSiteMode.Unspecified;
 
     /// <summary>
@@ -171,7 +171,7 @@ public class SetCookieHeaderValue
     /// (such as a web browser API that exposes cookies to scripts).
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.6</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.6"/>.</remarks>
     public bool HttpOnly { get; set; }
 
     /// <summary>

@@ -93,7 +93,7 @@ public class InputTagHelper : TagHelper
     public ModelExpression For { get; set; }
 
     /// <summary>
-    /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the
+    /// The format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>) used to format the
     /// <see cref="For"/> result. Sets the generated "value" attribute to that formatted string.
     /// </summary>
     /// <remarks>

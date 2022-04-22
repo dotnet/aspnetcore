@@ -162,7 +162,14 @@ internal abstract class MessagePackHubProtocolWorker
                 break;
             case NonVoidResult:
                 var itemType = binder.GetReturnType(invocationId);
-                result = DeserializeObject(ref reader, itemType, "argument");
+                if (itemType == typeof(RawResult))
+                {
+                    result = new RawResult(reader.ReadRaw());
+                }
+                else
+                {
+                    result = DeserializeObject(ref reader, itemType, "argument");
+                }
                 hasResult = true;
                 break;
             case VoidResult:
@@ -433,6 +440,10 @@ internal abstract class MessagePackHubProtocolWorker
         if (argument == null)
         {
             writer.WriteNil();
+        }
+        else if (argument is RawResult result)
+        {
+            writer.WriteRaw(result.RawSerializedData);
         }
         else
         {

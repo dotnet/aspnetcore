@@ -54,7 +54,7 @@ public class TwitterOptions : RemoteAuthenticationOptions
     /// Enables the retrieval user details during the authentication process, including
     /// e-mail addresses. Retrieving e-mail addresses requires special permissions
     /// from Twitter Support on a per application basis. The default is false.
-    /// See https://dev.twitter.com/rest/reference/get/account/verify_credentials
+    /// See <see href="https://dev.twitter.com/rest/reference/get/account/verify_credentials"/>.
     /// </summary>
     public bool RetrieveUserDetails { get; set; }
 

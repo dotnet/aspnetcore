@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
@@ -61,6 +62,7 @@ public class MultipartReader
             throw new ArgumentOutOfRangeException(nameof(bufferSize), bufferSize, "Insufficient buffer space, the buffer must be larger than the boundary: " + boundary);
         }
         _stream = new BufferedReadStream(stream, bufferSize);
+        boundary = HeaderUtilities.RemoveQuotes(new StringSegment(boundary)).ToString();
         _boundary = new MultipartBoundary(boundary, false);
         // This stream will drain any preamble data and remove the first boundary marker.
         // TODO: HeadersLengthLimit can't be modified until after the constructor.

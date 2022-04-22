@@ -57,7 +57,7 @@ public interface IHttpRequestFeature
     /// Gets or sets the request target as it was sent in the HTTP request.
     /// <para>
     /// This property contains the raw path and full query, as well as other request targets
-    /// such as * for OPTIONS requests (https://tools.ietf.org/html/rfc7230#section-5.3).
+    /// such as * for OPTIONS requests (<see href="https://tools.ietf.org/html/rfc7230#section-5.3"/>).
     /// </para>
     /// </summary>
     /// <remarks>

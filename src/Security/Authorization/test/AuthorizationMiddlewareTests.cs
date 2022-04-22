@@ -208,6 +208,28 @@ public class AuthorizationMiddlewareTests
     }
 
     [Fact]
+    public async Task CanApplyPolicyDirectlyToEndpoint()
+    {
+        // Arrange
+        var calledPolicy = false;
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ =>
+        {
+            calledPolicy = true;
+            return true;
+        }).Build();
+
+        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+        var next = new TestRequestDelegate();
+        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+        var context = GetHttpContext(anonymous: false, endpoint: CreateEndpoint(new AuthorizeAttribute(), policy));
+
+        // Act & Assert
+        await middleware.Invoke(context);
+        Assert.True(calledPolicy);
+    }
+
+    [Fact]
     public async Task Invoke_ValidClaimShouldNotFail()
     {
         // Arrange

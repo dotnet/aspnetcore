@@ -1937,6 +1937,58 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    public async Task StreamWindow_BiggerThan_ConnectionWindow()
+    {
+        // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
+        _clientSettings.InitialWindowSize = 16384 * 5;
+
+        await InitializeConnectionAsync(async context =>
+        {
+            var data = new byte[16384 * 4];
+            data.AsSpan().Fill(1);
+            await context.Response.Body.WriteAsync(data);
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+            withStreamId: 1).DefaultTimeout();
+
+        for (int i = 0; i < 3; i++)
+        {
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)(Http2DataFrameFlags.NONE),
+                withStreamId: 1).DefaultTimeout();
+        }
+
+        // Now we've consumed the entire connection window, and there's one more frame to write
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 16383,
+            withFlags: (byte)(Http2DataFrameFlags.NONE),
+            withStreamId: 1).DefaultTimeout();
+
+        // Send more than enough bytes for the window update
+        await SendWindowUpdateAsync(0, 1);
+
+        // Expect the last frame
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 1,
+            withFlags: (byte)(Http2DataFrameFlags.NONE),
+            withStreamId: 1).DefaultTimeout();
+
+        // 0 length end of stream frame
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 0,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
     public async Task HEADERS_Received_Decoded()
     {
         await InitializeConnectionAsync(_readHeadersApplication);

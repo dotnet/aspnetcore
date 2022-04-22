@@ -92,8 +92,7 @@ internal static partial class DefaultHubDispatcherLog
     [LoggerMessage(19, LogLevel.Debug, "Stream '{StreamId}' closed with error '{Error}'.", EventName = "ClosingStreamWithBindingError")]
     private static partial void ClosingStreamWithBindingError(ILogger logger, string? streamId, string? error);
 
-    [LoggerMessage(20, LogLevel.Debug, "StreamCompletionMessage received unexpectedly.", EventName = "UnexpectedStreamCompletion")]
-    public static partial void UnexpectedStreamCompletion(ILogger logger);
+    // Retired [20]UnexpectedStreamCompletion, replaced with more generic [24]UnexpectedCompletion
 
     [LoggerMessage(21, LogLevel.Debug, "StreamItemMessage received unexpectedly.", EventName = "UnexpectedStreamItem")]
     public static partial void UnexpectedStreamItem(ILogger logger);
@@ -103,4 +102,7 @@ internal static partial class DefaultHubDispatcherLog
 
     [LoggerMessage(23, LogLevel.Debug, "Invocation ID '{InvocationId}' is already in use.", EventName = "InvocationIdInUse")]
     public static partial void InvocationIdInUse(ILogger logger, string InvocationId);
+
+    [LoggerMessage(24, LogLevel.Debug, "CompletionMessage for invocation ID '{InvocationId}' received unexpectedly.", EventName = "UnexpectedCompletion")]
+    public static partial void UnexpectedCompletion(ILogger logger, string invocationId);
 }
