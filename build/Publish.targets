@@ -44,7 +44,7 @@
     -->
     <WriteLinesToFile
       File="$(LatestRuntimeVersionFile)"
-      Lines="$(CommitHash);$(PackageVersion)"
+      Lines="$(RepositoryCommit);$(PackageVersion)"
       Overwrite="true" />
 
     <ItemGroup>
@@ -304,8 +304,8 @@
                     UploadTimeoutInMinutes="$(PushToBlobFeed_UploadTimeoutMinutes)"
                     ManifestBranch="$(BuildBranch)"
                     ManifestBuildId="$(Version)"
-                    ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(CommitHash)"
-                    ManifestCommit="$(CommitHash)"
+                    ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(RepositoryCommit)"
+                    ManifestCommit="$(RepositoryCommit)"
                     ManifestName="aspnet"
                     MaxClients="$(PushToBlobFeed_MaxClients)"
                     Condition="@(PackageToPublish->Count()) != 0" />
@@ -318,8 +318,8 @@
                     UploadTimeoutInMinutes="$(PushToBlobFeed_UploadTimeoutMinutes)"
                     ManifestBranch="$(BuildBranch)"
                     ManifestBuildId="$(Version)"
-                    ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(CommitHash)"
-                    ManifestCommit="$(CommitHash)"
+                    ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(RepositoryCommit)"
+                    ManifestCommit="$(RepositoryCommit)"
                     ManifestName="aspnet"
                     MaxClients="$(PushToBlobFeed_MaxClients)" />
   </Target>
