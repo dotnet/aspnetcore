@@ -73,11 +73,11 @@ fi
 
 exit_code=0
 
-echo "Trace: dotnet tool install --global dotnet-trace"
-dotnet tool install --global dotnet-trace
+echo "Trace: dotnet tool install --tool-path $DIR dotnet-trace"
+dotnet tool install --tool-path $DIR dotnet-trace
 exit_code=$?
 
-if [[ $exit_code != 0]]; then
+if [[ $exit_code != 0 ]]; then
     echo "dotnet tool install failed: exit_code=$exit_code"
     exit $exit_code
 fi
@@ -88,7 +88,7 @@ sync
 
 echo "Restore: dotnet restore RunTests/RunTests.csproj"
 # '--verbosity detailed' can be removed when random failures are identified.
-dotnet trace collect --providers 'System.Net.Http,System.Net.Sockets,System.Net.Security,System.Net.NameResolution' -- dotnet restore RunTests/RunTests.csproj --verbosity detailed
+./dotnet-trace collect --providers 'System.Net.Http,System.Net.Sockets,System.Net.Security,System.Net.NameResolution' -- dotnet restore RunTests/RunTests.csproj --verbosity detailed
 exit_code=$?
 
 if [[ $exit_code != 0 ]]; then
