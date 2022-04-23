@@ -11,7 +11,7 @@
       <VersionHeaderContents Include="#define ProductVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreModuleVersionMinor),$(AssemblyBuild),$(AspNetCoreModuleVersionRevision)" />
       <VersionHeaderContents Include="#define ProductVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreModuleVersionMinor).$(AssemblyBuild).$(AspNetCoreModuleVersionRevision)\0&quot;" />
       <VersionHeaderContents Include="#define PlatformToolset &quot;$(PlatformToolset)\0&quot;" />
-      <VersionHeaderContents Include="#define CommitHash &quot;$(CommitHash)\0&quot;" />
+      <VersionHeaderContents Include="#define CommitHash &quot;$(RepositoryCommit)\0&quot;" />
     </ItemGroup>
 
     <ItemGroup>
