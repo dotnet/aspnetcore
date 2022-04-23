@@ -1,4 +1,3 @@
 #nullable enable
-*REMOVED*~Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.WsFederationPostConfigureOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtection) -> void
 *REMOVED*Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions! options) -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions! options) -> void

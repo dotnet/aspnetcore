@@ -16,7 +16,7 @@
 ~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerEntry.OutboundHeaderName.get -> string
 ~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerEntryCollection.Add(string capturedHeaderName, string outboundHeaderName) -> void
 ~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerEntryCollection.Add(string headerName) -> void
-~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMiddleware.HeaderPropagationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions!>! options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues! values) -> void
+Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMiddleware.HeaderPropagationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions!>! options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues! values) -> void
 ~Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>
 ~static Microsoft.AspNetCore.Builder.HeaderPropagationApplicationBuilderExtensions.UseHeaderPropagation(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
