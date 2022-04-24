@@ -326,6 +326,10 @@ public static partial class RequestDelegateFactory
         {
             return Expression.Call(ExecuteValueTaskWithEmptyResultMethod, methodCall);
         }
+        else if (returnType == typeof(ValueTask<object?>))
+        {
+            return methodCall;
+        }
         else if (returnType.IsGenericType &&
                      returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
         {

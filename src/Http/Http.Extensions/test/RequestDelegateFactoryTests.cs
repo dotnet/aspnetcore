@@ -4713,10 +4713,17 @@ public class RequestDelegateFactoryTests : LoggedTest
                 return "foo";
             }
 
+            async Task<object> TaskOfObjectWithYieldMethod()
+            {
+                await Task.Yield();
+                return "foo";
+            }
+
             return new object[][]
             {
                 new object[] { (Func<Task<string>>)TaskOfTMethod },
-                new object[] { (Func<Task<string>>)TaskOfTWithYieldMethod }
+                new object[] { (Func<Task<string>>)TaskOfTWithYieldMethod },
+                new object[] { (Func<Task<object>>)TaskOfObjectWithYieldMethod }
             };
         }
     }
@@ -4764,10 +4771,17 @@ public class RequestDelegateFactoryTests : LoggedTest
                 return "foo";
             }
 
+            async ValueTask<object> ValueTaskOfObjectWithYield()
+            {
+                await Task.Yield();
+                return "foo";
+            }
+
             return new object[][]
             {
                 new object[] { (Func<ValueTask<string>>)ValueTaskOfTMethod },
-                new object[] { (Func<ValueTask<string>>)ValueTaskOfTWithYieldMethod }
+                new object[] { (Func<ValueTask<string>>)ValueTaskOfTWithYieldMethod },
+                new object[] { (Func<ValueTask<object>>)ValueTaskOfObjectWithYield }
             };
         }
     }
@@ -4865,30 +4879,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(String.Empty, decodedResponseBody);
     }
 
-    public static object[][] AwaitedTaskReturningMethods
-    {
-        get
-        {
-            async Task HandlerWithTaskAwait(HttpContext c)
-            {
-                await Task.Delay(1000);
-                c.Response.StatusCode = 400;
-            };
-
-            async ValueTask HandlerWithValueTaskAwait(HttpContext c)
-            {
-                await Task.Delay(1000);
-                c.Response.StatusCode = 400;
-            };
-
-            return new object[][]
-            {
-                new object[] { (Func<HttpContext, Task>)HandlerWithTaskAwait },
-                new object[] { (Func<HttpContext, ValueTask>)HandlerWithValueTaskAwait },
-            };
-        }
-    }
-
     [Fact]
     public async Task CanInvokeFilter_OnTaskModifyingHttpContext()
     {
@@ -4897,6 +4887,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         async Task HandlerWithTaskAwait(HttpContext c)
         {
             await tcs.Task;
+            await Task.Yield();
             c.Response.StatusCode = 400;
         };
         var responseBodyStream = new MemoryStream();
@@ -4910,13 +4901,15 @@ public class RequestDelegateFactoryTests : LoggedTest
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
-                    tcs.SetResult();
                     return await next(context);
                 }
             }
         });
+
         var requestDelegate = factoryResult.RequestDelegate;
-        await requestDelegate(httpContext);
+        var request = requestDelegate(httpContext);
+        tcs.TrySetResult();
+        await request;
 
         Assert.Equal(400, httpContext.Response.StatusCode);
         var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
