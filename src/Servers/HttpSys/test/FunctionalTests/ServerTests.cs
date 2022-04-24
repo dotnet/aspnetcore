@@ -36,8 +36,10 @@ public class ServerTests
         }
     }
 
-    [ConditionalFact]
-    public async Task Server_ConnectExistingQueueName_Success()
+    [ConditionalTheory]
+    [InlineData(RequestQueueMode.Attach)]
+    [InlineData(RequestQueueMode.CreateOrAttach)]
+    public async Task Server_ConnectExistingQueueName_Success(RequestQueueMode queueMode)
     {
         string address;
         var queueName = Guid.NewGuid().ToString();
@@ -60,7 +62,7 @@ public class ServerTests
         }, options =>
         {
             options.RequestQueueName = queueName;
-            options.RequestQueueMode = RequestQueueMode.Attach;
+            options.RequestQueueMode = queueMode;
         }))
         {
             var psi = new ProcessStartInfo("netsh", "http show servicestate view=requestq")
@@ -71,6 +73,20 @@ public class ServerTests
             process.Start();
             var netshOutput = await process.StandardOutput.ReadToEndAsync();
             Assert.Contains(queueName, netshOutput);
+
+            var prefix = UrlPrefix.Create(address);
+            switch (queueMode)
+            {
+                case RequestQueueMode.Attach:
+                    Assert.Equal("0", prefix.Port);
+
+                    break;
+                case RequestQueueMode.CreateOrAttach:
+                    Assert.NotEqual("0", prefix.Port);
+                    Assert.Contains(address, netshOutput, StringComparison.OrdinalIgnoreCase);
+
+                    break;
+            }
         }
     }
 
@@ -587,8 +603,10 @@ public class ServerTests
         }
     }
 
-    [ConditionalFact]
-    public async Task Server_AttachToExistingQueue_NoIServerAddresses_NoDefaultAdded()
+    [ConditionalTheory]
+    [InlineData(RequestQueueMode.Attach)]
+    [InlineData(RequestQueueMode.CreateOrAttach)]
+    public async Task Server_AttachToExistingQueue_NoIServerAddresses_NoDefaultAdded(RequestQueueMode queueMode)
     {
         var queueName = Guid.NewGuid().ToString();
         using var server = Utilities.CreateHttpServer(out var address, httpContext => Task.CompletedTask, options =>
@@ -598,7 +616,7 @@ public class ServerTests
         using var attachedServer = Utilities.CreatePump(options =>
         {
             options.RequestQueueName = queueName;
-            options.RequestQueueMode = RequestQueueMode.Attach;
+            options.RequestQueueMode = queueMode;
         });
         await attachedServer.StartAsync(new DummyApplication(context => Task.CompletedTask), default);
         var addressesFeature = attachedServer.Features.Get<IServerAddressesFeature>();
