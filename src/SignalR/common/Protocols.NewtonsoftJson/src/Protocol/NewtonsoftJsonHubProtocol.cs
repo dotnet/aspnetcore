@@ -176,15 +176,16 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                         throw new InvalidDataException($"Expected '{StreamIdsPropertyName}' to be of type {JTokenType.Array}.");
                                     }
 
-                                    var newStreamIds = new List<string>();
+                                    List<string>? newStreamIds = null;
                                     reader.Read();
                                     while (reader.TokenType != JsonToken.EndArray)
                                     {
+                                        newStreamIds ??= new();
                                         newStreamIds.Add(reader.Value?.ToString() ?? throw new InvalidDataException($"Null value for '{StreamIdsPropertyName}' is not valid."));
                                         reader.Read();
                                     }
 
-                                    streamIds = newStreamIds.ToArray();
+                                    streamIds = newStreamIds?.ToArray() ?? Array.Empty<string>();
                                     break;
                                 case TargetPropertyName:
                                     target = JsonUtils.ReadAsString(reader, TargetPropertyName);

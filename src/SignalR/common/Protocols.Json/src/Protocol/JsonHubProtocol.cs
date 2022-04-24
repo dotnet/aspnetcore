@@ -174,15 +174,16 @@ public sealed class JsonHubProtocol : IHubProtocol
                                     $"Expected '{StreamIdsPropertyName}' to be of type {SystemTextJsonExtensions.GetTokenString(JsonTokenType.StartArray)}.");
                             }
 
-                            var newStreamIds = new List<string>();
+                            List<string>? newStreamIds = null;
                             reader.Read();
                             while (reader.TokenType != JsonTokenType.EndArray)
                             {
+                                newStreamIds ??= new();
                                 newStreamIds.Add(reader.GetString() ?? throw new InvalidDataException($"Null value for '{StreamIdsPropertyName}' is not valid."));
                                 reader.Read();
                             }
 
-                            streamIds = newStreamIds.ToArray();
+                            streamIds = newStreamIds?.ToArray() ?? Array.Empty<string>();
                         }
                         else if (reader.ValueTextEquals(TargetPropertyNameBytes.EncodedUtf8Bytes))
                         {
