@@ -115,10 +115,11 @@ internal sealed partial class RequestQueue
             throw new NotSupportedException("Can't attach when UrlGroup is null");
         }
 
-        Debug.Assert(Created);
         CheckDisposed();
         // Set the association between request queue and url group. After this, requests for registered urls will
         // get delivered to this request queue.
+
+        UrlGroup.Queue = this;
 
         var info = new HttpApiTypes.HTTP_BINDING_INFO();
         info.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
@@ -137,13 +138,14 @@ internal sealed partial class RequestQueue
             throw new NotSupportedException("Can't detach when UrlGroup is null");
         }
 
-        Debug.Assert(Created);
         CheckDisposed();
         // Break the association between request queue and url group. After this, requests for registered urls
         // will get 503s.
         // Note that this method may be called multiple times (Stop() and then Abort()). This
         // is fine since http.sys allows to set HttpServerBindingProperty multiple times for valid
         // Url groups.
+
+        UrlGroup.Queue = null;
 
         var info = new HttpApiTypes.HTTP_BINDING_INFO();
         info.Flags = HttpApiTypes.HTTP_FLAGS.NONE;

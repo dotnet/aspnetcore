@@ -42,6 +42,8 @@ internal partial class UrlGroup : IDisposable
 
     internal ulong Id { get; private set; }
 
+    internal RequestQueue? Queue { get; set; }
+
     internal unsafe void SetMaxConnections(long maxConnections)
     {
         var connectionLimit = new HttpApiTypes.HTTP_CONNECTION_LIMIT_INFO();
@@ -93,6 +95,8 @@ internal partial class UrlGroup : IDisposable
 
     internal void RegisterPrefix(string uriPrefix, int contextId)
     {
+        Debug.Assert(Queue != null);
+
         Log.RegisteringPrefix(_logger, uriPrefix);
         CheckDisposed();
         var statusCode = HttpApi.HttpAddUrlToUrlGroup(Id, uriPrefix, (ulong)contextId, 0);
@@ -101,6 +105,22 @@ internal partial class UrlGroup : IDisposable
         {
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
             {
+                // If we didn't create the queue and the uriPrefix already exists, confirm it exists for the
+                // queue we attached to, if so we are all good, otherwise throw an already registered error.
+                if (!Queue.Created)
+                {
+                    unsafe
+                    {
+                        ulong urlGroupId;
+                        var findUrlStatusCode = HttpApi.HttpFindUrlGroupId(uriPrefix, Queue.Handle, &urlGroupId);
+                        if (findUrlStatusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+                        {
+                            // Already registered for the desired queue, all good
+                            return;
+                        }
+                    }
+                }
+
                 throw new HttpSysException((int)statusCode, Resources.FormatException_PrefixAlreadyRegistered(uriPrefix));
             }
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED)
@@ -118,11 +138,7 @@ internal partial class UrlGroup : IDisposable
 
         var statusCode = HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
 
-        if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_NOT_FOUND)
-        {
-            return false;
-        }
-        return true;
+        return statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
     }
 
     public void Dispose()

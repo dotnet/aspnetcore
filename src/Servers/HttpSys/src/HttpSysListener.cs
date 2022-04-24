@@ -147,10 +147,10 @@ internal partial class HttpSysListener : IDisposable
                     return;
                 }
 
-                // If this instance created the queue then configure it.
-                if (_requestQueue.Created)
+                // Always configure the UrlGroup if the intent was to create, only configure the queue if we actually created it
+                if (Options.RequestQueueMode == RequestQueueMode.Create || Options.RequestQueueMode == RequestQueueMode.CreateOrAttach)
                 {
-                    Options.Apply(UrlGroup, RequestQueue);
+                    Options.Apply(UrlGroup, _requestQueue.Created ? RequestQueue : null);
 
                     _requestQueue.AttachToUrlGroup();
 
@@ -195,7 +195,7 @@ internal partial class HttpSysListener : IDisposable
                 Log.ListenerStopping(Logger);
 
                 // If this instance created the queue then remove the URL prefixes before shutting down.
-                if (_requestQueue.Created)
+                if (Options.RequestQueueMode == RequestQueueMode.Create || Options.RequestQueueMode == RequestQueueMode.CreateOrAttach)
                 {
                     Options.UrlPrefixes.UnregisterAllPrefixes();
                     _requestQueue.DetachFromUrlGroup();
