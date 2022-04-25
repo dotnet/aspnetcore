@@ -194,7 +194,7 @@ internal partial class HttpSysListener : IDisposable
 
                 Log.ListenerStopping(Logger);
 
-                // If this instance created the queue then remove the URL prefixes before shutting down.
+                // If this instance registered URL prefixes then remove them before shutting down.
                 if (Options.RequestQueueMode == RequestQueueMode.Create || Options.RequestQueueMode == RequestQueueMode.CreateOrAttach)
                 {
                     Options.UrlPrefixes.UnregisterAllPrefixes();
