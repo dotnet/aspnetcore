@@ -250,7 +250,8 @@ internal class OpenApiGenerator
         var hasFormOrBodyParameter = false;
         ParameterInfo? requestBodyParameter = null;
 
-        foreach (var parameter in methodInfo.GetParameters())
+        var parameters = FlattenParameters(methodInfo.GetParameters());
+        foreach (var parameter in parameters)
         {
             var (bodyOrFormParameter, _) = GetOpenApiParameterLocation(parameter, pattern, false);
             hasFormOrBodyParameter |= bodyOrFormParameter;
@@ -355,9 +356,40 @@ internal class OpenApiGenerator
             : new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
     }
 
+    private static List<ParameterInfo> FlattenParameters(ParameterInfo[] parameters)
+    {
+        var flattenedParameters = new List<ParameterInfo>();
+        NullabilityInfoContext? nullabilityContext = null;
+
+        foreach (var parameter in parameters)
+        {
+            var attributes = parameter.GetCustomAttributes();
+
+            if (attributes.OfType<ParametersAttribute>().Any())
+            {
+                nullabilityContext ??= new();
+
+                var properties = parameter.ParameterType.GetProperties();
+                for (var i = 0; i < properties.Length; i++)
+                {
+                    if (properties[i].CanWrite)
+                    {
+                        flattenedParameters.Add(new SurrogatedParameterInfo(properties[i], nullabilityContext));
+                    }
+                }
+            }
+            else
+            {
+                flattenedParameters.Add(parameter);
+            }
+        }
+
+        return flattenedParameters;
+    }
+
     private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
     {
-        var parameters = methodInfo.GetParameters();
+        var parameters = FlattenParameters(methodInfo.GetParameters());
         var openApiParameters = new List<OpenApiParameter>();
 
         foreach (var parameter in parameters)

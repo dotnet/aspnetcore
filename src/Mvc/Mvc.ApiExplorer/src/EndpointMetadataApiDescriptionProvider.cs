@@ -116,36 +116,48 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
         var hasBodyOrFormFileParameter = false;
 
-        foreach (var parameter in methodInfo.GetParameters())
+        static List<ParameterInfo> FlattenParameters(ParameterInfo[] parameters)
         {
-            void DummyMethod(ParameterInfo parameterInfo)
+            var flattenedParameters = new List<ParameterInfo>();
+            NullabilityInfoContext? nullabilityContext = null;
+
+            foreach (var parameter in parameters)
             {
-                var parameterDescription = CreateApiParameterDescription(parameterInfo, routeEndpoint.RoutePattern, disableInferredBody);
+                var attributes = parameter.GetCustomAttributes();
 
-                if (parameterDescription is { })
+                if (attributes.OfType<ParametersAttribute>().Any())
                 {
-                    apiDescription.ParameterDescriptions.Add(parameterDescription);
+                    nullabilityContext ??= new();
 
-                    hasBodyOrFormFileParameter |=
-                        parameterDescription.Source == BindingSource.Body ||
-                        parameterDescription.Source == BindingSource.FormFile;
+                    var properties = parameter.ParameterType.GetProperties();
+                    for (var i = 0; i < properties.Length; i++)
+                    {
+                        if (properties[i].CanWrite)
+                        {
+                            flattenedParameters.Add(new SurrogatedParameterInfo(properties[i], nullabilityContext));
+                        }
+                    }
+                }
+                else
+                {
+                    flattenedParameters.Add(parameter);
                 }
             }
 
-            if (parameter.GetCustomAttributes().OfType<ParametersAttribute>() is { })
-            {
-                var properties = parameter.ParameterType.GetProperties();
-                var nullabilityContext = new NullabilityInfoContext();
+            return flattenedParameters;
+        }
 
-                for (var i = 0; i < properties.Length; i++)
-                {
-                    var parameterInfo = new SurrogatedParameterInfo(properties[i], nullabilityContext);
-                    DummyMethod(parameterInfo);
-                }
-            }
-            else
+        foreach (var parameter in FlattenParameters(methodInfo.GetParameters()))
+        {
+            var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern, disableInferredBody);
+
+            if (parameterDescription is { })
             {
-                DummyMethod(parameter);
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
+
+                hasBodyOrFormFileParameter |=
+                    parameterDescription.Source == BindingSource.Body ||
+                    parameterDescription.Source == BindingSource.FormFile;
             }
         }
 

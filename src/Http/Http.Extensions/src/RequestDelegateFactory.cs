@@ -420,7 +420,7 @@ public static partial class RequestDelegateFactory
         if (parameterCustomAttributes.OfType<ParametersAttribute>().FirstOrDefault() is { } ||
             parameter.ParameterType.GetCustomAttributes().OfType<ParametersAttribute>().FirstOrDefault() is { })
         {
-            return BindSurrogatedArgument(parameter, factoryContext);
+            return BindParameterFromSurrogatedProperties(parameter, factoryContext);
         }
         else if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
         {
@@ -1094,7 +1094,7 @@ public static partial class RequestDelegateFactory
         return Expression.Convert(indexExpression, returnType ?? typeof(string));
     }
 
-    private static Expression BindSurrogatedArgument(ParameterInfo parameter, FactoryContext factoryContext)
+    private static Expression BindParameterFromSurrogatedProperties(ParameterInfo parameter, FactoryContext factoryContext)
     {
         var properties = parameter.ParameterType.GetProperties();
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
@@ -1110,13 +1110,14 @@ public static partial class RequestDelegateFactory
 
             // Try to find the parameterless constructor
             var constructor = parameter.ParameterType.GetConstructor(Array.Empty<Type>());
-            if (constructor is { })
+            if (constructor is not null)
             {
                 return constructor;
             }
 
             // If a parameterless ctor is not defined
-            // we will try to find a ctor that includes all the property types.
+            // we will try to find a ctor that includes all
+            // property types and the right order.
             var types = new Type[properties.Length];
             for (var i = 0; i < properties.Length; i++)
             {
