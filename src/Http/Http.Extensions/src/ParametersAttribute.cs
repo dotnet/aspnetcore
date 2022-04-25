@@ -8,7 +8,10 @@ using System;
 /// <summary>
 /// 
 /// </summary>
-[AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
+[AttributeUsage(
+    AttributeTargets.Parameter | AttributeTargets.Class,
+    Inherited = false,
+    AllowMultiple = false)]
 public sealed class ParametersAttribute : Attribute
 {
 }

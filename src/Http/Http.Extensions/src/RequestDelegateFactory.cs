@@ -417,8 +417,8 @@ public static partial class RequestDelegateFactory
             throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
         }
 
-        if (parameterCustomAttributes.OfType<ParametersAttribute>().FirstOrDefault() is { } ||
-            parameter.ParameterType.GetCustomAttributes().OfType<ParametersAttribute>().FirstOrDefault() is { })
+        if (parameter.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)) ||
+            parameter.ParameterType.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
         {
             return BindParameterFromSurrogatedProperties(parameter, factoryContext);
         }
