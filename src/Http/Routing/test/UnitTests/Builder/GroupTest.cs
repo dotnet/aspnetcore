@@ -1,14 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Builder;
+#nullable enable
+
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Primitives;
 using Moq;
 
-namespace Microsoft.AspNetCore.Routing.Builder;
+namespace Microsoft.AspNetCore.Builder;
 
 public class GroupTest
 {
@@ -20,7 +22,7 @@ public class GroupTest
     [Fact]
     public async Task Prefix_CanBeEmpty()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var group = builder.MapGroup("");
         Assert.Equal("", group.GroupPrefix.RawText);
@@ -55,7 +57,7 @@ public class GroupTest
     [Fact]
     public async Task PrefixWithRouteParameter_CanBeUsed()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var group = builder.MapGroup("/{org}");
         Assert.Equal("/{org}", group.GroupPrefix.RawText);
@@ -93,7 +95,7 @@ public class GroupTest
     [Fact]
     public async Task NestedPrefixWithRouteParameters_CanBeUsed()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var group = builder.MapGroup("/{org}").MapGroup("/{id}");
         Assert.Equal("/{org}/{id}", group.GroupPrefix.RawText);
@@ -131,7 +133,7 @@ public class GroupTest
     [Fact]
     public void RepeatedRouteParameter_ThrowsRoutePatternException()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var ex = Assert.Throws<RoutePatternException>(() => builder.MapGroup("/{ID}").MapGroup("/{id}"));
 
@@ -142,7 +144,7 @@ public class GroupTest
     [Fact]
     public void NullParameters_ThrowsArgumentNullException()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var ex = Assert.Throws<ArgumentNullException>(() => builder.MapGroup((string)null!));
         Assert.Equal("prefix", ex.ParamName);
@@ -160,7 +162,7 @@ public class GroupTest
     [Fact]
     public void RoutePatternInConvention_IncludesFullGroupPrefix()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var outer = builder.MapGroup("/outer");
         var inner = outer.MapGroup("/inner");
@@ -210,7 +212,7 @@ public class GroupTest
     [Fact]
     public async Task BuildingEndpointInConvention_Works()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var group = builder.MapGroup("/group");
         var mapGetCalled = false;
@@ -247,7 +249,7 @@ public class GroupTest
     [Fact]
     public void ModifyingRoutePatternInConvention_ThrowsNotSupportedException()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var group = builder.MapGroup("/group");
         group.MapGet("/foo", () => "Hello World!");
@@ -265,7 +267,7 @@ public class GroupTest
     [Fact]
     public async Task ChangingMostEndpointBuilderPropertiesInConvention_Works()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var group = builder.MapGroup("/group");
         var mapGetCalled = false;
@@ -308,7 +310,7 @@ public class GroupTest
     [Fact]
     public void GivenNonRouteEndpoint_ThrowsNotSupportedException()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var group = builder.MapGroup("/group");
         ((IEndpointRouteBuilder)group).DataSources.Add(new TestCustomEndpintDataSource());
@@ -324,7 +326,7 @@ public class GroupTest
     [Fact]
     public void OuterGroupMetadata_AddedFirst()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var outer = builder.MapGroup("/outer");
         var inner = outer.MapGroup("/inner");
@@ -345,7 +347,7 @@ public class GroupTest
     [Fact]
     public void MultipleEndpoints_AreSupported()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
 
         var group = builder.MapGroup("/group");
         group.MapGet("/foo", () => "foo");
@@ -372,7 +374,7 @@ public class GroupTest
     [Fact]
     public void DataSourceFiresChangeToken_WhenInnerDataSourceFiresChangeToken()
     {
-        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null));
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider: null!));
         var dynamicDataSource = new DynamicEndpointDataSource();
 
         var group = builder.MapGroup("/group");
