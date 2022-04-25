@@ -17,7 +17,7 @@ namespace Microsoft.Net.Http.Headers;
 /// Represents the value of a <c>Content-Disposition</c> header.
 /// </summary>
 /// <remarks>
-/// Note this is for use both in HTTP (https://tools.ietf.org/html/rfc6266) and MIME (https://tools.ietf.org/html/rfc2183)
+/// Note this is for use both in HTTP (<see href="https://tools.ietf.org/html/rfc6266"/>) and MIME (<see href="https://tools.ietf.org/html/rfc2183"/>).
 /// </remarks>
 public class ContentDispositionHeaderValue
 {

@@ -299,7 +299,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// <summary>
     /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard.
     /// This only applies when the <see cref="ResponseType"/> is set to <see cref="OpenIdConnectResponseType.Code"/>.
-    /// See https://tools.ietf.org/html/rfc7636.
+    /// See <see href="https://tools.ietf.org/html/rfc7636"/>.
     /// The default value is `true`.
     /// </summary>
     public bool UsePkce { get; set; } = true;

@@ -157,14 +157,19 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         }
     }
 
-    // Consumes bytes from the stream's window and returns the remaining bytes and actual bytes consumed
-    internal (long actual, long remaining) ConsumeStreamWindow(long bytes)
+    internal long CheckStreamWindow(long bytes)
     {
         lock (_dataWriterLock)
         {
-            var actual = Math.Min(bytes, _streamWindow);
-            _streamWindow -= actual;
-            return (actual, _streamWindow);
+            return Math.Min(bytes, _streamWindow);
+        }
+    }
+
+    internal void ConsumeStreamWindow(long bytes)
+    {
+        lock (_dataWriterLock)
+        {
+            _streamWindow -= bytes;
         }
     }
 
@@ -295,6 +300,25 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, ID
         }
 
         _frameWriter.Schedule(this);
+    }
+
+    public bool TryScheduleNextWriteIfStreamWindowHasSpace()
+    {
+        lock (_dataWriterLock)
+        {
+            Debug.Assert(_unconsumedBytes > 0);
+
+            // Check the stream window under the lock so that we don't miss window updates
+            if (_streamWindow > 0)
+            {
+                Schedule();
+
+                return true;
+            }
+
+            _waitingForWindowUpdates = true;
+        }
+        return false;
     }
 
     public void ScheduleResumeFromWindowUpdate()

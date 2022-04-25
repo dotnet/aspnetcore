@@ -64,7 +64,6 @@ public class InteropTests
     public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41248")]
     public Task ClientCompressedUnary() => InteropTestCase("client_compressed_unary");
 
     [Fact]

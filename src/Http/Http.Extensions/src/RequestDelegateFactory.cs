@@ -121,7 +121,9 @@ public static partial class RequestDelegateFactory
 
         var factoryContext = CreateFactoryContext(options);
 
-        var targetableRequestDelegate = CreateTargetableRequestDelegate(handler.Method, targetExpression, factoryContext);
+        Expression<Func<HttpContext, object?>> targetFactory = (httpContext) => handler.Target;
+
+        var targetableRequestDelegate = CreateTargetableRequestDelegate(handler.Method, targetExpression, factoryContext, targetFactory);
 
         return new RequestDelegateResult(httpContext => targetableRequestDelegate(handler.Target, httpContext), factoryContext.Metadata);
     }
@@ -162,7 +164,7 @@ public static partial class RequestDelegateFactory
         }
 
         var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
-        var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression, factoryContext);
+        var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression, factoryContext, context => targetFactory(context));
 
         return new RequestDelegateResult(httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext), factoryContext.Metadata);
     }
@@ -187,7 +189,7 @@ public static partial class RequestDelegateFactory
         return context;
     }
 
-    private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext)
+    private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext, Expression<Func<HttpContext, object?>>? targetFactory = null)
     {
         // Non void return type
 
@@ -223,7 +225,7 @@ public static partial class RequestDelegateFactory
         // return type associated with the request to allow for the filter invocation pipeline.
         if (factoryContext.Filters is { Count: > 0 })
         {
-            var filterPipeline = CreateFilterPipeline(methodInfo, targetExpression, factoryContext);
+            var filterPipeline = CreateFilterPipeline(methodInfo, targetExpression, factoryContext, targetFactory);
             Expression<Func<RouteHandlerInvocationContext, ValueTask<object?>>> invokePipeline = (context) => filterPipeline(context);
             returnType = typeof(ValueTask<object?>);
             // var filterContext = new RouteHandlerInvocationContext(httpContext, new[] { (object)name_local, (object)int_local });
@@ -250,22 +252,29 @@ public static partial class RequestDelegateFactory
         return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
     }
 
-    private static RouteHandlerFilterDelegate CreateFilterPipeline(MethodInfo methodInfo, Expression? target, FactoryContext factoryContext)
+    private static RouteHandlerFilterDelegate CreateFilterPipeline(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext, Expression<Func<HttpContext, object?>>? targetFactory)
     {
         Debug.Assert(factoryContext.Filters is not null);
         // httpContext.Response.StatusCode >= 400
         // ? Task.CompletedTask
-        // : handler((string)context.Parameters[0], (int)context.Parameters[1])
+        // : {
+        //  target = targetFactory(httpContext);
+        //  handler is ((Type)target).MethodName(parameters);
+        //  handler((string)context.Parameters[0], (int)context.Parameters[1]);
+        // }
         var filteredInvocation = Expression.Lambda<RouteHandlerFilterDelegate>(
             Expression.Condition(
                 Expression.GreaterThanOrEqual(FilterContextHttpContextStatusCodeExpr, Expression.Constant(400)),
                 CompletedValueTaskExpr,
                 Expression.Block(
                     new[] { TargetExpr },
+                    targetFactory == null
+                        ? Expression.Empty()
+                        : Expression.Assign(TargetExpr, Expression.Invoke(targetFactory, FilterContextHttpContextExpr)),
                     Expression.Call(WrapObjectAsValueTaskMethod,
-                        target is null
+                        targetExpression is null
                             ? Expression.Call(methodInfo, factoryContext.ContextArgAccess)
-                            : Expression.Call(target, methodInfo, factoryContext.ContextArgAccess))
+                            : Expression.Call(targetExpression, methodInfo, factoryContext.ContextArgAccess))
                 )),
             FilterContextExpr).Compile();
         var routeHandlerContext = new RouteHandlerContext(
