@@ -10,14 +10,9 @@ internal class ServerDelegationPropertyFeature : IServerDelegationFeature
     private readonly ILogger _logger;
     private readonly UrlGroup _urlGroup;
 
-    public ServerDelegationPropertyFeature(RequestQueue queue, ILogger logger)
+    public ServerDelegationPropertyFeature(UrlGroup urlGroup, ILogger logger)
     {
-        if (queue.UrlGroup == null)
-        {
-            throw new ArgumentException($"{nameof(queue)}.UrlGroup can't be null");
-        }
-
-        _urlGroup = queue.UrlGroup;
+        _urlGroup = urlGroup ?? throw new ArgumentNullException(nameof(urlGroup));
         _logger = logger;
     }
 
