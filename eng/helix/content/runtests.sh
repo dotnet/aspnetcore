@@ -73,9 +73,11 @@ fi
 
 exit_code=0
 
-echo "Trace: dotnet tool install --tool-path $DIR dotnet-trace"
-dotnet tool install --tool-path $DIR dotnet-trace
+mv NuGet.config NuGet.config.save
+echo "Trace: dotnet tool install --tool-path $DIR --add-source $DIR dotnet-trace"
+dotnet tool install --tool-path $DIR --add-source $DIR dotnet-trace
 exit_code=$?
+mv NuGet.config.save NuGet.config
 
 if [[ $exit_code != 0 ]]; then
     echo "dotnet tool install failed: exit_code=$exit_code"

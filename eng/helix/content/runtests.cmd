@@ -23,11 +23,13 @@ echo.
 
 set exit_code=0
 
-echo "Trace: dotnet tool install --tool-path %HELIX_WORKITEM_ROOT% dotnet-trace"
-dotnet tool install --tool-path %HELIX_WORKITEM_ROOT% dotnet-trace
+move NuGet.config NuGet.config.save
+echo "Trace: dotnet tool install --tool-path %CD% --add-source %CD%\\ dotnet-trace"
+dotnet tool install --tool-path %CD% --add-source %CD%\\ dotnet-trace
+set exit_code=%errorlevel%
+move NuGet.config.save NuGet.config
 
-if not errorlevel 0 (
-    set exit_code=%errorlevel%
+if %exit_code% NEQ 0 (
     echo "dotnet tool install failed: exit_code=$exit_code"
     EXIT /b %exit_code%
 )
