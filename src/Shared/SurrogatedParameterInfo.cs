@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.Http;
 internal class SurrogatedParameterInfo : ParameterInfo
 {
     private readonly PropertyInfo _underlyingProperty;
-    private readonly NullabilityInfo _nullabilityInfo;
+    private readonly NullabilityInfoContext _nullabilityContext;
+    private NullabilityInfo? _nullabilityInfo;
 
     public SurrogatedParameterInfo(PropertyInfo propertyInfo, NullabilityInfoContext nullabilityContext)
     {
@@ -21,7 +22,7 @@ internal class SurrogatedParameterInfo : ParameterInfo
         ClassImpl = propertyInfo.PropertyType;
         PositionImpl = -1;//parameter.Position;
 
-        _nullabilityInfo = nullabilityContext.Create(propertyInfo);
+        _nullabilityContext = nullabilityContext;
         _underlyingProperty = propertyInfo;
     }
 
@@ -48,5 +49,7 @@ internal class SurrogatedParameterInfo : ParameterInfo
     public override bool IsDefined(Type attributeType, bool inherit)
         => _underlyingProperty.IsDefined(attributeType, inherit);
 
-    public new bool IsOptional => _nullabilityInfo.ReadState != NullabilityState.NotNull;
+    public new bool IsOptional => NullabilityInfo.ReadState != NullabilityState.NotNull;
+
+    public NullabilityInfo NullabilityInfo => _nullabilityInfo ??= _nullabilityContext.Create(_underlyingProperty);
 }

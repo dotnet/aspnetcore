@@ -116,35 +116,41 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
         var hasBodyOrFormFileParameter = false;
 
-        static List<ParameterInfo> FlattenParameters(ParameterInfo[] parameters)
+        static IEnumerable<ParameterInfo> FlattenParameters(ParameterInfo[] parameters)
         {
-            var flattenedParameters = new List<ParameterInfo>();
+            if (parameters.Length == 0)
+            {
+                return Array.Empty<ParameterInfo>();
+            }
+
+            List<ParameterInfo>? flattenedParameters = null;
             NullabilityInfoContext? nullabilityContext = null;
 
-            foreach (var parameter in parameters)
+            for (var i = 0; i < parameters.Length; i++)
             {
-                var attributes = parameter.GetCustomAttributes();
-
-                if (attributes.OfType<ParametersAttribute>().Any())
+                if (parameters[i].CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
                 {
+                    // Initialize the list with all parameter already processed
+                    // to keep the same parameter ordering
+                    flattenedParameters ??= new(parameters[0..i]);
                     nullabilityContext ??= new();
 
-                    var properties = parameter.ParameterType.GetProperties();
-                    for (var i = 0; i < properties.Length; i++)
+                    var properties = parameters[i].ParameterType.GetProperties();
+                    foreach (var property in properties)
                     {
-                        if (properties[i].CanWrite)
+                        if (property.CanWrite)
                         {
-                            flattenedParameters.Add(new SurrogatedParameterInfo(properties[i], nullabilityContext));
+                            flattenedParameters.Add(new SurrogatedParameterInfo(property, nullabilityContext));
                         }
                     }
                 }
-                else
+                else if (flattenedParameters is not null)
                 {
-                    flattenedParameters.Add(parameter);
+                    flattenedParameters.Add(parameters[i]);
                 }
             }
 
-            return flattenedParameters;
+            return flattenedParameters is not null ? flattenedParameters : parameters;
         }
 
         foreach (var parameter in FlattenParameters(methodInfo.GetParameters()))
