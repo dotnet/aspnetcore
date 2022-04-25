@@ -162,6 +162,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     var buffer = result.Buffer;
                     try
                     {
+                        if (_bodyOutput.Aborted)
+                        {
+                            break;
+                        }
+
                         if (!buffer.IsEmpty)
                         {
                             await AsyncIO!.WriteAsync(buffer);
