@@ -1125,7 +1125,7 @@ public static partial class RequestDelegateFactory
             }
             constructor = parameter.ParameterType.GetConstructor(types);
 
-            if (constructor is { })
+            if (constructor is not null)
             {
                 return constructor;
             }
