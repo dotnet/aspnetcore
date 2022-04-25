@@ -1117,7 +1117,19 @@ public static partial class RequestDelegateFactory
 
             // If a parameterless ctor is not defined
             // we will try to find a ctor that includes all
-            // property types and the right order.
+            // property types and in the right order.
+            // Eg.:
+            // public class Sample
+            // {
+            //    // Valid
+            //    public Sample(int id, string name){}
+            //    // InValid
+            //    public Sample(string name, int id){}
+            //
+            //    public int Id { get; set; }
+            //    public string Name { get; set; }
+            //}
+
             var types = new Type[properties.Length];
             for (var i = 0; i < properties.Length; i++)
             {
