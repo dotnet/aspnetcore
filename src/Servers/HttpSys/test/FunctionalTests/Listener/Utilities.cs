@@ -97,8 +97,6 @@ internal static class Utilities
         {
             options.RequestQueueName = requestQueueName;
             options.RequestQueueMode = RequestQueueMode.Attach;
-            options.Authentication.Schemes = AuthenticationSchemes.None;
-            options.Authentication.AllowAnonymous = true;
         });
     }
 
