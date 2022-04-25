@@ -4,12 +4,13 @@ set -e
 
 usage()
 {
-    echo "Usage: $0 [BuildArch] [CodeName] [lldbx.y] [--skipunmount] --rootfsdir <directory>]"
+    echo "Usage: $0 [BuildArch] [CodeName] [lldbx.y] [llvmx[.y]] [--skipunmount] --rootfsdir <directory>]"
     echo "BuildArch can be: arm(default), armel, arm64, x86"
     echo "CodeName - optional, Code name for Linux, can be: xenial(default), zesty, bionic, alpine, alpine3.13 or alpine3.14. If BuildArch is armel, LinuxCodeName is jessie(default) or tizen."
     echo "                              for FreeBSD can be: freebsd12, freebsd13"
     echo "                              for illumos can be: illumos."
     echo "lldbx.y - optional, LLDB version, can be: lldb3.9(default), lldb4.0, lldb5.0, lldb6.0 no-lldb. Ignored for alpine and FreeBSD"
+    echo "llvmx[.y] - optional, LLVM version for LLVM related packages."
     echo "--skipunmount - optional, will skip the unmount of rootfs folder."
     echo "--use-mirror - optional, use mirror URL to fetch resources, when available."
     exit 1
@@ -48,6 +49,7 @@ __AlpinePackages+=" gettext-dev"
 __AlpinePackages+=" icu-dev"
 __AlpinePackages+=" libunwind-dev"
 __AlpinePackages+=" lttng-ust-dev"
+__AlpinePackages+=" compiler-rt-static"
 
 # CoreFX dependencies
 __UbuntuPackages+=" libcurl4-openssl-dev"
@@ -164,6 +166,15 @@ while :; do
         no-lldb)
             unset __LLDB_Package
             ;;
+        llvm*)
+            version="$(echo "$lowerI" | tr -d '[:alpha:]-=')"
+            parts=(${version//./ })
+            __LLVM_MajorVersion="${parts[0]}"
+            __LLVM_MinorVersion="${parts[1]}"
+            if [[ -z "$__LLVM_MinorVersion" && "$__LLVM_MajorVersion" -le 6 ]]; then
+                __LLVM_MinorVersion=0;
+            fi
+            ;;
         xenial) # Ubuntu 16.04
             if [ "$__CodeName" != "jessie" ]; then
                 __CodeName=xenial
@@ -260,6 +271,10 @@ if [ "$__BuildArch" == "armel" ]; then
     __LLDB_Package="lldb-3.5-dev"
 fi
 __UbuntuPackages+=" ${__LLDB_Package:-}"
+
+if [ ! -z "$__LLVM_MajorVersion" ]; then
+    __UbuntuPackages+=" libclang-common-${__LLVM_MajorVersion}${__LLVM_MinorVersion:+.$__LLVM_MinorVersion}-dev"
+fi
 
 if [ -z "$__RootfsDir" ] && [ ! -z "$ROOTFS_DIR" ]; then
     __RootfsDir=$ROOTFS_DIR
