@@ -166,14 +166,12 @@ internal partial class UrlGroup : IDisposable
         }
     }
 
-    internal bool UnregisterPrefix(string uriPrefix)
+    internal void UnregisterPrefix(string uriPrefix)
     {
         Log.UnregisteringPrefix(_logger, uriPrefix);
         CheckDisposed();
 
-        var statusCode = HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
-
-        return statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
+        HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
     }
 
     public void Dispose()

@@ -10,9 +10,9 @@ internal class ServerDelegationPropertyFeature : IServerDelegationFeature
     private readonly ILogger _logger;
     private readonly UrlGroup _urlGroup;
 
-    public ServerDelegationPropertyFeature(UrlGroup urlGroup!!, ILogger logger)
+    public ServerDelegationPropertyFeature(UrlGroup urlGroup, ILogger logger)
     {
-        _urlGroup = urlGroup;
+        _urlGroup = urlGroup ?? throw new ArgumentNullException(nameof(urlGroup));
         _logger = logger;
     }
 
