@@ -88,7 +88,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     private Task SendToAllConnections(string methodName, object?[] args, Func<HubConnectionContext, object?, bool>? include, object? state = null, CancellationToken cancellationToken = default)
     {
         List<Task>? tasks = null;
-        SerializedHubMessage? message = null;
+        PooledSerializedMessage? message = null;
 
         // foreach over HubConnectionStore avoids allocating an enumerator
         foreach (var connection in _connections)
@@ -128,12 +128,21 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         }
 
         // Some connections are slow
-        return Task.WhenAll(tasks);
+        var allTasks = Task.WhenAll(tasks);
+
+        if (allTasks.IsCompletedSuccessfully)
+        {
+            message?.Dispose();
+
+            return allTasks;
+        }
+
+        return AwaitThenDispose(allTasks, message!);
     }
 
     // Tasks and message are passed by ref so they can be lazily created inside the method post-filtering,
     // while still being re-usable when sending to multiple groups
-    private static void SendToGroupConnections(string methodName, object?[] args, ConcurrentDictionary<string, HubConnectionContext> connections, Func<HubConnectionContext, object?, bool>? include, object? state, ref List<Task>? tasks, ref SerializedHubMessage? message, CancellationToken cancellationToken)
+    private static void SendToGroupConnections(string methodName, object?[] args, ConcurrentDictionary<string, HubConnectionContext> connections, Func<HubConnectionContext, object?, bool>? include, object? state, ref List<Task>? tasks, ref PooledSerializedMessage? message, CancellationToken cancellationToken)
     {
         // foreach over ConcurrentDictionary avoids allocating an enumerator
         foreach (var connection in connections)
@@ -204,12 +213,21 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             // Can't optimize for sending to a single connection in a group because
             // group might be modified inbetween checking and sending
             List<Task>? tasks = null;
-            SerializedHubMessage? message = null;
+            PooledSerializedMessage? message = null;
             DefaultHubLifetimeManager<THub>.SendToGroupConnections(methodName, args, group, null, null, ref tasks, ref message, cancellationToken);
 
             if (tasks != null)
             {
-                return Task.WhenAll(tasks);
+                var task = Task.WhenAll(tasks);
+
+                if (task.IsCompletedSuccessfully)
+                {
+                    message?.Dispose();
+
+                    return task;
+                }
+
+                return AwaitThenDispose(task, message!);
             }
         }
 
@@ -221,7 +239,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     {
         // Each task represents the list of tasks for each of the writes within a group
         List<Task>? tasks = null;
-        SerializedHubMessage? message = null;
+        PooledSerializedMessage? message = null;
 
         foreach (var groupName in groupNames)
         {
@@ -239,7 +257,16 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
 
         if (tasks != null)
         {
-            return Task.WhenAll(tasks);
+            var task = Task.WhenAll(tasks);
+
+            if (task.IsCompletedSuccessfully)
+            {
+                message?.Dispose();
+
+                return task;
+            }
+
+            return AwaitThenDispose(task, message!);
         }
 
         return Task.CompletedTask;
@@ -257,22 +284,43 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         if (group != null)
         {
             List<Task>? tasks = null;
-            SerializedHubMessage? message = null;
+            PooledSerializedMessage? message = null;
 
             DefaultHubLifetimeManager<THub>.SendToGroupConnections(methodName, args, group, (connection, state) => !((IReadOnlyList<string>)state!).Contains(connection.ConnectionId), excludedConnectionIds, ref tasks, ref message, cancellationToken);
 
             if (tasks != null)
             {
-                return Task.WhenAll(tasks);
+                var task = Task.WhenAll(tasks);
+
+                if (task.IsCompletedSuccessfully)
+                {
+                    message?.Dispose();
+
+                    return task;
+                }
+
+                return AwaitThenDispose(task, message!);
             }
         }
 
         return Task.CompletedTask;
     }
 
-    private static SerializedHubMessage CreateSerializedInvocationMessage(string methodName, object?[] args)
+    static async Task AwaitThenDispose(Task task, PooledSerializedMessage pooledSerializedMessage)
     {
-        return new SerializedHubMessage(CreateInvocationMessage(methodName, args));
+        try
+        {
+            await task;
+        }
+        finally
+        {
+            pooledSerializedMessage?.Dispose();
+        }
+    }
+
+    private static PooledSerializedMessage CreateSerializedInvocationMessage(string methodName, object?[] args)
+    {
+        return new PooledSerializedMessage(CreateInvocationMessage(methodName, args));
     }
 
     private static HubMessage CreateInvocationMessage(string methodName, object?[] args)

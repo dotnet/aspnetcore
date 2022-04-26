@@ -174,7 +174,24 @@ public partial class HubConnectionContext
         return WriteAsync(message, ignoreAbort: false, cancellationToken);
     }
 
-    internal ValueTask WriteAsync(HubMessage message, bool ignoreAbort, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// This method is designed to support the framework and is not intended to be used by application code. Writes a pre-serialized message to the
+    /// connection.
+    /// </summary>
+    /// <param name="message">The serialization cache to use.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+    /// <returns></returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public virtual ValueTask WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken = default)
+    {
+        return WriteAsync(message, ignoreAbort: false, cancellationToken);
+    }
+    internal virtual ValueTask WriteAsync(PooledSerializedMessage message, CancellationToken cancellationToken = default)
+    {
+        return WriteAsync(message, ignoreAbort: false, cancellationToken);
+    }
+
+    internal ValueTask WriteAsync(object message, bool ignoreAbort, CancellationToken cancellationToken = default)
     {
         // Try to grab the lock synchronously, if we fail, go to the slower path
 #pragma warning disable CA2016 // This will always finish synchronously so we do not need to both with cancel
@@ -211,80 +228,35 @@ public partial class HubConnectionContext
         return default;
     }
 
-    /// <summary>
-    /// This method is designed to support the framework and is not intended to be used by application code. Writes a pre-serialized message to the
-    /// connection.
-    /// </summary>
-    /// <param name="message">The serialization cache to use.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
-    /// <returns></returns>
-    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public virtual ValueTask WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken = default)
-    {
-        // Try to grab the lock synchronously, if we fail, go to the slower path
-#pragma warning disable CA2016 // This will always finish synchronously so we do not need to both with cancel
-        if (!_writeLock.Wait(0))
-        {
-#pragma warning restore CA2016
-            return new ValueTask(WriteSlowAsync(message, cancellationToken));
-        }
-
-        if (_connectionAborted)
-        {
-            _writeLock.Release();
-            return default;
-        }
-
-        // This method should never throw synchronously
-        var task = WriteCore(message, cancellationToken);
-
-        // The write didn't complete synchronously so await completion
-        if (!task.IsCompletedSuccessfully)
-        {
-            return new ValueTask(CompleteWriteAsync(task));
-        }
-        else
-        {
-            // If it's a IValueTaskSource backed ValueTask,
-            // inform it its result has been read so it can reset
-            task.GetAwaiter().GetResult();
-        }
-
-        // Otherwise, release the lock acquired when entering WriteAsync
-        _writeLock.Release();
-
-        return default;
-    }
-
-    private ValueTask<FlushResult> WriteCore(HubMessage message, CancellationToken cancellationToken)
+    private ValueTask<FlushResult> WriteCore(object message, CancellationToken cancellationToken)
     {
         try
         {
-            // We know that we are only writing this message to one receiver, so we can
-            // write it without caching.
-            Protocol.WriteMessage(message, _connectionContext.Transport.Output);
+            if (message is HubMessage hubMessage)
+            {
+                // We know that we are only writing this message to one receiver, so we can
+                // write it without caching.
+                Protocol.WriteMessage(hubMessage, _connectionContext.Transport.Output);
 
-            return _connectionContext.Transport.Output.FlushAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            CloseException = ex;
-            Log.FailedWritingMessage(_logger, ex);
+                return _connectionContext.Transport.Output.FlushAsync(cancellationToken);
+            }
+            else if (message is SerializedHubMessage serializedHubMessage)
+            {
+                var buffer = serializedHubMessage.GetSerializedMessage(Protocol);
 
-            AbortAllowReconnect();
+                return _connectionContext.Transport.Output.WriteAsync(buffer, cancellationToken);
+            }
+            else if (message is PooledSerializedMessage pooledSerializedMessage)
+            {
+                var writer = pooledSerializedMessage.GetSerializedMessage(Protocol);
 
-            return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
-        }
-    }
+                // TODO: Use CopyToAsync
+                writer.CopyTo(_connectionContext.Transport.Output);
 
-    private ValueTask<FlushResult> WriteCore(SerializedHubMessage message, CancellationToken cancellationToken)
-    {
-        try
-        {
-            // Grab a preserialized buffer for this protocol.
-            var buffer = message.GetSerializedMessage(Protocol);
+                return _connectionContext.Transport.Output.FlushAsync(cancellationToken);
+            }
 
-            return _connectionContext.Transport.Output.WriteAsync(buffer, cancellationToken);
+            throw new NotSupportedException();
         }
         catch (Exception ex)
         {
@@ -317,7 +289,7 @@ public partial class HubConnectionContext
         }
     }
 
-    private async Task WriteSlowAsync(HubMessage message, bool ignoreAbort, CancellationToken cancellationToken)
+    private async Task WriteSlowAsync(object message, bool ignoreAbort, CancellationToken cancellationToken)
     {
         // Failed to get the lock immediately when entering WriteAsync so await until it is available
         await _writeLock.WaitAsync(cancellationToken);
@@ -325,32 +297,6 @@ public partial class HubConnectionContext
         try
         {
             if (_connectionAborted && !ignoreAbort)
-            {
-                return;
-            }
-
-            await WriteCore(message, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            CloseException = ex;
-            Log.FailedWritingMessage(_logger, ex);
-            AbortAllowReconnect();
-        }
-        finally
-        {
-            _writeLock.Release();
-        }
-    }
-
-    private async Task WriteSlowAsync(SerializedHubMessage message, CancellationToken cancellationToken)
-    {
-        // Failed to get the lock immediately when entering WriteAsync so await until it is available
-        await _writeLock.WaitAsync(cancellationToken);
-
-        try
-        {
-            if (_connectionAborted)
             {
                 return;
             }
