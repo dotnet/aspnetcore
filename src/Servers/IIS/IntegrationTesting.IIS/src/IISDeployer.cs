@@ -361,44 +361,45 @@ public class IISDeployer : IISDeployerBase
         {
             RetryServerManagerAction(serverManager =>
             {
-                foreach (var site in serverManager.Sites)
+                var site = serverManager.Sites.SingleOrDefault();
+                if (site == null)
                 {
-                    if (site.State != ObjectState.Stopped && site.State != ObjectState.Stopping)
-                    {
-                        var state = site.Stop();
-                        Logger.LogInformation($"Stopping site, state: {state}");
-                    }
+                    throw new InvalidOperationException("Site not found");
                 }
 
-                foreach (var appPool in serverManager.ApplicationPools)
+                if (site.State != ObjectState.Stopped && site.State != ObjectState.Stopping)
                 {
-                    if (appPool.State != ObjectState.Stopped && appPool.State != ObjectState.Stopping)
-                    {
-                        var state = appPool.Stop();
-                        Logger.LogInformation($"Stopping pool, state: {state}");
-                    }
+                    var state = site.Stop();
+                    Logger.LogInformation($"Stopping site, state: {state}");
                 }
 
-                foreach (var site in serverManager.Sites)
+                var appPool = serverManager.ApplicationPools.SingleOrDefault();
+                if (appPool == null)
                 {
-                    if (site.State != ObjectState.Stopped)
-                    {
-                        throw new InvalidOperationException($"Site {site.Name} not stopped yet");
-                    }
+                    throw new InvalidOperationException("Application pool not found");
+                }
+
+                if (appPool.State != ObjectState.Stopped && appPool.State != ObjectState.Stopping)
+                {
+                    var state = appPool.Stop();
+                    Logger.LogInformation($"Stopping pool, state: {state}");
+                }
+
+                if (site.State != ObjectState.Stopped)
+                {
+                    throw new InvalidOperationException("Site not stopped yet");
                 }
 
                 try
                 {
-                    foreach (var appPool in serverManager.ApplicationPools)
+                    if (appPool.WorkerProcesses != null &&
+                        appPool.WorkerProcesses.Any(wp =>
+                            wp.State == WorkerProcessState.Running ||
+                            wp.State == WorkerProcessState.Stopping))
                     {
-                        if (appPool.WorkerProcesses != null &&
-                            appPool.WorkerProcesses.Any(wp =>
-                                wp.State == WorkerProcessState.Running ||
-                                wp.State == WorkerProcessState.Stopping))
-                        {
-                            throw new InvalidOperationException("WorkerProcess not stopped yet");
-                        }
+                        throw new InvalidOperationException("WorkerProcess not stopped yet");
                     }
+
                 }
                 // If WAS was stopped for some reason appPool.WorkerProcesses
                 // would throw UnauthorizedAccessException.
