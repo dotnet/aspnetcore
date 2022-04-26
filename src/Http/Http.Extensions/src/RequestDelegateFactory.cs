@@ -1785,6 +1785,11 @@ public static partial class RequestDelegateFactory
             await task;
         }
 
+        if (task.IsCompletedSuccessfully)
+        {
+            task.GetAwaiter().GetResult();
+        }
+
         return ExecuteAwaited(task);
     }
 
@@ -1798,7 +1803,6 @@ public static partial class RequestDelegateFactory
 
         if (task.IsCompletedSuccessfully)
         {
-            task.GetAwaiter().GetResult();
             return new ValueTask<object?>(EmptyHttpResult.Instance);
         }
 
