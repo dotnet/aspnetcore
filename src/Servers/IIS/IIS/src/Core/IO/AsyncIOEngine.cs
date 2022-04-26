@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
 internal partial class AsyncIOEngine : IAsyncIOEngine
 {
-    private const ushort responseMaxChunkBytes = 65533;
+    private const ushort responseMaxChunks = 65533;
 
     private readonly IISHttpContext _context;
     private readonly NativeSafeHandle _handler;
@@ -44,6 +44,16 @@ internal partial class AsyncIOEngine : IAsyncIOEngine
         }
         else
         {
+            /*
+             * In case the number of chunks is bigger than responseMaxChunks we need to make multiple calls 
+             * to the native api https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/ihttpresponse-writeentitychunks-method  
+             * Despite the documentation states that feeding the function with more than 65535 chunks will throw an exception, it actually seems that 65534 is
+             * the maximum number of chunks allowed.
+             * Also, there seems to be a problem when slicing a ReadOnlySequence on segment borders tracked here https://github.com/dotnet/runtime/issues/67607
+             * 
+             * That's why responseMaxChunks is set to be 65533. 
+             */
+
             ushort chunksCount = 0;
             var start = 0;
             var length = 0;
@@ -55,7 +65,7 @@ internal partial class AsyncIOEngine : IAsyncIOEngine
                 chunksCount++;
                 length += chunk.Length;
 
-                if (chunksCount == responseMaxChunkBytes)
+                if (chunksCount == responseMaxChunks)
                 {
                     result += await WriteImplAsync(data.Slice(start, length));
 
