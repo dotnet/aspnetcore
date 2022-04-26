@@ -36,6 +36,8 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo ExecuteTaskWithEmptyResultMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskWithEmptyResult), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteValueTaskWithEmptyResultMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskWithEmptyResult), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo ExecuteTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo ExecuteValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteValueTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfT), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -749,14 +751,15 @@ public static partial class RequestDelegateFactory
         }
         else if (returnType == typeof(ValueTask<object>))
         {
-            // REVIEW: We can avoid this box if it becomes a performance issue
-            var box = Expression.TypeAs(methodCall, typeof(object));
-            return Expression.Call(ExecuteObjectReturnMethod, box, HttpContextExpr);
+            return Expression.Call(ExecuteValueTaskOfObjectMethod,
+                methodCall,
+                HttpContextExpr);
         }
         else if (returnType == typeof(Task<object>))
         {
-            var convert = Expression.Convert(methodCall, typeof(object));
-            return Expression.Call(ExecuteObjectReturnMethod, convert, HttpContextExpr);
+            return Expression.Call(ExecuteTaskOfObjectMethod,
+                methodCall,
+                HttpContextExpr);
         }
         else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
         {
@@ -1685,16 +1688,47 @@ public static partial class RequestDelegateFactory
     // if necessary and restart the cycle until we've reached a terminal state (unknown type).
     // We currently don't handle Task<unknown> or ValueTask<unknown>. We can support this later if this
     // ends up being a common scenario.
-    private static async Task ExecuteObjectReturn(object? obj, HttpContext httpContext)
+    private static Task ExecuteValueTaskOfObject(ValueTask<object> valueTask, HttpContext httpContext)
     {
-        // See if we need to unwrap Task<object> or ValueTask<object>
+        static async Task ExecuteAwaited(ValueTask<object> valueTask, HttpContext httpContext)
+        {
+            await ExecuteObjectReturn(await valueTask, httpContext);
+        }
+
+        if (valueTask.IsCompletedSuccessfully)
+        {
+            return ExecuteObjectReturn(valueTask.GetAwaiter().GetResult(), httpContext);
+        }
+
+        return ExecuteAwaited(valueTask, httpContext);
+    }
+
+    private static Task ExecuteTaskOfObject(Task<object> task, HttpContext httpContext)
+    {
+        static async Task ExecuteAwaited(Task<object> task, HttpContext httpContext)
+        {
+            await ExecuteObjectReturn(await task, httpContext);
+        }
+
+        if (task.IsCompletedSuccessfully)
+        {
+            return ExecuteObjectReturn(task.GetAwaiter().GetResult(), httpContext);
+        }
+
+        return ExecuteAwaited(task, httpContext);
+    }
+
+    private static async Task ExecuteObjectReturn(object obj, HttpContext httpContext)
+    {
         if (obj is Task<object> taskObj)
         {
-            obj = await taskObj;
+            await ExecuteTaskOfObject(taskObj, httpContext);
+            return;
         }
         else if (obj is ValueTask<object> valueTaskObj)
         {
-            obj = await valueTaskObj;
+            await ExecuteValueTaskOfObject(valueTaskObj, httpContext);
+            return;
         }
         else if (obj is Task<IResult?> task)
         {
@@ -1716,9 +1750,8 @@ public static partial class RequestDelegateFactory
             await ExecuteValueTaskOfString(valueTaskString, httpContext);
             return;
         }
-
         // Terminal built ins
-        if (obj is IResult result)
+        else if (obj is IResult result)
         {
             await ExecuteResultWriteResponse(result, httpContext);
         }
