@@ -1788,6 +1788,7 @@ public static partial class RequestDelegateFactory
         if (task.IsCompletedSuccessfully)
         {
             task.GetAwaiter().GetResult();
+            return Task.CompletedTask;
         }
 
         return ExecuteAwaited(task);
