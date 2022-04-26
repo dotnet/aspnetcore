@@ -87,14 +87,11 @@ public class RequestBodyTests
         {
             Assert.True(httpContext.Request.CanHaveBody());
             byte[] input = new byte[100];
-            await Task.Delay(1000);
-            int read = await httpContext.Request.Body.ReadAsync(input, 0, 1);
-            Assert.Equal(1, read);
-            read = await httpContext.Request.Body.ReadAsync(input, 0, 0);
+            int read = await httpContext.Request.Body.ReadAsync(input, 0, 0);
             Assert.Equal(0, read);
-            read = await httpContext.Request.Body.ReadAsync(input, 1, input.Length - 1);
-            httpContext.Response.ContentLength = read + 1;
-            await httpContext.Response.Body.WriteAsync(input, 0, read + 1);
+            read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
+            httpContext.Response.ContentLength = read;
+            await httpContext.Response.Body.WriteAsync(input, 0, read);
         }))
         {
             string response = await SendRequestAsync(address, "Hello World");
