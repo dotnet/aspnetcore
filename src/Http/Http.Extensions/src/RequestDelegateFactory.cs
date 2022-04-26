@@ -1718,53 +1718,46 @@ public static partial class RequestDelegateFactory
         return ExecuteAwaited(task, httpContext);
     }
 
-    private static async Task ExecuteObjectReturn(object obj, HttpContext httpContext)
+    private static Task ExecuteObjectReturn(object obj, HttpContext httpContext)
     {
         if (obj is Task<object> taskObj)
         {
-            await ExecuteTaskOfObject(taskObj, httpContext);
-            return;
+            return ExecuteTaskOfObject(taskObj, httpContext);
         }
         else if (obj is ValueTask<object> valueTaskObj)
         {
-            await ExecuteValueTaskOfObject(valueTaskObj, httpContext);
-            return;
+            return ExecuteValueTaskOfObject(valueTaskObj, httpContext);
         }
         else if (obj is Task<IResult?> task)
         {
-            await ExecuteTaskResult(task, httpContext);
-            return;
+            return ExecuteTaskResult(task, httpContext);
         }
         else if (obj is ValueTask<IResult?> valueTask)
         {
-            await ExecuteValueTaskResult(valueTask, httpContext);
-            return;
+            return ExecuteValueTaskResult(valueTask, httpContext);
         }
         else if (obj is Task<string?> taskString)
         {
-            await ExecuteTaskOfString(taskString, httpContext);
-            return;
-        }
+            return ExecuteTaskOfString(taskString, httpContext);        }
         else if (obj is ValueTask<string?> valueTaskString)
         {
-            await ExecuteValueTaskOfString(valueTaskString, httpContext);
-            return;
+            return ExecuteValueTaskOfString(valueTaskString, httpContext);
         }
         // Terminal built ins
         else if (obj is IResult result)
         {
-            await ExecuteResultWriteResponse(result, httpContext);
+            return ExecuteResultWriteResponse(result, httpContext);
         }
         else if (obj is string stringValue)
         {
             SetPlaintextContentType(httpContext);
-            await httpContext.Response.WriteAsync(stringValue);
+            return httpContext.Response.WriteAsync(stringValue);
         }
         else
         {
             // Otherwise, we JSON serialize when we reach the terminal state
             // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
-            await httpContext.Response.WriteAsJsonAsync<object?>(obj);
+            return httpContext.Response.WriteAsJsonAsync<object?>(obj);
         }
     }
 
