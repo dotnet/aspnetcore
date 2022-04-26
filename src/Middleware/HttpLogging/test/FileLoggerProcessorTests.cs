@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
@@ -13,6 +15,7 @@ public class FileLoggerProcessorTests
     private string _messageOne = "Message one";
     private string _messageTwo = "Message two";
     private string _messageThree = "Message three";
+    private string _messageFour = "Message four";
 
     private DateTime _today = new DateTime(2021, 01, 01, 12, 00, 00);
 
@@ -201,6 +204,66 @@ public class FileLoggerProcessorTests
     }
 
     [Fact]
+    public async Task StopsLoggingAfter10000Files()
+    {
+        var path = Path.Combine(TempPath, Path.GetRandomFileName());
+        Directory.CreateDirectory(path);
+        var mockSystemDateTime = new MockSystemDateTime
+        {
+            Now = _today
+        };
+
+        try
+        {
+            string lastFileName;
+            var options = new W3CLoggerOptions()
+            {
+                LogDirectory = path,
+                FileSizeLimit = 5,
+                RetainedFileCountLimit = 10000
+            };
+            var testSink = new TestSink();
+            var testLogger = new TestLoggerFactory(testSink, enabled:true);
+            await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), testLogger))
+            {
+                logger.SystemDateTime = mockSystemDateTime;
+                for (int i = 0; i < 10000; i++)
+                {
+                    logger.EnqueueMessage(_messageOne);
+                }
+                lastFileName = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.9999.txt"));
+                await WaitForFile(lastFileName, _messageOne.Length).DefaultTimeout();
+
+                // directory is full, no warnings yet
+                Assert.Equal(0, testSink.Writes.Count);
+
+                logger.EnqueueMessage(_messageOne);
+                await WaitForCondition(() => testSink.Writes.FirstOrDefault()?.EventId.Name == "MaxFilesReached").DefaultTimeout();
+            }
+
+            Assert.Equal(10000, new DirectoryInfo(path)
+                .GetFiles()
+                .ToArray().Length);
+
+            // restarting the logger should do nothing since the folder is still full
+            var testSink2 = new TestSink();
+            var testLogger2 = new TestLoggerFactory(testSink2, enabled:true);
+            await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), testLogger2))
+            {
+                Assert.Equal(0, testSink2.Writes.Count);
+
+                logger.SystemDateTime = mockSystemDateTime;
+                logger.EnqueueMessage(_messageOne);
+                await WaitForCondition(() => testSink2.Writes.FirstOrDefault()?.EventId.Name == "MaxFilesReached").DefaultTimeout();
+            }
+        }
+        finally
+        {
+            Helpers.DisposeDirectory(path);
+        }
+    }
+
+    [Fact]
     public async Task InstancesWriteToSameDirectory()
     {
         var mockSystemDateTime = new MockSystemDateTime
@@ -349,6 +412,72 @@ public class FileLoggerProcessorTests
             Helpers.DisposeDirectory(path);
         }
     }
+    [Fact]
+    public async Task RollsTextFilesWhenFirstLogOfDayIsMissing()
+    {
+        var mockSystemDateTime = new MockSystemDateTime
+        {
+            Now = _today
+        };
+
+        var path = Path.Combine(TempPath, Path.GetRandomFileName());
+        Directory.CreateDirectory(path);
+
+        try
+        {
+            var options = new W3CLoggerOptions()
+            {
+                LogDirectory = path,
+                FileSizeLimit = 5,
+                RetainedFileCountLimit = 2,
+            };
+            var fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
+            var fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0001.txt"));
+            var fileName3 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0002.txt"));
+            var fileName4 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0003.txt"));
+
+            await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+            {
+                logger.SystemDateTime = mockSystemDateTime;
+                logger.EnqueueMessage(_messageOne);
+                logger.EnqueueMessage(_messageTwo);
+                logger.EnqueueMessage(_messageThree);
+                // Pause for a bit before disposing so logger can finish logging
+                await WaitForFile(fileName3, _messageThree.Length).DefaultTimeout();
+            }
+
+            // Even with a big enough FileSizeLimit, we still won't try to write to files from a previous instance.
+            options.FileSizeLimit = 10000;
+
+            await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
+            {
+                logger.SystemDateTime = mockSystemDateTime;
+                logger.EnqueueMessage(_messageFour);
+                // Pause for a bit before disposing so logger can finish logging
+                await WaitForFile(fileName4, _messageFour.Length).DefaultTimeout();
+            }
+
+            var actualFiles = new DirectoryInfo(path)
+                .GetFiles()
+                .Select(f => f.Name)
+                .OrderBy(f => f)
+                .ToArray();
+
+            Assert.Equal(2, actualFiles.Length);
+
+            Assert.False(File.Exists(fileName1));
+            Assert.False(File.Exists(fileName2));
+            Assert.True(File.Exists(fileName3));
+            Assert.True(File.Exists(fileName4));
+
+            Assert.Equal(_messageThree + Environment.NewLine, File.ReadAllText(fileName3));
+            Assert.Equal(_messageFour + Environment.NewLine, File.ReadAllText(fileName4));
+        }
+        finally
+        {
+            Helpers.DisposeDirectory(path);
+        }
+    }
 
     [Fact]
     public async Task WritesToNewFileOnOptionsChange()
@@ -424,6 +553,14 @@ public class FileLoggerProcessorTests
             {
                 // Continue
             }
+            await Task.Delay(10);
+        }
+    }
+
+    private async Task WaitForCondition(Func<bool> waitForLog)
+    {
+        while (!waitForLog())
+        {
             await Task.Delay(10);
         }
     }
