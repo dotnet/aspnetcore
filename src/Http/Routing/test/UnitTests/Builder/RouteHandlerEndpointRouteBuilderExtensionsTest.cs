@@ -902,7 +902,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
                     Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
-                    context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+                    context.Parameters[0] = context.GetParameter<int>(0) + 1;
                     return await next(context);
                 });
 
