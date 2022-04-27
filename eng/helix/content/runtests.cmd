@@ -7,9 +7,8 @@ set $aspRuntimeVersion=%2
 set $queue=%3
 set $arch=%4
 set $quarantined=%5
-set $ef=%6
-set $helixTimeout=%7
-set $installPlaywright=%8
+set $helixTimeout=%6
+set $installPlaywright=%7
 REM Batch only supports up to 9 arguments using the %# syntax, need to shift to get more
 
 set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
@@ -23,8 +22,8 @@ echo.
 
 set exit_code=0
 
-echo "Running tests: dotnet run --no-build --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%"
-dotnet run --no-build --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --helixTimeout %$helixTimeout%
+echo "Running tests: dotnet run --no-build --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --helixTimeout %$helixTimeout%"
+dotnet run --no-build --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --helixTimeout %$helixTimeout%
 if not errorlevel 0 (
     set exit_code=%errorlevel%
 )

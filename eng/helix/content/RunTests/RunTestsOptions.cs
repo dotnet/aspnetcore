@@ -43,11 +43,6 @@ namespace RunTests
                 { Argument = new Argument<bool>(), Required = true },
 
                 new Option(
-                    aliases: new string[] { "--ef" },
-                    description: "The version of the EF tool to use")
-                { Argument = new Argument<string>(), Required = true },
-
-                new Option(
                     aliases: new string[] { "--helixTimeout" },
                     description: "The timeout duration of the Helix job")
                 { Argument = new Argument<string>(), Required = true },
@@ -63,7 +58,6 @@ namespace RunTests
             var options = new RunTestsOptions
             {
                 Architecture = parseResult.ValueForOption<string>("--arch"),
-                EfVersion = parseResult.ValueForOption<string>("--ef"),
                 HelixQueue = parseResult.ValueForOption<string>("--queue"),
                 Quarantined = parseResult.ValueForOption<bool>("--quarantined"),
                 RuntimeVersion = sharedFxVersion,
@@ -83,7 +77,6 @@ namespace RunTests
         }
 
         public string Architecture { get; private set; }
-        public string EfVersion { get; private set; }
         public string HelixQueue { get; private set; }
         public bool Quarantined { get; private set; }
         public string RuntimeVersion { get; private set; }
