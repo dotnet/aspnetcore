@@ -34,6 +34,17 @@ public class UnauthorizedResultTests
         Assert.Equal(StatusCodes.Status401Unauthorized, httpContext.Response.StatusCode);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new UnauthorizedHttpResult();
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
     private static IServiceCollection CreateServices()
     {
         var services = new ServiceCollection();

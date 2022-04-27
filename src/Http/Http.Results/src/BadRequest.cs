@@ -29,6 +29,8 @@ public sealed class BadRequest : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.BadRequestObjectResult");
@@ -42,6 +44,8 @@ public sealed class BadRequest : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest));
     }
 }

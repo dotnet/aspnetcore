@@ -158,6 +158,8 @@ public sealed partial class RedirectToRouteHttpResult : IResult
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
 
         var destinationUrl = linkGenerator.GetUriByRouteValues(

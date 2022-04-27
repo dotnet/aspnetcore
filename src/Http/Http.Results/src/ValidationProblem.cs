@@ -43,6 +43,8 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger(typeof(ValidationProblem));
 
@@ -59,6 +61,8 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json"));
     }
 }

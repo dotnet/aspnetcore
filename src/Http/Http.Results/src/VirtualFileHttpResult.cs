@@ -101,6 +101,8 @@ public sealed class VirtualFileHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var hostingEnvironment = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
         var fileInfo = GetFileInformation(hostingEnvironment.WebRootFileProvider);

@@ -206,6 +206,17 @@ public class JsonResultTests
         Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, httpContext.Response.StatusCode);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new JsonHttpResult<object>(null, null);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
     private static IServiceProvider CreateServices()
     {
         var services = new ServiceCollection();

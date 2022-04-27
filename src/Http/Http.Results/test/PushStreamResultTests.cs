@@ -66,4 +66,15 @@ public class PushStreamResultTests
         Assert.Equal(entityTag, result.EntityTag);
         Assert.Equal(expectedMediaType, result.ContentType);
     }
+
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new PushStreamHttpResult(s => Task.CompletedTask, "content-type");
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
 }

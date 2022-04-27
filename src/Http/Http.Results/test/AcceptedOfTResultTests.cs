@@ -74,6 +74,24 @@ public class AcceptedOfTResultTests
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new Accepted<object>("location", null);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
+    [Fact]
+    public void PopulateMetadata_ThrowsArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Accepted<object>>(null));
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 
