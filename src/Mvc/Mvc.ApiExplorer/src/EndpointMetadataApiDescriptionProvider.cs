@@ -26,6 +26,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
     private readonly IHostEnvironment _environment;
     private readonly IServiceProviderIsService? _serviceProviderIsService;
     private readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
+    private readonly ParameterBindingConstructorCache _parameterBindingConstructorCache = new();
     private readonly ParameterPolicyFactory _parameterPolicyFactory;
 
     // Executes before MVC's DefaultApiDescriptionProvider and GrpcJsonTranscodingDescriptionProvider for no particular reason.
@@ -116,7 +117,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
         var hasBodyOrFormFileParameter = false;
 
-        static IEnumerable<ParameterInfo> FlattenParameters(ParameterInfo[] parameters)
+        static IEnumerable<ParameterInfo> FlattenParameters(ParameterInfo[] parameters, ParameterBindingConstructorCache cache)
         {
             if (parameters.Length == 0)
             {
@@ -135,12 +136,20 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
                     flattenedParameters ??= new(parameters[0..i]);
                     nullabilityContext ??= new();
 
-                    var properties = parameters[i].ParameterType.GetProperties();
-                    foreach (var property in properties)
+                    var constructor = cache.GetParameterConstructor(parameters[i]);
+                    if (constructor?.GetParameters() is { Length: > 0 } constructorParameters)
                     {
-                        if (property.CanWrite)
+                        flattenedParameters.AddRange(constructorParameters);
+                    }
+                    else
+                    {
+                        var properties = parameters[i].ParameterType.GetProperties();
+                        foreach (var property in properties)
                         {
-                            flattenedParameters.Add(new SurrogatedParameterInfo(property, nullabilityContext));
+                            if (property.CanWrite)
+                            {
+                                flattenedParameters.Add(new SurrogatedParameterInfo(property, nullabilityContext));
+                            }
                         }
                     }
                 }
@@ -153,7 +162,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
             return flattenedParameters is not null ? flattenedParameters : parameters;
         }
 
-        foreach (var parameter in FlattenParameters(methodInfo.GetParameters()))
+        foreach (var parameter in FlattenParameters(methodInfo.GetParameters(), _parameterBindingConstructorCache))
         {
             var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern, disableInferredBody);
 
