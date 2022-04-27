@@ -47,6 +47,11 @@
     <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
+
+    <!-- Grab the tool packages for what RunTests installs. -->
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" />
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(dotnetefVersion)\dotnet-ef.$(dotnetefVersion).nupkg" />
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
   </ItemGroup>
 
   <Choose>
