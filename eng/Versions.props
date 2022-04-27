@@ -283,6 +283,10 @@
     <MicrosoftDataSqlClientVersion>4.0.1</MicrosoftDataSqlClientVersion>
     <MicrosoftAspNetCoreAppVersion>6.0.0-preview.3.21167.1</MicrosoftAspNetCoreAppVersion>
     <MicrosoftOpenApiVersion>1.2.3</MicrosoftOpenApiVersion>
+    <!-- dotnet tool versions (see also auto-updated dotnetefVersion property). -->
+    <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
+    <DotnetServeVersion>1.10.93</DotnetServeVersion>
+    <MicrosoftPlaywrightCLIVersion>1.2.3</MicrosoftPlaywrightCLIVersion>
   </PropertyGroup>
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">
