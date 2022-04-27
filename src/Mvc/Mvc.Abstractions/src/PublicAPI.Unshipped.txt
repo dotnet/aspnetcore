@@ -1,1 +1,14 @@
 #nullable enable
+
+Microsoft.AspNetCore.Mvc.Formatters.ModelStateEnum
+Microsoft.AspNetCore.Mvc.Formatters.ModelStateEnum.Set = 0 -> Microsoft.AspNetCore.Mvc.Formatters.ModelStateEnum
+Microsoft.AspNetCore.Mvc.Formatters.ModelStateEnum.Undefined = 1 -> Microsoft.AspNetCore.Mvc.Formatters.ModelStateEnum
+Microsoft.AspNetCore.Mvc.Formatters.ModelStateEnum.Null = 2 -> Microsoft.AspNetCore.Mvc.Formatters.ModelStateEnum
+
+Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.ModelState.get -> Microsoft.AspNetCore.Mvc.Formatters.ModelStateEnum
+
+static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.NullValue() -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
+static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.NullValueAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
+
+static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.UndefinedValue() -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
+static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.UndefinedValueAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!

@@ -102,10 +102,10 @@ public class InputFormatterContext
     /// <summary>
     /// Gets a flag to indicate whether the input formatter should allow no value to be provided.
     /// If <see langword="false"/>, the input formatter should handle empty input by returning
-    /// <see cref="InputFormatterResult.NoValueAsync()"/>. If <see langword="true"/>, the input
     /// formatter should handle empty input by returning the default value for the type
     /// <see cref="ModelType"/>.
     /// </summary>
+    //todo this is to be redesigned to reflect null/empty scenerio
     public bool TreatEmptyInputAsDefaultValue { get; }
 
     /// <summary>

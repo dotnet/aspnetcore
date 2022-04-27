@@ -353,7 +353,6 @@ Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy.AllExceptions 
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy.MalformedInputExceptions = 1 -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.HasError.get -> bool
-Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.IsModelSet.get -> bool
 Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Model.get -> object?
 Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter
 Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter.CanWriteResult(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext! context) -> bool
@@ -726,8 +725,6 @@ static Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorExtensions.GetPrope
 static Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorExtensions.SetProperty<T>(this Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! actionDescriptor, T value) -> void
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Failure() -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.FailureAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
-static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.NoValue() -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
-static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.NoValueAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.Success(object? model) -> Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!
 static Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult.SuccessAsync(object? model) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
 static Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.GetBindingInfo(System.Collections.Generic.IEnumerable<object!>! attributes) -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo?

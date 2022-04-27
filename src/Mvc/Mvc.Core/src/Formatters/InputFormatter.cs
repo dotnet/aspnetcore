@@ -110,7 +110,9 @@ public abstract class InputFormatter : IInputFormatter, IApiRequestFormatMetadat
                 return InputFormatterResult.SuccessAsync(GetDefaultValueForType(context.ModelType));
             }
 
-            return InputFormatterResult.NoValueAsync();
+            //this is not finished, hav eto check some things if null value always lead here
+            throw new NotImplementedException();
+            return InputFormatterResult.NullValueAsync();
         }
 
         return ReadRequestBodyAsync(context);
