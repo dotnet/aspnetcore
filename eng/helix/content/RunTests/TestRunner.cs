@@ -123,21 +123,59 @@ namespace RunTests
 
         public async Task<bool> InstallDotnetToolsAsync()
         {
+            const string filename = "NuGet.config";
+            const string backupFilename = "NuGet.save";
+            var correlationPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
+
             try
             {
-                // Install dotnet-dump first so we can catch any failures from running dotnet after this (installing tools, running tests, etc.)
+                // Do not use network for dotnet tool installations.
+                File.Move(filename, backupFilename);
+
+                // Install dotnet-dump first so we can catch any failures from running dotnet after this
+                // (installing tools, running tests, etc.)
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --version 5.0.0-*",
+                    $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
                     environmentVariables: EnvironmentVariables,
                     outputDataReceived: Console.WriteLine,
                     errorDataReceived: Console.Error.WriteLine,
                     throwOnError: false,
                     cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install dotnet-ef --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: Console.WriteLine,
+                    errorDataReceived: Console.Error.WriteLine,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception in InstallDotnetTools: {e}");
+                return false;
+            }
+            finally
+            {
+                File.Move(backupFilename, filename);
+            }
+
+            try
+            {
                 Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
 
                 await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"nuget add source {Options.HELIX_WORKITEM_ROOT} --configfile NuGet.config",
+                    $"nuget add source {Options.HELIX_WORKITEM_ROOT} --configfile {filename}",
                     environmentVariables: EnvironmentVariables,
                     outputDataReceived: Console.WriteLine,
                     errorDataReceived: Console.Error.WriteLine,
@@ -152,30 +190,14 @@ namespace RunTests
                     errorDataReceived: Console.Error.WriteLine,
                     throwOnError: false,
                     cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"tool install dotnet-ef --version {Options.EfVersion} --tool-path {Options.HELIX_WORKITEM_ROOT}",
-                    environmentVariables: EnvironmentVariables,
-                    outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.Error.WriteLine,
-                    throwOnError: false,
-                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT}",
-                    environmentVariables: EnvironmentVariables,
-                    outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.Error.WriteLine,
-                    throwOnError: false,
-                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Exception in InstallDotnetTools: {e}");
                 return false;
             }
+
+            return true;
         }
 
         public async Task<bool> CheckTestDiscoveryAsync()
@@ -283,7 +305,8 @@ namespace RunTests
             {
                 foreach (var file in Directory.EnumerateFiles("artifacts/log", "*.log", SearchOption.AllDirectories))
                 {
-                    // Combine the directory name + log name for the copied log file name to avoid overwriting duplicate test names in different test projects
+                    // Combine the directory name + log name for the copied log file name to avoid overwriting
+                    // duplicate test names in different test projects
                     var logName = $"{Path.GetFileName(Path.GetDirectoryName(file))}_{Path.GetFileName(file)}";
                     Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName)}");
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName));
