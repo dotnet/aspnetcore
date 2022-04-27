@@ -17,8 +17,8 @@ internal class SurrogatedParameterInfo : ParameterInfo
         Debug.Assert(null != propertyInfo);
 
         AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
-        MemberImpl = propertyInfo;
         NameImpl = propertyInfo.Name;
+        MemberImpl = propertyInfo;
         ClassImpl = propertyInfo.PropertyType;
         PositionImpl = -1;//parameter.Position;
 
