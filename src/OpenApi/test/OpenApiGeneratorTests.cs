@@ -352,8 +352,48 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("object", fromBodyParam.Content.First().Value.Schema.Type);
         Assert.True(fromBodyParam.Required);
     }
-
 #nullable disable
+
+    [Fact]
+    public void AddsMultipleParametersFromParametersAttribute()
+    {
+        static void AssertParameters(OpenApiOperation operation)
+        {
+            Assert.Collection(
+                operation.Parameters,
+                param =>
+                {
+                    Assert.Equal("Foo", param.Name);
+                    Assert.Equal("number", param.Schema.Type);
+                    Assert.Equal(ParameterLocation.Path, param.In);
+                    Assert.True(param.Required);
+                },
+                param =>
+                {
+                    Assert.Equal("Bar", param.Name);
+                    Assert.Equal("number", param.Schema.Type);
+                    Assert.Equal(ParameterLocation.Query, param.In);
+                    Assert.True(param.Required);
+                },
+                param =>
+                {
+                    Assert.Equal("FromBody", param.Name);
+                    var fromBodyParam = operation.RequestBody;
+                    Assert.Equal("object", fromBodyParam.Content.First().Value.Schema.Type);
+                    Assert.False(fromBodyParam.Required);
+                }
+            );
+        }
+
+        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListClass req) => { }));
+        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListClassWithReadOnlyProperties req) => { }));
+        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListStruct req) => { }));
+        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListRecord req) => { }));
+        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListRecordStruct req) => { }));
+        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
+        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"));
+        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
+    }
 
     [Fact]
     public void TestParameterIsRequired()
@@ -800,5 +840,43 @@ public class OpenApiOperationGeneratorTests
             throw new NotImplementedException();
         public static bool TryParse(string value, out BindAsyncRecord result) =>
             throw new NotImplementedException();
+    }
+
+    private record ArgumentListRecord([FromRoute] int Foo, int Bar, InferredJsonClass FromBody, HttpContext context);
+
+    private record struct ArgumentListRecordStruct([FromRoute] int Foo, int Bar, InferredJsonClass FromBody, HttpContext context);
+
+    private record ArgumentListRecordWithoutAttributes(int Foo, int Bar, InferredJsonClass FromBody, HttpContext context);
+
+    private record ArgumentListRecordWithoutPositionalParameters
+    {
+        [FromRoute]
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+        public InferredJsonClass FromBody { get; set; }
+        public HttpContext Context { get; set; }
+    }
+
+    private class ArgumentListClass
+    {
+        [FromRoute]
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+        public InferredJsonClass FromBody { get; set; }
+        public HttpContext Context { get; set; }
+    }
+
+    private class ArgumentListClassWithReadOnlyProperties : ArgumentListClass
+    {
+        public int ReadOnly { get; }
+    }
+
+    private struct ArgumentListStruct
+    {
+        [FromRoute]
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+        public InferredJsonClass FromBody { get; set; }
+        public HttpContext Context { get; set; }
     }
 }

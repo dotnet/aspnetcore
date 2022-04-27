@@ -30,6 +30,7 @@ internal class OpenApiGenerator
     private readonly IServiceProviderIsService? _serviceProviderIsService;
 
     internal static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
+    internal static readonly ParameterBindingConstructorCache ParameterBindingConstructorCache = new();
 
     /// <summary>
     /// Creates an <see cref="OpenApiGenerator" /> instance given an <see cref="IHostEnvironment" />
@@ -375,12 +376,20 @@ internal class OpenApiGenerator
                 flattenedParameters ??= new(parameters[0..i]);
                 nullabilityContext ??= new();
 
-                var properties = parameters[i].ParameterType.GetProperties();
-                foreach (var property in properties)
+                var constructor = ParameterBindingConstructorCache.GetParameterConstructor(parameters[i]);
+                if (constructor?.GetParameters() is { Length: > 0 } constructorParameters)
                 {
-                    if (property.CanWrite)
+                    flattenedParameters.AddRange(constructorParameters);
+                }
+                else
+                {
+                    var properties = parameters[i].ParameterType.GetProperties();
+                    foreach (var property in properties)
                     {
-                        flattenedParameters.Add(new SurrogatedParameterInfo(property, nullabilityContext));
+                        if (property.CanWrite)
+                        {
+                            flattenedParameters.Add(new SurrogatedParameterInfo(property, nullabilityContext));
+                        }
                     }
                 }
             }
