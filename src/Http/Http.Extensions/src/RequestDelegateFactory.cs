@@ -406,13 +406,19 @@ public static partial class RequestDelegateFactory
         }
 
         // Get metadata from return type
-        if (methodInfo.ReturnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(methodInfo.ReturnType))
+        var returnType = methodInfo.ReturnType;
+        if (AwaitableInfo.IsTypeAwaitable(returnType, out var awaitableInfo))
+        {
+            returnType = awaitableInfo.ResultType;
+        }
+
+        if (returnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(returnType))
         {
             // Return type implements IEndpointMetadataProvider
             var context = new EndpointMetadataContext(methodInfo, metadata, services);
             invokeArgs ??= new object[1];
             invokeArgs[0] = context;
-            PopulateMetadataForEndpointMethod.MakeGenericMethod(methodInfo.ReturnType).Invoke(null, invokeArgs);
+            PopulateMetadataForEndpointMethod.MakeGenericMethod(returnType).Invoke(null, invokeArgs);
         }
     }
 
