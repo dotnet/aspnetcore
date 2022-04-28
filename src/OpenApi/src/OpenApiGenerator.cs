@@ -30,7 +30,6 @@ internal class OpenApiGenerator
     private readonly IServiceProviderIsService? _serviceProviderIsService;
 
     internal static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
-    internal static readonly ParameterBindingConstructorCache ParameterBindingConstructorCache = new();
 
     /// <summary>
     /// Creates an <see cref="OpenApiGenerator" /> instance given an <see cref="IHostEnvironment" />
@@ -376,10 +375,17 @@ internal class OpenApiGenerator
                 flattenedParameters ??= new(parameters[0..i]);
                 nullabilityContext ??= new();
 
-                var constructor = ParameterBindingConstructorCache.GetParameterConstructor(parameters[i]);
-                if (constructor?.GetParameters() is { Length: > 0 } constructorParameters)
+                var (constructor, constructorParameters) = ParameterBindingMethodCache.FindConstructor(parameters[i].ParameterType);
+                if (constructor is not null && constructorParameters is { Length: > 0 })
                 {
-                    flattenedParameters.AddRange(constructorParameters);
+                    foreach (var constructorParameter in constructorParameters)
+                    {
+                        flattenedParameters.Add(
+                            new SurrogateParameterInfo(
+                                constructorParameter.PropertyInfo,
+                                constructorParameter.ParameterInfo,
+                                nullabilityContext));
+                    }
                 }
                 else
                 {
@@ -388,7 +394,7 @@ internal class OpenApiGenerator
                     {
                         if (property.CanWrite)
                         {
-                            flattenedParameters.Add(new SurrogatedParameterInfo(property, nullabilityContext));
+                            flattenedParameters.Add(new SurrogateParameterInfo(property, nullabilityContext));
                         }
                     }
                 }

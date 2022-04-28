@@ -17,9 +17,8 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)RoslynUtils\TypeHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)SurrogatedParameterInfo.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)SurrogateParameterInfo.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ParameterBindingMethodCache.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)ParameterBindingConstructorCache.cs" LinkBase="Shared"/>
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\TypeNameHelper.cs" LinkBase="Shared" />
   </ItemGroup>
 
