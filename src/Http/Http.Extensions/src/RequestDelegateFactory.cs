@@ -383,7 +383,7 @@ public static partial class RequestDelegateFactory
         return ExecuteAwaited(task);
     }
 
-    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services)
+    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, ParameterInfo[] surrogateParameters)
     {
         object?[]? invokeArgs = null;
 
@@ -415,7 +415,7 @@ public static partial class RequestDelegateFactory
         AddMetadata(methodInfo.GetParameters());
 
         // Get metadata from surrogated parameter types
-        AddMetadata(surrogatedParameters);
+        AddMetadata(surrogateParameters);
 
         // Get metadata from return type
         var returnType = methodInfo.ReturnType;
