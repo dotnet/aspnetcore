@@ -219,7 +219,7 @@ public static partial class RequestDelegateFactory
         AddTypeProvidedMetadata(methodInfo,
             factoryContext.Metadata,
             factoryContext.ServiceProvider,
-            factoryContext.SurrogatedParameters.ToArray());
+            factoryContext.SurrogateParameters.ToArray());
 
         // Add method attributes as metadata *after* any inferred metadata so that the attributes hava a higher specificity
         AddMethodAttributesAsMetadata(methodInfo, factoryContext.Metadata);
@@ -420,7 +420,7 @@ public static partial class RequestDelegateFactory
         if (parameter.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)) ||
             parameter.ParameterType.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
         {
-            return BindParameterFromSurrogatedProperties(parameter, factoryContext);
+            return BindParameterFromSurrogateProperties(parameter, factoryContext);
         }
         else if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
         {
@@ -1093,72 +1093,31 @@ public static partial class RequestDelegateFactory
         var indexExpression = Expression.MakeIndex(sourceExpression, itemProperty, indexArguments);
         return Expression.Convert(indexExpression, returnType ?? typeof(string));
     }
+    
 
-    private static Expression BindParameterFromSurrogatedProperties(ParameterInfo parameter, FactoryContext factoryContext)
+    private static Expression BindParameterFromSurrogateProperties(ParameterInfo parameter, FactoryContext factoryContext)
     {
-        var properties = parameter.ParameterType.GetProperties();
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
+        var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameter.ParameterType);
 
-        static ConstructorInfo? GetConstructor(ParameterInfo parameter, PropertyInfo[] properties)
-        {
-            if (parameter.ParameterType.IsValueType)
-            {
-                // Value types always have a default constructor, we will use
-                // the parameter type during the NewExpression creation
-                return null;
-            }
-
-            // Try to find the parameterless constructor
-            var constructor = parameter.ParameterType.GetConstructor(Array.Empty<Type>());
-            if (constructor is not null)
-            {
-                return constructor;
-            }
-
-            // If a parameterless ctor is not defined
-            // we will try to find a ctor that includes all
-            // property types and in the right order.
-            // Eg.:
-            // public class Sample
-            // {
-            //    // Valid
-            //    public Sample(int id, string name){}
-            //    // InValid
-            //    public Sample(string name, int id){}
-            //
-            //    public int Id { get; set; }
-            //    public string Name { get; set; }
-            //}
-
-            var types = new Type[properties.Length];
-            for (var i = 0; i < properties.Length; i++)
-            {
-                types[i] = properties[i].PropertyType;
-            }
-            constructor = parameter.ParameterType.GetConstructor(types);
-
-            if (constructor is not null)
-            {
-                return constructor;
-            }
-
-            throw new InvalidOperationException($"No '{parameter.ParameterType}' public parameterless constructor found for {parameter.Name}.");
-        }
-
-        var constructor = GetConstructor(parameter, properties);
-        if (constructor?.GetParameters() is { Length: > 0 } parameters)
+        if (constructor is not null && parameters is { Length: > 0 })
         {
             //  arg_local = new T(....)
-            var constructorArguments = new Expression[properties.Length];
 
-            for (var i = 0; i < properties.Length; i++)
+            var constructorArguments = new Expression[parameters.Length];
+
+            for (var i = 0; i < parameters.Length; i++)
             {
-                var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext.NullabilityContext);
+                var parameterInfo =
+                    new SurrogateParameterInfo(parameters[i].PropertyInfo, parameters[i].ParameterInfo, factoryContext.NullabilityContext);
                 constructorArguments[i] = CreateArgument(parameterInfo, factoryContext);
-                factoryContext.SurrogatedParameters.Add(parameterInfo);
+                factoryContext.SurrogateParameters.Add(parameterInfo);
             }
 
-            factoryContext.ParamCheckExpressions.Add(Expression.Assign(argumentExpression, Expression.New(constructor, constructorArguments)));
+            factoryContext.ParamCheckExpressions.Add(
+                Expression.Assign(
+                    argumentExpression,
+                    Expression.New(constructor, constructorArguments)));
         }
         else
         {
@@ -1168,6 +1127,7 @@ public static partial class RequestDelegateFactory
             //      arg_local.Property[n] = expression[n],
             //  }
 
+            var properties = parameter.ParameterType.GetProperties();
             var bindings = new List<MemberBinding>(properties.Length);
 
             for (var i = 0; i < properties.Length; i++)
@@ -1175,14 +1135,20 @@ public static partial class RequestDelegateFactory
                 // For parameterless ctor we will init only writable properties.
                 if (properties[i].CanWrite)
                 {
-                    var parameterInfo = new SurrogatedParameterInfo(properties[i], factoryContext.NullabilityContext);
+                    var parameterInfo = new SurrogateParameterInfo(properties[i], factoryContext.NullabilityContext);
                     bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));
-                    factoryContext.SurrogatedParameters.Add(parameterInfo);
+                    factoryContext.SurrogateParameters.Add(parameterInfo);
                 }
             }
 
-            var newExpression = constructor is null ? Expression.New(parameter.ParameterType) : Expression.New(constructor);
-            factoryContext.ParamCheckExpressions.Add(Expression.Assign(argumentExpression, Expression.MemberInit(newExpression, bindings)));
+            var newExpression = constructor is null ?
+                Expression.New(parameter.ParameterType) :
+                Expression.New(constructor);
+
+            factoryContext.ParamCheckExpressions.Add(
+                Expression.Assign(
+                    argumentExpression,
+                    Expression.MemberInit(newExpression, bindings)));
         }
 
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.SurrogatedParameter);
@@ -1681,7 +1647,7 @@ public static partial class RequestDelegateFactory
 
     private static bool IsOptionalParameter(ParameterInfo parameter, FactoryContext factoryContext)
     {
-        if (parameter is SurrogatedParameterInfo argument)
+        if (parameter is SurrogateParameterInfo argument)
         {
             return argument.IsOptional;
         }
@@ -1919,7 +1885,7 @@ public static partial class RequestDelegateFactory
         public List<Expression> BoxedArgs { get; } = new();
         public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
 
-        public List<ParameterInfo> SurrogatedParameters { get; } = new();
+        public List<ParameterInfo> SurrogateParameters { get; } = new();
     }
 
     private static class RequestDelegateFactoryConstants
