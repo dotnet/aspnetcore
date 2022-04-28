@@ -2055,6 +2055,69 @@ public class RequestDelegateFactoryTests : LoggedTest
             throw new NotImplementedException();
     }
 
+    [Fact]
+    public void BuildRequestDelegateThrowsInvalidOperationExceptionForInvalidParameterListConstructor()
+    {
+        void TestParameterListRecord([Parameters] BadArgumentListRecord req) { }
+        void TestParameterListClass([Parameters] BadArgumentListClass req) { }
+        void TestParameterListClassWithMutipleConstructors([Parameters] BadArgumentListClassMultipleCtors req) { }
+        void TestParameterListAbstractClass([Parameters] BadAbstractArgumentListClass req) { }
+        void TestParameterListNoPulicConstructorClass([Parameters] BadNoPublicConstructorArgumentListClass req) { }
+
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestParameterListRecord));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestParameterListClass));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestParameterListClassWithMutipleConstructors));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestParameterListAbstractClass));
+        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestParameterListNoPulicConstructorClass));
+    }
+
+    private record BadArgumentListRecord(int Foo)
+    {
+        public BadArgumentListRecord(int foo, int bar)
+            : this(foo)
+        {
+
+        }
+
+        public int Bar { get; set; }
+    }
+
+    private class BadNoPublicConstructorArgumentListClass
+    {
+        private BadNoPublicConstructorArgumentListClass()
+        { }
+
+        public int Foo { get; set; }
+    }
+
+    private abstract class BadAbstractArgumentListClass
+    {
+        public int Foo { get; set; }
+    }
+
+    private class BadArgumentListClass
+    {
+        public BadArgumentListClass(int foo, string name)
+        {
+        }
+
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+    }
+    private class BadArgumentListClassMultipleCtors
+    {
+        public BadArgumentListClassMultipleCtors(int foo)
+        {
+        }
+
+        public BadArgumentListClassMultipleCtors(int foo, int bar)
+        {
+        }
+
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+    }
+
     public static object[][] ExplicitFromServiceActions
     {
         get
@@ -2719,13 +2782,20 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("null", responseBody);
     }
 
+    record NullableParametersRecord(string? Name);
+    record DefaultValueParametersRecord(string? Name = "DefaultName");
+    record RequiredParametersRecord(string Name);
+
     public static IEnumerable<object?[]> QueryParamOptionalityData
     {
         get
         {
             string requiredQueryParam(string name) => $"Hello {name}!";
             string defaultValueQueryParam(string name = "DefaultName") => $"Hello {name}!";
+            string requiredQueryParamFromArgumentList([Parameters] RequiredParametersRecord req) => $"Hello {req.Name}!";
+            string defaultValueQueryParamFromArgumentList([Parameters] DefaultValueParametersRecord req) => $"Hello {req.Name}!";
             string nullableQueryParam(string? name) => $"Hello {name}!";
+            string nullableQueryParamFromArgumentList([Parameters] NullableParametersRecord req) => $"Hello {req.Name}!";
             string requiredParseableQueryParam(int age) => $"Age: {age}";
             string defaultValueParseableQueryParam(int age = 12) => $"Age: {age}";
             string nullableQueryParseableParam(int? age) => $"Age: {age}";
@@ -2733,11 +2803,17 @@ public class RequestDelegateFactoryTests : LoggedTest
             return new List<object?[]>
                 {
                     new object?[] { (Func<string, string>)requiredQueryParam, "name", null, true, null},
+                    new object?[] { (Func<RequiredParametersRecord, string>)requiredQueryParamFromArgumentList, "Name", null, true, null},
                     new object?[] { (Func<string, string>)requiredQueryParam, "name", "TestName", false, "Hello TestName!" },
+                    new object?[] { (Func<RequiredParametersRecord, string>)requiredQueryParamFromArgumentList, "Name", "TestName", false, "Hello TestName!" },
                     new object?[] { (Func<string, string>)defaultValueQueryParam, "name", null, false, "Hello DefaultName!" },
+                    new object?[] { (Func<DefaultValueParametersRecord, string>)defaultValueQueryParamFromArgumentList, "Name", null, false, "Hello DefaultName!" },
                     new object?[] { (Func<string, string>)defaultValueQueryParam, "name", "TestName", false, "Hello TestName!" },
+                    new object?[] { (Func<DefaultValueParametersRecord, string>)defaultValueQueryParamFromArgumentList, "Name", "TestName", false, "Hello TestName!" },
                     new object?[] { (Func<string?, string>)nullableQueryParam, "name", null, false, "Hello !" },
+                    new object?[] { (Func<NullableParametersRecord, string>)nullableQueryParamFromArgumentList, "Name", null, false, "Hello !" },
                     new object?[] { (Func<string?, string>)nullableQueryParam, "name", "TestName", false, "Hello TestName!"},
+                    new object?[] { (Func<NullableParametersRecord, string>)nullableQueryParamFromArgumentList, "Name", "TestName", false, "Hello TestName!"},
 
                     new object?[] { (Func<int, string>)requiredParseableQueryParam, "age", null, true, null},
                     new object?[] { (Func<int, string>)requiredParseableQueryParam, "age", "42", false, "Age: 42" },
@@ -2778,7 +2854,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             var log = Assert.Single(logs);
             Assert.Equal(LogLevel.Debug, log.LogLevel);
             Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
-            var expectedType = paramName == "age" ? "int age" : "string name";
+            var expectedType = paramName == "age" ? "int age" : $"string {paramName}";
             Assert.Equal($@"Required parameter ""{expectedType}"" was not provided from route or query string.", log.Message);
         }
         else
@@ -2795,7 +2871,9 @@ public class RequestDelegateFactoryTests : LoggedTest
         get
         {
             string requiredRouteParam(string name) => $"Hello {name}!";
+            string requiredRouteParamFromArgumentList([Parameters] RequiredParametersRecord req) => $"Hello {req.Name}!";
             string defaultValueRouteParam(string name = "DefaultName") => $"Hello {name}!";
+            string defaultValueRouteParamFromArgumentList([Parameters] DefaultValueParametersRecord req) => $"Hello {req.Name}!";
             string nullableRouteParam(string? name) => $"Hello {name}!";
             string requiredParseableRouteParam(int age) => $"Age: {age}";
             string defaultValueParseableRouteParam(int age = 12) => $"Age: {age}";
@@ -2804,7 +2882,9 @@ public class RequestDelegateFactoryTests : LoggedTest
             return new List<object?[]>
                 {
                     new object?[] { (Func<string, string>)requiredRouteParam, "name", null, true, null},
+                    new object?[] { (Func<RequiredParametersRecord, string>)requiredRouteParamFromArgumentList, "Name", null, true, null},
                     new object?[] { (Func<string, string>)requiredRouteParam, "name", "TestName", false, "Hello TestName!" },
+                    new object?[] { (Func<RequiredParametersRecord, string>)requiredRouteParamFromArgumentList, "Name", "TestName", false, "Hello TestName!" },
                     new object?[] { (Func<string, string>)defaultValueRouteParam, "name", null, false, "Hello DefaultName!" },
                     new object?[] { (Func<string, string>)defaultValueRouteParam, "name", "TestName", false, "Hello TestName!" },
                     new object?[] { (Func<string?, string>)nullableRouteParam, "name", null, false, "Hello !" },
@@ -2850,7 +2930,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             var log = Assert.Single(logs);
             Assert.Equal(LogLevel.Debug, log.LogLevel);
             Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
-            var expectedType = paramName == "age" ? "int age" : "string name";
+            var expectedType = paramName == "age" ? "int age" : $"string {paramName}";
             Assert.Equal($@"Required parameter ""{expectedType}"" was not provided from query string.", log.Message);
         }
         else
