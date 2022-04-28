@@ -14,9 +14,11 @@ internal class SurrogateParameterInfo : ParameterInfo
     private readonly NullabilityInfoContext _nullabilityContext;
     private NullabilityInfo? _nullabilityInfo;
 
-    public SurrogateParameterInfo(PropertyInfo propertyInfo, NullabilityInfoContext nullabilityContext)
+    public SurrogateParameterInfo(PropertyInfo propertyInfo, NullabilityInfoContext? nullabilityContext = null)
     {
         Debug.Assert(null != propertyInfo);
+
+        ArgumentNullException.ThrowIfNull(nullabilityContext);
 
         AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
         NameImpl = propertyInfo.Name;
@@ -27,7 +29,7 @@ internal class SurrogateParameterInfo : ParameterInfo
         // not defining a real position.
         PositionImpl = -1;
 
-        _nullabilityContext = nullabilityContext;
+        _nullabilityContext = nullabilityContext ?? new NullabilityInfoContext();
         _underlyingProperty = propertyInfo;
     }
 
