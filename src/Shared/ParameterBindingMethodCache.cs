@@ -34,6 +34,7 @@ internal sealed class ParameterBindingMethodCache
     // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
     private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression, Expression>?> _stringMethodCallCache = new();
     private readonly ConcurrentDictionary<Type, (Func<ParameterInfo, Expression>?, int)> _bindAsyncMethodCallCache = new();
+    private readonly ConcurrentDictionary<Type, (ConstructorInfo?, ConstructorParameter[])> _constructorCache = new();
 
     // If IsDynamicCodeSupported is false, we can't use the static Enum.TryParse<T> since there's no easy way for
     // this code to generate the specific instantiation for any enums used
@@ -270,6 +271,102 @@ internal sealed class ParameterBindingMethodCache
             return methodInfo.ReturnType.IsGenericType &&
                 methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>);
         }
+    }
+
+    public (ConstructorInfo?, ConstructorParameter[]) FindConstructor(Type type)
+    {
+        static (ConstructorInfo? constructor, ConstructorParameter[] parameters) Finder(Type type)
+        {
+            var constructor = GetConstructor(type);
+
+            if (constructor is null || constructor.GetParameters().Length == 0)
+            {
+                return (constructor, Array.Empty<ConstructorParameter>());
+            }
+
+            var properties = type.GetProperties();
+            var lookupTable = new Dictionary<ParameterLookupKey, PropertyInfo>(properties.Length);
+            for (var i = 0; i < properties.Length; i++)
+            {
+                lookupTable.Add(new ParameterLookupKey(properties[i].Name, properties[i].PropertyType), properties[i]);
+            }
+
+            // This behavior diverge from the JSON serialization
+            // since we don't have an attribute, eg. JsonConstructor,
+            // we need to be very restrictive about the ctor
+            // and only accept if the parameterized ctor has
+            // only arguments that we can match (Type and Name)
+            // with a public property.
+
+            var parameters = constructor.GetParameters();
+            var parametersWithPropertyInfo = new ConstructorParameter[parameters.Length];
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var key = new ParameterLookupKey(parameters[i].Name!, parameters[i].ParameterType);
+                if (!lookupTable.TryGetValue(key, out var property))
+                {
+                    throw new InvalidOperationException(
+                        $"The '{type}' public parameterized constructor must contains only parameters that match to the declared properties.");
+                }
+
+                parametersWithPropertyInfo[i] = new ConstructorParameter(parameters[i], property);
+            }
+
+            return (constructor, parametersWithPropertyInfo);
+        }
+
+        return _constructorCache.GetOrAdd(type, Finder);
+    }
+
+    private static ConstructorInfo? GetConstructor(Type type)
+    {
+        if (type.IsAbstract)
+        {
+            throw new InvalidOperationException($"The '{type}' abstract type is not supported.");
+        }
+
+        var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+
+        // if only one constructor is declared
+        // we will use it to try match the properties
+        if (constructors.Length == 1)
+        {
+            return constructors[0];
+        }
+
+        // We will try to get the parameterless ctor
+        // as priority before visit the others
+        var parameterlessConstructor = constructors.SingleOrDefault(c => c.GetParameters().Length == 0);
+        if (parameterlessConstructor is not null)
+        {
+            return parameterlessConstructor;
+        }
+
+        // If a parameterized constructors is not found at this point
+        // we will use a default constructor that is always available
+        // for value types.
+        if (type.IsValueType)
+        {
+            return null;
+        }
+
+        // We don't have an attribute, similar to JsonConstructor, to
+        // disambiguate ctors, so, we will throw if more than one
+        // ctor is defined without a parameterless constructor.
+        // Eg.:
+        // public class X
+        // {
+        //   public X(int foo)
+        //   public X(int foo, int bar)
+        //   ...
+        // }
+        if (parameterlessConstructor is null && constructors.Length > 1)
+        {
+            throw new InvalidOperationException($"Only a single public parameterized constructor is allowed for '{type}'.");
+        }
+
+        throw new InvalidOperationException($"No '{type}' public parameterless constructor found.");
     }
 
     private MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
@@ -534,5 +631,42 @@ internal sealed class ParameterBindingMethodCache
 
         static async ValueTask<object?> ConvertAwaited(ValueTask<Nullable<T>> typedValueTask) => await typedValueTask;
         return ConvertAwaited(typedValueTask);
+    }
+
+    private class ParameterLookupKey
+    {
+        public ParameterLookupKey(string name, Type type)
+        {
+            Name = name;
+            Type = type;
+        }
+
+        public string Name { get; }
+        public Type Type { get; }
+
+        public override int GetHashCode()
+        {
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
+        }
+
+        public override bool Equals([NotNullWhen(true)] object? obj)
+        {
+            Debug.Assert(obj is ParameterLookupKey);
+
+            var other = (ParameterLookupKey)obj;
+            return Type == other.Type && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    internal class ConstructorParameter
+    {
+        public ConstructorParameter(ParameterInfo parameter, PropertyInfo propertyInfo)
+        {
+            ParameterInfo = parameter;
+            PropertyInfo = propertyInfo;
+        }
+
+        public ParameterInfo ParameterInfo { get; }
+        public PropertyInfo PropertyInfo { get; }
     }
 }
