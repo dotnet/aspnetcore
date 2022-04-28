@@ -3,13 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
-    <DefineConstants Condition=" '$(InstallPlaywright)' == 'true' ">$(DefineConstants);INSTALLPLAYWRIGHT</DefineConstants>
     <NoWarn>$(NoWarn);CA2007;NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20158.1" />
-    <PackageReference Condition=" '$(InstallPlaywright)' == 'true' " Include="Microsoft.Playwright" Version="1.17.3" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.17.3" />
   </ItemGroup>
 
   <Target Name="Test" />

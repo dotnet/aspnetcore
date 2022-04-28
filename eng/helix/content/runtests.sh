@@ -23,7 +23,7 @@ else
     export PLAYWRIGHT_DRIVER_PATH="$DIR/.playwright/unix/native/playwright.sh"
     PLAYWRIGHT_NODE_PATH=$DIR/.playwright/unix/native/node
 fi
-export InstallPlaywright="$installPlaywright"
+
 if [ -f "$PLAYWRIGHT_DRIVER_PATH" ]; then
     if [[ "$helixQueue" != *"OSX"* ]]; then
         echo "Installing Playwright requirements..."
@@ -75,8 +75,8 @@ sync
 
 exit_code=0
 
-echo "Running tests: dotnet run --no-build --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6"
-dotnet run --no-build --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6
+echo "Running tests: dotnet run --no-build --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
+dotnet run --no-build --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 

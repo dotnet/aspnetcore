@@ -13,7 +13,6 @@ REM Batch only supports up to 9 arguments using the %# syntax, need to shift to 
 
 set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
-set InstallPlaywright=%$installPlaywright%
 set PLAYWRIGHT_BROWSERS_PATH=%CD%\ms-playwright
 
 set "PATH=%HELIX_WORKITEM_ROOT%;%PATH%;%HELIX_WORKITEM_ROOT%\node\bin"
@@ -22,8 +21,8 @@ echo.
 
 set exit_code=0
 
-echo "Running tests: dotnet run --no-build --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --helixTimeout %$helixTimeout%"
-dotnet run --no-build --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --helixTimeout %$helixTimeout%
+echo "Running tests: dotnet run --no-build --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --helixTimeout %$helixTimeout% --playwright $installPlaywright"
+dotnet run --no-build --project RunTests\RunTests.csproj -- --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --helixTimeout %$helixTimeout% --playwright $installPlaywright
 if not errorlevel 0 (
     set exit_code=%errorlevel%
 )

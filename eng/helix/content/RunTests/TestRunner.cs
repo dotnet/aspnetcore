@@ -8,9 +8,7 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-#if INSTALLPLAYWRIGHT
 using Microsoft.Playwright;
-#endif
 
 namespace RunTests
 {
@@ -47,14 +45,17 @@ namespace RunTests
                 Console.WriteLine($"Set VSTEST_DUMP_PATH: {dumpPath}");
                 EnvironmentVariables.Add("VSTEST_DUMP_PATH", dumpPath);
 
-#if INSTALLPLAYWRIGHT
-                // Playwright will download and look for browsers to this directory
-                var playwrightBrowsers = Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH");
-                Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
-                EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
-#else
-                Console.WriteLine($"Skipping setting PLAYWRIGHT_BROWSERS_PATH");
-#endif
+                if (Options.InstallPlaywright)
+                {
+                    // Playwright will download and look for browsers to this directory
+                    var playwrightBrowsers = Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH");
+                    Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
+                    EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
+                }
+                else
+                {
+                    Console.WriteLine($"Skipping setting PLAYWRIGHT_BROWSERS_PATH");
+                }
 
                 Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
                 Directory.CreateDirectory(nugetRestore);
@@ -101,8 +102,7 @@ namespace RunTests
             }
         }
 
-#if INSTALLPLAYWRIGHT
-        public async Task<bool> InstallPlaywrightAsync()
+        public bool InstallPlaywright()
         {
             try
             {
@@ -119,7 +119,6 @@ namespace RunTests
                 return false;
             }
         }
-#endif
 
         public async Task<bool> InstallDotnetToolsAsync()
         {
@@ -157,8 +156,6 @@ namespace RunTests
                     errorDataReceived: Console.Error.WriteLine,
                     throwOnError: false,
                     cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                return true;
             }
             catch (Exception e)
             {

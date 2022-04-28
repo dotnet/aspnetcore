@@ -38,6 +38,11 @@ namespace RunTests
                 { Argument = new Argument<string>(), Required = true },
 
                 new Option(
+                    aliases: new string[] { "--playwright" },
+                    description: "Whether to install Microsoft.Playwright browsers or not")
+                { Argument = new Argument<bool>(), Required = true },
+
+                new Option(
                     aliases: new string[] { "--quarantined" },
                     description: "Whether quarantined tests should run or not")
                 { Argument = new Argument<bool>(), Required = true },
@@ -59,6 +64,7 @@ namespace RunTests
             {
                 Architecture = parseResult.ValueForOption<string>("--arch"),
                 HelixQueue = parseResult.ValueForOption<string>("--queue"),
+                InstallPlaywright = parseResult.ValueForOption<bool>("--playwright"),
                 Quarantined = parseResult.ValueForOption<bool>("--quarantined"),
                 RuntimeVersion = sharedFxVersion,
                 Target = parseResult.ValueForOption<string>("--target"),
@@ -78,6 +84,7 @@ namespace RunTests
 
         public string Architecture { get; private set; }
         public string HelixQueue { get; private set; }
+        public bool InstallPlaywright { get; private set; }
         public bool Quarantined { get; private set; }
         public string RuntimeVersion { get; private set; }
         public string Target { get; private set; }

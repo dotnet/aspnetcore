@@ -19,14 +19,18 @@ namespace RunTests
                 {
                     keepGoing = await runner.InstallDotnetToolsAsync();
                 }
-#if INSTALLPLAYWRIGHT
+
                 if (keepGoing)
                 {
-                    keepGoing = await runner.InstallPlaywrightAsync();
+                    if (runner.Options.InstallPlaywright)
+                    {
+                        keepGoing = runner.InstallPlaywright();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Playwright install skipped.");
+                    }
                 }
-#else
-                Console.WriteLine("Playwright install skipped.");
-#endif
 
                 runner.DisplayContents();
 
