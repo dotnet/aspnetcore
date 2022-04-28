@@ -227,9 +227,7 @@ public class DelegateTests
         // Stop the receiver
         receiver?.Dispose();
 
-        // Start the receiver again but this time we need to attach to the existing queue.
-        // Due to https://github.com/dotnet/aspnetcore/issues/40359, we have to manually
-        // register URL prefixes and attach the server's queue to them.
+        // Start the receiver again but this time we need to use CreateOrAttach to attach to the existing queue and setup the UrlPrefixes
         using var receiverRestarted = (MessagePump)Utilities.CreateHttpServer(out receiverAddress, async httpContext =>
         {
             await httpContext.Response.WriteAsync(_expectedResponseString);
@@ -237,29 +235,15 @@ public class DelegateTests
         options =>
         {
             options.RequestQueueName = queueName;
-            options.RequestQueueMode = RequestQueueMode.Attach;
+            options.RequestQueueMode = RequestQueueMode.CreateOrAttach;
             options.UrlPrefixes.Clear();
             options.UrlPrefixes.Add(receiverAddress);
         });
-        AttachToUrlGroup(receiverRestarted.Listener.RequestQueue);
-        receiverRestarted.Listener.Options.UrlPrefixes.RegisterAllPrefixes(receiverRestarted.Listener.UrlGroup);
 
         responseString = await SendRequestAsync(delegatorAddress);
         Assert.Equal(_expectedResponseString, responseString);
 
         destination?.Dispose();
-    }
-
-    private unsafe void AttachToUrlGroup(RequestQueue requestQueue)
-    {
-        var info = new HttpApiTypes.HTTP_BINDING_INFO();
-        info.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-        info.RequestQueueHandle = requestQueue.Handle.DangerousGetHandle();
-
-        var infoptr = new IntPtr(&info);
-
-        requestQueue.UrlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
-            infoptr, (uint)Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>());
     }
 
     private async Task<string> SendRequestAsync(string uri)

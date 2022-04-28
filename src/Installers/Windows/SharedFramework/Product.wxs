@@ -7,7 +7,7 @@
         <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." Schedule="afterInstallFinalize" />
         <Media Id="1" Cabinet="$(var.Cabinet)" CompressionLevel="high" EmbedCab="$(var.EmbedCab)" />
 
-        <WixVariable Id="WixUILicenseRtf" Value="$(var.files)\eula.rtf" />
+        <WixVariable Id="WixUILicenseRtf" Value="$(var.files)\eula.txt" />
         <UIRef Id="WixUI_Minimal" />
 
         <FeatureRef Id="FT_DepProvider" />
@@ -53,7 +53,7 @@
         </Feature>
 
         <ComponentGroup Id="CG_ProductInfo">
-            <ComponentRef Id="C_eula.rtf" />
+            <ComponentRef Id="C_eula.txt" />
             <ComponentRef Id="C_ProductVersion"/>
             <ComponentRef Id="C_ProductInstallDir"/>
             <?if $(var.Platform)=x64 ?>
@@ -63,8 +63,8 @@
         </ComponentGroup>
 
         <DirectoryRef Id="SharedFolder">
-            <Component Id="C_eula.rtf">
-                <File Name="eula.rtf" Source="$(var.files)\eula.rtf" />
+            <Component Id="C_eula.txt">
+                <File Name="eula.txt" Source="$(var.files)\eula.txt" />
             </Component>
 
             <?ifdef ProductVersionKey?>

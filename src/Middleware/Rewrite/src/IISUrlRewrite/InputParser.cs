@@ -124,7 +124,14 @@ internal class InputParser
                         }
                     case "UrlDecode":
                         {
-                            throw new NotImplementedException("UrlDecode is not implemented because of no great library available");
+                            var pattern = ParseString(context, uriMatchPart);
+                            results.Add(new UrlDecodeSegment(pattern));
+
+                            if (context.Current != CloseBrace)
+                            {
+                                throw new FormatException(Resources.FormatError_InputParserMissingCloseBrace(context.Index));
+                            }
+                            return;
                         }
                     case "UrlEncode":
                         {

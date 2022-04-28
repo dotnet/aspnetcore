@@ -1311,6 +1311,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
 
     [Theory]
     [MemberData(nameof(SupportedSchemes))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41363")]
     public async Task Settings_MaxFrameSize_Larger_Server(string scheme)
     {
         var hostBuilder = new HostBuilder()

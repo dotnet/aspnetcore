@@ -1773,17 +1773,6 @@
                   {
                     "name": "isActivitySender",
                     "parameters": {
-                      "user": "pranavkm"
-                    }
-                  }
-                ]
-              },
-              {
-                "operator": "not",
-                "operands": [
-                  {
-                    "name": "isActivitySender",
-                    "parameters": {
                       "user": "SteveSandersonMS"
                     }
                   }

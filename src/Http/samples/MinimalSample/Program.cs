@@ -16,8 +16,18 @@ if (app.Environment.IsDevelopment())
 string Plaintext() => "Hello, World!";
 app.MapGet("/plaintext", Plaintext);
 
+var nestedGroup = app.MapGroup("/group/{groupName}")
+   .MapGroup("/nested/{nestedName}")
+   .WithMetadata(new TagsAttribute("nested"));
+
+nestedGroup
+   .MapGet("/", (string groupName, string nestedName) =>
+   {
+       return $"Hello from {groupName}:{nestedName}!";
+   });
+
 object Json() => new { message = "Hello, World!" };
-app.MapGet("/json", Json);
+app.MapGet("/json", Json).WithTags("json");
 
 string SayHello(string name) => $"Hello, {name}!";
 app.MapGet("/hello/{name}", SayHello);

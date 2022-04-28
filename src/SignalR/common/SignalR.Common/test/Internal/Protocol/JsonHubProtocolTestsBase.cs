@@ -194,6 +194,18 @@ public abstract class JsonHubProtocolTestsBase
         Assert.Equal(expectedMessage, ex.Message);
     }
 
+    [Fact]
+    public void EmptyStreamIdsDoesNotAllocateNewArray()
+    {
+        var testData = Frame("{\"type\":1,\"target\":\"Target\",\"arguments\":[],\"streamIds\":[]}");
+
+        var binder = new TestBinder(Array.Empty<Type>(), typeof(object));
+        var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(testData));
+        JsonHubProtocol.TryParseMessage(ref data, binder, out var message);
+        Assert.IsType<InvocationMessage>(message);
+        Assert.Same(Array.Empty<string>(), (message as InvocationMessage).StreamIds);
+    }
+
     [Theory]
     [MemberData(nameof(OutOfOrderJsonTestDataNames))]
     public void ParseOutOfOrderJson(string outOfOrderJsonTestDataName)
