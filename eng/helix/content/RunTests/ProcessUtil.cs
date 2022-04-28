@@ -12,199 +12,198 @@ using System.Threading.Tasks;
 
 #nullable enable
 
-namespace RunTests
+namespace RunTests;
+
+public static class ProcessUtil
 {
-    public static class ProcessUtil
+    [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
+    private static extern int sys_kill(int pid, int sig);
+
+    public static Task CaptureDumpAsync()
     {
-        [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
-        private static extern int sys_kill(int pid, int sig);
+        var dumpDirectoryPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
 
-        public static Task CaptureDumpAsync()
+        if (dumpDirectoryPath == null)
         {
-            var dumpDirectoryPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
-
-            if (dumpDirectoryPath == null)
-            {
-                return Task.CompletedTask;
-            }
-
-            var process = Process.GetCurrentProcess();
-            var dumpFilePath = Path.Combine(dumpDirectoryPath, $"{process.ProcessName}-{process.Id}.dmp");
-
-            return CaptureDumpAsync(process.Id, dumpFilePath);
+            return Task.CompletedTask;
         }
 
-        public static Task CaptureDumpAsync(int pid)
+        var process = Process.GetCurrentProcess();
+        var dumpFilePath = Path.Combine(dumpDirectoryPath, $"{process.ProcessName}-{process.Id}.dmp");
+
+        return CaptureDumpAsync(process.Id, dumpFilePath);
+    }
+
+    public static Task CaptureDumpAsync(int pid)
+    {
+        var dumpDirectoryPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
+
+        if (dumpDirectoryPath == null)
         {
-            var dumpDirectoryPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
-
-            if (dumpDirectoryPath == null)
-            {
-                return Task.CompletedTask;
-            }
-
-            var process = Process.GetProcessById(pid);
-            var dumpFilePath = Path.Combine(dumpDirectoryPath, $"{process.ProcessName}.{process.Id}.dmp");
-
-            return CaptureDumpAsync(process.Id, dumpFilePath);
+            return Task.CompletedTask;
         }
 
-        public static Task CaptureDumpAsync(int pid, string dumpFilePath)
+        var process = Process.GetProcessById(pid);
+        var dumpFilePath = Path.Combine(dumpDirectoryPath, $"{process.ProcessName}.{process.Id}.dmp");
+
+        return CaptureDumpAsync(process.Id, dumpFilePath);
+    }
+
+    public static Task CaptureDumpAsync(int pid, string dumpFilePath)
+    {
+        // Skip this on OSX, we know it's unsupported right now
+        if (OperatingSystem.IsMacOS())
         {
-            // Skip this on OSX, we know it's unsupported right now
-            if (OperatingSystem.IsMacOS())
-            {
-                // Can we capture stacks or do a gcdump instead?
-                return Task.CompletedTask;
-            }
-
-            if (!File.Exists($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump") &&
-                !File.Exists($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump.exe"))
-            {
-                return Task.CompletedTask;
-            }
-
-            return RunAsync($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump", $"collect -p {pid} -o \"{dumpFilePath}\"");
+            // Can we capture stacks or do a gcdump instead?
+            return Task.CompletedTask;
         }
 
-        public static async Task<ProcessResult> RunAsync(
-            string filename,
-            string arguments,
-            string? workingDirectory = null,
-            string? dumpDirectoryPath = null,
-            bool throwOnError = true,
-            IDictionary<string, string?>? environmentVariables = null,
-            Action<string>? outputDataReceived = null,
-            Action<string>? errorDataReceived = null,
-            Action<int>? onStart = null,
-            CancellationToken cancellationToken = default)
+        if (!File.Exists($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump") &&
+            !File.Exists($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump.exe"))
         {
-            Console.WriteLine($"Running '{filename} {arguments}'");
-            using var process = new Process()
-            {
-                StartInfo =
-                {
-                    FileName = filename,
-                    Arguments = arguments,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                },
-                EnableRaisingEvents = true
-            };
+            return Task.CompletedTask;
+        }
 
-            if (workingDirectory != null)
+        return RunAsync($"{Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT")}/dotnet-dump", $"collect -p {pid} -o \"{dumpFilePath}\"");
+    }
+
+    public static async Task<ProcessResult> RunAsync(
+        string filename,
+        string arguments,
+        string? workingDirectory = null,
+        string? dumpDirectoryPath = null,
+        bool throwOnError = true,
+        IDictionary<string, string?>? environmentVariables = null,
+        Action<string>? outputDataReceived = null,
+        Action<string>? errorDataReceived = null,
+        Action<int>? onStart = null,
+        CancellationToken cancellationToken = default)
+    {
+        Console.WriteLine($"Running '{filename} {arguments}'");
+        using var process = new Process()
+        {
+            StartInfo =
             {
-                process.StartInfo.WorkingDirectory = workingDirectory;
+                FileName = filename,
+                Arguments = arguments,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            },
+            EnableRaisingEvents = true
+        };
+
+        if (workingDirectory != null)
+        {
+            process.StartInfo.WorkingDirectory = workingDirectory;
+        }
+
+        dumpDirectoryPath ??= Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
+
+        if (dumpDirectoryPath != null)
+        {
+            process.StartInfo.EnvironmentVariables["COMPlus_DbgEnableMiniDump"] = "1";
+            process.StartInfo.EnvironmentVariables["COMPlus_DbgMiniDumpName"] = Path.Combine(dumpDirectoryPath, $"{Path.GetFileName(filename)}.%d.dmp");
+        }
+
+        if (environmentVariables != null)
+        {
+            foreach (var kvp in environmentVariables)
+            {
+                process.StartInfo.Environment.Add(kvp);
             }
+        }
 
-            dumpDirectoryPath ??= Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
-
-            if (dumpDirectoryPath != null)
+        var outputBuilder = new StringBuilder();
+        process.OutputDataReceived += (_, e) =>
+        {
+            if (e.Data != null)
             {
-                process.StartInfo.EnvironmentVariables["COMPlus_DbgEnableMiniDump"] = "1";
-                process.StartInfo.EnvironmentVariables["COMPlus_DbgMiniDumpName"] = Path.Combine(dumpDirectoryPath, $"{Path.GetFileName(filename)}.%d.dmp");
-            }
-
-            if (environmentVariables != null)
-            {
-                foreach (var kvp in environmentVariables)
+                if (outputDataReceived != null)
                 {
-                    process.StartInfo.Environment.Add(kvp);
-                }
-            }
-
-            var outputBuilder = new StringBuilder();
-            process.OutputDataReceived += (_, e) =>
-            {
-                if (e.Data != null)
-                {
-                    if (outputDataReceived != null)
-                    {
-                        outputDataReceived.Invoke(e.Data);
-                    }
-                    else
-                    {
-                        outputBuilder.AppendLine(e.Data);
-                    }
-                }
-            };
-
-            var errorBuilder = new StringBuilder();
-            process.ErrorDataReceived += (_, e) =>
-            {
-                if (e.Data != null)
-                {
-                    if (errorDataReceived != null)
-                    {
-                        errorDataReceived.Invoke(e.Data);
-                    }
-                    else
-                    {
-                        errorBuilder.AppendLine(e.Data);
-                    }
-                }
-            };
-
-            var processLifetimeTask = new TaskCompletionSource<ProcessResult>();
-
-            process.Exited += (_, e) =>
-            {
-                Console.WriteLine($"'{process.StartInfo.FileName} {process.StartInfo.Arguments}' completed with exit code '{process.ExitCode}'");
-                if (throwOnError && process.ExitCode != 0)
-                {
-                    processLifetimeTask.TrySetException(new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode} output: {outputBuilder.ToString()}"));
+                    outputDataReceived.Invoke(e.Data);
                 }
                 else
                 {
-                    processLifetimeTask.TrySetResult(new ProcessResult(outputBuilder.ToString(), errorBuilder.ToString(), process.ExitCode));
+                    outputBuilder.AppendLine(e.Data);
                 }
-            };
+            }
+        };
 
-            process.Start();
-            onStart?.Invoke(process.Id);
-
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            var canceledTcs = new TaskCompletionSource<object?>();
-            await using var _ = cancellationToken.Register(() => canceledTcs.TrySetResult(null));
-
-            var result = await Task.WhenAny(processLifetimeTask.Task, canceledTcs.Task);
-
-            if (result == canceledTcs.Task)
+        var errorBuilder = new StringBuilder();
+        process.ErrorDataReceived += (_, e) =>
+        {
+            if (e.Data != null)
             {
-                if (dumpDirectoryPath != null)
+                if (errorDataReceived != null)
                 {
-                    var dumpFilePath = Path.Combine(dumpDirectoryPath, $"{Path.GetFileName(filename)}.{process.Id}.dmp");
-                    // Capture a process dump if the dumpDirectory is set
-                    await CaptureDumpAsync(process.Id, dumpFilePath);
+                    errorDataReceived.Invoke(e.Data);
                 }
-
-                if (!OperatingSystem.IsWindows())
+                else
                 {
-                    sys_kill(process.Id, sig: 2); // SIGINT
-
-                    var cancel = new CancellationTokenSource();
-
-                    await Task.WhenAny(processLifetimeTask.Task, Task.Delay(TimeSpan.FromSeconds(5), cancel.Token));
-
-                    cancel.Cancel();
+                    errorBuilder.AppendLine(e.Data);
                 }
+            }
+        };
+
+        var processLifetimeTask = new TaskCompletionSource<ProcessResult>();
+
+        process.Exited += (_, e) =>
+        {
+            Console.WriteLine($"'{process.StartInfo.FileName} {process.StartInfo.Arguments}' completed with exit code '{process.ExitCode}'");
+            if (throwOnError && process.ExitCode != 0)
+            {
+                processLifetimeTask.TrySetException(new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode} output: {outputBuilder.ToString()}"));
+            }
+            else
+            {
+                processLifetimeTask.TrySetResult(new ProcessResult(outputBuilder.ToString(), errorBuilder.ToString(), process.ExitCode));
+            }
+        };
+
+        process.Start();
+        onStart?.Invoke(process.Id);
+
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        var canceledTcs = new TaskCompletionSource<object?>();
+        await using var _ = cancellationToken.Register(() => canceledTcs.TrySetResult(null));
+
+        var result = await Task.WhenAny(processLifetimeTask.Task, canceledTcs.Task);
+
+        if (result == canceledTcs.Task)
+        {
+            if (dumpDirectoryPath != null)
+            {
+                var dumpFilePath = Path.Combine(dumpDirectoryPath, $"{Path.GetFileName(filename)}.{process.Id}.dmp");
+                // Capture a process dump if the dumpDirectory is set
+                await CaptureDumpAsync(process.Id, dumpFilePath);
+            }
+
+            if (!OperatingSystem.IsWindows())
+            {
+                sys_kill(process.Id, sig: 2); // SIGINT
+
+                var cancel = new CancellationTokenSource();
+
+                await Task.WhenAny(processLifetimeTask.Task, Task.Delay(TimeSpan.FromSeconds(5), cancel.Token));
+
+                cancel.Cancel();
+            }
+
+            if (!process.HasExited)
+            {
+                process.CloseMainWindow();
 
                 if (!process.HasExited)
                 {
-                    process.CloseMainWindow();
-
-                    if (!process.HasExited)
-                    {
-                        process.Kill();
-                    }
+                    process.Kill();
                 }
             }
-
-            return await processLifetimeTask.Task;
         }
+
+        return await processLifetimeTask.Task;
     }
 }
