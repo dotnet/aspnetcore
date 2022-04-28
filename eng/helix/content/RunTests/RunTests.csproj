@@ -1,15 +1,29 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+  <PropertyGroup>
+    <!-- Despite project name, treat as a test asset to avoid both IsTestProject and IsImplementationProject. -->
+    <IsTestAssetProject>true</IsTestAssetProject>
+    <IsUnitTestProject>false</IsUnitTestProject>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <NoWarn>$(NoWarn);CA2007;NU5104</NoWarn>
+    <IsPackable>false</IsPackable>
+
+    <!-- We don't need this unless building for tests. -->
+    <ExcludeFromBuild Condition=" '$(DotNetBuildFromSource)' == 'true' OR '$(SkipTestBuild)' == 'true' ">true</ExcludeFromBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20158.1" />
-    <PackageReference Include="Microsoft.Playwright" Version="1.17.3" />
+    <Reference Include="Microsoft.Playwright" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20158.1" AllowExplicitReference="true" />
   </ItemGroup>
 
-  <Target Name="Test" />
+  <Target Name="PublishThisProject" AfterTargets="Build" Condition=" '$(ExcludeFromBuild)' != 'true' " >
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
