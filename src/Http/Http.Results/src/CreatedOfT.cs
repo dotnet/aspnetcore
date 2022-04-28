@@ -69,6 +69,8 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         if (!string.IsNullOrEmpty(Location))
         {
             httpContext.Response.Headers.Location = Location;
@@ -90,6 +92,8 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status201Created, "application/json"));
     }
 }

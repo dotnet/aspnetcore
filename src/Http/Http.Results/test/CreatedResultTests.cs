@@ -73,6 +73,24 @@ public class CreatedResultTests
         Assert.Equal(StatusCodes.Status201Created, producesResponseTypeMetadata.StatusCode);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new Created("location");
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
+    [Fact]
+    public void PopulateMetadata_ThrowsArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Created>(null));
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

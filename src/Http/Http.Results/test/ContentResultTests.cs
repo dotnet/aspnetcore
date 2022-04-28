@@ -123,6 +123,17 @@ public class ContentResultTests
         Assert.Equal(expectedContentData.Length, httpContext.Response.ContentLength);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new ContentHttpResult("content", null);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
     private static IServiceCollection CreateServices()
     {
         var services = new ServiceCollection();

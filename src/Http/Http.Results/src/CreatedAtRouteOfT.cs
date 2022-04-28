@@ -68,6 +68,8 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
         var url = linkGenerator.GetUriByRouteValues(
             httpContext,
@@ -98,6 +100,8 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status201Created, "application/json"));
     }
 }

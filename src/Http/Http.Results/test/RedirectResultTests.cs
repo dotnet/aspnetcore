@@ -22,6 +22,17 @@ public class RedirectResultTests : RedirectResultTestBase
         Assert.Same(url, result.Url);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new RedirectHttpResult("url");
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
     protected override Task ExecuteAsync(HttpContext httpContext, string contentPath)
     {
         var redirectResult = new RedirectHttpResult(contentPath, false, false);
