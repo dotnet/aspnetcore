@@ -225,6 +225,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             public int Compare(string? x, string? y)
             {
                 // Flip x and y to put the longest instead of the shortest string first in the SortedList.
+                // SortedList does not support duplicate entries, so fall back to
+                // StringComparison.OrdinalIgnoreCase behavior for equal length strings.
                 var lengthResult = y!.Length.CompareTo(x!.Length);
                 if (lengthResult != 0)
                 {
