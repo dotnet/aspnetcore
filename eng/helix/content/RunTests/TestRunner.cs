@@ -1,15 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Playwright;
-
 namespace RunTests;
 
 public class TestRunner
@@ -75,7 +66,7 @@ public class TestRunner
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in SetupEnvironment: {e.ToString()}");
+            Console.WriteLine($"Exception in SetupEnvironment: {e}");
             return false;
         }
     }
@@ -98,7 +89,7 @@ public class TestRunner
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in DisplayContents: {e.ToString()}");
+            Console.WriteLine($"Exception in DisplayContents: {e}");
         }
     }
 
@@ -115,7 +106,7 @@ public class TestRunner
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception installing playwright: {e.ToString()}");
+            Console.WriteLine($"Exception installing playwright: {e}");
             return false;
         }
     }
@@ -217,7 +208,7 @@ public class TestRunner
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in CheckTestDiscovery: {e.ToString()}");
+            Console.WriteLine($"Exception in CheckTestDiscovery: {e}");
             return false;
         }
     }
@@ -271,7 +262,7 @@ public class TestRunner
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in RunTests: {e.ToString()}");
+            Console.WriteLine($"Exception in RunTests: {e}");
             exitCode = 1;
         }
         return exitCode;
