@@ -52,6 +52,10 @@
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" />
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(dotnetefVersion)\dotnet-ef.$(dotnetefVersion).nupkg" />
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
+
+    <!-- Grab published `RunTests` project output. -->
+    <HelixCorrelationPayload Include="$(ArtifactsBinDir)RunTests\Debug\net7.0\publish\"
+        Destination="$([MSBuild]::EnsureTrailingSlash('RunTests')" />
   </ItemGroup>
 
   <Choose>

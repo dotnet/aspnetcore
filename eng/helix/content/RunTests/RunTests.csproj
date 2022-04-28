@@ -7,8 +7,10 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <!-- Update helix.proj when this TFM is updated. -->
     <TargetFramework>net7.0</TargetFramework>
+
+    <OutputType>Exe</OutputType>
     <NoWarn>$(NoWarn);CA2007;NU5104</NoWarn>
     <IsPackable>false</IsPackable>
 
