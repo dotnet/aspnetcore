@@ -34,4 +34,9 @@ internal class HubConnectionBinder<THub> : IInvocationBinder where THub : Hub
     {
         return _connection.StreamTracker.GetStreamItemType(streamId);
     }
+
+    public string? GetTarget(ReadOnlySpan<byte> targetUtf8Bytes)
+    {
+        return _dispatcher.GetTargetName(targetUtf8Bytes);
+    }
 }

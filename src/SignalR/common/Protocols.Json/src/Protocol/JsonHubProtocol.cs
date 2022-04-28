@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -187,7 +188,25 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else if (reader.ValueTextEquals(TargetPropertyNameBytes.EncodedUtf8Bytes))
                         {
+#if NETCOREAPP
+                            reader.Read();
+
+                            if (reader.TokenType != JsonTokenType.String)
+                            {
+                                throw new InvalidDataException($"Expected '{TargetPropertyName}' to be of type {JsonTokenType.String}.");
+                            }
+
+                            if (!reader.HasValueSequence)
+                            {
+                                target = binder.GetTarget(reader.ValueSpan) ?? Encoding.UTF8.GetString(reader.ValueSpan);
+                            }
+                            else
+                            {
+                                target = reader.GetString();
+                            }
+#else
                             target = reader.ReadAsString(TargetPropertyName);
+#endif
                         }
                         else if (reader.ValueTextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
                         {
