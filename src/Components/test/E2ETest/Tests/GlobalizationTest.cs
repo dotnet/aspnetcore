@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -24,6 +25,7 @@ public abstract class GlobalizationTest<TServerFixture> : ServerTestBase<TServer
     [Theory]
     [InlineData("en-US")]
     [InlineData("fr-FR")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public virtual void CanSetCultureAndParseCultureSensitiveNumbersAndDates(string culture)
     {
         var cultureInfo = CultureInfo.GetCultureInfo(culture);
@@ -94,6 +96,7 @@ public abstract class GlobalizationTest<TServerFixture> : ServerTestBase<TServer
     [Theory]
     [InlineData("en-US")]
     [InlineData("fr-FR")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithInputFields(string culture)
     {
         var cultureInfo = CultureInfo.GetCultureInfo(culture);
@@ -151,6 +154,7 @@ public abstract class GlobalizationTest<TServerFixture> : ServerTestBase<TServer
     [Theory]
     [InlineData("en-US")]
     [InlineData("fr-FR")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithFormComponents(string culture)
     {
         var cultureInfo = CultureInfo.GetCultureInfo(culture);

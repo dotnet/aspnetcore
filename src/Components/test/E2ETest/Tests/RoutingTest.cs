@@ -798,6 +798,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void CanArriveAtQueryStringPageWithDateTimeQuery()
     {
         var dateTime = new DateTime(2000, 1, 2, 3, 4, 5, 6);
