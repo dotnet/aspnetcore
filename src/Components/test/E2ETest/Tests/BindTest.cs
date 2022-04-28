@@ -808,6 +808,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void CanBindTextboxNullableDateTimeOffset()
     {
         var target = Browser.Exists(By.Id("textbox-nullable-datetimeoffset"));
@@ -898,6 +899,7 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
     // Blazor have different formatting behaviour by default.
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41425")]
     public void CanBindTextboxTimeOnly()
     {
         var target = Browser.Exists(By.Id("textbox-timeonly"));
