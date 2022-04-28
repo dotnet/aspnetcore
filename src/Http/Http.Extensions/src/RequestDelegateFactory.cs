@@ -504,12 +504,12 @@ public static partial class RequestDelegateFactory
 
     private static Expression CreateArgument(ParameterInfo parameter, FactoryContext factoryContext)
     {
-        var parameterCustomAttributes = parameter.GetCustomAttributes();
-
         if (parameter.Name is null)
         {
             throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
         }
+
+        var parameterCustomAttributes = parameter.GetCustomAttributes();
 
         if (parameter.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)) ||
             parameter.ParameterType.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
