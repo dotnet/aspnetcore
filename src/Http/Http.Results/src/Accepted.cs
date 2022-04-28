@@ -31,8 +31,6 @@ public sealed class Accepted : IResult, IEndpointMetadataProvider
     /// <param name="locationUri">The location at which the status of requested content can be monitored.</param>
     internal Accepted(Uri locationUri)
     {
-        ArgumentNullException.ThrowIfNull(locationUri);
-
         if (locationUri.IsAbsoluteUri)
         {
             Location = locationUri.AbsoluteUri;

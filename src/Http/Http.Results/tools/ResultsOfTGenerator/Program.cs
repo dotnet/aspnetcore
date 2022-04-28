@@ -14,7 +14,7 @@ public class Program
     {
         // By default we assume we're being run in the context of the <repo>/src/Http/Http.Results/src
         var pwd = Directory.GetCurrentDirectory();
-        var classTargetFilePath = Path.Combine(pwd, "ResultsOfT.cs");
+        var classTargetFilePath = Path.Combine(pwd, "ResultsOfT.Generated.cs");
         var testsTargetFilePath = Path.Combine(pwd, "..", "test", "ResultsOfTTests.Generated.cs");
 
         if (args.Length > 0)

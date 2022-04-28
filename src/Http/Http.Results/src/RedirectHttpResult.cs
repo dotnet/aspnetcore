@@ -58,16 +58,6 @@ public sealed partial class RedirectHttpResult : IResult
     /// and will throw an exception when the supplied URL is not considered local.</param>
     internal RedirectHttpResult(string url, bool acceptLocalUrlOnly, bool permanent, bool preserveMethod)
     {
-        if (url == null)
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
-
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(url));
-        }
-
         Url = url;
         Permanent = permanent;
         PreserveMethod = preserveMethod;

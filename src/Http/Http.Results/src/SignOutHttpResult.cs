@@ -22,26 +22,6 @@ public sealed partial class SignOutHttpResult : IResult
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the default sign out scheme.
-    /// specified authentication scheme and <paramref name="properties"/>.
-    /// </summary>
-    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-    internal SignOutHttpResult(AuthenticationProperties properties)
-        : this(Array.Empty<string>(), properties)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
-    /// specified authentication scheme.
-    /// </summary>
-    /// <param name="authenticationScheme">The authentication scheme to use when signing out the user.</param>
-    internal SignOutHttpResult(string authenticationScheme)
-        : this(new[] { authenticationScheme })
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
     /// specified authentication schemes.
     /// </summary>

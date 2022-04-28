@@ -32,7 +32,7 @@ public sealed partial class SignInHttpResult : IResult
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
     internal SignInHttpResult(ClaimsPrincipal principal, string? authenticationScheme, AuthenticationProperties? properties)
     {
-        Principal = principal ?? throw new ArgumentNullException(nameof(principal));
+        Principal = principal;
         AuthenticationScheme = authenticationScheme;
         Properties = properties;
     }

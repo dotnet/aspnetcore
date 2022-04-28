@@ -23,32 +23,11 @@ public sealed partial class ChallengeHttpResult : IResult
 
     /// <summary>
     /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the
-    /// specified authentication scheme.
-    /// </summary>
-    /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-    internal ChallengeHttpResult(string authenticationScheme)
-        : this(new[] { authenticationScheme })
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the
     /// specified authentication schemes.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
     internal ChallengeHttpResult(IList<string> authenticationSchemes)
         : this(authenticationSchemes, properties: null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="ChallengeHttpResult"/> with the
-    /// specified <paramref name="properties"/>.
-    /// </summary>
-    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
-    /// challenge.</param>
-    internal ChallengeHttpResult(AuthenticationProperties? properties)
-        : this(Array.Empty<string>(), properties)
     {
     }
 

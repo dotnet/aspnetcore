@@ -23,16 +23,6 @@ public sealed partial class ForbidHttpResult : IResult
 
     /// <summary>
     /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
-    /// specified authentication scheme.
-    /// </summary>
-    /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-    internal ForbidHttpResult(string authenticationScheme)
-        : this(new[] { authenticationScheme })
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
     /// specified authentication schemes.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
