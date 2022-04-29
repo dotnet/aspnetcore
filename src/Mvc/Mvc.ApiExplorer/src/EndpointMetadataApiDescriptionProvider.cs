@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -116,7 +117,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
         var hasBodyOrFormFileParameter = false;
 
-        static IEnumerable<ParameterInfo> FlattenParameters(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
+        static ReadOnlySpan<ParameterInfo> FlattenParameters(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
         {
             if (parameters.Length == 0)
             {
@@ -165,7 +166,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
                 }
             }
 
-            return flattenedParameters is not null ? flattenedParameters : parameters;
+            return flattenedParameters is not null ? CollectionsMarshal.AsSpan(flattenedParameters) : parameters.AsSpan();
         }
 
         foreach (var parameter in FlattenParameters(methodInfo.GetParameters(), ParameterBindingMethodCache))

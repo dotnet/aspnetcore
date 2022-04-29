@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -356,7 +357,7 @@ internal class OpenApiGenerator
             : new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
     }
 
-    private static IEnumerable<ParameterInfo> FlattenParameters(ParameterInfo[] parameters)
+    private static ReadOnlySpan<ParameterInfo> FlattenParameters(ParameterInfo[] parameters)
     {
         if (parameters.Length == 0)
         {
@@ -405,7 +406,7 @@ internal class OpenApiGenerator
             }
         }
 
-        return flattenedParameters is not null ? flattenedParameters : parameters;
+        return flattenedParameters is not null ? CollectionsMarshal.AsSpan(flattenedParameters) : parameters.AsSpan();
     }
 
     private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
