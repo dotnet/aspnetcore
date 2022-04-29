@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -18,8 +19,6 @@ internal class SurrogateParameterInfo : ParameterInfo
     {
         Debug.Assert(null != propertyInfo);
 
-        ArgumentNullException.ThrowIfNull(nullabilityContext);
-
         AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
         NameImpl = propertyInfo.Name;
         MemberImpl = propertyInfo;
@@ -33,7 +32,7 @@ internal class SurrogateParameterInfo : ParameterInfo
         _underlyingProperty = propertyInfo;
     }
 
-    public SurrogateParameterInfo(PropertyInfo property, ParameterInfo parameterInfo, NullabilityInfoContext nullabilityContext)
+    public SurrogateParameterInfo(PropertyInfo property, ParameterInfo parameterInfo, NullabilityInfoContext? nullabilityContext = null)
         : this(property, nullabilityContext)
     {
         _constructionParameterInfo = parameterInfo;
@@ -73,14 +72,11 @@ internal class SurrogateParameterInfo : ParameterInfo
 
     public override IList<CustomAttributeData> GetCustomAttributesData()
     {
-        var attributes = _constructionParameterInfo?.GetCustomAttributesData();
+        var attributes = new List<CustomAttributeData>(
+            _constructionParameterInfo?.GetCustomAttributesData() ?? Array.Empty<CustomAttributeData>());
+        attributes.AddRange(_underlyingProperty.GetCustomAttributesData());
 
-        if (attributes == null || attributes is { Count: 0 })
-        {
-            attributes = _underlyingProperty.GetCustomAttributesData();
-        }
-
-        return attributes;
+        return attributes.AsReadOnly();
     }
 
     public override Type[] GetOptionalCustomModifiers()

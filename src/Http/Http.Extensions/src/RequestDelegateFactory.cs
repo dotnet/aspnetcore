@@ -468,7 +468,16 @@ public static partial class RequestDelegateFactory
 
         for (var i = 0; i < parameters.Length; i++)
         {
-            args[i] = CreateArgument(parameters[i], factoryContext);
+            if (parameters[i].CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)) ||
+                parameters[i].ParameterType.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
+            {
+                args[i] = CreateSurrogateArgument(parameters[i], factoryContext);
+            }
+            else
+            {
+                args[i] = CreateArgument(parameters[i], factoryContext);
+            }
+
             // Register expressions containing the boxed and unboxed variants
             // of the route handler's arguments for use in RouteHandlerInvocationContext
             // construction and route handler invocation.
@@ -511,12 +520,7 @@ public static partial class RequestDelegateFactory
 
         var parameterCustomAttributes = parameter.GetCustomAttributes();
 
-        if (parameter.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)) ||
-            parameter.ParameterType.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
-        {
-            return BindParameterFromSurrogateProperties(parameter, factoryContext);
-        }
-        else if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
+        if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
         {
             var routeName = routeAttribute.Name ?? parameter.Name;
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteAttribute);
@@ -657,6 +661,68 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.BodyParameter);
             return BindParameterFromBody(parameter, allowEmpty: false, factoryContext);
         }
+    }
+
+    private static Expression CreateSurrogateArgument(ParameterInfo parameter, FactoryContext factoryContext)
+    {
+        var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
+        var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameter.ParameterType);
+
+        if (constructor is not null && parameters is { Length: > 0 })
+        {
+            //  arg_local = new T(....)
+
+            var constructorArguments = new Expression[parameters.Length];
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameterInfo =
+                    new SurrogateParameterInfo(parameters[i].PropertyInfo, parameters[i].ParameterInfo, factoryContext.NullabilityContext);
+                constructorArguments[i] = CreateArgument(parameterInfo, factoryContext);
+                factoryContext.SurrogateParameters.Add(parameterInfo);
+            }
+
+            factoryContext.ParamCheckExpressions.Add(
+                Expression.Assign(
+                    argumentExpression,
+                    Expression.New(constructor, constructorArguments)));
+        }
+        else
+        {
+            //  arg_local = new T()
+            //  {
+            //      arg_local.Property[0] = expression[0],
+            //      arg_local.Property[n] = expression[n],
+            //  }
+
+            var properties = parameter.ParameterType.GetProperties();
+            var bindings = new List<MemberBinding>(properties.Length);
+
+            for (var i = 0; i < properties.Length; i++)
+            {
+                // For parameterless ctor we will init only writable properties.
+                if (properties[i].CanWrite)
+                {
+                    var parameterInfo = new SurrogateParameterInfo(properties[i], factoryContext.NullabilityContext);
+                    bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));
+                    factoryContext.SurrogateParameters.Add(parameterInfo);
+                }
+            }
+
+            var newExpression = constructor is null ?
+                Expression.New(parameter.ParameterType) :
+                Expression.New(constructor);
+
+            factoryContext.ParamCheckExpressions.Add(
+                Expression.Assign(
+                    argumentExpression,
+                    Expression.MemberInit(newExpression, bindings)));
+        }
+
+        factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.SurrogatedParameter);
+        factoryContext.ExtraLocals.Add(argumentExpression);
+
+        return argumentExpression;
     }
 
     private static Expression CreateMethodCall(MethodInfo methodInfo, Expression? target, Expression[] arguments) =>
@@ -1187,69 +1253,6 @@ public static partial class RequestDelegateFactory
         var indexArguments = new[] { Expression.Constant(key) };
         var indexExpression = Expression.MakeIndex(sourceExpression, itemProperty, indexArguments);
         return Expression.Convert(indexExpression, returnType ?? typeof(string));
-    }
-    
-
-    private static Expression BindParameterFromSurrogateProperties(ParameterInfo parameter, FactoryContext factoryContext)
-    {
-        var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
-        var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameter.ParameterType);
-
-        if (constructor is not null && parameters is { Length: > 0 })
-        {
-            //  arg_local = new T(....)
-
-            var constructorArguments = new Expression[parameters.Length];
-
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                var parameterInfo =
-                    new SurrogateParameterInfo(parameters[i].PropertyInfo, parameters[i].ParameterInfo, factoryContext.NullabilityContext);
-                constructorArguments[i] = CreateArgument(parameterInfo, factoryContext);
-                factoryContext.SurrogateParameters.Add(parameterInfo);
-            }
-
-            factoryContext.ParamCheckExpressions.Add(
-                Expression.Assign(
-                    argumentExpression,
-                    Expression.New(constructor, constructorArguments)));
-        }
-        else
-        {
-            //  arg_local = new T()
-            //  {
-            //      arg_local.Property[0] = expression[0],
-            //      arg_local.Property[n] = expression[n],
-            //  }
-
-            var properties = parameter.ParameterType.GetProperties();
-            var bindings = new List<MemberBinding>(properties.Length);
-
-            for (var i = 0; i < properties.Length; i++)
-            {
-                // For parameterless ctor we will init only writable properties.
-                if (properties[i].CanWrite)
-                {
-                    var parameterInfo = new SurrogateParameterInfo(properties[i], factoryContext.NullabilityContext);
-                    bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));
-                    factoryContext.SurrogateParameters.Add(parameterInfo);
-                }
-            }
-
-            var newExpression = constructor is null ?
-                Expression.New(parameter.ParameterType) :
-                Expression.New(constructor);
-
-            factoryContext.ParamCheckExpressions.Add(
-                Expression.Assign(
-                    argumentExpression,
-                    Expression.MemberInit(newExpression, bindings)));
-        }
-
-        factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.SurrogatedParameter);
-        factoryContext.ExtraLocals.Add(argumentExpression);
-
-        return argumentExpression;
     }
 
     private static Expression BindParameterFromService(ParameterInfo parameter, FactoryContext factoryContext)

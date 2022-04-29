@@ -5,8 +5,9 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
-internal class SurrogateParameterInfoTests
+public class SurrogateParameterInfoTests
 {
+    [Fact]
     public void Initialization_SetsTypeAndNameFromPropertyInfo()
     {
         // Arrange & Act
@@ -18,49 +19,180 @@ internal class SurrogateParameterInfoTests
         Assert.Equal(propertyInfo.PropertyType, surrogateParameterInfo.ParameterType);
     }
 
+    [Fact]
+    public void Initialization_WithConstructorArgument_SetsTypeAndNameFromPropertyInfo()
+    {
+        // Arrange & Act
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
+        var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.NoAttribute));
+        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+
+        // Assert
+        Assert.Equal(propertyInfo.Name, surrogateParameterInfo.Name);
+        Assert.Equal(propertyInfo.PropertyType, surrogateParameterInfo.ParameterType);
+    }
+
+    [Fact]
     public void SurrogateParameterInfo_ContainsPropertyCustomAttributes()
     {
         // Arrange & Act
-        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.PropertyWithCustomAttribute));
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
         var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
 
         // Assert
-        Assert.Equal(propertyInfo.CustomAttributes, surrogateParameterInfo.CustomAttributes);
         Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute)));
     }
 
-    public void SurrogateParameterInfo_ContainsPropertyInheritedCustomAttributes()
+    [Fact]
+    public void SurrogateParameterInfo_WithConstructorArgument_UsesParameterCustomAttributes()
     {
         // Arrange & Act
-        var propertyInfo = GetProperty(typeof(DerivedArgumentList), nameof(DerivedArgumentList.PropertyWithCustomAttribute));
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
+        var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.WithTestAttribute));
+        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+
+        // Assert
+        Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute)));
+    }
+
+    [Fact]
+    public void SurrogateParameterInfo_WithConstructorArgument_FallbackToPropertyCustomAttributes()
+    {
+        // Arrange & Act
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
+        var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.NoAttribute));
+        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+
+        // Assert
+        Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute)));
+    }
+
+    [Fact]
+    public void SurrogateParameterInfo_ContainsPropertyCustomAttributesData()
+    {
+        // Arrange & Act
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
         var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
 
         // Assert
-        Assert.Equal(propertyInfo.CustomAttributes, surrogateParameterInfo.CustomAttributes);
-        Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute)));
+        Assert.Single(
+            surrogateParameterInfo.GetCustomAttributesData(),
+            a => typeof(TestAttribute).IsAssignableFrom(a.AttributeType));
+    }
+
+    [Fact]
+    public void SurrogateParameterInfo_WithConstructorArgument_MergePropertyAndParameterCustomAttributesData()
+    {
+        // Arrange & Act
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
+        var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.WithSampleAttribute));
+        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+
+        // Assert
+        Assert.Single(
+            surrogateParameterInfo.GetCustomAttributesData(),
+            a => typeof(TestAttribute).IsAssignableFrom(a.AttributeType));
+        Assert.Single(
+            surrogateParameterInfo.GetCustomAttributesData(),
+            a => typeof(SampleAttribute).IsAssignableFrom(a.AttributeType));
+    }
+
+    [Fact]
+    public void SurrogateParameterInfo_ContainsPropertyInheritedCustomAttributes()
+    {
+        // Arrange & Act
+        var propertyInfo = GetProperty(typeof(DerivedArgumentList), nameof(DerivedArgumentList.WithTestAttribute));
+        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
+
+        // Assert
+        Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute), true));
+    }
+
+    [Fact]
+    public void SurrogateParameterInfo_DoesNotHaveDefaultValueFromProperty()
+    {
+        // Arrange & Act
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
+        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
+
+        // Assert
+        Assert.False(surrogateParameterInfo.HasDefaultValue);
+    }
+
+    [Fact]
+    public void SurrogateParameterInfo_WithConstructorArgument_HasDefaultValue()
+    {
+        // Arrange & Act
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
+        var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), "withDefaultValue");
+        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+
+        // Assert
+        Assert.True(surrogateParameterInfo.HasDefaultValue);
+        Assert.NotNull(surrogateParameterInfo.DefaultValue);
+        Assert.IsType<int>(surrogateParameterInfo.DefaultValue);
+        Assert.NotNull(surrogateParameterInfo.RawDefaultValue);
+        Assert.IsType<int>(surrogateParameterInfo.RawDefaultValue);
+    }
+
+    [Fact]
+    public void SurrogateParameterInfo_WithConstructorArgument_DoesNotHaveDefaultValue()
+    {
+        // Arrange & Act
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
+        var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.NoAttribute));
+        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+
+        // Assert
+        Assert.False(surrogateParameterInfo.HasDefaultValue);
     }
 
     private static PropertyInfo GetProperty(Type containerType, string propertyName)
         => containerType.GetProperty(propertyName);
 
+    private static ParameterInfo GetParameter(string methodName, string parameterName)
+    {
+        var methodInfo = typeof(ArgumentList).GetMethod(methodName);
+        var parameters = methodInfo.GetParameters();
+        return parameters.Single(p => p.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase));
+    }
+
     private class ArgumentList
     {
         public int NoAttribute { get; set; }
 
-        [TestAttribute]
-        public virtual int PropertyWithCustomAttribute { get; set; }
+        [Test]
+        public virtual int WithTestAttribute { get; set; }
+
+        [Sample]
+        public int WithSampleAttribute { get; set; }
+
+        public void DefaultMethod(
+            int noAttribute,
+            [Test] int withTestAttribute,
+            [Sample] int withSampleAttribute,
+            int withDefaultValue = 10)
+        { }
     }
 
     private class DerivedArgumentList : ArgumentList
     {
-        public override int PropertyWithCustomAttribute
+        [DerivedTest]
+        public override int WithTestAttribute
         {
-            get => base.PropertyWithCustomAttribute;
-            set => base.PropertyWithCustomAttribute = value;
+            get => base.WithTestAttribute;
+            set => base.WithTestAttribute = value;
         }
     }
 
-    [AttributeUsage(AttributeTargets.Property, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = true)]
+    private class SampleAttribute : Attribute
+    { }
+
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, Inherited = true)]
     private class TestAttribute : Attribute
+    { }
+
+    private class DerivedTestAttribute : TestAttribute
     { }
 }
