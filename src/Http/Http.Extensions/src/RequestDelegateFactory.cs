@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -225,7 +226,7 @@ public static partial class RequestDelegateFactory
         AddTypeProvidedMetadata(methodInfo,
             factoryContext.Metadata,
             factoryContext.ServiceProvider,
-            factoryContext.SurrogateParameters.ToArray());
+            CollectionsMarshal.AsSpan(factoryContext.SurrogateParameters));
 
         // Add method attributes as metadata *after* any inferred metadata so that the attributes hava a higher specificity
         AddMethodAttributesAsMetadata(methodInfo, factoryContext.Metadata);
@@ -383,11 +384,11 @@ public static partial class RequestDelegateFactory
         return ExecuteAwaited(task);
     }
 
-    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, ParameterInfo[] surrogateParameters)
+    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, Span<ParameterInfo> surrogateParameters)
     {
         object?[]? invokeArgs = null;
 
-        void AddMetadata(ParameterInfo[] parameters)
+        void AddMetadata(ReadOnlySpan<ParameterInfo> parameters)
         {
             foreach (var parameter in parameters)
             {
