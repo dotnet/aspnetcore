@@ -75,8 +75,8 @@ sync
 
 exit_code=0
 
-echo "Running tests: dotnet run $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
-dotnet run $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll -- --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright
+echo "Running tests: dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
+dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 
