@@ -35,8 +35,10 @@
     <DotNetCliChannel>Current</DotNetCliChannel>
 
     <!-- Similar to ProjectLayout.props in the Arcade SDK. The Helix SDK contains nothing similar. -->
+    <ArtifactsBinDir Condition=" '$(ArtifactsBinDir)' == '' "
+        >$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin'))</ArtifactsBinDir>
     <OutputPath Condition=" '$(OutputPath)' == '' "
-        >$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin', '$(MSBuildProjectName)'))</OutputPath>
+        >$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', '$(MSBuildProjectName)'))</OutputPath>
   </PropertyGroup>
 
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
