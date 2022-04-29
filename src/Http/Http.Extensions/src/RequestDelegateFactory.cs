@@ -1744,7 +1744,8 @@ public static partial class RequestDelegateFactory
         }
         else if (obj is Task<string?> taskString)
         {
-            return ExecuteTaskOfString(taskString, httpContext);        }
+            return ExecuteTaskOfString(taskString, httpContext);        
+        }
         else if (obj is ValueTask<string?> valueTaskString)
         {
             return ExecuteValueTaskOfString(valueTaskString, httpContext);
