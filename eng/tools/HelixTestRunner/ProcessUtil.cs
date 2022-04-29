@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 #nullable enable
 
-namespace RunTests;
+namespace HelixTestRunner;
 
 public static class ProcessUtil
 {

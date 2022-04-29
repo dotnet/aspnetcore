@@ -9,11 +9,11 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace RunTests;
+namespace HelixTestRunner;
 
-public class RunTestsOptions
+public class HelixTestRunnerOptions
 {
-    public static RunTestsOptions Parse(string[] args)
+    public static HelixTestRunnerOptions Parse(string[] args)
     {
         var command = new RootCommand()
         {
@@ -60,7 +60,7 @@ public class RunTestsOptions
 
         var parseResult = command.Parse(args);
         var sharedFxVersion = parseResult.ValueForOption<string>("--runtime");
-        var options = new RunTestsOptions
+        var options = new HelixTestRunnerOptions
         {
             Architecture = parseResult.ValueForOption<string>("--arch"),
             HelixQueue = parseResult.ValueForOption<string>("--queue"),

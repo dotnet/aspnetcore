@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace RunTests;
+namespace HelixTestRunner;
 
 class Program
 {
@@ -12,7 +12,7 @@ class Program
     {
         try
         {
-            var runner = new TestRunner(RunTestsOptions.Parse(args));
+            var runner = new TestRunner(HelixTestRunnerOptions.Parse(args));
 
             var keepGoing = runner.SetupEnvironment();
             if (keepGoing)
@@ -54,7 +54,7 @@ class Program
         }
         catch (Exception e)
         {
-            Console.WriteLine($"RunTests uncaught exception: {e.ToString()}");
+            Console.WriteLine($"HelixTestRunner uncaught exception: {e.ToString()}");
             Environment.Exit(1);
         }
     }

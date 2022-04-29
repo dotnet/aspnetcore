@@ -1,17 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace RunTests;
+namespace HelixTestRunner;
 
 public class TestRunner
 {
-    public TestRunner(RunTestsOptions options)
+    public TestRunner(HelixTestRunnerOptions options)
     {
         Options = options;
         EnvironmentVariables = new Dictionary<string, string>();
     }
 
-    public RunTestsOptions Options { get; set; }
+    public HelixTestRunnerOptions Options { get; set; }
     public Dictionary<string, string> EnvironmentVariables { get; set; }
 
     public bool SetupEnvironment()
@@ -262,7 +262,7 @@ public class TestRunner
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in RunTests: {e}");
+            Console.WriteLine($"Exception in HelixTestRunner: {e}");
             exitCode = 1;
         }
         return exitCode;

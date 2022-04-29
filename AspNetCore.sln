@@ -1704,7 +1704,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RateLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RateLimiting.Tests", "src\Middleware\RateLimiting\test\Microsoft.AspNetCore.RateLimiting.Tests.csproj", "{41FF4F96-98D2-4482-A2A7-4B179E80D285}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RunTests", "eng\tools\RunTests\RunTests.csproj", "{51D07AA9-6297-4F66-A7BD-71CE7E3F4A3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelixTestRunner", "eng\tools\HelixTestRunner\HelixTestRunner.csproj", "{51D07AA9-6297-4F66-A7BD-71CE7E3F4A3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

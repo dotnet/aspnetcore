@@ -48,14 +48,14 @@
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
 
-    <!-- Grab the tool packages for what RunTests installs. -->
+    <!-- Grab the tool packages for what HelixTestRunner installs. -->
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" />
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(dotnetefVersion)\dotnet-ef.$(dotnetefVersion).nupkg" />
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
 
-    <!-- Grab published `RunTests` project output. -->
-    <HelixCorrelationPayload Include="$(ArtifactsBinDir)RunTests\Debug\net7.0\publish\"
-        Destination="$([MSBuild]::EnsureTrailingSlash('RunTests')" />
+    <!-- Grab published `HelixTestRunner` project output. -->
+    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\Debug\net7.0\publish\"
+        Destination="$([MSBuild]::EnsureTrailingSlash('HelixTestRunner')" />
   </ItemGroup>
 
   <Choose>

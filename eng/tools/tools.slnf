@@ -4,7 +4,7 @@
     "projects": [
       "eng\\tools\\BaselineGenerator\\BaselineGenerator.csproj",
       "eng\\tools\\RepoTasks\\RepoTasks.csproj",
-      "eng\\tools\\RunTests\\RunTests.csproj"
+      "eng\\tools\\HelixTestRunner\\HelixTestRunner.csproj"
     ]
   }
 }
