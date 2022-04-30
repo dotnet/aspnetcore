@@ -368,7 +368,7 @@ public class Project : IDisposable
         }
     }
 
-    private class OrderedLock
+    private sealed class OrderedLock
     {
         private bool _nodeLockTaken;
         private bool _dotNetLockTaken;
