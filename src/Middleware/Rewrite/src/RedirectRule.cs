@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite;
 
-internal class RedirectRule : IRule
+internal sealed class RedirectRule : IRule
 {
     private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
     public Regex InitialMatch { get; }
@@ -31,7 +31,7 @@ internal class RedirectRule : IRule
         StatusCode = statusCode;
     }
 
-    public virtual void ApplyRule(RewriteContext context)
+    public void ApplyRule(RewriteContext context)
     {
         var request = context.HttpContext.Request;
         var path = request.Path;

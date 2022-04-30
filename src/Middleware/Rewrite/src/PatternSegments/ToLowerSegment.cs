@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
-internal class ToLowerSegment : PatternSegment
+internal sealed class ToLowerSegment : PatternSegment
 {
     private readonly Pattern _pattern;
 
