@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class UserProxy<THub> : IClientProxy where THub : Hub
+internal sealed class UserProxy<THub> : IClientProxy where THub : Hub
 {
     private readonly string _userId;
     private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -20,7 +20,7 @@ internal class UserProxy<THub> : IClientProxy where THub : Hub
     }
 }
 
-internal class MultipleUserProxy<THub> : IClientProxy where THub : Hub
+internal sealed class MultipleUserProxy<THub> : IClientProxy where THub : Hub
 {
     private readonly IReadOnlyList<string> _userIds;
     private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -37,7 +37,7 @@ internal class MultipleUserProxy<THub> : IClientProxy where THub : Hub
     }
 }
 
-internal class GroupProxy<THub> : IClientProxy where THub : Hub
+internal sealed class GroupProxy<THub> : IClientProxy where THub : Hub
 {
     private readonly string _groupName;
     private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -54,7 +54,7 @@ internal class GroupProxy<THub> : IClientProxy where THub : Hub
     }
 }
 
-internal class MultipleGroupProxy<THub> : IClientProxy where THub : Hub
+internal sealed class MultipleGroupProxy<THub> : IClientProxy where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
     private readonly IReadOnlyList<string> _groupNames;
@@ -71,7 +71,7 @@ internal class MultipleGroupProxy<THub> : IClientProxy where THub : Hub
     }
 }
 
-internal class GroupExceptProxy<THub> : IClientProxy where THub : Hub
+internal sealed class GroupExceptProxy<THub> : IClientProxy where THub : Hub
 {
     private readonly string _groupName;
     private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -90,7 +90,7 @@ internal class GroupExceptProxy<THub> : IClientProxy where THub : Hub
     }
 }
 
-internal class AllClientProxy<THub> : IClientProxy where THub : Hub
+internal sealed class AllClientProxy<THub> : IClientProxy where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
 
@@ -105,7 +105,7 @@ internal class AllClientProxy<THub> : IClientProxy where THub : Hub
     }
 }
 
-internal class AllClientsExceptProxy<THub> : IClientProxy where THub : Hub
+internal sealed class AllClientsExceptProxy<THub> : IClientProxy where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
     private readonly IReadOnlyList<string> _excludedConnectionIds;
@@ -122,7 +122,7 @@ internal class AllClientsExceptProxy<THub> : IClientProxy where THub : Hub
     }
 }
 
-internal class SingleClientProxy<THub> : IClientProxy where THub : Hub
+internal sealed class SingleClientProxy<THub> : IClientProxy where THub : Hub
 {
     private readonly string _connectionId;
     private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -139,7 +139,7 @@ internal class SingleClientProxy<THub> : IClientProxy where THub : Hub
     }
 }
 
-internal class MultipleClientProxy<THub> : IClientProxy where THub : Hub
+internal sealed class MultipleClientProxy<THub> : IClientProxy where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
     private readonly IReadOnlyList<string> _connectionIds;
@@ -156,7 +156,7 @@ internal class MultipleClientProxy<THub> : IClientProxy where THub : Hub
     }
 }
 
-internal class SingleClientProxyWithInvoke<THub> : ISingleClientProxy where THub : Hub
+internal sealed class SingleClientProxyWithInvoke<THub> : ISingleClientProxy where THub : Hub
 {
     private readonly string _connectionId;
     private readonly HubLifetimeManager<THub> _lifetimeManager;

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator;
 
 internal partial class HubClientProxyGenerator
 {
-    public class Emitter
+    public sealed class Emitter
     {
         private readonly SourceProductionContext _context;
         private readonly SourceGenerationSpec _spec;
