@@ -105,6 +105,7 @@
     <MicrosoftExtensionsOptionsVersion>7.0.0-preview.5.22226.6</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>7.0.0-preview.5.22226.6</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftInternalRuntimeAspNetCoreTransportVersion>7.0.0-preview.5.22226.6</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
+    <SystemConfigurationConfigurationManagerVersion>7.0.0-preview.5.22226.6</SystemConfigurationConfigurationManagerVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>7.0.0-preview.5.22226.6</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>7.0.0-preview.5.22226.6</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>7.0.0-preview.5.22226.6</SystemDirectoryServicesProtocolsVersion>

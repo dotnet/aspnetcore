@@ -181,6 +181,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c10154087e734fa58f08f2797e5d99404e9cd96b</Sha>
     </Dependency>
+    <Dependency Name="System.Configuration.ConfigurationManager" Version="7.0.0-preview.5.22226.6">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>c10154087e734fa58f08f2797e5d99404e9cd96b</Sha>
+    </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="7.0.0-preview.5.22226.6">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c10154087e734fa58f08f2797e5d99404e9cd96b</Sha>
