@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class Http3PeerSettings
+internal sealed class Http3PeerSettings
 {
     // Note these are protocol defaults, not Kestrel defaults.
     public const uint DefaultHeaderTableSize = 0;

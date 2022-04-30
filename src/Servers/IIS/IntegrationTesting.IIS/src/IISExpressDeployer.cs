@@ -440,7 +440,7 @@ public class IISExpressDeployer : IISDeployerBase
         }
     }
 
-    private class WindowsNativeMethods
+    private sealed class WindowsNativeMethods
     {
         internal delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
         [DllImport("user32.dll")]

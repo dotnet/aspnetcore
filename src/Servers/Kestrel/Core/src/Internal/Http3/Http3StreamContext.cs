@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class Http3StreamContext : HttpConnectionContext
+internal sealed class Http3StreamContext : HttpConnectionContext
 {
     public Http3StreamContext(
         string connectionId,

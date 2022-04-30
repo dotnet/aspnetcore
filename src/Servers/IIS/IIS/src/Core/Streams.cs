@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class Streams
+internal sealed class Streams
 {
     private static readonly ThrowingWasUpgradedWriteOnlyStreamInternal _throwingResponseStream
         = new ThrowingWasUpgradedWriteOnlyStreamInternal();

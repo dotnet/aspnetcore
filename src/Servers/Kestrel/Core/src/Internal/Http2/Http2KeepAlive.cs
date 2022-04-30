@@ -14,7 +14,7 @@ internal enum KeepAliveState
     Timeout
 }
 
-internal class Http2KeepAlive
+internal sealed class Http2KeepAlive
 {
     // An empty ping payload
     internal static readonly ReadOnlySequence<byte> PingPayload = new ReadOnlySequence<byte>(new byte[8]);

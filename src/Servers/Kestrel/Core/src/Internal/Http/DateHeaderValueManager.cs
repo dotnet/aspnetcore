@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 /// <summary>
 /// Manages the generation of the date header value.
 /// </summary>
-internal class DateHeaderValueManager : IHeartbeatHandler
+internal sealed class DateHeaderValueManager : IHeartbeatHandler
 {
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
     private static ReadOnlySpan<byte> DatePreambleBytes => new byte[8] { (byte)'\r', (byte)'\n', (byte)'D', (byte)'a', (byte)'t', (byte)'e', (byte)':', (byte)' ' };
@@ -45,7 +45,7 @@ internal class DateHeaderValueManager : IHeartbeatHandler
         Volatile.Write(ref _dateValues, dateValues);
     }
 
-    public class DateHeaderValues
+    public sealed class DateHeaderValues
     {
         public readonly byte[] Bytes;
         public readonly string String;
