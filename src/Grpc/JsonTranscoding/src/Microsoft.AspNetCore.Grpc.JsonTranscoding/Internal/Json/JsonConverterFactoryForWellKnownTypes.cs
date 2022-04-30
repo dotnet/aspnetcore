@@ -10,7 +10,7 @@ using Type = System.Type;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
-internal class JsonConverterFactoryForWellKnownTypes : JsonConverterFactory
+internal sealed class JsonConverterFactoryForWellKnownTypes : JsonConverterFactory
 {
     private readonly JsonContext _context;
 
