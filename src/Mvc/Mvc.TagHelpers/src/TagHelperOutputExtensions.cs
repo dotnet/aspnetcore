@@ -223,7 +223,7 @@ public static class TagHelperOutputExtensions
 
         if (string.Equals(currentClassValue, encodedClassValue, StringComparison.Ordinal))
         {
-            tagHelperOutput.Attributes.Remove(tagHelperOutput.Attributes["class"]);
+            tagHelperOutput.Attributes.Remove(classAttribute);
             return;
         }
 
@@ -250,7 +250,7 @@ public static class TagHelperOutputExtensions
         }
         else
         {
-            tagHelperOutput.Attributes.Remove(tagHelperOutput.Attributes["class"]);
+            tagHelperOutput.Attributes.Remove(classAttribute);
         }
     }
 
