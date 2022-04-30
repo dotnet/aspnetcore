@@ -52,7 +52,7 @@
 
     <!-- Grab the tool packages for what HelixTestRunner installs. -->
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" />
-    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(dotnetefVersion)\dotnet-ef.$(dotnetefVersion).nupkg" />
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" />
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
 
     <!-- Grab published `HelixTestRunner` project output. -->
