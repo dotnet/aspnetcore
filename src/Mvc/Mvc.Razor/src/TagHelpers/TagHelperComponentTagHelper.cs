@@ -88,10 +88,10 @@ public abstract partial class TagHelperComponentTagHelper : TagHelper
 
     private static partial class Log
     {
-        [LoggerMessage(2, LogLevel.Debug, "Tag helper component '{ComponentName}' initialized.", EventName = "TagHelperComponentInitialized")]
+        [LoggerMessage(2, LogLevel.Debug, "Tag helper component '{ComponentName}' initialized.", EventName = "TagHelperComponentInitialized", SkipEnabledCheck = true)]
         public static partial void TagHelperComponentInitialized(ILogger logger, string componentName);
 
-        [LoggerMessage(3, LogLevel.Debug, "Tag helper component '{ComponentName}' processed.", EventName = "TagHelperComponentProcessed")]
+        [LoggerMessage(3, LogLevel.Debug, "Tag helper component '{ComponentName}' processed.", EventName = "TagHelperComponentProcessed", SkipEnabledCheck = true)]
         public static partial void TagHelperComponentProcessed(ILogger logger, string componentName);
     }
 }
