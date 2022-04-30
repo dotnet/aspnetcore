@@ -245,7 +245,7 @@ public static class TagHelperOutputExtensions
 
         if (listOfClasses.Count > 0)
         {
-            var joinedClasses = new HtmlString(string.Join(" ", listOfClasses));
+            var joinedClasses = new HtmlString(string.Join(' ', listOfClasses));
             tagHelperOutput.Attributes.SetAttribute(classAttribute.Name, joinedClasses);
         }
         else
