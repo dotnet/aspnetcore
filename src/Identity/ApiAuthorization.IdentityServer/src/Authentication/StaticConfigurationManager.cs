@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.IdentityModel.Protocols;
@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
-internal class StaticConfigurationManager : IConfigurationManager<OpenIdConnectConfiguration>
+internal sealed class StaticConfigurationManager : IConfigurationManager<OpenIdConnectConfiguration>
 {
     private readonly Task<OpenIdConnectConfiguration> _configuration;
 

@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
-internal class ConfigureSigningCredentials : IConfigureOptions<ApiAuthorizationOptions>
+internal sealed class ConfigureSigningCredentials : IConfigureOptions<ApiAuthorizationOptions>
 {
     // We need to cast the underlying int value of the EphemeralKeySet to X509KeyStorageFlags
     // due to the fact that is not part of .NET Standard. This value is only used with non-windows
@@ -94,7 +94,7 @@ internal class ConfigureSigningCredentials : IConfigureOptions<ApiAuthorizationO
     }
 
     // for testing purposes only
-    internal virtual DateTimeOffset GetCurrentTime() => DateTimeOffset.UtcNow;
+    internal static DateTimeOffset GetCurrentTime() => DateTimeOffset.UtcNow;
 
     private static X509KeyStorageFlags GetStorageFlags(KeyDefinition key)
     {
