@@ -169,7 +169,7 @@ public class GlobbingUrlBuilder
         return (matchedUrls, sizeInBytes);
     }
 
-    private class PathComparer : IComparer<string>
+    private sealed class PathComparer : IComparer<string>
     {
         public int Compare(string x, string y)
         {

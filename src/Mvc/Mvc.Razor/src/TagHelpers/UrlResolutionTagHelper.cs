@@ -329,7 +329,7 @@ public class UrlResolutionTagHelper : TagHelper
         return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
     }
 
-    private class EncodeFirstSegmentContent : IHtmlContent
+    private sealed class EncodeFirstSegmentContent : IHtmlContent
     {
         private readonly string _firstSegment;
         private readonly int _firstSegmentLength;

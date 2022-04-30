@@ -337,7 +337,7 @@ public static class TagHelperOutputExtensions
         return -1;
     }
 
-    private class ClassAttributeHtmlContent : IHtmlContent
+    private sealed class ClassAttributeHtmlContent : IHtmlContent
     {
         private readonly object _left;
         private readonly string _right;
