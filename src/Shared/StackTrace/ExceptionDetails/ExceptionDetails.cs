@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.StackTrace.Sources;
 /// <summary>
 /// Contains details for individual exception messages.
 /// </summary>
-internal class ExceptionDetails
+internal sealed class ExceptionDetails
 {
     public ExceptionDetails(Exception error, IEnumerable<StackFrameSourceCodeInfo> stackFrames)
     {

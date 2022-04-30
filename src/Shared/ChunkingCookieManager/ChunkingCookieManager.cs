@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Internal;
 /// This handles cookies that are limited by per cookie length. It breaks down long cookies for responses, and reassembles them
 /// from requests.
 /// </summary>
-internal class ChunkingCookieManager
+internal sealed class ChunkingCookieManager
 {
 #endif
     /// <summary>

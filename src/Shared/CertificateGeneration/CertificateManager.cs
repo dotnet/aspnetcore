@@ -784,7 +784,7 @@ internal abstract class CertificateManager
         $"{c.Thumbprint} - {c.Subject} - Valid from {c.NotBefore:u} to {c.NotAfter:u} - IsHttpsDevelopmentCertificate: {IsHttpsDevelopmentCertificate(c).ToString().ToLowerInvariant()} - IsExportable: {Instance.IsExportable(c).ToString().ToLowerInvariant()}";
 
     [EventSource(Name = "Dotnet-dev-certs")]
-    public class CertificateManagerEventSource : EventSource
+    public sealed class CertificateManagerEventSource : EventSource
     {
         [Event(1, Level = EventLevel.Verbose, Message = "Listing certificates from {0}\\{1}")]
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
@@ -969,7 +969,7 @@ internal abstract class CertificateManager
         internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, description);
     }
 
-    internal class UserCancelledTrustException : Exception
+    internal sealed class UserCancelledTrustException : Exception
     {
     }
 

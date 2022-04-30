@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Internal;
 /// <summary>
 /// An <see cref="IDictionary{String, Object}"/> type to hold a small amount of items (10 or less in the common case).
 /// </summary>
-internal class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> where TKey : notnull
+internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> where TKey : notnull
 {
     // Threshold for size of array to use.
     private const int DefaultArrayThreshold = 10;

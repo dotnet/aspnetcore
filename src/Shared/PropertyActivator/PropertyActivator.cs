@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.Internal;
 
-internal class PropertyActivator<TContext>
+internal sealed class PropertyActivator<TContext>
 {
     private readonly Func<TContext, object> _valueAccessor;
     private readonly Action<object, object> _fastPropertySetter;
