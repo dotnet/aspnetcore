@@ -210,7 +210,7 @@ public abstract class WebViewManager : IAsyncDisposable
     private static Uri EnsureTrailingSlash(Uri uri)
         => uri.AbsoluteUri.EndsWith('/') ? uri : new Uri(uri.AbsoluteUri + '/');
 
-    private class RootComponent
+    private sealed class RootComponent
     {
         public Type ComponentType { get; init; }
         public ParameterView Parameters { get; init; }
@@ -241,7 +241,7 @@ public abstract class WebViewManager : IAsyncDisposable
         await DisposeAsyncCore();
     }
 
-    private class StaticWebAssetsLoader
+    private sealed class StaticWebAssetsLoader
     {
         internal static IFileProvider UseStaticWebAssets(IFileProvider fileProvider)
         {

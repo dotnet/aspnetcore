@@ -26,7 +26,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// components can be long-lived and re-render frequently, with the rendered size
 /// varying dramatically depending on the user's navigation in the app.
 /// </summary>
+#pragma warning disable CA1852 // Seal internal types
 internal class ArrayBuilder<T> : IDisposable
+#pragma warning restore CA1852 // Seal internal types
 {
     // The following fields are memory mapped to the WASM client. Do not re-order or use auto-properties.
     protected T[] _items;

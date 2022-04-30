@@ -64,7 +64,7 @@ public static class MsalWebAssemblyServiceCollectionExtensions
     }
 }
 
-internal class MsalRemoteAuthenticationBuilder<TRemoteAuthenticationState, TRemoteUserAccount> : IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TRemoteUserAccount>
+internal sealed class MsalRemoteAuthenticationBuilder<TRemoteAuthenticationState, TRemoteUserAccount> : IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TRemoteUserAccount>
     where TRemoteAuthenticationState : RemoteAuthenticationState, new()
     where TRemoteUserAccount : RemoteUserAccount
 {

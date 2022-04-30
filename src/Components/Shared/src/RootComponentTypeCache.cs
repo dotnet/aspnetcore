@@ -7,7 +7,7 @@ using System.Reflection;
 namespace Microsoft.AspNetCore.Components;
 
 // A cache for root component types
-internal class RootComponentTypeCache
+internal sealed class RootComponentTypeCache
 {
     private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
 

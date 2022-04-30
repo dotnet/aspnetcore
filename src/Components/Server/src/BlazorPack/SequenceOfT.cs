@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 /// Instance members are not thread-safe.
 /// </remarks>
 [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
-internal class Sequence<T> : IBufferWriter<T>, IDisposable
+internal sealed class Sequence<T> : IBufferWriter<T>, IDisposable
 {
     private static readonly int DefaultLengthFromArrayPool = 1 + (4095 / Marshal.SizeOf<T>());
 
@@ -291,7 +291,7 @@ internal class Sequence<T> : IBufferWriter<T>, IDisposable
         return segment;
     }
 
-    private class SequenceSegment : ReadOnlySequenceSegment<T>
+    private sealed class SequenceSegment : ReadOnlySequenceSegment<T>
     {
         /// <summary>
         /// A value indicating whether the element is a value type.
