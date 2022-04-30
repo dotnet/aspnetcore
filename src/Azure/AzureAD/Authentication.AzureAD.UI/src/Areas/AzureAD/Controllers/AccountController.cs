@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI.AzureAD.Controllers.Int
 [Area("AzureAD")]
 [Route("[area]/[controller]/[action]")]
 [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
-internal class AccountController : Controller
+internal sealed class AccountController : Controller
 {
     public AccountController(IOptionsMonitor<AzureADOptions> options)
     {
