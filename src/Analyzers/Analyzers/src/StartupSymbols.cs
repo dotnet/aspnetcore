@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class StartupSymbols
+internal sealed class StartupSymbols
 {
     public StartupSymbols(Compilation compilation)
     {
