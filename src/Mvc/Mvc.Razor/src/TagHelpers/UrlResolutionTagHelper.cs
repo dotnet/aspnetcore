@@ -156,8 +156,7 @@ public class UrlResolutionTagHelper : TagHelper
                 continue;
             }
 
-            var stringValue = attribute.Value as string;
-            if (stringValue != null)
+            if (attribute.Value is string stringValue)
             {
                 if (TryResolveUrl(stringValue, resolvedUrl: out string? resolvedUrl))
                 {
@@ -169,8 +168,7 @@ public class UrlResolutionTagHelper : TagHelper
             }
             else
             {
-                var htmlContent = attribute.Value as IHtmlContent;
-                if (htmlContent != null)
+                if (attribute.Value is IHtmlContent htmlContent)
                 {
                     var htmlString = htmlContent as HtmlString;
                     if (htmlString != null)
