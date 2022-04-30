@@ -32,7 +32,7 @@ public class DataProtectionProviderTests
 
             // Step 2: instantiate the system and round-trip a payload
             var protector = DataProtectionProvider.Create(directory).CreateProtector("purpose");
-            string plainText = "payload";
+            var plainText = "payload";
             Assert.Equal(plainText, protector.Unprotect(protector.Protect(plainText)));
 
             // Step 3: validate that there's now a single key in the directory and that it's not protected
@@ -68,7 +68,7 @@ public class DataProtectionProviderTests
         });
 
         var protector = provider.CreateProtector("Protector");
-        string plainText = "payload";
+        var plainText = "payload";
         Assert.Equal(plainText, protector.Unprotect(protector.Protect(plainText)));
 
         // Step 2: Validate that there's now a single key in the directory
@@ -103,7 +103,7 @@ public class DataProtectionProviderTests
         {
             configure.ProtectKeysWithDpapi();
         }).CreateProtector("purpose");
-            string plainText = "payload";
+            var plainText = "payload";
             Assert.Equal(plainText, protector.Unprotect(protector.Protect(plainText)));
 
             // Step 3: validate that there's now a single key in the directory and that it's protected with DPAPI
@@ -145,7 +145,7 @@ public class DataProtectionProviderTests
 
                     // Step 2: instantiate the system and round-trip a payload
                     var protector = DataProtectionProvider.Create(directory, certificate).CreateProtector("purpose");
-                    string plainText = "payload";
+                    var plainText = "payload";
                     var data = protector.Protect(plainText);
 
                     // add a cert without the private key to ensure the decryption will still fallback to the cert store
@@ -197,7 +197,7 @@ public class DataProtectionProviderTests
                     var certWithKey = new X509Certificate2(Path.Combine(GetTestFilesPath(), "TestCert3.pfx"), "password3");
 
                     var protector = DataProtectionProvider.Create(directory, certWithKey).CreateProtector("purpose");
-                    string plainText = "payload";
+                    var plainText = "payload";
                     var data = protector.Protect(plainText);
 
                     var keylessUnprotector = DataProtectionProvider.Create(directory).CreateProtector("purpose");
@@ -280,7 +280,7 @@ public class DataProtectionProviderTests
             .Create(directory, certificate)
             .CreateProtector("purpose");
 
-            string plainText = "payload";
+            var plainText = "payload";
             var data = protector.Protect(plainText);
 
             // Step 3: validate that there's now a single key in the directory and that it's is protected using the certificate

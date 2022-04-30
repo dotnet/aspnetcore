@@ -485,6 +485,7 @@ internal abstract class CertificateManager
                         char[] pem;
                         if (password != null)
                         {
+                            // TODO: cleanup cast: https://github.com/dotnet/aspnetcore/issues/41455
                             keyBytes = key.ExportEncryptedPkcs8PrivateKey((ReadOnlySpan<char>)password, new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100000));
                             pem = PemEncoding.Write("ENCRYPTED PRIVATE KEY", keyBytes);
                             pemEnvelope = Encoding.ASCII.GetBytes(pem);
@@ -494,10 +495,12 @@ internal abstract class CertificateManager
                             // Export the key first to an encrypted PEM to avoid issues with System.Security.Cryptography.Cng indicating that the operation is not supported.
                             // This is likely by design to avoid exporting the key by mistake.
                             // To bypass it, we export the certificate to pem temporarily and then we import it and export it as unprotected PEM.
+                            // TODO: cleanup cast: https://github.com/dotnet/aspnetcore/issues/41455
                             keyBytes = key.ExportEncryptedPkcs8PrivateKey((ReadOnlySpan<char>)"", new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 1));
                             pem = PemEncoding.Write("ENCRYPTED PRIVATE KEY", keyBytes);
                             key.Dispose();
                             key = RSA.Create();
+                            // TODO: cleanup cast: https://github.com/dotnet/aspnetcore/issues/41455
                             key.ImportFromEncryptedPem(pem, (ReadOnlySpan<char>)"");
                             Array.Clear(keyBytes, 0, keyBytes.Length);
                             Array.Clear(pem, 0, pem.Length);
