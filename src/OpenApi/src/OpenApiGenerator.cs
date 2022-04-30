@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// <summary>
 /// Defines a set of methods for generating OpenAPI definitions for endpoints.
 /// </summary>
-internal class OpenApiGenerator
+internal sealed class OpenApiGenerator
 {
     private readonly IHostEnvironment? _environment;
     private readonly IServiceProviderIsService? _serviceProviderIsService;
