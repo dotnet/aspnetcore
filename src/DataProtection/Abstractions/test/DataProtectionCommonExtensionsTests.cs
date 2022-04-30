@@ -249,7 +249,8 @@ public class DataProtectionCommonExtensionsTests
         // Act & assert
         var ex = Assert.Throws<CryptographicException>(() =>
         {
-            mockProtector.Object.Protect("Hello\ud800");
+            var plainText = "Hello\ud800";
+            mockProtector.Object.Protect(plainText);
         });
         Assert.IsAssignableFrom<EncoderFallbackException>(ex.InnerException);
     }
@@ -262,7 +263,8 @@ public class DataProtectionCommonExtensionsTests
         mockProtector.Setup(p => p.Protect(new byte[] { 0x48, 0x65, 0x6c, 0x6c, 0x6f })).Returns(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 });
 
         // Act
-        string retVal = mockProtector.Object.Protect("Hello");
+        var plainText = "Hello";
+        string retVal = mockProtector.Object.Protect(plainText);
 
         // Assert
         Assert.Equal("AQIDBAU", retVal);
@@ -277,7 +279,8 @@ public class DataProtectionCommonExtensionsTests
         // Act & assert
         var ex = Assert.Throws<CryptographicException>(() =>
         {
-            mockProtector.Object.Unprotect("A");
+            var data = "A";
+            mockProtector.Object.Unprotect(data);
         });
     }
 
@@ -291,7 +294,8 @@ public class DataProtectionCommonExtensionsTests
         // Act & assert
         var ex = Assert.Throws<CryptographicException>(() =>
         {
-            mockProtector.Object.Unprotect("AQIDBAU");
+            var data = "AQIDBAU";
+            mockProtector.Object.Unprotect(data);
         });
         Assert.IsAssignableFrom<DecoderFallbackException>(ex.InnerException);
     }
