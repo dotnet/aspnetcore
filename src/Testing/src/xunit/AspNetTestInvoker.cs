@@ -12,7 +12,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Testing;
 
-internal class AspNetTestInvoker : XunitTestInvoker
+internal sealed class AspNetTestInvoker : XunitTestInvoker
 {
     private readonly TestOutputHelper _testOutputHelper;
 
