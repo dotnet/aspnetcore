@@ -9,7 +9,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.OpenApi.Commands;
 
-internal class AddURLCommand : BaseCommand
+internal sealed class AddURLCommand : BaseCommand
 {
     private const string CommandName = "url";
 
