@@ -57,7 +57,7 @@
 
     <!-- Grab published `HelixTestRunner` project output. -->
     <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net7.0\publish\"
-        Destination="$([MSBuild]::EnsureTrailingSlash('HelixTestRunner'))" />
+        Destination="HelixTestRunner" />
   </ItemGroup>
 
   <Choose>
