@@ -475,12 +475,30 @@ public class TypedResultsTests
         var encoding = Encoding.UTF8;
 
         // Act
-        var result = TypedResults.Content(content, contentType, null);
+        var result = TypedResults.Content(content, contentType, encoding);
 
         // Assert
         Assert.Null(result.StatusCode);
         Assert.Equal(content, result.ResponseContent);
-        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal("text/plain; charset=utf-8", result.ContentType);
+    }
+
+    [Fact]
+    public void Content_WithContentAndContentTypeAndEncodingAndStatusCode_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content";
+        var contentType = "text/plain";
+        var encoding = Encoding.UTF8;
+        var statusCode = 201;
+
+        // Act
+        var result = TypedResults.Content(content, contentType, encoding, statusCode);
+
+        // Assert
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(content, result.ResponseContent);
+        Assert.Equal("text/plain; charset=utf-8", result.ContentType);
     }
 
     [Fact]
@@ -1039,6 +1057,22 @@ public class TypedResultsTests
     }
 
     [Fact]
+    public void Text_WithContentAndContentType_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content";
+        var contentType = "text/plain";
+
+        // Act
+        var result = TypedResults.Text(content, contentType);
+
+        // Assert
+        Assert.Null(result.StatusCode);
+        Assert.Equal(content, result.ResponseContent);
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
     public void Text_WithContentAndContentTypeAndEncoding_ResultHasCorrectValues()
     {
         // Arrange
@@ -1051,6 +1085,26 @@ public class TypedResultsTests
 
         // Assert
         Assert.Null(result.StatusCode);
+        Assert.Equal(content, result.ResponseContent);
+        var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
+        expectedMediaType.Encoding = encoding;
+        Assert.Equal(expectedMediaType.ToString(), result.ContentType);
+    }
+
+    [Fact]
+    public void Text_WithContentAndContentTypeAndEncodingAndStatusCode_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content";
+        var contentType = "text/plain";
+        var encoding = Encoding.ASCII;
+        var statusCode = 201;
+
+        // Act
+        var result = TypedResults.Text(content, contentType, encoding, statusCode);
+
+        // Assert
+        Assert.Equal(statusCode, result.StatusCode);
         Assert.Equal(content, result.ResponseContent);
         var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
         expectedMediaType.Encoding = encoding;

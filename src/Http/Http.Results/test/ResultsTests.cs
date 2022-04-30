@@ -360,12 +360,30 @@ public class ResultsTests
         var encoding = Encoding.UTF8;
 
         // Act
-        var result = Results.Content(content, contentType, null) as ContentHttpResult;
+        var result = Results.Content(content, contentType, encoding) as ContentHttpResult;
 
         // Assert
         Assert.Null(result.StatusCode);
         Assert.Equal(content, result.ResponseContent);
-        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal("text/plain; charset=utf-8", result.ContentType);
+    }
+
+    [Fact]
+    public void Content_WithContentAndContentTypeAndEncodingAndStatusCode_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content";
+        var contentType = "text/plain";
+        var encoding = Encoding.UTF8;
+        var statusCode = 201;
+
+        // Act
+        var result = Results.Content(content, contentType, encoding, statusCode) as ContentHttpResult;
+
+        // Assert
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(content, result.ResponseContent);
+        Assert.Equal("text/plain; charset=utf-8", result.ContentType);
     }
 
     [Fact]
@@ -926,6 +944,22 @@ public class ResultsTests
     }
 
     [Fact]
+    public void Text_WithContentAndContentType_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content";
+        var contentType = "text/plain";
+
+        // Act
+        var result = Results.Text(content, contentType) as ContentHttpResult;
+
+        // Assert
+        Assert.Null(result.StatusCode);
+        Assert.Equal(content, result.ResponseContent);
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
     public void Text_WithContentAndContentTypeAndEncoding_ResultHasCorrectValues()
     {
         // Arrange
@@ -938,6 +972,26 @@ public class ResultsTests
 
         // Assert
         Assert.Null(result.StatusCode);
+        Assert.Equal(content, result.ResponseContent);
+        var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
+        expectedMediaType.Encoding = encoding;
+        Assert.Equal(expectedMediaType.ToString(), result.ContentType);
+    }
+
+    [Fact]
+    public void Text_WithContentAndContentTypeAndEncodingAndStatusCode_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content";
+        var contentType = "text/plain";
+        var encoding = Encoding.ASCII;
+        var statusCode = 201;
+
+        // Act
+        var result = Results.Text(content, contentType, encoding, statusCode) as ContentHttpResult;
+
+        // Assert
+        Assert.Equal(statusCode, result.StatusCode);
         Assert.Equal(content, result.ResponseContent);
         var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
         expectedMediaType.Encoding = encoding;
@@ -1007,6 +1061,7 @@ public class ResultsTests
         (() => Results.Conflict(null), typeof(Conflict)),
         (() => Results.Conflict(new()), typeof(Conflict<object>)),
         (() => Results.Content("content", null, null), typeof(ContentHttpResult)),
+        (() => Results.Content("content", null, null, null), typeof(ContentHttpResult)),
         (() => Results.Created("/path", null), typeof(Created)),
         (() => Results.Created("/path", new()), typeof(Created<object>)),
         (() => Results.CreatedAtRoute("routeName", null, null), typeof(CreatedAtRoute)),
@@ -1027,6 +1082,7 @@ public class ResultsTests
         (() => Results.Stream(new MemoryStream(), null, null, null, null, false), typeof(FileStreamHttpResult)),
         (() => Results.Stream(s => Task.CompletedTask, null, null, null, null), typeof(PushStreamHttpResult)),
         (() => Results.Text("content", null, null), typeof(ContentHttpResult)),
+        (() => Results.Text("content", null, null, null), typeof(ContentHttpResult)),
         (() => Results.Redirect("/path", false, false), typeof(RedirectHttpResult)),
         (() => Results.LocalRedirect("/path", false, false), typeof(RedirectHttpResult)),
         (() => Results.RedirectToRoute("routeName", null, false, false, null), typeof(RedirectToRouteHttpResult)),
