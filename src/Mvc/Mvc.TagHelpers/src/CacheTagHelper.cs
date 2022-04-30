@@ -219,7 +219,7 @@ public class CacheTagHelper : CacheTagHelperBase
         }
     }
 
-    private class CharBufferTextWriter : TextWriter
+    private sealed class CharBufferTextWriter : TextWriter
     {
         public CharBufferTextWriter()
         {
@@ -246,7 +246,7 @@ public class CacheTagHelper : CacheTagHelperBase
         }
     }
 
-    private class CharBufferHtmlContent : IHtmlContent
+    private sealed class CharBufferHtmlContent : IHtmlContent
     {
         private readonly PagedCharBuffer _buffer;
 

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// <summary>
 /// Sets up default options for <see cref="MvcOptions"/>.
 /// </summary>
-internal class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IPostConfigureOptions<MvcOptions>
+internal sealed class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IPostConfigureOptions<MvcOptions>
 {
     private readonly IHttpRequestStreamReaderFactory _readerFactory;
     private readonly ILoggerFactory _loggerFactory;

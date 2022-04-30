@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 /// <summary>
 /// Default implementation of <see cref="ITagHelperComponentPropertyActivator"/>.
 /// </summary>
-internal class TagHelperComponentPropertyActivator : ITagHelperComponentPropertyActivator
+internal sealed class TagHelperComponentPropertyActivator : ITagHelperComponentPropertyActivator
 {
     private readonly ConcurrentDictionary<Type, PropertyActivator<ViewContext>[]> _propertiesToActivate;
     private readonly Func<Type, PropertyActivator<ViewContext>[]> _getPropertiesToActivate = GetPropertiesToActivate;

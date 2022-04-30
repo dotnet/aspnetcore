@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 /// <summary>
 /// Newtonsoft.Json based implementation of <see cref="IJsonHelper"/>.
 /// </summary>
-internal class NewtonsoftJsonHelper : IJsonHelper
+internal sealed class NewtonsoftJsonHelper : IJsonHelper
 {
     // Perf: JsonSerializers are relatively expensive to create, and are thread safe. Cache the serializer
     private readonly JsonSerializer _defaultSettingsJsonSerializer;

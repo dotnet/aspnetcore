@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 /// <see cref="ModelMetadata.ElementMetadata"/>. The indices of the elements in the collection are used to
 /// compute the model prefix keys.
 /// </remarks>
-internal class DefaultCollectionValidationStrategy : IValidationStrategy
+internal sealed class DefaultCollectionValidationStrategy : IValidationStrategy
 {
     private static readonly MethodInfo _getEnumerator = typeof(DefaultCollectionValidationStrategy)
         .GetMethod(nameof(GetEnumerator), BindingFlags.Static | BindingFlags.NonPublic)!;
@@ -86,7 +86,7 @@ internal class DefaultCollectionValidationStrategy : IValidationStrategy
         return (model as IEnumerable<T>)?.GetEnumerator() ?? ((IEnumerable)model).GetEnumerator();
     }
 
-    private class Enumerator : IEnumerator<ValidationEntry>
+    private sealed class Enumerator : IEnumerator<ValidationEntry>
     {
         private readonly string _key;
         private readonly ModelMetadata _metadata;

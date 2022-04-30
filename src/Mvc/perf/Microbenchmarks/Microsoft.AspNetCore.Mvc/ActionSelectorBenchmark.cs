@@ -231,7 +231,7 @@ public class ActionSelectorBenchmark
             NullLoggerFactory.Instance);
     }
 
-    private class MockActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
+    private sealed class MockActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
     {
         public MockActionDescriptorCollectionProvider(ActionDescriptor[] actions)
         {
@@ -241,7 +241,7 @@ public class ActionSelectorBenchmark
         public ActionDescriptorCollection ActionDescriptors { get; }
     }
 
-    private class MockRouter : IRouter
+    private sealed class MockRouter : IRouter
     {
         public static readonly IRouter Instance = new MockRouter();
 

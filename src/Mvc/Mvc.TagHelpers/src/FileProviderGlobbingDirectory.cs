@@ -6,7 +6,7 @@ using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
-internal class FileProviderGlobbingDirectory : DirectoryInfoBase
+internal sealed class FileProviderGlobbingDirectory : DirectoryInfoBase
 {
     private const char DirectorySeparatorChar = '/';
     private readonly IFileProvider _fileProvider;
