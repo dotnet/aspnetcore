@@ -15,7 +15,7 @@ internal abstract class ApplicationWrapper
     internal abstract void DisposeContext(object context, Exception? exception);
 }
 
-internal class ApplicationWrapper<TContext> : ApplicationWrapper, IHttpApplication<TContext> where TContext : notnull
+internal sealed class ApplicationWrapper<TContext> : ApplicationWrapper, IHttpApplication<TContext> where TContext : notnull
 {
     private readonly IHttpApplication<TContext> _application;
     private readonly Action _preProcessRequestAsync;

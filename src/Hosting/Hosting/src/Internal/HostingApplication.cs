@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class HostingApplication : IHttpApplication<HostingApplication.Context>
+internal sealed class HostingApplication : IHttpApplication<HostingApplication.Context>
 {
     private readonly RequestDelegate _application;
     private readonly IHttpContextFactory? _httpContextFactory;
@@ -116,7 +116,7 @@ internal class HostingApplication : IHttpApplication<HostingApplication.Context>
         context.Reset();
     }
 
-    internal class Context
+    internal sealed class Context
     {
         public HttpContext? HttpContext { get; set; }
         public IDisposable? Scope { get; set; }
