@@ -33,15 +33,8 @@ public abstract partial class TagHelperComponentTagHelper : TagHelper
         ITagHelperComponentManager manager,
         ILoggerFactory loggerFactory)
     {
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(manager);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _components = manager.Components.OrderBy(p => p.Order).ToArray();
         _logger = loggerFactory.CreateLogger(GetType());

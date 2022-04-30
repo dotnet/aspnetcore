@@ -32,10 +32,7 @@ internal class TagHelperComponentPropertyActivator : ITagHelperComponentProperty
     /// <inheritdoc />
     public void Activate(ViewContext context, ITagHelperComponent tagHelperComponent)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var propertiesToActivate = _propertiesToActivate.GetOrAdd(
             tagHelperComponent.GetType(),

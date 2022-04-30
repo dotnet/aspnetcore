@@ -41,20 +41,9 @@ public static class TagHelperOutputExtensions
         string attributeName,
         TagHelperContext context)
     {
-        if (tagHelperOutput == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperOutput));
-        }
-
-        if (attributeName == null)
-        {
-            throw new ArgumentNullException(nameof(attributeName));
-        }
-
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperOutput);
+        ArgumentNullException.ThrowIfNull(attributeName);
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!tagHelperOutput.Attributes.ContainsName(attributeName))
         {
@@ -95,15 +84,8 @@ public static class TagHelperOutputExtensions
     /// are not overridden; "class" attributes are merged with spaces.</remarks>
     public static void MergeAttributes(this TagHelperOutput tagHelperOutput, TagBuilder tagBuilder)
     {
-        if (tagHelperOutput == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperOutput));
-        }
-
-        if (tagBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(tagBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperOutput);
+        ArgumentNullException.ThrowIfNull(tagBuilder);
 
         foreach (var attribute in tagBuilder.Attributes)
         {
@@ -136,15 +118,8 @@ public static class TagHelperOutputExtensions
         this TagHelperOutput tagHelperOutput,
         IEnumerable<TagHelperAttribute> attributes)
     {
-        if (tagHelperOutput == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperOutput));
-        }
-
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperOutput);
+        ArgumentNullException.ThrowIfNull(attributes);
 
         foreach (var attribute in attributes.ToArray())
         {
@@ -164,10 +139,7 @@ public static class TagHelperOutputExtensions
         string classValue,
         HtmlEncoder htmlEncoder)
     {
-        if (tagHelperOutput == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperOutput));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperOutput);
 
         if (string.IsNullOrEmpty(classValue))
         {
@@ -226,10 +198,7 @@ public static class TagHelperOutputExtensions
         string classValue,
         HtmlEncoder htmlEncoder)
     {
-        if (tagHelperOutput == null)
-        {
-            throw new ArgumentNullException(nameof(tagHelperOutput));
-        }
+        ArgumentNullException.ThrowIfNull(tagHelperOutput);
 
         var encodedSpaceChars = SpaceChars.Where(x => !x.Equals('\u0020')).Select(x => htmlEncoder.Encode(x.ToString())).ToArray();
 
@@ -381,15 +350,8 @@ public static class TagHelperOutputExtensions
 
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (encoder == null)
-            {
-                throw new ArgumentNullException(nameof(encoder));
-            }
+            ArgumentNullException.ThrowIfNull(writer);
+            ArgumentNullException.ThrowIfNull(encoder);
 
             // Write out "{left} {right}" in the common nothing-empty case.
             var wroteLeft = false;

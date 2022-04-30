@@ -19,10 +19,7 @@ internal class FileProviderGlobbingDirectory : DirectoryInfoBase
         IFileInfo fileInfo,
         FileProviderGlobbingDirectory parent)
     {
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
+        ArgumentNullException.ThrowIfNull(fileProvider);
 
         _fileProvider = fileProvider;
         _fileInfo = fileInfo;

@@ -12,15 +12,8 @@ internal class FileProviderGlobbingFile : FileInfoBase
 
     public FileProviderGlobbingFile(IFileInfo fileInfo, DirectoryInfoBase parent)
     {
-        if (fileInfo == null)
-        {
-            throw new ArgumentNullException(nameof(fileInfo));
-        }
-
-        if (parent == null)
-        {
-            throw new ArgumentNullException(nameof(parent));
-        }
+        ArgumentNullException.ThrowIfNull(fileInfo);
+        ArgumentNullException.ThrowIfNull(parent);
 
         Name = fileInfo.Name;
         ParentDirectory = parent;

@@ -31,15 +31,8 @@ public class GlobbingUrlBuilder
     /// <param name="requestPathBase">The request path base.</param>
     public GlobbingUrlBuilder(IFileProvider fileProvider, IMemoryCache cache, PathString requestPathBase)
     {
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
-
-        if (cache == null)
-        {
-            throw new ArgumentNullException(nameof(cache));
-        }
+        ArgumentNullException.ThrowIfNull(fileProvider);
+        ArgumentNullException.ThrowIfNull(cache);
 
         FileProvider = fileProvider;
         Cache = cache;

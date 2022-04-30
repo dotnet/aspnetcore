@@ -113,15 +113,8 @@ public class UrlResolutionTagHelper : TagHelper
     /// <inheritdoc />
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         if (output.TagName == null)
         {
@@ -149,15 +142,8 @@ public class UrlResolutionTagHelper : TagHelper
     /// <param name="output">The <see cref="TagHelperOutput"/>.</param>
     protected void ProcessUrlAttribute(string attributeName, TagHelperOutput output)
     {
-        if (attributeName == null)
-        {
-            throw new ArgumentNullException(nameof(attributeName));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(attributeName);
+        ArgumentNullException.ThrowIfNull(output);
 
         var attributes = output.Attributes;
         // Read interface .Count once rather than per iteration
