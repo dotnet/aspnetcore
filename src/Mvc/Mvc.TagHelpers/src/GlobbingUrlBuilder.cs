@@ -303,15 +303,8 @@ public class GlobbingUrlBuilder
 
     private static bool IsWhiteSpace(string value, int index)
     {
-        for (var i = 0; i < ValidAttributeWhitespaceChars.Length; i++)
-        {
-            if (value[index] == ValidAttributeWhitespaceChars[i])
-            {
-                return true;
-            }
-        }
-
-        return false;
+        var ch = value[index];
+        return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
     }
 
     private static StringSegment Trim(StringSegment value)
