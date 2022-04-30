@@ -199,6 +199,7 @@
                           $(RepoRoot)src\Extensions\**\*.csproj;
                           $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
                           $(RepoRoot)src\OpenApi\**\*.csproj;
+                          $(RepoRoot)eng\tools\HelixTestRunner\HelixTestRunner.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
