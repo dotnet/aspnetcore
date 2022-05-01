@@ -17,14 +17,10 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 #pragma warning restore CA1852 // Seal internal types
 {
     // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
-    // "HTTP/1.1 100 Continue\r\n\r\n"
-    private static ReadOnlySpan<byte> ContinueBytes => new byte[] { (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'1', (byte)'.', (byte)'1', (byte)' ', (byte)'1', (byte)'0', (byte)'0', (byte)' ', (byte)'C', (byte)'o', (byte)'n', (byte)'t', (byte)'i', (byte)'n', (byte)'u', (byte)'e', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
-    // "HTTP/1.1 "
-    private static ReadOnlySpan<byte> HttpVersion11Bytes => new byte[] { (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'1', (byte)'.', (byte)'1', (byte)' ' };
-    // "\r\n\r\n"
-    private static ReadOnlySpan<byte> EndHeadersBytes => new byte[] { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
-    // "0\r\n\r\n"
-    private static ReadOnlySpan<byte> EndChunkedResponseBytes => new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
+    private static ReadOnlySpan<byte> ContinueBytes => "HTTP/1.1 100 Continue\r\n\r\n"u8;
+    private static ReadOnlySpan<byte> HttpVersion11Bytes => "HTTP/1.1 "u8;
+    private static ReadOnlySpan<byte> EndHeadersBytes => "\r\n\r\n"u8;
+    private static ReadOnlySpan<byte> EndChunkedResponseBytes => "0\r\n\r\n"u8;
 
     private const int MaxBeginChunkLength = 10;
     private const int EndChunkLength = 2;

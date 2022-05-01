@@ -68,6 +68,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.CommandLine.Experimental" />
     <LatestPackageReference Include="System.ComponentModel" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" />
+    <LatestPackageReference Include="System.Configuration.ConfigurationManager" />
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" />
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />

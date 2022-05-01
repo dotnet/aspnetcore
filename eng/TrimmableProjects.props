@@ -28,6 +28,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Routing" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Html.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.HttpSys" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.IISIntegration" />
@@ -37,7 +38,28 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authorization" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Cors" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics" />
+    <TrimmableProject Include="Microsoft.AspNetCore.HeaderPropagation" />
+    <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
+    <TrimmableProject Include="Microsoft.AspNetCore.HostFiltering" />
+    <TrimmableProject Include="Microsoft.AspNetCore.HttpLogging" />
     <TrimmableProject Include="Microsoft.AspNetCore.HttpOverrides" />
+    <TrimmableProject Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Localization.Routing" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Localization" />
+    <TrimmableProject Include="Microsoft.AspNetCore.RateLimiting" />
+    <TrimmableProject Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.ResponseCaching" />
+    <TrimmableProject Include="Microsoft.AspNetCore.ResponseCompression" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Rewrite" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SpaProxy" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SpaServices.Extensions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.StaticFiles" />
+    <TrimmableProject Include="Microsoft.AspNetCore.WebSockets" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Authorization" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Forms" />
@@ -48,6 +70,9 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Web" />
     <TrimmableProject Include="Microsoft.Extensions.ObjectPool" />
     <TrimmableProject Include="Microsoft.JSInterop" />
+    <TrimmableProject Include="Microsoft.Extensions.WebEncoders" />
+    <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
+    <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <TrimmableProject Include="Microsoft.Extensions.Features" />
   </ItemGroup>
 </Project>

@@ -105,6 +105,7 @@
     <MicrosoftExtensionsOptionsVersion>7.0.0-preview.5.22226.6</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>7.0.0-preview.5.22226.6</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftInternalRuntimeAspNetCoreTransportVersion>7.0.0-preview.5.22226.6</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
+    <SystemConfigurationConfigurationManagerVersion>7.0.0-preview.5.22226.6</SystemConfigurationConfigurationManagerVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>7.0.0-preview.5.22226.6</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>7.0.0-preview.5.22226.6</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>7.0.0-preview.5.22226.6</SystemDirectoryServicesProtocolsVersion>
@@ -283,6 +284,10 @@
     <MicrosoftDataSqlClientVersion>4.0.1</MicrosoftDataSqlClientVersion>
     <MicrosoftAspNetCoreAppVersion>6.0.0-preview.3.21167.1</MicrosoftAspNetCoreAppVersion>
     <MicrosoftOpenApiVersion>1.2.3</MicrosoftOpenApiVersion>
+    <!-- dotnet tool versions (see also auto-updated dotnetefVersion property). -->
+    <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
+    <DotnetServeVersion>1.10.93</DotnetServeVersion>
+    <MicrosoftPlaywrightCLIVersion>1.2.3</MicrosoftPlaywrightCLIVersion>
   </PropertyGroup>
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.NodeServices.Util;
 using Microsoft.Extensions.Logging;
@@ -75,7 +76,8 @@ internal sealed class NodeScriptRunner : IDisposable
 
         if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.NodeServices.Npm.NpmStarted"))
         {
-            diagnosticSource.Write(
+            WriteDiagnosticEvent(
+                diagnosticSource,
                 "Microsoft.AspNetCore.NodeServices.Npm.NpmStarted",
                 new
                 {
@@ -83,6 +85,11 @@ internal sealed class NodeScriptRunner : IDisposable
                     process = _npmProcess
                 });
         }
+
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+            Justification = "The values being passed into Write have the commonly used properties being preserved with DynamicDependency.")]
+        static void WriteDiagnosticEvent<TValue>(DiagnosticSource diagnosticSource, string name, TValue value)
+            => diagnosticSource.Write(name, value);
     }
 
     public void AttachToLogger(ILogger logger)

@@ -41,7 +41,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38260")]
     public async Task ExpandEnvironmentVariableInWebConfig()
     {
         // Point to dotnet installed in user profile.
@@ -236,7 +235,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38732")]
     public async Task LogsStartupExceptionExitError()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -1029,7 +1027,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37932")]
     public async Task Gets500_30_ErrorPage()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
