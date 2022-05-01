@@ -37,8 +37,8 @@ public interface IInvocationBinder
     /// <summary>
     /// Gets the <see cref="string"/> for the target byte.
     /// </summary>
-    /// <param name="targetUtf8Bytes">The target name as a utf8 sequence</param>
+    /// <param name="utf8Bytes">The target name as a utf8 sequence</param>
     /// <returns>A string that represents the target.</returns>
-    string? GetTarget(ReadOnlySpan<byte> targetUtf8Bytes) => null;
+    string? GetTarget(ReadOnlySpan<byte> utf8Bytes) => null;
 #endif
 }

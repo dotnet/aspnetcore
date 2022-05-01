@@ -58,11 +58,18 @@ internal sealed class Utf8HashLookup
     internal bool TryGetValue(ReadOnlySpan<byte> utf8, [MaybeNullWhen(false), AllowNull] out string value)
     {
         // Transcode to utf16 for comparison
+        char[]? pooledName = null;
         var count = Encoding.UTF8.GetCharCount(utf8);
-        var chars = ArrayPool<char>.Shared.Rent(count);
+        var chars = count <= 128 ?
+            stackalloc char[128] :
+            (pooledName = ArrayPool<char>.Shared.Rent(count));
         var encoded = Encoding.UTF8.GetChars(utf8, chars);
-        var hasValue = TryGetValue(chars.AsSpan(0, encoded), out value);
-        ArrayPool<char>.Shared.Return(chars);
+        var hasValue = TryGetValue(chars[..encoded], out value);
+        if (pooledName is not null)
+        {
+            ArrayPool<char>.Shared.Return(pooledName);
+        }
+
         return hasValue;
     }
 
