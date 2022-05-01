@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
@@ -27,9 +29,7 @@ internal sealed class Utf8HashLookup
 
     internal void Add(string value)
     {
-        var key = Encoding.UTF8.GetBytes(value);
-
-        var hashCode = GetKeyHashCode(key);
+        var hashCode = GetKeyHashCode(value.AsSpan());
         int index;
         if (freeList >= 0)
         {
@@ -49,13 +49,24 @@ internal sealed class Utf8HashLookup
 
         int bucket = hashCode % buckets.Length;
         slots[index].hashCode = hashCode;
-        slots[index].key = key;
+        slots[index].key = value;
         slots[index].value = value;
         slots[index].next = buckets[bucket] - 1;
         buckets[bucket] = index + 1;
     }
 
-    internal bool TryGetValue(ReadOnlySpan<byte> key, [MaybeNullWhen(false), AllowNull] out string value)
+    internal bool TryGetValue(ReadOnlySpan<byte> utf8, [MaybeNullWhen(false), AllowNull] out string value)
+    {
+        // Transcode to utf16 for comparison
+        var count = Encoding.UTF8.GetCharCount(utf8);
+        var chars = ArrayPool<char>.Shared.Rent(count);
+        var encoded = Encoding.UTF8.GetChars(utf8, chars);
+        var hasValue = TryGetValue(chars.AsSpan(0, encoded), out value);
+        ArrayPool<char>.Shared.Return(chars);
+        return hasValue;
+    }
+
+    private bool TryGetValue(ReadOnlySpan<char> key, [MaybeNullWhen(false), AllowNull] out string value)
     {
         var hashCode = GetKeyHashCode(key);
 
@@ -68,20 +79,16 @@ internal sealed class Utf8HashLookup
             }
         }
 
-        static bool AreKeysEqual(ReadOnlySpan<byte> key1, ReadOnlySpan<byte> key2)
-            => key1.SequenceEqual(key2);
+        static bool AreKeysEqual(ReadOnlySpan<char> key1, ReadOnlySpan<char> key2)
+            => CultureInfo.InvariantCulture.CompareInfo.Compare(key1, key2, CompareOptions.IgnoreCase) == 0;
 
         value = null;
         return false;
     }
 
-    private static int GetKeyHashCode(ReadOnlySpan<byte> key)
+    private static int GetKeyHashCode(ReadOnlySpan<char> key)
     {
-        // REVIEW: Use Marvin hash? https://github.com/dotnet/runtime/blob/4ed596ef63e60ce54cfb41d55928f0fe45f65cf3/src/libraries/System.Private.CoreLib/src/System/Marvin.cs
-        var h = new HashCode();
-        h.AddBytes(key);
-        var hashCode = h.ToHashCode();
-        return HashCodeMask & hashCode;
+        return HashCodeMask & string.GetHashCode(key);
     }
 
     private void Resize()
@@ -104,7 +111,7 @@ internal sealed class Utf8HashLookup
     {
         internal int hashCode;
         internal int next;
-        internal byte[] key;
+        internal string key;
         internal string value;
     }
 }
