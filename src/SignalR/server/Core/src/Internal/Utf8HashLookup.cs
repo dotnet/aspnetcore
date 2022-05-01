@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
@@ -57,11 +56,13 @@ internal sealed class Utf8HashLookup
 
     internal bool TryGetValue(ReadOnlySpan<byte> utf8, [MaybeNullWhen(false), AllowNull] out string value)
     {
+        const int StackAllocThreshold = 128;
+
         // Transcode to utf16 for comparison
         char[]? pooledName = null;
         var count = Encoding.UTF8.GetCharCount(utf8);
-        var chars = count <= 128 ?
-            stackalloc char[128] :
+        var chars = count <= StackAllocThreshold ?
+            stackalloc char[StackAllocThreshold] :
             (pooledName = ArrayPool<char>.Shared.Rent(count));
         var encoded = Encoding.UTF8.GetChars(utf8, chars);
         var hasValue = TryGetValue(chars[..encoded], out value);
@@ -79,15 +80,12 @@ internal sealed class Utf8HashLookup
 
         for (var i = buckets[hashCode % buckets.Length] - 1; i >= 0; i = slots[i].next)
         {
-            if (slots[i].hashCode == hashCode && AreKeysEqual(slots[i].key, key))
+            if (slots[i].hashCode == hashCode && key.Equals(slots[i].key, StringComparison.OrdinalIgnoreCase))
             {
                 value = slots[i].value;
                 return true;
             }
         }
-
-        static bool AreKeysEqual(ReadOnlySpan<char> key1, ReadOnlySpan<char> key2)
-            => CultureInfo.InvariantCulture.CompareInfo.Compare(key1, key2, CompareOptions.IgnoreCase) == 0;
 
         value = null;
         return false;
