@@ -5016,6 +5016,37 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegateFactory_CanApplyFiltersOnHandlerWithNoArguments()
+    {
+        // Arrange
+        string HelloName()
+        {
+            return "No arguments!";
+        };
+
+        var httpContext = CreateHttpContext();
+
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(HelloName, new RequestDelegateFactoryOptions()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    Assert.IsType<RouteHandlerInvocationContext>(context);
+                    Assert.Equal(0, context.Parameters.Count);
+                    return await next(context);
+                }
+            }
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+    }
+
+    [Fact]
     public void Create_AddsDelegateMethodInfo_AsMetadata()
     {
         // Arrange

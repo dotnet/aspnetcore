@@ -387,11 +387,12 @@ public static partial class RequestDelegateFactory
         var fallbackConstruction = Expression.New(
             RouteHandlerInvocationContextConstructor,
             new Expression[] { HttpContextExpr, Expression.NewArrayInit(typeof(object), factoryContext.BoxedArgs) });
-        var types = new List<Type>() { typeof(HttpContext) };
-        types.AddRange(factoryContext.ArgumentTypes);
-        var arguments = new List<Expression>() { HttpContextExpr };
-        arguments.AddRange(factoryContext.ArgumentExpressions);
-        var constructorType = factoryContext.ArgumentTypes.Count switch
+
+        var arguments = new Expression[factoryContext.ArgumentExpressions.Length + 1];
+        arguments[0] = HttpContextExpr;
+        factoryContext.ArgumentExpressions.CopyTo(arguments, 1);
+
+        var constructorType = factoryContext.ArgumentTypes?.Length switch
         {
             1 => typeof(RouteHandlerInvocationContext<>),
             2 => typeof(RouteHandlerInvocationContext<,>),
@@ -408,7 +409,7 @@ public static partial class RequestDelegateFactory
 
         if (constructorType.IsGenericType)
         {
-            var constructor = constructorType.MakeGenericType(factoryContext.ArgumentTypes.ToArray()).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).SingleOrDefault();
+            var constructor = constructorType.MakeGenericType(factoryContext.ArgumentTypes!).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).SingleOrDefault();
             if (constructor == null)
             {
                 // new RouteHandlerInvocationContext(httpContext, (object)name_local, (object)int_local);
@@ -416,7 +417,7 @@ public static partial class RequestDelegateFactory
             }
 
             // new RouteHandlerInvocationContext<string, int>(httpContext, name_local, int_local);
-            return Expression.New(constructor, arguments.ToArray());
+            return Expression.New(constructor, arguments);
         }
 
         // new RouteHandlerInvocationContext(httpContext, (object)name_local, (object)int_local);
@@ -499,6 +500,10 @@ public static partial class RequestDelegateFactory
 
         var args = new Expression[parameters.Length];
 
+        factoryContext.ArgumentTypes = new Type[parameters.Length];
+        factoryContext.ArgumentExpressions = new Expression[parameters.Length];
+        factoryContext.BoxedArgs = new Expression[parameters.Length];
+
         for (var i = 0; i < parameters.Length; i++)
         {
             args[i] = CreateArgument(parameters[i], factoryContext);
@@ -508,9 +513,9 @@ public static partial class RequestDelegateFactory
             // context.GetParameter<string>(0)
             factoryContext.ContextArgAccess.Add(Expression.Call(FilterContextExpr, RouteHandlerInvocationContextGetParameter.MakeGenericMethod(parameters[i].ParameterType), Expression.Constant(i)));
             // (string, name_local), (int, int_local)
-            factoryContext.ArgumentTypes.Add(parameters[i].ParameterType);
-            factoryContext.ArgumentExpressions.Add(args[i]);
-            factoryContext.BoxedArgs.Add(Expression.Convert(args[i], typeof(object)));
+            factoryContext.ArgumentTypes[i] = parameters[i].ParameterType;
+            factoryContext.ArgumentExpressions[i] = args[i];
+            factoryContext.BoxedArgs[i] = Expression.Convert(args[i], typeof(object));
         }
 
         if (factoryContext.HasInferredBody && factoryContext.DisableInferredFromBody)
@@ -1993,9 +1998,9 @@ public static partial class RequestDelegateFactory
         // Properties for constructing and managing filters
         public List<Expression> ContextArgAccess { get; } = new();
         public Expression? MethodCall { get; set; }
-        public List<Type> ArgumentTypes { get; } = new();
-        public List<Expression> ArgumentExpressions { get; } = new();
-        public List<Expression> BoxedArgs { get; } = new();
+        public Type[] ArgumentTypes { get; set; } = Array.Empty<Type>();
+        public Expression[] ArgumentExpressions { get; set;  } = Array.Empty<Expression>();
+        public Expression[] BoxedArgs { get; set;  } = Array.Empty<Expression>();
         public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
     }
 

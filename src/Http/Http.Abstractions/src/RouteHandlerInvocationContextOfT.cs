@@ -7,7 +7,7 @@ using System.Collections;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal class RouteHandlerInvocationContext<T0> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0)
     {
@@ -72,8 +72,10 @@ internal class RouteHandlerInvocationContext<T0> : RouteHandlerInvocationContext
 
     public IEnumerator<object?> GetEnumerator()
     {
-        yield return Arg0;
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)
@@ -111,7 +113,7 @@ internal class RouteHandlerInvocationContext<T0> : RouteHandlerInvocationContext
     }
 
 }
-internal class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1)
     {
@@ -182,9 +184,10 @@ internal class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationCon
 
     public IEnumerator<object?> GetEnumerator()
     {
-        yield return Arg0;
-        yield return Arg1;
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)
@@ -223,7 +226,7 @@ internal class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationCon
     }
 
 }
-internal class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2)
     {
@@ -300,10 +303,10 @@ internal class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocatio
 
     public IEnumerator<object?> GetEnumerator()
     {
-        yield return Arg0;
-        yield return Arg1;
-        yield return Arg2;
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)
@@ -343,7 +346,7 @@ internal class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocatio
     }
 
 }
-internal class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
     {
@@ -426,11 +429,10 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvoc
 
     public IEnumerator<object?> GetEnumerator()
     {
-        yield return Arg0;
-        yield return Arg1;
-        yield return Arg2;
-        yield return Arg3;
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)
@@ -471,7 +473,7 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvoc
     }
 
 }
-internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
     {
@@ -560,12 +562,10 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerI
 
     public IEnumerator<object?> GetEnumerator()
     {
-        yield return Arg0;
-        yield return Arg1;
-        yield return Arg2;
-        yield return Arg3;
-        yield return Arg4;
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)
@@ -607,7 +607,7 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerI
     }
 
 }
-internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
     {
@@ -702,13 +702,10 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHand
 
     public IEnumerator<object?> GetEnumerator()
     {
-        yield return Arg0;
-        yield return Arg1;
-        yield return Arg2;
-        yield return Arg3;
-        yield return Arg4;
-        yield return Arg5;
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)
@@ -751,7 +748,7 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHand
     }
 
 }
-internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
     {
@@ -852,14 +849,10 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : Route
 
     public IEnumerator<object?> GetEnumerator()
     {
-        yield return Arg0;
-        yield return Arg1;
-        yield return Arg2;
-        yield return Arg3;
-        yield return Arg4;
-        yield return Arg5;
-        yield return Arg6;
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)
@@ -903,7 +896,7 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : Route
     }
 
 }
-internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
     {
@@ -1010,15 +1003,10 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : R
 
     public IEnumerator<object?> GetEnumerator()
     {
-        yield return Arg0;
-        yield return Arg1;
-        yield return Arg2;
-        yield return Arg3;
-        yield return Arg4;
-        yield return Arg5;
-        yield return Arg6;
-        yield return Arg7;
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)
@@ -1063,7 +1051,7 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : R
     }
 
 }
-internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
     {
@@ -1176,16 +1164,10 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8>
 
     public IEnumerator<object?> GetEnumerator()
     {
-        yield return Arg0;
-        yield return Arg1;
-        yield return Arg2;
-        yield return Arg3;
-        yield return Arg4;
-        yield return Arg5;
-        yield return Arg6;
-        yield return Arg7;
-        yield return Arg8;
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)
@@ -1231,7 +1213,7 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8>
     }
 
 }
-internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
     {
@@ -1350,17 +1332,10 @@ internal class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8,
 
     public IEnumerator<object?> GetEnumerator()
     {
-        yield return Arg0;
-        yield return Arg1;
-        yield return Arg2;
-        yield return Arg3;
-        yield return Arg4;
-        yield return Arg5;
-        yield return Arg6;
-        yield return Arg7;
-        yield return Arg8;
-        yield return Arg9;
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)

@@ -15,7 +15,7 @@ using System.Collections;
 namespace Microsoft.AspNetCore.Http;
 
 <# foreach (var arity in arities) { #>
-internal class RouteHandlerInvocationContext<<# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>T<#=argumentCount#><# if (argumentCount < arity - 1) { #>, <# } #><# } #>> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<<# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>T<#=argumentCount#><# if (argumentCount < arity - 1) { #>, <# } #><# } #>> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, <# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>T<#=argumentCount#> arg<#=argumentCount#><# if (argumentCount < arity - 1) { #>, <# } #><# } #>)
     {
@@ -84,9 +84,10 @@ internal class RouteHandlerInvocationContext<<# foreach (var argumentCount in En
 
     public IEnumerator<object?> GetEnumerator()
     {
-<# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>        yield return Arg<#=argumentCount#>;
-<# } #>
-
+        for (int i = 0; i < Parameters.Count; i++)
+        {
+            yield return Parameters[i];
+        }
     }
 
     public override T GetParameter<T>(int index)
