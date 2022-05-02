@@ -82,7 +82,7 @@ public static class TypedResults
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
-    /// This is an alias for <see cref="Text(string, string?, Encoding?)"/>.
+    /// This is equivalent to <see cref="Text(string?, string?, Encoding?)"/>.
     /// </para>
     /// </summary>
     /// <remarks>
@@ -99,7 +99,7 @@ public static class TypedResults
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
-    /// This is an alias for <see cref="Text(string, string?, Encoding?, int?)"/>.
+    /// This is equivalent to <see cref="Text(string?, string?, Encoding?, int?)"/>.
     /// </para>
     /// </summary>
     /// <remarks>
@@ -117,7 +117,7 @@ public static class TypedResults
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
-    /// This is an alias for <see cref="Content(string, string?, Encoding?)"/>.
+    /// This is an alias for <see cref="Content(string?, string?, Encoding?)"/>.
     /// </para>
     /// </summary>
     /// <remarks>
@@ -134,7 +134,7 @@ public static class TypedResults
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
-    /// This is an alias for <see cref="Content(string, string?, Encoding?, int?)"/>.
+    /// This is an alias for <see cref="Content(string?, string?, Encoding?, int?)"/>.
     /// </para>
     /// </summary>
     /// <remarks>
