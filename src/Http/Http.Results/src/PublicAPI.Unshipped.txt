@@ -144,12 +144,13 @@ Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.Permanent.get ->
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.PreserveMethod.get -> bool
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteName.get -> string?
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
-static Microsoft.AspNetCore.Http.Results.Content(string! content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 *REMOVED*static Microsoft.AspNetCore.Http.Results.Content(string! content, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Content(string! content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Text(string! content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Content(string? content, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! contentType) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Content(string? content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Content(string? content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.IResult!
 *REMOVED*static Microsoft.AspNetCore.Http.Results.Text(string! content, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Text(string! content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Text(string? content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Text(string? content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.TypedResults.Content(string? content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Content(string? content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Text(string? content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult!

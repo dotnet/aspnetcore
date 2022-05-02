@@ -89,7 +89,7 @@ public static partial class Results
     /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
     /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
     /// </remarks>
-    public static IResult Content(string content, string? contentType, Encoding? contentEncoding)
+    public static IResult Content(string? content, string? contentType, Encoding? contentEncoding)
         => Content(content, contentType, contentEncoding, null);
 
     /// <summary>
@@ -107,7 +107,7 @@ public static partial class Results
     /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
     /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
     /// </remarks>
-    public static IResult Content(string content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
+    public static IResult Content(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
         => TypedResults.Content(content, contentType, contentEncoding, statusCode);
 
     /// <summary>
@@ -124,7 +124,7 @@ public static partial class Results
     /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
     /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
     /// </remarks>
-    public static IResult Text(string content, string? contentType, Encoding? contentEncoding)
+    public static IResult Text(string? content, string? contentType, Encoding? contentEncoding)
         => Text(content, contentType, contentEncoding, null);
 
     /// <summary>
@@ -142,7 +142,7 @@ public static partial class Results
     /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
     /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
     /// </remarks>
-    public static IResult Text(string content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
+    public static IResult Text(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
         => TypedResults.Text(content, contentType, contentEncoding, statusCode);
 
     /// <summary>
@@ -151,7 +151,7 @@ public static partial class Results
     /// <param name="content">The content to write to the response.</param>
     /// <param name="contentType">The content type (MIME type).</param>
     /// <returns>The created <see cref="IResult"/> object for the response.</returns>
-    public static IResult Content(string content, MediaTypeHeaderValue contentType)
+    public static IResult Content(string? content, MediaTypeHeaderValue contentType)
         => TypedResults.Content(content, contentType);
 
     /// <summary>
