@@ -83,7 +83,7 @@ internal sealed class Utf8HashLookup
 
     private static int GetKeyHashCode(ReadOnlySpan<char> key)
     {
-        return HashCodeMask & string.GetHashCode(key);
+        return HashCodeMask & string.GetHashCode(key, StringComparison.OrdinalIgnoreCase);
     }
 
     private void Resize()
