@@ -203,6 +203,7 @@
     <SystemCommandlineExperimentalPackageVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalPackageVersion>
     <SystemComponentModelPackageVersion>4.3.0</SystemComponentModelPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
+    <SystemPrivateUriPackageVersion>4.3.2</SystemPrivateUriPackageVersion>
     <SystemSecurityCryptographyX509CertificatesPackageVersion>4.3.2</SystemSecurityCryptographyX509CertificatesPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.3</SystemThreadingTasksExtensionsPackageVersion>
     <!-- Packages developed by @aspnet, but manually updated as necessary. -->

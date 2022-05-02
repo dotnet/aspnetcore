@@ -16,6 +16,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="Microsoft.Data.SqlClient" />
+    <Reference Include="System.Private.Uri" />
 
     <!-- Intentional change to remove reference to System.Data.SqlClient. See https://github.com/aspnet/AspNetCore/issues/12445 -->
     <SuppressBaselineReference Include="System.Data.SqlClient" />
