@@ -57,7 +57,7 @@
     "url-parse": ">=1.5.8",
     "minimist": ">=1.2.6",
     "async": ">=3.2.2",
-    "ansi-regex": ">=4.1.1"
+    "ansi-regex": "^4.1.1"
   },
   "author": "",
   "license": "Apache-2.0"
