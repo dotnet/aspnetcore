@@ -60,15 +60,8 @@ public class CacheTagHelper : CacheTagHelperBase
     /// <inheritdoc />
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         IHtmlContent content;
         if (Enabled)
@@ -219,7 +212,7 @@ public class CacheTagHelper : CacheTagHelperBase
         }
     }
 
-    private class CharBufferTextWriter : TextWriter
+    private sealed class CharBufferTextWriter : TextWriter
     {
         public CharBufferTextWriter()
         {
@@ -246,7 +239,7 @@ public class CacheTagHelper : CacheTagHelperBase
         }
     }
 
-    private class CharBufferHtmlContent : IHtmlContent
+    private sealed class CharBufferHtmlContent : IHtmlContent
     {
         private readonly PagedCharBuffer _buffer;
 
