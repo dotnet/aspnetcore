@@ -49,16 +49,16 @@ internal sealed class Utf8HashLookup
         const int StackAllocThreshold = 128;
 
         // Transcode to utf16 for comparison
-        char[]? pooledName = null;
+        char[]? pooled = null;
         var count = Encoding.UTF8.GetCharCount(utf8);
         var chars = count <= StackAllocThreshold ?
             stackalloc char[StackAllocThreshold] :
-            (pooledName = ArrayPool<char>.Shared.Rent(count));
+            (pooled = ArrayPool<char>.Shared.Rent(count));
         var encoded = Encoding.UTF8.GetChars(utf8, chars);
         var hasValue = TryGetValue(chars[..encoded], out value);
-        if (pooledName is not null)
+        if (pooled is not null)
         {
-            ArrayPool<char>.Shared.Return(pooledName);
+            ArrayPool<char>.Shared.Return(pooled);
         }
 
         return hasValue;
