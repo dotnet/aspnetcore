@@ -145,6 +145,7 @@ Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.PreserveMethod.g
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteName.get -> string?
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
 *REMOVED*static Microsoft.AspNetCore.Http.Results.Content(string! content, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.IResult!
+*REMOVED*static Microsoft.AspNetCore.Http.Results.Content(string! content, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! contentType) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Content(string? content, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! contentType) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Content(string? content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Content(string? content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.IResult!
