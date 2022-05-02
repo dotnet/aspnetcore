@@ -99,7 +99,7 @@ internal class SurrogateParameterInfo : ParameterInfo
             _underlyingProperty.IsDefined(attributeType, inherit);
     }
 
-    public new bool IsOptional => NullabilityInfo.ReadState != NullabilityState.NotNull;
+    public new bool IsOptional => HasDefaultValue || NullabilityInfo.ReadState != NullabilityState.NotNull;
 
     public NullabilityInfo NullabilityInfo
         => _nullabilityInfo ??= _constructionParameterInfo is not null ?
