@@ -82,7 +82,7 @@ public static class TypedResults
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
-    /// This is an alias for <see cref="Text(string, string?, Encoding?)"/>.
+    /// This is equivalent to <see cref="Text(string?, string?, Encoding?)"/>.
     /// </para>
     /// </summary>
     /// <remarks>
@@ -93,13 +93,31 @@ public static class TypedResults
     /// <param name="contentType">The content type (MIME type).</param>
     /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
-    public static ContentHttpResult Content(string? content, string? contentType = null, Encoding? contentEncoding = null)
-        => Text(content, contentType, contentEncoding);
+    public static ContentHttpResult Content(string? content, string? contentType, Encoding? contentEncoding)
+        => Content(content, contentType, contentEncoding, null);
 
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
-    /// This is an alias for <see cref="Content(string, string?, Encoding?)"/>.
+    /// This is equivalent to <see cref="Text(string?, string?, Encoding?, int?)"/>.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
+    /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
+    /// </remarks>
+    /// <param name="content">The content to write to the response.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    /// <param name="statusCode">The status code to return.</param>
+    /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
+    public static ContentHttpResult Content(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
+        => Text(content, contentType, contentEncoding, statusCode);
+
+    /// <summary>
+    /// Writes the <paramref name="content"/> string to the HTTP response.
+    /// <para>
+    /// This is an alias for <see cref="Content(string?, string?, Encoding?)"/>.
     /// </para>
     /// </summary>
     /// <remarks>
@@ -110,7 +128,25 @@ public static class TypedResults
     /// <param name="contentType">The content type (MIME type).</param>
     /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
-    public static ContentHttpResult Text(string? content, string? contentType = null, Encoding? contentEncoding = null)
+    public static ContentHttpResult Text(string? content, string? contentType, Encoding? contentEncoding)
+        => Text(content, contentType, contentEncoding, null);
+
+    /// <summary>
+    /// Writes the <paramref name="content"/> string to the HTTP response.
+    /// <para>
+    /// This is an alias for <see cref="Content(string?, string?, Encoding?, int?)"/>.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
+    /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
+    /// </remarks>
+    /// <param name="content">The content to write to the response.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    /// <param name="statusCode">The status code to return.</param>
+    /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
+    public static ContentHttpResult Text(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
     {
         MediaTypeHeaderValue? mediaTypeHeaderValue = null;
         if (contentType is not null)
@@ -119,7 +155,7 @@ public static class TypedResults
             mediaTypeHeaderValue.Encoding = contentEncoding ?? mediaTypeHeaderValue.Encoding;
         }
 
-        return new(content, mediaTypeHeaderValue?.ToString());
+        return new(content, mediaTypeHeaderValue?.ToString(), statusCode);
     }
 
     /// <summary>
