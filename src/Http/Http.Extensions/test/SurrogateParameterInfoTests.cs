@@ -35,48 +35,51 @@ public class SurrogateParameterInfoTests
     [Fact]
     public void SurrogateParameterInfo_ContainsPropertyCustomAttributes()
     {
-        // Arrange & Act
+        // Arrange
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
         var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
 
-        // Assert
+        // Act & Assert
         Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute)));
     }
 
     [Fact]
     public void SurrogateParameterInfo_WithConstructorArgument_UsesParameterCustomAttributes()
     {
-        // Arrange & Act
+        // Arrange
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
         var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.WithTestAttribute));
         var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
 
-        // Assert
+        // Act & Assert
         Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute)));
     }
 
     [Fact]
     public void SurrogateParameterInfo_WithConstructorArgument_FallbackToPropertyCustomAttributes()
     {
-        // Arrange & Act
+        // Arrange
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
         var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.NoAttribute));
         var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
 
-        // Assert
+        // Act & Assert
         Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute)));
     }
 
     [Fact]
     public void SurrogateParameterInfo_ContainsPropertyCustomAttributesData()
     {
-        // Arrange & Act
+        // Arrange
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
         var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
 
+        // Act
+        var attributes = surrogateParameterInfo.GetCustomAttributesData();
+
         // Assert
         Assert.Single(
-            surrogateParameterInfo.GetCustomAttributesData(),
+            attributes,
             a => typeof(TestAttribute).IsAssignableFrom(a.AttributeType));
     }
 
@@ -88,6 +91,9 @@ public class SurrogateParameterInfoTests
         var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.WithSampleAttribute));
         var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
 
+        // Act
+        var attributes = surrogateParameterInfo.GetCustomAttributesData();
+
         // Assert
         Assert.Single(
             surrogateParameterInfo.GetCustomAttributesData(),
@@ -95,6 +101,26 @@ public class SurrogateParameterInfoTests
         Assert.Single(
             surrogateParameterInfo.GetCustomAttributesData(),
             a => typeof(SampleAttribute).IsAssignableFrom(a.AttributeType));
+    }
+
+    [Fact]
+    public void SurrogateParameterInfo_WithConstructorArgument_MergePropertyAndParameterCustomAttributes()
+    {
+        // Arrange
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
+        var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.WithSampleAttribute));
+        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+
+        // Act
+        var attributes = surrogateParameterInfo.GetCustomAttributes(true);
+
+        // Assert
+        Assert.Single(
+            attributes,
+            a => typeof(TestAttribute).IsAssignableFrom(a.GetType()));
+        Assert.Single(
+            attributes,
+            a => typeof(SampleAttribute).IsAssignableFrom(a.GetType()));
     }
 
     [Fact]

@@ -60,14 +60,22 @@ internal class SurrogateParameterInfo : ParameterInfo
 
     public override object[] GetCustomAttributes(bool inherit)
     {
-        var attributes = _constructionParameterInfo?.GetCustomAttributes(inherit);
+        var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(inherit);
 
-        if (attributes == null || attributes is { Length: 0 })
+        if (constructorAttributes == null || constructorAttributes is { Length: 0 })
         {
-            attributes = _underlyingProperty.GetCustomAttributes(inherit);
+            return _underlyingProperty.GetCustomAttributes(inherit);
         }
 
-        return attributes;
+        var propertyAttributes = _underlyingProperty.GetCustomAttributes(inherit);
+
+        // Since the constructors attributes should take priority we will add them first,
+        // as we usually call it as First() or FirstOrDefault() in the argument creation
+        var mergedAttributes = new object[constructorAttributes.Length + propertyAttributes.Length];
+        Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
+        Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
+
+        return mergedAttributes;
     }
 
     public override IList<CustomAttributeData> GetCustomAttributesData()
