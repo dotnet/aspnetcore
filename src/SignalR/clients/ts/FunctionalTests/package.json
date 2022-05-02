@@ -56,7 +56,7 @@
     "url-parse": ">=1.5.8",
     "node-fetch": ">=2.6.7",
     "async": ">=3.2.2",
-    "ansi-regex": ">=4.1.1",
+    "ansi-regex": "^4.1.1",
     "minimist": ">=1.2.6"
   },
   "author": "",
