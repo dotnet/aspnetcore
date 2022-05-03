@@ -62,7 +62,7 @@ public static class RouteHandlerFilterExtensions
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="routeHandlerFilter">A <see cref="Delegate"/> representing the core logic of the filter.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
-    public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, Func<RouteHandlerInvocationContextBase, RouteHandlerFilterDelegate, ValueTask<object?>> routeHandlerFilter)
+    public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, Func<RouteHandlerInvocationContext, RouteHandlerFilterDelegate, ValueTask<object?>> routeHandlerFilter)
     {
         builder.RouteHandlerFilterFactories.Add((routeHandlerContext, next) => (context) => routeHandlerFilter(context, next));
         return builder;

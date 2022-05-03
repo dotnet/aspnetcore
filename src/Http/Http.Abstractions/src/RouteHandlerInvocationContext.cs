@@ -4,31 +4,29 @@
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Provides a default implementation for wrapping the <see cref="HttpContext"/> and parameters
+/// Provides an abstraction for wrapping the <see cref="HttpContext"/> and arguments
 /// provided to a route handler.
 /// </summary>
-public class DefaultRouteHandlerInvocationContext : RouteHandlerInvocationContextBase
+public abstract class RouteHandlerInvocationContext
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="DefaultRouteHandlerInvocationContext"/> for a given request.
+    /// The <see cref="HttpContext"/> associated with the current request being processed by the filter.
     /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-    /// <param name="arguments">A list of parameters provided in the current request.</param>
-    public DefaultRouteHandlerInvocationContext(HttpContext httpContext, params object[] arguments)
-    {
-        HttpContext = httpContext;
-        Arguments = arguments;
-    }
+    public abstract HttpContext HttpContext { get; }
 
-    /// <inheritdoc />
-    public override HttpContext HttpContext { get; }
+    /// <summary>
+    /// A list of arguments provided in the current request to the filter.
+    /// <remarks>
+    /// This list is not read-only to permit modifying of existing arguments by filters.
+    /// </remarks>
+    /// </summary>
+    public abstract IList<object?> Arguments { get; }
 
-    /// <inheritdoc />
-    public override IList<object?> Arguments { get; }
-
-    /// <inheritdoc />
-    public override T GetArgument<T>(int index)
-    {
-        return (T)Arguments[index]!;
-    }
+    /// <summary>
+    /// Retrieve the argument given its position in the argument list.
+    /// </summary>
+    /// <typeparam name="T">The <see cref="Type"/> of the resolved argument.</typeparam>
+    /// <param name="index">An integer representing the position of the argument in the argument list.</param>
+    /// <returns>The argument at a given <paramref name="index"/></returns>
+    public abstract T GetArgument<T>(int index);
 }

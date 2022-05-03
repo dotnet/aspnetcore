@@ -983,7 +983,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             _routeHandlerContext = routeHandlerContext;
         }
 
-        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContextBase context, RouteHandlerFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
         {
             context.HttpContext.Items["loggerErrorIsEnabled"] = _logger.IsEnabled(LogLevel.Error);
             context.HttpContext.Items["parentName"] = _routeHandlerContext.MethodInfo.DeclaringType?.Name;
@@ -993,7 +993,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
     class IncrementArgFilter : IRouteHandlerFilter
     {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContextBase context, RouteHandlerFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
         {
             context.Arguments[0] = ((int)context.Arguments[0]!) + 1;
             return await next(context);

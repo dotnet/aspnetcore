@@ -7,7 +7,7 @@ using System.Collections;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocationContextBase, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0)
     {
@@ -27,7 +27,7 @@ internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocation
             switch (index)
             {
                case 0:
-                    Arg0 = (T0)(object)value!;
+                    Arg0 = (T0)(object?)value!;
                     break;
                 default:
                     break;
@@ -113,7 +113,7 @@ internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocation
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationContextBase, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1)
     {
@@ -135,10 +135,10 @@ internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvoca
             switch (index)
             {
                case 0:
-                    Arg0 = (T0)(object)value!;
+                    Arg0 = (T0)(object?)value!;
                     break;
                case 1:
-                    Arg1 = (T1)(object)value!;
+                    Arg1 = (T1)(object?)value!;
                     break;
                 default:
                     break;
@@ -226,7 +226,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvoca
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocationContextBase, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2)
     {
@@ -250,13 +250,13 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerIn
             switch (index)
             {
                case 0:
-                    Arg0 = (T0)(object)value!;
+                    Arg0 = (T0)(object?)value!;
                     break;
                case 1:
-                    Arg1 = (T1)(object)value!;
+                    Arg1 = (T1)(object?)value!;
                     break;
                case 2:
-                    Arg2 = (T2)(object)value!;
+                    Arg2 = (T2)(object?)value!;
                     break;
                 default:
                     break;
@@ -346,7 +346,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerIn
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvocationContextBase, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
     {
@@ -372,16 +372,16 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandl
             switch (index)
             {
                case 0:
-                    Arg0 = (T0)(object)value!;
+                    Arg0 = (T0)(object?)value!;
                     break;
                case 1:
-                    Arg1 = (T1)(object)value!;
+                    Arg1 = (T1)(object?)value!;
                     break;
                case 2:
-                    Arg2 = (T2)(object)value!;
+                    Arg2 = (T2)(object?)value!;
                     break;
                case 3:
-                    Arg3 = (T3)(object)value!;
+                    Arg3 = (T3)(object?)value!;
                     break;
                 default:
                     break;
@@ -473,7 +473,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandl
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerInvocationContextBase, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
     {
@@ -501,19 +501,19 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteH
             switch (index)
             {
                case 0:
-                    Arg0 = (T0)(object)value!;
+                    Arg0 = (T0)(object?)value!;
                     break;
                case 1:
-                    Arg1 = (T1)(object)value!;
+                    Arg1 = (T1)(object?)value!;
                     break;
                case 2:
-                    Arg2 = (T2)(object)value!;
+                    Arg2 = (T2)(object?)value!;
                     break;
                case 3:
-                    Arg3 = (T3)(object)value!;
+                    Arg3 = (T3)(object?)value!;
                     break;
                case 4:
-                    Arg4 = (T4)(object)value!;
+                    Arg4 = (T4)(object?)value!;
                     break;
                 default:
                     break;
@@ -607,7 +607,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteH
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHandlerInvocationContextBase, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
     {
@@ -637,22 +637,22 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : Ro
             switch (index)
             {
                case 0:
-                    Arg0 = (T0)(object)value!;
+                    Arg0 = (T0)(object?)value!;
                     break;
                case 1:
-                    Arg1 = (T1)(object)value!;
+                    Arg1 = (T1)(object?)value!;
                     break;
                case 2:
-                    Arg2 = (T2)(object)value!;
+                    Arg2 = (T2)(object?)value!;
                     break;
                case 3:
-                    Arg3 = (T3)(object)value!;
+                    Arg3 = (T3)(object?)value!;
                     break;
                case 4:
-                    Arg4 = (T4)(object)value!;
+                    Arg4 = (T4)(object?)value!;
                     break;
                case 5:
-                    Arg5 = (T5)(object)value!;
+                    Arg5 = (T5)(object?)value!;
                     break;
                 default:
                     break;
@@ -748,7 +748,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : Ro
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : RouteHandlerInvocationContextBase, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
     {
@@ -780,25 +780,25 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> 
             switch (index)
             {
                case 0:
-                    Arg0 = (T0)(object)value!;
+                    Arg0 = (T0)(object?)value!;
                     break;
                case 1:
-                    Arg1 = (T1)(object)value!;
+                    Arg1 = (T1)(object?)value!;
                     break;
                case 2:
-                    Arg2 = (T2)(object)value!;
+                    Arg2 = (T2)(object?)value!;
                     break;
                case 3:
-                    Arg3 = (T3)(object)value!;
+                    Arg3 = (T3)(object?)value!;
                     break;
                case 4:
-                    Arg4 = (T4)(object)value!;
+                    Arg4 = (T4)(object?)value!;
                     break;
                case 5:
-                    Arg5 = (T5)(object)value!;
+                    Arg5 = (T5)(object?)value!;
                     break;
                case 6:
-                    Arg6 = (T6)(object)value!;
+                    Arg6 = (T6)(object?)value!;
                     break;
                 default:
                     break;
@@ -896,7 +896,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> 
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : RouteHandlerInvocationContextBase, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
     {
@@ -930,28 +930,28 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
             switch (index)
             {
                case 0:
-                    Arg0 = (T0)(object)value!;
+                    Arg0 = (T0)(object?)value!;
                     break;
                case 1:
-                    Arg1 = (T1)(object)value!;
+                    Arg1 = (T1)(object?)value!;
                     break;
                case 2:
-                    Arg2 = (T2)(object)value!;
+                    Arg2 = (T2)(object?)value!;
                     break;
                case 3:
-                    Arg3 = (T3)(object)value!;
+                    Arg3 = (T3)(object?)value!;
                     break;
                case 4:
-                    Arg4 = (T4)(object)value!;
+                    Arg4 = (T4)(object?)value!;
                     break;
                case 5:
-                    Arg5 = (T5)(object)value!;
+                    Arg5 = (T5)(object?)value!;
                     break;
                case 6:
-                    Arg6 = (T6)(object)value!;
+                    Arg6 = (T6)(object?)value!;
                     break;
                case 7:
-                    Arg7 = (T7)(object)value!;
+                    Arg7 = (T7)(object?)value!;
                     break;
                 default:
                     break;
@@ -1051,7 +1051,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : RouteHandlerInvocationContextBase, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
     {
@@ -1087,31 +1087,31 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
             switch (index)
             {
                case 0:
-                    Arg0 = (T0)(object)value!;
+                    Arg0 = (T0)(object?)value!;
                     break;
                case 1:
-                    Arg1 = (T1)(object)value!;
+                    Arg1 = (T1)(object?)value!;
                     break;
                case 2:
-                    Arg2 = (T2)(object)value!;
+                    Arg2 = (T2)(object?)value!;
                     break;
                case 3:
-                    Arg3 = (T3)(object)value!;
+                    Arg3 = (T3)(object?)value!;
                     break;
                case 4:
-                    Arg4 = (T4)(object)value!;
+                    Arg4 = (T4)(object?)value!;
                     break;
                case 5:
-                    Arg5 = (T5)(object)value!;
+                    Arg5 = (T5)(object?)value!;
                     break;
                case 6:
-                    Arg6 = (T6)(object)value!;
+                    Arg6 = (T6)(object?)value!;
                     break;
                case 7:
-                    Arg7 = (T7)(object)value!;
+                    Arg7 = (T7)(object?)value!;
                     break;
                case 8:
-                    Arg8 = (T8)(object)value!;
+                    Arg8 = (T8)(object?)value!;
                     break;
                 default:
                     break;
@@ -1213,7 +1213,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : RouteHandlerInvocationContextBase, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
     {
@@ -1251,34 +1251,34 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
             switch (index)
             {
                case 0:
-                    Arg0 = (T0)(object)value!;
+                    Arg0 = (T0)(object?)value!;
                     break;
                case 1:
-                    Arg1 = (T1)(object)value!;
+                    Arg1 = (T1)(object?)value!;
                     break;
                case 2:
-                    Arg2 = (T2)(object)value!;
+                    Arg2 = (T2)(object?)value!;
                     break;
                case 3:
-                    Arg3 = (T3)(object)value!;
+                    Arg3 = (T3)(object?)value!;
                     break;
                case 4:
-                    Arg4 = (T4)(object)value!;
+                    Arg4 = (T4)(object?)value!;
                     break;
                case 5:
-                    Arg5 = (T5)(object)value!;
+                    Arg5 = (T5)(object?)value!;
                     break;
                case 6:
-                    Arg6 = (T6)(object)value!;
+                    Arg6 = (T6)(object?)value!;
                     break;
                case 7:
-                    Arg7 = (T7)(object)value!;
+                    Arg7 = (T7)(object?)value!;
                     break;
                case 8:
-                    Arg8 = (T8)(object)value!;
+                    Arg8 = (T8)(object?)value!;
                     break;
                case 9:
-                    Arg9 = (T9)(object)value!;
+                    Arg9 = (T9)(object?)value!;
                     break;
                 default:
                     break;

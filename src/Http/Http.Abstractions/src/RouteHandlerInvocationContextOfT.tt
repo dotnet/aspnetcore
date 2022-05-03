@@ -37,7 +37,7 @@ internal sealed class RouteHandlerInvocationContext<<# foreach (var argumentCoun
             switch (index)
             {
 <# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>               case <#=argumentCount#>:
-                    Arg<#=argumentCount#> = (T<#=argumentCount#>)(object)value!;
+                    Arg<#=argumentCount#> = (T<#=argumentCount#>)(object?)value!;
                     break;
 <# } #>
                 default:
