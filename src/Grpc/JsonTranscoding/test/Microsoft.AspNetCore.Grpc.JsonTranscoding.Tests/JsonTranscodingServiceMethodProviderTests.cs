@@ -59,12 +59,12 @@ public class JsonTranscodingServiceMethodProviderTests
 
         var getMethodModel = matchedEndpoints[0];
         Assert.Equal("GET", getMethodModel.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Single());
-        Assert.Equal("/v1/additional_bindings/{name}", getMethodModel.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.HttpRule.Get);
+        Assert.Equal("/v1/additional_bindings/{name}", getMethodModel.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.HttpRule?.Get);
         Assert.Equal("/v1/additional_bindings/{name}", getMethodModel.RoutePattern.RawText);
 
         var additionalMethodModel = matchedEndpoints[1];
         Assert.Equal("DELETE", additionalMethodModel.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Single());
-        Assert.Equal("/v1/additional_bindings/{name}", additionalMethodModel.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.HttpRule.Delete);
+        Assert.Equal("/v1/additional_bindings/{name}", additionalMethodModel.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.HttpRule?.Delete);
         Assert.Equal("/v1/additional_bindings/{name}", additionalMethodModel.RoutePattern.RawText);
     }
 
@@ -172,7 +172,7 @@ public class JsonTranscodingServiceMethodProviderTests
         var endpoint = Assert.Single(matchedEndpoints);
 
         Assert.Equal("GET", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Single());
-        Assert.Equal("/v1/server_greeter/{name}", endpoint.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.HttpRule!.Get);
+        Assert.Equal("/v1/server_greeter/{name}", endpoint.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.HttpRule?.Get);
         Assert.Equal("/v1/server_greeter/{name}", endpoint.RoutePattern.RawText);
     }
 
