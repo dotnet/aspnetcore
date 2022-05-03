@@ -100,7 +100,6 @@ app.MapGet("/weatherforecast", (HttpContext httpContext, IDownstreamWebApi downs
         .ToArray();
 
     return forecast;
-})
 #elif (GenerateGraph)
 app.MapGet("/weatherforecast", (HttpContext httpContext, GraphServiceClient graphServiceClient) =>
 {
@@ -118,7 +117,6 @@ app.MapGet("/weatherforecast", (HttpContext httpContext, GraphServiceClient grap
         .ToArray();
 
     return forecast;
-})
 #else
 app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 {
