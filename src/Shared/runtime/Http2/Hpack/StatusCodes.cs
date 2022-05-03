@@ -8,207 +8,138 @@ namespace System.Net.Http.HPack
 {
     internal static partial class StatusCodes
     {
-        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
-
-        private static ReadOnlySpan<byte> BytesStatus100 => new byte[] { (byte)'1', (byte)'0', (byte)'0' };
-        private static ReadOnlySpan<byte> BytesStatus101 => new byte[] { (byte)'1', (byte)'0', (byte)'1' };
-        private static ReadOnlySpan<byte> BytesStatus102 => new byte[] { (byte)'1', (byte)'0', (byte)'2' };
-
-        private static ReadOnlySpan<byte> BytesStatus200 => new byte[] { (byte)'2', (byte)'0', (byte)'0' };
-        private static ReadOnlySpan<byte> BytesStatus201 => new byte[] { (byte)'2', (byte)'0', (byte)'1' };
-        private static ReadOnlySpan<byte> BytesStatus202 => new byte[] { (byte)'2', (byte)'0', (byte)'2' };
-        private static ReadOnlySpan<byte> BytesStatus203 => new byte[] { (byte)'2', (byte)'0', (byte)'3' };
-        private static ReadOnlySpan<byte> BytesStatus204 => new byte[] { (byte)'2', (byte)'0', (byte)'4' };
-        private static ReadOnlySpan<byte> BytesStatus205 => new byte[] { (byte)'2', (byte)'0', (byte)'5' };
-        private static ReadOnlySpan<byte> BytesStatus206 => new byte[] { (byte)'2', (byte)'0', (byte)'6' };
-        private static ReadOnlySpan<byte> BytesStatus207 => new byte[] { (byte)'2', (byte)'0', (byte)'7' };
-        private static ReadOnlySpan<byte> BytesStatus208 => new byte[] { (byte)'2', (byte)'0', (byte)'8' };
-        private static ReadOnlySpan<byte> BytesStatus226 => new byte[] { (byte)'2', (byte)'2', (byte)'6' };
-
-        private static ReadOnlySpan<byte> BytesStatus300 => new byte[] { (byte)'3', (byte)'0', (byte)'0' };
-        private static ReadOnlySpan<byte> BytesStatus301 => new byte[] { (byte)'3', (byte)'0', (byte)'1' };
-        private static ReadOnlySpan<byte> BytesStatus302 => new byte[] { (byte)'3', (byte)'0', (byte)'2' };
-        private static ReadOnlySpan<byte> BytesStatus303 => new byte[] { (byte)'3', (byte)'0', (byte)'3' };
-        private static ReadOnlySpan<byte> BytesStatus304 => new byte[] { (byte)'3', (byte)'0', (byte)'4' };
-        private static ReadOnlySpan<byte> BytesStatus305 => new byte[] { (byte)'3', (byte)'0', (byte)'5' };
-        private static ReadOnlySpan<byte> BytesStatus306 => new byte[] { (byte)'3', (byte)'0', (byte)'6' };
-        private static ReadOnlySpan<byte> BytesStatus307 => new byte[] { (byte)'3', (byte)'0', (byte)'7' };
-        private static ReadOnlySpan<byte> BytesStatus308 => new byte[] { (byte)'3', (byte)'0', (byte)'8' };
-
-        private static ReadOnlySpan<byte> BytesStatus400 => new byte[] { (byte)'4', (byte)'0', (byte)'0' };
-        private static ReadOnlySpan<byte> BytesStatus401 => new byte[] { (byte)'4', (byte)'0', (byte)'1' };
-        private static ReadOnlySpan<byte> BytesStatus402 => new byte[] { (byte)'4', (byte)'0', (byte)'2' };
-        private static ReadOnlySpan<byte> BytesStatus403 => new byte[] { (byte)'4', (byte)'0', (byte)'3' };
-        private static ReadOnlySpan<byte> BytesStatus404 => new byte[] { (byte)'4', (byte)'0', (byte)'4' };
-        private static ReadOnlySpan<byte> BytesStatus405 => new byte[] { (byte)'4', (byte)'0', (byte)'5' };
-        private static ReadOnlySpan<byte> BytesStatus406 => new byte[] { (byte)'4', (byte)'0', (byte)'6' };
-        private static ReadOnlySpan<byte> BytesStatus407 => new byte[] { (byte)'4', (byte)'0', (byte)'7' };
-        private static ReadOnlySpan<byte> BytesStatus408 => new byte[] { (byte)'4', (byte)'0', (byte)'8' };
-        private static ReadOnlySpan<byte> BytesStatus409 => new byte[] { (byte)'4', (byte)'0', (byte)'9' };
-        private static ReadOnlySpan<byte> BytesStatus410 => new byte[] { (byte)'4', (byte)'1', (byte)'0' };
-        private static ReadOnlySpan<byte> BytesStatus411 => new byte[] { (byte)'4', (byte)'1', (byte)'1' };
-        private static ReadOnlySpan<byte> BytesStatus412 => new byte[] { (byte)'4', (byte)'1', (byte)'2' };
-        private static ReadOnlySpan<byte> BytesStatus413 => new byte[] { (byte)'4', (byte)'1', (byte)'3' };
-        private static ReadOnlySpan<byte> BytesStatus414 => new byte[] { (byte)'4', (byte)'1', (byte)'4' };
-        private static ReadOnlySpan<byte> BytesStatus415 => new byte[] { (byte)'4', (byte)'1', (byte)'5' };
-        private static ReadOnlySpan<byte> BytesStatus416 => new byte[] { (byte)'4', (byte)'1', (byte)'6' };
-        private static ReadOnlySpan<byte> BytesStatus417 => new byte[] { (byte)'4', (byte)'1', (byte)'7' };
-        private static ReadOnlySpan<byte> BytesStatus418 => new byte[] { (byte)'4', (byte)'1', (byte)'8' };
-        private static ReadOnlySpan<byte> BytesStatus419 => new byte[] { (byte)'4', (byte)'1', (byte)'9' };
-        private static ReadOnlySpan<byte> BytesStatus421 => new byte[] { (byte)'4', (byte)'2', (byte)'1' };
-        private static ReadOnlySpan<byte> BytesStatus422 => new byte[] { (byte)'4', (byte)'2', (byte)'2' };
-        private static ReadOnlySpan<byte> BytesStatus423 => new byte[] { (byte)'4', (byte)'2', (byte)'3' };
-        private static ReadOnlySpan<byte> BytesStatus424 => new byte[] { (byte)'4', (byte)'2', (byte)'4' };
-        private static ReadOnlySpan<byte> BytesStatus426 => new byte[] { (byte)'4', (byte)'2', (byte)'6' };
-        private static ReadOnlySpan<byte> BytesStatus428 => new byte[] { (byte)'4', (byte)'2', (byte)'8' };
-        private static ReadOnlySpan<byte> BytesStatus429 => new byte[] { (byte)'4', (byte)'2', (byte)'9' };
-        private static ReadOnlySpan<byte> BytesStatus431 => new byte[] { (byte)'4', (byte)'3', (byte)'1' };
-        private static ReadOnlySpan<byte> BytesStatus451 => new byte[] { (byte)'4', (byte)'5', (byte)'1' };
-
-        private static ReadOnlySpan<byte> BytesStatus500 => new byte[] { (byte)'5', (byte)'0', (byte)'0' };
-        private static ReadOnlySpan<byte> BytesStatus501 => new byte[] { (byte)'5', (byte)'0', (byte)'1' };
-        private static ReadOnlySpan<byte> BytesStatus502 => new byte[] { (byte)'5', (byte)'0', (byte)'2' };
-        private static ReadOnlySpan<byte> BytesStatus503 => new byte[] { (byte)'5', (byte)'0', (byte)'3' };
-        private static ReadOnlySpan<byte> BytesStatus504 => new byte[] { (byte)'5', (byte)'0', (byte)'4' };
-        private static ReadOnlySpan<byte> BytesStatus505 => new byte[] { (byte)'5', (byte)'0', (byte)'5' };
-        private static ReadOnlySpan<byte> BytesStatus506 => new byte[] { (byte)'5', (byte)'0', (byte)'6' };
-        private static ReadOnlySpan<byte> BytesStatus507 => new byte[] { (byte)'5', (byte)'0', (byte)'7' };
-        private static ReadOnlySpan<byte> BytesStatus508 => new byte[] { (byte)'5', (byte)'0', (byte)'8' };
-        private static ReadOnlySpan<byte> BytesStatus510 => new byte[] { (byte)'5', (byte)'1', (byte)'0' };
-        private static ReadOnlySpan<byte> BytesStatus511 => new byte[] { (byte)'5', (byte)'1', (byte)'1' };
-
         public static ReadOnlySpan<byte> ToStatusBytes(int statusCode)
         {
             switch (statusCode)
             {
                 case (int)HttpStatusCode.Continue:
-                    return BytesStatus100;
+                    return "100"u8;
                 case (int)HttpStatusCode.SwitchingProtocols:
-                    return BytesStatus101;
+                    return "101"u8;
                 case (int)HttpStatusCode.Processing:
-                    return BytesStatus102;
+                    return "102"u8;
 
                 case (int)HttpStatusCode.OK:
-                    return BytesStatus200;
+                    return "200"u8;
                 case (int)HttpStatusCode.Created:
-                    return BytesStatus201;
+                    return "201"u8;
                 case (int)HttpStatusCode.Accepted:
-                    return BytesStatus202;
+                    return "202"u8;
                 case (int)HttpStatusCode.NonAuthoritativeInformation:
-                    return BytesStatus203;
+                    return "203"u8;
                 case (int)HttpStatusCode.NoContent:
-                    return BytesStatus204;
+                    return "204"u8;
                 case (int)HttpStatusCode.ResetContent:
-                    return BytesStatus205;
+                    return "205"u8;
                 case (int)HttpStatusCode.PartialContent:
-                    return BytesStatus206;
+                    return "206"u8;
                 case (int)HttpStatusCode.MultiStatus:
-                    return BytesStatus207;
+                    return "207"u8;
                 case (int)HttpStatusCode.AlreadyReported:
-                    return BytesStatus208;
+                    return "208"u8;
                 case (int)HttpStatusCode.IMUsed:
-                    return BytesStatus226;
+                    return "226"u8;
 
                 case (int)HttpStatusCode.MultipleChoices:
-                    return BytesStatus300;
+                    return "300"u8;
                 case (int)HttpStatusCode.MovedPermanently:
-                    return BytesStatus301;
+                    return "301"u8;
                 case (int)HttpStatusCode.Found:
-                    return BytesStatus302;
+                    return "302"u8;
                 case (int)HttpStatusCode.SeeOther:
-                    return BytesStatus303;
+                    return "303"u8;
                 case (int)HttpStatusCode.NotModified:
-                    return BytesStatus304;
+                    return "304"u8;
                 case (int)HttpStatusCode.UseProxy:
-                    return BytesStatus305;
+                    return "305"u8;
                 case (int)HttpStatusCode.Unused:
-                    return BytesStatus306;
+                    return "306"u8;
                 case (int)HttpStatusCode.TemporaryRedirect:
-                    return BytesStatus307;
+                    return "307"u8;
                 case (int)HttpStatusCode.PermanentRedirect:
-                    return BytesStatus308;
+                    return "308"u8;
 
                 case (int)HttpStatusCode.BadRequest:
-                    return BytesStatus400;
+                    return "400"u8;
                 case (int)HttpStatusCode.Unauthorized:
-                    return BytesStatus401;
+                    return "401"u8;
                 case (int)HttpStatusCode.PaymentRequired:
-                    return BytesStatus402;
+                    return "402"u8;
                 case (int)HttpStatusCode.Forbidden:
-                    return BytesStatus403;
+                    return "403"u8;
                 case (int)HttpStatusCode.NotFound:
-                    return BytesStatus404;
+                    return "404"u8;
                 case (int)HttpStatusCode.MethodNotAllowed:
-                    return BytesStatus405;
+                    return "405"u8;
                 case (int)HttpStatusCode.NotAcceptable:
-                    return BytesStatus406;
+                    return "406"u8;
                 case (int)HttpStatusCode.ProxyAuthenticationRequired:
-                    return BytesStatus407;
+                    return "407"u8;
                 case (int)HttpStatusCode.RequestTimeout:
-                    return BytesStatus408;
+                    return "408"u8;
                 case (int)HttpStatusCode.Conflict:
-                    return BytesStatus409;
+                    return "409"u8;
                 case (int)HttpStatusCode.Gone:
-                    return BytesStatus410;
+                    return "410"u8;
                 case (int)HttpStatusCode.LengthRequired:
-                    return BytesStatus411;
+                    return "411"u8;
                 case (int)HttpStatusCode.PreconditionFailed:
-                    return BytesStatus412;
+                    return "412"u8;
                 case (int)HttpStatusCode.RequestEntityTooLarge:
-                    return BytesStatus413;
+                    return "413"u8;
                 case (int)HttpStatusCode.RequestUriTooLong:
-                    return BytesStatus414;
+                    return "414"u8;
                 case (int)HttpStatusCode.UnsupportedMediaType:
-                    return BytesStatus415;
+                    return "415"u8;
                 case (int)HttpStatusCode.RequestedRangeNotSatisfiable:
-                    return BytesStatus416;
+                    return "416"u8;
                 case (int)HttpStatusCode.ExpectationFailed:
-                    return BytesStatus417;
+                    return "417"u8;
                 case (int)418:
-                    return BytesStatus418;
+                    return "418"u8;
                 case (int)419:
-                    return BytesStatus419;
+                    return "419"u8;
                 case (int)HttpStatusCode.MisdirectedRequest:
-                    return BytesStatus421;
+                    return "421"u8;
                 case (int)HttpStatusCode.UnprocessableEntity:
-                    return BytesStatus422;
+                    return "422"u8;
                 case (int)HttpStatusCode.Locked:
-                    return BytesStatus423;
+                    return "423"u8;
                 case (int)HttpStatusCode.FailedDependency:
-                    return BytesStatus424;
+                    return "424"u8;
                 case (int)HttpStatusCode.UpgradeRequired:
-                    return BytesStatus426;
+                    return "426"u8;
                 case (int)HttpStatusCode.PreconditionRequired:
-                    return BytesStatus428;
+                    return "428"u8;
                 case (int)HttpStatusCode.TooManyRequests:
-                    return BytesStatus429;
+                    return "429"u8;
                 case (int)HttpStatusCode.RequestHeaderFieldsTooLarge:
-                    return BytesStatus431;
+                    return "431"u8;
                 case (int)HttpStatusCode.UnavailableForLegalReasons:
-                    return BytesStatus451;
+                    return "451"u8;
 
                 case (int)HttpStatusCode.InternalServerError:
-                    return BytesStatus500;
+                    return "500"u8;
                 case (int)HttpStatusCode.NotImplemented:
-                    return BytesStatus501;
+                    return "501"u8;
                 case (int)HttpStatusCode.BadGateway:
-                    return BytesStatus502;
+                    return "502"u8;
                 case (int)HttpStatusCode.ServiceUnavailable:
-                    return BytesStatus503;
+                    return "503"u8;
                 case (int)HttpStatusCode.GatewayTimeout:
-                    return BytesStatus504;
+                    return "504"u8;
                 case (int)HttpStatusCode.HttpVersionNotSupported:
-                    return BytesStatus505;
+                    return "505"u8;
                 case (int)HttpStatusCode.VariantAlsoNegotiates:
-                    return BytesStatus506;
+                    return "506"u8;
                 case (int)HttpStatusCode.InsufficientStorage:
-                    return BytesStatus507;
+                    return "507"u8;
                 case (int)HttpStatusCode.LoopDetected:
-                    return BytesStatus508;
+                    return "508"u8;
                 case (int)HttpStatusCode.NotExtended:
-                    return BytesStatus510;
+                    return "510"u8;
                 case (int)HttpStatusCode.NetworkAuthenticationRequired:
-                    return BytesStatus511;
+                    return "511"u8;
 
                 default:
                     return Encoding.ASCII.GetBytes(statusCode.ToString(CultureInfo.InvariantCulture));

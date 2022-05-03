@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 internal class DateHeaderValueManager : IHeartbeatHandler
 {
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
-    private static ReadOnlySpan<byte> DatePreambleBytes => new byte[8] { (byte)'\r', (byte)'\n', (byte)'D', (byte)'a', (byte)'t', (byte)'e', (byte)':', (byte)' ' };
+    private static ReadOnlySpan<byte> DatePreambleBytes => "\r\nDate: "u8;
 
     private DateHeaderValues? _dateValues;
 

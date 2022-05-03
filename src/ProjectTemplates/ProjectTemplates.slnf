@@ -67,7 +67,6 @@
       "src\\ProjectTemplates\\Web.ItemTemplates\\Microsoft.DotNet.Web.ItemTemplates.csproj",
       "src\\ProjectTemplates\\Web.ProjectTemplates\\Microsoft.DotNet.Web.ProjectTemplates.csproj",
       "src\\ProjectTemplates\\test\\ProjectTemplates.Tests.csproj",
-      "src\\ProjectTemplates\\testassets\\DotNetToolsInstaller\\DotNetToolsInstaller.csproj",
       "src\\Razor\\Razor.Runtime\\src\\Microsoft.AspNetCore.Razor.Runtime.csproj",
       "src\\Razor\\Razor\\src\\Microsoft.AspNetCore.Razor.csproj",
       "src\\Security\\Authentication\\Cookies\\src\\Microsoft.AspNetCore.Authentication.Cookies.csproj",

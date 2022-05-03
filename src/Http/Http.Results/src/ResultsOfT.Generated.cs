@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// <remarks>
 /// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
 /// from an instance of one of the declared type arguments, e.g.
-/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// <code>Results&lt;Ok, BadRequest&gt; result = TypedResults.Ok();</code>
 /// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -61,6 +61,8 @@ public sealed class Results<TResult1, TResult2> : IResult, IEndpointMetadataProv
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(context);
     }
@@ -73,7 +75,7 @@ public sealed class Results<TResult1, TResult2> : IResult, IEndpointMetadataProv
 /// <remarks>
 /// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
 /// from an instance of one of the declared type arguments, e.g.
-/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// <code>Results&lt;Ok, BadRequest&gt; result = TypedResults.Ok();</code>
 /// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -128,6 +130,8 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult, IEndpointMe
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult3>(context);
@@ -141,7 +145,7 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult, IEndpointMe
 /// <remarks>
 /// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
 /// from an instance of one of the declared type arguments, e.g.
-/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// <code>Results&lt;Ok, BadRequest&gt; result = TypedResults.Ok();</code>
 /// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -204,6 +208,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult, I
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult3>(context);
@@ -218,7 +224,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult, I
 /// <remarks>
 /// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
 /// from an instance of one of the declared type arguments, e.g.
-/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// <code>Results&lt;Ok, BadRequest&gt; result = TypedResults.Ok();</code>
 /// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -289,6 +295,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult3>(context);
@@ -304,7 +312,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
 /// <remarks>
 /// An instance of this type cannot be created explicitly. Use the implicit cast operators to create an instance
 /// from an instance of one of the declared type arguments, e.g.
-/// <code>Results&lt;OkObjectHttpResult, ProblemHttpResult&gt; result = Results.Ok();</code>
+/// <code>Results&lt;Ok, BadRequest&gt; result = TypedResults.Ok();</code>
 /// </remarks>
 /// <typeparam name="TResult1">The first result type.</typeparam>
 /// <typeparam name="TResult2">The second result type.</typeparam>
@@ -383,6 +391,8 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult1>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult2>(context);
         ResultsOfTHelper.PopulateMetadataIfTargetIsIEndpointMetadataProvider<TResult3>(context);

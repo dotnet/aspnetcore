@@ -78,4 +78,14 @@ public class HttpFileStreamResultTests : FileStreamResultTestBase
         Assert.Equal(expectedMediaType, result.ContentType);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new FileStreamHttpResult(new MemoryStream(), null);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
 }

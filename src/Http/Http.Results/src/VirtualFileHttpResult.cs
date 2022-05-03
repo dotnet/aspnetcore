@@ -62,7 +62,7 @@ public sealed class VirtualFileHttpResult : IResult
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
     {
-        FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
+        FileName = fileName;
         ContentType = contentType ?? "application/octet-stream";
         FileDownloadName = fileDownloadName;
         EnableRangeProcessing = enableRangeProcessing;
@@ -101,6 +101,8 @@ public sealed class VirtualFileHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var hostingEnvironment = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
         var fileInfo = GetFileInformation(hostingEnvironment.WebRootFileProvider);

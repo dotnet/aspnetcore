@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
-using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
@@ -25,6 +24,6 @@ internal class UrlEncodeSegment : PatternSegment
         context.Builder = new StringBuilder(64);
         var pattern = _pattern.Evaluate(context, ruleBackReferences, conditionBackReferences);
         context.Builder = oldBuilder;
-        return UrlEncoder.Default.Encode(pattern);
+        return Uri.EscapeDataString(pattern);
     }
 }

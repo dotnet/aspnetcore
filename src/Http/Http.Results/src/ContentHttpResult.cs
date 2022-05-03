@@ -57,6 +57,8 @@ public sealed partial class ContentHttpResult : IResult
     /// <returns>A task that represents the asynchronous execute operation.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ContentResult");
