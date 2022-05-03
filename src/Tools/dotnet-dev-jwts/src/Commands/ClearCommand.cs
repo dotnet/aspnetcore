@@ -5,7 +5,11 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
+<<<<<<< HEAD
 internal class ClearCommand
+=======
+internal sealed class ClearCommand
+>>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
     public static void Register(CommandLineApplication app)
     {

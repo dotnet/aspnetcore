@@ -71,7 +71,11 @@ internal static class DevJwtCliHelpers
         }
         else
         {
+<<<<<<< HEAD
             secretsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "microsoft", "usersecrets", userSecretsId, "secret.json");
+=======
+            secretsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", userSecretsId, "secrets.json");
+>>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
         }
 
         IDictionary<string, string> secrets = null;
@@ -144,7 +148,11 @@ internal static class DevJwtCliHelpers
     public static void PrintJwt(Jwt jwt, JwtSecurityToken fullToken = null)
     {
         var table = new ConsoleTable();
+<<<<<<< HEAD
         table.AddColumns("Name", "Id", "Audience", "Expires", "Issued", "Scopes", "Roles", "Custom Claims");
+=======
+        table.AddColumns("Id", "Name", "Audience", "Expires", "Issued", "Scopes", "Roles", "Custom Claims");
+>>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
         if (fullToken is not null)
         {
             table.AddColumns("Token Header", "Token Payload");

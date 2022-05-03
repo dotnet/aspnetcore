@@ -6,7 +6,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
+<<<<<<< HEAD
 internal class KeyCommand
+=======
+internal sealed class KeyCommand
+>>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
     public static void Register(CommandLineApplication app)
     {

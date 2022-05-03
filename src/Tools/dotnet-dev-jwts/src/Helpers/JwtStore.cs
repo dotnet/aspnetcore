@@ -22,7 +22,11 @@ public class JwtStore
         }
         else
         {
+<<<<<<< HEAD
             _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "microsoft", "usersecrets", _userSecretsId, FileName);
+=======
+            _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", _userSecretsId, FileName);
+>>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
         }
         Load();
     }

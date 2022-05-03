@@ -6,7 +6,11 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
+<<<<<<< HEAD
 internal class PrintCommand
+=======
+internal sealed class PrintCommand
+>>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
     public static void Register(CommandLineApplication app)
     {

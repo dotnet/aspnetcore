@@ -10,7 +10,11 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Extensions.CommandLineUtils;
 
+<<<<<<< HEAD
 internal class ConsoleTable
+=======
+internal sealed class ConsoleTable
+>>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
     private readonly List<string> _columns = new();
     private readonly List<object[]> _rows = new();

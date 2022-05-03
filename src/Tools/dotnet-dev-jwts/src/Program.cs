@@ -4,6 +4,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 
+<<<<<<< HEAD
+=======
+#pragma warning disable CA1852 // Seal internal types
+>>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 CommandLineApplication devJwts = new()
 {
     Name = "dotnet dev-jwts"
@@ -25,3 +29,7 @@ ClearCommand.Register(devJwts);
 KeyCommand.Register(devJwts);
 
 devJwts.Execute(args);
+<<<<<<< HEAD
+=======
+#pragma warning restore CA1852 // Seal internal types
+>>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)

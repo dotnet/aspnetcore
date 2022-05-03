@@ -6,7 +6,11 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
+<<<<<<< HEAD
 internal class CreateCommand
+=======
+internal sealed class CreateCommand
+>>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
     private static readonly string[] _dateTimeFormats = new[] {
         "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd", "yyyy/MM/dd HH:mm", "yyyy/MM/dd HH:mm:ss" };
