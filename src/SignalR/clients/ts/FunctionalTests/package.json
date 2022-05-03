@@ -34,8 +34,7 @@
     "ts-node": "^8.6.2",
     "typescript": "^3.7.5",
     "webpack": "^5.23.0",
-    "ws": " ^6.0.0",
-    "yarn-audit-fix": "^9.3.1"
+    "ws": " ^6.0.0"
   },
   "scripts": {
     "preclean": "cd .. && yarn run build",

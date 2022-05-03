@@ -12,8 +12,5 @@
   "license": "MIT",
   "dependencies": {
     "selenium-standalone": "^6.24.0"
-  },
-  "devDependencies": {
-    "yarn-audit-fix": "^9.3.1"
   }
 }

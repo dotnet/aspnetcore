@@ -47,9 +47,7 @@
     "@microsoft/signalr": "link:../signalr",
     "@msgpack/msgpack": "^2.7.0"
   },
-  "devDependencies": {
-    "yarn-audit-fix": "^9.3.1"
-  },
+  "devDependencies": {},
   "resolutions": {
     "url-parse": ">=1.5.8",
     "node-fetch": ">=2.6.7"
