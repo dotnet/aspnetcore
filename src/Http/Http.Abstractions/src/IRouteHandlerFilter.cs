@@ -9,12 +9,12 @@ namespace Microsoft.AspNetCore.Http;
 public interface IRouteHandlerFilter
 {
     /// <summary>
-    /// Implements the core logic associated with the filter given a <see cref="RouteHandlerInvocationContext"/>
+    /// Implements the core logic associated with the filter given a <see cref="RouteHandlerInvocationContextBase"/>
     /// and the next filter to call in the pipeline.
     /// </summary>
-    /// <param name="context">The <see cref="RouteHandlerInvocationContext"/> associated with the current request/response.</param>
+    /// <param name="context">The <see cref="RouteHandlerInvocationContextBase"/> associated with the current request/response.</param>
     /// <param name="next">The next filter in the pipeline.</param>
     /// <returns>An awaitable result of calling the handler and apply
     /// any modifications made by filters in the pipeline.</returns>
-    ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next);
+    ValueTask<object?> InvokeAsync(RouteHandlerInvocationContextBase context, RouteHandlerFilterDelegate next);
 }

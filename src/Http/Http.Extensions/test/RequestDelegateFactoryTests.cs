@@ -4238,7 +4238,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
-                    context.Parameters[0] = context.Parameters[0] != null ? $"{((string)context.Parameters[0]!)}Prefix" : "NULL";
+                    context.Arguments[0] = context.Arguments[0] != null ? $"{((string)context.Arguments[0]!)}Prefix" : "NULL";
                     return await next(context);
                 }
             }
@@ -4438,12 +4438,12 @@ public class RequestDelegateFactoryTests : LoggedTest
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
-                    context.Parameters[1] = ((int)context.Parameters[1]!) + 2;
+                    context.Arguments[1] = ((int)context.Arguments[1]!) + 2;
                     return await next(context);
                 },
                 (routeHandlerContext, next) => async (context) =>
                 {
-                    foreach (var parameter in context.Parameters)
+                    foreach (var parameter in context.Arguments)
                     {
                         Log(parameter!.ToString() ?? "no arg");
                     }
@@ -4492,7 +4492,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     {
                         if (isInt)
                         {
-                            context.Parameters[1] = ((int)context.Parameters[1]!) + 2;
+                            context.Arguments[1] = ((int)context.Arguments[1]!) + 2;
                             return await next(context);
                         }
                         return "Is not an int.";
@@ -4592,9 +4592,9 @@ public class RequestDelegateFactoryTests : LoggedTest
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
-                    Todo originalTodo = (Todo)context.Parameters[0]!;
+                    Todo originalTodo = (Todo)context.Arguments[0]!;
                     originalTodo!.IsComplete = !originalTodo.IsComplete;
-                    context.Parameters[0] = originalTodo;
+                    context.Arguments[0] = originalTodo;
                     return await next(context);
                 }
             }
@@ -4685,8 +4685,8 @@ public class RequestDelegateFactoryTests : LoggedTest
                 },
                 (RouteHandlerContext, next) => async (context) =>
                 {
-                    var newValue = $"{context.GetParameter<string>(0)}Prefix";
-                    context.Parameters[0] = newValue;
+                    var newValue = $"{context.GetArgument<string>(0)}Prefix";
+                    context.Arguments[0] = newValue;
                     return await next(context);
                 }
             }
@@ -5005,8 +5005,8 @@ public class RequestDelegateFactoryTests : LoggedTest
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
-                    Assert.IsType<RouteHandlerInvocationContext>(context);
-                    Assert.Equal(11, context.Parameters.Count);
+                    Assert.IsType<DefaultRouteHandlerInvocationContext>(context);
+                    Assert.Equal(11, context.Arguments.Count);
                     return await next(context);
                 }
             }
@@ -5036,8 +5036,8 @@ public class RequestDelegateFactoryTests : LoggedTest
             {
                 (routeHandlerContext, next) => async (context) =>
                 {
-                    Assert.IsType<RouteHandlerInvocationContext>(context);
-                    Assert.Equal(0, context.Parameters.Count);
+                    Assert.IsType<DefaultRouteHandlerInvocationContext>(context);
+                    Assert.Equal(0, context.Arguments.Count);
                     return await next(context);
                 }
             }

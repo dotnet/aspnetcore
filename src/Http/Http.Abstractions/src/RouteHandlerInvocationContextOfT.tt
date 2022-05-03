@@ -15,7 +15,7 @@ using System.Collections;
 namespace Microsoft.AspNetCore.Http;
 
 <# foreach (var arity in arities) { #>
-internal sealed class RouteHandlerInvocationContext<<# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>T<#=argumentCount#><# if (argumentCount < arity - 1) { #>, <# } #><# } #>> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<<# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>T<#=argumentCount#><# if (argumentCount < arity - 1) { #>, <# } #><# } #>> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, <# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>T<#=argumentCount#> arg<#=argumentCount#><# if (argumentCount < arity - 1) { #>, <# } #><# } #>)
     {
@@ -48,7 +48,7 @@ internal sealed class RouteHandlerInvocationContext<<# foreach (var argumentCoun
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     <# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>public T<#=argumentCount#> Arg<#=argumentCount#> { get; set; }
     <# } #>
@@ -76,21 +76,21 @@ internal sealed class RouteHandlerInvocationContext<<# foreach (var argumentCoun
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -102,7 +102,7 @@ internal sealed class RouteHandlerInvocationContext<<# foreach (var argumentCoun
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)

@@ -7,7 +7,7 @@ using System.Collections;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0)
     {
@@ -37,7 +37,7 @@ internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocation
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
     
@@ -64,21 +64,21 @@ internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocation
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -89,7 +89,7 @@ internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocation
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)
@@ -113,7 +113,7 @@ internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocation
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1)
     {
@@ -148,7 +148,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvoca
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
@@ -176,21 +176,21 @@ internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvoca
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -202,7 +202,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvoca
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)
@@ -226,7 +226,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvoca
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2)
     {
@@ -266,7 +266,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerIn
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
@@ -295,21 +295,21 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerIn
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -322,7 +322,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerIn
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)
@@ -346,7 +346,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerIn
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
     {
@@ -391,7 +391,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandl
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
@@ -421,21 +421,21 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandl
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -449,7 +449,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandl
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)
@@ -473,7 +473,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandl
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
     {
@@ -523,7 +523,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteH
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
@@ -554,21 +554,21 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteH
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -583,7 +583,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteH
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)
@@ -607,7 +607,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteH
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
     {
@@ -662,7 +662,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : Ro
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
@@ -694,21 +694,21 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : Ro
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -724,7 +724,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : Ro
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)
@@ -748,7 +748,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : Ro
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
     {
@@ -808,7 +808,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> 
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
@@ -841,21 +841,21 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> 
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -872,7 +872,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> 
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)
@@ -896,7 +896,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> 
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
     {
@@ -961,7 +961,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
@@ -995,21 +995,21 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -1027,7 +1027,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)
@@ -1051,7 +1051,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
     {
@@ -1121,7 +1121,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
@@ -1156,21 +1156,21 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -1189,7 +1189,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)
@@ -1213,7 +1213,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     }
 
 }
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : RouteHandlerInvocationContextBase, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
     {
@@ -1288,7 +1288,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
 
     public override HttpContext HttpContext { get; }
 
-    public override IList<object?> Parameters => this;
+    public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
@@ -1324,21 +1324,21 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
 
     public void CopyTo(object?[] array, int arrayIndex)
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            array[arrayIndex++] = Parameters[i];
+            array[arrayIndex++] = Arguments[i];
         }
     }
 
     public IEnumerator<object?> GetEnumerator()
     {
-        for (int i = 0; i < Parameters.Count; i++)
+        for (int i = 0; i < Arguments.Count; i++)
         {
-            yield return Parameters[i];
+            yield return Arguments[i];
         }
     }
 
-    public override T GetParameter<T>(int index)
+    public override T GetArgument<T>(int index)
     {
         return index switch
         {
@@ -1358,7 +1358,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
 
     public int IndexOf(object? item)
     {
-        return Parameters.IndexOf(item);
+        return Arguments.IndexOf(item);
     }
 
     public void Insert(int index, object? item)

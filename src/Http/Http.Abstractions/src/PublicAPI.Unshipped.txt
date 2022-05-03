@@ -3,9 +3,11 @@
 *REMOVED*Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object?
 Microsoft.AspNetCore.Builder.EndpointBuilder.ServiceProvider.get -> System.IServiceProvider?
 Microsoft.AspNetCore.Builder.EndpointBuilder.ServiceProvider.set -> void
+Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext
+Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.DefaultRouteHandlerInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetRequiredMetadata<T>() -> T!
-Microsoft.AspNetCore.Http.IRouteHandlerFilter.InvokeAsync(Microsoft.AspNetCore.Http.RouteHandlerInvocationContext! context, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate! next) -> System.Threading.Tasks.ValueTask<object?>
+Microsoft.AspNetCore.Http.IRouteHandlerFilter.InvokeAsync(Microsoft.AspNetCore.Http.RouteHandlerInvocationContextBase! context, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate! next) -> System.Threading.Tasks.ValueTask<object?>
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.RouteHandlerContext
@@ -13,8 +15,8 @@ Microsoft.AspNetCore.Http.RouteHandlerContext.EndpointMetadata.get -> Microsoft.
 Microsoft.AspNetCore.Http.RouteHandlerContext.MethodInfo.get -> System.Reflection.MethodInfo!
 Microsoft.AspNetCore.Http.RouteHandlerContext.RouteHandlerContext(System.Reflection.MethodInfo! methodInfo, Microsoft.AspNetCore.Http.EndpointMetadataCollection! endpointMetadata) -> void
 Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate
-Microsoft.AspNetCore.Http.RouteHandlerInvocationContext
-Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.RouteHandlerInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! parameters) -> void
+Microsoft.AspNetCore.Http.RouteHandlerInvocationContextBase
+Microsoft.AspNetCore.Http.RouteHandlerInvocationContextBase.RouteHandlerInvocationContextBase() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(Microsoft.AspNetCore.Routing.RouteValueDictionary? dictionary) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? values) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string?>>? values) -> void
@@ -25,6 +27,9 @@ Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
 Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata.Summary.get -> string!
-virtual Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.GetParameter<T>(int index) -> T
-virtual Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
-virtual Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.Parameters.get -> System.Collections.Generic.IList<object?>!
+abstract Microsoft.AspNetCore.Http.RouteHandlerInvocationContextBase.Arguments.get -> System.Collections.Generic.IList<object?>!
+abstract Microsoft.AspNetCore.Http.RouteHandlerInvocationContextBase.GetArgument<T>(int index) -> T
+abstract Microsoft.AspNetCore.Http.RouteHandlerInvocationContextBase.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+override Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.Arguments.get -> System.Collections.Generic.IList<object?>!
+override Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.GetArgument<T>(int index) -> T
+override Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!

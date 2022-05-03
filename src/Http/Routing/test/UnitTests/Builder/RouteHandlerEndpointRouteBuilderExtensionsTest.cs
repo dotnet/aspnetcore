@@ -892,7 +892,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             void WithFilter(RouteHandlerBuilder builder) =>
                 builder.AddFilter(async (context, next) =>
                 {
-                    context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+                    context.Arguments[0] = ((int)context.Arguments[0]!) + 1;
                     return await next(context);
                 });
 
@@ -902,7 +902,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
                     Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
-                    context.Parameters[0] = context.GetParameter<int>(0) + 1;
+                    context.Arguments[0] = context.GetArgument<int>(0) + 1;
                     return await next(context);
                 });
 
@@ -983,7 +983,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             _routeHandlerContext = routeHandlerContext;
         }
 
-        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContextBase context, RouteHandlerFilterDelegate next)
         {
             context.HttpContext.Items["loggerErrorIsEnabled"] = _logger.IsEnabled(LogLevel.Error);
             context.HttpContext.Items["parentName"] = _routeHandlerContext.MethodInfo.DeclaringType?.Name;
@@ -993,9 +993,9 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
     class IncrementArgFilter : IRouteHandlerFilter
     {
-        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
+        public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContextBase context, RouteHandlerFilterDelegate next)
         {
-            context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+            context.Arguments[0] = ((int)context.Arguments[0]!) + 1;
             return await next(context);
         }
     }

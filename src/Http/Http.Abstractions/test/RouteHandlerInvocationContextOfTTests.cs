@@ -17,13 +17,13 @@ public class RouteHandlerInvocationContextOfTTests
     }
 
     [Fact]
-    public void ThrowsExceptionForInvalidCastOnGetParameter()
+    public void ThrowsExceptionForInvalidCastOnGetArgument()
     {
         var context = new RouteHandlerInvocationContext<string, int, bool, Todo>(new DefaultHttpContext(), "This is a test", 42, false, new Todo());
-        Assert.Throws<InvalidCastException>(() => context.GetParameter<string>(1));
-        Assert.Throws<InvalidCastException>(() => context.GetParameter<int>(0));
-        Assert.Throws<InvalidCastException>(() => context.GetParameter<string>(3));
-        var todo = context.GetParameter<ITodo>(3);
+        Assert.Throws<InvalidCastException>(() => context.GetArgument<string>(1));
+        Assert.Throws<InvalidCastException>(() => context.GetArgument<int>(0));
+        Assert.Throws<InvalidCastException>(() => context.GetArgument<string>(3));
+        var todo = context.GetArgument<ITodo>(3);
         Assert.IsType<Todo>(todo);
     }
 
@@ -32,7 +32,7 @@ public class RouteHandlerInvocationContextOfTTests
     {
         var context = new RouteHandlerInvocationContext<string, int, bool, Todo>(new DefaultHttpContext(), "This is a test", 42, false, new Todo());
         context[0] = "Foo";
-        Assert.Equal("Foo", context.GetParameter<string>(0));
+        Assert.Equal("Foo", context.GetArgument<string>(0));
     }
 
     [Fact]
