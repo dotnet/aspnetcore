@@ -3,7 +3,9 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -45,6 +47,70 @@ internal class SurrogateParameterInfo : ParameterInfo
     public override int MetadataToken => _underlyingProperty.MetadataToken;
     public override object? RawDefaultValue
         => _constructionParameterInfo is not null ? _constructionParameterInfo.RawDefaultValue : null;
+
+    /// <summary>
+    /// Unwraps all parameters that contains <see cref="ParametersAttribute"/> and
+    /// creates a flat list merging the current parameters, not including the
+    /// parametres that contain a <see cref="ParametersAttribute"/>, and all additional
+    /// parameters detected.
+    /// </summary>
+    /// <param name="parameters">List of parameters to be flattened.</param>
+    /// <param name="cache">An instance of the method cache class.</param>
+    /// <returns>Flat list of parameters.</returns>
+    public static ReadOnlySpan<ParameterInfo> Flatten(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
+    {
+        ArgumentNullException.ThrowIfNull(nameof(parameters));
+        ArgumentNullException.ThrowIfNull(nameof(cache));
+
+        if (parameters.Length == 0)
+        {
+            return Array.Empty<ParameterInfo>();
+        }
+
+        List<ParameterInfo>? flattenedParameters = null;
+        NullabilityInfoContext? nullabilityContext = null;
+
+        for (var i = 0; i < parameters.Length; i++)
+        {
+            if (parameters[i].CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
+            {
+                // Initialize the list with all parameter already processed
+                // to keep the same parameter ordering
+                flattenedParameters ??= new(parameters[0..i]);
+                nullabilityContext ??= new();
+
+                var (constructor, constructorParameters) = cache.FindConstructor(parameters[i].ParameterType);
+                if (constructor is not null && constructorParameters is { Length: > 0 })
+                {
+                    foreach (var constructorParameter in constructorParameters)
+                    {
+                        flattenedParameters.Add(
+                            new SurrogateParameterInfo(
+                                constructorParameter.PropertyInfo,
+                                constructorParameter.ParameterInfo,
+                                nullabilityContext));
+                    }
+                }
+                else
+                {
+                    var properties = parameters[i].ParameterType.GetProperties();
+                    foreach (var property in properties)
+                    {
+                        if (property.CanWrite)
+                        {
+                            flattenedParameters.Add(new SurrogateParameterInfo(property, nullabilityContext));
+                        }
+                    }
+                }
+            }
+            else if (flattenedParameters is not null)
+            {
+                flattenedParameters.Add(parameters[i]);
+            }
+        }
+
+        return flattenedParameters is not null ? CollectionsMarshal.AsSpan(flattenedParameters) : parameters.AsSpan();
+    }
 
     public override object[] GetCustomAttributes(Type attributeType, bool inherit)
     {

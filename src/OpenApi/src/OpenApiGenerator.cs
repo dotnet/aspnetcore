@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -251,7 +250,7 @@ internal class OpenApiGenerator
         var hasFormOrBodyParameter = false;
         ParameterInfo? requestBodyParameter = null;
 
-        var parameters = FlattenParameters(methodInfo.GetParameters());
+        var parameters = SurrogateParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
         foreach (var parameter in parameters)
         {
             var (bodyOrFormParameter, _) = GetOpenApiParameterLocation(parameter, pattern, false);
@@ -357,61 +356,9 @@ internal class OpenApiGenerator
             : new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
     }
 
-    private static ReadOnlySpan<ParameterInfo> FlattenParameters(ParameterInfo[] parameters)
-    {
-        if (parameters.Length == 0)
-        {
-            return Array.Empty<ParameterInfo>();
-        }
-
-        List<ParameterInfo>? flattenedParameters = null;
-        NullabilityInfoContext? nullabilityContext = null;
-
-        for (var i = 0; i < parameters.Length; i++)
-        {
-            if (parameters[i].CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
-            {
-                // Initialize the list with all parameter already processed
-                // to keep the same parameter ordering
-                flattenedParameters ??= new(parameters[0..i]);
-                nullabilityContext ??= new();
-
-                var (constructor, constructorParameters) = ParameterBindingMethodCache.FindConstructor(parameters[i].ParameterType);
-                if (constructor is not null && constructorParameters is { Length: > 0 })
-                {
-                    foreach (var constructorParameter in constructorParameters)
-                    {
-                        flattenedParameters.Add(
-                            new SurrogateParameterInfo(
-                                constructorParameter.PropertyInfo,
-                                constructorParameter.ParameterInfo,
-                                nullabilityContext));
-                    }
-                }
-                else
-                {
-                    var properties = parameters[i].ParameterType.GetProperties();
-                    foreach (var property in properties)
-                    {
-                        if (property.CanWrite)
-                        {
-                            flattenedParameters.Add(new SurrogateParameterInfo(property, nullabilityContext));
-                        }
-                    }
-                }
-            }
-            else if (flattenedParameters is not null)
-            {
-                flattenedParameters.Add(parameters[i]);
-            }
-        }
-
-        return flattenedParameters is not null ? CollectionsMarshal.AsSpan(flattenedParameters) : parameters.AsSpan();
-    }
-
     private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
     {
-        var parameters = FlattenParameters(methodInfo.GetParameters());
+        var parameters = SurrogateParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
         var openApiParameters = new List<OpenApiParameter>();
 
         foreach (var parameter in parameters)

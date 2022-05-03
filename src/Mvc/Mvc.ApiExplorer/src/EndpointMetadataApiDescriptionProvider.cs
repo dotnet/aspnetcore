@@ -117,59 +117,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
         var hasBodyOrFormFileParameter = false;
 
-        static ReadOnlySpan<ParameterInfo> FlattenParameters(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
-        {
-            if (parameters.Length == 0)
-            {
-                return Array.Empty<ParameterInfo>();
-            }
-
-            List<ParameterInfo>? flattenedParameters = null;
-            NullabilityInfoContext? nullabilityContext = null;
-
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                if (parameters[i].CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
-                {
-                    // Initialize the list with all parameter already processed
-                    // to keep the same parameter ordering
-                    flattenedParameters ??= new(parameters[0..i]);
-                    nullabilityContext ??= new();
-
-                    var (constructor, constructorParameters) = cache.FindConstructor(parameters[i].ParameterType);
-                    if (constructor is not null && constructorParameters is { Length: > 0 })
-                    {
-                        foreach (var constructorParameter in constructorParameters)
-                        {
-                            flattenedParameters.Add(
-                                new SurrogateParameterInfo(
-                                    constructorParameter.PropertyInfo,
-                                    constructorParameter.ParameterInfo,
-                                    nullabilityContext));
-                        }
-                    }
-                    else
-                    {
-                        var properties = parameters[i].ParameterType.GetProperties();
-                        foreach (var property in properties)
-                        {
-                            if (property.CanWrite)
-                            {
-                                flattenedParameters.Add(new SurrogateParameterInfo(property, nullabilityContext));
-                            }
-                        }
-                    }
-                }
-                else if (flattenedParameters is not null)
-                {
-                    flattenedParameters.Add(parameters[i]);
-                }
-            }
-
-            return flattenedParameters is not null ? CollectionsMarshal.AsSpan(flattenedParameters) : parameters.AsSpan();
-        }
-
-        foreach (var parameter in FlattenParameters(methodInfo.GetParameters(), ParameterBindingMethodCache))
+        foreach (var parameter in SurrogateParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache))
         {
             var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern, disableInferredBody);
 

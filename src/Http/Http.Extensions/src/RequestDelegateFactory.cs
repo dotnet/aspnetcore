@@ -1253,7 +1253,7 @@ public static partial class RequestDelegateFactory
                     Expression.MemberInit(newExpression, bindings)));
         }
 
-        factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.SurrogatedParameter);
+        factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.SurrogateParameter);
         factoryContext.ExtraLocals.Add(argumentExpression);
 
         return argumentExpression;
@@ -2061,7 +2061,7 @@ public static partial class RequestDelegateFactory
         public const string BodyParameter = "Body (Inferred)";
         public const string RouteOrQueryStringParameter = "Route or Query String (Inferred)";
         public const string FormFileParameter = "Form File (Inferred)";
-        public const string SurrogatedParameter = "Surrogate (Attribute)";
+        public const string SurrogateParameter = "Surrogate (Attribute)";
     }
 
     private static partial class Log

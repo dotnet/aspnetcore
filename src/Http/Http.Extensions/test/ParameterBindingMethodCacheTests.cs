@@ -607,8 +607,9 @@ public class ParameterBindingMethodCacheTests
     {
         var cache = new ParameterBindingMethodCache();
         var ex = Assert.Throws<InvalidOperationException>(() => cache.FindConstructor(type));
-        Assert.Equal($"The {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} public parameterized constructor must contains only parameters that match to the declared public properties.", ex.Message);
-
+        Assert.Equal(
+            $"The {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} public parameterized constructor must contains only parameters that match to the declared public properties.",
+            ex.Message);
     }
 
     enum Choice
@@ -1187,7 +1188,6 @@ public class ParameterBindingMethodCacheTests
             => throw new NotImplementedException();
     }
 
-
     public class ClassWithParameterizedConstructor
     {
         public int Foo { get; set; }
@@ -1197,7 +1197,9 @@ public class ParameterBindingMethodCacheTests
 
         }
     }
+
     public record RecordClassParameterizedConstructor(int Foo);
+
     public record struct RecordStructParameterizedConstructor(int Foo);
 
     public struct StructWithParameterizedConstructor
@@ -1220,6 +1222,7 @@ public class ParameterBindingMethodCacheTests
 
         }
     }
+
     public record RecordClassParameterlessConstructor
     {
         public RecordClassParameterlessConstructor()
@@ -1262,8 +1265,10 @@ public class ParameterBindingMethodCacheTests
 
     public struct StructWithDefaultConstructor
     { }
+
     public record struct RecordStructWithDefaultConstructor
     { }
+
     public struct StructWithMultipleConstructors
     {
         public StructWithMultipleConstructors(int foo)
@@ -1284,6 +1289,7 @@ public class ParameterBindingMethodCacheTests
     }
 
     private abstract class AbstractClass { }
+
     private abstract record AbstractRecord();
 
     private class ClassWithMultipleConstructors
@@ -1303,6 +1309,7 @@ public class ParameterBindingMethodCacheTests
         public RecordWithMultipleConstructors(int foo, int bar)
         { }
     }
+
     private class ClassWithInvalidConstructors
     {
         public int Foo { get; set; }

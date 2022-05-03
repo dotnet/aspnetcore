@@ -1600,6 +1600,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     private record ParametersListWithImplictFromBody(HttpContext HttpContext, TodoStruct Todo);
+
     private record ParametersListWithExplictFromBody(HttpContext HttpContext, [FromBody] Todo Todo);
 
     public static object[][] ImplicitFromBodyActions
@@ -2175,7 +2176,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         public BadArgumentListRecord(int foo, int bar)
             : this(foo)
         {
-
         }
 
         public int Bar { get; set; }
