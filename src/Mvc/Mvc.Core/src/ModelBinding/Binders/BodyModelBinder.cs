@@ -171,8 +171,7 @@ public partial class BodyModelBinder : IModelBinder
                 return;
             }
 
-            //here logic should be rewritten too
-            if (result.ModelState == ModelStateEnum.Set)
+            if (result.IsModelSet)
             {
                 var model = result.Model;
                 bindingContext.Result = ModelBindingResult.Success(model);

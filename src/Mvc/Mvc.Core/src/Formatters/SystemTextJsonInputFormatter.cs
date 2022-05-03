@@ -108,10 +108,7 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
             // or the JSON-encoded value "null". The upstream BodyModelBinder needs to
             // be notified that we don't regard this as a real input so it can register
             // a model binding error.
-
-            //todo check if this is always null value
-            throw new NotImplementedException();
-            return InputFormatterResult.NullValue();
+            return InputFormatterResult.NoValue();
         }
         else
         {

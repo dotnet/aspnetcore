@@ -9,25 +9,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters;
 public class InputFormatterResult
 {
     private static readonly InputFormatterResult _failure = new InputFormatterResult(hasError: true);
-    private static readonly InputFormatterResult _nullValue = new InputFormatterResult(ModelStateEnum.Null);
-    private static readonly InputFormatterResult _undefinedValue = new InputFormatterResult(ModelStateEnum.Undefined);
+    private static readonly InputFormatterResult _noValue = new InputFormatterResult(hasError: false);
     private static readonly Task<InputFormatterResult> _failureAsync = Task.FromResult(_failure);
-    private static readonly Task<InputFormatterResult> _nullValueAsync = Task.FromResult(_nullValue);
-    private static readonly Task<InputFormatterResult> _undefinedValueAsync = Task.FromResult(_undefinedValue);
+    private static readonly Task<InputFormatterResult> _noValueAsync = Task.FromResult(_noValue);
 
     private InputFormatterResult(bool hasError)
     {
         HasError = hasError;
     }
-    private InputFormatterResult(ModelStateEnum modelState)
-    {
-        ModelState = modelState;
-    }
 
     private InputFormatterResult(object? model)
     {
         Model = model;
-        ModelState = ModelStateEnum.Set;
+        IsModelSet = true;
     }
 
     /// <summary>
@@ -38,7 +32,7 @@ public class InputFormatterResult
     /// <summary>
     /// Gets an indication whether a value for the <see cref="Model"/> property was supplied.
     /// </summary>
-    public ModelStateEnum ModelState { get; }
+    public bool IsModelSet { get; }
 
     /// <summary>
     /// Gets the deserialized <see cref="object"/>.
@@ -110,9 +104,9 @@ public class InputFormatterResult
     /// An <see cref="InputFormatterResult"/> indicating the <see cref="IInputFormatter.ReadAsync"/>
     /// operation produced no value.
     /// </returns>
-    public static InputFormatterResult NullValue()
+    public static InputFormatterResult NoValue()
     {
-        return _nullValue;
+        return _noValue;
     }
 
     /// <summary>
@@ -123,33 +117,8 @@ public class InputFormatterResult
     /// A <see cref="Task"/> that on completion provides an <see cref="InputFormatterResult"/> indicating the
     /// <see cref="IInputFormatter.ReadAsync"/> operation produced no value.
     /// </returns>
-    public static Task<InputFormatterResult> NullValueAsync()
+    public static Task<InputFormatterResult> NoValueAsync()
     {
-        return _nullValueAsync;
-    }
-    /// <summary>
-    /// Returns an <see cref="InputFormatterResult"/> indicating the <see cref="IInputFormatter.ReadAsync"/>
-    /// operation produced no value.
-    /// </summary>
-    /// <returns>
-    /// An <see cref="InputFormatterResult"/> indicating the <see cref="IInputFormatter.ReadAsync"/>
-    /// operation produced no value.
-    /// </returns>
-    public static InputFormatterResult UndefinedValue()
-    {
-        return _undefinedValue;
-    }
-
-    /// <summary>
-    /// Returns a <see cref="Task"/> that on completion provides an <see cref="InputFormatterResult"/> indicating
-    /// the <see cref="IInputFormatter.ReadAsync"/> operation produced no value.
-    /// </summary>
-    /// <returns>
-    /// A <see cref="Task"/> that on completion provides an <see cref="InputFormatterResult"/> indicating the
-    /// <see cref="IInputFormatter.ReadAsync"/> operation produced no value.
-    /// </returns>
-    public static Task<InputFormatterResult> UndefinedValueAsync()
-    {
-        return _undefinedValueAsync;
+        return _noValueAsync;
     }
 }
