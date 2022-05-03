@@ -52,11 +52,9 @@ internal partial class AsyncIOEngine : IAsyncIOEngine
              * Also, there seems to be a problem when slicing a ReadOnlySequence on segment borders tracked here https://github.com/dotnet/runtime/issues/67607
              * That's why responseMaxChunks is set to be 65533. 
              */
-
             ushort chunksCount = 0;
             var start = 0;
             var length = 0;
-
             var result = 0;
 
             foreach (var chunk in data)
