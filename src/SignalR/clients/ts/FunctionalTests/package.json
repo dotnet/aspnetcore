@@ -33,8 +33,7 @@
     "rxjs": "^6.3.3",
     "ts-node": "^8.6.2",
     "typescript": "^3.7.5",
-    "ws": " ^6.0.0",
-    "yarn-audit-fix": "^9.2.2"
+    "ws": " ^6.0.0"
   },
   "scripts": {
     "preclean": "cd .. && yarn run build",
