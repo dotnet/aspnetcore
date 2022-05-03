@@ -22,7 +22,7 @@ internal sealed class ReflectionServiceInvokerResolver<TService>
         string methodName,
         Type[] methodParameters,
         string verb,
-        HttpRule httpRule,
+        HttpRule? httpRule,
         MethodDescriptor methodDescriptor) where TDelegate : Delegate
     {
         var handlerMethod = GetMethod(methodName, methodParameters);

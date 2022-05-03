@@ -22,7 +22,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
     private delegate (RequestDelegate RequestDelegate, List<object> Metadata) CreateRequestDelegate<TRequest, TResponse>(
         Method<TRequest, TResponse> method,
         string httpVerb,
-        HttpRule httpRule,
+        HttpRule? httpRule,
         MethodDescriptor methodDescriptor,
         CallHandlerDescriptorInfo descriptorInfo,
         MethodOptions methodOptions);
@@ -33,7 +33,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
     private readonly GrpcServiceOptions _globalOptions;
     private readonly GrpcServiceOptions<TService> _serviceOptions;
     private readonly IGrpcServiceActivator<TService> _serviceActivator;
-    private readonly GrpcJsonTranscodingOptions _JsonTranscodingOptions;
+    private readonly GrpcJsonTranscodingOptions _jsonTranscodingOptions;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
 
@@ -45,7 +45,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         GrpcServiceOptions<TService> serviceOptions,
         ILoggerFactory loggerFactory,
         IGrpcServiceActivator<TService> serviceActivator,
-        GrpcJsonTranscodingOptions JsonTranscodingOptions)
+        GrpcJsonTranscodingOptions jsonTranscodingOptions)
     {
         _context = context;
         _invokerResolver = invokerResolver;
@@ -53,7 +53,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         _globalOptions = globalOptions;
         _serviceOptions = serviceOptions;
         _serviceActivator = serviceActivator;
-        _JsonTranscodingOptions = JsonTranscodingOptions;
+        _jsonTranscodingOptions = jsonTranscodingOptions;
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<JsonTranscodingProviderServiceBinder<TService>>();
     }
@@ -85,10 +85,9 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
                 LogMethodHttpRule(method, httpRule);
                 ProcessHttpRule(method, methodDescriptor, httpRule, CreateServerStreamingRequestDelegate);
             }
-            else
+            else if (_jsonTranscodingOptions.IncludeUnannotatedMethods)
             {
-                // Consider setting to enable mapping to methods without HttpRule
-                // AddMethodCore(method, method.FullName, "GET", string.Empty, string.Empty, methodDescriptor);
+                AddMethodCore(method, httpRule: null, method.FullName, "POST", "*", string.Empty, methodDescriptor, CreateServerStreamingRequestDelegate);
             }
         }
         else
@@ -106,10 +105,9 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
                 LogMethodHttpRule(method, httpRule);
                 ProcessHttpRule(method, methodDescriptor, httpRule, CreateUnaryRequestDelegate);
             }
-            else
+            else if (_jsonTranscodingOptions.IncludeUnannotatedMethods)
             {
-                // Consider setting to enable mapping to methods without HttpRule
-                // AddMethodCore(method, method.FullName, "GET", string.Empty, string.Empty, methodDescriptor);
+                AddMethodCore(method, httpRule: null, method.FullName, "POST", "*", string.Empty, methodDescriptor, CreateUnaryRequestDelegate);
             }
         }
         else
@@ -148,7 +146,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
     private (RequestDelegate RequestDelegate, List<object> Metadata) CreateUnaryRequestDelegate<TRequest, TResponse>(
         Method<TRequest, TResponse> method,
         string httpVerb,
-        HttpRule httpRule,
+        HttpRule? httpRule,
         MethodDescriptor methodDescriptor,
         CallHandlerDescriptorInfo descriptorInfo,
         MethodOptions methodOptions)
@@ -167,7 +165,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             methodInvoker,
             _loggerFactory,
             descriptorInfo,
-            _JsonTranscodingOptions.UnarySerializerOptions);
+            _jsonTranscodingOptions.UnarySerializerOptions);
 
         return (callHandler.HandleCallAsync, metadata);
     }
@@ -175,7 +173,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
     private (RequestDelegate RequestDelegate, List<object> Metadata) CreateServerStreamingRequestDelegate<TRequest, TResponse>(
         Method<TRequest, TResponse> method,
         string httpVerb,
-        HttpRule httpRule,
+        HttpRule? httpRule,
         MethodDescriptor methodDescriptor,
         CallHandlerDescriptorInfo descriptorInfo,
         MethodOptions methodOptions)
@@ -194,14 +192,14 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             methodInvoker,
             _loggerFactory,
             descriptorInfo,
-            _JsonTranscodingOptions.ServerStreamingSerializerOptions);
+            _jsonTranscodingOptions.ServerStreamingSerializerOptions);
 
         return (callHandler.HandleCallAsync, metadata);
     }
 
     private void AddMethodCore<TRequest, TResponse>(
         Method<TRequest, TResponse> method,
-        HttpRule httpRule,
+        HttpRule? httpRule,
         string pattern,
         string httpVerb,
         string body,

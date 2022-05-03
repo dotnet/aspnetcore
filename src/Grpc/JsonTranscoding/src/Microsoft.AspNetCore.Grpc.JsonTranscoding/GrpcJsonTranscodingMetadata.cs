@@ -17,7 +17,7 @@ public sealed class GrpcJsonTranscodingMetadata
     /// </summary>
     /// <param name="methodDescriptor">The Protobuf <see cref="Google.Protobuf.Reflection.MethodDescriptor"/>.</param>
     /// <param name="httpRule">The <see cref="Google.Api.HttpRule"/>.</param>
-    public GrpcJsonTranscodingMetadata(MethodDescriptor methodDescriptor, HttpRule httpRule)
+    public GrpcJsonTranscodingMetadata(MethodDescriptor methodDescriptor, HttpRule? httpRule)
     {
         MethodDescriptor = methodDescriptor;
         HttpRule = httpRule;
@@ -29,7 +29,8 @@ public sealed class GrpcJsonTranscodingMetadata
     public MethodDescriptor MethodDescriptor { get; }
 
     /// <summary>
-    /// Gets the <see cref="Google.Api.HttpRule"/>.
+    /// Gets the <see cref="Google.Api.HttpRule"/>. This could be <c>null</c> if <see cref="GrpcJsonTranscodingOptions.IncludeUnannotatedMethods" />
+    /// is <c>true</c> and the method doesn't have a <see cref="Google.Api.HttpRule"/>.
     /// </summary>
-    public HttpRule HttpRule { get; }
+    public HttpRule? HttpRule { get; }
 }

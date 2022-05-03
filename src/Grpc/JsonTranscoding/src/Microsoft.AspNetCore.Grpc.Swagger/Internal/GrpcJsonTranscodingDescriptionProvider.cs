@@ -44,11 +44,14 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
                     var httpRule = grpcMetadata.HttpRule;
                     var methodDescriptor = grpcMetadata.MethodDescriptor;
 
-                    if (ServiceDescriptorHelpers.TryResolvePattern(grpcMetadata.HttpRule, out var pattern, out var verb))
+                    if (httpRule != null)
                     {
-                        var apiDescription = CreateApiDescription(routeEndpoint, httpRule, methodDescriptor, pattern, verb);
+                        if (ServiceDescriptorHelpers.TryResolvePattern(httpRule, out var pattern, out var verb))
+                        {
+                            var apiDescription = CreateApiDescription(routeEndpoint, httpRule, methodDescriptor, pattern, verb);
 
-                        context.Results.Add(apiDescription);
+                            context.Results.Add(apiDescription);
+                        }
                     }
                 }
             }

@@ -157,7 +157,7 @@ public class DynamicGrpcServiceRegistry
             string methodName,
             Type[] methodParameters,
             string verb,
-            HttpRule httpRule,
+            HttpRule? httpRule,
             MethodDescriptor methodDescriptor) where TDelegate : Delegate
         {
             return ((TDelegate)_testDelegate, new List<object>());

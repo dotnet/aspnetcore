@@ -29,6 +29,11 @@ public sealed class GrpcJsonTranscodingOptions
     internal JsonSerializerOptions ServerStreamingSerializerOptions => _serverStreamingOptions.Value;
 
     /// <summary>
+    /// Gets or sets a value indicating whether gRPC methods unannotated with <c>HttpRule</c> are included with JSON transcoding.
+    /// </summary>
+    public bool IncludeUnannotatedMethods { get; set; }
+
+    /// <summary>
     /// Gets or sets the <see cref="Google.Protobuf.Reflection.TypeRegistry"/> used to lookup types from type names.
     /// </summary>
     public TypeRegistry TypeRegistry { get; set; } = TypeRegistry.Empty;

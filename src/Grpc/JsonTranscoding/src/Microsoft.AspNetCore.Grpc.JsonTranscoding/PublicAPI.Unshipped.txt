@@ -10,11 +10,13 @@ Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteIndented.set -> 
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteInt64sAsStrings.get -> bool
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteInt64sAsStrings.set -> void
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingMetadata
-Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingMetadata.GrpcJsonTranscodingMetadata(Google.Protobuf.Reflection.MethodDescriptor! methodDescriptor, Google.Api.HttpRule! httpRule) -> void
-Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingMetadata.HttpRule.get -> Google.Api.HttpRule!
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingMetadata.GrpcJsonTranscodingMetadata(Google.Protobuf.Reflection.MethodDescriptor! methodDescriptor, Google.Api.HttpRule? httpRule) -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingMetadata.HttpRule.get -> Google.Api.HttpRule?
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingMetadata.MethodDescriptor.get -> Google.Protobuf.Reflection.MethodDescriptor!
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.GrpcJsonTranscodingOptions() -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.IncludeUnannotatedMethods.get -> bool
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.IncludeUnannotatedMethods.set -> void
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.JsonSettings.get -> Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings!
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.JsonSettings.set -> void
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonTranscodingOptions.TypeRegistry.get -> Google.Protobuf.Reflection.TypeRegistry!

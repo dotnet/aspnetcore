@@ -15,6 +15,6 @@ internal interface IServiceInvokerResolver<TService> where TService : class
         string methodName,
         Type[] methodParameters,
         string verb,
-        HttpRule httpRule,
+        HttpRule? httpRule,
         MethodDescriptor methodDescriptor) where TDelegate : Delegate;
 }

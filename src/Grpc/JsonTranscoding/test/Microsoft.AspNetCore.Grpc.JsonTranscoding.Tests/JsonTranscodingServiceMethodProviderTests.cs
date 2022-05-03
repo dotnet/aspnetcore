@@ -80,6 +80,42 @@ public class JsonTranscodingServiceMethodProviderTests
     }
 
     [Fact]
+    public void AddMethod_Unary_NoHttpRuleInProto_IncludeUnannotatedMethods_ResolveMethod()
+    {
+        // Arrange & Act
+        var endpoints = MapEndpoints<JsonTranscodingGreeterService>(configureJsonTranscoding: o =>
+        {
+            o.IncludeUnannotatedMethods = true;
+        });
+
+        // Assert
+        var endpoint = FindGrpcEndpoint(endpoints, nameof(JsonTranscodingGreeterService.NoOption));
+
+        Assert.Equal("/transcoding.JsonTranscodingGreeter/NoOption", endpoint.RoutePattern.RawText);
+        Assert.Equal("POST", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Single());
+        Assert.Equal("transcoding.JsonTranscodingGreeter.NoOption", endpoint.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.MethodDescriptor.FullName);
+        Assert.Null(endpoint.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.HttpRule);
+    }
+
+    [Fact]
+    public void AddMethod_ServerStreaming_NoHttpRuleInProto_IncludeUnannotatedMethods_ResolveMethod()
+    {
+        // Arrange & Act
+        var endpoints = MapEndpoints<JsonTranscodingGreeterService>(configureJsonTranscoding: o =>
+        {
+            o.IncludeUnannotatedMethods = true;
+        });
+
+        // Assert
+        var endpoint = FindGrpcEndpoint(endpoints, nameof(JsonTranscodingGreeterService.ServerStreamingNoOption));
+
+        Assert.Equal("/transcoding.JsonTranscodingGreeter/ServerStreamingNoOption", endpoint.RoutePattern.RawText);
+        Assert.Equal("POST", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Single());
+        Assert.Equal("transcoding.JsonTranscodingGreeter.ServerStreamingNoOption", endpoint.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.MethodDescriptor.FullName);
+        Assert.Null(endpoint.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.HttpRule);
+    }
+
+    [Fact]
     public void AddMethod_Success_HttpRuleFoundLogged()
     {
         // Arrange
@@ -136,7 +172,7 @@ public class JsonTranscodingServiceMethodProviderTests
         var endpoint = Assert.Single(matchedEndpoints);
 
         Assert.Equal("GET", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Single());
-        Assert.Equal("/v1/server_greeter/{name}", endpoint.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.HttpRule.Get);
+        Assert.Equal("/v1/server_greeter/{name}", endpoint.Metadata.GetMetadata<GrpcJsonTranscodingMetadata>()?.HttpRule!.Get);
         Assert.Equal("/v1/server_greeter/{name}", endpoint.RoutePattern.RawText);
     }
 
@@ -214,7 +250,9 @@ public class JsonTranscodingServiceMethodProviderTests
         }
     }
 
-    private IReadOnlyList<Endpoint> MapEndpoints<TService>(Action<ILoggingBuilder>? configureLogging = null)
+    private IReadOnlyList<Endpoint> MapEndpoints<TService>(
+        Action<ILoggingBuilder>? configureLogging = null,
+        Action<GrpcJsonTranscodingOptions>? configureJsonTranscoding = null)
         where TService : class
     {
         var serviceCollection = new ServiceCollection();
@@ -222,7 +260,10 @@ public class JsonTranscodingServiceMethodProviderTests
         {
             configureLogging?.Invoke(log);
         });
-        serviceCollection.AddGrpc();
+        serviceCollection.AddGrpc().AddJsonTranscoding(o =>
+        {
+            configureJsonTranscoding?.Invoke(o);
+        });
         serviceCollection.RemoveAll(typeof(IServiceMethodProvider<>));
         serviceCollection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
 

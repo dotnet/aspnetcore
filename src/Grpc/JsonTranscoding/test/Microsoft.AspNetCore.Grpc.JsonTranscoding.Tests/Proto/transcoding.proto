@@ -42,6 +42,7 @@ service JsonTranscodingGreeter {
     };
   }
   rpc NoOption (HelloRequest) returns (HelloReply);
+  rpc ServerStreamingNoOption (HelloRequest) returns (stream HelloReply);
   rpc ServerStreamingGetOption (HelloRequest) returns (stream HelloReply) {
     option (google.api.http) = {
       get: "/v1/greeter/{name}"
