@@ -101,11 +101,11 @@ app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi
 
     return forecast;
 #elif (GenerateGraph)
-app.MapGet("/weatherforecast", async (HttpContext httpContext, GraphServiceClient graphServiceClient) =>
+app.MapGet("/weatherforecast", async (HttpContext httpContext, Graph.GraphServiceClient graphServiceClient) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-    var user = await _graphServiceClient.Me.Request().GetAsync();
+    var user = await graphServiceClient.Me.Request().GetAsync();
 
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
