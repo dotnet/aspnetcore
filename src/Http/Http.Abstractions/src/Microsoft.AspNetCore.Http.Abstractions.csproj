@@ -34,9 +34,9 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="RouteHandlerInvocationContextOfT.tt">
+    <None Update="RouteHandlerInvocationContextOfT.Generated.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>RouteHandlerInvocationContextOfT.cs</LastGenOutput>
+      <LastGenOutput>RouteHandlerInvocationContextOfT.Generated.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
@@ -45,10 +45,10 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="RouteHandlerInvocationContextOfT.cs">
+    <Compile Update="RouteHandlerInvocationContextOfT.Generated.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>RouteHandlerInvocationContextOfT.tt</DependentUpon>
+      <DependentUpon>RouteHandlerInvocationContextOfT.Generated.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

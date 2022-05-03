@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using Mono.TextTemplating;
 
 namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
 
@@ -53,6 +54,34 @@ public class RouteHandlerInvocationContextOfTTests
             enumeratedCount++;
         }
         Assert.Equal(4, enumeratedCount);
+    }
+
+    // Test for https://github.com/dotnet/aspnetcore/issues/41489
+    [Fact]
+    public void HandlesMismatchedNullabilityOnTypeParams()
+    {
+        var context = new RouteHandlerInvocationContext<string?, int?, bool?, Todo?>(new DefaultHttpContext(), null, null, null, null);
+        // Mismatched reference types will resolve as null
+        Assert.Null(context.GetArgument<string>(0));
+        Assert.Null(context.GetArgument<Todo>(3));
+        // Mismatched value types will throw
+        Assert.Throws<NullReferenceException>(() => context.GetArgument<int>(1));
+        Assert.Throws<NullReferenceException>(() => context.GetArgument<bool>(2));
+    }
+
+    [Fact]
+    public void GeneratedCodeIsUpToDate()
+    {
+        var currentContentPath = Path.Combine(AppContext.BaseDirectory, "Shared", "GeneratedContent", "RouteHandlerInvocationContextOfT.Generated.cs");
+        var templatePath = Path.Combine(AppContext.BaseDirectory, "Shared", "GeneratedContent", "RouteHandlerInvocationContextOfT.Generated.tt");
+
+        var generator = new TemplateGenerator();
+        var compiledTemplate = generator.CompileTemplate(File.ReadAllText(templatePath));
+
+        var generatedContent = compiledTemplate.Process();
+        var currentContent = File.ReadAllText(currentContentPath);
+
+        Assert.Equal(currentContent, generatedContent);
     }
 
     interface ITodo { }

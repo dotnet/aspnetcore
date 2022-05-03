@@ -4,9 +4,11 @@
 #nullable enable
 
 using System.Collections;
+using System.CodeDom.Compiler;
 
 namespace Microsoft.AspNetCore.Http;
 
+[GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0)
@@ -113,6 +115,7 @@ internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocation
     }
 
 }
+[GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1)
@@ -226,6 +229,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvoca
     }
 
 }
+[GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2)
@@ -346,6 +350,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerIn
     }
 
 }
+[GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
@@ -473,6 +478,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandl
     }
 
 }
+[GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
@@ -607,6 +613,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteH
     }
 
 }
+[GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
@@ -748,6 +755,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : Ro
     }
 
 }
+[GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
@@ -896,6 +904,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> 
     }
 
 }
+[GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
@@ -1051,6 +1060,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     }
 
 }
+[GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
@@ -1213,6 +1223,7 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     }
 
 }
+[GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : RouteHandlerInvocationContext, IList<object?>
 {
     internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
