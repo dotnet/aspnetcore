@@ -18,7 +18,8 @@
   "devDependencies": {
     "@types/node": "^13.1.7",
     "ts-node": "^8.6.2",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "yarn-audit-fix": "^9.3.1"
   },
   "resolutions": {
     "lodash": ">=4.17.21"
