@@ -298,7 +298,7 @@ internal static unsafe class UnsafeNativeMethods
     /*
      * HELPER FUNCTIONS
      */
-    private static SafeLibraryHandle InitializeLazySafeLibraryHandle(string libraryName, ref SafeLibraryHandle? safeLibraryHandle)
+    private static SafeLibraryHandle GetLibHandle(string libraryName, ref SafeLibraryHandle? safeLibraryHandle)
     {
         if (safeLibraryHandle is null)
         {
@@ -313,9 +313,9 @@ internal static unsafe class UnsafeNativeMethods
     }
 
     // We use methods instead of properties to access lazy handles in order to prevent debuggers from automatically attempting to load libraries on unsupported platforms.
-    private static SafeLibraryHandle GetBCryptLibHandle() => InitializeLazySafeLibraryHandle(BCRYPT_LIB, ref _lazyBCryptLibHandle);
-    private static SafeLibraryHandle GetCrypt32LibHandle() => InitializeLazySafeLibraryHandle(CRYPT32_LIB, ref _lazyCrypt32LibHandle);
-    private static SafeLibraryHandle GetNCryptLibHandle() => InitializeLazySafeLibraryHandle(NCRYPT_LIB, ref _lazyNCryptLibHandle);
+    private static SafeLibraryHandle GetBCryptLibHandle() => GetLibHandle(BCRYPT_LIB, ref _lazyBCryptLibHandle);
+    private static SafeLibraryHandle GetCrypt32LibHandle() => GetLibHandle(CRYPT32_LIB, ref _lazyCrypt32LibHandle);
+    private static SafeLibraryHandle GetNCryptLibHandle() => GetLibHandle(NCRYPT_LIB, ref _lazyNCryptLibHandle);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void ThrowExceptionForBCryptStatus(int ntstatus)
