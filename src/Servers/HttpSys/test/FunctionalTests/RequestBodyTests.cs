@@ -40,6 +40,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        public async Task RequestBody_Read0ByteSync_Success()
+        {
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                Assert.True(httpContext.Request.CanHaveBody());
+                byte[] input = new byte[100];
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
+                int read = httpContext.Request.Body.Read(input, 0, 0);
+                Assert.Equal(0, read);
+                read = httpContext.Request.Body.Read(input, 0, input.Length);
+                httpContext.Response.ContentLength = read;
+                httpContext.Response.Body.Write(input, 0, read);
+                return Task.FromResult(0);
+            }))
+            {
+                string response = await SendRequestAsync(address, "Hello World");
+                Assert.Equal("Hello World", response);
+            }
+        }
+
+        [ConditionalFact]
         public async Task RequestBody_ReadAsync_Success()
         {
             string address;
@@ -50,6 +72,29 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
                 httpContext.Response.ContentLength = read;
                 await httpContext.Response.Body.WriteAsync(input, 0, read);
+            }))
+            {
+                string response = await SendRequestAsync(address, "Hello World");
+                Assert.Equal("Hello World", response);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task RequestBody_Read0ByteAsync_Success()
+        {
+            string address;
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
+            {
+                Assert.True(httpContext.Request.CanHaveBody());
+                byte[] input = new byte[100];
+                await Task.Delay(1000);
+                int read = await httpContext.Request.Body.ReadAsync(input, 0, 1);
+                Assert.Equal(1, read);
+                read = await httpContext.Request.Body.ReadAsync(input, 0, 0);
+                Assert.Equal(0, read);
+                read = await httpContext.Request.Body.ReadAsync(input, 1, input.Length - 1);
+                httpContext.Response.ContentLength = read + 1;
+                await httpContext.Response.Body.WriteAsync(input, 0, read + 1);
             }))
             {
                 string response = await SendRequestAsync(address, "Hello World");
@@ -87,7 +132,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Throws<ArgumentOutOfRangeException>("offset", () => httpContext.Request.Body.Read(input, -1, 1));
                 Assert.Throws<ArgumentOutOfRangeException>("offset", () => httpContext.Request.Body.Read(input, input.Length + 1, 1));
                 Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 10, -1));
-                Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 0, 0));
                 Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 1, input.Length));
                 Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 0, input.Length + 1));
                 return Task.FromResult(0);
