@@ -67,14 +67,14 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"];
+var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"] ?? "";
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
 #if (GenerateApi)
-app.MapGet("/weatherforecast", (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
+app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
@@ -101,7 +101,7 @@ app.MapGet("/weatherforecast", (HttpContext httpContext, IDownstreamWebApi downs
 
     return forecast;
 #elif (GenerateGraph)
-app.MapGet("/weatherforecast", (HttpContext httpContext, GraphServiceClient graphServiceClient) =>
+app.MapGet("/weatherforecast", async (HttpContext httpContext, GraphServiceClient graphServiceClient) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 

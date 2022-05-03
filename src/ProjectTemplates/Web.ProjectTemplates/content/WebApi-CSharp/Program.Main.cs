@@ -13,6 +13,7 @@ using Graph = Microsoft.Graph;
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.Resource;
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth || GenerateGraph || WindowsAuth || EnableOpenAPI)
 
@@ -98,7 +99,7 @@ public class Program
 
         #if (UseMinimalAPIs)
         #if (OrganizationalAuth || IndividualB2CAuth)
-        var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"];
+        var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"] ?? "";
         #endif
         var summaries = new[]
         {
@@ -106,7 +107,7 @@ public class Program
         };
 
         #if (GenerateApi)
-        app.MapGet("/weatherforecast", (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
+        app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
         {
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
@@ -132,9 +133,8 @@ public class Program
                 .ToArray();
 
             return forecast;
-        })
         #elif (GenerateGraph)
-        app.MapGet("/weatherforecast", (HttpContext httpContext, GraphServiceClient graphServiceClient) =>
+        app.MapGet("/weatherforecast", async (HttpContext httpContext, GraphServiceClient graphServiceClient) =>
         {
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
@@ -150,7 +150,6 @@ public class Program
                 .ToArray();
 
             return forecast;
-        })
         #else
         app.MapGet("/weatherforecast", (HttpContext httpContext) =>
         {
