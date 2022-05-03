@@ -101,8 +101,8 @@ app.MapGet("/weatherforecast", (HttpContext httpContext, IDownstreamWebApi downs
 
     return forecast;
 })
-#elseif (GenerateGraph)
-app.MapGet("/weahterforecast", (HttpContext httpContext, GraphServiceClient graphServiceClient) =>
+#elif (GenerateGraph)
+app.MapGet("/weatherforecast", (HttpContext httpContext, GraphServiceClient graphServiceClient) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
