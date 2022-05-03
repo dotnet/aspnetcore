@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Cryptography;
 [SuppressUnmanagedCodeSecurity]
 internal static unsafe class UnsafeNativeMethods
 {
-    private const string BCRYPT_LIB = "bcrypt.dll";
+    internal const string BCRYPT_LIB = "bcrypt.dll";
     private static SafeLibraryHandle? _lazyBCryptLibHandle;
 
     private const string CRYPT32_LIB = "crypt32.dll";
