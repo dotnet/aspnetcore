@@ -261,7 +261,7 @@ internal partial class IISHttpContext : IFeatureCollection,
     }
 
     // Http/2 does not support the upgrade mechanic.
-    // Http/1.x upgrade requests may have a request body, but that's not allowed in our main scenario (WebSockets) and much
+    // Http/1.1 upgrade requests may have a request body, but that's not allowed in our main scenario (WebSockets) and much
     // more complicated to support. See https://tools.ietf.org/html/rfc7230#section-6.7, https://tools.ietf.org/html/rfc7540#section-3.2
     bool IHttpUpgradeFeature.IsUpgradableRequest => !RequestCanHaveBody && HttpVersion == System.Net.HttpVersion.Version11;
 
@@ -342,7 +342,7 @@ internal partial class IISHttpContext : IFeatureCollection,
         {
             if (HttpVersion != System.Net.HttpVersion.Version11)
             {
-                throw new InvalidOperationException(CoreStrings.UpdateWithWrongProtocolVersion);
+                throw new InvalidOperationException(CoreStrings.UpgradeWithWrongProtocolVersion);
             }
             throw new InvalidOperationException(CoreStrings.CannotUpgradeNonUpgradableRequest);
         }
