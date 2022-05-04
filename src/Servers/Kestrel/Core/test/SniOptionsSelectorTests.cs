@@ -187,6 +187,91 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void MultipleWildcardPrefixServerNamesOfSameLengthAreAllowed()
+        {
+            var sniDictionary = new Dictionary<string, SniConfig>
+                {
+                    {
+                        "*.a.example.org",
+                        new SniConfig
+                        {
+                            Certificate = new CertificateConfig
+                            {
+                                Path = "a"
+                            }
+                        }
+                    },
+                    {
+                        "*.b.example.org",
+                        new SniConfig
+                        {
+                            Certificate = new CertificateConfig
+                            {
+                                Path = "b"
+                            }
+                        }
+                    }
+                };
+
+            var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+            var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+
+            var sniOptionsSelector = new SniOptionsSelector(
+                "TestEndpointName",
+                sniDictionary,
+                mockCertificateConfigLoader,
+                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+                fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+                logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+            var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "c.a.example.org");
+            Assert.Equal("a", pathDictionary[aSubdomainOptions.ServerCertificate]);
+
+            var (bSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "c.b.example.org");
+            Assert.Equal("b", pathDictionary[bSubdomainOptions.ServerCertificate]);
+        }
+
+        [Fact]
+        public void DuplicateWildcardPrefixServerNamesThrowsArgumentException()
+        {
+            var sniDictionary = new Dictionary<string, SniConfig>
+                {
+                    {
+                        "*.example.org",
+                        new SniConfig
+                        {
+                            Certificate = new CertificateConfig
+                            {
+                                Path = "a"
+                            }
+                        }
+                    },
+                    {
+                        "*.EXAMPLE.org",
+                        new SniConfig
+                        {
+                            Certificate = new CertificateConfig
+                            {
+                                Path = "b"
+                            }
+                        }
+                    }
+                };
+
+            var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+            var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+
+            var exception = Assert.Throws<ArgumentException>(() => new SniOptionsSelector(
+                 "TestEndpointName",
+                 sniDictionary,
+                 mockCertificateConfigLoader,
+                 fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>()));
+            Assert.Equal("An item with the same key has already been added. Key: .EXAMPLE.org (Parameter 'key')", exception.Message);
+        }
+
+        [Fact]
         public void GetOptionsThrowsAnAuthenticationExceptionIfThereIsNoMatchingSniSection()
         {
             var sniOptionsSelector = new SniOptionsSelector(

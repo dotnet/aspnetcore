@@ -36,6 +36,39 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
+        public void FileBufferingReadStream_Sync0ByteReadUnderThreshold_DoesntCreateFile()
+        {
+            var inner = MakeStream(1024);
+            using (var stream = new FileBufferingReadStream(inner, 1024 * 2, null, Directory.GetCurrentDirectory()))
+            {
+                var bytes = new byte[1000];
+                var read0 = stream.Read(bytes, 0, 0);
+                Assert.Equal(0, read0);
+                Assert.Equal(read0, stream.Length);
+                Assert.Equal(read0, stream.Position);
+                Assert.True(stream.InMemory);
+                Assert.Null(stream.TempFileName);
+
+                var read1 = stream.Read(bytes, 0, bytes.Length);
+                Assert.Equal(bytes.Length, read1);
+                Assert.Equal(read0 + read1, stream.Length);
+                Assert.Equal(read0 + read1, stream.Position);
+                Assert.True(stream.InMemory);
+                Assert.Null(stream.TempFileName);
+
+                var read2 = stream.Read(bytes, 0, bytes.Length);
+                Assert.Equal(inner.Length - read0 - read1, read2);
+                Assert.Equal(read0 + read1 + read2, stream.Length);
+                Assert.Equal(read0 + read1 + read2, stream.Position);
+                Assert.True(stream.InMemory);
+                Assert.Null(stream.TempFileName);
+
+                var read3 = stream.Read(bytes, 0, bytes.Length);
+                Assert.Equal(0, read3);
+            }
+        }
+
+        [Fact]
         public void FileBufferingReadStream_SyncReadUnderThreshold_DoesntCreateFile()
         {
             var inner = MakeStream(1024 * 2);
@@ -165,6 +198,39 @@ namespace Microsoft.AspNetCore.WebUtilities
         ///////////////////
 
         [Fact]
+        public async Task FileBufferingReadStream_Async0ByteReadUnderThreshold_DoesntCreateFile()
+        {
+            var inner = MakeStream(1024);
+            using (var stream = new FileBufferingReadStream(inner, 1024 * 2, null, Directory.GetCurrentDirectory()))
+            {
+                var bytes = new byte[1000];
+                var read0 = await stream.ReadAsync(bytes, 0, 0);
+                Assert.Equal(0, read0);
+                Assert.Equal(read0, stream.Length);
+                Assert.Equal(read0, stream.Position);
+                Assert.True(stream.InMemory);
+                Assert.Null(stream.TempFileName);
+
+                var read1 = await stream.ReadAsync(bytes, 0, bytes.Length);
+                Assert.Equal(bytes.Length, read1);
+                Assert.Equal(read0 + read1, stream.Length);
+                Assert.Equal(read0 + read1, stream.Position);
+                Assert.True(stream.InMemory);
+                Assert.Null(stream.TempFileName);
+
+                var read2 = await stream.ReadAsync(bytes, 0, bytes.Length);
+                Assert.Equal(inner.Length - read0 - read1, read2);
+                Assert.Equal(read0 + read1 + read2, stream.Length);
+                Assert.Equal(read0 + read1 + read2, stream.Position);
+                Assert.True(stream.InMemory);
+                Assert.Null(stream.TempFileName);
+
+                var read3 = await stream.ReadAsync(bytes, 0, bytes.Length);
+                Assert.Equal(0, read3);
+            }
+        }
+
+        [Fact]
         public async Task FileBufferingReadStream_AsyncReadUnderThreshold_DoesntCreateFile()
         {
             var inner = MakeStream(1024 * 2);
@@ -231,6 +297,47 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 var read3 = await stream.ReadAsync(bytes, 0, bytes.Length);
                 Assert.Equal(0, read3);
+            }
+
+            Assert.False(File.Exists(tempFileName));
+        }
+
+        [Fact]
+        public async Task FileBufferingReadStream_Async0ByteReadAfterBuffering_ReadsFromFile()
+        {
+            var inner = MakeStream(1024 * 2);
+            string tempFileName;
+            using (var stream = new FileBufferingReadStream(inner, 1024, null, GetCurrentDirectory()))
+            {
+                await stream.DrainAsync(default);
+                stream.Position = 0;
+                Assert.Equal(inner.Length, stream.Length);
+                Assert.Equal(0, stream.Position);
+                Assert.False(stream.InMemory);
+                Assert.NotNull(stream.TempFileName);
+                tempFileName = stream.TempFileName!;
+                Assert.True(File.Exists(tempFileName));
+
+                var bytes = new byte[1000];
+                var read0 = await stream.ReadAsync(bytes, 0, 0);
+                Assert.Equal(0, read0);
+                Assert.Equal(read0, stream.Position);
+
+                var read1 = await stream.ReadAsync(bytes, 0, bytes.Length);
+                Assert.Equal(bytes.Length, read1);
+                Assert.Equal(read0 + read1, stream.Position);
+
+                var read2 = await stream.ReadAsync(bytes, 0, bytes.Length);
+                Assert.Equal(bytes.Length, read2);
+                Assert.Equal(read0 + read1 + read2, stream.Position);
+
+                var read3 = await stream.ReadAsync(bytes, 0, bytes.Length);
+                Assert.Equal(inner.Length - read0 - read1 - read2, read3);
+                Assert.Equal(read0 + read1 + read2 + read3, stream.Length);
+                Assert.Equal(read0 + read1 + read2 + read3, stream.Position);
+
+                var read4 = await stream.ReadAsync(bytes, 0, bytes.Length);
+                Assert.Equal(0, read4);
             }
 
             Assert.False(File.Exists(tempFileName));
