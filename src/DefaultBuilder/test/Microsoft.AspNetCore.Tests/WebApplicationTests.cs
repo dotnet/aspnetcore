@@ -1687,6 +1687,36 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
+        public void EmptyAppConfiguration()
+        {
+            var wwwroot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+            bool createdDirectory = false;
+            if (!Directory.Exists(wwwroot))
+            {
+                createdDirectory = true;
+                Directory.CreateDirectory(wwwroot);
+            }
+    
+            try
+            {
+                var builder = WebApplication.CreateBuilder();
+    
+                builder.WebHost.ConfigureAppConfiguration((ctx, config) => { });
+    
+                using var app = builder.Build();
+                var hostEnv = app.Services.GetRequiredService<Hosting.IWebHostEnvironment>();
+                Assert.Equal(wwwroot, hostEnv.WebRootPath);
+            }
+            finally
+            {
+                if (createdDirectory)
+                {
+                    Directory.Delete(wwwroot);
+                }
+            }
+        }
+
+        [Fact]
         public void HostConfigurationNotAffectedByConfiguration()
         {
             var builder = WebApplication.CreateBuilder();
