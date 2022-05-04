@@ -3,6 +3,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -57,9 +58,8 @@ internal class SurrogateParameterInfo : ParameterInfo
     /// <param name="parameters">List of parameters to be flattened.</param>
     /// <param name="cache">An instance of the method cache class.</param>
     /// <returns>Flat list of parameters.</returns>
-    public static ReadOnlySpan<ParameterInfo> Flatten(
-        ParameterInfo[] parameters,
-        ParameterBindingMethodCache cache)
+    [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = ".")]
+    public static ReadOnlySpan<ParameterInfo> Flatten(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
     {
         ArgumentNullException.ThrowIfNull(nameof(parameters));
         ArgumentNullException.ThrowIfNull(nameof(cache));
@@ -96,6 +96,7 @@ internal class SurrogateParameterInfo : ParameterInfo
                 else
                 {
                     var properties = parameters[i].ParameterType.GetProperties();
+
                     foreach (var property in properties)
                     {
                         if (property.CanWrite)
