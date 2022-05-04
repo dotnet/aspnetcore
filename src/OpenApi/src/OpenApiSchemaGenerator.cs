@@ -24,6 +24,7 @@ internal static class OpenApiSchemaGenerator
             [typeof(decimal)] = ("number", "double"),
             [typeof(DateTime)] = ("string", "date-time"),
             [typeof(DateTimeOffset)] = ("string", "date-time"),
+            [typeof(TimeSpan)] = ("string", "date-span"),
             [typeof(Guid)] = ("string", "uuid"),
             [typeof(char)] = ("string", null),
             [typeof(Uri)] = ("string", "uri"),
@@ -56,7 +57,12 @@ internal static class OpenApiSchemaGenerator
             return typeAndFormat;
         }
 
-        if (type == typeof(IFormFileCollection) || type == typeof(FormFile))
+        if (type == typeof(IFormFileCollection) || type == typeof(IFormFile))
+        {
+            return ("object", null);
+        }
+
+        if (typeof(IDictionary).IsAssignableFrom(type))
         {
             return ("object", null);
         }
