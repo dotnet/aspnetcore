@@ -116,6 +116,24 @@ public class JsonTranscodingServiceMethodProviderTests
     }
 
     [Fact]
+    public void AddMethod_HasAnnotation_IncludeUnannotatedMethods_ResolveMethodUsesAnnotation()
+    {
+        // Arrange & Act
+        var endpoints = MapEndpoints<JsonTranscodingGreeterService>(configureJsonTranscoding: o =>
+        {
+            o.IncludeUnannotatedMethods = true;
+        });
+
+        // Assert
+        var endpoint = FindGrpcEndpoint(endpoints, nameof(JsonTranscodingGreeterService.SayHello));
+
+        Assert.Equal("GET", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Single());
+        Assert.Equal("/v1/greeter/{name}", endpoint.RoutePattern.RawText);
+        Assert.Equal(1, endpoint.RoutePattern.Parameters.Count);
+        Assert.Equal("name", endpoint.RoutePattern.Parameters[0].Name);
+    }
+
+    [Fact]
     public void AddMethod_Success_HttpRuleFoundLogged()
     {
         // Arrange
