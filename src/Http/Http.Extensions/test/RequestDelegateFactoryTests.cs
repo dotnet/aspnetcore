@@ -2203,6 +2203,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         public int Foo { get; set; }
         public int Bar { get; set; }
     }
+
     private class BadArgumentListClassMultipleCtors
     {
         public BadArgumentListClassMultipleCtors(int foo)
@@ -2233,6 +2234,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     private record ParametersListWithImplictFromService(HttpContext HttpContext, IMyService MyService);
+
     private record ParametersListWithExplictFromService(HttpContext HttpContext, [FromService] MyService MyService);
 
     public static object[][] ExplicitFromServiceActions
@@ -2389,6 +2391,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Same(httpContext, httpContextArgument);
     }
+
     private record ParametersListWithHttpContext(
         HttpContext HttpContext,
         ClaimsPrincipal User,
@@ -3056,7 +3059,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             var log = Assert.Single(logs);
             Assert.Equal(LogLevel.Debug, log.LogLevel);
             Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
-            var expectedType = paramName == "age" ? "int age" : $"string {paramName}";
+            var expectedType = paramName == "age" ? "int age" : $"string name";
             Assert.Equal($@"Required parameter ""{expectedType}"" was not provided from route or query string.", log.Message);
         }
         else
@@ -3128,7 +3131,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             var log = Assert.Single(logs);
             Assert.Equal(LogLevel.Debug, log.LogLevel);
             Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
-            var expectedType = paramName == "age" ? "int age" : $"string {paramName}";
+            var expectedType = paramName == "age" ? "int age" : $"string name";
             Assert.Equal($@"Required parameter ""{expectedType}"" was not provided from query string.", log.Message);
         }
         else
@@ -4556,6 +4559,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         [FromRoute]
         public int Value { get; set; }
     }
+
     private class ParameterListClassWithParameterizedContructor
     {
         public ParameterListClassWithParameterizedContructor(HttpContext httpContext)

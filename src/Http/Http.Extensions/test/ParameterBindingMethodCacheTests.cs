@@ -1208,6 +1208,7 @@ public class ParameterBindingMethodCacheTests
 
         public StructWithParameterizedConstructor(int foo)
         {
+            Foo = foo;
         }
     }
 
@@ -1331,7 +1332,9 @@ public class ParameterBindingMethodCacheTests
         public int Foo { get; set; }
 
         public StructWithInvalidConstructors(int foo, int bar)
-        { }
+        {
+            Foo = foo;
+        }
     }
 
     private record struct RecordStructWithInvalidConstructors
@@ -1339,7 +1342,9 @@ public class ParameterBindingMethodCacheTests
         public int Foo { get; set; }
 
         public RecordStructWithInvalidConstructors(int foo, int bar)
-        { }
+        {
+            Foo = foo;
+        }
     }
 
     private class MockParameterInfo : ParameterInfo
