@@ -231,16 +231,18 @@ public class RazorPagesTemplateTest : LoggedTest
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("IndividualB2C", null)]
-    [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-    [InlineData("IndividualB2C", new string[] { "--use-program-main --called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+    [InlineData("IndividualB2C", new [] { "--use-program-main" })]
+    [InlineData("IndividualB2C", new [] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+    [InlineData("IndividualB2C", new [] { "--use-program-main", "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     [InlineData("SingleOrg", null)]
-    [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-    [InlineData("SingleOrg", new string[] { "--use-program-main --called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+    [InlineData("SingleOrg", new [] { "--use-program-main" })]
+    [InlineData("SingleOrg", new [] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+    [InlineData("SingleOrg", new [] { "--use-program-main", "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
 
     [ConditionalTheory]
-    [InlineData("SingleOrg", new string[] { "--calls-graph" })]
-    [InlineData("SingleOrg", new string[] { "--use-program-main --calls-graph" })]
+    [InlineData("SingleOrg", new [] { "--calls-graph" })]
+    [InlineData("SingleOrg", new [] { "--use-program-main", "--calls-graph" })]
     public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes_WithSingleOrg(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
 
     private async Task<Project> BuildAndPublishRazorPagesTemplate(string auth, string[] args)

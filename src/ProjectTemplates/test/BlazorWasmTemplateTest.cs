@@ -81,20 +81,32 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     // LocalDB doesn't work on non Windows platforms
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
-        => BlazorWasmHostedTemplate_IndividualAuth_Works(true);
+        => BlazorWasmHostedTemplate_IndividualAuth_Works(true, false);
 
     [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB()
-        => BlazorWasmHostedTemplate_IndividualAuth_Works(false);
+        => BlazorWasmHostedTemplate_IndividualAuth_Works(false, false);
 
-    private async Task<Project> CreateBuildPublishIndividualAuthProject(bool useLocalDb)
+    [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
+    // LocalDB doesn't work on non Windows platforms
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+    public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB_ProgramMain()
+        => BlazorWasmHostedTemplate_IndividualAuth_Works(true, true);
+
+    [ConditionalFact]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/34554", Queues = "Windows.10.Arm64v8.Open")]
+    public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB_ProgramMain()
+        => BlazorWasmHostedTemplate_IndividualAuth_Works(false, true);
+
+    private async Task<Project> CreateBuildPublishIndividualAuthProject(bool useLocalDb, bool useProgramMain = false)
     {
         // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
         Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
         var project = await CreateBuildPublishAsync("blazorhostedindividual" + (useLocalDb ? "uld" : ""),
-            args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
+            args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "", useProgramMain ? "--use-program-main" : "" });
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -128,9 +140,9 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         return project;
     }
 
-    private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(bool useLocalDb)
+    private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(bool useLocalDb, bool useProgramMain)
     {
-        var project = await CreateBuildPublishIndividualAuthProject(useLocalDb: useLocalDb);
+        var project = await CreateBuildPublishIndividualAuthProject(useLocalDb: useLocalDb, useProgramMain: useProgramMain);
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
     }
@@ -161,6 +173,17 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
                 "--app-id-uri", "ApiUri",
                 "--api-client-id", "1234123413241324"),
             new TemplateInstance(
+                "blazorwasmhostedaadb2c_program_main", "-ho",
+                "-au", "IndividualB2C",
+                "--aad-b2c-instance", "example.b2clogin.com",
+                "-ssp", "b2c_1_siupin",
+                "--client-id", "clientId",
+                "--domain", "my-domain",
+                "--default-scope", "full",
+                "--app-id-uri", "ApiUri",
+                "--api-client-id", "1234123413241324",
+                "--use-program-main"),
+            new TemplateInstance(
                 "blazorwasmhostedaad", "-ho",
                 "-au", "SingleOrg",
                 "--domain", "my-domain",
@@ -169,6 +192,16 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
                 "--default-scope", "full",
                 "--app-id-uri", "ApiUri",
                 "--api-client-id", "1234123413241324"),
+            new TemplateInstance(
+                "blazorwasmhostedaad_program_main", "-ho",
+                "-au", "SingleOrg",
+                "--domain", "my-domain",
+                "--tenant-id", "tenantId",
+                "--client-id", "clientId",
+                "--default-scope", "full",
+                "--app-id-uri", "ApiUri",
+                "--api-client-id", "1234123413241324",
+                "--use-program-main"),
             new TemplateInstance(
                 "blazorwasmhostedaadgraph", "-ho",
                 "-au", "SingleOrg",
@@ -179,6 +212,17 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
                 "--default-scope", "full",
                 "--app-id-uri", "ApiUri",
                 "--api-client-id", "1234123413241324"),
+            new TemplateInstance(
+                "blazorwasmhostedaadgraph_program_main", "-ho",
+                "-au", "SingleOrg",
+                "--calls-graph",
+                "--domain", "my-domain",
+                "--tenant-id", "tenantId",
+                "--client-id", "clientId",
+                "--default-scope", "full",
+                "--app-id-uri", "ApiUri",
+                "--api-client-id", "1234123413241324",
+                "--use-program-main"),
             new TemplateInstance(
                 "blazorwasmhostedaadapi", "-ho",
                 "-au", "SingleOrg",
@@ -191,6 +235,18 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
                 "--app-id-uri", "ApiUri",
                 "--api-client-id", "1234123413241324"),
             new TemplateInstance(
+                "blazorwasmhostedaadapi_program_main", "-ho",
+                "-au", "SingleOrg",
+                "--called-api-url", "\"https://graph.microsoft.com\"",
+                "--called-api-scopes", "user.readwrite",
+                "--domain", "my-domain",
+                "--tenant-id", "tenantId",
+                "--client-id", "clientId",
+                "--default-scope", "full",
+                "--app-id-uri", "ApiUri",
+                "--api-client-id", "1234123413241324",
+                "--use-program-main"),
+            new TemplateInstance(
                 "blazorwasmstandaloneaadb2c",
                 "-au", "IndividualB2C",
                 "--aad-b2c-instance", "example.b2clogin.com",
@@ -198,11 +254,26 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
                 "--client-id", "clientId",
                 "--domain", "my-domain"),
             new TemplateInstance(
+                "blazorwasmstandaloneaadb2c_program_main",
+                "-au", "IndividualB2C",
+                "--aad-b2c-instance", "example.b2clogin.com",
+                "-ssp", "b2c_1_siupin",
+                "--client-id", "clientId",
+                "--domain", "my-domain",
+                "--use-program-main"),
+            new TemplateInstance(
                 "blazorwasmstandaloneaad",
                 "-au", "SingleOrg",
                 "--domain", "my-domain",
                 "--tenant-id", "tenantId",
                 "--client-id", "clientId"),
+            new TemplateInstance(
+                "blazorwasmstandaloneaad_program_main",
+                "-au", "SingleOrg",
+                "--domain", "my-domain",
+                "--tenant-id", "tenantId",
+                "--client-id", "clientId",
+                "--use-program-main"),
         };
 
     public class TemplateInstance
