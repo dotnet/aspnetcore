@@ -73,7 +73,7 @@ public class WebApiTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public Task WebApiTemplateProgramMainMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { "ArgConstants.UseProgramMain ArgConstants.UseMinimalApis" });
+    public Task WebApiTemplateProgramMainMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis });
 
     [ConditionalTheory]
     [InlineData(false, false)]
