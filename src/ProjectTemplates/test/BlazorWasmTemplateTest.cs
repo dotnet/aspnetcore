@@ -35,18 +35,18 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     }
 
     [Fact]
-    public Task BlazorWasmHostedTemplateCanCreateBuildPublish() => CreateBuildPublishAsync("blazorhosted", args: new[] { "--hosted" }, serverProject: true);
+    public Task BlazorWasmHostedTemplateCanCreateBuildPublish() => CreateBuildPublishAsync("blazorhosted", args: new[] { ArgConstants.Hosted }, serverProject: true);
 
     [Fact]
-    public Task BlazorWasmHostedTemplateWithProgamMainCanCreateBuildPublish() => CreateBuildPublishAsync("blazorhosted", args: new[] { "--use-program-main", "--hosted" }, serverProject: true);
+    public Task BlazorWasmHostedTemplateWithProgamMainCanCreateBuildPublish() => CreateBuildPublishAsync("blazorhosted", args: new[] { ArgConstants.UseProgramMain, ArgConstants.Hosted }, serverProject: true);
 
     [Fact]
-    public Task BlazorWasmStandalonePwaTemplateCanCreateBuildPublish() => CreateBuildPublishAsync("blazorstandalonepwa", args: new[] { "--pwa" });
+    public Task BlazorWasmStandalonePwaTemplateCanCreateBuildPublish() => CreateBuildPublishAsync("blazorstandalonepwa", args: new[] { ArgConstants.Pwa });
 
     [Fact]
     public async Task BlazorWasmHostedPwaTemplateCanCreateBuildPublish()
     {
-        var project = await CreateBuildPublishAsync("blazorhostedpwa", args: new[] { "--hosted", "--pwa" }, serverProject: true);
+        var project = await CreateBuildPublishAsync("blazorhostedpwa", args: new[] { ArgConstants.Hosted, ArgConstants.Pwa }, serverProject: true);
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -106,7 +106,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
         var project = await CreateBuildPublishAsync("blazorhostedindividual" + (useLocalDb ? "uld" : ""),
-            args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "", useProgramMain ? "--use-program-main" : "" });
+            args: new[] { ArgConstants.Hosted, ArgConstants.Auth, "Individual", useLocalDb ? "-uld" : "", useProgramMain ? ArgConstants.UseProgramMain : "" });
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -151,11 +151,11 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     public async Task BlazorWasmStandaloneTemplate_IndividualAuth_CreateBuildPublish()
     {
         var project = await CreateBuildPublishAsync("blazorstandaloneindividual", args: new[] {
-                "-au",
+                ArgConstants.Auth,
                 "Individual",
                 "--authority",
                 "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
-                "--client-id",
+                ArgConstants.ClientId,
                 "sample-client-id"
             });
     }
@@ -164,116 +164,116 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         {
             new TemplateInstance(
                 "blazorwasmhostedaadb2c", "-ho",
-                "-au", "IndividualB2C",
-                "--aad-b2c-instance", "example.b2clogin.com",
+                ArgConstants.Auth, "IndividualB2C",
+                ArgConstants.AadB2cInstance, "example.b2clogin.com",
                 "-ssp", "b2c_1_siupin",
-                "--client-id", "clientId",
-                "--domain", "my-domain",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324"),
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324"),
             new TemplateInstance(
                 "blazorwasmhostedaadb2c_program_main", "-ho",
-                "-au", "IndividualB2C",
-                "--aad-b2c-instance", "example.b2clogin.com",
+                ArgConstants.Auth, "IndividualB2C",
+                ArgConstants.AadB2cInstance, "example.b2clogin.com",
                 "-ssp", "b2c_1_siupin",
-                "--client-id", "clientId",
-                "--domain", "my-domain",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324",
-                "--use-program-main"),
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324",
+                ArgConstants.UseProgramMain),
             new TemplateInstance(
                 "blazorwasmhostedaad", "-ho",
-                "-au", "SingleOrg",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324"),
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324"),
             new TemplateInstance(
                 "blazorwasmhostedaad_program_main", "-ho",
-                "-au", "SingleOrg",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324",
-                "--use-program-main"),
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324",
+                ArgConstants.UseProgramMain),
             new TemplateInstance(
                 "blazorwasmhostedaadgraph", "-ho",
-                "-au", "SingleOrg",
-                "--calls-graph",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324"),
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.CallsGraph,
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324"),
             new TemplateInstance(
                 "blazorwasmhostedaadgraph_program_main", "-ho",
-                "-au", "SingleOrg",
-                "--calls-graph",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324",
-                "--use-program-main"),
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.CallsGraph,
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324",
+                ArgConstants.UseProgramMain),
             new TemplateInstance(
                 "blazorwasmhostedaadapi", "-ho",
-                "-au", "SingleOrg",
-                "--called-api-url", "\"https://graph.microsoft.com\"",
-                "--called-api-scopes", "user.readwrite",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324"),
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.CalledApiUrl, "\"https://graph.microsoft.com\"",
+                ArgConstants.CalledApiScopes, "user.readwrite",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324"),
             new TemplateInstance(
                 "blazorwasmhostedaadapi_program_main", "-ho",
-                "-au", "SingleOrg",
-                "--called-api-url", "\"https://graph.microsoft.com\"",
-                "--called-api-scopes", "user.readwrite",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324",
-                "--use-program-main"),
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.CalledApiUrl, "\"https://graph.microsoft.com\"",
+                ArgConstants.CalledApiScopes, "user.readwrite",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324",
+                ArgConstants.UseProgramMain),
             new TemplateInstance(
                 "blazorwasmstandaloneaadb2c",
-                "-au", "IndividualB2C",
-                "--aad-b2c-instance", "example.b2clogin.com",
+                ArgConstants.Auth, "IndividualB2C",
+                ArgConstants.AadB2cInstance, "example.b2clogin.com",
                 "-ssp", "b2c_1_siupin",
-                "--client-id", "clientId",
-                "--domain", "my-domain"),
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.Domain, "my-domain"),
             new TemplateInstance(
                 "blazorwasmstandaloneaadb2c_program_main",
-                "-au", "IndividualB2C",
-                "--aad-b2c-instance", "example.b2clogin.com",
+                ArgConstants.Auth, "IndividualB2C",
+                ArgConstants.AadB2cInstance, "example.b2clogin.com",
                 "-ssp", "b2c_1_siupin",
-                "--client-id", "clientId",
-                "--domain", "my-domain",
-                "--use-program-main"),
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.UseProgramMain),
             new TemplateInstance(
                 "blazorwasmstandaloneaad",
-                "-au", "SingleOrg",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId"),
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId"),
             new TemplateInstance(
                 "blazorwasmstandaloneaad_program_main",
-                "-au", "SingleOrg",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId",
-                "--use-program-main"),
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.UseProgramMain),
         };
 
     public class TemplateInstance

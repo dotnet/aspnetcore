@@ -142,7 +142,7 @@ public class Project : IDisposable
         }
     }
 
-    internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true, bool errorOnBuildWarning = true)
+    internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
     {
         Output.WriteLine("Publishing ASP.NET Core application...");
 
@@ -157,7 +157,7 @@ public class Project : IDisposable
         var result = new ProcessResult(execution);
 
         // Fail if there were build warnings
-        if (errorOnBuildWarning && (execution.Output.Contains(": warning") || execution.Error.Contains(": warning")))
+        if (execution.Output.Contains(": warning") || execution.Error.Contains(": warning"))
         {
             result.ExitCode = -1;
         }

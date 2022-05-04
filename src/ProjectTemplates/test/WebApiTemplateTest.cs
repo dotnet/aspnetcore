@@ -35,25 +35,25 @@ public class WebApiTemplateTest : LoggedTest
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("IndividualB2C", null)]
-    [InlineData("IndividualB2C", new string[] { "--use-program-main" })]
-    [InlineData("IndividualB2C", new string[] { "--use-minimal-apis" })]
-    [InlineData("IndividualB2C", new string[] { "--use-program-main", "--use-minimal-apis" })]
-    [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-    [InlineData("IndividualB2C", new string[] { "--use-minimal-apis", "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-    [InlineData("IndividualB2C", new string[] { "--use-program-main", "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-    [InlineData("IndividualB2C", new string[] { "--use-program-main", "--use-minimal-apis", "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+    [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain })]
+    [InlineData("IndividualB2C", new string[] { ArgConstants.UseMinimalApis })]
+    [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis })]
+    [InlineData("IndividualB2C", new string[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("IndividualB2C", new string[] { ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("SingleOrg", null)]
-    [InlineData("SingleOrg", new string[] { "--use-program-main" })]
-    [InlineData("SingleOrg", new string[] { "--use-minimal-apis" })]
-    [InlineData("SingleOrg", new string[] { "--use-program-main", "--use-minimal-apis" })]
-    [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-    [InlineData("SingleOrg", new string[] { "--use-minimal-apis", "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-    [InlineData("SingleOrg", new string[] { "--use-program-main", "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-    [InlineData("SingleOrg", new string[] { "--use-program-main", "--use-minimal-apis", "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-    [InlineData("SingleOrg", new string[] { "--calls-graph" })]
-    [InlineData("SingleOrg", new string[] { "--use-program-main", "--calls-graph" })]
-    [InlineData("SingleOrg", new string[] { "--use-minimal-apis", "--calls-graph" })]
-    [InlineData("SingleOrg", new string[] { "--use-program-main", "--use-minimal-apis", "--calls-graph" })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseMinimalApis })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.CallsGraph })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseMinimalApis, ArgConstants.CallsGraph })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CallsGraph })]
     public Task WebApiTemplateCSharp_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
     [Fact]
@@ -65,15 +65,15 @@ public class WebApiTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public Task WebApiTemplateProgramMainCSharp() => WebApiTemplateCore(languageOverride: null, args: new [] { "--use-program-main" });
+    public Task WebApiTemplateProgramMainCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public Task WebApiTemplateMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new [] { "--use-minimal-apis" });
+    public Task WebApiTemplateMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseMinimalApis });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public Task WebApiTemplateProgramMainMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new [] { "--use-program-main --use-minimal-apis" });
+    public Task WebApiTemplateProgramMainMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { "ArgConstants.UseProgramMain ArgConstants.UseMinimalApis" });
 
     [ConditionalTheory]
     [InlineData(false, false)]
@@ -87,11 +87,11 @@ public class WebApiTemplateTest : LoggedTest
 
         var args = useProgramMain
             ? useMinimalApis
-                ? new[] { "--use-program-main", "--use-minimal-apis", "--no-openapi" }
-                : new[] { "--use-program-main", "--no-openapi" }
+                ? new[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.NoOpenApi }
+                : new[] { ArgConstants.UseProgramMain, ArgConstants.NoOpenApi }
             : useMinimalApis
-                ? new[] { "--use-minimal-apis", "--no-openapi" }
-                : new[] { "--no-openapi" };
+                ? new[] { ArgConstants.UseMinimalApis, ArgConstants.NoOpenApi }
+                : new[] { ArgConstants.NoOpenApi };
         var createResult = await project.RunDotNetNewAsync("webapi", args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
