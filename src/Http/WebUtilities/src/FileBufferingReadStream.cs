@@ -317,7 +317,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 _buffer.Write(buffer.Slice(0, read));
             }
-            else
+            // Allow zero-byte reads
+            else if (buffer.Length > 0)
             {
                 _completelyBuffered = true;
             }
@@ -392,7 +393,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 await _buffer.WriteAsync(buffer.Slice(0, read), cancellationToken);
             }
-            else
+            // Allow zero-byte reads
+            else if (buffer.Length > 0)
             {
                 _completelyBuffered = true;
             }
