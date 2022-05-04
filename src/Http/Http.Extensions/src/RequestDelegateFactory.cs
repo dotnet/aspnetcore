@@ -381,7 +381,7 @@ public static partial class RequestDelegateFactory
 
     private static Expression CreateRouteHandlerInvocationContextBase(FactoryContext factoryContext)
     {
-        // In the event that the a constructor matching the arity of the
+        // In the event that a constructor matching the arity of the
         // provided parameters is not found, we fall back to using the
         // non-generic implementation of RouteHandlerInvocationContext.
         var fallbackConstruction = Expression.New(

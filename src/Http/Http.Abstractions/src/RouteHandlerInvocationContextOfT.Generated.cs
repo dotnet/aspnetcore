@@ -113,7 +113,6 @@ internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocation
     {
         return GetEnumerator();
     }
-
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationContext, IList<object?>
@@ -227,7 +226,6 @@ internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvoca
     {
         return GetEnumerator();
     }
-
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocationContext, IList<object?>
@@ -348,7 +346,6 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerIn
     {
         return GetEnumerator();
     }
-
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvocationContext, IList<object?>
@@ -476,7 +473,6 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandl
     {
         return GetEnumerator();
     }
-
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerInvocationContext, IList<object?>
@@ -611,7 +607,6 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteH
     {
         return GetEnumerator();
     }
-
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHandlerInvocationContext, IList<object?>
@@ -753,7 +748,6 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : Ro
     {
         return GetEnumerator();
     }
-
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : RouteHandlerInvocationContext, IList<object?>
@@ -902,7 +896,6 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> 
     {
         return GetEnumerator();
     }
-
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : RouteHandlerInvocationContext, IList<object?>
@@ -1058,7 +1051,6 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     {
         return GetEnumerator();
     }
-
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : RouteHandlerInvocationContext, IList<object?>
@@ -1221,7 +1213,6 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     {
         return GetEnumerator();
     }
-
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
 internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : RouteHandlerInvocationContext, IList<object?>
@@ -1391,5 +1382,4 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     {
         return GetEnumerator();
     }
-
 }

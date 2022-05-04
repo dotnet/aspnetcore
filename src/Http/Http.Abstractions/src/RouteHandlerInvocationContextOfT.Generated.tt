@@ -126,6 +126,5 @@ internal sealed class RouteHandlerInvocationContext<<# foreach (var argumentCoun
     {
         return GetEnumerator();
     }
-
 }
 <# } #>

@@ -27,6 +27,6 @@ public abstract class RouteHandlerInvocationContext
     /// </summary>
     /// <typeparam name="T">The <see cref="Type"/> of the resolved argument.</typeparam>
     /// <param name="index">An integer representing the position of the argument in the argument list.</param>
-    /// <returns>The argument at a given <paramref name="index"/></returns>
+    /// <returns>The argument at a given <paramref name="index"/>.</returns>
     public abstract T GetArgument<T>(int index);
 }

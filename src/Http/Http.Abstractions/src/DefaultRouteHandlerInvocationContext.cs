@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Provides a default implementation for wrapping the <see cref="HttpContext"/> and parameters
 /// provided to a route handler.
 /// </summary>
-public class DefaultRouteHandlerInvocationContext : RouteHandlerInvocationContext
+public sealed class DefaultRouteHandlerInvocationContext : RouteHandlerInvocationContext
 {
     /// <summary>
     /// Creates a new instance of the <see cref="DefaultRouteHandlerInvocationContext"/> for a given request.
