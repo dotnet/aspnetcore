@@ -1019,29 +1019,6 @@ describe("hubConnection", () => {
         }
     });
 
-    it("populates the Content-Type header when sending XMLHttpRequest", async () => {
-        // Skip test on Node as this header isn't set (it was added for React-Native)
-        if (typeof window === "undefined") {
-            return;
-        }
-        const hubConnection = getConnectionBuilder(HttpTransportType.LongPolling, TESTHUB_NOWEBSOCKETS_ENDPOINT_URL)
-            .withHubProtocol(new JsonHubProtocol())
-            .build();
-
-        try {
-            await hubConnection.start();
-
-            // Check what transport was used by asking the server to tell us.
-            expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("LongPolling");
-            // Check to see that the Content-Type header is set the expected value
-            expect(await hubConnection.invoke("GetContentTypeHeader")).toEqual("text/plain;charset=UTF-8");
-
-            await hubConnection.stop();
-        } catch (e) {
-            fail(e);
-        }
-    });
-
     eachTransport((t) => {
         it("sets the user agent header", async () => {
             const hubConnection = getConnectionBuilder(t, TESTHUBENDPOINT_URL)
