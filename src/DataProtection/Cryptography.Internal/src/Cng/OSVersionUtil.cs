@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 
 namespace Microsoft.AspNetCore.Cryptography.Cng;
@@ -11,34 +12,29 @@ internal static class OSVersionUtil
 
     private static OSVersion GetOSVersion()
     {
-        const string BCRYPT_LIB = "bcrypt.dll";
-        SafeLibraryHandle? bcryptLibHandle = null;
-        try
+        if (Environment.OSVersion.Platform is not PlatformID.Win32NT)
         {
-            bcryptLibHandle = SafeLibraryHandle.Open(BCRYPT_LIB);
-        }
-        catch
-        {
-            // we'll handle the exceptional case later
+            // Not running on Win7+.
+            return OSVersion.NotWindows;
         }
 
-        if (bcryptLibHandle != null)
+        try
         {
-            using (bcryptLibHandle)
+            // REVIEW: Should we just use the lazy handle instead of disposing?
+            using var bcryptLibHandle = SafeLibraryHandle.Open(UnsafeNativeMethods.BCRYPT_LIB);
+
+            if (bcryptLibHandle.DoesProcExist("BCryptKeyDerivation"))
             {
-                if (bcryptLibHandle.DoesProcExist("BCryptKeyDerivation"))
-                {
-                    // We're running on Win8+.
-                    return OSVersion.Win8OrLater;
-                }
-                else
-                {
-                    // We're running on Win7+.
-                    return OSVersion.Win7OrLater;
-                }
+                // We're running on Win8+.
+                return OSVersion.Win8OrLater;
+            }
+            else
+            {
+                // We're running on Win7+.
+                return OSVersion.Win7OrLater;
             }
         }
-        else
+        catch
         {
             // Not running on Win7+.
             return OSVersion.NotWindows;
