@@ -306,6 +306,8 @@ On Windows, you can run the command script:
 .\eng\build.cmd
 ```
 
+> You died of disentery, play again
+
 On macOS/Linux, you can run the shell script:
 
 ```bash
