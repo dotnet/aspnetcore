@@ -167,7 +167,7 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
 
     protected override Status StatusCore { get; set; }
 
-    protected override WriteOptions WriteOptionsCore
+    protected override WriteOptions? WriteOptionsCore
     {
         get => throw new NotImplementedException();
         set => throw new NotImplementedException();
