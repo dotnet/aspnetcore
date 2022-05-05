@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 #if (WindowsAuth)
 using Microsoft.AspNetCore.Authentication.Negotiate;
 #endif
-#if (EnableOpenAPI)
-using Microsoft.AspNetCore.OpenApi;
-#endif
 #if (GenerateGraph)
 using Graph = Microsoft.Graph;
 #endif
@@ -15,7 +12,7 @@ using Graph = Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.Resource;
 #endif
-#if (OrganizationalAuth || IndividualB2CAuth || GenerateGraph || WindowsAuth || EnableOpenAPI)
+#if (OrganizationalAuth || IndividualB2CAuth || GenerateGraph || WindowsAuth)
 
 #endif
 namespace Company.WebApplication1;
@@ -170,12 +167,10 @@ public class Program
         #if (EnableOpenAPI && !NoAuth)
         })
         .WithName("GetWeatherForecast")
-        .WithOpenApi()
         .RequireAuthorization();
         #elif (EnableOpenAPI && NoAuth)
         })
-        .WithName("GetWeatherForecast")
-        .WithOpenApi();
+        .WithName("GetWeatherForecast");
         #elif (!EnableOpenAPI && !NoAuth)
         })
         .RequireAuthorization();
