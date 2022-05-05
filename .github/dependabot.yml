@@ -57,18 +57,6 @@ updates:
     allow:
       - dependency-type: "all"
     commit-message:
-      prefix: "[release/5.0] "
-      include: scope
-    labels:
-      - area-infrastructure
-    target-branch: "release/5.0"
-  - package-ecosystem: "gitsubmodule"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-    allow:
-      - dependency-type: "all"
-    commit-message:
       prefix: "[release/6.0] "
       include: scope
     labels:
