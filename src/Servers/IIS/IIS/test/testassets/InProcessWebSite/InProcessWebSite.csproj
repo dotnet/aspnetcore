@@ -29,6 +29,7 @@
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="System.Private.Uri" />
     <Reference Include="xunit.assert" />
   </ItemGroup>
 
