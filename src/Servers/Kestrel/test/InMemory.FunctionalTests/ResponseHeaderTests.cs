@@ -105,17 +105,15 @@ public class ResponseHeaderTests : TestApplicationErrorLoggerLoggedTest
     [Fact]
     public async Task ResponseHeaders_NullEntriesAreIgnored()
     {
-        string tag = "tag";
+        var tag = "Warning";
 
         await using var server = new TestServer(context =>
         {
             Assert.Empty(context.Response.Headers[tag]);
-            var beforeLength = context.Response.Headers.ContentLength;
 
             context.Response.Headers.Add(tag, new StringValues((string)null));
 
             Assert.Empty(context.Response.Headers[tag]);
-            Assert.Equal(beforeLength, context.Response.Headers.ContentLength);
 
             // this should not throw
             context.Response.Headers.Add(tag, new StringValues("Hello"));
