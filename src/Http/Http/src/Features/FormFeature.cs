@@ -245,7 +245,7 @@ public class FormFeature : IFormFeature
 
                         // Do not limit the key name length here because the multipart headers length limit is already in effect.
                         var key = formDataSection.Name;
-                        var value = await formDataSection.GetValueAsync();
+                        var value = await formDataSection.GetValueAsync(cancellationToken);
 
                         formAccumulator.Append(key, value);
                         if (formAccumulator.ValueCount > _options.ValueCountLimit)
