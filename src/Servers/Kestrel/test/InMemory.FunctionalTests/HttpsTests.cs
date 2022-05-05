@@ -354,7 +354,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows)]
         public async Task ClientAttemptingToUseUnsupportedProtocolIsLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -383,7 +384,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows)]
         public async Task DevCertWithInvalidPrivateKeyProducesCustomWarning()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();

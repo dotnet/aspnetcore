@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows)]
         public async Task TlsHandshakeRejectsTlsLessThan12()
         {
             using (var server = new TestServer(context =>

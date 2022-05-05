@@ -361,7 +361,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows)]
         public async Task DoesNotSupportTls10()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
