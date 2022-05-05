@@ -25,6 +25,8 @@
     "webpack-cli": "^3.0.3"
   },
   "resolutions": {
-    "lodash": ">=4.17.21"
+    "lodash": ">=4.17.21",
+    "ansi-regex": "^4.1.1",
+    "minimist": ">=1.2.6"
   }
 }

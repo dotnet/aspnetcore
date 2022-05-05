@@ -196,13 +196,17 @@
     <MicrosoftVSSDKBuildToolsVersion>15.9.3032</MicrosoftVSSDKBuildToolsVersion>
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <MicrosoftCSharpPackageVersion>4.7.0</MicrosoftCSharpPackageVersion>
+    <MicrosoftWin32PrimitivesPackageVersion>4.3.0</MicrosoftWin32PrimitivesPackageVersion>
     <NETStandardLibraryPackageVersion>2.0.3</NETStandardLibraryPackageVersion>
     <SystemBuffersPackageVersion>4.5.0</SystemBuffersPackageVersion>
     <SystemCodeDomPackageVersion>4.4.0</SystemCodeDomPackageVersion>
     <SystemCommandlineExperimentalPackageVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalPackageVersion>
     <SystemComponentModelPackageVersion>4.3.0</SystemComponentModelPackageVersion>
     <SystemNetHttpPackageVersion>4.3.4</SystemNetHttpPackageVersion>
+    <SystemNetPrimitivesPackageVersion>4.3.0</SystemNetPrimitivesPackageVersion>
     <SystemNetSocketsPackageVersion>4.3.0</SystemNetSocketsPackageVersion>
+    <SystemPrivateUriPackageVersion>4.3.2</SystemPrivateUriPackageVersion>
+    <SystemSecurityCryptographyX509CertificatesPackageVersion>4.3.2</SystemSecurityCryptographyX509CertificatesPackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.3</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>

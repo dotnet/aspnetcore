@@ -35,6 +35,10 @@
     "**/set-value": "^2.0.1",
     "lodash": ">=4.17.21",
     "url-parse": ">=1.5.8",
-    "node-fetch": ">=2.6.7"
+    "node-fetch": ">=2.6.7",
+    "ansi-regex": "^4.1.1",
+    "msgpack5": ">=4.5.1",
+    "ws": ">=6.2.2",
+    "minimist": ">=1.2.6"
   }
 }

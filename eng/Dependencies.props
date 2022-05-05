@@ -55,6 +55,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <LatestPackageReference Include="Microsoft.Extensions.Options" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
+    <LatestPackageReference Include="Microsoft.Win32.Primitives" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
     <LatestPackageReference Include="Microsoft.Win32.SystemEvents" />
     <LatestPackageReference Include="System.Buffers" />
@@ -69,7 +70,9 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.IO.Pipelines" />
     <LatestPackageReference Include="System.Net.Http" />
     <LatestPackageReference Include="System.Net.Http.Json" />
+    <LatestPackageReference Include="System.Net.Primitives" />
     <LatestPackageReference Include="System.Net.Sockets" />
+    <LatestPackageReference Include="System.Private.Uri" />
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
@@ -77,6 +80,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Security.AccessControl" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
+    <LatestPackageReference Include="System.Security.Cryptography.X509Certificates" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
     <LatestPackageReference Include="System.Security.Permissions" />
     <LatestPackageReference Include="System.Security.Principal.Windows" />
