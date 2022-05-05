@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 
@@ -276,7 +273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         return result;
     }
 
-    private class MethodInfo
+    private sealed class MethodInfo
     {
         public string MethodAsciiString;
         public ulong AsciiStringAsLong;

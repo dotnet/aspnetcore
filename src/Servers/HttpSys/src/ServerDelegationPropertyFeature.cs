@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal class ServerDelegationPropertyFeature : IServerDelegationFeature
+internal sealed class ServerDelegationPropertyFeature : IServerDelegationFeature
 {
     private readonly ILogger _logger;
     private readonly UrlGroup _urlGroup;

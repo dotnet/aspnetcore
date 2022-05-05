@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class MiddlewareAnalyzer
+internal sealed class MiddlewareAnalyzer
 {
     private readonly StartupAnalysisBuilder _context;
 

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
-internal class ServerProtocolSegment : PatternSegment
+internal sealed class ServerProtocolSegment : PatternSegment
 {
     public override string? Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
     {

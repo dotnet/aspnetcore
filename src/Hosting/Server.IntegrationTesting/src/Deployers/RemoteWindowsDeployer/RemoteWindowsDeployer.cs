@@ -337,7 +337,7 @@ public class RemoteWindowsDeployer : ApplicationDeployer
         return scripts;
     }
 
-    private class Scripts
+    private sealed class Scripts
     {
         public Scripts(string remotePSSessionHelper, string startServer, string stopServer)
         {

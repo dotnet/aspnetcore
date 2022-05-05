@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 //
 // We can't refer to Hub.Items from a CircuitHost - but we want need to be
 // able to break the link between Hub.Items and a CircuitHost.
-internal class CircuitHandle
+internal sealed class CircuitHandle
 {
     public CircuitHost CircuitHost { get; set; }
 }

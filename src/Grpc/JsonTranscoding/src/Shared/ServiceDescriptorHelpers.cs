@@ -342,7 +342,7 @@ internal static class ServiceDescriptorHelpers
         return null;
     }
 
-    public record BodyDescriptorInfo(
+    public sealed record BodyDescriptorInfo(
         MessageDescriptor Descriptor,
         List<FieldDescriptor>? FieldDescriptors,
         bool IsDescriptorRepeated,

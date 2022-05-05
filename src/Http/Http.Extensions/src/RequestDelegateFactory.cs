@@ -1791,7 +1791,7 @@ public static partial class RequestDelegateFactory
         }
         else if (obj is Task<string?> taskString)
         {
-            return ExecuteTaskOfString(taskString, httpContext);        
+            return ExecuteTaskOfString(taskString, httpContext);
         }
         else if (obj is ValueTask<string?> valueTaskString)
         {
@@ -1968,7 +1968,7 @@ public static partial class RequestDelegateFactory
         await EnsureRequestResultNotNull(result).ExecuteAsync(httpContext);
     }
 
-    private class FactoryContext
+    private sealed class FactoryContext
     {
         // Options
         public IServiceProvider? ServiceProvider { get; init; }

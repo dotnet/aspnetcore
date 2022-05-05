@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
-internal class MacOSCertificateManager : CertificateManager
+internal sealed class MacOSCertificateManager : CertificateManager
 {
     private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
     private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";

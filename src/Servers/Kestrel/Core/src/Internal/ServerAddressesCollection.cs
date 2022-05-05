@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class ServerAddressesCollection : ICollection<string>
+internal sealed class ServerAddressesCollection : ICollection<string>
 {
     private readonly List<string> _addresses = new List<string>();
     private readonly PublicServerAddressesCollection _publicCollection;
@@ -96,7 +96,7 @@ internal class ServerAddressesCollection : ICollection<string>
         return GetEnumerator();
     }
 
-    private class PublicServerAddressesCollection : ICollection<string>
+    private sealed class PublicServerAddressesCollection : ICollection<string>
     {
         private readonly ServerAddressesCollection _addressesCollection;
         private readonly object _addressesLock;

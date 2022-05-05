@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class ServicesAnalysis
+internal sealed class ServicesAnalysis
 {
     public ServicesAnalysis(IMethodSymbol configureServicesMethod, ImmutableArray<ServicesItem> services)
     {

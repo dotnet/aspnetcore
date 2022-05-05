@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration;
 
-internal class IISSetupFilter : IStartupFilter
+internal sealed class IISSetupFilter : IStartupFilter
 {
     private readonly string _pairingToken;
     private readonly PathString _pathBase;

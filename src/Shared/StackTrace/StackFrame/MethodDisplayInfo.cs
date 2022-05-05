@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Microsoft.Extensions.StackTrace.Sources;
 
-internal class MethodDisplayInfo
+internal sealed class MethodDisplayInfo
 {
     public MethodDisplayInfo(string? declaringTypeName, string name, string? genericArguments, string? subMethod, IEnumerable<ParameterDisplayInfo> parameters)
     {

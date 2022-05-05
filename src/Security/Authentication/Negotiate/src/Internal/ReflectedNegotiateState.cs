@@ -12,7 +12,7 @@ using System.Security.Principal;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
-internal class ReflectedNegotiateState : INegotiateState
+internal sealed class ReflectedNegotiateState : INegotiateState
 {
     // https://www.gnu.org/software/gss/reference/gss.pdf
     private const uint GSS_S_NO_CRED = 7 << 16;

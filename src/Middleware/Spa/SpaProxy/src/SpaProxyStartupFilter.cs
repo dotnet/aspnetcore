@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.SpaProxy;
 
-internal class SpaProxyStartupFilter : IStartupFilter
+internal sealed class SpaProxyStartupFilter : IStartupFilter
 {
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
     {

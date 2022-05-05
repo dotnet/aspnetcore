@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core;
 /// <summary>
 /// The default authentication handler with IIS In-Process
 /// </summary>
-internal class IISServerAuthenticationHandlerInternal : IAuthenticationHandler
+internal sealed class IISServerAuthenticationHandlerInternal : IAuthenticationHandler
 {
     private HttpContext? _context;
     private IISHttpContext? _iisHttpContext;

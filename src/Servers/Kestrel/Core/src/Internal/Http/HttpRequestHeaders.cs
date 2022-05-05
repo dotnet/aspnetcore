@@ -176,7 +176,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         return enumerator;
     }
 
-    private class EnumeratorCache
+    private sealed class EnumeratorCache
     {
         /// <summary>
         /// Enumerator created from previous request
@@ -207,7 +207,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
     /// IEnumerator allocations across requests if the header collection is commonly
     /// enumerated for forwarding in a reverse-proxy type situation.
     /// </summary>
-    private class EnumeratorBox : IEnumerator<KeyValuePair<string, StringValues>>
+    private sealed class EnumeratorBox : IEnumerator<KeyValuePair<string, StringValues>>
     {
         public Enumerator Enumerator;
 

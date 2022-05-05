@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 
-internal class ContentEncodingNegotiator
+internal sealed class ContentEncodingNegotiator
 {
     // List of encodings by preference order with their associated extension so that we can easily handle "*".
     private static readonly StringSegment[] _preferredEncodings =

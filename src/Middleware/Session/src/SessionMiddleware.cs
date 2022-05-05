@@ -124,7 +124,7 @@ public class SessionMiddleware
         }
     }
 
-    private class SessionEstablisher
+    private sealed class SessionEstablisher
     {
         private readonly HttpContext _context;
         private readonly string _cookieValue;

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
-internal class DefaultFilterProvider : IFilterProvider
+internal sealed class DefaultFilterProvider : IFilterProvider
 {
     public int Order => -1000;
 

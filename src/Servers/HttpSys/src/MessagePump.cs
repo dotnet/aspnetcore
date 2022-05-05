@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal partial class MessagePump : IServer
+internal sealed partial class MessagePump : IServer
 {
     private readonly ILogger _logger;
     private readonly HttpSysOptions _options;

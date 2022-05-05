@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class UseMvcAnalyzer
+internal sealed class UseMvcAnalyzer
 {
     private readonly StartupAnalysis _context;
 

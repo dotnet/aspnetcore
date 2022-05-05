@@ -13,7 +13,9 @@ namespace Microsoft.Extensions.Localization;
 /// This API supports infrastructure and is not intended to be used
 /// directly from your code. This API may change or be removed in future releases.
 /// </summary>
+#pragma warning disable CA1852 // Seal internal types
 internal class ResourceManagerStringProvider : IResourceStringProvider
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly IResourceNamesCache _resourceNamesCache;
     private readonly ResourceManager _resourceManager;

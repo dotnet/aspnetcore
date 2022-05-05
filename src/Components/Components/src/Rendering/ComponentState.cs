@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// within the context of a <see cref="Renderer"/>. This is an internal implementation
 /// detail of <see cref="Renderer"/>.
 /// </summary>
-internal class ComponentState : IDisposable
+internal sealed class ComponentState : IDisposable
 {
     private readonly Renderer _renderer;
     private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;

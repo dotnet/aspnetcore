@@ -12,7 +12,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Caching.SqlServer;
 
-internal class DatabaseOperations : IDatabaseOperations
+internal sealed class DatabaseOperations : IDatabaseOperations
 {
     /// <summary>
     /// Since there is no specific exception type representing a 'duplicate key' error, we are relying on
@@ -24,11 +24,6 @@ internal class DatabaseOperations : IDatabaseOperations
     /// </summary>
     private const int DuplicateKeyErrorId = 2627;
 
-    protected const string GetTableSchemaErrorText =
-        "Could not retrieve information of table with schema '{0}' and " +
-        "name '{1}'. Make sure you have the table setup and try again. " +
-        "Connection string: {2}";
-
     public DatabaseOperations(
         string connectionString, string schemaName, string tableName, ISystemClock systemClock)
     {
@@ -39,15 +34,15 @@ internal class DatabaseOperations : IDatabaseOperations
         SqlQueries = new SqlQueries(schemaName, tableName);
     }
 
-    protected SqlQueries SqlQueries { get; }
+    internal SqlQueries SqlQueries { get; }
 
-    protected string ConnectionString { get; }
+    internal string ConnectionString { get; }
 
-    protected string SchemaName { get; }
+    internal string SchemaName { get; }
 
-    protected string TableName { get; }
+    internal string TableName { get; }
 
-    protected ISystemClock SystemClock { get; }
+    private ISystemClock SystemClock { get; }
 
     public void DeleteCacheItem(string key)
     {
@@ -77,12 +72,12 @@ internal class DatabaseOperations : IDatabaseOperations
         }
     }
 
-    public virtual byte[]? GetCacheItem(string key)
+    public byte[]? GetCacheItem(string key)
     {
         return GetCacheItem(key, includeValue: true);
     }
 
-    public virtual async Task<byte[]?> GetCacheItemAsync(string key, CancellationToken token = default(CancellationToken))
+    public async Task<byte[]?> GetCacheItemAsync(string key, CancellationToken token = default(CancellationToken))
     {
         token.ThrowIfCancellationRequested();
 
@@ -101,7 +96,7 @@ internal class DatabaseOperations : IDatabaseOperations
         await GetCacheItemAsync(key, includeValue: false, token: token).ConfigureAwait(false);
     }
 
-    public virtual void DeleteExpiredCacheItems()
+    public void DeleteExpiredCacheItems()
     {
         var utcNow = SystemClock.UtcNow;
 
@@ -116,7 +111,7 @@ internal class DatabaseOperations : IDatabaseOperations
         }
     }
 
-    public virtual void SetCacheItem(string key, byte[] value, DistributedCacheEntryOptions options)
+    public void SetCacheItem(string key, byte[] value, DistributedCacheEntryOptions options)
     {
         var utcNow = SystemClock.UtcNow;
 
@@ -154,7 +149,7 @@ internal class DatabaseOperations : IDatabaseOperations
         }
     }
 
-    public virtual async Task SetCacheItemAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
+    public async Task SetCacheItemAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
     {
         token.ThrowIfCancellationRequested();
 
@@ -194,7 +189,7 @@ internal class DatabaseOperations : IDatabaseOperations
         }
     }
 
-    protected virtual byte[]? GetCacheItem(string key, bool includeValue)
+    private byte[]? GetCacheItem(string key, bool includeValue)
     {
         var utcNow = SystemClock.UtcNow;
 
@@ -238,7 +233,7 @@ internal class DatabaseOperations : IDatabaseOperations
         return value;
     }
 
-    protected virtual async Task<byte[]?> GetCacheItemAsync(string key, bool includeValue, CancellationToken token = default(CancellationToken))
+    private async Task<byte[]?> GetCacheItemAsync(string key, bool includeValue, CancellationToken token = default(CancellationToken))
     {
         token.ThrowIfCancellationRequested();
 
@@ -285,7 +280,7 @@ internal class DatabaseOperations : IDatabaseOperations
         return value;
     }
 
-    protected static bool IsDuplicateKeyException(SqlException ex)
+    private static bool IsDuplicateKeyException(SqlException ex)
     {
         if (ex.Errors != null)
         {
@@ -294,7 +289,7 @@ internal class DatabaseOperations : IDatabaseOperations
         return false;
     }
 
-    protected static DateTimeOffset? GetAbsoluteExpiration(DateTimeOffset utcNow, DistributedCacheEntryOptions options)
+    private static DateTimeOffset? GetAbsoluteExpiration(DateTimeOffset utcNow, DistributedCacheEntryOptions options)
     {
         // calculate absolute expiration
         DateTimeOffset? absoluteExpiration = null;
@@ -314,7 +309,7 @@ internal class DatabaseOperations : IDatabaseOperations
         return absoluteExpiration;
     }
 
-    protected static void ValidateOptions(TimeSpan? slidingExpiration, DateTimeOffset? absoluteExpiration)
+    private static void ValidateOptions(TimeSpan? slidingExpiration, DateTimeOffset? absoluteExpiration)
     {
         if (!slidingExpiration.HasValue && !absoluteExpiration.HasValue)
         {

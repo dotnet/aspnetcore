@@ -207,7 +207,7 @@ public partial class BodyModelBinder : IModelBinder
         return policy == InputFormatterExceptionPolicy.AllExceptions;
     }
 
-    private partial class Log
+    private sealed partial class Log
     {
         public static void InputFormatterSelected(ILogger logger, IInputFormatter inputFormatter, InputFormatterContext formatterContext)
         {

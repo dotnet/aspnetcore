@@ -21,7 +21,7 @@ public class TestFileChangeToken : IChangeToken
         return new NullDisposable();
     }
 
-    private class NullDisposable : IDisposable
+    private sealed class NullDisposable : IDisposable
     {
         public void Dispose()
         {

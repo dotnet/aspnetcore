@@ -143,7 +143,7 @@ public class RemoteAuthenticationOptions : AuthenticationSchemeOptions
         set => _correlationCookieBuilder = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    private class CorrelationCookieBuilder : RequestPathBaseCookieBuilder
+    private sealed class CorrelationCookieBuilder : RequestPathBaseCookieBuilder
     {
         private readonly RemoteAuthenticationOptions _options;
 

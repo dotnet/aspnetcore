@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
-internal class AntiforgerySerializationContext
+internal sealed class AntiforgerySerializationContext
 {
     // Avoid allocating 256 bytes (the default) and using 18 (the AntiforgeryToken minimum). 64 bytes is enough for
     // a short username or claim UID and some additional data. MemoryStream bumps capacity to 256 if exceeded.

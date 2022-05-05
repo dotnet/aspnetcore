@@ -751,7 +751,7 @@ internal sealed partial class HttpConnectionDispatcher
         response.Headers.Expires = HeaderValueEpochDate;
     }
 
-    private class EmptyServiceProvider : IServiceProvider
+    private sealed class EmptyServiceProvider : IServiceProvider
     {
         public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
         public object? GetService(Type serviceType) => null;

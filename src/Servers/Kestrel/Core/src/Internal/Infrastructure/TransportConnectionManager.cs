@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-internal class TransportConnectionManager
+internal sealed class TransportConnectionManager
 {
     private readonly ConnectionManager _connectionManager;
     private readonly ConcurrentDictionary<long, ConnectionReference> _connectionReferences = new ConcurrentDictionary<long, ConnectionReference>();

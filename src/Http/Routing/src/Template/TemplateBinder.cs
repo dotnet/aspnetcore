@@ -745,7 +745,7 @@ public class TemplateBinder
 
     // This represents an 'explicit null' in the slots array.
     [DebuggerDisplay("explicit null")]
-    private class SentinullValue
+    private sealed class SentinullValue
     {
         public static object Instance = new SentinullValue();
 

@@ -34,7 +34,7 @@ public abstract class Disable2faModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class Disable2faModel<TUser> : Disable2faModel where TUser : class
+internal sealed class Disable2faModel<TUser> : Disable2faModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly ILogger<Disable2faModel> _logger;

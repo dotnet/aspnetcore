@@ -41,7 +41,7 @@ public class SessionOptions
     /// </summary>
     public TimeSpan IOTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
-    private class SessionCookieBuilder : CookieBuilder
+    private sealed class SessionCookieBuilder : CookieBuilder
     {
         public SessionCookieBuilder()
         {

@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Configures <see cref="MvcViewOptions"/> to use <see cref="RazorViewEngine"/>.
 /// </summary>
-internal class MvcRazorMvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
+internal sealed class MvcRazorMvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
 {
     private readonly IRazorViewEngine _razorViewEngine;
 
