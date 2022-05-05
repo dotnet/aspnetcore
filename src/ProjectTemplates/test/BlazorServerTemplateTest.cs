@@ -27,25 +27,27 @@ namespace Templates.Test
         public Task BlazorServerTemplateWorks_NoAuth() => CreateBuildPublishAsync("blazorservernoauth");
 
         [Fact]
-        public Task BlazorServerTemplateWorks_ProgamMainNoAuth() => CreateBuildPublishAsync("blazorservernoauth", args: new [] { "--use-program-main" });
+        public Task BlazorServerTemplateWorks_ProgamMainNoAuth() => CreateBuildPublishAsync("blazorservernoauth", args: new [] { ArgConstants.UseProgramMain });
 
         [Theory]
         [InlineData(true, null)]
-        [InlineData(true, new string[] { "--use-program-main" })]
+        [InlineData(true, new string[] { ArgConstants.UseProgramMain })]
         [InlineData(false, null)]
-        [InlineData(false, new string[] { "--use-program-main" })]
+        [InlineData(false, new string[] { ArgConstants.UseProgramMain })]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
         public Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB, string[] args) => CreateBuildPublishAsync("blazorserverindividual" + (useLocalDB ? "uld" : "", args: args));
 
         [Theory]
         [InlineData("IndividualB2C", null)]
-        [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        [InlineData("IndividualB2C", new string[] { "--use-program-main", "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
         [InlineData("SingleOrg", null)]
-        [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        [InlineData("SingleOrg", new string[] { "--use-program-main --called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
-        [InlineData("SingleOrg", new string[] { "--use-program-main --calls-graph" })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
+        [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
         public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args)
             => CreateBuildPublishAsync("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), auth, args);
 

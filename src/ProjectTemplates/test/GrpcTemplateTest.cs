@@ -43,7 +43,7 @@ namespace Templates.Test
         {
             var project = await ProjectFactory.GetOrCreateProject("grpc", Output);
 
-            var args = useProgramMain ? new [] { "--use-program-main" } : null;
+            var args = useProgramMain ? new [] { ArgConstants.UseProgramMain } : null;
             var createResult = await project.RunDotNetNewAsync("grpc", args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 

@@ -45,7 +45,7 @@ namespace Templates.Test
 
         [ConditionalFact]
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-        public async Task MvcTemplate_ProgramMainNoAuthCSharp() => await MvcTemplateCore(languageOverride: null, new [] { "--use-program-main" });
+        public async Task MvcTemplate_ProgramMainNoAuthCSharp() => await MvcTemplateCore(languageOverride: null, new [] { ArgConstants.UseProgramMain });
 
         private async Task MvcTemplateCore(string languageOverride, string[] args = null)
         {
@@ -129,7 +129,7 @@ namespace Templates.Test
         {
             var project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
 
-            var args = useProgramMain ? new [] { "--use-program-main" } : null;
+            var args = useProgramMain ? new [] { ArgConstants.UseProgramMain } : null;
             var createResult = await project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: useLocalDB, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
@@ -292,10 +292,15 @@ namespace Templates.Test
         [ConditionalTheory]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         [InlineData("IndividualB2C", null)]
-        [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
         [InlineData("SingleOrg", null)]
-        [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
+        [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
         public Task MvcTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => MvcTemplateBuildsAndPublishes(auth: auth, args: args);
 
         private async Task<Project> MvcTemplateBuildsAndPublishes(string auth, string[] args)

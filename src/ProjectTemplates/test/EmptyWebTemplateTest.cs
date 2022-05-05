@@ -42,7 +42,7 @@ namespace Templates.Test
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         public async Task EmptyWebTemplateProgramMainCSharp()
         {
-            await EmtpyTemplateCore(languageOverride: null, args: new [] { "--use-program-main" });
+            await EmtpyTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
         }
 
         [Fact]

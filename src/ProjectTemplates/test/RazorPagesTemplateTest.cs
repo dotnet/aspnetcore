@@ -42,7 +42,7 @@ namespace Templates.Test
         {
             var project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
 
-            var args = useProgramMain ? new [] { "--use-program-main" } : null;
+            var args = useProgramMain ? new [] { ArgConstants.UseProgramMain } : null;
             var createResult = await project.RunDotNetNewAsync("razor", args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("razor", project, createResult));
 
@@ -116,7 +116,7 @@ namespace Templates.Test
         {
             var project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
 
-            var args = useProgramMain ? new [] { "--use-program-main" } : null;
+            var args = useProgramMain ? new [] { ArgConstants.UseProgramMain } : null;
             var createResult = await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
@@ -231,16 +231,18 @@ namespace Templates.Test
         [ConditionalTheory]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         [InlineData("IndividualB2C", null)]
-        [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        [InlineData("IndividualB2C", new string[] { "--use-program-main --called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
         [InlineData("SingleOrg", null)]
-        [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        [InlineData("SingleOrg", new string[] { "--use-program-main --called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
+        [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
         public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
 
         [ConditionalTheory]
-        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
-        [InlineData("SingleOrg", new string[] { "--use-program-main --calls-graph" })]
+        [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
         public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes_WithSingleOrg(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
 
         private async Task<Project> BuildAndPublishRazorPagesTemplate(string auth, string[] args)

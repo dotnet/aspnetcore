@@ -33,13 +33,13 @@ namespace Templates.Test
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/sdk/issues/12831")]
         [InlineData("C#", null)]
-        [InlineData("C#", new string[] { "--use-program-main" })]
+        [InlineData("C#", new string[] { ArgConstants.UseProgramMain })]
         [InlineData("F#", null)]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25404")]
         public async Task WorkerTemplateAsync(string language, string[] args)
         {
             var project = await ProjectFactory.GetOrCreateProject(
-                $"worker-{ language.ToLowerInvariant()[0] }sharp",
+                $"worker-{language.ToLowerInvariant()[0]}sharp",
                 Output);
 
             var createResult = await project.RunDotNetNewAsync("worker", language: language, args: args);
