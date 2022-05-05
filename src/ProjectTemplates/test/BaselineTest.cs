@@ -67,6 +67,7 @@ namespace Templates.Test
         }
 
         // This test should generally not be quarantined as it only is checking that the expected files are on disk
+        // and that the namespace declarations in the generated .cs files start with the project name
         [Theory]
         [MemberData(nameof(TemplateBaselines))]
         public async Task Template_Produces_The_Right_Set_Of_FilesAsync(string arguments, string[] expectedFiles)
