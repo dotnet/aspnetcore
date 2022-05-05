@@ -18,8 +18,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 
 internal sealed class JsonTranscodingServerCallContext : ServerCallContext, IServerCallContextFeature
 {
-    // TODO(JamesNK): Remove nullable override after Grpc.Core.Api update
-    private static readonly AuthContext UnauthenticatedContext = new AuthContext(null!, new Dictionary<string, List<AuthProperty>>());
+    private static readonly AuthContext UnauthenticatedContext = new AuthContext(null, new Dictionary<string, List<AuthProperty>>());
 
     private readonly IMethod _method;
 
@@ -191,7 +190,6 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
         }
     }
 
-    // TODO(JamesNK): Remove nullable override after Grpc.Core.Api update
     protected override IDictionary<object, object> UserStateCore => HttpContext.Items!;
 
     protected override ContextPropagationToken CreatePropagationTokenCore(ContextPropagationOptions? options)
