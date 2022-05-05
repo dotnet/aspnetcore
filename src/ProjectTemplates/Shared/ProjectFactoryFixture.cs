@@ -14,6 +14,7 @@ namespace Templates.Test.Helpers
 {
     public class ProjectFactoryFixture : IDisposable
     {
+        private const string LetterChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private readonly ConcurrentDictionary<string, Project> _projects = new ConcurrentDictionary<string, Project>();
 
         public IMessageSink DiagnosticsMessageSink { get; }
@@ -42,7 +43,16 @@ namespace Templates.Test.Helpers
                         DiagnosticsMessageSink = DiagnosticsMessageSink,
                         ProjectGuid = Path.GetRandomFileName().Replace(".", string.Empty)
                     };
-                    project.ProjectName = $"AspNet.{project.ProjectGuid}";
+                    // Replace first character with a random letter if it's a digit to avoid random insertions of '_'
+                    // into template namespace declarations (i.e. make it more stable for testing)
+                    var projectNameSuffix = !char.IsLetter(project.ProjectGuid[0])
+                        ? string.Create(project.ProjectGuid.Length, project.ProjectGuid, (suffix, guid) =>
+                        {
+                            guid.AsSpan(1).CopyTo(suffix[1..]);
+                            suffix[0] = GetRandomLetter();
+                        })
+                        : project.ProjectGuid;
+                    project.ProjectName = $"AspNet.{projectNameSuffix}";
 
                     var assemblyPath = GetType().Assembly;
                     var basePath = GetTemplateFolderBasePath(assemblyPath);
@@ -51,6 +61,8 @@ namespace Templates.Test.Helpers
                 },
                 output);
         }
+
+        private static char GetRandomLetter() => LetterChars[Random.Shared.Next(LetterChars.Length - 1)];
 
         private static string GetTemplateFolderBasePath(Assembly assembly) =>
             (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
