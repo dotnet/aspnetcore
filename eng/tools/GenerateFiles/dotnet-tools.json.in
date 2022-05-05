@@ -9,7 +9,7 @@
       ]
     },
     "dotnet-ef": {
-      "version": "${dotnetefVersion}",
+      "version": "${DotnetEfVersion}",
       "commands": [
         "dotnet-ef"
       ]
