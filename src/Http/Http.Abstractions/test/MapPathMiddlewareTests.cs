@@ -43,24 +43,27 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         }
 
         [Theory]
-        [InlineData("/foo", "", "/foo")]
-        [InlineData("/foo", "", "/foo/")]
-        [InlineData("/foo", "/Bar", "/foo")]
-        [InlineData("/foo", "/Bar", "/foo/cho")]
-        [InlineData("/foo", "/Bar", "/foo/cho/")]
-        [InlineData("/foo/cho", "/Bar", "/foo/cho")]
-        [InlineData("/foo/cho", "/Bar", "/foo/cho/do")]
-        public async Task PathMatchFunc_BranchTaken(string matchPath, string basePath, string requestPath)
+        [InlineData("/foo", "", "/foo", "/foo", "")]
+        [InlineData("/foo", "", "/foo/", "/foo", "/")]
+        [InlineData("/foo", "/Bar", "/foo", "/Bar/foo", "")]
+        [InlineData("/foo", "/Bar", "/foo/cho", "/Bar/foo", "/cho")]
+        [InlineData("/foo", "/Bar", "/foo/cho/", "/Bar/foo", "/cho/")]
+        [InlineData("/foo/cho", "/Bar", "/foo/cho", "/Bar/foo/cho", "")]
+        [InlineData("/foo/cho", "/Bar", "/foo/cho/do", "/Bar/foo/cho", "/do")]
+        [InlineData("/foo%42/cho", "/Bar%42", "/foo%42/cho/do%42", "/Bar%42/foo%42/cho", "/do%42")]
+        public async Task PathMatchFunc_BranchTaken(string matchPath, string basePath, string requestPath, string expectedPathBase, string expectedPath)
         {
             HttpContext context = CreateRequest(basePath, requestPath);
             var builder = new ApplicationBuilder(serviceProvider: null!);
-            builder.Map(matchPath, UseSuccess);
+            builder.Map(new PathString(matchPath), UseSuccess);
             var app = builder.Build();
             await app.Invoke(context);
 
             Assert.Equal(200, context.Response.StatusCode);
             Assert.Equal(basePath, context.Request.PathBase.Value);
             Assert.Equal(requestPath, context.Request.Path.Value);
+            Assert.Equal(expectedPathBase, (string)context.Items["test.PathBase"]!);
+            Assert.Equal(expectedPath, context.Items["test.Path"]);
         }
 
         [Theory]

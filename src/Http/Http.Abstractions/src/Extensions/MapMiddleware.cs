@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             return _next(context);
         }
 
-        private async Task InvokeCore(HttpContext context, string matchedPath, string remainingPath)
+        private async Task InvokeCore(HttpContext context, PathString matchedPath, PathString remainingPath)
         {
             var path = context.Request.Path;
             var pathBase = context.Request.PathBase;
