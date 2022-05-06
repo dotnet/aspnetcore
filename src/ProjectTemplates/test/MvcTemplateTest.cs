@@ -255,7 +255,7 @@ namespace Templates.Test
             var createResult = await project.RunDotNetNewAsync("mvc");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
-            var publishResult = await project.RunDotNetPublishAsync(additionalArgs: $"/p:PublishSingleFile=true -r {runtimeIdentifer}", noRestore: false);
+            var publishResult = await project.RunDotNetPublishAsync(additionalArgs: $"/p:PublishSingleFile=true -r {runtimeIdentifer} --self-contained", noRestore: false);
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
             var menuLinks = new[]
