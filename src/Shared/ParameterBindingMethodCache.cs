@@ -633,7 +633,7 @@ internal sealed class ParameterBindingMethodCache
         return ConvertAwaited(typedValueTask);
     }
 
-    private class ParameterLookupKey
+    private sealed class ParameterLookupKey
     {
         public ParameterLookupKey(string name, Type type)
         {
@@ -658,7 +658,7 @@ internal sealed class ParameterBindingMethodCache
         }
     }
 
-    internal class ConstructorParameter
+    internal sealed class ConstructorParameter
     {
         public ConstructorParameter(ParameterInfo parameter, PropertyInfo propertyInfo)
         {
