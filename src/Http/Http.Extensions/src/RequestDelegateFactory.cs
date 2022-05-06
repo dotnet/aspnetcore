@@ -513,18 +513,7 @@ public static partial class RequestDelegateFactory
 
         var parameterCustomAttributes = parameter.GetCustomAttributes();
 
-        if (parameter.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)) ||
-            parameter.ParameterType.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
-        {
-            if (parameter is SurrogateParameterInfo)
-            {
-                throw new NotSupportedException(
-                    $"Nested {nameof(ParametersAttribute)} is not supported and should be used only for handler parameters or parameter types.");
-            }
-
-            return BindParameterFromParametersType(parameter, factoryContext);
-        }
-        else if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
+        if (parameterCustomAttributes.OfType<IFromRouteMetadata>().FirstOrDefault() is { } routeAttribute)
         {
             var routeName = routeAttribute.Name ?? parameter.Name;
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.RouteAttribute);
@@ -610,6 +599,17 @@ public static partial class RequestDelegateFactory
         else if (parameter.ParameterType == typeof(PipeReader))
         {
             return RequestPipeReaderExpr;
+        }
+        else if (parameter.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)) ||
+            parameter.ParameterType.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
+        {
+            if (parameter is SurrogateParameterInfo)
+            {
+                throw new NotSupportedException(
+                    $"Nested {nameof(ParametersAttribute)} is not supported and should be used only for handler parameters or parameter types.");
+            }
+
+            return BindParameterFromParametersType(parameter, factoryContext);
         }
         else if (ParameterBindingMethodCache.HasBindAsyncMethod(parameter))
         {

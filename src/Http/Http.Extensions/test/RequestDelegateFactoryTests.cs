@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -1651,9 +1652,15 @@ public class RequestDelegateFactoryTests : LoggedTest
                 args.HttpContext.Items.Add("body", args.Todo);
             }
 
+            void TestExplicitFromBody_ParameterListAttribute(HttpContext httpContext, [FromBody] TodoArgumentList todo)
+            {
+                httpContext.Items.Add("body", todo);
+            }
+
             return new[]
             {
                     new[] { (Action<HttpContext, Todo>)TestExplicitFromBody },
+                    new[] { (Action<HttpContext, TodoArgumentList>)TestExplicitFromBody_ParameterListAttribute },
                     new object[] { (Action<ParametersListWithExplictFromBody>)TestExplicitFromBody_ParameterList },
             };
         }
@@ -2155,20 +2162,47 @@ public class RequestDelegateFactoryTests : LoggedTest
             throw new NotImplementedException();
     }
 
-    [Fact]
-    public void BuildRequestDelegateThrowsInvalidOperationExceptionForInvalidParameterListConstructor()
+    public static object[][] BadArgumentListActions
     {
-        void TestParameterListRecord([Parameters] BadArgumentListRecord req) { }
-        void TestParameterListClass([Parameters] BadArgumentListClass req) { }
-        void TestParameterListClassWithMutipleConstructors([Parameters] BadArgumentListClassMultipleCtors req) { }
-        void TestParameterListAbstractClass([Parameters] BadAbstractArgumentListClass req) { }
-        void TestParameterListNoPulicConstructorClass([Parameters] BadNoPublicConstructorArgumentListClass req) { }
+        get
+        {
+            void TestParameterListRecord([Parameters] BadArgumentListRecord req) { }
+            void TestParameterListClass([Parameters] BadArgumentListClass req) { }
+            void TestParameterListClassWithMutipleConstructors([Parameters] BadArgumentListClassMultipleCtors req) { }
+            void TestParameterListAbstractClass([Parameters] BadAbstractArgumentListClass req) { }
+            void TestParameterListNoPulicConstructorClass([Parameters] BadNoPublicConstructorArgumentListClass req) { }
 
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestParameterListRecord));
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestParameterListClass));
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestParameterListClassWithMutipleConstructors));
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestParameterListAbstractClass));
-        Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(TestParameterListNoPulicConstructorClass));
+            static string GetMultipleContructorsError(Type type)
+                => $"Only a single public parameterized constructor is allowed for {TypeNameHelper.GetTypeDisplayName(type, fullName: false)}.";
+
+            static string GetAbstractClassError(Type type)
+                => $"The {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} abstract type is not supported.";
+
+            static string GetNoContructorsError(Type type)
+                => $"No {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} public parameterless constructor found.";
+
+            static string GetInvalidConstructorError(Type type)
+                => $"The {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} public parameterized constructor must contains only parameters that match to the declared public properties.";
+
+            return new object[][]
+            {
+                    new object[] { (Action<BadArgumentListRecord>)TestParameterListRecord, GetMultipleContructorsError(typeof(BadArgumentListRecord)) },
+                    new object[] { (Action<BadArgumentListClass>)TestParameterListClass, GetInvalidConstructorError(typeof(BadArgumentListClass)) },
+                    new object[] { (Action<BadArgumentListClassMultipleCtors>)TestParameterListClassWithMutipleConstructors, GetMultipleContructorsError(typeof(BadArgumentListClassMultipleCtors))  },
+                    new object[] { (Action<BadAbstractArgumentListClass>)TestParameterListAbstractClass, GetAbstractClassError(typeof(BadAbstractArgumentListClass)) },
+                    new object[] { (Action<BadNoPublicConstructorArgumentListClass>)TestParameterListNoPulicConstructorClass, GetNoContructorsError(typeof(BadNoPublicConstructorArgumentListClass)) },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(BadArgumentListActions))]
+    public void BuildRequestDelegateThrowsInvalidOperationExceptionForInvalidParameterListConstructor(
+        Delegate @delegate,
+        string errorMessage)
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(@delegate));
+        Assert.Equal(errorMessage, exception.Message);
     }
 
     private record BadArgumentListRecord(int Foo)
@@ -4503,6 +4537,9 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private record ParameterListRecordClass(HttpContext HttpContext, [FromRoute] int Value);
 
+    [Parameters]
+    private record ExplicityArgumentListRecord(HttpContext HttpContext, [FromRoute] int Value);
+
     private record ParameterListRecordWithoutPositionalParameters
     {
         public HttpContext? HttpContext { get; set; }
@@ -4513,6 +4550,20 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private struct ParameterListStruct
     {
+        public HttpContext HttpContext { get; set; }
+
+        [FromRoute]
+        public int Value { get; set; }
+    }
+
+    private struct ParameterListMutableStruct
+    {
+        public ParameterListMutableStruct()
+        {
+            Value = -1;
+            HttpContext = default!;
+        }
+
         public HttpContext HttpContext { get; set; }
 
         [FromRoute]
@@ -4577,6 +4628,11 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         get
         {
+            void TestParameterListAttributeOnType(ExplicityArgumentListRecord args)
+            {
+                args.HttpContext.Items.Add("input", args.Value);
+            }
+
             void TestParameterListRecordStruct([Parameters] ParameterListRecordStruct args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
@@ -4593,6 +4649,11 @@ public class RequestDelegateFactoryTests : LoggedTest
             }
 
             void TestParameterListStruct([Parameters] ParameterListStruct args)
+            {
+                args.HttpContext.Items.Add("input", args.Value);
+            }
+
+            void TestParameterListMutableStruct([Parameters] ParameterListMutableStruct args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
             }
@@ -4619,10 +4680,12 @@ public class RequestDelegateFactoryTests : LoggedTest
 
             return new[]
             {
+                new object[] { (Action<ExplicityArgumentListRecord>)TestParameterListAttributeOnType },
                 new object[] { (Action<ParameterListRecordStruct>)TestParameterListRecordStruct },
                 new object[] { (Action<ParameterListRecordClass>)TestParameterListRecordClass },
                 new object[] { (Action<ParameterListRecordWithoutPositionalParameters>)TestParameterListRecordWithoutPositionalParameters },
                 new object[] { (Action<ParameterListStruct>)TestParameterListStruct },
+                new object[] { (Action<ParameterListMutableStruct>)TestParameterListMutableStruct },
                 new object[] { (Action<ParameterListStructWithParameterizedContructor>)TestParameterListStructWithParameterizedContructor },
                 new object[] { (Action<ParameterListStructWithMultipleParameterizedContructor>)TestParameterListStructWithMultipleParameterizedContructor },
                 new object[] { (Action<ParameterListClass>)TestParameterListClass },
@@ -4649,7 +4712,39 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(originalRouteParam, httpContext.Items["input"]);
     }
 
-    private record ParameterListWitDefaultValue(HttpContext HttpContext, [FromRoute] int Value = 42);
+    private record ParameterListRecordWitDefaultValue(HttpContext HttpContext, [FromRoute] int Value = 42);
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListRecordUsesDefaultValue()
+    {
+        const int expectedValue = 42;
+
+        void TestAction([Parameters] ParameterListRecordWitDefaultValue args)
+        {
+            args.HttpContext.Items.Add("input", args.Value);
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(expectedValue, httpContext.Items["input"]);
+    }
+
+    private class ParameterListWitDefaultValue
+    {
+        public ParameterListWitDefaultValue(HttpContext httpContext, [FromRoute]int value = 42)
+        {
+            HttpContext = httpContext;
+            Value = value;
+        }
+
+        public HttpContext HttpContext { get; }
+        public int Value { get; }
+    }
 
     [Fact]
     public async Task RequestDelegatePopulatesFromParameterListUsesDefaultValue()
@@ -5938,6 +6033,15 @@ public class RequestDelegateFactoryTests : LoggedTest
         public int Id { get; set; }
         public string? Name { get; set; } = "Todo";
         public bool IsComplete { get; set; }
+    }
+
+    [Parameters]
+    private class TodoArgumentList : Todo
+    {
+        public TodoArgumentList()
+        {
+
+        }
     }
 
     private class TodoChild : Todo
