@@ -35,8 +35,10 @@
     <DotNetCliChannel>Current</DotNetCliChannel>
 
     <!-- Similar to ProjectLayout.props in the Arcade SDK. The Helix SDK contains nothing similar. -->
+    <ArtifactsBinDir Condition=" '$(ArtifactsBinDir)' == '' "
+        >$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin'))</ArtifactsBinDir>
     <OutputPath Condition=" '$(OutputPath)' == '' "
-        >$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin', '$(MSBuildProjectName)'))</OutputPath>
+        >$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', '$(MSBuildProjectName)'))</OutputPath>
   </PropertyGroup>
 
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
@@ -47,6 +49,15 @@
     <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
+
+    <!-- Grab the tool packages for what HelixTestRunner installs. -->
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" />
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(dotnetefVersion)\dotnet-ef.$(dotnetefVersion).nupkg" />
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
+
+    <!-- Grab published `HelixTestRunner` project output. -->
+    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net7.0\publish\"
+        Destination="HelixTestRunner" />
   </ItemGroup>
 
   <Choose>

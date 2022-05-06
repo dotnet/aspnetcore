@@ -68,6 +68,8 @@ public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
         var url = linkGenerator.GetUriByAddress(
             httpContext,
@@ -95,6 +97,8 @@ public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status202Accepted, "application/json"));
     }
 }

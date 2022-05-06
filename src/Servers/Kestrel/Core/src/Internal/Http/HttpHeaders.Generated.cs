@@ -8071,6 +8071,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._Origin;
                     nameStr = HeaderNames.Origin;
                     break;
+                case 94:
+                    flag = 0x100000000000L;
+                    values = ref _headers._UpgradeInsecureRequests;
+                    nameStr = HeaderNames.UpgradeInsecureRequests;
+                    break;
                 case 95:
                     flag = 0x8L;
                     values = ref _headers._UserAgent;

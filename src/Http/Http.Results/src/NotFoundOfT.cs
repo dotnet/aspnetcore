@@ -37,6 +37,8 @@ public sealed class NotFound<TValue> : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.NotFoundObjectResult");
@@ -53,6 +55,8 @@ public sealed class NotFound<TValue> : IResult, IEndpointMetadataProvider
     /// <inheritdoc/>
     static void IEndpointMetadataProvider.PopulateMetadata(EndpointMetadataContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         context.EndpointMetadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status404NotFound, "application/json"));
     }
 }

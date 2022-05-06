@@ -24,6 +24,17 @@ public class StatusCodeResultTests
         Assert.Equal(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new StatusCodeHttpResult(200);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
     private static IServiceCollection CreateServices()
     {
         var services = new ServiceCollection();

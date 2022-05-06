@@ -68,6 +68,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.CommandLine.Experimental" />
     <LatestPackageReference Include="System.ComponentModel" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" />
+    <LatestPackageReference Include="System.Configuration.ConfigurationManager" />
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" />
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />
@@ -75,9 +76,11 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Net.Http" />
     <LatestPackageReference Include="System.Net.Http.Json" />
     <LatestPackageReference Include="System.Net.Sockets" />
+    <LatestPackageReference Include="System.Private.Uri" />
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
+    <LatestPackageReference Include="System.Security.Cryptography.X509Certificates" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
     <LatestPackageReference Include="System.Security.Permissions" />
     <LatestPackageReference Include="System.Security.Principal.Windows" />

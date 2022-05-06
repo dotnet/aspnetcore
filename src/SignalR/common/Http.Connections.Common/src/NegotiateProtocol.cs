@@ -37,7 +37,7 @@ public static class NegotiateProtocol
 
     // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
     // Used to detect ASP.NET SignalR Server connection attempt
-    private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => new byte[] { (byte)'P', (byte)'r', (byte)'o', (byte)'t', (byte)'o', (byte)'c', (byte)'o', (byte)'l', (byte)'V', (byte)'e', (byte)'r', (byte)'s', (byte)'i', (byte)'o', (byte)'n' };
+    private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => "ProtocolVersion"u8;
 
     /// <summary>
     /// Writes the <paramref name="response"/> to the <paramref name="output"/>.

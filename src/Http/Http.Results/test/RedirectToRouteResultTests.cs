@@ -84,6 +84,17 @@ public class RedirectToRouteResultTests
         Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new RedirectToRouteHttpResult(null);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
     private static HttpContext GetHttpContext(string path)
     {
         var services = CreateServices(path);

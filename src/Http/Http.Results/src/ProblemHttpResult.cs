@@ -42,6 +42,8 @@ public sealed class ProblemHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger(typeof(ProblemHttpResult));
 

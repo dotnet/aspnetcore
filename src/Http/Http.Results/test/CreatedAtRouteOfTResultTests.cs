@@ -101,6 +101,24 @@ public partial class CreatedAtRouteOfTResultTests
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new CreatedAtRoute<object>(null, null);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
+    [Fact]
+    public void PopulateMetadata_ThrowsArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<CreatedAtRoute<object>>(null));
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 
