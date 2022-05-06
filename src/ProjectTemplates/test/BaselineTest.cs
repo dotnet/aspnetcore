@@ -105,7 +105,7 @@ public class BaselineTest : LoggedTest
             if (relativePath.EndsWith(".cs", StringComparison.Ordinal))
             {
                 var namespaceDeclarationPrefix = "namespace ";
-                var namespaceDeclaration = File.ReadLines(Path.Combine(Project.TemplateOutputDir, relativePath))
+                var namespaceDeclaration = File.ReadLines(file)
                     .SingleOrDefault(line => line.StartsWith(namespaceDeclarationPrefix, StringComparison.Ordinal))
                     ?.Substring(namespaceDeclarationPrefix.Length);
 
