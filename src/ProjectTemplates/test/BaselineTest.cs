@@ -67,6 +67,7 @@ public class BaselineTest : LoggedTest
     }
 
     // This test should generally not be quarantined as it only is checking that the expected files are on disk
+    // and that the namespace declarations in the generated .cs files start with the project name
     [Theory]
     [MemberData(nameof(TemplateBaselines))]
     public async Task Template_Produces_The_Right_Set_Of_FilesAsync(string arguments, string[] expectedFiles)
@@ -100,6 +101,20 @@ public class BaselineTest : LoggedTest
                 continue;
             }
             Assert.Contains(relativePath, expectedFiles);
+
+            if (relativePath.EndsWith(".cs", StringComparison.Ordinal))
+            {
+                var namespaceDeclarationPrefix = "namespace ";
+                var namespaceDeclaration = File.ReadLines(Path.Combine(Project.TemplateOutputDir, relativePath))
+                    .SingleOrDefault(line => line.StartsWith(namespaceDeclarationPrefix, StringComparison.Ordinal))
+                    ?.Substring(namespaceDeclarationPrefix.Length);
+
+                // nullable because Program.cs with top-level statements doesn't have a namespace declaration
+                if (namespaceDeclaration is not null)
+                {
+                    Assert.StartsWith(Project.ProjectName, namespaceDeclaration, StringComparison.Ordinal);
+                }
+            }
         }
     }
 
