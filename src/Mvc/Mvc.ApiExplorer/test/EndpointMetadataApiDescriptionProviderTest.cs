@@ -479,7 +479,6 @@ public class EndpointMetadataApiDescriptionProviderTest
             );
         }
 
-        AssertParameters(GetApiDescription((ExplicitArgumentListClass req) => { }));
         AssertParameters(GetApiDescription(([Parameters] ArgumentListClass req) => { }));
         AssertParameters(GetApiDescription(([Parameters] ArgumentListClassWithReadOnlyProperties req) => { }));
         AssertParameters(GetApiDescription(([Parameters] ArgumentListStruct req) => { }));
@@ -1382,16 +1381,6 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     private class ArgumentListClass
-    {
-        [FromRoute]
-        public int Foo { get; set; }
-        public int Bar { get; set; }
-        public InferredJsonClass FromBody { get; set; }
-        public HttpContext Context { get; set; }
-    }
-
-    [Parameters]
-    private class ExplicitArgumentListClass
     {
         [FromRoute]
         public int Foo { get; set; }

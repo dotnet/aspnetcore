@@ -74,8 +74,7 @@ internal class SurrogateParameterInfo : ParameterInfo
 
         for (var i = 0; i < parameters.Length; i++)
         {
-            if (parameters[i].CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)) ||
-                parameters[i].ParameterType.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
+            if (parameters[i].CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
             {
                 // Initialize the list with all parameter already processed
                 // to keep the same parameter ordering

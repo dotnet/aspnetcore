@@ -385,7 +385,6 @@ public class OpenApiOperationGeneratorTests
             );
         }
 
-        AssertParameters(GetOpenApiOperation((ExplicitArgumentListClass req) => { }));
         AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListClass req) => { }));
         AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListClassWithReadOnlyProperties req) => { }));
         AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListStruct req) => { }));
@@ -873,16 +872,6 @@ public class OpenApiOperationGeneratorTests
     }
 
     private struct ArgumentListStruct
-    {
-        [FromRoute]
-        public int Foo { get; set; }
-        public int Bar { get; set; }
-        public InferredJsonClass FromBody { get; set; }
-        public HttpContext Context { get; set; }
-    }
-
-    [Parameters]
-    private class ExplicitArgumentListClass
     {
         [FromRoute]
         public int Foo { get; set; }

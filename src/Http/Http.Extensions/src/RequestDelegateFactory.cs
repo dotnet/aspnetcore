@@ -647,8 +647,7 @@ public static partial class RequestDelegateFactory
         {
             return RequestPipeReaderExpr;
         }
-        else if (parameter.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)) ||
-            parameter.ParameterType.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
+        else if (parameter.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
         {
             if (parameter is SurrogateParameterInfo)
             {

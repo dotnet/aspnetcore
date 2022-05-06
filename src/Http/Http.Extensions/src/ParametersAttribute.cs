@@ -9,7 +9,7 @@ using System;
 /// 
 /// </summary>
 [AttributeUsage(
-    AttributeTargets.Parameter | AttributeTargets.Class,
+    AttributeTargets.Parameter,
     Inherited = false,
     AllowMultiple = false)]
 public sealed class ParametersAttribute : Attribute

@@ -1652,15 +1652,9 @@ public class RequestDelegateFactoryTests : LoggedTest
                 args.HttpContext.Items.Add("body", args.Todo);
             }
 
-            void TestExplicitFromBody_ParameterListAttribute(HttpContext httpContext, [FromBody] TodoArgumentList todo)
-            {
-                httpContext.Items.Add("body", todo);
-            }
-
             return new[]
             {
                     new[] { (Action<HttpContext, Todo>)TestExplicitFromBody },
-                    new[] { (Action<HttpContext, TodoArgumentList>)TestExplicitFromBody_ParameterListAttribute },
                     new object[] { (Action<ParametersListWithExplictFromBody>)TestExplicitFromBody_ParameterList },
             };
         }
@@ -2252,16 +2246,23 @@ public class RequestDelegateFactoryTests : LoggedTest
         public int Bar { get; set; }
     }
 
-    [Parameters]
     private record NestedArgumentListRecord([Parameters] object NestedParameterList);
 
-    private record RecordWithParametersConstructor([Parameters] object NestedParameterList);
+    private class ClassWithParametersConstructor
+    {
+        public ClassWithParametersConstructor([Parameters] object nestedParameterList)
+        {
+            NestedParameterList = nestedParameterList;
+        }
+
+        public object NestedParameterList { get; set; }
+    }
 
     [Fact]
     public void BuildRequestDelegateThrowsNotSupportedExceptionForNestedParametersList()
     {
-        void TestNestedParameterListRecordOnType(NestedArgumentListRecord req) { }
-        void TestNestedParameterListRecordOnArgument([Parameters] RecordWithParametersConstructor req) { }
+        void TestNestedParameterListRecordOnType([Parameters] NestedArgumentListRecord req) { }
+        void TestNestedParameterListRecordOnArgument([Parameters] ClassWithParametersConstructor req) { }
 
         Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestNestedParameterListRecordOnType));
         Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestNestedParameterListRecordOnArgument));
@@ -4537,9 +4538,6 @@ public class RequestDelegateFactoryTests : LoggedTest
 
     private record ParameterListRecordClass(HttpContext HttpContext, [FromRoute] int Value);
 
-    [Parameters]
-    private record ExplicityArgumentListRecord(HttpContext HttpContext, [FromRoute] int Value);
-
     private record ParameterListRecordWithoutPositionalParameters
     {
         public HttpContext? HttpContext { get; set; }
@@ -4628,11 +4626,6 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         get
         {
-            void TestParameterListAttributeOnType(ExplicityArgumentListRecord args)
-            {
-                args.HttpContext.Items.Add("input", args.Value);
-            }
-
             void TestParameterListRecordStruct([Parameters] ParameterListRecordStruct args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
@@ -4680,7 +4673,6 @@ public class RequestDelegateFactoryTests : LoggedTest
 
             return new[]
             {
-                new object[] { (Action<ExplicityArgumentListRecord>)TestParameterListAttributeOnType },
                 new object[] { (Action<ParameterListRecordStruct>)TestParameterListRecordStruct },
                 new object[] { (Action<ParameterListRecordClass>)TestParameterListRecordClass },
                 new object[] { (Action<ParameterListRecordWithoutPositionalParameters>)TestParameterListRecordWithoutPositionalParameters },
@@ -6096,15 +6088,6 @@ public class RequestDelegateFactoryTests : LoggedTest
         public int Id { get; set; }
         public string? Name { get; set; } = "Todo";
         public bool IsComplete { get; set; }
-    }
-
-    [Parameters]
-    private class TodoArgumentList : Todo
-    {
-        public TodoArgumentList()
-        {
-
-        }
     }
 
     private class TodoChild : Todo
