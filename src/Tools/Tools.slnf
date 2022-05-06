@@ -97,7 +97,7 @@
       "src\\Tools\\Microsoft.dotnet-openapi\\src\\Microsoft.dotnet-openapi.csproj",
       "src\\Tools\\Microsoft.dotnet-openapi\\test\\dotnet-microsoft.openapi.Tests.csproj",
       "src\\Tools\\dotnet-dev-certs\\src\\dotnet-dev-certs.csproj",
-      "src\\Tools\\dotnet-dev-jwts\\src\\dotnet-dev-jwts.csproj",
+      "src\\Tools\\dotnet-user-jwts\\src\\dotnet-user-jwts.csproj",
       "src\\Tools\\dotnet-getdocument\\src\\dotnet-getdocument.csproj",
       "src\\Tools\\dotnet-sql-cache\\src\\dotnet-sql-cache.csproj",
       "src\\Tools\\dotnet-user-secrets\\src\\dotnet-user-secrets.csproj",

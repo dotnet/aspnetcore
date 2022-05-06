@@ -41,19 +41,19 @@ internal sealed class ListCommand
         var project = DevJwtCliHelpers.GetProject(projectPath);
         if (project == null)
         {
-            Console.WriteLine($"No project found at {projectPath} or current directory.");
+            Console.WriteLine($"No project found at `--project` path or current directory.");
             return 1;
         }
         var userSecretsId = DevJwtCliHelpers.GetUserSecretsId(project);
         if (userSecretsId == null)
         {
-            Console.WriteLine($"Project does not contain a user secret ID.");
+            Console.WriteLine($"Project does not contain a user secrets ID.");
             return 1;
         }
         var jwtStore = new JwtStore(userSecretsId);
 
         Console.WriteLine($"Project: {project}");
-        Console.WriteLine($"User Secrets Id: {userSecretsId}");
+        Console.WriteLine($"User Secrets ID: {userSecretsId}");
 
         if (jwtStore.Jwts is { Count: > 0 } jwts)
         {

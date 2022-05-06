@@ -44,12 +44,12 @@ internal sealed class CreateCommand
 
             var issuerOption = cmd.Option(
                 "--issuer",
-                "The issuer of the JWT. Defaults to the dotnet-dev-jwt",
+                "The issuer of the JWT. Defaults to the dotnet-user-jwts",
                 CommandOptionType.SingleValue);
 
             var scopesOption = cmd.Option(
                 "--scope",
-                "The issuer of the JWT. Defaults to the dotnet-dev-jwt",
+                "A scope claim to add to the JWT. Specify once for each scope.",
                 CommandOptionType.MultipleValue);
 
             var rolesOption = cmd.Option(
@@ -130,11 +130,11 @@ internal sealed class CreateCommand
         }
 
         var expiresOn = notBefore.AddMonths(6);
-        if (notBeforeOption.HasValue())
+        if (expiresOnOption.HasValue())
         {
             if (!ParseDate(expiresOnOption.Value(), out expiresOn))
             {
-                Console.WriteLine(@"The date provided for -expires-on could not be parsed. Ensure you use the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'.");
+                Console.WriteLine(@"The date provided for --expires-on could not be parsed. Ensure you use the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'.");
                 isValid = false;
             }
         }
@@ -181,7 +181,7 @@ internal sealed class CreateCommand
         var project = DevJwtCliHelpers.GetProject(projectPath);
         if (project == null)
         {
-            Console.WriteLine($"No project found at {projectPath} or current directory.");
+            Console.WriteLine($"No project found at `--project` path or current directory.");
             return 1;
         }
 

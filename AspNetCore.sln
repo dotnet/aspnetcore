@@ -1710,9 +1710,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Html.A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RateLimiting", "RateLimiting", "{1D865E78-7A66-4CA9-92EE-2B350E45281F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-dev-jwts", "dotnet-dev-jwts", "{DBADF9EC-1571-42CA-9AC4-3D02F90D5BE8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-dev-jwts", "src\Tools\dotnet-dev-jwts\src\dotnet-dev-jwts.csproj", "{B34CB502-0286-4939-B25F-45998528A802}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-jwts", "src\Tools\dotnet-user-jwts\src\dotnet-user-jwts.csproj", "{B34CB502-0286-4939-B25F-45998528A802}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

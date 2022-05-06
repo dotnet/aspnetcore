@@ -39,7 +39,7 @@ internal sealed class ConsoleTable
         if (_columns.Count != values.Length)
         {
             throw new Exception(
-                $"The number columns in the table '{_columns.Count}' does not match the number of columns in the row '{values.Length}'.");
+                $"The number of columns in the table '{_columns.Count}' does not match the number of columns in the row '{values.Length}'.");
         }
 
         _rows.Add(values);
@@ -60,12 +60,12 @@ internal sealed class ConsoleTable
             .Select(i => " | {" + i + ", " + maxColumnLengths[i] + "}")
             .Aggregate((previousRowColumn, nextRowColumn) => previousRowColumn + nextRowColumn) + " |";
 
-        var maxRowLength = Math.Max(0, _rows.Any() ? _rows.Max(row => string.Format(CultureInfo.InvariantCulture, formatRow, row).Length) : 0);
+        var formattedRows = _rows.Select(row => string.Format(CultureInfo.InvariantCulture, formatRow, row)).ToList();
+
+        var maxRowLength = Math.Max(0, _rows.Any() ? _rows.Max(row => formattedRows.Count) : 0);
         var columnHeaders = string.Format(CultureInfo.InvariantCulture, formatRow, _columns.ToArray());
 
         var maxTotalLength = Math.Max(maxRowLength, columnHeaders.Length);
-
-        var formattedRows = _rows.Select(row => string.Format(CultureInfo.InvariantCulture, formatRow, row)).ToList();
 
         var rowDivider = $" {string.Join("", Enumerable.Repeat("-", maxTotalLength - 1))} ";
 

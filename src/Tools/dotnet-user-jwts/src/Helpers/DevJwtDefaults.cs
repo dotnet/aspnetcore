@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
 internal static class DevJwtsDefaults
 {
-    public static string Issuer => "dotnet-dev-jwt";
+    public static string Issuer => "dotnet-user-jwts";
 
     public static string SigningKeyConfigurationKey => $"{Issuer}:KeyMaterial";
 

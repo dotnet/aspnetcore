@@ -41,7 +41,7 @@ internal sealed class ClearCommand
         var project = DevJwtCliHelpers.GetProject(projectPath);
         if (project == null)
         {
-            Console.WriteLine($"No project found at {projectPath} or current directory.");
+            Console.WriteLine($"No project found at `--project` path or current directory.");
             return 1;
         }
 
