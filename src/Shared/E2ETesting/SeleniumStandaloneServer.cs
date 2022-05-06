@@ -85,7 +85,7 @@ public class SeleniumStandaloneServer : IDisposable
     private static async Task InitializeInstance(ITestOutputHelper output)
     {
         var port = FindAvailablePort();
-        var uri = new UriBuilder("http", "localhost", port, "/wd/hub").Uri;
+        var uri = new UriBuilder("http", "localhost", port).Uri;
 
         var seleniumConfigPath = typeof(SeleniumStandaloneServer).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -111,7 +111,7 @@ public class SeleniumStandaloneServer : IDisposable
         var psi = new ProcessStartInfo
         {
             FileName = "npm",
-            Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" {chromeDriverArg} -- -port {port}",
+            Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" {chromeDriverArg} -- --host localhost --port {port}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
@@ -178,7 +178,13 @@ public class SeleniumStandaloneServer : IDisposable
         // Log
         void LogOutput(object sender, DataReceivedEventArgs e)
         {
-            logOutput.TryAdd(e.Data);
+            try
+            {
+                logOutput.TryAdd(e.Data);
+            }
+            catch (Exception)
+            {
+            }
 
             // We avoid logging on the output here because it is unreliable. We can only log in the diagnostics sink.
             lock (_diagnosticsMessageSink)
