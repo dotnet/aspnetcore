@@ -130,6 +130,46 @@ public class Http3ConnectionTests : Http3TestBase
         await requestStream.ExpectReceiveEndOfStream();
     }
 
+    [Fact]
+    public async Task HEADERS_CookiesMergedIntoOne()
+    {
+        var headers = new[]
+        {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "a=0"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "b=1"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "c=2"),
+            };
+
+        await Http3Api.InitializeConnectionAsync(async context =>
+        {
+            var buffer = new byte[16 * 1024];
+            var received = 0;
+
+            while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await context.Response.Body.WriteAsync(buffer, 0, received);
+            }
+        });
+
+        await Http3Api.CreateControlStream();
+        await Http3Api.GetInboundControlStream();
+
+        var requestStream = await Http3Api.CreateRequestStream();
+
+        await requestStream.SendHeadersAsync(headers);
+        var frame = await requestStream.ReceiveFrameAsync();
+
+        await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: false);
+        var receivedHeaders = await requestStream.ExpectHeadersAsync();
+
+        Assert.Equal("a=0; b=1; c=2", receivedHeaders[HeaderNames.Cookie]);
+
+        await requestStream.OnDisposedTask.DefaultTimeout();
+    }
+
     [Theory]
     [InlineData(0, 0)]
     [InlineData(1, 4)]

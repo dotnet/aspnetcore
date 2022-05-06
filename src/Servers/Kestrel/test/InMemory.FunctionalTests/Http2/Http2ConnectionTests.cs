@@ -2862,7 +2862,7 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
-        Assert.Equal("a=0; b=1; c=2", _receivedHeaders["Cookie"]);
+        Assert.Equal("a=0; b=1; c=2", _receivedHeaders[HeaderNames.Cookie]);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }

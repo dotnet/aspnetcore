@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using ASCIIEncoding = System.Text.ASCIIEncoding;
+using HeaderNames = Microsoft.Net.Http.Headers.HeaderNames;
 using HttpCharacters = Microsoft.AspNetCore.Http.HttpCharacters;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
@@ -906,6 +908,17 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         // Suppress pseudo headers from the public headers collection.
         HttpRequestHeaders.ClearPseudoRequestHeaders();
+
+        // Cookies should be merged into a single string separated by "; "
+        StringValues cookies;
+        var containsCookies = HttpRequestHeaders.Remove(HeaderNames.Cookie, out cookies);
+        if (containsCookies)
+        {
+            var mergeCookies = string.Join("; ", cookies.ToArray());
+            var cookiesMergedValueSpan = new ReadOnlySpan<byte>(ASCIIEncoding.ASCII.GetBytes(mergeCookies));
+            var cookiesHeaderValueSpan = new ReadOnlySpan<byte>(ASCIIEncoding.ASCII.GetBytes(HeaderNames.Cookie));
+            HttpRequestHeaders.Append(cookiesHeaderValueSpan, cookiesMergedValueSpan, false);
+        }
 
         return true;
     }
