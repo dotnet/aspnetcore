@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal class SurrogateParameterInfo : ParameterInfo
+internal sealed class SurrogateParameterInfo : ParameterInfo
 {
     private readonly PropertyInfo _underlyingProperty;
     private readonly ParameterInfo? _constructionParameterInfo;
