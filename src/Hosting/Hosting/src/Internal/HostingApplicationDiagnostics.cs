@@ -310,17 +310,8 @@ internal sealed class HostingApplicationDiagnostics
     [MethodImpl(MethodImplOptions.NoInlining)]
     private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
     {
-        var activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server);
-        if (activity is null && (loggingEnabled || diagnosticListenerActivityCreationEnabled))
-        {
-            activity = new Activity(ActivityName);
-        }
         hasDiagnosticListener = false;
 
-        if (activity is null)
-        {
-            return null;
-        }
         var headers = httpContext.Request.Headers;
         _propagator.ExtractTraceIdAndState(headers,
             static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
@@ -332,9 +323,26 @@ internal sealed class HostingApplicationDiagnostics
             out var requestId,
             out var traceState);
 
+        Activity? activity = _activitySource.CreateActivity(
+            ActivityName,
+            ActivityKind.Server,
+            string.IsNullOrEmpty(requestId) ? null! : requestId
+            );
+
+        if (activity is null)
+        {
+            if (loggingEnabled || diagnosticListenerActivityCreationEnabled)
+            {
+                activity = new Activity(ActivityName);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         if (!string.IsNullOrEmpty(requestId))
         {
-            activity.SetParentId(requestId);
             if (!string.IsNullOrEmpty(traceState))
             {
                 activity.TraceStateString = traceState;
