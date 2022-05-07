@@ -4,18 +4,21 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 
+[assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
+
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 
 /// <summary>
 /// Deployment helper for IISExpress.
 /// </summary>
-public class IISExpressDeployer : IISDeployerBase
+public partial class IISExpressDeployer : IISDeployerBase
 {
     private const string IISExpressRunningMessage = "IIS Express is running.";
     private const string FailedToInitializeBindingsMessage = "Failed to initialize site bindings";
@@ -440,17 +443,34 @@ public class IISExpressDeployer : IISDeployerBase
         }
     }
 
-    private sealed class WindowsNativeMethods
+    private sealed partial class WindowsNativeMethods
     {
         internal delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
-        [DllImport("user32.dll")]
-        internal static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
-        [DllImport("user32.dll")]
-        internal static extern bool PostMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-        [DllImport("user32.dll")]
-        internal static extern bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        internal static extern int GetClassName(IntPtr hWnd, char[] lpClassName, int nMaxCount);
+        [LibraryImport("user32.dll")]
+        internal static partial uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool PostMessage([MarshalUsing(typeof(HandleRefMarshaller))] HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
+        [LibraryImport("user32.dll", SetLastError = true)]
+        internal static partial int GetClassName(IntPtr hWnd, char[] lpClassName, int nMaxCount);
+
+        [CustomTypeMarshaller(typeof(HandleRef), Direction = CustomTypeMarshallerDirection.In, Features = CustomTypeMarshallerFeatures.UnmanagedResources | CustomTypeMarshallerFeatures.TwoStageMarshalling)]
+        internal struct HandleRefMarshaller
+        {
+            private readonly HandleRef _handle;
+
+            public HandleRefMarshaller(HandleRef handle)
+            {
+                _handle = handle;
+            }
+
+            public IntPtr ToNativeValue() => _handle.Handle;
+
+            public void FreeNative() => GC.KeepAlive(_handle.Wrapper);
+        }
     }
 
     private void SendStopMessageToProcess(int pid)

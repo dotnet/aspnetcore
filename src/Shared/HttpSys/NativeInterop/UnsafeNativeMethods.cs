@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
-internal static unsafe class UnsafeNclNativeMethods
+internal static unsafe partial class UnsafeNclNativeMethods
 {
     private const string sspicli_LIB = "sspicli.dll";
     private const string api_ms_win_core_io_LIB = "api-ms-win-core-io-l1-1-0.dll";
@@ -37,11 +37,12 @@ internal static unsafe class UnsafeNclNativeMethods
         internal const uint ERROR_CONNECTION_INVALID = 1229;
     }
 
-    [DllImport(api_ms_win_core_io_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-    internal static extern unsafe uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
+    [LibraryImport(api_ms_win_core_io_LIB, SetLastError = true)]
+    internal static unsafe partial uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 
-    [DllImport(api_ms_win_core_kernel32_legacy_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-    internal static extern unsafe bool SetFileCompletionNotificationModes(SafeHandle handle, FileCompletionNotificationModes modes);
+    [LibraryImport(api_ms_win_core_kernel32_legacy_LIB, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static unsafe partial bool SetFileCompletionNotificationModes(SafeHandle handle, FileCompletionNotificationModes modes);
 
     [Flags]
     internal enum FileCompletionNotificationModes : byte
@@ -51,40 +52,42 @@ internal static unsafe class UnsafeNclNativeMethods
         SkipSetEventOnHandle = 2
     }
 
-    [DllImport(TOKENBINDING, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.StdCall)]
-    public static extern int TokenBindingVerifyMessage(
-        [In] byte* tokenBindingMessage,
-        [In] uint tokenBindingMessageSize,
-        [In] char* keyType,
-        [In] byte* tlsUnique,
-        [In] uint tlsUniqueSize,
-        [Out] out HeapAllocHandle resultList);
+    [LibraryImport(TOKENBINDING)]
+    public static partial int TokenBindingVerifyMessage(
+        byte* tokenBindingMessage,
+        uint tokenBindingMessageSize,
+        char* keyType,
+        byte* tlsUnique,
+        uint tlsUniqueSize,
+        out HeapAllocHandle resultList);
 
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366569(v=vs.85).aspx
-    [DllImport(api_ms_win_core_heap_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-    internal static extern IntPtr GetProcessHeap();
+    [LibraryImport(api_ms_win_core_heap_LIB, SetLastError = true)]
+    internal static partial IntPtr GetProcessHeap();
 
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366701(v=vs.85).aspx
-    [DllImport(api_ms_win_core_heap_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-    internal static extern bool HeapFree(
-        [In] IntPtr hHeap,
-        [In] uint dwFlags,
-        [In] IntPtr lpMem);
+    [LibraryImport(api_ms_win_core_heap_LIB, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool HeapFree(
+        IntPtr hHeap,
+        uint dwFlags,
+        IntPtr lpMem);
 
-    internal static class SafeNetHandles
+    internal static partial class SafeNetHandles
     {
-        [DllImport(sspicli_LIB, ExactSpelling = true, SetLastError = true)]
-        internal static extern int FreeContextBuffer(
-            [In] IntPtr contextBuffer);
+        [LibraryImport(sspicli_LIB, SetLastError = true)]
+        internal static partial int FreeContextBuffer(
+            IntPtr contextBuffer);
 
-        [DllImport(api_ms_win_core_handle_LIB, ExactSpelling = true, SetLastError = true)]
-        internal static extern bool CloseHandle(IntPtr handle);
+        [LibraryImport(api_ms_win_core_handle_LIB, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool CloseHandle(IntPtr handle);
 
-        [DllImport(api_ms_win_core_heap_obsolete_LIB, EntryPoint = "LocalAlloc", SetLastError = true)]
-        internal static extern SafeLocalFreeChannelBinding LocalAllocChannelBinding(int uFlags, UIntPtr sizetdwBytes);
+        [LibraryImport(api_ms_win_core_heap_obsolete_LIB, EntryPoint = "LocalAlloc", SetLastError = true)]
+        internal static partial SafeLocalFreeChannelBinding LocalAllocChannelBinding(int uFlags, UIntPtr sizetdwBytes);
 
-        [DllImport(api_ms_win_core_heap_obsolete_LIB, ExactSpelling = true, SetLastError = true)]
-        internal static extern IntPtr LocalFree(IntPtr handle);
+        [LibraryImport(api_ms_win_core_heap_obsolete_LIB, SetLastError = true)]
+        internal static partial IntPtr LocalFree(IntPtr handle);
     }
 
     // from tokenbinding.h
@@ -144,13 +147,11 @@ internal static unsafe class UnsafeNclNativeMethods
     // DACL related stuff
 
     [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "Instantiated natively")]
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
-        Justification = "Does not own the resource.")]
     [StructLayout(LayoutKind.Sequential)]
-    internal sealed class SECURITY_ATTRIBUTES
+    internal struct SECURITY_ATTRIBUTES
     {
-        public int nLength = 12;
-        public SafeLocalMemHandle lpSecurityDescriptor = new SafeLocalMemHandle(IntPtr.Zero, false);
-        public bool bInheritHandle;
+        public uint nLength;
+        public IntPtr lpSecurityDescriptor;
+        public int bInheritHandle;
     }
 }

@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
-public class TestServer : IDisposable
+public partial class TestServer : IDisposable
 {
     private const string InProcessHandlerDll = "aspnetcorev2_inprocess.dll";
     private const string AspNetCoreModuleDll = "aspnetcorev2.dll";
@@ -178,23 +178,23 @@ public class TestServer : IDisposable
 
     private delegate int hostfxr_main_fn(IntPtr argc, IntPtr argv);
 
-    [DllImport(HWebCoreDll)]
-    private static extern int WebCoreActivate(
-        [In, MarshalAs(UnmanagedType.LPWStr)]
+    [LibraryImport(HWebCoreDll)]
+    private static partial int WebCoreActivate(
+        [MarshalAs(UnmanagedType.LPWStr)]
             string appHostConfigPath,
-        [In, MarshalAs(UnmanagedType.LPWStr)]
+        [MarshalAs(UnmanagedType.LPWStr)]
             string rootWebConfigPath,
-        [In, MarshalAs(UnmanagedType.LPWStr)]
+        [MarshalAs(UnmanagedType.LPWStr)]
             string instanceName);
 
-    [DllImport(HWebCoreDll)]
-    private static extern int WebCoreShutdown(bool immediate);
+    [LibraryImport(HWebCoreDll)]
+    private static partial int WebCoreShutdown([MarshalAs(UnmanagedType.Bool)] bool immediate);
 
-    [DllImport(InProcessHandlerDll)]
-    private static extern int set_main_handler(hostfxr_main_fn main);
+    [LibraryImport(InProcessHandlerDll)]
+    private static partial int set_main_handler(hostfxr_main_fn main);
 
-    [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
-    private static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
+    [LibraryImport("kernel32", SetLastError = true)]
+    private static partial IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
     private void Retry(Action func, int attempts)
     {

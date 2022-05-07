@@ -15,10 +15,10 @@ using System.Threading.Tasks;
 
 namespace HelixTestRunner;
 
-public static class ProcessUtil
+public static partial class ProcessUtil
 {
-    [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
-    private static extern int sys_kill(int pid, int sig);
+    [LibraryImportAttribute("libc", SetLastError = true, EntryPoint = "kill")]
+    private static partial int sys_kill(int pid, int sig);
 
     public static Task CaptureDumpAsync()
     {
