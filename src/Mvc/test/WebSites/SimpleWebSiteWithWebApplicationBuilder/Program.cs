@@ -11,6 +11,9 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+// just to make sure that it does not cause exceptions
+app.Urls.Add($"http://0.0.0.0:{8080}");
+
 app.MapControllers();
 
 app.MapGet("/", () => "Hello World");
