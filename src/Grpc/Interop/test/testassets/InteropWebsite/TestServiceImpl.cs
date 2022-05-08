@@ -47,7 +47,7 @@ public class TestServiceImpl : TestService.TestServiceBase
 
         foreach (var responseParam in request.ResponseParameters)
         {
-            responseStream.WriteOptions = (responseParam.Compressed?.Value ?? false)
+            responseStream.WriteOptions = !(responseParam.Compressed?.Value ?? false)
                 ? new WriteOptions(WriteFlags.NoCompress)
                 : null;
 
