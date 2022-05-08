@@ -243,11 +243,11 @@
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleApiCommonProtosVersion>2.5.0</GoogleApiCommonProtosVersion>
     <GoogleProtobufVersion>3.18.1</GoogleProtobufVersion>
-    <GrpcAspNetCoreVersion>2.43.0</GrpcAspNetCoreVersion>
-    <GrpcAspNetCoreServerVersion>2.43.0</GrpcAspNetCoreServerVersion>
-    <GrpcAuthVersion>2.43.0</GrpcAuthVersion>
-    <GrpcNetClientVersion>2.43.0</GrpcNetClientVersion>
-    <GrpcToolsVersion>2.43.0</GrpcToolsVersion>
+    <GrpcAspNetCoreVersion>2.45.0</GrpcAspNetCoreVersion>
+    <GrpcAspNetCoreServerVersion>2.45.0</GrpcAspNetCoreServerVersion>
+    <GrpcAuthVersion>2.45.0</GrpcAuthVersion>
+    <GrpcNetClientVersion>2.45.0</GrpcNetClientVersion>
+    <GrpcToolsVersion>2.45.0</GrpcToolsVersion>
     <DuendeIdentityServerAspNetIdentityVersion>5.2.0</DuendeIdentityServerAspNetIdentityVersion>
     <DuendeIdentityServerEntityFrameworkVersion>5.2.0</DuendeIdentityServerEntityFrameworkVersion>
     <DuendeIdentityServerVersion>5.2.0</DuendeIdentityServerVersion>

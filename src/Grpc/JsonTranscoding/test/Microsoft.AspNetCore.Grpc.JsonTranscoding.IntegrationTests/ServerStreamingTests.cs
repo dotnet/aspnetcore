@@ -77,4 +77,40 @@ public class ServerStreamingTests : IntegrationTestBase
         // Assert 2
         Assert.Equal("Hello test 2!", result2.RootElement.GetProperty("message").GetString());
     }
+
+    [Fact]
+    public async Task GetWithRouteParameter_WriteMultiple_CancellationBefore_CallCanceled()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        async Task ServerStreamingMethod(HelloRequest request, IServerStreamWriter<HelloReply> writer, ServerCallContext context)
+        {
+            await writer.WriteAsync(new HelloReply { Message = $"Hello {request.Name} 1!" });
+            await tcs.Task;
+            await writer.WriteAsync(new HelloReply { Message = $"Hello {request.Name} 2!" }, new CancellationToken(canceled: true));
+        }
+        var method = Fixture.DynamicGrpc.AddServerStreamingMethod<HelloRequest, HelloReply>(
+            ServerStreamingMethod,
+            Greeter.Descriptor.FindMethodByName("SayHello"));
+
+        var client = new HttpClient(Fixture.Handler) { BaseAddress = new Uri("http://localhost") };
+
+        // Act 1
+        var response = await client.GetAsync("/v1/greeter/test", HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+        var responseStream = await response.Content.ReadAsStreamAsync();
+        var streamReader = new StreamReader(responseStream);
+
+        var line1 = await streamReader.ReadLineAsync();
+        using var result1 = JsonDocument.Parse(line1!);
+
+        // Assert 1
+        Assert.Equal("Hello test 1!", result1.RootElement.GetProperty("message").GetString());
+
+        // Act 2
+        tcs.SetResult();
+        var ex = await Assert.ThrowsAsync<IOException>(() => streamReader.ReadLineAsync());
+
+        // Assert 2
+        Assert.Equal("The application aborted the request.", ex.InnerException!.Message);
+    }
 }
