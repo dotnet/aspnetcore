@@ -43,11 +43,6 @@ internal sealed class UnaryServerCallHandler<TService, TRequest, TResponse> : Se
             throw new RpcException(new Status(StatusCode.Cancelled, "No message returned from method."));
         }
 
-<<<<<<< HEAD
-        serverCallContext.EnsureResponseHeaders();
-
-        await JsonRequestHelpers.SendMessage(serverCallContext, SerializerOptions, response, CancellationToken.None);
-=======
         if (response is HttpBody httpBody)
         {
             serverCallContext.EnsureResponseHeaders(httpBody.ContentType);
@@ -56,8 +51,7 @@ internal sealed class UnaryServerCallHandler<TService, TRequest, TResponse> : Se
         else
         {
             serverCallContext.EnsureResponseHeaders();
-            await JsonRequestHelpers.SendMessage(serverCallContext, SerializerOptions, response);
+            await JsonRequestHelpers.SendMessage(serverCallContext, SerializerOptions, response, CancellationToken.None);
         }
->>>>>>> 93624c8c84 (Add support for HttpBody)
     }
 }
