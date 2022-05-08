@@ -63,7 +63,7 @@ internal static partial class ProcessTracker
         }
     }
 
-    [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("kernel32.dll", EntryPoint = "CreateJobObjectW", StringMarshalling = StringMarshalling.Utf16)]
     private static partial IntPtr CreateJobObject(IntPtr lpJobAttributes, string name);
 
     [LibraryImport("kernel32.dll")]
