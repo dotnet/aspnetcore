@@ -12,10 +12,6 @@ using System.Threading;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 
-#if NET7_0_OR_GREATER
-[assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
-#endif
-
 namespace Microsoft.AspNetCore.Cryptography;
 
 [SuppressUnmanagedCodeSecurity]
@@ -287,7 +283,7 @@ internal static unsafe partial class UnsafeNativeMethods
         IntPtr pvReserved,
         IntPtr pPromptStruct,
         uint dwFlags,
-        out DATA_BLOB pDataOut);
+        DATA_BLOB* pDataOut);
 
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380262(v=vs.85).aspx
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -317,7 +313,7 @@ internal static unsafe partial class UnsafeNativeMethods
         IntPtr pvReserved,
         IntPtr pPromptStruct,
         uint dwFlags,
-        out DATA_BLOB pDataOut);
+        DATA_BLOB* pDataOut);
 
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380890(v=vs.85).aspx
     [return: MarshalAs(UnmanagedType.Bool)]

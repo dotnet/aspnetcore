@@ -6,8 +6,6 @@ using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using static Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes;
 
-[assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
-
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal static unsafe partial class HttpApi

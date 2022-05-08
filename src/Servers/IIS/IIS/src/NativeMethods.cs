@@ -6,8 +6,6 @@ using System.Runtime.InteropServices.Marshalling;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core;
 
-[assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
-
 namespace Microsoft.AspNetCore.Server.IIS;
 
 internal static partial class NativeMethods

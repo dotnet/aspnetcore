@@ -11,8 +11,6 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 
-[assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
-
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 
 /// <summary>
@@ -455,7 +453,7 @@ public partial class IISExpressDeployer : IISDeployerBase
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
         [LibraryImport("user32.dll", SetLastError = true)]
-        internal static partial int GetClassName(IntPtr hWnd, char[] lpClassName, int nMaxCount);
+        internal static partial int GetClassName(IntPtr hWnd, [Out, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U2)] char[] lpClassName, int nMaxCount);
 
         [CustomTypeMarshaller(typeof(HandleRef), Direction = CustomTypeMarshallerDirection.In, Features = CustomTypeMarshallerFeatures.UnmanagedResources | CustomTypeMarshallerFeatures.TwoStageMarshalling)]
         internal struct HandleRefMarshaller
