@@ -11,8 +11,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
-using ASCIIEncoding = System.Text.ASCIIEncoding;
-using HeaderNames = Microsoft.Net.Http.Headers.HeaderNames;
 using HttpCharacters = Microsoft.AspNetCore.Http.HttpCharacters;
 using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
 
@@ -204,14 +202,11 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         HttpRequestHeaders.ClearPseudoRequestHeaders();
 
         // Cookies should be merged into a single string separated by "; "
-        StringValues cookies;
-        var containsCookies = HttpRequestHeaders.Remove(HeaderNames.Cookie, out cookies);
-        if (containsCookies)
+        var headers = (AspNetCore.Http.IHeaderDictionary)HttpRequestHeaders;
+        if (headers.Cookie.Count > 1)
         {
-            var mergeCookies = string.Join("; ", cookies.ToArray());
-            var cookiesMergedValueSpan = new ReadOnlySpan<byte>(ASCIIEncoding.ASCII.GetBytes(mergeCookies));
-            var cookiesHeaderValueSpan = new ReadOnlySpan<byte>(ASCIIEncoding.ASCII.GetBytes(HeaderNames.Cookie));
-            HttpRequestHeaders.Append(cookiesHeaderValueSpan, cookiesMergedValueSpan, false);
+            var mergedCookies = string.Join("; ", headers.Cookie.ToArray());
+            headers.Cookie = new StringValues(mergedCookies);
         }
 
         return true;
