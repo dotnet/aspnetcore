@@ -116,7 +116,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         }
 
         var requestMetadataAttributes = GetRequestMetadataAttributes(action);
-
+        
         var apiResponseTypes = _responseTypeProvider.GetApiResponseTypes(action);
         foreach (var apiResponseType in apiResponseTypes)
         {

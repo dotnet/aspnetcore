@@ -341,7 +341,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
         var responseProviderMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(
             responseProviderMetadata, responseType, defaultErrorType, contentTypes);
-        var producesResponseMetadataTypes = ReadResponseMetadata(producesResponseMetadata, responseType);
+        var producesResponseMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(producesResponseMetadata, responseType);
 
         // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
         // over those that are added via attributes.
@@ -391,51 +391,6 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
             supportedResponseTypes.Add(defaultApiResponseType);
         }
-    }
-
-    private static Dictionary<int, ApiResponseType> ReadResponseMetadata(
-        IReadOnlyList<IProducesResponseTypeMetadata> responseMetadata,
-        Type? type)
-    {
-        var results = new Dictionary<int, ApiResponseType>();
-
-        foreach (var metadata in responseMetadata)
-        {
-            var statusCode = metadata.StatusCode;
-
-            var apiResponseType = new ApiResponseType
-            {
-                Type = metadata.Type,
-                StatusCode = statusCode,
-            };
-
-            if (apiResponseType.Type == typeof(void))
-            {
-                if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
-                {
-                    // Allow setting the response type from the return type of the method if it has
-                    // not been set explicitly by the method.
-                    apiResponseType.Type = type;
-                }
-            }
-
-            var attributeContentTypes = new MediaTypeCollection();
-            if (metadata.ContentTypes != null)
-            {
-                foreach (var contentType in metadata.ContentTypes)
-                {
-                    attributeContentTypes.Add(contentType);
-                }
-            }
-            ApiResponseTypeProvider.CalculateResponseFormatForType(apiResponseType, attributeContentTypes, responseTypeMetadataProviders: null, modelMetadataProvider: null);
-
-            if (apiResponseType.Type != null)
-            {
-                results[apiResponseType.StatusCode] = apiResponseType;
-            }
-        }
-
-        return results;
     }
 
     private static ApiResponseType CreateDefaultApiResponseType(Type responseType)
