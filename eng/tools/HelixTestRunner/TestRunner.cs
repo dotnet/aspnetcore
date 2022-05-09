@@ -35,6 +35,8 @@ public class TestRunner
             var dumpPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
             Console.WriteLine($"Set VSTEST_DUMP_PATH: {dumpPath}");
             EnvironmentVariables.Add("VSTEST_DUMP_PATH", dumpPath);
+            EnvironmentVariables.Add("DOTNET_CLI_VSTEST_TRACE", "1");
+            EnvironmentVariables.Add("VSTEST_ DISABLE_FASTER_JSON_SERIALIZATION=", "1");
 
             if (Options.InstallPlaywright)
             {
@@ -221,7 +223,7 @@ public class TestRunner
             // Timeout test run 5 minutes before the Helix job would timeout
             var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
             var diagLog = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"), "vstest.log");
-            var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\"";
+            var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;CollectDump;TestTimeout=15m\"";
             if (Options.Quarantined)
             {
                 Console.WriteLine("Running quarantined tests.");
