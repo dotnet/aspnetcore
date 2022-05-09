@@ -83,8 +83,7 @@ public class WebApiTemplateTest : LoggedTest
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     public async Task WebApiTemplateCSharp_WithoutOpenAPI(bool useProgramMain, bool useMinimalApis)
     {
-        var project = await FactoryFixture.GetOrCreateProject("webapinoopenapi" + (useProgramMain ? "true" : "false") + (useMinimalApis ? "true" : "false")
-            + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
+        var project = await FactoryFixture.CreateProject(Output);
 
         var args = useProgramMain
             ? useMinimalApis
@@ -109,7 +108,7 @@ public class WebApiTemplateTest : LoggedTest
 
     private async Task<Project> PublishAndBuildWebApiTemplate(string languageOverride, string auth, string[] args = null)
     {
-        var project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp") + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
+        var project = await FactoryFixture.CreateProject(Output);
 
         var createResult = await project.RunDotNetNewAsync("webapi", language: languageOverride, auth: auth, args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));

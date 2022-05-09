@@ -111,10 +111,10 @@ public class Project : IDisposable
         // Only run one instance of 'dotnet new' at once, as a workaround for
         // https://github.com/aspnet/templating/issues/63
 
-        await DotNetNewLock.WaitAsync();
+        //await DotNetNewLock.WaitAsync();
         try
         {
-            Output.WriteLine("Acquired DotNetNewLock");
+            //Output.WriteLine("Acquired DotNetNewLock");
 
             if (Directory.Exists(TemplateOutputDir))
             {
@@ -137,8 +137,8 @@ public class Project : IDisposable
         }
         finally
         {
-            DotNetNewLock.Release();
-            Output.WriteLine("Released DotNetNewLock");
+            //DotNetNewLock.Release();
+            //Output.WriteLine("Released DotNetNewLock");
         }
     }
 
@@ -226,10 +226,10 @@ public class Project : IDisposable
 
         // Only run one instance of 'dotnet new' at once, as a workaround for
         // https://github.com/aspnet/templating/issues/63
-        await DotNetNewLock.WaitAsync();
+        //await DotNetNewLock.WaitAsync();
         try
         {
-            Output.WriteLine("Acquired DotNetNewLock");
+            //Output.WriteLine("Acquired DotNetNewLock");
             var command = DotNetMuxer.MuxerPathOrDefault();
             if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
             {
@@ -246,8 +246,8 @@ public class Project : IDisposable
         }
         finally
         {
-            DotNetNewLock.Release();
-            Output.WriteLine("Released DotNetNewLock");
+            //DotNetNewLock.Release();
+            //Output.WriteLine("Released DotNetNewLock");
         }
     }
 
@@ -257,10 +257,10 @@ public class Project : IDisposable
 
         // Only run one instance of 'dotnet new' at once, as a workaround for
         // https://github.com/aspnet/templating/issues/63
-        await DotNetNewLock.WaitAsync();
+        //await DotNetNewLock.WaitAsync();
         try
         {
-            Output.WriteLine("Acquired DotNetNewLock");
+            //Output.WriteLine("Acquired DotNetNewLock");
             var command = DotNetMuxer.MuxerPathOrDefault();
             if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
             {
@@ -277,8 +277,8 @@ public class Project : IDisposable
         }
         finally
         {
-            DotNetNewLock.Release();
-            Output.WriteLine("Released DotNetNewLock");
+            //DotNetNewLock.Release();
+            //Output.WriteLine("Released DotNetNewLock");
         }
     }
 
@@ -335,10 +335,10 @@ public class Project : IDisposable
 
     internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)
     {
-        await DotNetNewLock.WaitAsync();
+        //await DotNetNewLock.WaitAsync();
         try
         {
-            Output.WriteLine("Acquired DotNetNewLock");
+            //Output.WriteLine("Acquired DotNetNewLock");
             var result = ProcessEx.Run(
                 Output,
                 AppContext.BaseDirectory,
@@ -351,8 +351,8 @@ public class Project : IDisposable
         }
         finally
         {
-            DotNetNewLock.Release();
-            Output.WriteLine("Released DotNetNewLock");
+            //DotNetNewLock.Release();
+            //Output.WriteLine("Released DotNetNewLock");
         }
     }
 

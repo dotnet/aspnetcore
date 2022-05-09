@@ -41,7 +41,7 @@ public class GrpcTemplateTest : LoggedTest
     [InlineData(false)]
     public async Task GrpcTemplate(bool useProgramMain)
     {
-        var project = await ProjectFactory.GetOrCreateProject("grpc", Output);
+        var project = await ProjectFactory.CreateProject(Output);
 
         var args = useProgramMain ? new[] { ArgConstants.UseProgramMain } : null;
         var createResult = await project.RunDotNetNewAsync("grpc", args: args);

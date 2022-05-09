@@ -23,4 +23,5 @@ internal static class ArgConstants
     public const string AppIdClientId = "--api-client-id";
     public const string TenantId = "--tenant-id";
     public const string AadB2cInstance = "--aad-b2c-instance";
+    public const string UseLocalDb = "-uld";
 }
