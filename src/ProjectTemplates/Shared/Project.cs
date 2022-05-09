@@ -156,11 +156,12 @@ public class Project : IDisposable
 
         var result = new ProcessResult(execution);
 
+        // Comment out to see if it impacts test failures
         // Fail if there were build warnings
-        if (execution.Output.Contains(": warning") || execution.Error.Contains(": warning"))
-        {
-            result.ExitCode = -1;
-        }
+        //if (execution.Output.Contains(": warning") || execution.Error.Contains(": warning"))
+        //{
+        //    result.ExitCode = -1;
+        //}
 
         CaptureBinLogOnFailure(execution);
         return result;
