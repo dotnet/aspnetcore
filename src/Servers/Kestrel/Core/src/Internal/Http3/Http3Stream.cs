@@ -908,11 +908,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         HttpRequestHeaders.ClearPseudoRequestHeaders();
 
         // Cookies should be merged into a single string separated by "; "
+        // https://datatracker.ietf.org/doc/html/draft-ietf-quic-http-34#section-4.1.1.2
         var headers = (AspNetCore.Http.IHeaderDictionary)HttpRequestHeaders;
         if (headers.Cookie.Count > 1)
         {
-            var mergedCookies = string.Join("; ", headers.Cookie.ToArray());
-            headers.Cookie = new StringValues(mergedCookies);
+            headers.Cookie = string.Join("; ", headers.Cookie.ToArray());
         }
 
         return true;

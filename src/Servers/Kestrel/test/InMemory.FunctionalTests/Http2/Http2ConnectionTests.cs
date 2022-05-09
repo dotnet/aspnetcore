@@ -5431,7 +5431,7 @@ public class Http2ConnectionTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
     }
 
-public static TheoryData<byte[]> UpperCaseHeaderNameData
+    public static TheoryData<byte[]> UpperCaseHeaderNameData
     {
         get
         {
