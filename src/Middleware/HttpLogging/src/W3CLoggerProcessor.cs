@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             await WriteMessageAsync("#Version: 1.0", streamWriter, cancellationToken);
 
-            await WriteMessageAsync("#Start-Date: " + DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
+            await WriteMessageAsync("#Start-Date: " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
 
             await WriteMessageAsync(GetFieldsDirective(), streamWriter, cancellationToken);
         }

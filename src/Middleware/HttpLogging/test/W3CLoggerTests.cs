@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         public async Task WritesDateTime()
         {
             var path = Path.GetTempFileName() + "_";
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var options = new W3CLoggerOptions()
             {
                 LoggingFields = W3CLoggingFields.Date | W3CLoggingFields.Time,
@@ -48,7 +48,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.StartsWith("#Start-Date: ", lines[1]);
                     var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
                     // Assert that the log was written in the last 10 seconds
-                    Assert.True(now.Subtract(startDate).TotalSeconds < 10);
+                    // W3CLogger writes start-time to second precision, so delta could be as low as -0.999...
+                    var delta = startDate.Subtract(now).TotalSeconds;
+                    Assert.InRange(delta, -1, 10);
 
                     Assert.Equal("#Fields: date time", lines[2]);
 
@@ -89,7 +91,9 @@ namespace Microsoft.AspNetCore.HttpLogging
                     Assert.StartsWith("#Start-Date: ", lines[1]);
                     var startDate = DateTime.Parse(lines[1].Substring(13), CultureInfo.InvariantCulture);
                     // Assert that the log was written in the last 10 seconds
-                    Assert.True(now.Subtract(startDate).TotalSeconds < 10);
+                    // W3CLogger writes start-time to second precision, so delta could be as low as -0.999...
+                    var delta = startDate.Subtract(now).TotalSeconds;
+                    Assert.InRange(delta, -1, 10);
 
                     Assert.Equal("#Fields: cs-uri-query sc-status cs-host", lines[2]);
                     Assert.Equal("- - -", lines[3]);
