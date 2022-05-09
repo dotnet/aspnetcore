@@ -323,7 +323,7 @@ internal sealed class HostingApplicationDiagnostics
             out var requestId,
             out var traceState);
 
-        Activity? activity = _activitySource.CreateActivity(
+        var activity = _activitySource.CreateActivity(
             ActivityName,
             ActivityKind.Server,
             string.IsNullOrEmpty(requestId) ? null! : requestId
@@ -331,9 +331,15 @@ internal sealed class HostingApplicationDiagnostics
 
         if (activity is null)
         {
+            // CreateActivity didn't create an Activity (this is an optimization for the
+            // case when there are no listeners). Let's create it here if needed.
             if (loggingEnabled || diagnosticListenerActivityCreationEnabled)
             {
                 activity = new Activity(ActivityName);
+                if (!string.IsNullOrEmpty(requestId))
+                {
+                    activity.SetParentId(requestId);
+                }
             }
             else
             {
