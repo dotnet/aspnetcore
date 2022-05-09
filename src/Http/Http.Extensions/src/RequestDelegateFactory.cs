@@ -459,7 +459,7 @@ public static partial class RequestDelegateFactory
         // Get metadata from parameter types
         AddMetadata(methodInfo.GetParameters());
 
-        // Get metadata from properties surrogate as parameter types
+        // Get metadata from properties as parameter types
         AddMetadata(propertiesAsParameter);
 
         // Get metadata from return type
@@ -1299,7 +1299,7 @@ public static partial class RequestDelegateFactory
                     Expression.MemberInit(newExpression, bindings)));
         }
 
-        factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.SurrogateParameter);
+        factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.PropertyAsParameter);
         factoryContext.ExtraLocals.Add(argumentExpression);
 
         return argumentExpression;
@@ -2110,7 +2110,7 @@ public static partial class RequestDelegateFactory
         public const string BodyParameter = "Body (Inferred)";
         public const string RouteOrQueryStringParameter = "Route or Query String (Inferred)";
         public const string FormFileParameter = "Form File (Inferred)";
-        public const string SurrogateParameter = "Surrogate (Attribute)";
+        public const string PropertyAsParameter = "AsParameter (Attribute)";
     }
 
     private static partial class Log
