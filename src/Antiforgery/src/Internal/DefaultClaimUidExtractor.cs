@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Antiforgery;
 /// <summary>
 /// Default implementation of <see cref="IClaimUidExtractor"/>.
 /// </summary>
-internal class DefaultClaimUidExtractor : IClaimUidExtractor
+internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
 {
     private readonly ObjectPool<AntiforgerySerializationContext> _pool;
 

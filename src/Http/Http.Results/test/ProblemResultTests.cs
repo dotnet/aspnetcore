@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class ProblemResultTests
 {
@@ -89,6 +89,17 @@ public class ProblemResultTests
         Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, details.Status.Value);
         Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, result.StatusCode);
         Assert.Equal(StatusCodes.Status413RequestEntityTooLarge, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new ProblemHttpResult(new());
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
     private static IServiceProvider CreateServices()

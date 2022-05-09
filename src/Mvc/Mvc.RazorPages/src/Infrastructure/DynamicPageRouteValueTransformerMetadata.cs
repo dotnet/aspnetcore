@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class DynamicPageRouteValueTransformerMetadata : IDynamicEndpointMetadata
+internal sealed class DynamicPageRouteValueTransformerMetadata : IDynamicEndpointMetadata
 {
     public DynamicPageRouteValueTransformerMetadata(Type selectorType, object? state)
     {

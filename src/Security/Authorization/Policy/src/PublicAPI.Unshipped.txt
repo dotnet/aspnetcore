@@ -1,1 +1,3 @@
 #nullable enable
+static Microsoft.AspNetCore.Builder.AuthorizationEndpointConventionBuilderExtensions.RequireAuthorization<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> TBuilder
+static Microsoft.AspNetCore.Builder.AuthorizationEndpointConventionBuilderExtensions.RequireAuthorization<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!>! configurePolicy) -> TBuilder

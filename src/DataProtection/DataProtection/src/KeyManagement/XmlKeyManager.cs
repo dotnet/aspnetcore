@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -153,6 +154,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     }
 
     /// <inheritdoc/>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public IReadOnlyCollection<IKey> GetAllKeys()
     {
         var allElements = KeyRepository.GetAllElements();
@@ -255,6 +257,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         return Interlocked.CompareExchange<CancellationTokenSource?>(ref _cacheExpirationTokenSource, null, null).Token;
     }
 
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private KeyBase? ProcessKeyElement(XElement keyElement)
     {
         Debug.Assert(keyElement.Name == KeyElementName);
@@ -441,6 +444,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             encryptorFactories: _encryptorFactories);
     }
 
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     IAuthenticatedEncryptorDescriptor IInternalXmlKeyManager.DeserializeDescriptorFromKeyElement(XElement keyElement)
     {
         try

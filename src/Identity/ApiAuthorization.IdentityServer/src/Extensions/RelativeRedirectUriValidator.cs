@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Duende.IdentityServer.Models;
@@ -6,7 +6,7 @@ using Duende.IdentityServer.Validation;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
-internal class RelativeRedirectUriValidator : StrictRedirectUriValidator
+internal sealed class RelativeRedirectUriValidator : StrictRedirectUriValidator
 {
     public RelativeRedirectUriValidator(IAbsoluteUrlFactory absoluteUrlFactory)
     {

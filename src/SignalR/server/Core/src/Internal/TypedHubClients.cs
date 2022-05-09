@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class TypedHubClients<T> : IHubCallerClients<T>
+internal sealed class TypedHubClients<T> : IHubCallerClients<T>
 {
     private readonly IHubCallerClients _hubClients;
 
@@ -11,6 +11,8 @@ internal class TypedHubClients<T> : IHubCallerClients<T>
     {
         _hubClients = dynamicContext;
     }
+
+    public T Single(string connectionId) => TypedClientBuilder<T>.Build(_hubClients.Single(connectionId));
 
     public T All => TypedClientBuilder<T>.Build(_hubClients.All);
 

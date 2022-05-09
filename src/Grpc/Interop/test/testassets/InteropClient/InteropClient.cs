@@ -26,6 +26,7 @@ using Grpc.Auth;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Grpc.Testing;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -81,6 +82,7 @@ public class InteropClient : IDisposable
 
     private ServiceProvider serviceProvider;
     private ILoggerFactory loggerFactory;
+    private HttpEventSourceListener httpEventSource;
     private ClientOptions options;
 
     private InteropClient(ClientOptions options)
@@ -103,11 +105,13 @@ public class InteropClient : IDisposable
         serviceProvider = services.BuildServiceProvider();
 
         loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+        httpEventSource = new HttpEventSourceListener(loggerFactory);
     }
 
     public void Dispose()
     {
         serviceProvider.Dispose();
+        httpEventSource.Dispose();
     }
 
     public static void Run(string[] args)
@@ -163,12 +167,10 @@ public class InteropClient : IDisposable
             httpClientHandler.ClientCertificates.Add(cert);
         }
 
-        var httpClient = new HttpClient(httpClientHandler);
-
         var channel = GrpcChannel.ForAddress($"{scheme}://{options.ServerHost}:{options.ServerPort}", new GrpcChannelOptions
         {
             Credentials = credentials,
-            HttpClient = httpClient,
+            HttpHandler = httpClientHandler,
             LoggerFactory = loggerFactory
         });
 

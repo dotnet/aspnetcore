@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// Represents an <see cref="IResult"/> that when executed will
@@ -115,6 +115,8 @@ public sealed class FileStreamHttpResult : IResult
     /// <inheritdoc/>
     public async Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.FileStreamResult");

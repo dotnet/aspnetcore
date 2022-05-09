@@ -56,10 +56,6 @@
 
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
-    <ProjectReference Include="../testassets/DotNetToolsInstaller/DotNetToolsInstaller.csproj"
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
@@ -75,6 +71,4 @@
     </ItemGroup>
     <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)\.playwright\%(_PublishFiles.RecursiveDir)\" />
   </Target>
-
-
 </Project>

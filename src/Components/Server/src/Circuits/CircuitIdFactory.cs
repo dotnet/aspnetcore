@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 // This is a singleton instance
 // Generates strong cryptographic ids for circuits that are protected with authenticated encryption.
-internal class CircuitIdFactory
+internal sealed class CircuitIdFactory
 {
     private const string CircuitIdProtectorPurpose = "Microsoft.AspNetCore.Components.Server.CircuitIdFactory,V1";
 

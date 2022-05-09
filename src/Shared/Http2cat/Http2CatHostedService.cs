@@ -21,7 +21,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http2Cat;
 
-internal class Http2CatHostedService : IHostedService
+internal sealed class Http2CatHostedService : IHostedService
 {
     private readonly IConnectionFactory _connectionFactory;
     private readonly ILogger<Http2CatHostedService> _logger;

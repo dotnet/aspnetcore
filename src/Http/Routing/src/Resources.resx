@@ -234,4 +234,13 @@
   <data name="FormatterMapping_MediaTypeInvalid" xml:space="preserve">
     <value>No media type found for format '{0}'.</value>
   </data>
+  <data name="MapGroup_ChangingRoutePatternUnsupported" xml:space="preserve">
+    <value>MapGroup does not support mutating RouteEndpointBuilder.RoutePattern from '{0}' to '{1}' via conventions.</value>
+  </data>
+  <data name="MapGroup_CustomEndpointUnsupported" xml:space="preserve">
+    <value>MapGroup does not support custom Endpoint type '{0}'. Only RouteEndpoints can be grouped.</value>
+  </data>
+  <data name="MapGroup_RepeatedDictionaryEntry" xml:space="preserve">
+    <value>MapGroup cannot build a pattern for '{0}' because the 'RoutePattern.{1}' dictionary key '{2}' has multiple values.</value>
+  </data>
 </root>

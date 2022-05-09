@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class FileParser
+internal sealed class FileParser
 {
     public static IList<IRule> Parse(TextReader input)
     {

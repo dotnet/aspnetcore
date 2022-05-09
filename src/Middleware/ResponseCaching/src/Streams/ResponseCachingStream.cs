@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.ResponseCaching;
 
-internal class ResponseCachingStream : Stream
+internal sealed class ResponseCachingStream : Stream
 {
     private readonly Stream _innerStream;
     private readonly long _maxBufferSize;

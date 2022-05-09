@@ -162,7 +162,7 @@ public class InProcessTestServer<TStartup> : InProcessTestServer
         }
     }
 
-    private class ForwardingLoggerProvider : ILoggerProvider
+    private sealed class ForwardingLoggerProvider : ILoggerProvider
     {
         private readonly ILoggerFactory _loggerFactory;
 

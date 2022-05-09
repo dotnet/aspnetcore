@@ -46,7 +46,7 @@ using Microsoft.AspNetCore.Hosting.Views;
 #line default
 #line hidden
 #nullable disable
-    internal class ErrorPage : Microsoft.Extensions.RazorViews.BaseView
+    internal sealed class ErrorPage : Microsoft.Extensions.RazorViews.BaseView
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()

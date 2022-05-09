@@ -81,8 +81,8 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         static string GetMethod(IHttpMethodMetadata metadata) => Assert.Single(metadata.HttpMethods);
 
         Assert.Equal(3, metadataArray.Length);
-        Assert.Equal("ATTRIBUTE", GetMethod(metadataArray[0]));
-        Assert.Equal("METHOD", GetMethod(metadataArray[1]));
+        Assert.Equal("METHOD", GetMethod(metadataArray[0]));
+        Assert.Equal("ATTRIBUTE", GetMethod(metadataArray[1]));
         Assert.Equal("BUILDER", GetMethod(metadataArray[2]));
 
         Assert.Equal("BUILDER", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()!.HttpMethods.Single());
@@ -129,7 +129,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
-    public async Task MapGetWithRouteParameter_BuildsEndpointWithRouteSpecificBinding()
+    public async Task MapGet_WithRouteParameter_BuildsEndpointWithRouteSpecificBinding()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
         _ = builder.MapGet("/{id}", (int? id, HttpContext httpContext) =>
@@ -167,7 +167,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
-    public async Task MapGetWithoutRouteParameter_BuildsEndpointWithQuerySpecificBinding()
+    public async Task MapGet_WithoutRouteParameter_BuildsEndpointWithQuerySpecificBinding()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(new EmptyServiceProvider()));
         _ = builder.MapGet("/", (int? id, HttpContext httpContext) =>
@@ -892,7 +892,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             void WithFilter(RouteHandlerBuilder builder) =>
                 builder.AddFilter(async (context, next) =>
                 {
-                    context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+                    context.Arguments[0] = ((int)context.Arguments[0]!) + 1;
                     return await next(context);
                 });
 
@@ -902,7 +902,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
                     Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
-                    context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+                    context.Arguments[0] = context.GetArgument<int>(0) + 1;
                     return await next(context);
                 });
 
@@ -995,7 +995,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     {
         public async ValueTask<object?> InvokeAsync(RouteHandlerInvocationContext context, RouteHandlerFilterDelegate next)
         {
-            context.Parameters[0] = ((int)context.Parameters[0]!) + 1;
+            context.Arguments[0] = ((int)context.Arguments[0]!) + 1;
             return await next(context);
         }
     }

@@ -44,9 +44,11 @@
           ]
         },
         {
-          "condition": "(UseProgramMain && !UseMinimalAPIs)",
+          "condition": "(UseProgramMain)",
           "exclude": [
-            "Program.cs"
+            "Program.cs",
+            "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs",
+            "Program.MinimalAPIs.WindowsOrNoAuth.cs"
           ],
           "rename": {
             "Program.Main.cs": "Program.cs"
@@ -55,13 +57,17 @@
         {
           "condition": "(UseMinimalAPIs)",
           "exclude": [
-            "Controllers/WeatherForecastController.cs",
-            "Program.cs",
+            "Controllers/WeatherForecastController.cs"
+          ]
+        },
+        {
+          "condition": "(UseMinimalAPIs && !UseProgramMain)",
+          "exclude": [
             "WeatherForecast.cs"
           ]
         },
         {
-          "condition": "(UseMinimalAPIs && (NoAuth || WindowsAuth))",
+          "condition": "(!UseProgramMain && UseMinimalAPIs && (NoAuth || WindowsAuth))",
           "rename": {
             "Program.MinimalAPIs.WindowsOrNoAuth.cs": "Program.cs"
           },
@@ -70,7 +76,7 @@
           ]
         },
         {
-          "condition": "(UseMinimalAPIs && (IndividualAuth || OrganizationalAuth))",
+          "condition": "(!UseProgramMain && UseMinimalAPIs && (IndividualAuth || OrganizationalAuth))",
           "rename": {
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs": "Program.cs"
           },

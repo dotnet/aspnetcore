@@ -76,6 +76,8 @@
       "src\\Middleware\\MiddlewareAnalysis\\samples\\MiddlewareAnalysisSample\\MiddlewareAnalysisSample.csproj",
       "src\\Middleware\\MiddlewareAnalysis\\src\\Microsoft.AspNetCore.MiddlewareAnalysis.csproj",
       "src\\Middleware\\MiddlewareAnalysis\\test\\Microsoft.AspNetCore.MiddlewareAnalysis.Tests.csproj",
+      "src\\Middleware\\RateLimiting\\src\\Microsoft.AspNetCore.RateLimiting.csproj",
+      "src\\Middleware\\RateLimiting\\test\\Microsoft.AspNetCore.RateLimiting.Tests.csproj",
       "src\\Middleware\\RequestDecompression\\sample\\RequestDecompressionSample.csproj",
       "src\\Middleware\\RequestDecompression\\src\\Microsoft.AspNetCore.RequestDecompression.csproj",
       "src\\Middleware\\RequestDecompression\\test\\Microsoft.AspNetCore.RequestDecompression.Tests.csproj",

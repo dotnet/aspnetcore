@@ -62,11 +62,13 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
+    <LatestPackageReference Include="Microsoft.OpenApi" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
     <LatestPackageReference Include="System.CommandLine.Experimental" />
     <LatestPackageReference Include="System.ComponentModel" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" />
+    <LatestPackageReference Include="System.Configuration.ConfigurationManager" />
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" />
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />
@@ -74,9 +76,11 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Net.Http" />
     <LatestPackageReference Include="System.Net.Http.Json" />
     <LatestPackageReference Include="System.Net.Sockets" />
+    <LatestPackageReference Include="System.Private.Uri" />
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
     <LatestPackageReference Include="System.Security.Cryptography.Pkcs" />
+    <LatestPackageReference Include="System.Security.Cryptography.X509Certificates" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" />
     <LatestPackageReference Include="System.Security.Permissions" />
     <LatestPackageReference Include="System.Security.Principal.Windows" />
@@ -189,6 +193,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="MessagePackAnalyzer" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />
     <LatestPackageReference Include="Mono.Cecil" />
+    <LatestPackageReference Include="Mono.TextTemplating" />
     <LatestPackageReference Include="Moq" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />

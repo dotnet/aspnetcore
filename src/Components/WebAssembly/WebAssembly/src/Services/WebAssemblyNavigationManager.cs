@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 /// <summary>
 /// Default client-side implementation of <see cref="NavigationManager"/>.
 /// </summary>
-internal class WebAssemblyNavigationManager : NavigationManager
+internal sealed class WebAssemblyNavigationManager : NavigationManager
 {
     /// <summary>
     /// Gets the instance of <see cref="WebAssemblyNavigationManager"/>.

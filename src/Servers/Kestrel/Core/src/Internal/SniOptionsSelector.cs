@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class SniOptionsSelector
+internal sealed class SniOptionsSelector
 {
     private const string WildcardHost = "*";
     private const string WildcardPrefix = "*.";
@@ -196,7 +196,7 @@ internal class SniOptionsSelector
             ServerCertificateSelectionCallback = sslOptions.ServerCertificateSelectionCallback,
         };
 
-    private class SniOptions
+    private sealed class SniOptions
     {
         public SniOptions(SslServerAuthenticationOptions sslOptions, HttpProtocols httpProtocols, ClientCertificateMode clientCertificateMode)
         {
@@ -210,7 +210,7 @@ internal class SniOptionsSelector
         public ClientCertificateMode ClientCertificateMode { get; }
     }
 
-    private class LongestStringFirstComparer : IComparer<string>
+    private sealed class LongestStringFirstComparer : IComparer<string>
     {
         public static LongestStringFirstComparer Instance { get; } = new LongestStringFirstComparer();
 
@@ -221,7 +221,15 @@ internal class SniOptionsSelector
         public int Compare(string? x, string? y)
         {
             // Flip x and y to put the longest instead of the shortest string first in the SortedList.
-            return y!.Length.CompareTo(x!.Length);
+            var lengthResult = y!.Length.CompareTo(x!.Length);
+            if (lengthResult != 0)
+            {
+                return lengthResult;
+            }
+            else
+            {
+                return string.Compare(x, y, StringComparison.OrdinalIgnoreCase);
+            }
         }
     }
 }

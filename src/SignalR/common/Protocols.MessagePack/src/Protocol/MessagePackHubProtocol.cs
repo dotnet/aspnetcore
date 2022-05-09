@@ -76,7 +76,7 @@ public class MessagePackHubProtocol : IHubProtocol
             .WithResolver(SignalRResolver.Instance)
             .WithSecurity(MessagePackSecurity.UntrustedData);
 
-    internal class SignalRResolver : IFormatterResolver
+    internal sealed class SignalRResolver : IFormatterResolver
     {
         public static readonly IFormatterResolver Instance = new SignalRResolver();
 

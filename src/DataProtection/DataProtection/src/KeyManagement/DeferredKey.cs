@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 /// </summary>
 internal sealed class DeferredKey : KeyBase
 {
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public DeferredKey(
         Guid keyId,
         DateTimeOffset creationDate,
@@ -34,6 +36,7 @@ internal sealed class DeferredKey : KeyBase
     {
     }
 
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private static Func<IAuthenticatedEncryptorDescriptor> GetLazyDescriptorDelegate(IInternalXmlKeyManager keyManager, XElement keyElement)
     {
         // The <key> element will be held around in memory for a potentially lengthy period
@@ -42,13 +45,19 @@ internal sealed class DeferredKey : KeyBase
 
         try
         {
-            return () => keyManager.DeserializeDescriptorFromKeyElement(encryptedKeyElement.ToXElement());
+            return GetLazyDescriptorDelegate;
         }
         finally
         {
             // It's important that the lambda above doesn't capture 'descriptorElement'. Clearing the reference here
             // helps us detect if we've done this by causing a null ref at runtime.
             keyElement = null!;
+        }
+
+        [RequiresUnreferencedCode(TrimmerWarning.Message)]
+        IAuthenticatedEncryptorDescriptor GetLazyDescriptorDelegate()
+        {
+            return keyManager.DeserializeDescriptorFromKeyElement(encryptedKeyElement.ToXElement());
         }
     }
 }

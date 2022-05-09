@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// Represents an <see cref="IResult"/> that when executed will
@@ -34,6 +34,8 @@ public sealed partial class StatusCodeHttpResult : IResult
     /// <returns>A task that represents the asynchronous execute operation.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.StatusCodeResult");

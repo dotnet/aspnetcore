@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// An <see cref="IResult"/> that on execution invokes <see cref="M:HttpContext.ForbidAsync"/>.
@@ -18,16 +18,6 @@ public sealed partial class ForbidHttpResult : IResult
     /// </summary>
     internal ForbidHttpResult()
         : this(Array.Empty<string>())
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="ForbidHttpResult"/> with the
-    /// specified authentication scheme.
-    /// </summary>
-    /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-    internal ForbidHttpResult(string authenticationScheme)
-        : this(new[] { authenticationScheme })
     {
     }
 
@@ -90,6 +80,8 @@ public sealed partial class ForbidHttpResult : IResult
     /// <inheritdoc />
     public async Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ForbidResult");

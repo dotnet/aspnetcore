@@ -6,7 +6,7 @@ using System.Security.Authentication.ExtendedProtection;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
-internal class SafeLocalFreeChannelBinding : ChannelBinding
+internal sealed class SafeLocalFreeChannelBinding : ChannelBinding
 {
     private const int LMEM_FIXED = 0;
     private int size;

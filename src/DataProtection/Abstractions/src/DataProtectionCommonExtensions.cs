@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection.Abstractions;
 using Microsoft.Extensions.Internal;
 
@@ -182,6 +183,7 @@ public static class DataProtectionCommonExtensions
     /// <param name="protector">The data protector to use for this operation.</param>
     /// <param name="plaintext">The plaintext data to protect.</param>
     /// <returns>The protected form of the plaintext data.</returns>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public static string Protect(this IDataProtector protector, string plaintext)
     {
         if (protector == null)
@@ -216,6 +218,7 @@ public static class DataProtectionCommonExtensions
     /// <exception cref="System.Security.Cryptography.CryptographicException">
     /// Thrown if <paramref name="protectedData"/> is invalid or malformed.
     /// </exception>
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public static string Unprotect(this IDataProtector protector, string protectedData)
     {
         if (protector == null)

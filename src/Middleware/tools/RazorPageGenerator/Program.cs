@@ -139,7 +139,7 @@ dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews c:\project
         };
     }
 
-    private class SuppressChecksumOptionsFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
+    private sealed class SuppressChecksumOptionsFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
     {
         public int Order { get; set; }
 
@@ -154,7 +154,7 @@ dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews c:\project
         }
     }
 
-    private class SuppressMetadataAttributesFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
+    private sealed class SuppressMetadataAttributesFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
     {
         public int Order { get; set; }
 
@@ -169,7 +169,7 @@ dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews c:\project
         }
     }
 
-    private class FileSystemRazorProjectItemWrapper : RazorProjectItem
+    private sealed class FileSystemRazorProjectItemWrapper : RazorProjectItem
     {
         private readonly RazorProjectItem _source;
 

@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 
-internal class RedisSubscriptionManager
+internal sealed class RedisSubscriptionManager
 {
     private readonly ConcurrentDictionary<string, HubConnectionStore> _subscriptions = new ConcurrentDictionary<string, HubConnectionStore>(StringComparer.Ordinal);
     private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);

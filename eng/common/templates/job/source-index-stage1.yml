@@ -7,6 +7,7 @@ parameters:
   binlogPath: artifacts/log/Debug/Build.binlog
   condition: ''
   dependsOn: ''
+  pool: ''
 
 jobs:
 - job: SourceIndexStage1
@@ -22,13 +23,17 @@ jobs:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: source-dot-net stage1 variables
 
-  pool:
-    ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      name: NetCore1ESPool-Public
-      demands: ImageOverride -equals Build.Server.Amd64.VS2019.Open
-    ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-      name: NetCore1ESPool-Internal
-      demands: ImageOverride -equals Build.Server.Amd64.VS2019
+  ${{ if ne(parameters.pool, '') }}:
+    pool: ${{ parameters.pool }}
+  ${{ if eq(parameters.pool, '') }}:
+    pool:
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        name: NetCore1ESPool-Public
+        demands: ImageOverride -equals Build.Server.Amd64.VS2019.Open
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        name: NetCore1ESPool-Internal
+        demands: ImageOverride -equals Build.Server.Amd64.VS2019
+
   steps:
   - ${{ each preStep in parameters.preSteps }}:
     - ${{ preStep }}

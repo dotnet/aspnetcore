@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.DataProtection, Version=7.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.DataProtection.Internal.DataProtectionHostedService.StartAsync(System.Threading.CancellationToken)</property>
+    </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2026</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.AspNetCore.DataProtection.Internal.KeyManagementOptionsSetup.Configure(Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions)</property>
+    </attribute>
+  </assembly>
+</linker>

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
 
-internal class ModelEndpointDataSource : EndpointDataSource
+internal sealed class ModelEndpointDataSource : EndpointDataSource
 {
     private readonly List<DefaultEndpointConventionBuilder> _endpointConventionBuilders;
 

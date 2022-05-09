@@ -461,6 +461,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             timeoutControl: _mockTimeoutControl.Object);
 
         _connection = new Http2Connection(httpConnectionContext);
+        _connection._streamLifetimeHandler = new LifetimeHandlerInterceptor(_connection._streamLifetimeHandler, this);
 
         var httpConnection = new HttpConnection(httpConnectionContext);
         httpConnection.Initialize(_connection);
@@ -468,6 +469,35 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
                            .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
 
         _timeoutControl.Initialize(_serviceContext.SystemClock.UtcNow.Ticks);
+    }
+
+    private class LifetimeHandlerInterceptor : IHttp2StreamLifetimeHandler
+    {
+        private readonly IHttp2StreamLifetimeHandler _inner;
+        private readonly Http2TestBase _httpTestBase;
+
+        public LifetimeHandlerInterceptor(IHttp2StreamLifetimeHandler inner, Http2TestBase httpTestBase)
+        {
+            _inner = inner;
+            _httpTestBase = httpTestBase;
+        }
+
+        public void DecrementActiveClientStreamCount()
+        {
+            _inner.DecrementActiveClientStreamCount();
+        }
+
+        public void OnStreamCompleted(Http2Stream stream)
+        {
+            _inner.OnStreamCompleted(stream);
+
+            // Stream in test might not have been started with StartStream method.
+            // In that case there isn't a record of a running stream.
+            if (_httpTestBase._runningStreams.TryGetValue(stream.StreamId, out var tcs))
+            {
+                tcs.TrySetResult();
+            }
+        }
     }
 
     protected void InitializeConnectionWithoutPreface(RequestDelegate application)
@@ -679,6 +709,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         Http2FrameWriter.WriteHeader(frame, writableBuffer);
         writableBuffer.Write(buffer.Slice(0, frame.PayloadLength));
         return FlushAsync(writableBuffer);
+    }
+
+    protected Task WaitForStreamAsync(int streamId)
+    {
+        return _runningStreams[streamId].Task;
     }
 
     protected Task WaitForAllStreamsAsync()

@@ -116,7 +116,7 @@ public static class DotNetDispatcher
             task.ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
 
         }
-        else if(syncResult is ValueTask valueTaskResult)
+        else if (syncResult is ValueTask valueTaskResult)
         {
             valueTaskResult.AsTask().ContinueWith(t => EndInvokeDotNetAfterTask(t, jsRuntime, invocationInfo), TaskScheduler.Current);
         }
@@ -380,7 +380,7 @@ public static class DotNetDispatcher
     }
 
     private static Task CreateValueTaskConverter<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T>(object result) => ((ValueTask<T>)result).AsTask();
-    
+
     private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
     {
         var type = objectReference.Value.GetType();

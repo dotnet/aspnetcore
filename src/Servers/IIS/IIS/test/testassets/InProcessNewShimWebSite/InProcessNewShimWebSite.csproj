@@ -58,18 +58,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" >
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
+    <PackageReference Include="System.Private.Uri" Version="4.3.2" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
     <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" >
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
     <Reference Include="xunit.assert" />
   </ItemGroup>
-
-  <!-- Repeat Build target for win-x64 to allow later Publish w/ NoBuild=true. -->
-  <Target Name="BuildX64"
-      BeforeTargets="Build"
-      Condition=" '$(RuntimeIdentifier)' != 'win-x64' AND '$(TargetArchitecture)' != 'arm' ">
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-        Properties="RuntimeIdentifier=win-x64;ReferenceTestTasks=false"
-        Targets="Build" />
-  </Target>
 </Project>

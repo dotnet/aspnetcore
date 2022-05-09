@@ -316,7 +316,7 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
         }
     }
 
-    private class AssemblyLogTimestampOffsetEnricher : ILogEventEnricher
+    private sealed class AssemblyLogTimestampOffsetEnricher : ILogEventEnricher
     {
         private readonly DateTimeOffset? _logStart;
 
@@ -334,7 +334,7 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
                         : DateTimeOffset.UtcNow.ToString("s", CultureInfo.InvariantCulture)));
     }
 
-    private class Disposable : IDisposable
+    private sealed class Disposable : IDisposable
     {
         private readonly Action _action;
 

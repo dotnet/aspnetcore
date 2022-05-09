@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// An <see cref="ContentHttpResult"/> that when executed
@@ -30,18 +30,18 @@ public sealed partial class ContentHttpResult : IResult
     /// <param name="contentType">The Content-Type header for the response</param>
     internal ContentHttpResult(string? content, string? contentType, int? statusCode)
     {
-        Content = content;
+        ResponseContent = content;
         StatusCode = statusCode;
         ContentType = contentType;
     }
 
     /// <summary>
-    /// Gets or set the content representing the body of the response.
+    /// Gets the content representing the body of the response.
     /// </summary>
-    public string? Content { get; internal init; }
+    public string? ResponseContent { get; internal init; }
 
     /// <summary>
-    /// Gets or sets the Content-Type header for the response.
+    /// Gets the Content-Type header for the response.
     /// </summary>
     public string? ContentType { get; internal init; }
 
@@ -57,10 +57,22 @@ public sealed partial class ContentHttpResult : IResult
     /// <returns>A task that represents the asynchronous execute operation.</returns>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ContentResult");
 
-        return HttpResultsHelper.WriteResultAsContentAsync(httpContext, logger, Content, StatusCode, ContentType);
+        if (StatusCode is { } statusCode)
+        {
+            HttpResultsHelper.Log.WritingResultAsStatusCode(logger, statusCode);
+            httpContext.Response.StatusCode = statusCode;
+        }
+
+        return HttpResultsHelper.WriteResultAsContentAsync(
+            httpContext,
+            logger,
+            ResponseContent,
+            ContentType);
     }
 }

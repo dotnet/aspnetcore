@@ -7,11 +7,6 @@ namespace Microsoft.AspNetCore.Authorization.Test;
 
 public class AssertionRequirementsTests
 {
-    private AssertionRequirement CreateRequirement()
-    {
-        return new AssertionRequirement(context => true);
-    }
-
     [Fact]
     public void ToString_ShouldReturnFormatValue()
     {

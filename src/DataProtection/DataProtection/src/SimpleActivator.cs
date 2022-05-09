@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection;
@@ -26,6 +27,7 @@ internal class SimpleActivator : IActivator
         _services = services;
     }
 
+    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public virtual object CreateInstance(Type expectedBaseType, string implementationTypeName)
     {
         // Would the assignment even work?

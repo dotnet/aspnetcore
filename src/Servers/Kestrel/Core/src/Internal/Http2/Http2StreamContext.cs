@@ -25,8 +25,7 @@ internal sealed class Http2StreamContext : HttpConnectionContext
         Http2PeerSettings clientPeerSettings,
         Http2PeerSettings serverPeerSettings,
         Http2FrameWriter frameWriter,
-        InputFlowControl connectionInputFlowControl,
-        OutputFlowControl connectionOutputFlowControl) : base(connectionId, protocols, altSvcHeader, connectionContext: null!, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+        InputFlowControl connectionInputFlowControl) : base(connectionId, protocols, altSvcHeader, connectionContext: null!, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
     {
         StreamId = streamId;
         StreamLifetimeHandler = streamLifetimeHandler;
@@ -34,7 +33,6 @@ internal sealed class Http2StreamContext : HttpConnectionContext
         ServerPeerSettings = serverPeerSettings;
         FrameWriter = frameWriter;
         ConnectionInputFlowControl = connectionInputFlowControl;
-        ConnectionOutputFlowControl = connectionOutputFlowControl;
     }
 
     public IHttp2StreamLifetimeHandler StreamLifetimeHandler { get; }
@@ -42,7 +40,5 @@ internal sealed class Http2StreamContext : HttpConnectionContext
     public Http2PeerSettings ServerPeerSettings { get; }
     public Http2FrameWriter FrameWriter { get; }
     public InputFlowControl ConnectionInputFlowControl { get; }
-    public OutputFlowControl ConnectionOutputFlowControl { get; }
-
     public int StreamId { get; set; }
 }

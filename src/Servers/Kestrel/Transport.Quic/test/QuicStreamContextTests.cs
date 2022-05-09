@@ -62,7 +62,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
-        var clientStream = clientConnection.OpenBidirectionalStream();
+        var clientStream = await clientConnection.OpenBidirectionalStreamAsync();
         await clientStream.WriteAsync(TestData).DefaultTimeout();
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
         var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
@@ -109,7 +109,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
-        var clientStream = clientConnection.OpenBidirectionalStream();
+        var clientStream = await clientConnection.OpenBidirectionalStreamAsync();
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
@@ -166,7 +166,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
         // Act
         Logger.LogInformation("Client starting stream.");
-        var clientStream = clientConnection.OpenBidirectionalStream();
+        var clientStream = await clientConnection.OpenBidirectionalStreamAsync();
         await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
 
@@ -243,7 +243,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
-        await using var clientStream = quicConnection.OpenBidirectionalStream();
+        await using var clientStream = await quicConnection.OpenBidirectionalStreamAsync();
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         await using var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
@@ -288,7 +288,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
-        await using var clientStream = quicConnection.OpenUnidirectionalStream();
+        await using var clientStream = await quicConnection.OpenUnidirectionalStreamAsync();
         await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
 
         await using var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
@@ -323,7 +323,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
-        await using var clientStream = quicConnection.OpenUnidirectionalStream();
+        await using var clientStream = await quicConnection.OpenUnidirectionalStreamAsync();
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         await using var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
@@ -363,7 +363,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
-        await using var clientStream = quicConnection.OpenUnidirectionalStream();
+        await using var clientStream = await quicConnection.OpenUnidirectionalStreamAsync();
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         await using var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
@@ -481,7 +481,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
-        await using var clientStream = quicConnection.OpenBidirectionalStream();
+        await using var clientStream = await quicConnection.OpenBidirectionalStreamAsync();
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         await using var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();

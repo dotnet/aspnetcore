@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Rewrite;
 /// <summary>
 /// Represents a string iterator, with captures.
 /// </summary>
-internal class ParserContext
+internal sealed class ParserContext
 {
     public readonly string Template;
     public int Index { get; set; }

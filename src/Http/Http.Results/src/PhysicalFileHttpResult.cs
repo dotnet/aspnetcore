@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// A <see cref="PhysicalFileHttpResult"/> on execution will write a file from disk to the response
@@ -107,6 +107,8 @@ public sealed partial class PhysicalFileHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var fileInfo = GetFileInfoWrapper(FileName);
         if (!fileInfo.Exists)
         {

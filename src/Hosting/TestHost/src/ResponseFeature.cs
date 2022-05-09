@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class ResponseFeature : IHttpResponseFeature, IHttpResponseBodyFeature
+internal sealed class ResponseFeature : IHttpResponseFeature, IHttpResponseBodyFeature
 {
     private readonly HeaderDictionary _headers = new HeaderDictionary();
     private readonly Action<Exception> _abort;

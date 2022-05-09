@@ -169,7 +169,7 @@
                           $(RepoRoot)src\Hosting\**\*.*proj;
                           $(RepoRoot)src\Http\**\*.*proj;
                           $(RepoRoot)src\HttpClientFactory\**\*.*proj;
-                          $(RepoRoot)src\Html.Abstractions\*.*proj;
+                          $(RepoRoot)src\Html.Abstractions\**\*.*proj;
                           $(RepoRoot)src\Identity\**\*.*proj;
                           $(RepoRoot)src\Servers\**\*.csproj;
                           $(RepoRoot)src\Security\**\*.*proj;
@@ -198,6 +198,8 @@
                           $(RepoRoot)src\submodules\spa-templates\src\*.csproj;
                           $(RepoRoot)src\Extensions\**\*.csproj;
                           $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
+                          $(RepoRoot)src\OpenApi\**\*.csproj;
+                          $(RepoRoot)eng\tools\HelixTestRunner\HelixTestRunner.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
@@ -238,6 +240,7 @@
                           $(RepoRoot)src\Testing\**\src\*.csproj;
                           $(RepoRoot)src\Extensions\**\src\*.csproj;
                           $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
+                          $(RepoRoot)src\OpenApi\**\src\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);

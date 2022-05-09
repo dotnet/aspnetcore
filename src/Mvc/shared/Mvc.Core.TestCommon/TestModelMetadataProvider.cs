@@ -141,7 +141,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
         return ForProperty(typeof(TContainer), propertyName);
     }
 
-    private class TestModelMetadataDetailsProvider :
+    private sealed class TestModelMetadataDetailsProvider :
         IBindingMetadataProvider,
         IDisplayMetadataProvider,
         IValidationMetadataProvider
@@ -182,7 +182,7 @@ public class TestModelMetadataProvider : DefaultModelMetadataProvider
         IMetadataBuilder ValidationDetails(Action<ValidationMetadata> action);
     }
 
-    private class MetadataBuilder : IMetadataBuilder
+    private sealed class MetadataBuilder : IMetadataBuilder
     {
         private readonly List<Action<BindingMetadata>> _bindingActions = new List<Action<BindingMetadata>>();
         private readonly List<Action<DisplayMetadata>> _displayActions = new List<Action<DisplayMetadata>>();

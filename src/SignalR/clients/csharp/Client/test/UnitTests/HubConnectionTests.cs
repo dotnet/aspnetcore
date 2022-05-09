@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
@@ -217,6 +218,29 @@ public partial class HubConnectionTests : VerifiableLoggedTest
 
             // Assert that SendAsync didn't send a message
             Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
+        }
+    }
+
+    [Fact]
+    public async Task SendAsyncCanceledWhenTokenCanceledDuringSend()
+    {
+        using (StartVerifiableLog())
+        {
+            // Use pause threshold to block FlushAsync when writing 100+ bytes
+            var connection = new TestConnection(pipeOptions: new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, pauseWriterThreshold: 100, useSynchronizationContext: false));
+            var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+
+            await hubConnection.StartAsync().DefaultTimeout();
+
+            var cts = new CancellationTokenSource();
+            // Send 100+ bytes to trigger pauseWriterThreshold
+            var sendTask = hubConnection.SendAsync("testMethod", new byte[100], cts.Token);
+
+            cts.Cancel();
+
+            await Assert.ThrowsAsync<OperationCanceledException>(() => sendTask.DefaultTimeout());
+
+            await hubConnection.StopAsync().DefaultTimeout();
         }
     }
 

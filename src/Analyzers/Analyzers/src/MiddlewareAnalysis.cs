@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class MiddlewareAnalysis
+internal sealed class MiddlewareAnalysis
 {
     public MiddlewareAnalysis(IMethodSymbol configureMethod, ImmutableArray<MiddlewareItem> middleware)
     {

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Authentication;
 
 [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
-internal class AzureADB2CJwtBearerOptionsConfiguration : IConfigureNamedOptions<JwtBearerOptions>
+internal sealed class AzureADB2CJwtBearerOptionsConfiguration : IConfigureNamedOptions<JwtBearerOptions>
 {
     private readonly IOptions<AzureADB2CSchemeOptions> _schemeOptions;
     private readonly IOptionsMonitor<AzureADB2COptions> _azureADB2COptions;

@@ -1476,8 +1476,13 @@
           "pathFilter": [
             "src/ProjectTemplates/",
             "src/Razor/",
-            "src/MusicStore/",
-            "src/Mvc/"
+            "src/Mvc/Mvc.Localization/",
+            "src/Mvc/Mvc.DataAnnotations/",
+            "src/Mvc/Mvc.Razor.RuntimeCompilation/",
+            "src/Mvc/Mvc.Razor/",
+            "src/Mvc/Mvc.RazorPages/",
+            "src/Mvc/Mvc.TagHelpers/",
+            "src/Mvc/Mvc.ViewFeatures/"
           ]
         },
         {
@@ -1508,9 +1513,27 @@
           ]
         },
         {
-          "label": "blazor-wasm",
+          "label": "area-grpc",
           "pathFilter": [
-            "src/ProjectTemplates/BlazorWasm.ProjectTemplates/"
+            "src/Grpc/"
+          ]
+        },
+        {
+          "label": "area-web-frameworks",
+          "pathFilter": [
+            "src/Mvc/Mvc.Abstractions/",
+            "src/Mvc/Mvc.Analyzers/",
+            "src/Mvc/Mvc.Api.Analyzers/",
+            "src/Mvc/Mvc.ApiExplorer/",
+            "src/Mvc/Mvc.Core/",
+            "src/Mvc/Mvc.Cors/",
+            "src/Mvc/Mvc.Formatters.Json/",
+            "src/Mvc/Mvc.Formatters.Xml/",
+            "src/Mvc/Mvc.NewtonsoftJson/",
+            "src/Mvc/Mvc.Testing.Tasks/src/",
+            "src/Mvc/Mvc.Testing/",
+            "src/Mvc/Mvc/",
+            "src/Mvc/perf/"
           ]
         }
       ]
@@ -1740,17 +1763,6 @@
                     "name": "isActivitySender",
                     "parameters": {
                       "user": "Tratcher"
-                    }
-                  }
-                ]
-              },
-              {
-                "operator": "not",
-                "operands": [
-                  {
-                    "name": "isActivitySender",
-                    "parameters": {
-                      "user": "pranavkm"
                     }
                   }
                 ]
@@ -2540,7 +2552,7 @@
         {
           "name": "addMilestone",
           "parameters": {
-            "milestoneName": "7.0-preview4"
+            "milestoneName": "7.0-preview5"
           }
         }
       ],
