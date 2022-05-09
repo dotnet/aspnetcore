@@ -2089,7 +2089,7 @@ public static partial class RequestDelegateFactory
         public List<Expression> ContextArgAccess { get; } = new();
         public Expression? MethodCall { get; set; }
         public Type[] ArgumentTypes { get; set; } = Array.Empty<Type>();
-        public Expression[] ArgumentExpressions { get; set;  } = Array.Empty<Expression>();
+        public Expression[] ArgumentExpressions { get; set; } = Array.Empty<Expression>();
         public Expression[] BoxedArgs { get; set;  } = Array.Empty<Expression>();
         public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
 
