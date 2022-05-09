@@ -2110,7 +2110,7 @@ public static partial class RequestDelegateFactory
         public const string BodyParameter = "Body (Inferred)";
         public const string RouteOrQueryStringParameter = "Route or Query String (Inferred)";
         public const string FormFileParameter = "Form File (Inferred)";
-        public const string PropertyAsParameter = "AsParameter (Attribute)";
+        public const string PropertyAsParameter = "As Parameter (Attribute)";
     }
 
     private static partial class Log
