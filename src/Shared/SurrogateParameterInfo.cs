@@ -50,9 +50,9 @@ internal sealed class SurrogateParameterInfo : ParameterInfo
         => _constructionParameterInfo is not null ? _constructionParameterInfo.RawDefaultValue : null;
 
     /// <summary>
-    /// Unwraps all parameters that contains <see cref="ParametersAttribute"/> and
+    /// Unwraps all parameters that contains <see cref="AsParametersAttribute"/> and
     /// creates a flat list merging the current parameters, not including the
-    /// parametres that contain a <see cref="ParametersAttribute"/>, and all additional
+    /// parametres that contain a <see cref="AsParametersAttribute"/>, and all additional
     /// parameters detected.
     /// </summary>
     /// <param name="parameters">List of parameters to be flattened.</param>
@@ -74,7 +74,7 @@ internal sealed class SurrogateParameterInfo : ParameterInfo
 
         for (var i = 0; i < parameters.Length; i++)
         {
-            if (parameters[i].CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
+            if (parameters[i].CustomAttributes.Any(a => typeof(AsParametersAttribute).IsAssignableFrom(a.AttributeType)))
             {
                 // Initialize the list with all parameter already processed
                 // to keep the same parameter ordering

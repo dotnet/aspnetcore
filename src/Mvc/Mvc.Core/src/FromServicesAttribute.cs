@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// }
 /// </code>
 /// </example>
-[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public class FromServicesAttribute : Attribute, IBindingSourceMetadata, IFromServiceMetadata
 {
     /// <inheritdoc />

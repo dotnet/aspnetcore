@@ -225,7 +225,7 @@ public class RequestDelegateFactoryTests : LoggedTest
         const string paramName = "value";
         const int originalRouteParam = 42;
 
-        static void TestAction([Parameters] ParameterListFromRoute args)
+        static void TestAction([AsParameters] ParameterListFromRoute args)
         {
             args.HttpContext.Items.Add("input", args.Value);
         }
@@ -1529,7 +1529,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         int? deserializedRouteParam = null;
 
-        void TestAction([Parameters] ParameterListFromQuery args)
+        void TestAction([AsParameters] ParameterListFromQuery args)
         {
             deserializedRouteParam = args.Value;
         }
@@ -1584,7 +1584,7 @@ public class RequestDelegateFactoryTests : LoggedTest
 
         int? deserializedRouteParam = null;
 
-        void TestAction([Parameters] ParameterListFromHeader args)
+        void TestAction([AsParameters] ParameterListFromHeader args)
         {
             deserializedRouteParam = args.Value;
         }
@@ -1623,7 +1623,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                 httpContext.Items.Add("body", todo);
             }
 
-            void TestImpliedFromBodyStruct_ParameterList([Parameters] ParametersListWithImplictFromBody args)
+            void TestImpliedFromBodyStruct_ParameterList([AsParameters] ParametersListWithImplictFromBody args)
             {
                 args.HttpContext.Items.Add("body", args.Todo);
             }
@@ -1647,7 +1647,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                 httpContext.Items.Add("body", todo);
             }
 
-            void TestExplicitFromBody_ParameterList([Parameters] ParametersListWithExplictFromBody args)
+            void TestExplicitFromBody_ParameterList([AsParameters] ParametersListWithExplictFromBody args)
             {
                 args.HttpContext.Items.Add("body", args.Todo);
             }
@@ -2160,11 +2160,11 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         get
         {
-            void TestParameterListRecord([Parameters] BadArgumentListRecord req) { }
-            void TestParameterListClass([Parameters] BadArgumentListClass req) { }
-            void TestParameterListClassWithMutipleConstructors([Parameters] BadArgumentListClassMultipleCtors req) { }
-            void TestParameterListAbstractClass([Parameters] BadAbstractArgumentListClass req) { }
-            void TestParameterListNoPulicConstructorClass([Parameters] BadNoPublicConstructorArgumentListClass req) { }
+            void TestParameterListRecord([AsParameters] BadArgumentListRecord req) { }
+            void TestParameterListClass([AsParameters] BadArgumentListClass req) { }
+            void TestParameterListClassWithMutipleConstructors([AsParameters] BadArgumentListClassMultipleCtors req) { }
+            void TestParameterListAbstractClass([AsParameters] BadAbstractArgumentListClass req) { }
+            void TestParameterListNoPulicConstructorClass([AsParameters] BadNoPublicConstructorArgumentListClass req) { }
 
             static string GetMultipleContructorsError(Type type)
                 => $"Only a single public parameterized constructor is allowed for {TypeNameHelper.GetTypeDisplayName(type, fullName: false)}.";
@@ -2246,11 +2246,11 @@ public class RequestDelegateFactoryTests : LoggedTest
         public int Bar { get; set; }
     }
 
-    private record NestedArgumentListRecord([Parameters] object NestedParameterList);
+    private record NestedArgumentListRecord([AsParameters] object NestedParameterList);
 
     private class ClassWithParametersConstructor
     {
-        public ClassWithParametersConstructor([Parameters] object nestedParameterList)
+        public ClassWithParametersConstructor([AsParameters] object nestedParameterList)
         {
             NestedParameterList = nestedParameterList;
         }
@@ -2261,8 +2261,8 @@ public class RequestDelegateFactoryTests : LoggedTest
     [Fact]
     public void BuildRequestDelegateThrowsNotSupportedExceptionForNestedParametersList()
     {
-        void TestNestedParameterListRecordOnType([Parameters] NestedArgumentListRecord req) { }
-        void TestNestedParameterListRecordOnArgument([Parameters] ClassWithParametersConstructor req) { }
+        void TestNestedParameterListRecordOnType([AsParameters] NestedArgumentListRecord req) { }
+        void TestNestedParameterListRecordOnArgument([AsParameters] ClassWithParametersConstructor req) { }
 
         Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestNestedParameterListRecordOnType));
         Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestNestedParameterListRecordOnArgument));
@@ -2281,7 +2281,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                 httpContext.Items.Add("service", myService);
             }
 
-            void TestExplicitFromService_FromParameterList([Parameters] ParametersListWithExplictFromService args)
+            void TestExplicitFromService_FromParameterList([AsParameters] ParametersListWithExplictFromService args)
             {
                 args.HttpContext.Items.Add("service", args.MyService);
             }
@@ -2315,7 +2315,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                 httpContext.Items.Add("service", myService);
             }
 
-            void TestImpliedFromService_FromParameterList([Parameters] ParametersListWithImplictFromService args)
+            void TestImpliedFromService_FromParameterList([AsParameters] ParametersListWithImplictFromService args)
             {
                 args.HttpContext.Items.Add("service", args.MyService);
             }
@@ -2438,7 +2438,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         HttpContext? httpContextArgument = null;
 
-        void TestAction([Parameters] ParametersListWithHttpContext args)
+        void TestAction([AsParameters] ParametersListWithHttpContext args)
         {
             httpContextArgument = args.HttpContext;
         }
@@ -2503,7 +2503,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         ClaimsPrincipal? userArgument = null;
 
-        void TestAction([Parameters] ParametersListWithHttpContext args)
+        void TestAction([AsParameters] ParametersListWithHttpContext args)
         {
             userArgument = args.User;
         }
@@ -2544,7 +2544,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         HttpRequest? httpRequestArgument = null;
 
-        void TestAction([Parameters] ParametersListWithHttpContext args)
+        void TestAction([AsParameters] ParametersListWithHttpContext args)
         {
             httpRequestArgument = args.HttpRequest;
         }
@@ -2584,7 +2584,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         HttpResponse? httpResponseArgument = null;
 
-        void TestAction([Parameters] ParametersListWithHttpContext args)
+        void TestAction([AsParameters] ParametersListWithHttpContext args)
         {
             httpResponseArgument = args.HttpResponse;
         }
@@ -4626,47 +4626,47 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         get
         {
-            void TestParameterListRecordStruct([Parameters] ParameterListRecordStruct args)
+            void TestParameterListRecordStruct([AsParameters] ParameterListRecordStruct args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
             }
 
-            void TestParameterListRecordClass([Parameters] ParameterListRecordClass args)
+            void TestParameterListRecordClass([AsParameters] ParameterListRecordClass args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
             }
 
-            void TestParameterListRecordWithoutPositionalParameters([Parameters] ParameterListRecordWithoutPositionalParameters args)
+            void TestParameterListRecordWithoutPositionalParameters([AsParameters] ParameterListRecordWithoutPositionalParameters args)
             {
                 args.HttpContext!.Items.Add("input", args.Value);
             }
 
-            void TestParameterListStruct([Parameters] ParameterListStruct args)
+            void TestParameterListStruct([AsParameters] ParameterListStruct args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
             }
 
-            void TestParameterListMutableStruct([Parameters] ParameterListMutableStruct args)
+            void TestParameterListMutableStruct([AsParameters] ParameterListMutableStruct args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
             }
 
-            void TestParameterListStructWithParameterizedContructor([Parameters] ParameterListStructWithParameterizedContructor args)
+            void TestParameterListStructWithParameterizedContructor([AsParameters] ParameterListStructWithParameterizedContructor args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
             }
 
-            void TestParameterListStructWithMultipleParameterizedContructor([Parameters] ParameterListStructWithMultipleParameterizedContructor args)
+            void TestParameterListStructWithMultipleParameterizedContructor([AsParameters] ParameterListStructWithMultipleParameterizedContructor args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
             }
 
-            void TestParameterListClass([Parameters] ParameterListClass args)
+            void TestParameterListClass([AsParameters] ParameterListClass args)
             {
                 args.HttpContext!.Items.Add("input", args.Value);
             }
 
-            void TestParameterListClassWithParameterizedContructor([Parameters] ParameterListClassWithParameterizedContructor args)
+            void TestParameterListClassWithParameterizedContructor([AsParameters] ParameterListClassWithParameterizedContructor args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
             }
@@ -4711,7 +4711,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         const int expectedValue = 42;
 
-        void TestAction([Parameters] ParameterListRecordWitDefaultValue args)
+        void TestAction([AsParameters] ParameterListRecordWitDefaultValue args)
         {
             args.HttpContext.Items.Add("input", args.Value);
         }
@@ -4743,7 +4743,7 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         const int expectedValue = 42;
 
-        void TestAction([Parameters] ParameterListWitDefaultValue args)
+        void TestAction([AsParameters] ParameterListWitDefaultValue args)
         {
             args.HttpContext.Items.Add("input", args.Value);
         }

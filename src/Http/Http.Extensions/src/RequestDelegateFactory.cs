@@ -647,12 +647,12 @@ public static partial class RequestDelegateFactory
         {
             return RequestPipeReaderExpr;
         }
-        else if (parameter.CustomAttributes.Any(a => typeof(ParametersAttribute).IsAssignableFrom(a.AttributeType)))
+        else if (parameter.CustomAttributes.Any(a => typeof(AsParametersAttribute).IsAssignableFrom(a.AttributeType)))
         {
             if (parameter is SurrogateParameterInfo)
             {
                 throw new NotSupportedException(
-                    $"Nested {nameof(ParametersAttribute)} is not supported and should be used only for handler parameters or parameter types.");
+                    $"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters or parameter types.");
             }
 
             return BindParameterFromParametersType(parameter, factoryContext);

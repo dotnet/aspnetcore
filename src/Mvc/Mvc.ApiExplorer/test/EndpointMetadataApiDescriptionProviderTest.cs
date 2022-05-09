@@ -479,14 +479,14 @@ public class EndpointMetadataApiDescriptionProviderTest
             );
         }
 
-        AssertParameters(GetApiDescription(([Parameters] ArgumentListClass req) => { }));
-        AssertParameters(GetApiDescription(([Parameters] ArgumentListClassWithReadOnlyProperties req) => { }));
-        AssertParameters(GetApiDescription(([Parameters] ArgumentListStruct req) => { }));
-        AssertParameters(GetApiDescription(([Parameters] ArgumentListRecord req) => { }));
-        AssertParameters(GetApiDescription(([Parameters] ArgumentListRecordStruct req) => { }));
-        AssertParameters(GetApiDescription(([Parameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
-        AssertParameters(GetApiDescription(([Parameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"));
-        AssertParameters(GetApiDescription(([Parameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListClass req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListClassWithReadOnlyProperties req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListStruct req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecord req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordStruct req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
     }
 
     [Fact]

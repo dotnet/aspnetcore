@@ -12,6 +12,6 @@ using System;
     AttributeTargets.Parameter,
     Inherited = false,
     AllowMultiple = false)]
-public sealed class ParametersAttribute : Attribute
+public sealed class AsParametersAttribute : Attribute
 {
 }

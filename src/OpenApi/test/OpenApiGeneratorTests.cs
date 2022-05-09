@@ -385,14 +385,14 @@ public class OpenApiOperationGeneratorTests
             );
         }
 
-        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListClass req) => { }));
-        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListClassWithReadOnlyProperties req) => { }));
-        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListStruct req) => { }));
-        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListRecord req) => { }));
-        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListRecordStruct req) => { }));
-        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
-        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"));
-        AssertParameters(GetOpenApiOperation(([Parameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
+        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListClass req) => { }));
+        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListClassWithReadOnlyProperties req) => { }));
+        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListStruct req) => { }));
+        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecord req) => { }));
+        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordStruct req) => { }));
+        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
+        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"));
+        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
     }
 
     [Fact]
