@@ -27,7 +27,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [Fact]
     public async Task BlazorWasmStandaloneTemplateCanCreateBuildPublish()
     {
-        var project = await CreateBuildPublishAsync("blazorstandalone");
+        var project = await CreateBuildPublishAsync();
 
         // The service worker assets manifest isn't generated for non-PWA projects
         var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
@@ -35,18 +35,18 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     }
 
     [Fact]
-    public Task BlazorWasmHostedTemplateCanCreateBuildPublish() => CreateBuildPublishAsync("blazorhosted", args: new[] { ArgConstants.Hosted }, serverProject: true);
+    public Task BlazorWasmHostedTemplateCanCreateBuildPublish() => CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted }, serverProject: true);
 
     [Fact]
-    public Task BlazorWasmHostedTemplateWithProgamMainCanCreateBuildPublish() => CreateBuildPublishAsync("blazorhosted", args: new[] { ArgConstants.UseProgramMain, ArgConstants.Hosted }, serverProject: true);
+    public Task BlazorWasmHostedTemplateWithProgamMainCanCreateBuildPublish() => CreateBuildPublishAsync(args: new[] { ArgConstants.UseProgramMain, ArgConstants.Hosted }, serverProject: true);
 
     [Fact]
-    public Task BlazorWasmStandalonePwaTemplateCanCreateBuildPublish() => CreateBuildPublishAsync("blazorstandalonepwa", args: new[] { ArgConstants.Pwa });
+    public Task BlazorWasmStandalonePwaTemplateCanCreateBuildPublish() => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa });
 
     [Fact]
     public async Task BlazorWasmHostedPwaTemplateCanCreateBuildPublish()
     {
-        var project = await CreateBuildPublishAsync("blazorhostedpwa", args: new[] { ArgConstants.Hosted, ArgConstants.Pwa }, serverProject: true);
+        var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted, ArgConstants.Pwa }, serverProject: true);
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -105,8 +105,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
         Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-        var project = await CreateBuildPublishAsync("blazorhostedindividual" + (useLocalDb ? "uld" : ""),
-            args: new[] { ArgConstants.Hosted, ArgConstants.Auth, "Individual", useLocalDb ? "-uld" : "", useProgramMain ? ArgConstants.UseProgramMain : "" });
+        var project = await CreateBuildPublishAsync("Individual", args: new[] { ArgConstants.Hosted, useLocalDb ? "-uld" : "", useProgramMain ? ArgConstants.UseProgramMain : "" });
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -150,9 +149,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [Fact]
     public async Task BlazorWasmStandaloneTemplate_IndividualAuth_CreateBuildPublish()
     {
-        var project = await CreateBuildPublishAsync("blazorstandaloneindividual", args: new[] {
-                ArgConstants.Auth,
-                "Individual",
+        var project = await CreateBuildPublishAsync("Individual", args: new[] {
                 "--authority",
                 "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
                 ArgConstants.ClientId,
@@ -291,7 +288,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [Theory]
     [MemberData(nameof(TemplateData))]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
-        => CreateBuildPublishAsync(instance.Name, args: instance.Arguments, targetFramework: "netstandard2.1");
+        => CreateBuildPublishAsync(args: instance.Arguments, targetFramework: "netstandard2.1");
 
     private string ReadFile(string basePath, string path)
     {
