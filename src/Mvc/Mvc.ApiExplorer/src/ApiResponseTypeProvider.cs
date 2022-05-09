@@ -89,8 +89,13 @@ internal class ApiResponseTypeProvider
             contentTypes,
             responseTypeMetadataProviders);
 
-        var responseTypes = responseTypesFromProvider.Concat(
-            ReadResponseMetadata(producesResponseMetadata, type).Values).ToList();
+        var responseTypesFromEndpointMetadata = ReadResponseMetadata(
+            producesResponseMetadata,
+            type,
+            responseTypeMetadataProviders,
+            _modelMetadataProvider);
+
+        var responseTypes = responseTypesFromProvider.Concat(responseTypesFromEndpointMetadata.Values).ToList();
 
         // Set the default status only when no status has already been set explicitly
         if (responseTypes.Count == 0 && type != null)
@@ -207,7 +212,9 @@ internal class ApiResponseTypeProvider
 
     internal static Dictionary<int, ApiResponseType> ReadResponseMetadata(
         IReadOnlyList<IProducesResponseTypeMetadata> responseMetadata,
-        Type? type)
+        Type? type,
+        IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
+        IModelMetadataProvider? modelMetadataProvider = null)
     {
         var results = new Dictionary<int, ApiResponseType>();
 
@@ -239,7 +246,8 @@ internal class ApiResponseTypeProvider
                     attributeContentTypes.Add(contentType);
                 }
             }
-            ApiResponseTypeProvider.CalculateResponseFormatForType(apiResponseType, attributeContentTypes, responseTypeMetadataProviders: null, modelMetadataProvider: null);
+
+            CalculateResponseFormatForType(apiResponseType, attributeContentTypes, responseTypeMetadataProviders, modelMetadataProvider);
 
             if (apiResponseType.Type != null)
             {
