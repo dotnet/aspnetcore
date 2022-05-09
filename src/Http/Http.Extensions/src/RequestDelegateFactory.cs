@@ -226,7 +226,7 @@ public static partial class RequestDelegateFactory
         AddTypeProvidedMetadata(methodInfo,
             factoryContext.Metadata,
             factoryContext.ServiceProvider,
-            CollectionsMarshal.AsSpan(factoryContext.SurrogateParameters));
+            CollectionsMarshal.AsSpan(factoryContext.PropertiesAsParameter));
 
         // Add method attributes as metadata *after* any inferred metadata so that the attributes hava a higher specificity
         AddMethodAttributesAsMetadata(methodInfo, factoryContext.Metadata);
@@ -428,7 +428,7 @@ public static partial class RequestDelegateFactory
         return fallbackConstruction;
     }
 
-    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, Span<ParameterInfo> surrogateParameters)
+    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, Span<ParameterInfo> propertiesAsParameter)
     {
         object?[]? invokeArgs = null;
 
@@ -459,8 +459,8 @@ public static partial class RequestDelegateFactory
         // Get metadata from parameter types
         AddMetadata(methodInfo.GetParameters());
 
-        // Get metadata from surrogated parameter types
-        AddMetadata(surrogateParameters);
+        // Get metadata from properties surrogate as parameter types
+        AddMetadata(propertiesAsParameter);
 
         // Get metadata from return type
         var returnType = methodInfo.ReturnType;
@@ -649,7 +649,7 @@ public static partial class RequestDelegateFactory
         }
         else if (parameter.CustomAttributes.Any(a => typeof(AsParametersAttribute).IsAssignableFrom(a.AttributeType)))
         {
-            if (parameter is SurrogateParameterInfo)
+            if (parameter is PropertyAsParameterInfo)
             {
                 throw new NotSupportedException(
                     $"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters or parameter types.");
@@ -1257,9 +1257,9 @@ public static partial class RequestDelegateFactory
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameterInfo =
-                    new SurrogateParameterInfo(parameters[i].PropertyInfo, parameters[i].ParameterInfo, factoryContext.NullabilityContext);
+                    new PropertyAsParameterInfo(parameters[i].PropertyInfo, parameters[i].ParameterInfo, factoryContext.NullabilityContext);
                 constructorArguments[i] = CreateArgument(parameterInfo, factoryContext);
-                factoryContext.SurrogateParameters.Add(parameterInfo);
+                factoryContext.PropertiesAsParameter.Add(parameterInfo);
             }
 
             factoryContext.ParamCheckExpressions.Add(
@@ -1283,9 +1283,9 @@ public static partial class RequestDelegateFactory
                 // For parameterless ctor we will init only writable properties.
                 if (properties[i].CanWrite)
                 {
-                    var parameterInfo = new SurrogateParameterInfo(properties[i], factoryContext.NullabilityContext);
+                    var parameterInfo = new PropertyAsParameterInfo(properties[i], factoryContext.NullabilityContext);
                     bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));
-                    factoryContext.SurrogateParameters.Add(parameterInfo);
+                    factoryContext.PropertiesAsParameter.Add(parameterInfo);
                 }
             }
 
@@ -1795,7 +1795,7 @@ public static partial class RequestDelegateFactory
 
     private static bool IsOptionalParameter(ParameterInfo parameter, FactoryContext factoryContext)
     {
-        if (parameter is SurrogateParameterInfo argument)
+        if (parameter is PropertyAsParameterInfo argument)
         {
             return argument.IsOptional;
         }
@@ -2093,7 +2093,7 @@ public static partial class RequestDelegateFactory
         public Expression[] BoxedArgs { get; set;  } = Array.Empty<Expression>();
         public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
 
-        public List<ParameterInfo> SurrogateParameters { get; } = new();
+        public List<ParameterInfo> PropertiesAsParameter { get; } = new();
     }
 
     private static class RequestDelegateFactoryConstants

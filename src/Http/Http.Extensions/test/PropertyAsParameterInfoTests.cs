@@ -5,18 +5,18 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
-public class SurrogateParameterInfoTests
+public class PropertyAsParameterInfoTests
 {
     [Fact]
     public void Initialization_SetsTypeAndNameFromPropertyInfo()
     {
         // Arrange & Act
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo);
 
         // Assert
-        Assert.Equal(propertyInfo.Name, surrogateParameterInfo.Name);
-        Assert.Equal(propertyInfo.PropertyType, surrogateParameterInfo.ParameterType);
+        Assert.Equal(propertyInfo.Name, parameterInfo.Name);
+        Assert.Equal(propertyInfo.PropertyType, parameterInfo.ParameterType);
     }
 
     [Fact]
@@ -25,57 +25,57 @@ public class SurrogateParameterInfoTests
         // Arrange & Act
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
         var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.NoAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo, parameter);
 
         // Assert
-        Assert.Equal(propertyInfo.Name, surrogateParameterInfo.Name);
-        Assert.Equal(propertyInfo.PropertyType, surrogateParameterInfo.ParameterType);
+        Assert.Equal(propertyInfo.Name, parameterInfo.Name);
+        Assert.Equal(propertyInfo.PropertyType, parameterInfo.ParameterType);
     }
 
     [Fact]
-    public void SurrogateParameterInfo_ContainsPropertyCustomAttributes()
+    public void PropertyAsParameterInfoTests_ContainsPropertyCustomAttributes()
     {
         // Arrange
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo);
 
         // Act & Assert
-        Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute)));
+        Assert.Single(parameterInfo.GetCustomAttributes(typeof(TestAttribute)));
     }
 
     [Fact]
-    public void SurrogateParameterInfo_WithConstructorArgument_UsesParameterCustomAttributes()
+    public void PropertyAsParameterInfoTests_WithConstructorArgument_UsesParameterCustomAttributes()
     {
         // Arrange
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
         var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.WithTestAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo, parameter);
 
         // Act & Assert
-        Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute)));
+        Assert.Single(parameterInfo.GetCustomAttributes(typeof(TestAttribute)));
     }
 
     [Fact]
-    public void SurrogateParameterInfo_WithConstructorArgument_FallbackToPropertyCustomAttributes()
+    public void PropertyAsParameterInfoTests_WithConstructorArgument_FallbackToPropertyCustomAttributes()
     {
         // Arrange
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
         var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.NoAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo, parameter);
 
         // Act & Assert
-        Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute)));
+        Assert.Single(parameterInfo.GetCustomAttributes(typeof(TestAttribute)));
     }
 
     [Fact]
-    public void SurrogateParameterInfo_ContainsPropertyCustomAttributesData()
+    public void PropertyAsParameterInfoTests_ContainsPropertyCustomAttributesData()
     {
         // Arrange
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo);
 
         // Act
-        var attributes = surrogateParameterInfo.GetCustomAttributesData();
+        var attributes = parameterInfo.GetCustomAttributesData();
 
         // Assert
         Assert.Single(
@@ -84,35 +84,35 @@ public class SurrogateParameterInfoTests
     }
 
     [Fact]
-    public void SurrogateParameterInfo_WithConstructorArgument_MergePropertyAndParameterCustomAttributesData()
+    public void PropertyAsParameterInfoTests_WithConstructorArgument_MergePropertyAndParameterCustomAttributesData()
     {
         // Arrange & Act
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
         var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.WithSampleAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo, parameter);
 
         // Act
-        var attributes = surrogateParameterInfo.GetCustomAttributesData();
+        var attributes = parameterInfo.GetCustomAttributesData();
 
         // Assert
         Assert.Single(
-            surrogateParameterInfo.GetCustomAttributesData(),
+            parameterInfo.GetCustomAttributesData(),
             a => typeof(TestAttribute).IsAssignableFrom(a.AttributeType));
         Assert.Single(
-            surrogateParameterInfo.GetCustomAttributesData(),
+            parameterInfo.GetCustomAttributesData(),
             a => typeof(SampleAttribute).IsAssignableFrom(a.AttributeType));
     }
 
     [Fact]
-    public void SurrogateParameterInfo_WithConstructorArgument_MergePropertyAndParameterCustomAttributes()
+    public void PropertyAsParameterInfoTests_WithConstructorArgument_MergePropertyAndParameterCustomAttributes()
     {
         // Arrange
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.WithTestAttribute));
         var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.WithSampleAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo, parameter);
 
         // Act
-        var attributes = surrogateParameterInfo.GetCustomAttributes(true);
+        var attributes = parameterInfo.GetCustomAttributes(true);
 
         // Assert
         Assert.Single(
@@ -124,53 +124,53 @@ public class SurrogateParameterInfoTests
     }
 
     [Fact]
-    public void SurrogateParameterInfo_ContainsPropertyInheritedCustomAttributes()
+    public void PropertyAsParameterInfoTests_ContainsPropertyInheritedCustomAttributes()
     {
         // Arrange & Act
         var propertyInfo = GetProperty(typeof(DerivedArgumentList), nameof(DerivedArgumentList.WithTestAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo);
 
         // Assert
-        Assert.Single(surrogateParameterInfo.GetCustomAttributes(typeof(TestAttribute), true));
+        Assert.Single(parameterInfo.GetCustomAttributes(typeof(TestAttribute), true));
     }
 
     [Fact]
-    public void SurrogateParameterInfo_DoesNotHaveDefaultValueFromProperty()
+    public void PropertyAsParameterInfoTests_DoesNotHaveDefaultValueFromProperty()
     {
         // Arrange & Act
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo);
 
         // Assert
-        Assert.False(surrogateParameterInfo.HasDefaultValue);
+        Assert.False(parameterInfo.HasDefaultValue);
     }
 
     [Fact]
-    public void SurrogateParameterInfo_WithConstructorArgument_HasDefaultValue()
+    public void PropertyAsParameterInfoTests_WithConstructorArgument_HasDefaultValue()
     {
         // Arrange & Act
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
         var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), "withDefaultValue");
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo, parameter);
 
         // Assert
-        Assert.True(surrogateParameterInfo.HasDefaultValue);
-        Assert.NotNull(surrogateParameterInfo.DefaultValue);
-        Assert.IsType<int>(surrogateParameterInfo.DefaultValue);
-        Assert.NotNull(surrogateParameterInfo.RawDefaultValue);
-        Assert.IsType<int>(surrogateParameterInfo.RawDefaultValue);
+        Assert.True(parameterInfo.HasDefaultValue);
+        Assert.NotNull(parameterInfo.DefaultValue);
+        Assert.IsType<int>(parameterInfo.DefaultValue);
+        Assert.NotNull(parameterInfo.RawDefaultValue);
+        Assert.IsType<int>(parameterInfo.RawDefaultValue);
     }
 
     [Fact]
-    public void SurrogateParameterInfo_WithConstructorArgument_DoesNotHaveDefaultValue()
+    public void PropertyAsParameterInfoTests_WithConstructorArgument_DoesNotHaveDefaultValue()
     {
         // Arrange & Act
         var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
         var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.NoAttribute));
-        var surrogateParameterInfo = new SurrogateParameterInfo(propertyInfo, parameter);
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo, parameter);
 
         // Assert
-        Assert.False(surrogateParameterInfo.HasDefaultValue);
+        Assert.False(parameterInfo.HasDefaultValue);
     }
 
     private static PropertyInfo GetProperty(Type containerType, string propertyName)

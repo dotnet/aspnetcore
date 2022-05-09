@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class SurrogateParameterInfo : ParameterInfo
+internal sealed class PropertyAsParameterInfo : ParameterInfo
 {
     private readonly PropertyInfo _underlyingProperty;
     private readonly ParameterInfo? _constructionParameterInfo;
@@ -18,7 +18,7 @@ internal sealed class SurrogateParameterInfo : ParameterInfo
     private readonly NullabilityInfoContext _nullabilityContext;
     private NullabilityInfo? _nullabilityInfo;
 
-    public SurrogateParameterInfo(PropertyInfo propertyInfo, NullabilityInfoContext? nullabilityContext = null)
+    public PropertyAsParameterInfo(PropertyInfo propertyInfo, NullabilityInfoContext? nullabilityContext = null)
     {
         Debug.Assert(null != propertyInfo);
 
@@ -35,7 +35,7 @@ internal sealed class SurrogateParameterInfo : ParameterInfo
         _underlyingProperty = propertyInfo;
     }
 
-    public SurrogateParameterInfo(PropertyInfo property, ParameterInfo parameterInfo, NullabilityInfoContext? nullabilityContext = null)
+    public PropertyAsParameterInfo(PropertyInfo property, ParameterInfo parameterInfo, NullabilityInfoContext? nullabilityContext = null)
         : this(property, nullabilityContext)
     {
         _constructionParameterInfo = parameterInfo;
@@ -58,7 +58,7 @@ internal sealed class SurrogateParameterInfo : ParameterInfo
     /// <param name="parameters">List of parameters to be flattened.</param>
     /// <param name="cache">An instance of the method cache class.</param>
     /// <returns>Flat list of parameters.</returns>
-    [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "SurrogateParameterInfo.Flatten requires unreferenced code.")]
+    [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "PropertyAsParameterInfo.Flatten requires unreferenced code.")]
     public static ReadOnlySpan<ParameterInfo> Flatten(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
     {
         ArgumentNullException.ThrowIfNull(nameof(parameters));
@@ -87,7 +87,7 @@ internal sealed class SurrogateParameterInfo : ParameterInfo
                     foreach (var constructorParameter in constructorParameters)
                     {
                         flattenedParameters.Add(
-                            new SurrogateParameterInfo(
+                            new PropertyAsParameterInfo(
                                 constructorParameter.PropertyInfo,
                                 constructorParameter.ParameterInfo,
                                 nullabilityContext));
@@ -101,7 +101,7 @@ internal sealed class SurrogateParameterInfo : ParameterInfo
                     {
                         if (property.CanWrite)
                         {
-                            flattenedParameters.Add(new SurrogateParameterInfo(property, nullabilityContext));
+                            flattenedParameters.Add(new PropertyAsParameterInfo(property, nullabilityContext));
                         }
                     }
                 }

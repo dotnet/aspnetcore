@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)RoslynUtils\TypeHelper.cs" />
-    <Compile Include="$(SharedSourceRoot)SurrogateParameterInfo.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)PropertyAsParameterInfo.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
