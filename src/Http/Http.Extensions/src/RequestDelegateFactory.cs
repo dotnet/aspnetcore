@@ -652,7 +652,7 @@ public static partial class RequestDelegateFactory
             if (parameter is PropertyAsParameterInfo)
             {
                 throw new NotSupportedException(
-                    $"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters or parameter types.");
+                    $"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters.");
             }
 
             return BindParameterFromParametersType(parameter, factoryContext);
