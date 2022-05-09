@@ -170,7 +170,7 @@ public class OpenApiOperationGeneratorTests
         var content = Assert.Single(createdResponseType.Content);
 
         Assert.NotNull(createdResponseType);
-        Assert.Equal("object", content.Value.Schema.Type);
+        Assert.Equal("string", content.Value.Schema.Type);
         Assert.Equal("application/json", createdResponseType.Content.Keys.First());
 
         var badRequestResponseType = responses["400"];
