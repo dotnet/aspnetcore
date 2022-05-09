@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Http;
 using System;
 
 /// <summary>
-/// 
+/// Specifies that a parameter represents a structure delegate's parameter list.
 /// </summary>
 [AttributeUsage(
     AttributeTargets.Parameter,

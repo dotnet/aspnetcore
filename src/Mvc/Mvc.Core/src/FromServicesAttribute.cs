@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 namespace Microsoft.AspNetCore.Mvc;
 
 /// <summary>
-/// Specifies that an action parameter should be bound using the request services.
+/// Specifies that a parameter or property should be bound using the request services.
 /// </summary>
 /// <example>
 /// In this example an implementation of IProductModelRequestService is registered as a service.
