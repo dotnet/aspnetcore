@@ -111,7 +111,7 @@ public class SeleniumStandaloneServer : IDisposable
         var psi = new ProcessStartInfo
         {
             FileName = "npm",
-            Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" {chromeDriverArg} -- --host localhost --port {port}",
+            Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" {chromeDriverArg} -- --host localhost -port {port}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
