@@ -655,7 +655,7 @@ public static partial class RequestDelegateFactory
                     $"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters.");
             }
 
-            return BindPropertiesAsParameter(parameter, factoryContext);
+            return BindParameterFromProperties(parameter, factoryContext);
         }
         else if (ParameterBindingMethodCache.HasBindAsyncMethod(parameter))
         {
@@ -1243,7 +1243,7 @@ public static partial class RequestDelegateFactory
         return Expression.Convert(indexExpression, returnType ?? typeof(string));
     }
 
-    private static Expression BindPropertiesAsParameter(ParameterInfo parameter, FactoryContext factoryContext)
+    private static Expression BindParameterFromProperties(ParameterInfo parameter, FactoryContext factoryContext)
     {
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
         var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameter.ParameterType);
