@@ -133,7 +133,7 @@ public class Http3ConnectionTests : Http3TestBase
     [Fact]
     public async Task HEADERS_CookiesMergedIntoOne()
     {
-        var headers = new[]
+        var requestHeaders = new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
@@ -143,10 +143,15 @@ public class Http3ConnectionTests : Http3TestBase
                 new KeyValuePair<string, string>(HeaderNames.Cookie, "c=2"),
             };
 
+        var receivedHeaders = "";
+
         await Http3Api.InitializeConnectionAsync(async context =>
         {
             var buffer = new byte[16 * 1024];
             var received = 0;
+
+            // verify that the cookies are all merged into a single string
+            receivedHeaders = context.Request.Headers[HeaderNames.Cookie];
 
             while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
             {
@@ -156,18 +161,16 @@ public class Http3ConnectionTests : Http3TestBase
 
         await Http3Api.CreateControlStream();
         await Http3Api.GetInboundControlStream();
-
         var requestStream = await Http3Api.CreateRequestStream();
 
-        await requestStream.SendHeadersAsync(headers);
-        var frame = await requestStream.ReceiveFrameAsync();
 
-        await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: false);
-        var receivedHeaders = await requestStream.ExpectHeadersAsync();
+        await requestStream.SendHeadersAsync(requestHeaders, endStream: true);
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
 
-        Assert.Equal("a=0; b=1; c=2", receivedHeaders[HeaderNames.Cookie]);
-
+        await requestStream.ExpectReceiveEndOfStream();
         await requestStream.OnDisposedTask.DefaultTimeout();
+
+        Assert.Equal("a=0; b=1; c=2", receivedHeaders);
     }
 
     [Theory]
