@@ -163,7 +163,6 @@ public class Http3ConnectionTests : Http3TestBase
         await Http3Api.GetInboundControlStream();
         var requestStream = await Http3Api.CreateRequestStream();
 
-
         await requestStream.SendHeadersAsync(requestHeaders, endStream: true);
         var responseHeaders = await requestStream.ExpectHeadersAsync();
 
