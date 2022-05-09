@@ -83,7 +83,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
-    public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
+    public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync();
 
