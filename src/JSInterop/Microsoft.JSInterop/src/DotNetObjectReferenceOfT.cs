@@ -73,6 +73,8 @@ public sealed class DotNetObjectReference<[DynamicallyAccessedMembers(Dynamicall
     }
 
     object IDotNetObjectReference.Value => Value;
+
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
     Type IDotNetObjectReference.Type => typeof(TValue);
 
     internal bool Disposed { get; private set; }

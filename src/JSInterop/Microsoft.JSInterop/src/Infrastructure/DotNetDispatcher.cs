@@ -12,7 +12,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
 
-[assembly: MetadataUpdateHandler(typeof(Microsoft.JSInterop.Infrastructure.DotNetDispatcher))]
+[assembly: MetadataUpdateHandler(typeof(Microsoft.JSInterop.Infrastructure.DotNetDispatcher.MetadataUpdateHandler))]
 
 namespace Microsoft.JSInterop.Infrastructure;
 
@@ -381,6 +381,8 @@ public static class DotNetDispatcher
 
     private static Task CreateValueTaskConverter<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T>(object result) => ((ValueTask<T>)result).AsTask();
 
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111:ReflectionToDynamicallyAccessedMembers",
+        Justification = "The Type being passed into GetOrAdd is annotated, but the trimmer warns anyway. See https://github.com/dotnet/linker/issues/2790")]
     private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
     {
         var type = objectReference.Type;
@@ -499,11 +501,16 @@ public static class DotNetDispatcher
             ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyKey.AssemblyName}'.");
     }
 
-    private static void ClearCache(Type[]? _)
+    // don't point the MetadataUpdateHandlerAttribute at the DotNetDispatcher class, since the attribute has
+    // DynamicallyAccessedMemberTypes.All. This causes unnecessary trim warnings on the non-MetadataUpdateHandler methods.
+    internal static class MetadataUpdateHandler
     {
-        _cachedMethodsByAssembly.Clear();
-        _cachedMethodsByType.Clear();
-        _cachedConvertToTaskByType.Clear();
+        public static void ClearCache(Type[]? _)
+        {
+            _cachedMethodsByAssembly.Clear();
+            _cachedMethodsByType.Clear();
+            _cachedConvertToTaskByType.Clear();
+        }
     }
 
     private readonly struct AssemblyKey : IEquatable<AssemblyKey>
