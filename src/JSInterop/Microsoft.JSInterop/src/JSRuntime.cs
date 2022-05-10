@@ -290,7 +290,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         return streamId;
     }
 
-    internal long TrackObjectReference<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TValue>(DotNetObjectReference<TValue> dotNetObjectReference) where TValue : class
+    internal long TrackObjectReference<[DynamicallyAccessedMembers(JSInvokable)] TValue>(DotNetObjectReference<TValue> dotNetObjectReference) where TValue : class
     {
         if (dotNetObjectReference == null)
         {

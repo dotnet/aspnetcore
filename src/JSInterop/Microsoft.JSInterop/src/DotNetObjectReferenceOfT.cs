@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop.Infrastructure;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop;
 
@@ -14,7 +15,7 @@ namespace Microsoft.JSInterop;
 /// To avoid leaking memory, the reference must later be disposed by JS code or by .NET code.
 /// </summary>
 /// <typeparam name="TValue">The type of the value to wrap.</typeparam>
-public sealed class DotNetObjectReference<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TValue> :
+public sealed class DotNetObjectReference<[DynamicallyAccessedMembers(JSInvokable)] TValue> :
     IDotNetObjectReference, IDisposable where TValue : class
 {
     private readonly TValue _value;
@@ -74,7 +75,7 @@ public sealed class DotNetObjectReference<[DynamicallyAccessedMembers(Dynamicall
 
     object IDotNetObjectReference.Value => Value;
 
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
+    [DynamicallyAccessedMembers(JSInvokable)]
     Type IDotNetObjectReference.Type => typeof(TValue);
 
     internal bool Disposed { get; private set; }

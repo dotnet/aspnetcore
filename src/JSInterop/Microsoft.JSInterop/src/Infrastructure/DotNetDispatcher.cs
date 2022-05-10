@@ -11,6 +11,7 @@ using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 [assembly: MetadataUpdateHandler(typeof(Microsoft.JSInterop.Infrastructure.DotNetDispatcher.MetadataUpdateHandler))]
 
@@ -19,7 +20,6 @@ namespace Microsoft.JSInterop.Infrastructure;
 /// <summary>
 /// Provides methods that receive incoming calls from JS to .NET.
 /// </summary>
-[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070", Justification = "Linker does not propogate annotations to generated state machine. https://github.com/mono/linker/issues/1403")]
 public static class DotNetDispatcher
 {
     private const string DisposeDotNetObjectReferenceMethodName = "__Dispose";
@@ -396,7 +396,7 @@ public static class DotNetDispatcher
             throw new ArgumentException($"The type '{type.Name}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
         }
 
-        static Dictionary<string, (MethodInfo, Type[])> ScanTypeForCallableMethods([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type type)
+        static Dictionary<string, (MethodInfo, Type[])> ScanTypeForCallableMethods([DynamicallyAccessedMembers(JSInvokable)] Type type)
         {
             var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
 

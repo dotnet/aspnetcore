@@ -4,10 +4,11 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop.Infrastructure;
 
-internal sealed class DotNetObjectReferenceJsonConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TValue> : JsonConverter<DotNetObjectReference<TValue>> where TValue : class
+internal sealed class DotNetObjectReferenceJsonConverter<[DynamicallyAccessedMembers(JSInvokable)] TValue> : JsonConverter<DotNetObjectReference<TValue>> where TValue : class
 {
     public DotNetObjectReferenceJsonConverter(JSRuntime jsRuntime)
     {
