@@ -1328,10 +1328,10 @@ $@"        private void Clear(long bitsToClear)
             }}
         }}
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public void MergeCookies()
         {{
-            if (_headers._Cookie.Count > 1)
+            if ((_bits & 0x20000L) != 0 && _headers._Cookie.Count > 1)
             {{
                 _headers._Cookie = string.Join(""; "", _headers._Cookie.ToArray());
             }}
