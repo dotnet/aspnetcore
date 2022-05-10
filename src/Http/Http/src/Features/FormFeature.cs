@@ -253,10 +253,7 @@ public class FormFeature : IFormFeature
                     }
                     else
                     {
-                        if (sectionCount > _options.ValueCountLimit)
-                        {
-                            // Ignore form sections with invalid content disposition
-                        }
+                        // Ignore form sections with invalid content disposition
                     }
 
                     section = await multipartReader.ReadNextSectionAsync(cancellationToken);
