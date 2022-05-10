@@ -25,10 +25,7 @@ public class FormFeature : IFormFeature
     /// <param name="form">The <see cref="IFormCollection"/> to use as the backing store.</param>
     public FormFeature(IFormCollection form)
     {
-        if (form == null)
-        {
-            throw new ArgumentNullException(nameof(form));
-        }
+        ArgumentNullException.ThrowIfNull(form);
 
         Form = form;
         _request = default!;
@@ -51,14 +48,8 @@ public class FormFeature : IFormFeature
     /// <param name="options">The <see cref="FormOptions"/>.</param>
     public FormFeature(HttpRequest request, FormOptions options)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(options);
 
         _request = request;
         _options = options;
@@ -68,7 +59,7 @@ public class FormFeature : IFormFeature
     {
         get
         {
-            MediaTypeHeaderValue.TryParse(_request.ContentType, out var mt);
+            _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out var mt);
             return mt;
         }
     }
