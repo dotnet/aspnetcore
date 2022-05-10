@@ -132,7 +132,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private bool AddValueUnknown(string key, StringValues value)
-    { 
+    {
         Unknown.Add(GetInternedHeaderName(key), value);
         // Return true, above will throw and exit for false
         return true;
