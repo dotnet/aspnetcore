@@ -163,6 +163,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 else if (HasMultipartFormContentType(contentType))
                 {
                     var formAccumulator = new KeyValueAccumulator();
+                    var nonFormOrFileContentDispositionCount = 0;
 
                     var boundary = GetBoundary(contentType, _options.MultipartBoundaryLengthLimit);
                     var multipartReader = new MultipartReader(boundary, _request.Body)
@@ -238,7 +239,10 @@ namespace Microsoft.AspNetCore.Http.Features
                         }
                         else
                         {
-                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + section.ContentDisposition);
+                            if (nonFormOrFileContentDispositionCount++ >= _options.ValueCountLimit)
+                            {
+                                throw new InvalidDataException($"Unrecognized Content-Disposition. Form value count limit {_options.ValueCountLimit} exceeded.");
+                            }
                         }
 
                         section = await multipartReader.ReadNextSectionAsync(cancellationToken);
