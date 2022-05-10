@@ -40,7 +40,7 @@ namespace Templates.Test
         [InlineData(false)]
         public async Task RazorPagesTemplate_NoAuth(bool useProgramMain)
         {
-            var project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
+            var project = await ProjectFactory.CreateProject(Output);
 
             var args = useProgramMain ? new [] { ArgConstants.UseProgramMain } : null;
             var createResult = await project.RunDotNetNewAsync("razor", args: args);
@@ -114,7 +114,7 @@ namespace Templates.Test
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB, bool useProgramMain)
         {
-            var project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
+            var project = await ProjectFactory.CreateProject(Output);
 
             var args = useProgramMain ? new [] { ArgConstants.UseProgramMain } : null;
             var createResult = await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, args: args);
@@ -247,7 +247,7 @@ namespace Templates.Test
 
         private async Task<Project> BuildAndPublishRazorPagesTemplate(string auth, string[] args)
         {
-            var project = await ProjectFactory.GetOrCreateProject("razorpages" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
+            var project = await ProjectFactory.CreateProject(Output);
 
             var createResult = await project.RunDotNetNewAsync("razor", auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));

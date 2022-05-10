@@ -24,18 +24,18 @@ namespace Templates.Test
         public override string ProjectType { get; } = "blazorserver";
 
         [Fact]
-        public Task BlazorServerTemplateWorks_NoAuth() => CreateBuildPublishAsync("blazorservernoauth");
+        public Task BlazorServerTemplateWorks_NoAuth() => CreateBuildPublishAsync();
 
         [Fact]
-        public Task BlazorServerTemplateWorks_ProgamMainNoAuth() => CreateBuildPublishAsync("blazorservernoauth", args: new [] { ArgConstants.UseProgramMain });
+        public Task BlazorServerTemplateWorks_ProgamMainNoAuth() => CreateBuildPublishAsync(args: new [] { ArgConstants.UseProgramMain });
 
         [Theory]
-        [InlineData(true, null)]
-        [InlineData(true, new string[] { ArgConstants.UseProgramMain })]
-        [InlineData(false, null)]
-        [InlineData(false, new string[] { ArgConstants.UseProgramMain })]
+        [InlineData("Individual", null)]
+        [InlineData("Individual", new string[] { ArgConstants.UseLocalDb })]
+        [InlineData("Individual", new string[] { ArgConstants.UseProgramMain })]
+        [InlineData("Individual", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseLocalDb })]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
-        public Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB, string[] args) => CreateBuildPublishAsync("blazorserverindividual" + (useLocalDB ? "uld" : "", args: args));
+        public Task BlazorServerTemplateWorks_IndividualAuth(string auth, string[] args) => CreateBuildPublishAsync(auth, args: args);
 
         [Theory]
         [InlineData("IndividualB2C", null)]
@@ -49,7 +49,6 @@ namespace Templates.Test
         [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph })]
         [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
         public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args)
-            => CreateBuildPublishAsync("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), auth, args);
-
+            => CreateBuildPublishAsync(auth, args);
     }
 }

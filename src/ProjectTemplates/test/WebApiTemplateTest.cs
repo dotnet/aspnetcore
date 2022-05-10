@@ -83,7 +83,7 @@ namespace Templates.Test
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         public async Task WebApiTemplateCSharp_WithoutOpenAPI(bool useProgramMain, bool useMinimalApis)
         {
-            var project = await FactoryFixture.GetOrCreateProject("webapinoopenapi", Output);
+            var project = await FactoryFixture.CreateProject(Output);
 
             var args = useProgramMain
             ? useMinimalApis

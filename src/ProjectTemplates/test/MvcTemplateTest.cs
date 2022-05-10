@@ -49,7 +49,7 @@ namespace Templates.Test
 
         private async Task MvcTemplateCore(string languageOverride, string[] args = null)
         {
-            var project = await ProjectFactory.GetOrCreateProject("mvcnoauth" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
+            var project = await ProjectFactory.CreateProject(Output);
 
             var createResult = await project.RunDotNetNewAsync("mvc", language: languageOverride, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
@@ -127,7 +127,7 @@ namespace Templates.Test
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDB, bool useProgramMain)
         {
-            var project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
+            var project = await ProjectFactory.CreateProject(Output);
 
             var args = useProgramMain ? new [] { ArgConstants.UseProgramMain } : null;
             var createResult = await project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: useLocalDB, args: args);
@@ -249,7 +249,7 @@ namespace Templates.Test
             // This test verifies publishing an MVC app as a single file exe works. We'll limit testing
             // this to a few operating systems to make our lives easier.
             var runtimeIdentifer = "win-x64";
-            var project = await ProjectFactory.GetOrCreateProject("mvcsinglefileexe", Output);
+            var project = await ProjectFactory.CreateProject(Output);
             project.RuntimeIdentifier = runtimeIdentifer;
 
             var createResult = await project.RunDotNetNewAsync("mvc");
@@ -305,7 +305,7 @@ namespace Templates.Test
 
         private async Task<Project> MvcTemplateBuildsAndPublishes(string auth, string[] args)
         {
-            var project = await ProjectFactory.GetOrCreateProject("mvc" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
+            var project = await ProjectFactory.CreateProject(Output);
 
             var createResult = await project.RunDotNetNewAsync("mvc", auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
