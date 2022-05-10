@@ -22,7 +22,7 @@ echo.
 set exit_code=0
 
 echo "Running tests: %HELIX_CORRELATION_PAYLOAD%/HelixTestRunner/HelixTestRunner.exe --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --helixTimeout %$helixTimeout% --playwright $installPlaywright"
-%HELIX_CORRELATION_PAYLOAD%/HelixTestRunner/HelixTestRunner.exe --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --helixTimeout %$helixTimeout% --playwright $installPlaywright
+%HELIX_CORRELATION_PAYLOAD%/HelixTestRunner/HelixTestRunner.exe --target %$target% --runtime %$aspRuntimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --helixTimeout %$helixTimeout% --playwright %$installPlaywright%
 if not errorlevel 0 (
     set exit_code=%errorlevel%
 )
