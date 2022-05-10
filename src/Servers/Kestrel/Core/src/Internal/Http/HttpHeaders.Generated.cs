@@ -7930,7 +7930,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_headers._Cookie.Count > 1)
             {
-                _headers._Cookie = string.Join("; ", _headers._Cookie.ToArray()); // TODO string.Join is less than ideal
+                _headers._Cookie = string.Join("; ", _headers._Cookie.ToArray());
             }
         }
 
