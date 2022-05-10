@@ -200,7 +200,7 @@ internal sealed class OpenApiGenerator
             {
                 responseContent[contentType] = new OpenApiMediaType
                 {
-                    Schema = new OpenApiSchema { Type = SchemaGenerator.GetOpenApiSchemaType(type) }
+                    Schema = OpenApiSchemaGenerator.GetOpenApiSchema(type)
                 };
             }
 
@@ -271,10 +271,7 @@ internal sealed class OpenApiGenerator
             {
                 requestBodyContent[contentType] = new OpenApiMediaType
                 {
-                    Schema = new OpenApiSchema
-                    {
-                        Type = SchemaGenerator.GetOpenApiSchemaType(acceptsMetadata.RequestType ?? requestBodyParameter?.ParameterType)
-                    }
+                    Schema =  OpenApiSchemaGenerator.GetOpenApiSchema(acceptsMetadata.RequestType ?? requestBodyParameter?.ParameterType)
                 };
             }
             isRequired = !acceptsMetadata.IsOptional;
@@ -299,20 +296,14 @@ internal sealed class OpenApiGenerator
                 {
                     requestBodyContent["multipart/form-data"] = new OpenApiMediaType
                     {
-                        Schema = new OpenApiSchema
-                        {
-                            Type = SchemaGenerator.GetOpenApiSchemaType(requestBodyParameter.ParameterType)
-                        }
+                        Schema =  OpenApiSchemaGenerator.GetOpenApiSchema(requestBodyParameter.ParameterType)
                     };
                 }
                 else
                 {
                     requestBodyContent["application/json"] = new OpenApiMediaType
                     {
-                        Schema = new OpenApiSchema
-                        {
-                            Type = SchemaGenerator.GetOpenApiSchemaType(requestBodyParameter.ParameterType)
-                        }
+                        Schema = OpenApiSchemaGenerator.GetOpenApiSchema(requestBodyParameter.ParameterType)
                     };
                 }
             }
@@ -380,7 +371,7 @@ internal sealed class OpenApiGenerator
                 Name = parameter.Name,
                 In = parameterLocation,
                 Content = GetOpenApiParameterContent(metadata),
-                Schema = new OpenApiSchema { Type = SchemaGenerator.GetOpenApiSchemaType(parameter.ParameterType) },
+                Schema = OpenApiSchemaGenerator.GetOpenApiSchema(parameter.ParameterType),
                 Required = !isOptional
 
             };
