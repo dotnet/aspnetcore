@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "6.0.104"
+    "version": "6.0.105"
   },
   "tools": {
-    "dotnet": "6.0.104",
+    "dotnet": "6.0.105",
     "runtimes": {
       "dotnet/x64": [
         "2.1.30",
@@ -13,7 +13,7 @@
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ],
       "aspnetcore/x64": [
-        "3.1.24"
+        "3.1.25"
       ]
     },
     "Git": "2.22.0",
