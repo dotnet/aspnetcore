@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop;
@@ -13,7 +13,8 @@ namespace Microsoft.JSInterop;
 /// To avoid leaking memory, the reference must later be disposed by JS code or by .NET code.
 /// </summary>
 /// <typeparam name="TValue">The type of the value to wrap.</typeparam>
-public sealed class DotNetObjectReference<TValue> : IDotNetObjectReference, IDisposable where TValue : class
+public sealed class DotNetObjectReference<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TValue> :
+    IDotNetObjectReference, IDisposable where TValue : class
 {
     private readonly TValue _value;
     private long _objectId;
@@ -71,6 +72,7 @@ public sealed class DotNetObjectReference<TValue> : IDotNetObjectReference, IDis
     }
 
     object IDotNetObjectReference.Value => Value;
+    Type IDotNetObjectReference.Type => typeof(TValue);
 
     internal bool Disposed { get; private set; }
 

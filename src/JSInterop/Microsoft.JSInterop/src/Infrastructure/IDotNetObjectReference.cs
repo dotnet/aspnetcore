@@ -6,4 +6,7 @@ namespace Microsoft.JSInterop.Infrastructure;
 internal interface IDotNetObjectReference : IDisposable
 {
     object Value { get; }
+
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
+    Type Type { get; }
 }

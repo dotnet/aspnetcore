@@ -383,7 +383,7 @@ public static class DotNetDispatcher
 
     private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
     {
-        var type = objectReference.Value.GetType();
+        var type = objectReference.Type;
         var assemblyMethods = _cachedMethodsByType.GetOrAdd(type, ScanTypeForCallableMethods);
         if (assemblyMethods.TryGetValue(methodIdentifier, out var result))
         {
@@ -394,7 +394,7 @@ public static class DotNetDispatcher
             throw new ArgumentException($"The type '{type.Name}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
         }
 
-        static Dictionary<string, (MethodInfo, Type[])> ScanTypeForCallableMethods(Type type)
+        static Dictionary<string, (MethodInfo, Type[])> ScanTypeForCallableMethods([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type type)
         {
             var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
 

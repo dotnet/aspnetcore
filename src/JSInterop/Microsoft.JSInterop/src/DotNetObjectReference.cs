@@ -13,7 +13,7 @@ public static class DotNetObjectReference
     /// </summary>
     /// <param name="value">The reference type to track.</param>
     /// <returns>An instance of <see cref="DotNetObjectReference{TValue}" />.</returns>
-    public static DotNetObjectReference<TValue> Create<TValue>(TValue value) where TValue : class
+    public static DotNetObjectReference<TValue> Create<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TValue>(TValue value) where TValue : class
     {
         if (value is null)
         {
