@@ -53,15 +53,13 @@ public class FormMultipartSection
     /// Gets the form value
     /// </summary>
     /// <returns>The form value</returns>
-    public Task<string> GetValueAsync() => GetValueAsync(CancellationToken.None);
+    public Task<string> GetValueAsync() => Section.ReadAsStringAsync();
 
     /// <summary>
     /// Gets the form value
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The form value</returns>
-    public Task<string> GetValueAsync(CancellationToken cancellationToken)
-    {
-        return Section.ReadAsStringAsync(cancellationToken);
-    }
+    public ValueTask<string> GetValueAsync(CancellationToken cancellationToken)
+        => Section.ReadAsStringAsync(cancellationToken);
 }
