@@ -231,7 +231,11 @@ internal sealed partial class SocketConnection : TransportConnection
                         return false;
                     }
 
-                    return true;
+                    // This is unexpected.
+                    error = result.SocketError;
+                    SocketsLog.ConnectionError(_logger, this, error);
+
+                    return false;
                 }
             }
         }
