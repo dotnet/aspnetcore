@@ -255,7 +255,7 @@ public class FormFeature : IFormFeature
                     }
                     else
                     {
-                        System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + section.ContentDisposition);
+                        throw new InvalidDataException($"Unrecognized content-disposition for this section:  {section.ContentDisposition}");
                     }
 
                     section = await multipartReader.ReadNextSectionAsync(cancellationToken);

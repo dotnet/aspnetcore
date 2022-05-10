@@ -162,6 +162,12 @@ InvalidContentDispositionValue +
 "\r\n" +
 "Foo\r\n";
 
+    private const string MultipartFormFileNonFormOrFileContentDispositionValue = "--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
+"Content-Disposition:x" +
+"\r\n" +
+"\r\n" +
+"Foo\r\n";
+
     private const string MultipartFormWithField =
         MultipartFormField +
         MultipartFormEnd;
@@ -437,6 +443,28 @@ InvalidContentDispositionValue +
         }
 
         await responseFeature.CompleteAsync();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReadFormAsync_NonFormOrFieldContentDisposition_Throw(bool bufferRequest)
+    {
+        var formContent = new List<byte>();
+        formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormFileNonFormOrFileContentDispositionValue));
+        formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormEnd));
+
+        var context = new DefaultHttpContext();
+        var responseFeature = new FakeResponseFeature();
+        context.Features.Set<IHttpResponseFeature>(responseFeature);
+        context.Request.ContentType = MultipartContentType;
+        context.Request.Body = new NonSeekableReadStream(formContent.ToArray());
+
+        IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest });
+        context.Features.Set<IFormFeature>(formFeature);
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
+        Assert.StartsWith("Unrecognized content-disposition for this section:", exception.Message);
     }
 
     [Theory]
