@@ -64,6 +64,7 @@ namespace Templates.Test.Helpers
                 // declarations (i.e. make it more stable for testing)
                 ProjectGuid = GetRandomLetter() + Path.GetRandomFileName().Replace(".", string.Empty)
             };
+            project.ProjectName = $"AspNetCore.{project.ProjectGuid}";
 
             var assemblyPath = GetType().Assembly;
             var basePath = GetTemplateFolderBasePath(assemblyPath);
