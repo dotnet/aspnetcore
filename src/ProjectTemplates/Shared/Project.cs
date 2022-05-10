@@ -108,38 +108,24 @@ public class Project : IDisposable
 
         argString += $" -o {TemplateOutputDir}";
 
-        // Only run one instance of 'dotnet new' at once, as a workaround for
-        // https://github.com/aspnet/templating/issues/63
-
-        //await DotNetNewLock.WaitAsync();
-        try
+        if (Directory.Exists(TemplateOutputDir))
         {
-            //Output.WriteLine("Acquired DotNetNewLock");
-
-            if (Directory.Exists(TemplateOutputDir))
-            {
-                Output.WriteLine($"Template directory already exists, deleting contents of {TemplateOutputDir}");
-                Directory.Delete(TemplateOutputDir, recursive: true);
-            }
-
-            using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
-            await execution.Exited;
-
-            var result = new ProcessResult(execution);
-
-            // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
-            if (errorOnRestoreError && (execution.Output.Contains("Restore failed.") || execution.Error.Contains("Restore failed.")))
-            {
-                result.ExitCode = -1;
-            }
-
-            return result;
+            Output.WriteLine($"Template directory already exists, deleting contents of {TemplateOutputDir}");
+            Directory.Delete(TemplateOutputDir, recursive: true);
         }
-        finally
+
+        using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+        await execution.Exited;
+
+        var result = new ProcessResult(execution);
+
+        // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
+        if (errorOnRestoreError && (execution.Output.Contains("Restore failed.") || execution.Error.Contains("Restore failed.")))
         {
-            //DotNetNewLock.Release();
-            //Output.WriteLine("Released DotNetNewLock");
+            result.ExitCode = -1;
         }
+
+        return result;
     }
 
     internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
@@ -156,12 +142,11 @@ public class Project : IDisposable
 
         var result = new ProcessResult(execution);
 
-        // Comment out to see if it impacts test failures
         // Fail if there were build warnings
-        //if (execution.Output.Contains(": warning") || execution.Error.Contains(": warning"))
-        //{
-        //    result.ExitCode = -1;
-        //}
+        if (execution.Output.Contains(": warning") || execution.Error.Contains(": warning"))
+        {
+            result.ExitCode = -1;
+        }
 
         CaptureBinLogOnFailure(execution);
         return result;

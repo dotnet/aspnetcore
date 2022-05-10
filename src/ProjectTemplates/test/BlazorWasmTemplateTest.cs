@@ -286,6 +286,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     }
 
     [Theory]
+    [SkipOnHelix("TODO: Put issue URL in here if this fixes it!", Queues = HelixConstants.DebianArm64)]
     [MemberData(nameof(TemplateData))]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(args: instance.Arguments, targetFramework: "netstandard2.1");

@@ -102,81 +102,21 @@ public class BaselineTest : LoggedTest
             }
             Assert.Contains(relativePath, expectedFiles);
 
-            // Commented out to see if it impacts the Helix test failures
-            // if (relativePath.EndsWith(".cs", StringComparison.Ordinal))
-            // {
-            //     var namespaceDeclarationPrefix = "namespace ";
-            //     var namespaceDeclaration = File.ReadLines(file)
-            //         .SingleOrDefault(line => line.StartsWith(namespaceDeclarationPrefix, StringComparison.Ordinal))
-            //         ?.Substring(namespaceDeclarationPrefix.Length);
+            if (relativePath.EndsWith(".cs", StringComparison.Ordinal))
+            {
+                var namespaceDeclarationPrefix = "namespace ";
+                var namespaceDeclaration = File.ReadLines(file)
+                    .SingleOrDefault(line => line.StartsWith(namespaceDeclarationPrefix, StringComparison.Ordinal))
+                    ?.Substring(namespaceDeclarationPrefix.Length);
 
-            //     // nullable because Program.cs with top-level statements doesn't have a namespace declaration
-            //     if (namespaceDeclaration is not null)
-            //     {
-            //         Assert.StartsWith(Project.ProjectName, namespaceDeclaration, StringComparison.Ordinal);
-            //     }
-            // }
+                // nullable because Program.cs with top-level statements doesn't have a namespace declaration
+                if (namespaceDeclaration is not null)
+                {
+                    Assert.StartsWith(Project.ProjectName, namespaceDeclaration, StringComparison.Ordinal);
+                }
+            }
         }
     }
-
-    //private static ConcurrentDictionary<string, object> _projectKeys = new();
-
-    //private string CreateProjectKey(string arguments)
-    //{
-    //    var text = "baseline";
-
-    //    // Turn string like "new templatename -minimal -au SingleOrg --another-option OptionValue"
-    //    // into array like [ "new templatename", "minimal", "au SingleOrg", "another-option OptionValue" ]
-    //    var argumentsArray = arguments
-    //        .Split(new[] { " --", " -" }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-    //        .ToArray();
-
-    //    // Add template name, value has form of "new name"
-    //    text += argumentsArray[0].Substring("new ".Length);
-
-    //    // Sort arguments to ensure definitions that differ only by arguments order are caught
-    //    Array.Sort(argumentsArray, StringComparer.Ordinal);
-
-    //    foreach (var argValue in argumentsArray)
-    //    {
-    //        var argSegments = argValue.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-
-    //        if (argSegments.Length == 0)
-    //        {
-    //            continue;
-    //        }
-    //        else if (argSegments.Length == 1)
-    //        {
-    //            text += argSegments[0] switch
-    //            {
-    //                "ho" => "hosted",
-    //                "p" => "pwa",
-    //                _ => argSegments[0].Replace("-", "")
-    //            };
-    //        }
-    //        else
-    //        {
-    //            text += argSegments[0] switch
-    //            {
-    //                "au" => argSegments[1],
-    //                "uld" => "uld",
-    //                "language" => argSegments[1].Replace("#", "Sharp"),
-    //                "support-pages-and-views" when argSegments[1] == "true" => "supportpagesandviewstrue",
-    //                _ => ""
-    //            };
-    //        }
-    //    }
-
-    //    if (!_projectKeys.TryAdd(text, null))
-    //    {
-    //        throw new InvalidOperationException(
-    //            $"Project key for template with args '{arguments}' already exists. " +
-    //            $"Check that the metadata specified in {BaselineDefinitionFileResourceName} is correct and that " +
-    //            $"the {nameof(CreateProjectKey)} method is considering enough template arguments to ensure uniqueness.");
-    //    }
-
-    //    return text;
-    //}
 
     private void AssertFileExists(string basePath, string path, bool shouldExist)
     {

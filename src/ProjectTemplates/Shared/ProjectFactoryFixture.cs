@@ -61,18 +61,11 @@ public class ProjectFactoryFixture : IDisposable
         {
             Output = output,
             DiagnosticsMessageSink = DiagnosticsMessageSink,
-            ProjectGuid = Path.GetRandomFileName().Replace(".", string.Empty)
+            // Ensure first character is a letter to avoid random insertions of '_' into template namespace
+            // declarations (i.e. make it more stable for testing)
+            ProjectGuid = GetRandomLetter() + Path.GetRandomFileName().Replace(".", string.Empty)
         };
-        // Replace first character with a random letter if it's a digit to avoid random insertions of '_'
-        // into template namespace declarations (i.e. make it more stable for testing)
-        var projectNameSuffix = !char.IsLetter(project.ProjectGuid[0])
-            ? string.Create(project.ProjectGuid.Length, project.ProjectGuid, (suffix, guid) =>
-            {
-                guid.AsSpan(1).CopyTo(suffix[1..]);
-                suffix[0] = GetRandomLetter();
-            })
-            : project.ProjectGuid;
-        project.ProjectName = $"AspNet.{projectNameSuffix}";
+        project.ProjectName = $"AspNet.{project.ProjectGuid}";
 
         var assemblyPath = GetType().Assembly;
         var basePath = GetTemplateFolderBasePath(assemblyPath);
