@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             // Depending on timing, this could result in a shutdown failure, but sometimes it succeeds, handle both situations
             if (!response.IsSuccessStatusCode)
             {
-                Assert.Equal("Application Shutting Down", response.ReasonPhrase);
+                Assert.True(response.ReasonPhrase == "Application Shutting Down" || response.ReasonPhrase == "Server has been shutdown");
             }
 
             // This shutdown should trigger a copy to the next highest directory, which will be 2
