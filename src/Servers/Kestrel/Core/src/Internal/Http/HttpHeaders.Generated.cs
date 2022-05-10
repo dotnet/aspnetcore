@@ -7926,6 +7926,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public void MergeCookies()
+        {
+            if (_headers._Cookie.Count > 1)
+            {
+                _headers._Cookie = string.Join("; ", _headers._Cookie.ToArray()); // TODO string.Join is less than ideal
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public unsafe bool TryQPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);

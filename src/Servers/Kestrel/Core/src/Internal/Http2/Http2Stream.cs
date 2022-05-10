@@ -203,11 +203,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
         // Cookies should be merged into a single string separated by "; "
         // https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.5
-        var headers = (AspNetCore.Http.IHeaderDictionary)HttpRequestHeaders;
-        if (headers.Cookie.Count > 1)
-        {
-            headers.Cookie = string.Join("; ", headers.Cookie.ToArray());
-        }
+        HttpRequestHeaders.MergeCookies();
 
         return true;
     }

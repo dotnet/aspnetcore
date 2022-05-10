@@ -909,11 +909,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         // Cookies should be merged into a single string separated by "; "
         // https://datatracker.ietf.org/doc/html/draft-ietf-quic-http-34#section-4.1.1.2
-        var headers = (AspNetCore.Http.IHeaderDictionary)HttpRequestHeaders;
-        if (headers.Cookie.Count > 1)
-        {
-            headers.Cookie = string.Join("; ", headers.Cookie.ToArray());
-        }
+        HttpRequestHeaders.MergeCookies();
 
         return true;
     }
