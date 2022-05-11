@@ -1329,7 +1329,7 @@ $@"        private void Clear(long bitsToClear)
             }}
         }}
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void MergeCookies()
         {{
             if (HasCookie && _headers._Cookie.Count > 1)
