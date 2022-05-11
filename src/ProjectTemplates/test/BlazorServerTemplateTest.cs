@@ -47,11 +47,14 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
     [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish_IndividualB2C(string auth, string[] args) => CreateBuildPublishAsync(auth, args);
+
+    [Theory]
     [InlineData("SingleOrg", null)]
     [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
     [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph })]
     [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
-    public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args) => CreateBuildPublishAsync(auth, args);
+    public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish_SingleOrg(string auth, string[] args) => CreateBuildPublishAsync(auth, args);
 }

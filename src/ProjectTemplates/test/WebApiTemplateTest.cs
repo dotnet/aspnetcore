@@ -35,26 +35,40 @@ public class WebApiTemplateTest : LoggedTest
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("IndividualB2C", null)]
-    [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain })]
     [InlineData("IndividualB2C", new string[] { ArgConstants.UseMinimalApis })]
-    [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis })]
     [InlineData("IndividualB2C", new string[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("IndividualB2C", new string[] { ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    public Task WebApiTemplateCSharp_IdentityWeb_IndividualB2C_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
+
+    [ConditionalTheory]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [InlineData("IndividualB2C", null)]
+    [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain })]
+    [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis })]
     [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    public Task WebApiTemplateCSharp_IdentityWeb_IndividualB2C_ProgramMain_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
+
+    [ConditionalTheory]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("SingleOrg", null)]
-    [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain })]
     [InlineData("SingleOrg", new string[] { ArgConstants.UseMinimalApis })]
-    [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis })]
     [InlineData("SingleOrg", new string[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("SingleOrg", new string[] { ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.CallsGraph })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseMinimalApis, ArgConstants.CallsGraph })]
+    public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
+
+    [ConditionalTheory]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [InlineData("SingleOrg", null)]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain })]
+    [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis })]
     [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    [InlineData("SingleOrg", new string[] { ArgConstants.CallsGraph })]
     [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
-    [InlineData("SingleOrg", new string[] { ArgConstants.UseMinimalApis, ArgConstants.CallsGraph })]
     [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CallsGraph })]
-    public Task WebApiTemplateCSharp_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
+    public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_ProgramMain_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
     [Fact]
     public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
