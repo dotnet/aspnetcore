@@ -12,35 +12,35 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 /// </summary>
 internal sealed class Utf8HashLookup
 {
-    private int[] buckets;
-    private Slot[] slots;
-    private int count;
+    private int[] _buckets;
+    private Slot[] _slots;
+    private int _count;
 
     private const int HashCodeMask = 0x7fffffff;
 
     internal Utf8HashLookup()
     {
-        buckets = new int[7];
-        slots = new Slot[7];
+        _buckets = new int[7];
+        _slots = new Slot[7];
     }
 
     internal void Add(string value)
     {
         var hashCode = GetKeyHashCode(value.AsSpan());
 
-        if (count == slots.Length)
+        if (_count == _slots.Length)
         {
             Resize();
         }
 
-        int index = count;
-        count++;
+        int index = _count;
+        _count++;
 
-        int bucket = hashCode % buckets.Length;
-        slots[index].hashCode = hashCode;
-        slots[index].value = value;
-        slots[index].next = buckets[bucket] - 1;
-        buckets[bucket] = index + 1;
+        int bucket = hashCode % _buckets.Length;
+        _slots[index].hashCode = hashCode;
+        _slots[index].value = value;
+        _slots[index].next = _buckets[bucket] - 1;
+        _buckets[bucket] = index + 1;
     }
 
     internal bool TryGetValue(ReadOnlySpan<byte> utf8, [MaybeNullWhen(false), AllowNull] out string value)
@@ -67,11 +67,11 @@ internal sealed class Utf8HashLookup
     {
         var hashCode = GetKeyHashCode(key);
 
-        for (var i = buckets[hashCode % buckets.Length] - 1; i >= 0; i = slots[i].next)
+        for (var i = _buckets[hashCode % _buckets.Length] - 1; i >= 0; i = _slots[i].next)
         {
-            if (slots[i].hashCode == hashCode && key.Equals(slots[i].value, StringComparison.OrdinalIgnoreCase))
+            if (_slots[i].hashCode == hashCode && key.Equals(_slots[i].value, StringComparison.OrdinalIgnoreCase))
             {
-                value = slots[i].value;
+                value = _slots[i].value;
                 return true;
             }
         }
@@ -87,21 +87,21 @@ internal sealed class Utf8HashLookup
 
     private void Resize()
     {
-        var newSize = checked(count * 2 + 1);
+        var newSize = checked(_count * 2 + 1);
         var newBuckets = new int[newSize];
         var newSlots = new Slot[newSize];
-        Array.Copy(slots, newSlots, count);
-        for (int i = 0; i < count; i++)
+        Array.Copy(_slots, newSlots, _count);
+        for (int i = 0; i < _count; i++)
         {
             int bucket = newSlots[i].hashCode % newSize;
             newSlots[i].next = newBuckets[bucket] - 1;
             newBuckets[bucket] = i + 1;
         }
-        buckets = newBuckets;
-        slots = newSlots;
+        _buckets = newBuckets;
+        _slots = newSlots;
     }
 
-    internal struct Slot
+    private struct Slot
     {
         internal int hashCode;
         internal int next;
