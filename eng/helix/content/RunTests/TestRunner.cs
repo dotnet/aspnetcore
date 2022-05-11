@@ -213,9 +213,10 @@ namespace RunTests
             try
             {
                 // Timeout test run 5 minutes before the Helix job would timeout
-                var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
+                var testProcessTimeout = Options.Timeout.Subtract(TimeSpan.FromMinutes(5));
+                var cts = new CancellationTokenSource(testProcessTimeout);
                 var diagLog = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"), "vstest.log");
-                var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;CollectDump;TestTimeout=60m\"";
+                var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;CollectDump;TestTimeout=15m\"";
                 if (Options.Quarantined)
                 {
                     Console.WriteLine("Running quarantined tests.");
@@ -231,6 +232,10 @@ namespace RunTests
 
                     if (result.ExitCode != 0)
                     {
+                        if (cts.Token.IsCancellationRequested)
+                        {
+                            Console.WriteLine($"Quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
+                        }
                         Console.WriteLine($"Failure in quarantined tests. Exit code: {result.ExitCode}.");
                     }
                 }
@@ -249,6 +254,11 @@ namespace RunTests
 
                     if (result.ExitCode != 0)
                     {
+                        if (cts.Token.IsCancellationRequested)
+                        {
+                            Console.WriteLine($"Non-quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
+                        }
+
                         Console.WriteLine($"Failure in non-quarantined tests. Exit code: {result.ExitCode}.");
                         exitCode = result.ExitCode;
                     }
