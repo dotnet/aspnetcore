@@ -20,5 +20,7 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 </Project>
+

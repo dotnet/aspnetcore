@@ -27,6 +27,7 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <Reference Include="AngleSharp" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
 </Project>

@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.33</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.34</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -97,7 +97,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Cookies-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Cookies' ">
-    <BaselinePackageVersion>2.1.16</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.34</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Cookies' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication" Version="[2.1.2, )" />
@@ -494,7 +494,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http' ">
-    <BaselinePackageVersion>2.1.22</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.34</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.1.1, )" />
@@ -559,10 +559,10 @@
     <BaselinePackageVersion>2.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.1.6, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.1.6, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.JsonPatch-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' ">
@@ -621,7 +621,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' ">
-    <BaselinePackageVersion>2.1.16</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.34</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.1.1, )" />
@@ -637,7 +637,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.1, )" />
-    <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.2, )" />
+    <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Cors-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Cors' ">

@@ -4,6 +4,7 @@
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
     <MicrosoftNETCoreAppPackageVersion>2.1.30</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.30</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <SystemMemoryPackageVersion>4.5.4</SystemMemoryPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
@@ -189,7 +190,6 @@
     <SystemIdentityModelTokensJwtPackageVersion>5.2.4</SystemIdentityModelTokensJwtPackageVersion>
     <SystemInteractiveAsyncPackageVersion>3.1.1</SystemInteractiveAsyncPackageVersion>
     <SystemIOPipelinesPackageVersion>4.5.4</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.5.4</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.4</SystemNetHttpPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.5.4</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNumericsVectorsPackageVersion>4.5.0</SystemNumericsVectorsPackageVersion>

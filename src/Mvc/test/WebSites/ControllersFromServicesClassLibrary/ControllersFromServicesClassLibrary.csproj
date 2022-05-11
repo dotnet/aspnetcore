@@ -10,5 +10,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
     <Reference Include="Microsoft.AspNetCore.Razor.Language" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 </Project>
+

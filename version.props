@@ -2,8 +2,8 @@
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>34</AspNetCorePatchVersion>
-    <ValidateBaseline>false</ValidateBaseline>
+    <AspNetCorePatchVersion>35</AspNetCorePatchVersion>
+    <ValidateBaseline>true</ValidateBaseline>
 
     <PreReleaseLabel>servicing</PreReleaseLabel>
     <PreReleaseBrandingLabel>Servicing</PreReleaseBrandingLabel>

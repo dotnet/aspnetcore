@@ -10,6 +10,7 @@
 
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
 </Project>
