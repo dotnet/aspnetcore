@@ -2167,16 +2167,16 @@ public class RequestDelegateFactoryTests : LoggedTest
             void TestParameterListNoPulicConstructorClass([AsParameters] BadNoPublicConstructorArgumentListClass req) { }
 
             static string GetMultipleContructorsError(Type type)
-                => $"Only a single public parameterized constructor is allowed for {TypeNameHelper.GetTypeDisplayName(type, fullName: false)}.";
+                => $"Only a single public parameterized constructor is allowed for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.";
 
             static string GetAbstractClassError(Type type)
-                => $"The {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} abstract type is not supported.";
+                => $"The abstract type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}' is not supported.";
 
             static string GetNoContructorsError(Type type)
-                => $"No {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} public parameterless constructor found.";
+                => $"No public parameterless constructor found for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.";
 
             static string GetInvalidConstructorError(Type type)
-                => $"The {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} public parameterized constructor must contains only parameters that match to the declared public properties.";
+                => $"The public parameterized constructor must contains only parameters that match to the declared public properties for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.";
 
             return new object[][]
             {
@@ -4724,6 +4724,47 @@ public class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         Assert.Equal(expectedValue, httpContext.Items["input"]);
+    }
+
+    private class ParameterListWithReadOnlyProperties
+    {
+        public ParameterListWithReadOnlyProperties()
+        {
+            ReadOnlyValue = 1;
+        }
+
+        public int Value { get; set; }
+
+        public int ConstantValue => 1;
+
+        public int ReadOnlyValue { get; }
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListAndSkipReadOnlyProperties()
+    {
+        const int routeParamValue = 42;
+        var expectedInput = new ParameterListWithReadOnlyProperties() { Value = routeParamValue };
+
+        void TestAction(HttpContext context, [AsParameters] ParameterListWithReadOnlyProperties args)
+        {
+            context.Items.Add("input", args);
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.Value)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.ConstantValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.ReadOnlyValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithReadOnlyProperties>(httpContext.Items["input"]);
+        Assert.Equal(expectedInput.Value, input.Value);
+        Assert.Equal(expectedInput.ConstantValue, input.ConstantValue);
+        Assert.Equal(expectedInput.ReadOnlyValue, input.ReadOnlyValue);
     }
 
     private class ParameterListWitDefaultValue
