@@ -50,5 +50,4 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph })]
     [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
     public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args) => CreateBuildPublishAsync(auth, args);
-
 }

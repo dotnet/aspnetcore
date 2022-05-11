@@ -238,13 +238,12 @@ public class TestRunner
                     throwOnError: false,
                     cancellationToken: cts.Token);
 
+                if (cts.Token.IsCancellationRequested)
+                {
+                    Console.WriteLine($"Quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
+                }
                 if (result.ExitCode != 0)
                 {
-                    if (cts.Token.IsCancellationRequested)
-                    {
-                        Console.WriteLine($"Quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
-                    }
-
                     Console.WriteLine($"Failure in quarantined tests. Exit code: {result.ExitCode}.");
                 }
             }
@@ -261,13 +260,12 @@ public class TestRunner
                     throwOnError: false,
                     cancellationToken: cts.Token);
 
+                if (cts.Token.IsCancellationRequested)
+                {
+                    Console.WriteLine($"Non-quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
+                }
                 if (result.ExitCode != 0)
                 {
-                    if (cts.Token.IsCancellationRequested)
-                    {
-                        Console.WriteLine($"Non-quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
-                    }
-
                     Console.WriteLine($"Failure in non-quarantined tests. Exit code: {result.ExitCode}.");
                     exitCode = result.ExitCode;
                 }
