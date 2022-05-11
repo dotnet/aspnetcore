@@ -232,6 +232,8 @@ public class MvcTemplateTest : LoggedTest
 
             await aspNetProcess.AssertPagesOk(pages);
         }
+        
+        Assert.False(useLocalDB);
     }
 
     [ConditionalFact]
