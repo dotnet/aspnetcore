@@ -515,6 +515,26 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Theory]
+    [InlineData(nameof(ReturnsResultOfProductWithEndpointMetadata))]
+    [InlineData(nameof(ReturnsTaskOfResultOfProductWithEndpointMetadata))]
+    public void GetApiDescription_PopulatesResponseType_ForResultOfT_WithEndpointMetadata(string methodName)
+    {
+        // Arrange
+        var action = CreateActionDescriptor(
+            methodName,
+            endpointMetadata: new[] { new ProducesResponseTypeMetadata(typeof(Product), 200) });
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        var responseType = Assert.Single(description.SupportedResponseTypes);
+        Assert.Equal(typeof(Product), responseType.Type);
+        Assert.NotNull(responseType.ModelMetadata);
+    }
+
+    [Theory]
     [InlineData(nameof(ReturnsActionResultOfSequenceOfProducts))]
     [InlineData(nameof(ReturnsTaskOfActionResultOfSequenceOfProducts))]
     public void GetApiDescription_PopulatesResponseType_ForActionResultOfSequenceOfT(string methodName)
@@ -1213,6 +1233,25 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Fact]
+    public void GetApiDescription_IncludesRequestFormats_FilteredByAcceptsMetadata()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(
+            nameof(AcceptsProduct_Body),
+            endpointMetadata: new[] { new XmlOnlyMetadata() });
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Collection(
+            description.SupportedRequestFormats.OrderBy(f => f.MediaType.ToString()),
+            f => Assert.Equal("application/xml", f.MediaType.ToString()),
+            f => Assert.Equal("text/xml", f.MediaType.ToString()));
+    }
+
+    [Fact]
     public void GetApiDescription_IncludesRequestFormats_FilteredByType()
     {
         // Arrange
@@ -1375,8 +1414,8 @@ public class DefaultApiDescriptionProviderTest
         var action = CreateActionDescriptor(nameof(AcceptsFormFile));
         action.FilterDescriptors = new[]
         {
-                new FilterDescriptor(new ConsumesAttribute("multipart/form-data"), FilterScope.Action),
-            };
+            new FilterDescriptor(new ConsumesAttribute("multipart/form-data"), FilterScope.Action),
+        };
 
         // Act
         var descriptions = GetApiDescriptions(action);
@@ -2112,7 +2151,7 @@ public class DefaultApiDescriptionProviderTest
         return formatters;
     }
 
-    private ControllerActionDescriptor CreateActionDescriptor(string methodName = null, Type controllerType = null)
+    private ControllerActionDescriptor CreateActionDescriptor(string methodName = null, Type controllerType = null, object[] endpointMetadata = null)
     {
         var action = new ControllerActionDescriptor();
         action.SetProperty(new ApiDescriptionActionData());
@@ -2145,6 +2184,11 @@ public class DefaultApiDescriptionProviderTest
             action.MethodInfo = GetType().GetMethod(
                 methodName ?? "ReturnsObject",
                 BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        if (endpointMetadata != null)
+        {
+            action.EndpointMetadata = new List<object>(endpointMetadata);
         }
 
         action.Parameters = new List<ParameterDescriptor>();
@@ -2244,10 +2288,12 @@ public class DefaultApiDescriptionProviderTest
     }
 
     private ActionResult<Product> ReturnsActionResultOfProduct() => null;
+    private Http.HttpResults.Ok<Product> ReturnsResultOfProductWithEndpointMetadata() => null;
 
     private ActionResult<IEnumerable<Product>> ReturnsActionResultOfSequenceOfProducts() => null;
 
     private Task<ActionResult<Product>> ReturnsTaskOfActionResultOfProduct() => null;
+    private Task<Http.HttpResults.Ok<Product>> ReturnsTaskOfResultOfProductWithEndpointMetadata() => null;
 
     private Task<ActionResult<IEnumerable<Product>>> ReturnsTaskOfActionResultOfSequenceOfProducts() => null;
 
@@ -2650,5 +2696,14 @@ public class DefaultApiDescriptionProviderTest
     private class FromFormFileAttribute : Attribute, IBindingSourceMetadata
     {
         public BindingSource BindingSource => BindingSource.FormFile;
+    }
+
+    private class XmlOnlyMetadata : Http.Metadata.IAcceptsMetadata
+    {
+        public IReadOnlyList<string> ContentTypes => new[] { "text/xml", "application/xml" };
+
+        public Type RequestType => null;
+
+        public bool IsOptional => false;
     }
 }
