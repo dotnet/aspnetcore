@@ -36,15 +36,17 @@ public abstract class Http2ConnectionBenchmarkBase
     private int _currentStreamId;
     private byte[] _headersBuffer;
     private DuplexPipe.DuplexPipePair _connectionPair;
-    private Http2Frame _httpFrame;
     private int _dataWritten;
+    private Task _requestProcessingTask;
+
+    private Http2Frame _receiveHttpFrame = new();
+    private Http2Frame _sendHttpFrame = new();
 
     protected abstract Task ProcessRequest(HttpContext httpContext);
 
     public virtual void GlobalSetup()
     {
         _memoryPool = PinnedBlockMemoryPoolFactory.Create();
-        _httpFrame = new Http2Frame();
 
         var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
 
@@ -79,7 +81,7 @@ public abstract class Http2ConnectionBenchmarkBase
 
         _currentStreamId = 1;
 
-        _ = _connection.ProcessRequestsAsync(new DummyApplication(ProcessRequest, new MockHttpContextFactory()));
+        _requestProcessingTask = _connection.ProcessRequestsAsync(new DummyApplication(ProcessRequest, new MockHttpContextFactory()));
 
         _connectionPair.Application.Output.Write(Http2Connection.ClientPreface);
         _connectionPair.Application.Output.WriteSettings(new Http2PeerSettings
@@ -89,12 +91,12 @@ public abstract class Http2ConnectionBenchmarkBase
         _connectionPair.Application.Output.FlushAsync().GetAwaiter().GetResult();
 
         // Read past connection setup frames
-        ReceiveFrameAsync(_connectionPair.Application.Input, _httpFrame).GetAwaiter().GetResult();
-        Debug.Assert(_httpFrame.Type == Http2FrameType.SETTINGS);
-        ReceiveFrameAsync(_connectionPair.Application.Input, _httpFrame).GetAwaiter().GetResult();
-        Debug.Assert(_httpFrame.Type == Http2FrameType.WINDOW_UPDATE);
-        ReceiveFrameAsync(_connectionPair.Application.Input, _httpFrame).GetAwaiter().GetResult();
-        Debug.Assert(_httpFrame.Type == Http2FrameType.SETTINGS);
+        ReceiveFrameAsync(_connectionPair.Application.Input).GetAwaiter().GetResult();
+        Debug.Assert(_receiveHttpFrame.Type == Http2FrameType.SETTINGS);
+        ReceiveFrameAsync(_connectionPair.Application.Input).GetAwaiter().GetResult();
+        Debug.Assert(_receiveHttpFrame.Type == Http2FrameType.WINDOW_UPDATE);
+        ReceiveFrameAsync(_connectionPair.Application.Input).GetAwaiter().GetResult();
+        Debug.Assert(_receiveHttpFrame.Type == Http2FrameType.SETTINGS);
     }
 
     [Benchmark]
@@ -102,32 +104,32 @@ public abstract class Http2ConnectionBenchmarkBase
     {
         _requestHeadersEnumerator.Initialize(_httpRequestHeaders);
         _requestHeadersEnumerator.MoveNext();
-        _connectionPair.Application.Output.WriteStartStream(streamId: _currentStreamId, _hpackEncoder, _requestHeadersEnumerator, _headersBuffer, endStream: true, frame: _httpFrame);
+        _connectionPair.Application.Output.WriteStartStream(streamId: _currentStreamId, _hpackEncoder, _requestHeadersEnumerator, _headersBuffer, endStream: true, frame: _sendHttpFrame);
         await _connectionPair.Application.Output.FlushAsync();
 
         while (true)
         {
-            await ReceiveFrameAsync(_connectionPair.Application.Input, _httpFrame);
+            await ReceiveFrameAsync(_connectionPair.Application.Input);
 
-            if (_httpFrame.StreamId != _currentStreamId && _httpFrame.StreamId != 0)
+            if (_receiveHttpFrame.StreamId != _currentStreamId && _receiveHttpFrame.StreamId != 0)
             {
-                throw new Exception($"Unexpected stream ID: {_httpFrame.StreamId}");
+                throw new Exception($"Unexpected stream ID: {_receiveHttpFrame.StreamId}");
             }
 
-            if (_httpFrame.Type == Http2FrameType.DATA)
+            if (_receiveHttpFrame.Type == Http2FrameType.DATA)
             {
-                _dataWritten += _httpFrame.DataPayloadLength;
+                _dataWritten += _receiveHttpFrame.DataPayloadLength;
             }
 
             if (_dataWritten > 1024 * 32)
             {
-                _connectionPair.Application.Output.WriteWindowUpdateAsync(streamId: 0, _dataWritten, _httpFrame);
+                _connectionPair.Application.Output.WriteWindowUpdateAsync(streamId: 0, _dataWritten, _sendHttpFrame);
                 await _connectionPair.Application.Output.FlushAsync();
 
                 _dataWritten = 0;
             }
 
-            if ((_httpFrame.HeadersFlags & Http2HeadersFrameFlags.END_STREAM) == Http2HeadersFrameFlags.END_STREAM)
+            if ((_receiveHttpFrame.HeadersFlags & Http2HeadersFrameFlags.END_STREAM) == Http2HeadersFrameFlags.END_STREAM)
             {
                 break;
             }
@@ -136,7 +138,7 @@ public abstract class Http2ConnectionBenchmarkBase
         _currentStreamId += 2;
     }
 
-    internal async ValueTask ReceiveFrameAsync(PipeReader pipeReader, Http2Frame frame, uint maxFrameSize = Http2PeerSettings.DefaultMaxFrameSize)
+    internal async ValueTask ReceiveFrameAsync(PipeReader pipeReader, uint maxFrameSize = Http2PeerSettings.DefaultMaxFrameSize)
     {
         while (true)
         {
@@ -147,7 +149,7 @@ public abstract class Http2ConnectionBenchmarkBase
 
             try
             {
-                if (Http2FrameReader.TryReadFrame(ref buffer, frame, maxFrameSize, out var framePayload))
+                if (Http2FrameReader.TryReadFrame(ref buffer, _receiveHttpFrame, maxFrameSize, out var framePayload))
                 {
                     consumed = examined = framePayload.End;
                     return;
@@ -170,9 +172,10 @@ public abstract class Http2ConnectionBenchmarkBase
     }
 
     [GlobalCleanup]
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         _connectionPair.Application.Output.Complete();
+        await _requestProcessingTask;
         _memoryPool?.Dispose();
     }
 }
