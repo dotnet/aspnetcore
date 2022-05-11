@@ -224,14 +224,15 @@ public class TestRunner
             var testProcessTimeout = Options.Timeout.Subtract(TimeSpan.FromMinutes(5));
             var cts = new CancellationTokenSource(testProcessTimeout);
             var diagLog = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"), "vstest.log");
-            var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;CollectDump;TestTimeout=15m\"";
+            var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger xunit --logger \"console;verbosity=normal\" " +
+                                 "--blame-crash --blame-hang-timeout 15m";
             if (Options.Quarantined)
             {
                 ProcessUtil.PrintMessage("Running quarantined tests.");
 
                 // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                 var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    commonTestArgs + " --TestCaseFilter:\"Quarantined=true\"",
+                    commonTestArgs + " --filter \"Quarantined=true\"",
                     environmentVariables: EnvironmentVariables,
                     outputDataReceived: ProcessUtil.PrintMessage,
                     errorDataReceived: ProcessUtil.PrintErrorMessage,
@@ -253,7 +254,7 @@ public class TestRunner
 
                 // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                 var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    commonTestArgs + " --TestCaseFilter:\"Quarantined!=true|Quarantined=false\"",
+                    commonTestArgs + " --filter \"Quarantined!=true|Quarantined=false\"",
                     environmentVariables: EnvironmentVariables,
                     outputDataReceived: ProcessUtil.PrintMessage,
                     errorDataReceived: ProcessUtil.PrintErrorMessage,
