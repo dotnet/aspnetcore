@@ -53,9 +53,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
     {
         if (HasCookie && _headers._Cookie.Count > 1)
         {
-            {
-                _headers._Cookie = string.Join("; ", _headers._Cookie.ToArray());
-            }
+            _headers._Cookie = string.Join("; ", _headers._Cookie.ToArray());
         }
     }
 
