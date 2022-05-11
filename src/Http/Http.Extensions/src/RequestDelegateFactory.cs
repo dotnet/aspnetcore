@@ -432,7 +432,7 @@ public static partial class RequestDelegateFactory
     {
         object?[]? invokeArgs = null;
 
-        void AddMetadata(ReadOnlySpan<ParameterInfo> parameters)
+        static void AddMetadata(ReadOnlySpan<ParameterInfo> parameters, MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, object?[]? invokeArgs)
         {
             foreach (var parameter in parameters)
             {
@@ -457,10 +457,10 @@ public static partial class RequestDelegateFactory
         }
 
         // Get metadata from parameter types
-        AddMetadata(methodInfo.GetParameters());
+        AddMetadata(methodInfo.GetParameters(), methodInfo, metadata, services, invokeArgs);
 
         // Get metadata from properties as parameter types
-        AddMetadata(propertiesAsParameter);
+        AddMetadata(propertiesAsParameter, methodInfo, metadata, services, invokeArgs);
 
         // Get metadata from return type
         var returnType = methodInfo.ReturnType;
