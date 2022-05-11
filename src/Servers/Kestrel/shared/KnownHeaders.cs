@@ -1329,15 +1329,6 @@ $@"        private void Clear(long bitsToClear)
             }}
         }}
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void MergeCookies()
-        {{
-            if (HasCookie && _headers._Cookie.Count > 1)
-            {{
-                _headers._Cookie = string.Join(""; "", _headers._Cookie.ToArray());
-            }}
-        }}
-
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public unsafe bool TryQPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {{
