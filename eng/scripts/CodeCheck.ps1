@@ -99,7 +99,6 @@ try {
         $expectedVersion = $dep.Version
 
         if ($dep.Name -in $globalJson.'msbuild-sdks'.PSObject.Properties.Name) {
-
             $actualVersion = $globalJson.'msbuild-sdks'.($dep.Name)
 
             if ($expectedVersion -ne $actualVersion) {

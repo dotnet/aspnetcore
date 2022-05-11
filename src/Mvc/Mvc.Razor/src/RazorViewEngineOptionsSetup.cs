@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Razor;
 
-internal class RazorViewEngineOptionsSetup : IConfigureOptions<RazorViewEngineOptions>
+internal sealed class RazorViewEngineOptionsSetup : IConfigureOptions<RazorViewEngineOptions>
 {
     public void Configure(RazorViewEngineOptions options)
     {

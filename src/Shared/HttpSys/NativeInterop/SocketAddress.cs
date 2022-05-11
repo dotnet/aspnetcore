@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal;
 ///       on how to format the memory buffers that winsock uses for network addresses.
 ///    </para>
 /// </devdoc>
-internal class SocketAddress
+internal sealed class SocketAddress
 {
     private const int NumberOfIPv6Labels = 8;
     // Lower case hex, no leading zeros

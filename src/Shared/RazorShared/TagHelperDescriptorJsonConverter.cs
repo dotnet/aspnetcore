@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.CodeAnalysis.Razor.Serialization;
 
-internal class TagHelperDescriptorJsonConverter : JsonConverter
+internal sealed class TagHelperDescriptorJsonConverter : JsonConverter
 {
     public static readonly TagHelperDescriptorJsonConverter Instance = new TagHelperDescriptorJsonConverter();
 

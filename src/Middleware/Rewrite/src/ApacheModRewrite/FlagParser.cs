@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class FlagParser
+internal sealed class FlagParser
 {
     private readonly IDictionary<string, FlagType> _ruleFlagLookup = new Dictionary<string, FlagType>(StringComparer.OrdinalIgnoreCase) {
             { "b", FlagType.EscapeBackreference},

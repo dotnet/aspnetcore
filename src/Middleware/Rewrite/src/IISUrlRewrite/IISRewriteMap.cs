@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-internal class IISRewriteMap
+internal sealed class IISRewriteMap
 {
     private readonly Dictionary<string, string> _map = new Dictionary<string, string>();
 

@@ -24,7 +24,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http2Cat;
 
-internal class Http2Utilities : IHttpStreamHeadersHandler
+internal sealed class Http2Utilities : IHttpStreamHeadersHandler
 {
     public static ReadOnlySpan<byte> ClientPreface => "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"u8;
     public const int MaxRequestHeaderFieldSize = 16 * 1024;
@@ -979,7 +979,7 @@ internal class Http2Utilities : IHttpStreamHeadersHandler
         ((IHttpStreamHeadersHandler)this).OnHeader(name, value);
     }
 
-    internal class Http2FrameWithPayload : Http2Frame
+    internal sealed class Http2FrameWithPayload : Http2Frame
     {
         public Http2FrameWithPayload() : base()
         {

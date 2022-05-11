@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.BrowserTesting;
 
-internal class BrowserTestOutputLogger : ITestOutputHelper
+internal sealed class BrowserTestOutputLogger : ITestOutputHelper
 {
     private readonly ILogger _logger;
 

@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStreamHeadersHandler, IRequestProcessor
+internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStreamHeadersHandler, IRequestProcessor
 {
     public static ReadOnlySpan<byte> ClientPreface => ClientPrefaceBytes;
     public static byte[]? InvalidHttp1xErrorResponseBytes;

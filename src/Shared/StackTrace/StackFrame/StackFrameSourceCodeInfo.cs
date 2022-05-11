@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.StackTrace.Sources;
 /// <summary>
 /// Contains the source code where the exception occurred.
 /// </summary>
-internal class StackFrameSourceCodeInfo
+internal sealed class StackFrameSourceCodeInfo
 {
     /// <summary>
     /// Function containing instruction

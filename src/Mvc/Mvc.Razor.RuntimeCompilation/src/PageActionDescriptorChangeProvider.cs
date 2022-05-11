@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
-internal class PageActionDescriptorChangeProvider : IActionDescriptorChangeProvider
+internal sealed class PageActionDescriptorChangeProvider : IActionDescriptorChangeProvider
 {
     private readonly RuntimeCompilationFileProvider _fileProvider;
     private readonly string[] _searchPatterns;

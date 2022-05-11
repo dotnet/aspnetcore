@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-internal class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
+internal sealed class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
 {
     private ProblemDetailsFactory? _problemDetailsFactory;
 

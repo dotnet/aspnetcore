@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Microsoft.Extensions.Caching.SqlConfig.Tools;
 
-internal class SqlQueries
+internal sealed class SqlQueries
 {
     private const string CreateTableFormat = "CREATE TABLE {0}(" +
         // Maximum size of primary key column is 900 bytes (898 bytes from key + 2 additional bytes used by the

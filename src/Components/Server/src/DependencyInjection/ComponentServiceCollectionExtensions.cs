@@ -92,7 +92,7 @@ public static class ComponentServiceCollectionExtensions
         return builder;
     }
 
-    private class DefaultServerSideBlazorBuilder : IServerSideBlazorBuilder
+    private sealed class DefaultServerSideBlazorBuilder : IServerSideBlazorBuilder
     {
         public DefaultServerSideBlazorBuilder(IServiceCollection services)
         {

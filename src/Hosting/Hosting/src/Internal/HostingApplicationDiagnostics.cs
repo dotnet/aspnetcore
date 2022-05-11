@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class HostingApplicationDiagnostics
+internal sealed class HostingApplicationDiagnostics
 {
     private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 

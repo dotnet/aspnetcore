@@ -13,7 +13,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.DeveloperCertificates.Tools;
 
-internal class Program
+internal sealed class Program
 {
     private const int CriticalError = -1;
     private const int Success = 0;

@@ -100,7 +100,7 @@ internal static class JsonRequestHelpers
             Code = (int)status.StatusCode
         };
 
-        await WriteResponseMessage(response, encoding, e, options);
+        await WriteResponseMessage(response, encoding, e, options, CancellationToken.None);
     }
 
     public static int MapStatusCodeToHttpStatus(StatusCode statusCode)
@@ -147,13 +147,13 @@ internal static class JsonRequestHelpers
         return StatusCodes.Status500InternalServerError;
     }
 
-    public static async Task WriteResponseMessage(HttpResponse response, Encoding encoding, object responseBody, JsonSerializerOptions options)
+    public static async Task WriteResponseMessage(HttpResponse response, Encoding encoding, object responseBody, JsonSerializerOptions options, CancellationToken cancellationToken)
     {
         var (stream, usesTranscodingStream) = GetStream(response.Body, encoding);
 
         try
         {
-            await JsonSerializer.SerializeAsync(stream, responseBody, options);
+            await JsonSerializer.SerializeAsync(stream, responseBody, options, cancellationToken);
         }
         finally
         {
@@ -281,7 +281,7 @@ internal static class JsonRequestHelpers
         });
     }
 
-    public static async Task SendMessage<TResponse>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions, TResponse message) where TResponse : class
+    public static async Task SendMessage<TResponse>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions, TResponse message, CancellationToken cancellationToken) where TResponse : class
     {
         var response = serverCallContext.HttpContext.Response;
 
@@ -304,7 +304,7 @@ internal static class JsonRequestHelpers
                 responseType = message.GetType();
             }
 
-            await JsonRequestHelpers.WriteResponseMessage(response, serverCallContext.RequestEncoding, responseBody, serializerOptions);
+            await JsonRequestHelpers.WriteResponseMessage(response, serverCallContext.RequestEncoding, responseBody, serializerOptions, cancellationToken);
 
             GrpcServerLog.SerializedMessage(serverCallContext.Logger, responseType);
             GrpcServerLog.MessageSent(serverCallContext.Logger);

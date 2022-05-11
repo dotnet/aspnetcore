@@ -419,7 +419,7 @@ public abstract class PhysicalFileResultTestBase
             () => ExecuteAsync(httpContext, path, "text/plain"));
     }
 
-    private class TestSendFileFeature : IHttpResponseBodyFeature
+    private sealed class TestSendFileFeature : IHttpResponseBodyFeature
     {
         public string Name { get; set; }
         public long Offset { get; set; }

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 ///
 /// We don't have or need a .NET reader for this format. We only read it from JS code.
 /// </summary>
-internal class RenderBatchWriter : IDisposable
+internal sealed class RenderBatchWriter : IDisposable
 {
     private readonly ArrayBuilder<string> _strings;
     private readonly Dictionary<string, int> _deduplicatedStringIndices;

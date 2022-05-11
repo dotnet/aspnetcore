@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR;
 
-internal class StreamTracker
+internal sealed class StreamTracker
 {
     private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals(nameof(BuildStream)));
     private readonly object[] _streamConverterArgs;
@@ -95,7 +95,7 @@ internal class StreamTracker
         void TryComplete(Exception? ex);
     }
 
-    private class ChannelConverter<T> : IStreamConverter
+    private sealed class ChannelConverter<T> : IStreamConverter
     {
         private readonly Channel<T?> _channel;
 

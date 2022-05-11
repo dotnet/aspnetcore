@@ -127,7 +127,7 @@ public class KnownRouteValueConstraint : IRouteConstraint
         return valuesCollection.Items;
     }
 
-    private class RouteValuesCollection
+    private sealed class RouteValuesCollection
     {
         public RouteValuesCollection(int version, string[] items)
         {

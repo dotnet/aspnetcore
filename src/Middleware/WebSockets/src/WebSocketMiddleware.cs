@@ -88,7 +88,7 @@ public partial class WebSocketMiddleware
         return _next(context);
     }
 
-    private class UpgradeHandshake : IHttpWebSocketFeature
+    private sealed class UpgradeHandshake : IHttpWebSocketFeature
     {
         private readonly HttpContext _context;
         private readonly IHttpUpgradeFeature _upgradeFeature;

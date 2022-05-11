@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
-internal class DefaultClientRequestParametersProvider : IClientRequestParametersProvider
+internal sealed class DefaultClientRequestParametersProvider : IClientRequestParametersProvider
 {
     public DefaultClientRequestParametersProvider(
         IAbsoluteUrlFactory urlFactory,

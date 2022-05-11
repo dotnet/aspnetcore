@@ -343,7 +343,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         }
     }
 
-    private class HostMetadataEndpointComparer : EndpointMetadataComparer<IHostMetadata>
+    private sealed class HostMetadataEndpointComparer : EndpointMetadataComparer<IHostMetadata>
     {
         protected override int CompareMetadata(IHostMetadata? x, IHostMetadata? y)
         {
@@ -354,7 +354,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
         }
     }
 
-    private class HostPolicyJumpTable : PolicyJumpTable
+    private sealed class HostPolicyJumpTable : PolicyJumpTable
     {
         private readonly (EdgeKey host, int destination)[] _destinations;
         private readonly int _exitDestination;

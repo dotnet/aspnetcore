@@ -18,7 +18,7 @@ public class TypedClientBuilderBenchmark
 
     public interface ITestClient { }
 
-    private class DummyProxy : IClientProxy
+    private sealed class DummyProxy : IClientProxy
     {
         public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {

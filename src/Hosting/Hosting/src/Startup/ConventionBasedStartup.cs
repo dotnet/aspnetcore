@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class ConventionBasedStartup : IStartup
+internal sealed class ConventionBasedStartup : IStartup
 {
     private readonly StartupMethods _methods;
 

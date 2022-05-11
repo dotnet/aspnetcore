@@ -956,7 +956,7 @@ public class Program
 
     static void Generate_ProvidesMetadataResultClass(StreamWriter writer, int typeArgNumber)
     {
-        //private class ProvidesMetadataResult1 : IResult, IEndpointMetadataProvider
+        //private sealed class ProvidesMetadataResult1 : IResult, IEndpointMetadataProvider
         //{
         //    public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
 

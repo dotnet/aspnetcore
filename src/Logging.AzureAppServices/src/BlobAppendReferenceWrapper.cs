@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
 /// <inheritdoc />
-internal class BlobAppendReferenceWrapper : ICloudAppendBlob
+internal sealed class BlobAppendReferenceWrapper : ICloudAppendBlob
 {
     private readonly Uri _fullUri;
     private readonly HttpClient _client;

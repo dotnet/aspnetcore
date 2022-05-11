@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Rewrite.UrlMatches;
 
 namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-internal class UrlRewriteFileParser
+internal sealed class UrlRewriteFileParser
 {
     private InputParser _inputParser = default!;
 

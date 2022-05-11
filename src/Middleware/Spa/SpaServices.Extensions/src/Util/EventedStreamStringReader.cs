@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.NodeServices.Util;
 /// Captures the completed-line notifications from a <see cref="EventedStreamReader"/>,
 /// combining the data into a single <see cref="string"/>.
 /// </summary>
-internal class EventedStreamStringReader : IDisposable
+internal sealed class EventedStreamStringReader : IDisposable
 {
     private readonly EventedStreamReader _eventedStreamReader;
     private bool _isDisposed;

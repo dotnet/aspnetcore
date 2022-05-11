@@ -107,7 +107,7 @@ public class AuthenticationBuilder
         => AddSchemeHelper<PolicySchemeOptions, PolicySchemeHandler>(authenticationScheme, displayName, configureOptions);
 
     // Used to ensure that there's always a default sign in scheme that's not itself
-    private class EnsureSignInScheme<TOptions> : IPostConfigureOptions<TOptions> where TOptions : RemoteAuthenticationOptions
+    private sealed class EnsureSignInScheme<TOptions> : IPostConfigureOptions<TOptions> where TOptions : RemoteAuthenticationOptions
     {
         private readonly AuthenticationOptions _authOptions;
 
