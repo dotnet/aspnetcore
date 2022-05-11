@@ -39,6 +39,7 @@
       "src\\Servers\\IIS\\IISIntegration\\src\\Microsoft.AspNetCore.Server.IISIntegration.csproj",
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\SignalR\\clients\\csharp\\Client.Core\\src\\Microsoft.AspNetCore.SignalR.Client.Core.csproj",
       "src\\SignalR\\clients\\csharp\\Client.SourceGenerator\\src\\Microsoft.AspNetCore.SignalR.Client.SourceGenerator.csproj",

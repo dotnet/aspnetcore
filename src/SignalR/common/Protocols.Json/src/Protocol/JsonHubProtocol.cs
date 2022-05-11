@@ -198,7 +198,7 @@ public sealed class JsonHubProtocol : IHubProtocol
 
                             if (!reader.HasValueSequence)
                             {
-                                target = binder.GetTarget(reader.ValueSpan) ?? Encoding.UTF8.GetString(reader.ValueSpan);
+                                target = binder.GetTarget(reader.ValueSpan) ?? reader.GetString();
                             }
                             else
                             {
