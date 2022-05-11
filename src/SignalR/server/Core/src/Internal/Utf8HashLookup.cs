@@ -16,8 +16,6 @@ internal sealed class Utf8HashLookup
     private Slot[] _slots;
     private int _count;
 
-    private const int HashCodeMask = 0x7fffffff;
-
     internal Utf8HashLookup()
     {
         _buckets = new int[7];
@@ -26,7 +24,8 @@ internal sealed class Utf8HashLookup
 
     internal void Add(string value)
     {
-        var hashCode = GetKeyHashCode(value.AsSpan());
+        var key = Encoding.UTF8.GetBytes(value);
+        var hashCode = GetKeyHashCode(key);
 
         if (_count == _slots.Length)
         {
@@ -38,38 +37,19 @@ internal sealed class Utf8HashLookup
 
         int bucket = hashCode % _buckets.Length;
         _slots[index].hashCode = hashCode;
+        _slots[index].key = key;
         _slots[index].value = value;
         _slots[index].next = _buckets[bucket] - 1;
         _buckets[bucket] = index + 1;
     }
 
-    internal bool TryGetValue(ReadOnlySpan<byte> utf8, [MaybeNullWhen(false), AllowNull] out string value)
-    {
-        const int StackAllocThreshold = 128;
-
-        // Transcode to utf16 for comparison
-        char[]? pooled = null;
-        var count = Encoding.UTF8.GetCharCount(utf8);
-        var chars = count <= StackAllocThreshold ?
-            stackalloc char[StackAllocThreshold] :
-            (pooled = ArrayPool<char>.Shared.Rent(count));
-        var encoded = Encoding.UTF8.GetChars(utf8, chars);
-        var hasValue = TryGetValue(chars[..encoded], out value);
-        if (pooled is not null)
-        {
-            ArrayPool<char>.Shared.Return(pooled);
-        }
-
-        return hasValue;
-    }
-
-    private bool TryGetValue(ReadOnlySpan<char> key, [MaybeNullWhen(false), AllowNull] out string value)
+    internal bool TryGetValue(ReadOnlySpan<byte> key, [MaybeNullWhen(false), AllowNull] out string value)
     {
         var hashCode = GetKeyHashCode(key);
 
         for (var i = _buckets[hashCode % _buckets.Length] - 1; i >= 0; i = _slots[i].next)
         {
-            if (_slots[i].hashCode == hashCode && key.Equals(_slots[i].value, StringComparison.OrdinalIgnoreCase))
+            if (_slots[i].hashCode == hashCode && key.SequenceEqual(_slots[i].key.Span))
             {
                 value = _slots[i].value;
                 return true;
@@ -80,9 +60,11 @@ internal sealed class Utf8HashLookup
         return false;
     }
 
-    private static int GetKeyHashCode(ReadOnlySpan<char> key)
+    private static int GetKeyHashCode(ReadOnlySpan<byte> key)
     {
-        return HashCodeMask & string.GetHashCode(key, StringComparison.OrdinalIgnoreCase);
+        var hashCode = new HashCode();
+        hashCode.AddBytes(key);
+        return hashCode.ToHashCode();
     }
 
     private void Resize()
@@ -105,6 +87,7 @@ internal sealed class Utf8HashLookup
     {
         internal int hashCode;
         internal int next;
+        internal Memory<byte> key;
         internal string value;
     }
 }
