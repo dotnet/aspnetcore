@@ -101,6 +101,7 @@ public class KnownHeaders
         };
         var requestHeadersExistence = new[]
         {
+            HeaderNames.Cookie,
             HeaderNames.Connection,
             HeaderNames.TransferEncoding,
         };
@@ -1331,7 +1332,7 @@ $@"        private void Clear(long bitsToClear)
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public void MergeCookies()
         {{
-            if ((_bits & 0x20000L) != 0 && _headers._Cookie.Count > 1)
+            if (HasCookie && _headers._Cookie.Count > 1)
             {{
                 _headers._Cookie = string.Join(""; "", _headers._Cookie.ToArray());
             }}

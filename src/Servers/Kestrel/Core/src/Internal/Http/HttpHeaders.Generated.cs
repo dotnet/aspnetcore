@@ -383,6 +383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private HeaderReferences _headers;
 
         public bool HasConnection => (_bits & 0x2L) != 0;
+        public bool HasCookie => (_bits & 0x20000L) != 0;
         public bool HasTransferEncoding => (_bits & 0x20000000000L) != 0;
 
         public int HostCount => _headers._Host.Count;
@@ -7928,7 +7929,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public void MergeCookies()
         {
-            if ((_bits & 0x20000L) != 0 && _headers._Cookie.Count > 1)
+            if (HasCookie && _headers._Cookie.Count > 1)
             {
                 _headers._Cookie = string.Join("; ", _headers._Cookie.ToArray());
             }
