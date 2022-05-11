@@ -53,6 +53,7 @@ public class ApiBehaviorApplicationModelProviderTest
         var actionModel = new ActionModel(method, Array.Empty<object>())
         {
             Controller = controllerModel,
+            Selectors = { new SelectorModel { AttributeRouteModel = new AttributeRouteModel() } },
         };
         controllerModel.Actions.Add(actionModel);
 
@@ -77,6 +78,8 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.NotEmpty(actionModel.Filters.OfType<ModelStateInvalidFilterFactory>());
         Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
         Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
+        Assert.NotEmpty(actionModel.Selectors);
+        Assert.Empty(actionModel.Selectors[0].EndpointMetadata);
     }
 
     [Fact]
@@ -93,6 +96,7 @@ public class ApiBehaviorApplicationModelProviderTest
         var actionModel = new ActionModel(method, Array.Empty<object>())
         {
             Controller = controllerModel,
+            Selectors = { new SelectorModel { AttributeRouteModel = new AttributeRouteModel() } },
         };
         controllerModel.Actions.Add(actionModel);
 
@@ -117,6 +121,8 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.NotEmpty(actionModel.Filters.OfType<ModelStateInvalidFilterFactory>());
         Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
         Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
+        Assert.NotEmpty(actionModel.Selectors);
+        Assert.Empty(actionModel.Selectors[0].EndpointMetadata);
     }
 
     [Fact]
@@ -129,6 +135,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.Collection(
             provider.ActionModelConventions,
             c => Assert.IsType<ApiVisibilityConvention>(c),
+            c => Assert.IsType<EndpointMetadataConvention>(c),
             c => Assert.IsType<ClientErrorResultFilterConvention>(c),
             c => Assert.IsType<InvalidModelStateFilterConvention>(c),
             c => Assert.IsType<ConsumesConstraintForFormFileParameterConvention>(c),

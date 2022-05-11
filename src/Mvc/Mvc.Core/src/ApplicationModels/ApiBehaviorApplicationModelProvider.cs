@@ -23,6 +23,7 @@ internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelPro
         ActionModelConventions = new List<IActionModelConvention>()
         {
             new ApiVisibilityConvention(),
+            new EndpointMetadataConvention(serviceProvider)
         };
 
         if (!options.SuppressMapClientErrors)
@@ -52,8 +53,6 @@ internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelPro
                 new InferParameterBindingInfoConvention(modelMetadataProvider, serviceProviderIsService);
             ActionModelConventions.Add(convention);
         }
-
-        ActionModelConventions.Add(new EndpointMetadataConvention(serviceProvider));
     }
 
     /// <remarks>
