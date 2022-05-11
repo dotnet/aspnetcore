@@ -113,12 +113,19 @@ public class MvcTemplateTest : LoggedTest
     }
 
     [ConditionalTheory]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
+    [InlineData(false)]
+    [InlineData(true)]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
-    public async Task MvcTemplate_IndividualAuth(bool useLocalDB, bool useProgramMain)
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
+    public Task MvcTemplate_IndividualAuth_LocalDb(bool useProgramMain) => MvcTemplate_IndividualAuth_Core(useLocalDB: true, useProgramMain);
+
+    [ConditionalTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
+    public Task MvcTemplate_IndividualAuth(bool useProgramMain) => MvcTemplate_IndividualAuth_Core(useLocalDB: false, useProgramMain);
+
+    private async Task MvcTemplate_IndividualAuth_Core(bool useLocalDB, bool useProgramMain)
     {
         var project = await ProjectFactory.CreateProject(Output);
 

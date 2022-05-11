@@ -107,12 +107,19 @@ public class RazorPagesTemplateTest : LoggedTest
     }
 
     [ConditionalTheory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB, bool useProgramMain)
+    [InlineData(false)]
+    [InlineData(true)]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
+    public Task RazorPagesTemplate_IndividualAuth_LocalDb(bool useProgramMain) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: true, useProgramMain);
+
+    [ConditionalTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
+    public Task RazorPagesTemplate_IndividualAuth(bool useProgramMain) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: false, useProgramMain);
+
+    private async Task RazorPagesTemplate_IndividualAuth_Core(bool useLocalDB, bool useProgramMain)
     {
         var project = await ProjectFactory.CreateProject(Output);
 
