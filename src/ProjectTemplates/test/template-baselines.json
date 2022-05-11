@@ -1569,6 +1569,7 @@
         "ClientApp/src/custom.css",
         "ClientApp/src/App.js",
         "ClientApp/src/App.test.js",
+        "ClientApp/src/AppRoutes.js",
         "ClientApp/src/index.js",
         "ClientApp/src/reportWebVitals.js",
         "ClientApp/src/serviceWorkerRegistration.js",
