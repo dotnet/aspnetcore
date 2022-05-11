@@ -180,6 +180,7 @@ public class FormFeature : IFormFeature
             else if (HasMultipartFormContentType(contentType))
             {
                 var formAccumulator = new KeyValueAccumulator();
+                var sectionCount = 0;
 
                 var boundary = GetBoundary(contentType, _options.MultipartBoundaryLengthLimit);
                 var multipartReader = new MultipartReader(boundary, _request.Body)
@@ -191,6 +192,11 @@ public class FormFeature : IFormFeature
                 var section = await multipartReader.ReadNextSectionAsync(cancellationToken);
                 while (section != null)
                 {
+                    sectionCount++;
+                    if (sectionCount > _options.ValueCountLimit)
+                    {
+                        throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
+                    }
                     // Parse the content disposition here and pass it further to avoid reparsings
                     if (!ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition))
                     {
@@ -229,10 +235,6 @@ public class FormFeature : IFormFeature
                         {
                             files = new FormFileCollection();
                         }
-                        if (files.Count >= _options.ValueCountLimit)
-                        {
-                            throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
-                        }
                         files.Add(file);
                     }
                     else if (contentDisposition.IsFormDisposition())
@@ -248,14 +250,10 @@ public class FormFeature : IFormFeature
                         var value = await formDataSection.GetValueAsync();
 
                         formAccumulator.Append(key, value);
-                        if (formAccumulator.ValueCount > _options.ValueCountLimit)
-                        {
-                            throw new InvalidDataException($"Form value count limit {_options.ValueCountLimit} exceeded.");
-                        }
                     }
                     else
                     {
-                        System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + section.ContentDisposition);
+                        // Ignore form sections with invalid content disposition
                     }
 
                     section = await multipartReader.ReadNextSectionAsync(cancellationToken);
