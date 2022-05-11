@@ -38,7 +38,6 @@ internal sealed class Utf8HashLookup
 
         int bucket = hashCode % buckets.Length;
         slots[index].hashCode = hashCode;
-        slots[index].key = value;
         slots[index].value = value;
         slots[index].next = buckets[bucket] - 1;
         buckets[bucket] = index + 1;
@@ -70,7 +69,7 @@ internal sealed class Utf8HashLookup
 
         for (var i = buckets[hashCode % buckets.Length] - 1; i >= 0; i = slots[i].next)
         {
-            if (slots[i].hashCode == hashCode && key.Equals(slots[i].key, StringComparison.OrdinalIgnoreCase))
+            if (slots[i].hashCode == hashCode && key.Equals(slots[i].value, StringComparison.OrdinalIgnoreCase))
             {
                 value = slots[i].value;
                 return true;
@@ -106,7 +105,6 @@ internal sealed class Utf8HashLookup
     {
         internal int hashCode;
         internal int next;
-        internal string key;
         internal string value;
     }
 }
