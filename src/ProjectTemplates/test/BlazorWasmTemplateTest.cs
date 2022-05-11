@@ -285,7 +285,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         public string[] Arguments { get; }
     }
 
-    [Theory]
+    [ConditionalTheory]
     [SkipOnHelix("TODO: Put issue URL in here if this fixes it!", Queues = HelixConstants.DebianArm64)]
     [MemberData(nameof(TemplateData))]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)

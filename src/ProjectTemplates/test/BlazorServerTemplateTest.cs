@@ -30,16 +30,15 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     [Fact]
     public Task BlazorServerTemplateWorks_ProgamMainNoAuth() => CreateBuildPublishAsync(args: new[] { ArgConstants.UseProgramMain });
 
-    [Theory]
+    [ConditionalTheory]
     [InlineData("Individual", null)]
     [InlineData("Individual", new string[] { ArgConstants.UseProgramMain })]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
     public Task BlazorServerTemplateWorks_IndividualAuth(string auth, string[] args) => CreateBuildPublishAsync(auth, args: args);
 
-    [Theory]
+    [ConditionalTheory]
     [InlineData("Individual", new string[] { ArgConstants.UseLocalDb })]
     [InlineData("Individual", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseLocalDb })]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
     public Task BlazorServerTemplateWorks_IndividualAuth_LocalDb(string auth, string[] args) => CreateBuildPublishAsync(auth, args: args);
 
