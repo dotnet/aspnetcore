@@ -35,10 +35,10 @@ public interface IInvocationBinder
 
 #if NETCOREAPP
     /// <summary>
-    /// Gets the <see cref="string"/> for the target byte.
+    /// Gets the <see cref="string"/> representation for the target from bytes.
     /// </summary>
-    /// <param name="utf8Bytes">The target name as a utf8 sequence</param>
-    /// <returns>A string that represents the target.</returns>
+    /// <param name="utf8Bytes">The target name as a utf8 sequence.</param>
+    /// <returns>A string that represents the target or null if the target string couldn't be determined.</returns>
     string? GetTarget(ReadOnlySpan<byte> utf8Bytes) => null;
 #endif
 }
