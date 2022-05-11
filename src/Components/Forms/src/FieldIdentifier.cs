@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
-/// Uniquely identifies a single field that can be edited. This may correspond to a property on a
+/// Uniquely identifies a single field that can be edited. This may correspond to a property or indexer on a
 /// model object, or can be any other named value.
 /// </summary>
 public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
@@ -15,7 +15,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// <summary>
     /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
     /// </summary>
-    /// <param name="accessor">An expression that identifies an object member.</param>
+    /// <param name="accessor">An expression that identifies an object member or indexer.</param>
     /// <typeparam name="TField">The field <see cref="Type"/>.</typeparam>
     public static FieldIdentifier Create<TField>(Expression<Func<TField>> accessor)
     {
@@ -100,42 +100,69 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
             accessorBody = unaryExpression.Operand;
         }
 
-        if (!(accessorBody is MemberExpression memberExpression))
+        if (accessorBody is MemberExpression memberExpression)
         {
-            throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
-        }
+            // Identify the field name. We don't mind whether it's a property or field, or even something else.
+            fieldName = memberExpression.Member.Name;
 
-        // Identify the field name. We don't mind whether it's a property or field, or even something else.
-        fieldName = memberExpression.Member.Name;
-
-        // Get a reference to the model object
-        // i.e., given a value like "(something).MemberName", determine the runtime value of "(something)",
-        if (memberExpression.Expression is ConstantExpression constantExpression)
-        {
-            if (constantExpression.Value is null)
+            // Get a reference to the model object
+            // i.e., given a value like "(something).MemberName", determine the runtime value of "(something)",
+            if (memberExpression.Expression is ConstantExpression constantExpression)
+            {
+                if (constantExpression.Value is null)
+                {
+                    throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                }
+                model = constantExpression.Value;
+            }
+            else if (memberExpression.Expression != null)
+            {
+                // It would be great to cache this somehow, but it's unclear there's a reasonable way to do
+                // so, given that it embeds captured values such as "this". We could consider special-casing
+                // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
+                // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
+                var modelLambda = Expression.Lambda(memberExpression.Expression);
+                var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
+                var result = modelLambdaCompiled();
+                if (result is null)
+                {
+                    throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                }
+                model = result;
+            }
+            else
             {
                 throw new ArgumentException("The provided expression must evaluate to a non-null value.");
             }
-            model = constantExpression.Value;
         }
-        else if (memberExpression.Expression != null)
+        else if (accessorBody is MethodCallExpression methodCallExpression
+            && methodCallExpression.Method.IsSpecialName
+            && methodCallExpression.Method.Name == "get_Item")
         {
-            // It would be great to cache this somehow, but it's unclear there's a reasonable way to do
-            // so, given that it embeds captured values such as "this". We could consider special-casing
-            // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
-            // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
-            var modelLambda = Expression.Lambda(memberExpression.Expression);
-            var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
-            var result = modelLambdaCompiled();
-            if (result is null)
+            // Field name will be the index value, enclosed in brackets
+            fieldName = $"[{methodCallExpression.Arguments[0]}]";
+
+            // Get a reference to the model object
+            // i.e., given a value like "(something)[1]", determine the runtime value of "(something)",
+            if (methodCallExpression.Object != null)
+            {
+                var modelLambda = Expression.Lambda(methodCallExpression.Object);
+                var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
+                var result = modelLambdaCompiled();
+                if (result is null)
+                {
+                    throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                }
+                model = result;
+            }
+            else
             {
                 throw new ArgumentException("The provided expression must evaluate to a non-null value.");
             }
-            model = result;
         }
         else
         {
-            throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
+            throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) or indexers of an object.");
         }
     }
 }

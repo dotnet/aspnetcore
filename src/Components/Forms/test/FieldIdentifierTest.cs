@@ -142,7 +142,7 @@ public class FieldIdentifierTest
     {
         var ex = Assert.Throws<ArgumentException>(() =>
             FieldIdentifier.Create(() => new TestModel()));
-        Assert.Equal($"The provided expression contains a NewExpression which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.", ex.Message);
+        Assert.Equal($"The provided expression contains a NewExpression which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) or indexers of an object.", ex.Message);
     }
 
     [Fact]
@@ -184,6 +184,15 @@ public class FieldIdentifierTest
     }
 
     [Fact]
+    public void CanCreateFromExpression_MemberWithIndexedCollectionEntry()
+    {
+        var model = new TestModel { IndexProperty = new() { false, true } };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.IndexProperty[1]);
+        Assert.Same(model.IndexProperty, fieldIdentifier.Model);
+        Assert.Equal("[1]", fieldIdentifier.FieldName);
+    }
+
+    [Fact]
     public void CanCreateFromExpression_MemberOfIndexedCollectionEntry()
     {
         var models = new List<TestModel>() { null, new TestModel() };
@@ -208,6 +217,8 @@ public class FieldIdentifierTest
         public string StringProperty { get; set; }
 
         public int IntProperty { get; set; }
+
+        public List<bool> IndexProperty { get; set; }
 
 #pragma warning disable 649
         public string StringField;
