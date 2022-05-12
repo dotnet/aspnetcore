@@ -28,6 +28,14 @@ using Microsoft.Win32;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
+//internal sealed class KnownTypeActivator : IActivator
+//{
+//    public object CreateInstance(Type expectedBaseType, string implementationTypeName)
+//    {
+//        throw new NotImplementedException();
+//    }
+//}
+
 /// <summary>
 /// A key manager backed by an <see cref="IXmlRepository"/>.
 /// </summary>
@@ -154,7 +162,6 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     }
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public IReadOnlyCollection<IKey> GetAllKeys()
     {
         var allElements = KeyRepository.GetAllElements();
@@ -257,7 +264,6 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         return Interlocked.CompareExchange<CancellationTokenSource?>(ref _cacheExpirationTokenSource, null, null).Token;
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private KeyBase? ProcessKeyElement(XElement keyElement)
     {
         Debug.Assert(keyElement.Name == KeyElementName);
@@ -444,7 +450,6 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             encryptorFactories: _encryptorFactories);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     IAuthenticatedEncryptorDescriptor IInternalXmlKeyManager.DeserializeDescriptorFromKeyElement(XElement keyElement)
     {
         try
@@ -455,7 +460,8 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
 
             // Decrypt the descriptor element and pass it to the descriptor for consumption
             var unencryptedInputToDeserializer = descriptorElement.Elements().Single().DecryptElement(_activator);
-            var deserializerInstance = _activator.CreateInstance<IAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
+
+            var deserializerInstance = CreateDeserializer(descriptorDeserializerTypeName);
             var descriptorInstance = deserializerInstance.ImportFromXml(unencryptedInputToDeserializer);
 
             return descriptorInstance ?? CryptoUtil.Fail<IAuthenticatedEncryptorDescriptor>("ImportFromXml returned null.");
@@ -465,6 +471,34 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             WriteKeyDeserializationErrorToLog(ex, keyElement);
             throw;
         }
+    }
+
+    [UnconditionalSuppressMessage("Trimmer", "IL2057", Justification = "Type.GetType result is only useful with types that are referenced by DataProtection assembly.")]
+    private IAuthenticatedEncryptorDescriptorDeserializer CreateDeserializer(string descriptorDeserializerTypeName)
+    {
+        var resolvedTypeName = TypeForwardingActivator.TryForwardTypeName(descriptorDeserializerTypeName, out var forwardedTypeName)
+            ? forwardedTypeName
+            : descriptorDeserializerTypeName;
+        var type = Type.GetType(resolvedTypeName, throwOnError: false);
+
+        if (type == typeof(AuthenticatedEncryptorDescriptorDeserializer))
+        {
+            return _activator.CreateInstance<AuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
+        }
+        else if (type == typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer))
+        {
+            return _activator.CreateInstance<CngCbcAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
+        }
+        else if (type == typeof(CngGcmAuthenticatedEncryptorDescriptorDeserializer))
+        {
+            return _activator.CreateInstance<CngGcmAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
+        }
+        else if (type == typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer))
+        {
+            return _activator.CreateInstance<ManagedAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
+        }
+
+        return _activator.CreateInstance<IAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
     }
 
     void IInternalXmlKeyManager.RevokeSingleKey(Guid keyId, DateTimeOffset revocationDate, string? reason)
