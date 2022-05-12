@@ -1,25 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Buffers.Binary;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net.Http.HPack;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Http2HeadersEnumerator = Microsoft.AspNetCore.Server.Kestrel.Core.Tests.Http2HeadersEnumerator;
@@ -39,13 +31,13 @@ public abstract class Http2ConnectionBenchmarkBase
     private int _dataWritten;
     private Task _requestProcessingTask;
 
-    private Http2Frame _receiveHttpFrame = new();
-    private Http2Frame _sendHttpFrame = new();
+    private readonly Http2Frame _receiveHttpFrame = new();
+    private readonly Http2Frame _sendHttpFrame = new();
 
     protected abstract Task ProcessRequest(HttpContext httpContext);
 
     [Params(0, 1, 3)]
-    public int numCookies { get; set; }
+    public int NumCookies { get; set; }
 
     public virtual void GlobalSetup()
     {
@@ -61,15 +53,16 @@ public abstract class Http2ConnectionBenchmarkBase
         _httpRequestHeaders[HeaderNames.Scheme] = new StringValues("http");
         _httpRequestHeaders[HeaderNames.Authority] = new StringValues("localhost:80");
 
-        if (numCookies > 0) {
+        if (NumCookies > 0)
+        {
             var cookies = new StringValues("0=1");
-            for (int i = 1; i < numCookies; i++)
+            for (var index = 1; index < NumCookies; index++)
             {
-                cookies.Append($"{i}={i + 1}");
+                _ = cookies.Append($"{index}={index + 1}");
             }
             _httpRequestHeaders[HeaderNames.Cookie] = cookies;
         }
-        
+
         _headersBuffer = new byte[1024 * 16];
         _hpackEncoder = new DynamicHPackEncoder();
 
