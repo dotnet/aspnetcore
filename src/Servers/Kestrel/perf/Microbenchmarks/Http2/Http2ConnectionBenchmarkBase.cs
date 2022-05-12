@@ -56,7 +56,7 @@ public abstract class Http2ConnectionBenchmarkBase
         if (NumCookies > 0)
         {
             var cookies = new string[NumCookies];
-            for (var index = 1; index < NumCookies; index++)
+            for (var index = 0; index < NumCookies; index++)
             {
                 cookies[index] = $"{index}={index + 1}";
             }
