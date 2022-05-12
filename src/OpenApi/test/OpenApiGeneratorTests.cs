@@ -364,14 +364,14 @@ public class OpenApiOperationGeneratorTests
                 param =>
                 {
                     Assert.Equal("Foo", param.Name);
-                    Assert.Equal("number", param.Schema.Type);
+                    Assert.Equal("integer", param.Schema.Type);
                     Assert.Equal(ParameterLocation.Path, param.In);
                     Assert.True(param.Required);
                 },
                 param =>
                 {
                     Assert.Equal("Bar", param.Name);
-                    Assert.Equal("number", param.Schema.Type);
+                    Assert.Equal("integer", param.Schema.Type);
                     Assert.Equal(ParameterLocation.Query, param.In);
                     Assert.True(param.Required);
                 },
