@@ -226,7 +226,7 @@ public static partial class RequestDelegateFactory
         AddTypeProvidedMetadata(methodInfo,
             factoryContext.Metadata,
             factoryContext.ServiceProvider,
-            CollectionsMarshal.AsSpan(factoryContext.PropertiesAsParameter));
+            CollectionsMarshal.AsSpan(factoryContext.Parameters));
 
         // Add method attributes as metadata *after* any inferred metadata so that the attributes hava a higher specificity
         AddMethodAttributesAsMetadata(methodInfo, factoryContext.Metadata);
@@ -428,39 +428,31 @@ public static partial class RequestDelegateFactory
         return fallbackConstruction;
     }
 
-    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, Span<ParameterInfo> propertiesAsParameter)
+    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, ReadOnlySpan<ParameterInfo> parameters)
     {
         object?[]? invokeArgs = null;
 
-        static void AddMetadata(ReadOnlySpan<ParameterInfo> parameters, MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, object?[]? invokeArgs)
+        // Get metadata from parameter types
+        foreach (var parameter in parameters)
         {
-            foreach (var parameter in parameters)
+            if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
-                if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
-                {
-                    // Parameter type implements IEndpointParameterMetadataProvider
-                    var parameterContext = new EndpointParameterMetadataContext(parameter, metadata, services);
-                    invokeArgs ??= new object[1];
-                    invokeArgs[0] = parameterContext;
-                    PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
-                }
+                // Parameter type implements IEndpointParameterMetadataProvider
+                var parameterContext = new EndpointParameterMetadataContext(parameter, metadata, services);
+                invokeArgs ??= new object[1];
+                invokeArgs[0] = parameterContext;
+                PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
+            }
 
-                if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
-                {
-                    // Parameter type implements IEndpointMetadataProvider
-                    var context = new EndpointMetadataContext(methodInfo, metadata, services);
-                    invokeArgs ??= new object[1];
-                    invokeArgs[0] = context;
-                    PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
-                }
+            if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
+            {
+                // Parameter type implements IEndpointMetadataProvider
+                var context = new EndpointMetadataContext(methodInfo, metadata, services);
+                invokeArgs ??= new object[1];
+                invokeArgs[0] = context;
+                PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
             }
         }
-
-        // Get metadata from parameter types
-        AddMetadata(methodInfo.GetParameters(), methodInfo, metadata, services, invokeArgs);
-
-        // Get metadata from properties as parameter types
-        AddMetadata(propertiesAsParameter, methodInfo, metadata, services, invokeArgs);
 
         // Get metadata from return type
         var returnType = methodInfo.ReturnType;
@@ -514,6 +506,7 @@ public static partial class RequestDelegateFactory
         factoryContext.ArgumentTypes = new Type[parameters.Length];
         factoryContext.ArgumentExpressions = new Expression[parameters.Length];
         factoryContext.BoxedArgs = new Expression[parameters.Length];
+        factoryContext.Parameters = new List<ParameterInfo>(parameters);
 
         for (var i = 0; i < parameters.Length; i++)
         {
@@ -611,6 +604,16 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.ServiceAttribute);
             return BindParameterFromService(parameter, factoryContext);
         }
+        else if (parameterCustomAttributes.OfType<AsParametersAttribute>().Any())
+        {
+            if (parameter is PropertyAsParameterInfo)
+            {
+                throw new NotSupportedException(
+                    $"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters.");
+            }
+
+            return BindParameterFromProperties(parameter, factoryContext);
+        }
         else if (parameter.ParameterType == typeof(HttpContext))
         {
             return HttpContextExpr;
@@ -646,16 +649,6 @@ public static partial class RequestDelegateFactory
         else if (parameter.ParameterType == typeof(PipeReader))
         {
             return RequestPipeReaderExpr;
-        }
-        else if (parameter.CustomAttributes.Any(a => typeof(AsParametersAttribute).IsAssignableFrom(a.AttributeType)))
-        {
-            if (parameter is PropertyAsParameterInfo)
-            {
-                throw new NotSupportedException(
-                    $"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters.");
-            }
-
-            return BindParameterFromProperties(parameter, factoryContext);
         }
         else if (ParameterBindingMethodCache.HasBindAsyncMethod(parameter))
         {
@@ -1259,7 +1252,7 @@ public static partial class RequestDelegateFactory
                 var parameterInfo =
                     new PropertyAsParameterInfo(parameters[i].PropertyInfo, parameters[i].ParameterInfo, factoryContext.NullabilityContext);
                 constructorArguments[i] = CreateArgument(parameterInfo, factoryContext);
-                factoryContext.PropertiesAsParameter.Add(parameterInfo);
+                factoryContext.Parameters.Add(parameterInfo);
             }
 
             factoryContext.ParamCheckExpressions.Add(
@@ -1285,7 +1278,7 @@ public static partial class RequestDelegateFactory
                 {
                     var parameterInfo = new PropertyAsParameterInfo(properties[i], factoryContext.NullabilityContext);
                     bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));
-                    factoryContext.PropertiesAsParameter.Add(parameterInfo);
+                    factoryContext.Parameters.Add(parameterInfo);
                 }
             }
 
@@ -2093,7 +2086,7 @@ public static partial class RequestDelegateFactory
         public Expression[] BoxedArgs { get; set;  } = Array.Empty<Expression>();
         public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
 
-        public List<ParameterInfo> PropertiesAsParameter { get; } = new();
+        public List<ParameterInfo> Parameters { get; set; } = new();
     }
 
     private static class RequestDelegateFactoryConstants

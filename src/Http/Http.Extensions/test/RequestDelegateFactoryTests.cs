@@ -5901,6 +5901,29 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public void Create_CombinesPropertiesAsParameterMetadata_AndTopLevelParameter()
+    {
+        // Arrange
+        var @delegate = ([AsParameters] AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
+        var options = new RequestDelegateFactoryOptions
+        {
+            InitialEndpointMetadata = new List<object>
+            {
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
+            }
+        };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+        Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param1" });
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Property });
+        Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: nameof(AddsCustomParameterMetadata.Data) });
+    }
+
+    [Fact]
     public void Create_CombinesAllMetadata_InCorrectOrder()
     {
         // Arrange
@@ -6113,8 +6136,23 @@ public class RequestDelegateFactoryTests : LoggedTest
         public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
     }
 
+    private class AddsCustomParameterMetadataAsProperty : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
+    {
+        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        {
+            parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
+        }
+
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.Property });
+        }
+    }
+
     private class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
     {
+        public AddsCustomParameterMetadataAsProperty? Data { get; set; }
+
         public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
         {
             parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
@@ -6162,7 +6200,8 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         Caller,
         Parameter,
-        ReturnType
+        ReturnType,
+        Property
     }
 
     private class Todo : ITodo

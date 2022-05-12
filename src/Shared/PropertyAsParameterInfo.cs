@@ -74,7 +74,7 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
 
         for (var i = 0; i < parameters.Length; i++)
         {
-            if (parameters[i].CustomAttributes.Any(a => typeof(AsParametersAttribute).IsAssignableFrom(a.AttributeType)))
+            if (parameters[i].CustomAttributes.Any(a => a.AttributeType == typeof(AsParametersAttribute)))
             {
                 // Initialize the list with all parameter already processed
                 // to keep the same parameter ordering
