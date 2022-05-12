@@ -108,11 +108,8 @@ public class ServerStreamingTests : IntegrationTestBase
         // Assert 1
         Assert.Equal("Hello test 1!", result1.RootElement.GetProperty("message").GetString());
 
-        // Act 2
+        // Act & Assert 2
         tcs.SetResult();
-        var ex = await Assert.ThrowsAsync<IOException>(() => streamReader.ReadLineAsync());
-
-        // Assert 2
-        Assert.Equal("The application aborted the request.", ex.InnerException!.Message);
+        await Assert.ThrowsAsync<IOException>(() => streamReader.ReadLineAsync());
     }
 }
