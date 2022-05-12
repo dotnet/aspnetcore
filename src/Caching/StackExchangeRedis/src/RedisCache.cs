@@ -292,13 +292,22 @@ public class RedisCache : IDistributedCache, IDisposable
     {
         _ = _connection ?? throw new InvalidOperationException($"{nameof(_connection)} cannot be null.");
 
-        foreach (var endPoint in _connection.GetEndPoints())
+        try
         {
-            if (_connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
+            foreach (var endPoint in _connection.GetEndPoints())
             {
-                _setScript = SetScriptPreExtendedSetCommand;
-                return;
+                if (_connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
+                {
+                    _setScript = SetScriptPreExtendedSetCommand;
+                    return;
+                }
             }
+        }
+        catch (NotSupportedException)
+        {
+            // The GetServer call may not be supported with some configurations, in which
+            // case let's also fall back to using the older command.
+            _setScript = SetScriptPreExtendedSetCommand;
         }
     }
 
