@@ -31,6 +31,7 @@ public abstract class RequestServicesTestBase<TStartup> : IClassFixture<MvcTestF
     [InlineData("http://localhost/RequestScopedService/FromView")]
     [InlineData("http://localhost/RequestScopedService/FromViewComponent")]
     [InlineData("http://localhost/RequestScopedService/FromActionArgument")]
+    [InlineData("http://localhost/RequestScopedService/FromProperty")]
     public async Task RequestServices(string url)
     {
         for (var i = 0; i < 2; i++)

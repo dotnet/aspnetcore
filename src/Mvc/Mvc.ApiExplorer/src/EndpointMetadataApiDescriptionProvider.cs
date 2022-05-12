@@ -116,20 +116,18 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
 
         var hasBodyOrFormFileParameter = false;
 
-        foreach (var parameter in methodInfo.GetParameters())
+        foreach (var parameter in PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache))
         {
             var parameterDescription = CreateApiParameterDescription(parameter, routeEndpoint.RoutePattern, disableInferredBody);
 
-            if (parameterDescription is null)
+            if (parameterDescription is { })
             {
-                continue;
+                apiDescription.ParameterDescriptions.Add(parameterDescription);
+
+                hasBodyOrFormFileParameter |=
+                    parameterDescription.Source == BindingSource.Body ||
+                    parameterDescription.Source == BindingSource.FormFile;
             }
-
-            apiDescription.ParameterDescriptions.Add(parameterDescription);
-
-            hasBodyOrFormFileParameter |=
-                parameterDescription.Source == BindingSource.Body ||
-                parameterDescription.Source == BindingSource.FormFile;
         }
 
         // Get IAcceptsMetadata.

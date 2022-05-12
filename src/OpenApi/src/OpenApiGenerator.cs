@@ -250,7 +250,8 @@ internal sealed class OpenApiGenerator
         var hasFormOrBodyParameter = false;
         ParameterInfo? requestBodyParameter = null;
 
-        foreach (var parameter in methodInfo.GetParameters())
+        var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
+        foreach (var parameter in parameters)
         {
             var (bodyOrFormParameter, _) = GetOpenApiParameterLocation(parameter, pattern, false);
             hasFormOrBodyParameter |= bodyOrFormParameter;
@@ -348,7 +349,7 @@ internal sealed class OpenApiGenerator
 
     private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
     {
-        var parameters = methodInfo.GetParameters();
+        var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
         var openApiParameters = new List<OpenApiParameter>();
 
         foreach (var parameter in parameters)

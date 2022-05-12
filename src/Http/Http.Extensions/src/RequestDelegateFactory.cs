@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -222,7 +223,10 @@ public static partial class RequestDelegateFactory
         factoryContext.MethodCall = CreateMethodCall(methodInfo, targetExpression, arguments);
 
         // Add metadata provided by the delegate return type and parameter types next, this will be more specific than inferred metadata from above
-        AddTypeProvidedMetadata(methodInfo, factoryContext.Metadata, factoryContext.ServiceProvider);
+        AddTypeProvidedMetadata(methodInfo,
+            factoryContext.Metadata,
+            factoryContext.ServiceProvider,
+            CollectionsMarshal.AsSpan(factoryContext.Parameters));
 
         // Add method attributes as metadata *after* any inferred metadata so that the attributes hava a higher specificity
         AddMethodAttributesAsMetadata(methodInfo, factoryContext.Metadata);
@@ -424,12 +428,11 @@ public static partial class RequestDelegateFactory
         return fallbackConstruction;
     }
 
-    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services)
+    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, ReadOnlySpan<ParameterInfo> parameters)
     {
         object?[]? invokeArgs = null;
 
         // Get metadata from parameter types
-        var parameters = methodInfo.GetParameters();
         foreach (var parameter in parameters)
         {
             if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
@@ -503,10 +506,12 @@ public static partial class RequestDelegateFactory
         factoryContext.ArgumentTypes = new Type[parameters.Length];
         factoryContext.ArgumentExpressions = new Expression[parameters.Length];
         factoryContext.BoxedArgs = new Expression[parameters.Length];
+        factoryContext.Parameters = new List<ParameterInfo>(parameters);
 
         for (var i = 0; i < parameters.Length; i++)
         {
             args[i] = CreateArgument(parameters[i], factoryContext);
+
             // Register expressions containing the boxed and unboxed variants
             // of the route handler's arguments for use in RouteHandlerInvocationContext
             // construction and route handler invocation.
@@ -598,6 +603,16 @@ public static partial class RequestDelegateFactory
         {
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.ServiceAttribute);
             return BindParameterFromService(parameter, factoryContext);
+        }
+        else if (parameterCustomAttributes.OfType<AsParametersAttribute>().Any())
+        {
+            if (parameter is PropertyAsParameterInfo)
+            {
+                throw new NotSupportedException(
+                    $"Nested {nameof(AsParametersAttribute)} is not supported and should be used only for handler parameters.");
+            }
+
+            return BindParameterFromProperties(parameter, factoryContext);
         }
         else if (parameter.ParameterType == typeof(HttpContext))
         {
@@ -1221,6 +1236,68 @@ public static partial class RequestDelegateFactory
         return Expression.Convert(indexExpression, returnType ?? typeof(string));
     }
 
+    private static Expression BindParameterFromProperties(ParameterInfo parameter, FactoryContext factoryContext)
+    {
+        var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
+        var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameter.ParameterType);
+
+        if (constructor is not null && parameters is { Length: > 0 })
+        {
+            //  arg_local = new T(....)
+
+            var constructorArguments = new Expression[parameters.Length];
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameterInfo =
+                    new PropertyAsParameterInfo(parameters[i].PropertyInfo, parameters[i].ParameterInfo, factoryContext.NullabilityContext);
+                constructorArguments[i] = CreateArgument(parameterInfo, factoryContext);
+                factoryContext.Parameters.Add(parameterInfo);
+            }
+
+            factoryContext.ParamCheckExpressions.Add(
+                Expression.Assign(
+                    argumentExpression,
+                    Expression.New(constructor, constructorArguments)));
+        }
+        else
+        {
+            //  arg_local = new T()
+            //  {
+            //      arg_local.Property[0] = expression[0],
+            //      arg_local.Property[n] = expression[n],
+            //  }
+
+            var properties = parameter.ParameterType.GetProperties();
+            var bindings = new List<MemberBinding>(properties.Length);
+
+            for (var i = 0; i < properties.Length; i++)
+            {
+                // For parameterless ctor we will init only writable properties.
+                if (properties[i].CanWrite)
+                {
+                    var parameterInfo = new PropertyAsParameterInfo(properties[i], factoryContext.NullabilityContext);
+                    bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));
+                    factoryContext.Parameters.Add(parameterInfo);
+                }
+            }
+
+            var newExpression = constructor is null ?
+                Expression.New(parameter.ParameterType) :
+                Expression.New(constructor);
+
+            factoryContext.ParamCheckExpressions.Add(
+                Expression.Assign(
+                    argumentExpression,
+                    Expression.MemberInit(newExpression, bindings)));
+        }
+
+        factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.PropertyAsParameter);
+        factoryContext.ExtraLocals.Add(argumentExpression);
+
+        return argumentExpression;
+    }
+
     private static Expression BindParameterFromService(ParameterInfo parameter, FactoryContext factoryContext)
     {
         var isOptional = IsOptionalParameter(parameter, factoryContext);
@@ -1711,15 +1788,20 @@ public static partial class RequestDelegateFactory
 
     private static bool IsOptionalParameter(ParameterInfo parameter, FactoryContext factoryContext)
     {
+        if (parameter is PropertyAsParameterInfo argument)
+        {
+            return argument.IsOptional;
+        }
+
         // - Parameters representing value or reference types with a default value
         // under any nullability context are treated as optional.
         // - Value type parameters without a default value in an oblivious
         // nullability context are required.
         // - Reference type parameters without a default value in an oblivious
         // nullability context are optional.
-        var nullability = factoryContext.NullabilityContext.Create(parameter);
+        var nullabilityInfo = factoryContext.NullabilityContext.Create(parameter);
         return parameter.HasDefaultValue
-            || nullability.ReadState != NullabilityState.NotNull;
+            || nullabilityInfo.ReadState != NullabilityState.NotNull;
     }
 
     private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
@@ -2000,9 +2082,11 @@ public static partial class RequestDelegateFactory
         public List<Expression> ContextArgAccess { get; } = new();
         public Expression? MethodCall { get; set; }
         public Type[] ArgumentTypes { get; set; } = Array.Empty<Type>();
-        public Expression[] ArgumentExpressions { get; set;  } = Array.Empty<Expression>();
+        public Expression[] ArgumentExpressions { get; set; } = Array.Empty<Expression>();
         public Expression[] BoxedArgs { get; set;  } = Array.Empty<Expression>();
         public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
+
+        public List<ParameterInfo> Parameters { get; set; } = new();
     }
 
     private static class RequestDelegateFactoryConstants
@@ -2019,6 +2103,7 @@ public static partial class RequestDelegateFactory
         public const string BodyParameter = "Body (Inferred)";
         public const string RouteOrQueryStringParameter = "Route or Query String (Inferred)";
         public const string FormFileParameter = "Form File (Inferred)";
+        public const string PropertyAsParameter = "As Parameter (Attribute)";
     }
 
     private static partial class Log

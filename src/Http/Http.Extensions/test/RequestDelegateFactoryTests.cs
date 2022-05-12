@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -203,6 +204,30 @@ public class RequestDelegateFactoryTests : LoggedTest
         static void TestAction(HttpContext httpContext, [FromRoute] int value)
         {
             httpContext.Items.Add("input", value);
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(originalRouteParam, httpContext.Items["input"]);
+    }
+
+    private record ParameterListFromRoute(HttpContext HttpContext, int Value);
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromRouteParameterBased_FromParameterList()
+    {
+        const string paramName = "value";
+        const int originalRouteParam = 42;
+
+        static void TestAction([AsParameters] ParameterListFromRoute args)
+        {
+            args.HttpContext.Items.Add("input", args.Value);
         }
 
         var httpContext = CreateHttpContext();
@@ -1491,6 +1516,40 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(originalQueryParam, deserializedRouteParam);
     }
 
+    private record ParameterListFromQuery([FromQuery] int Value);
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromQueryParameter_FromParameterList()
+    {
+        // QueryCollection is case sensitve, since we now getting
+        // the parameter name from the Property/Record constructor
+        // we should match the case here
+        const string paramName = "Value";
+        const int originalQueryParam = 42;
+
+        int? deserializedRouteParam = null;
+
+        void TestAction([AsParameters] ParameterListFromQuery args)
+        {
+            deserializedRouteParam = args.Value;
+        }
+
+        var query = new QueryCollection(new Dictionary<string, StringValues>()
+        {
+            [paramName] = originalQueryParam.ToString(NumberFormatInfo.InvariantInfo)
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = query;
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(originalQueryParam, deserializedRouteParam);
+    }
+
     [Fact]
     public async Task RequestDelegatePopulatesFromHeaderParameterBasedOnParameterName()
     {
@@ -1515,6 +1574,36 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(originalHeaderParam, deserializedRouteParam);
     }
 
+    private record ParameterListFromHeader([FromHeader(Name = "X-Custom-Header")] int Value);
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromHeaderParameter_FromParameterList()
+    {
+        const string customHeaderName = "X-Custom-Header";
+        const int originalHeaderParam = 42;
+
+        int? deserializedRouteParam = null;
+
+        void TestAction([AsParameters] ParameterListFromHeader args)
+        {
+            deserializedRouteParam = args.Value;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers[customHeaderName] = originalHeaderParam.ToString(NumberFormatInfo.InvariantInfo);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(originalHeaderParam, deserializedRouteParam);
+    }
+
+    private record ParametersListWithImplictFromBody(HttpContext HttpContext, TodoStruct Todo);
+
+    private record ParametersListWithExplictFromBody(HttpContext HttpContext, [FromBody] Todo Todo);
+
     public static object[][] ImplicitFromBodyActions
     {
         get
@@ -1534,11 +1623,17 @@ public class RequestDelegateFactoryTests : LoggedTest
                 httpContext.Items.Add("body", todo);
             }
 
+            void TestImpliedFromBodyStruct_ParameterList([AsParameters] ParametersListWithImplictFromBody args)
+            {
+                args.HttpContext.Items.Add("body", args.Todo);
+            }
+
             return new[]
             {
                     new[] { (Action<HttpContext, Todo>)TestImpliedFromBody },
                     new[] { (Action<HttpContext, ITodo>)TestImpliedFromBodyInterface },
                     new object[] { (Action<HttpContext, TodoStruct>)TestImpliedFromBodyStruct },
+                    new object[] { (Action<ParametersListWithImplictFromBody>)TestImpliedFromBodyStruct_ParameterList },
                 };
         }
     }
@@ -1552,10 +1647,16 @@ public class RequestDelegateFactoryTests : LoggedTest
                 httpContext.Items.Add("body", todo);
             }
 
+            void TestExplicitFromBody_ParameterList([AsParameters] ParametersListWithExplictFromBody args)
+            {
+                args.HttpContext.Items.Add("body", args.Todo);
+            }
+
             return new[]
             {
                     new[] { (Action<HttpContext, Todo>)TestExplicitFromBody },
-                };
+                    new object[] { (Action<ParametersListWithExplictFromBody>)TestExplicitFromBody_ParameterList },
+            };
         }
     }
 
@@ -2055,6 +2156,122 @@ public class RequestDelegateFactoryTests : LoggedTest
             throw new NotImplementedException();
     }
 
+    public static object[][] BadArgumentListActions
+    {
+        get
+        {
+            void TestParameterListRecord([AsParameters] BadArgumentListRecord req) { }
+            void TestParameterListClass([AsParameters] BadArgumentListClass req) { }
+            void TestParameterListClassWithMutipleConstructors([AsParameters] BadArgumentListClassMultipleCtors req) { }
+            void TestParameterListAbstractClass([AsParameters] BadAbstractArgumentListClass req) { }
+            void TestParameterListNoPulicConstructorClass([AsParameters] BadNoPublicConstructorArgumentListClass req) { }
+
+            static string GetMultipleContructorsError(Type type)
+                => $"Only a single public parameterized constructor is allowed for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.";
+
+            static string GetAbstractClassError(Type type)
+                => $"The abstract type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}' is not supported.";
+
+            static string GetNoContructorsError(Type type)
+                => $"No public parameterless constructor found for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.";
+
+            static string GetInvalidConstructorError(Type type)
+                => $"The public parameterized constructor must contain only parameters that match the declared public properties for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.";
+
+            return new object[][]
+            {
+                    new object[] { (Action<BadArgumentListRecord>)TestParameterListRecord, GetMultipleContructorsError(typeof(BadArgumentListRecord)) },
+                    new object[] { (Action<BadArgumentListClass>)TestParameterListClass, GetInvalidConstructorError(typeof(BadArgumentListClass)) },
+                    new object[] { (Action<BadArgumentListClassMultipleCtors>)TestParameterListClassWithMutipleConstructors, GetMultipleContructorsError(typeof(BadArgumentListClassMultipleCtors))  },
+                    new object[] { (Action<BadAbstractArgumentListClass>)TestParameterListAbstractClass, GetAbstractClassError(typeof(BadAbstractArgumentListClass)) },
+                    new object[] { (Action<BadNoPublicConstructorArgumentListClass>)TestParameterListNoPulicConstructorClass, GetNoContructorsError(typeof(BadNoPublicConstructorArgumentListClass)) },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(BadArgumentListActions))]
+    public void BuildRequestDelegateThrowsInvalidOperationExceptionForInvalidParameterListConstructor(
+        Delegate @delegate,
+        string errorMessage)
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => RequestDelegateFactory.Create(@delegate));
+        Assert.Equal(errorMessage, exception.Message);
+    }
+
+    private record BadArgumentListRecord(int Foo)
+    {
+        public BadArgumentListRecord(int foo, int bar)
+            : this(foo)
+        {
+        }
+
+        public int Bar { get; set; }
+    }
+
+    private class BadNoPublicConstructorArgumentListClass
+    {
+        private BadNoPublicConstructorArgumentListClass()
+        { }
+
+        public int Foo { get; set; }
+    }
+
+    private abstract class BadAbstractArgumentListClass
+    {
+        public int Foo { get; set; }
+    }
+
+    private class BadArgumentListClass
+    {
+        public BadArgumentListClass(int foo, string name)
+        {
+        }
+
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+    }
+
+    private class BadArgumentListClassMultipleCtors
+    {
+        public BadArgumentListClassMultipleCtors(int foo)
+        {
+        }
+
+        public BadArgumentListClassMultipleCtors(int foo, int bar)
+        {
+        }
+
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+    }
+
+    private record NestedArgumentListRecord([AsParameters] object NestedParameterList);
+
+    private class ClassWithParametersConstructor
+    {
+        public ClassWithParametersConstructor([AsParameters] object nestedParameterList)
+        {
+            NestedParameterList = nestedParameterList;
+        }
+
+        public object NestedParameterList { get; set; }
+    }
+
+    [Fact]
+    public void BuildRequestDelegateThrowsNotSupportedExceptionForNestedParametersList()
+    {
+        void TestNestedParameterListRecordOnType([AsParameters] NestedArgumentListRecord req) { }
+        void TestNestedParameterListRecordOnArgument([AsParameters] ClassWithParametersConstructor req) { }
+
+        Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestNestedParameterListRecordOnType));
+        Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(TestNestedParameterListRecordOnArgument));
+    }
+
+    private record ParametersListWithImplictFromService(HttpContext HttpContext, IMyService MyService);
+
+    private record ParametersListWithExplictFromService(HttpContext HttpContext, [FromService] MyService MyService);
+
     public static object[][] ExplicitFromServiceActions
     {
         get
@@ -2062,6 +2279,11 @@ public class RequestDelegateFactoryTests : LoggedTest
             void TestExplicitFromService(HttpContext httpContext, [FromService] MyService myService)
             {
                 httpContext.Items.Add("service", myService);
+            }
+
+            void TestExplicitFromService_FromParameterList([AsParameters] ParametersListWithExplictFromService args)
+            {
+                args.HttpContext.Items.Add("service", args.MyService);
             }
 
             void TestExplicitFromIEnumerableService(HttpContext httpContext, [FromService] IEnumerable<MyService> myServices)
@@ -2077,6 +2299,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             return new object[][]
             {
                     new[] { (Action<HttpContext, MyService>)TestExplicitFromService },
+                    new object[] { (Action<ParametersListWithExplictFromService>)TestExplicitFromService_FromParameterList },
                     new[] { (Action<HttpContext, IEnumerable<MyService>>)TestExplicitFromIEnumerableService },
                     new[] { (Action<HttpContext, MyService, IEnumerable<MyService>>)TestExplicitMultipleFromService },
             };
@@ -2092,6 +2315,11 @@ public class RequestDelegateFactoryTests : LoggedTest
                 httpContext.Items.Add("service", myService);
             }
 
+            void TestImpliedFromService_FromParameterList([AsParameters] ParametersListWithImplictFromService args)
+            {
+                args.HttpContext.Items.Add("service", args.MyService);
+            }
+
             void TestImpliedIEnumerableFromService(HttpContext httpContext, IEnumerable<MyService> myServices)
             {
                 httpContext.Items.Add("service", myServices.Single());
@@ -2105,6 +2333,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             return new object[][]
             {
                     new[] { (Action<HttpContext, IMyService>)TestImpliedFromService },
+                    new object[] { (Action<ParametersListWithImplictFromService>)TestImpliedFromService_FromParameterList },
                     new[] { (Action<HttpContext, IEnumerable<MyService>>)TestImpliedIEnumerableFromService },
                     new[] { (Action<HttpContext, MyService>)TestImpliedFromServiceBasedOnContainer },
             };
@@ -2198,6 +2427,32 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(httpContext, httpContextArgument);
     }
 
+    private record ParametersListWithHttpContext(
+        HttpContext HttpContext,
+        ClaimsPrincipal User,
+        HttpRequest HttpRequest,
+        HttpResponse HttpResponse);
+
+    [Fact]
+    public async Task RequestDelegatePopulatesHttpContextParameterWithoutAttribute_FromParameterList()
+    {
+        HttpContext? httpContextArgument = null;
+
+        void TestAction([AsParameters] ParametersListWithHttpContext args)
+        {
+            httpContextArgument = args.HttpContext;
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Same(httpContext, httpContextArgument);
+    }
+
     [Fact]
     public async Task RequestDelegatePassHttpContextRequestAbortedAsCancellationToken()
     {
@@ -2244,6 +2499,27 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegatePassHttpContextUserAsClaimsPrincipal_FromParameterList()
+    {
+        ClaimsPrincipal? userArgument = null;
+
+        void TestAction([AsParameters] ParametersListWithHttpContext args)
+        {
+            userArgument = args.User;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.User = new ClaimsPrincipal();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.User, userArgument);
+    }
+
+    [Fact]
     public async Task RequestDelegatePassHttpContextRequestAsHttpRequest()
     {
         HttpRequest? httpRequestArgument = null;
@@ -2264,6 +2540,26 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegatePassHttpContextRequestAsHttpRequest_FromParameterList()
+    {
+        HttpRequest? httpRequestArgument = null;
+
+        void TestAction([AsParameters] ParametersListWithHttpContext args)
+        {
+            httpRequestArgument = args.HttpRequest;
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request, httpRequestArgument);
+    }
+
+    [Fact]
     public async Task RequestDelegatePassesHttpContextRresponseAsHttpResponse()
     {
         HttpResponse? httpResponseArgument = null;
@@ -2271,6 +2567,26 @@ public class RequestDelegateFactoryTests : LoggedTest
         void TestAction(HttpResponse httpResponse)
         {
             httpResponseArgument = httpResponse;
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Response, httpResponseArgument);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePassesHttpContextRresponseAsHttpResponse_FromParameterList()
+    {
+        HttpResponse? httpResponseArgument = null;
+
+        void TestAction([AsParameters] ParametersListWithHttpContext args)
+        {
+            httpResponseArgument = args.HttpResponse;
         }
 
         var httpContext = CreateHttpContext();
@@ -2778,7 +3094,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             var log = Assert.Single(logs);
             Assert.Equal(LogLevel.Debug, log.LogLevel);
             Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
-            var expectedType = paramName == "age" ? "int age" : "string name";
+            var expectedType = paramName == "age" ? "int age" : $"string name";
             Assert.Equal($@"Required parameter ""{expectedType}"" was not provided from route or query string.", log.Message);
         }
         else
@@ -2850,7 +3166,7 @@ public class RequestDelegateFactoryTests : LoggedTest
             var log = Assert.Single(logs);
             Assert.Equal(LogLevel.Debug, log.LogLevel);
             Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
-            var expectedType = paramName == "age" ? "int age" : "string name";
+            var expectedType = paramName == "age" ? "int age" : $"string name";
             Assert.Equal($@"Required parameter ""{expectedType}"" was not provided from query string.", log.Message);
         }
         else
@@ -4218,6 +4534,312 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, badHttpRequestException.StatusCode);
     }
 
+    private record struct ParameterListRecordStruct(HttpContext HttpContext, [FromRoute] int Value);
+
+    private record ParameterListRecordClass(HttpContext HttpContext, [FromRoute] int Value);
+
+    private record ParameterListRecordWithoutPositionalParameters
+    {
+        public HttpContext? HttpContext { get; set; }
+
+        [FromRoute]
+        public int Value { get; set; }
+    }
+
+    private struct ParameterListStruct
+    {
+        public HttpContext HttpContext { get; set; }
+
+        [FromRoute]
+        public int Value { get; set; }
+    }
+
+    private struct ParameterListMutableStruct
+    {
+        public ParameterListMutableStruct()
+        {
+            Value = -1;
+            HttpContext = default!;
+        }
+
+        public HttpContext HttpContext { get; set; }
+
+        [FromRoute]
+        public int Value { get; set; }
+    }
+
+    private class ParameterListStructWithParameterizedContructor
+    {
+        public ParameterListStructWithParameterizedContructor(HttpContext httpContext)
+        {
+            HttpContext = httpContext;
+            Value = 42;
+        }
+
+        public HttpContext HttpContext { get; set; }
+
+        public int Value { get; set; }
+    }
+
+    private struct ParameterListStructWithMultipleParameterizedContructor
+    {
+        public ParameterListStructWithMultipleParameterizedContructor(HttpContext httpContext)
+        {
+            HttpContext = httpContext;
+            Value = 10;
+        }
+
+        public ParameterListStructWithMultipleParameterizedContructor(HttpContext httpContext, [FromHeader(Name ="Value")] int value)
+        {
+            HttpContext = httpContext;
+            Value = value;
+        }
+
+        public HttpContext HttpContext { get; set; }
+
+        [FromRoute]
+        public int Value { get; set; }
+    }
+
+    private class ParameterListClass
+    {
+        public HttpContext? HttpContext { get; set; }
+
+        [FromRoute]
+        public int Value { get; set; }
+    }
+
+    private class ParameterListClassWithParameterizedContructor
+    {
+        public ParameterListClassWithParameterizedContructor(HttpContext httpContext)
+        {
+            HttpContext = httpContext;
+            Value = 42;
+        }
+
+        public HttpContext HttpContext { get; set; }
+
+        public int Value { get; set; }
+    }
+
+    public static object[][] FromParameterListActions
+    {
+        get
+        {
+            void TestParameterListRecordStruct([AsParameters] ParameterListRecordStruct args)
+            {
+                args.HttpContext.Items.Add("input", args.Value);
+            }
+
+            void TestParameterListRecordClass([AsParameters] ParameterListRecordClass args)
+            {
+                args.HttpContext.Items.Add("input", args.Value);
+            }
+
+            void TestParameterListRecordWithoutPositionalParameters([AsParameters] ParameterListRecordWithoutPositionalParameters args)
+            {
+                args.HttpContext!.Items.Add("input", args.Value);
+            }
+
+            void TestParameterListStruct([AsParameters] ParameterListStruct args)
+            {
+                args.HttpContext.Items.Add("input", args.Value);
+            }
+
+            void TestParameterListMutableStruct([AsParameters] ParameterListMutableStruct args)
+            {
+                args.HttpContext.Items.Add("input", args.Value);
+            }
+
+            void TestParameterListStructWithParameterizedContructor([AsParameters] ParameterListStructWithParameterizedContructor args)
+            {
+                args.HttpContext.Items.Add("input", args.Value);
+            }
+
+            void TestParameterListStructWithMultipleParameterizedContructor([AsParameters] ParameterListStructWithMultipleParameterizedContructor args)
+            {
+                args.HttpContext.Items.Add("input", args.Value);
+            }
+
+            void TestParameterListClass([AsParameters] ParameterListClass args)
+            {
+                args.HttpContext!.Items.Add("input", args.Value);
+            }
+
+            void TestParameterListClassWithParameterizedContructor([AsParameters] ParameterListClassWithParameterizedContructor args)
+            {
+                args.HttpContext.Items.Add("input", args.Value);
+            }
+
+            return new[]
+            {
+                new object[] { (Action<ParameterListRecordStruct>)TestParameterListRecordStruct },
+                new object[] { (Action<ParameterListRecordClass>)TestParameterListRecordClass },
+                new object[] { (Action<ParameterListRecordWithoutPositionalParameters>)TestParameterListRecordWithoutPositionalParameters },
+                new object[] { (Action<ParameterListStruct>)TestParameterListStruct },
+                new object[] { (Action<ParameterListMutableStruct>)TestParameterListMutableStruct },
+                new object[] { (Action<ParameterListStructWithParameterizedContructor>)TestParameterListStructWithParameterizedContructor },
+                new object[] { (Action<ParameterListStructWithMultipleParameterizedContructor>)TestParameterListStructWithMultipleParameterizedContructor },
+                new object[] { (Action<ParameterListClass>)TestParameterListClass },
+                new object[] { (Action<ParameterListClassWithParameterizedContructor>)TestParameterListClassWithParameterizedContructor },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(FromParameterListActions))]
+    public async Task RequestDelegatePopulatesFromParameterList(Delegate action)
+    {
+        const string paramName = "value";
+        const int originalRouteParam = 42;
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues[paramName] = originalRouteParam.ToString(NumberFormatInfo.InvariantInfo);
+
+        var factoryResult = RequestDelegateFactory.Create(action);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(originalRouteParam, httpContext.Items["input"]);
+    }
+
+    private record struct SampleParameterList(int Foo);
+    private record struct AdditionalSampleParameterList(int Bar);
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromMultipleParameterLists()
+    {
+        const int foo = 1;
+        const int bar = 2;
+
+        void TestAction(HttpContext context, [AsParameters] SampleParameterList args, [AsParameters] AdditionalSampleParameterList args2)
+        {
+            context.Items.Add("foo", args.Foo);
+            context.Items.Add("bar", args2.Bar);
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues[nameof(SampleParameterList.Foo)] = foo.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues[nameof(AdditionalSampleParameterList.Bar)] = bar.ToString(NumberFormatInfo.InvariantInfo);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(foo, httpContext.Items["foo"]);
+        Assert.Equal(bar, httpContext.Items["bar"]);
+    }
+
+    [Fact]
+    public void RequestDelegateThrowsWhenParameterNameConflicts()
+    {
+        void TestAction(HttpContext context, [AsParameters] SampleParameterList args, [AsParameters] SampleParameterList args2)
+        {
+            context.Items.Add("foo", args.Foo);
+        }
+        var httpContext = CreateHttpContext();
+
+        var exception = Assert.Throws<ArgumentException>(() => RequestDelegateFactory.Create(TestAction));
+        Assert.Contains("An item with the same key has already been added. Key: Foo", exception.Message);
+    }
+
+    private class ParameterListWithReadOnlyProperties
+    {
+        public ParameterListWithReadOnlyProperties()
+        {
+            ReadOnlyValue = 1;
+        }
+
+        public int Value { get; set; }
+
+        public int ConstantValue => 1;
+
+        public int ReadOnlyValue { get; }
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListAndSkipReadOnlyProperties()
+    {
+        const int routeParamValue = 42;
+        var expectedInput = new ParameterListWithReadOnlyProperties() { Value = routeParamValue };
+
+        void TestAction(HttpContext context, [AsParameters] ParameterListWithReadOnlyProperties args)
+        {
+            context.Items.Add("input", args);
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.Value)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.ConstantValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues[nameof(ParameterListWithReadOnlyProperties.ReadOnlyValue)] = routeParamValue.ToString(NumberFormatInfo.InvariantInfo);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var input = Assert.IsType<ParameterListWithReadOnlyProperties>(httpContext.Items["input"]);
+        Assert.Equal(expectedInput.Value, input.Value);
+        Assert.Equal(expectedInput.ConstantValue, input.ConstantValue);
+        Assert.Equal(expectedInput.ReadOnlyValue, input.ReadOnlyValue);
+    }
+
+    private record ParameterListRecordWitDefaultValue(HttpContext HttpContext, [FromRoute] int Value = 42);
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListRecordUsesDefaultValue()
+    {
+        const int expectedValue = 42;
+
+        void TestAction([AsParameters] ParameterListRecordWitDefaultValue args)
+        {
+            args.HttpContext.Items.Add("input", args.Value);
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(expectedValue, httpContext.Items["input"]);
+    }
+
+    private class ParameterListWitDefaultValue
+    {
+        public ParameterListWitDefaultValue(HttpContext httpContext, [FromRoute]int value = 42)
+        {
+            HttpContext = httpContext;
+            Value = value;
+        }
+
+        public HttpContext HttpContext { get; }
+        public int Value { get; }
+    }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListUsesDefaultValue()
+    {
+        const int expectedValue = 42;
+
+        void TestAction([AsParameters] ParameterListWitDefaultValue args)
+        {
+            args.HttpContext.Items.Add("input", args.Value);
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(expectedValue, httpContext.Items["input"]);
+    }
+
     [Fact]
     public async Task RequestDelegateFactory_InvokesFiltersButNotHandler_OnArgumentError()
     {
@@ -5279,6 +5901,29 @@ public class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public void Create_CombinesPropertiesAsParameterMetadata_AndTopLevelParameter()
+    {
+        // Arrange
+        var @delegate = ([AsParameters] AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
+        var options = new RequestDelegateFactoryOptions
+        {
+            InitialEndpointMetadata = new List<object>
+            {
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
+            }
+        };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+        Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param1" });
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Property });
+        Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: nameof(AddsCustomParameterMetadata.Data) });
+    }
+
+    [Fact]
     public void Create_CombinesAllMetadata_InCorrectOrder()
     {
         // Arrange
@@ -5491,8 +6136,23 @@ public class RequestDelegateFactoryTests : LoggedTest
         public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
     }
 
+    private class AddsCustomParameterMetadataAsProperty : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
+    {
+        public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
+        {
+            parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
+        }
+
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            context.EndpointMetadata?.Add(new CustomEndpointMetadata { Source = MetadataSource.Property });
+        }
+    }
+
     private class AddsCustomParameterMetadata : IEndpointParameterMetadataProvider, IEndpointMetadataProvider
     {
+        public AddsCustomParameterMetadataAsProperty? Data { get; set; }
+
         public static void PopulateMetadata(EndpointParameterMetadataContext parameterContext)
         {
             parameterContext.EndpointMetadata?.Add(new ParameterNameMetadata { Name = parameterContext.Parameter?.Name });
@@ -5540,7 +6200,8 @@ public class RequestDelegateFactoryTests : LoggedTest
     {
         Caller,
         Parameter,
-        ReturnType
+        ReturnType,
+        Property
     }
 
     private class Todo : ITodo
