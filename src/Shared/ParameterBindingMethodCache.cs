@@ -307,7 +307,7 @@ internal sealed class ParameterBindingMethodCache
                 if (!lookupTable.TryGetValue(key, out var property))
                 {
                     throw new InvalidOperationException(
-                        $"The public parameterized constructor must contains only parameters that match to the declared public properties for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.");
+                        $"The public parameterized constructor must contain only parameters that match the declared public properties for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.");
                 }
 
                 parametersWithPropertyInfo[i] = new ConstructorParameter(parameters[i], property);
