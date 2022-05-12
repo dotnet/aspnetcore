@@ -28,14 +28,6 @@ using Microsoft.Win32;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
-//internal sealed class KnownTypeActivator : IActivator
-//{
-//    public object CreateInstance(Type expectedBaseType, string implementationTypeName)
-//    {
-//        throw new NotImplementedException();
-//    }
-//}
-
 /// <summary>
 /// A key manager backed by an <see cref="IXmlRepository"/>.
 /// </summary>
