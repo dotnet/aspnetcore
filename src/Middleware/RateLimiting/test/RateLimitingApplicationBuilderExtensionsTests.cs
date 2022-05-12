@@ -28,9 +28,11 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
     public void UseRateLimiter_RespectsOptions()
     {
         // These are the options that should get used
-        var options = new RateLimiterOptions();
-        options.DefaultRejectionStatusCode = 429;
-        options.Limiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
+        var configureOptions = new Action<RateLimiterOptions>(opt =>
+        {
+            opt.DefaultRejectionStatusCode = 429;
+            opt.Limiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
+        });
 
         // These should not get used
         var services = new ServiceCollection();
@@ -44,7 +46,7 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
         var appBuilder = new ApplicationBuilder(serviceProvider);
 
         // Act
-        appBuilder.UseRateLimiter(options);
+        appBuilder.UseRateLimiter(configureOptions);
         var app = appBuilder.Build();
         var context = new DefaultHttpContext();
         app.Invoke(context);
