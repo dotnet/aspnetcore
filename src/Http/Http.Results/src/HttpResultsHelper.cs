@@ -16,6 +16,28 @@ internal static partial class HttpResultsHelper
     private const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
+    public static Task WriteResultAsJsonAsync(
+        HttpContext httpContext,
+        ILogger logger,
+        object? value,
+        Type valueType,
+        string? contentType = null,
+        JsonSerializerOptions? jsonSerializerOptions = null)
+    {
+        if (value is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        Log.WritingResultAsJson(logger, valueType.Name);
+
+        return httpContext.Response.WriteAsJsonAsync(
+            value,
+            options: jsonSerializerOptions,
+            type: valueType,
+            contentType: contentType);
+    }
+
     public static Task WriteResultAsJsonAsync<T>(
         HttpContext httpContext,
         ILogger logger,
