@@ -2176,7 +2176,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                 => $"No public parameterless constructor found for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.";
 
             static string GetInvalidConstructorError(Type type)
-                => $"The public parameterized constructor must contain only parameters that match to the declared public properties for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.";
+                => $"The public parameterized constructor must contain only parameters that match the declared public properties for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.";
 
             return new object[][]
             {

@@ -608,7 +608,7 @@ public class ParameterBindingMethodCacheTests
         var cache = new ParameterBindingMethodCache();
         var ex = Assert.Throws<InvalidOperationException>(() => cache.FindConstructor(type));
         Assert.Equal(
-            $"The public parameterized constructor must contain only parameters that match to the declared public properties for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.",
+            $"The public parameterized constructor must contain only parameters that match the declared public properties for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.",
             ex.Message);
     }
 
