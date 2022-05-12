@@ -209,62 +209,38 @@ public class Project : IDisposable
     {
         var args = $"--verbose --no-build migrations add {migrationName}";
 
-        // Only run one instance of 'dotnet new' at once, as a workaround for
-        // https://github.com/aspnet/templating/issues/63
-        //await DotNetNewLock.WaitAsync();
-        try
+        var command = DotNetMuxer.MuxerPathOrDefault();
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
         {
-            //Output.WriteLine("Acquired DotNetNewLock");
-            var command = DotNetMuxer.MuxerPathOrDefault();
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-            {
-                args = $"\"{DotNetEfFullPath}\" " + args;
-            }
-            else
-            {
-                command = "dotnet-ef";
-            }
+            args = $"\"{DotNetEfFullPath}\" " + args;
+        }
+        else
+        {
+            command = "dotnet-ef";
+        }
 
-            using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
-            await result.Exited;
-            return new ProcessResult(result);
-        }
-        finally
-        {
-            //DotNetNewLock.Release();
-            //Output.WriteLine("Released DotNetNewLock");
-        }
+        using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+        await result.Exited;
+        return new ProcessResult(result);
     }
 
     internal async Task<ProcessResult> RunDotNetEfUpdateDatabaseAsync()
     {
         var args = "--verbose --no-build database update";
 
-        // Only run one instance of 'dotnet new' at once, as a workaround for
-        // https://github.com/aspnet/templating/issues/63
-        //await DotNetNewLock.WaitAsync();
-        try
+        var command = DotNetMuxer.MuxerPathOrDefault();
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
         {
-            //Output.WriteLine("Acquired DotNetNewLock");
-            var command = DotNetMuxer.MuxerPathOrDefault();
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-            {
-                args = $"\"{DotNetEfFullPath}\" " + args;
-            }
-            else
-            {
-                command = "dotnet-ef";
-            }
+            args = $"\"{DotNetEfFullPath}\" " + args;
+        }
+        else
+        {
+            command = "dotnet-ef";
+        }
 
-            using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
-            await result.Exited;
-            return new ProcessResult(result);
-        }
-        finally
-        {
-            //DotNetNewLock.Release();
-            //Output.WriteLine("Released DotNetNewLock");
-        }
+        using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+        await result.Exited;
+        return new ProcessResult(result);
     }
 
     // If this fails, you should generate new migrations via migrations/updateMigrations.cmd
@@ -320,25 +296,15 @@ public class Project : IDisposable
 
     internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)
     {
-        //await DotNetNewLock.WaitAsync();
-        try
-        {
-            //Output.WriteLine("Acquired DotNetNewLock");
-            var result = ProcessEx.Run(
-                Output,
-                AppContext.BaseDirectory,
-                DotNetMuxer.MuxerPathOrDefault(),
-                arguments +
-                    $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
-                    $" -o {TemplateOutputDir}");
-            await result.Exited;
-            return result;
-        }
-        finally
-        {
-            //DotNetNewLock.Release();
-            //Output.WriteLine("Released DotNetNewLock");
-        }
+        var result = ProcessEx.Run(
+            Output,
+            AppContext.BaseDirectory,
+            DotNetMuxer.MuxerPathOrDefault(),
+            arguments +
+                $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
+                $" -o {TemplateOutputDir}");
+        await result.Exited;
+        return result;
     }
 
     public void Dispose()

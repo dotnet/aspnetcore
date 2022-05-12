@@ -53,24 +53,14 @@ internal static class TemplatePackageInstaller
 
     public static async Task EnsureTemplatingEngineInitializedAsync(ITestOutputHelper output)
     {
-        await ProcessLock.DotNetNewLock.WaitAsync();
-        try
+        if (!_haveReinstalledTemplatePackages)
         {
-            output.WriteLine("Acquired DotNetNewLock");
-            if (!_haveReinstalledTemplatePackages)
+            if (Directory.Exists(CustomHivePath))
             {
-                if (Directory.Exists(CustomHivePath))
-                {
-                    Directory.Delete(CustomHivePath, recursive: true);
-                }
-                await InstallTemplatePackages(output);
-                _haveReinstalledTemplatePackages = true;
+                Directory.Delete(CustomHivePath, recursive: true);
             }
-        }
-        finally
-        {
-            ProcessLock.DotNetNewLock.Release();
-            output.WriteLine("Released DotNetNewLock");
+            await InstallTemplatePackages(output);
+            _haveReinstalledTemplatePackages = true;
         }
     }
 
