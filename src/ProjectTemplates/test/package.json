@@ -11,7 +11,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "selenium-standalone": "^6.24.0"
+    "selenium-standalone": "^7.1.0"
   },
   "resolutions": {
     "minimist": ">=1.2.6"

@@ -51,7 +51,7 @@
 
     <PropertyGroup>
       <_PackageJsonLinesContent>@(_PackageJsonLines)</_PackageJsonLinesContent>
-      <_PackageJsonSeleniumPackage>&quot;selenium-standalone&quot;: &quot;^6.24.0&quot;</_PackageJsonSeleniumPackage>
+      <_PackageJsonSeleniumPackage>&quot;selenium-standalone&quot;: &quot;^7.1.0&quot;</_PackageJsonSeleniumPackage>
     </PropertyGroup>
 
     <Error
