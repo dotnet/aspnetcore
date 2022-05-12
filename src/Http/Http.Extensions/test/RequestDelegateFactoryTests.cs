@@ -4704,26 +4704,45 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(originalRouteParam, httpContext.Items["input"]);
     }
 
-    private record ParameterListRecordWitDefaultValue(HttpContext HttpContext, [FromRoute] int Value = 42);
+    private record struct SampleParameterList(int Foo);
+    private record struct AdditionalSampleParameterList(int Bar);
 
     [Fact]
-    public async Task RequestDelegatePopulatesFromParameterListRecordUsesDefaultValue()
+    public async Task RequestDelegatePopulatesFromMultipleParameterLists()
     {
-        const int expectedValue = 42;
+        const int foo = 1;
+        const int bar = 2;
 
-        void TestAction([AsParameters] ParameterListRecordWitDefaultValue args)
+        void TestAction(HttpContext context, [AsParameters] SampleParameterList args, [AsParameters] AdditionalSampleParameterList args2)
         {
-            args.HttpContext.Items.Add("input", args.Value);
+            context.Items.Add("foo", args.Foo);
+            context.Items.Add("bar", args2.Bar);
         }
 
         var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues[nameof(SampleParameterList.Foo)] = foo.ToString(NumberFormatInfo.InvariantInfo);
+        httpContext.Request.RouteValues[nameof(AdditionalSampleParameterList.Bar)] = bar.ToString(NumberFormatInfo.InvariantInfo);
 
         var factoryResult = RequestDelegateFactory.Create(TestAction);
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
 
-        Assert.Equal(expectedValue, httpContext.Items["input"]);
+        Assert.Equal(foo, httpContext.Items["foo"]);
+        Assert.Equal(bar, httpContext.Items["bar"]);
+    }
+
+    [Fact]
+    public void RequestDelegateThrowsWhenParameterNameConflicts()
+    {
+        void TestAction(HttpContext context, [AsParameters] SampleParameterList args, [AsParameters] SampleParameterList args2)
+        {
+            context.Items.Add("foo", args.Foo);
+        }
+        var httpContext = CreateHttpContext();
+
+        var exception = Assert.Throws<ArgumentException>(() => RequestDelegateFactory.Create(TestAction));
+        Assert.Contains("An item with the same key has already been added. Key: Foo", exception.Message);
     }
 
     private class ParameterListWithReadOnlyProperties
@@ -4765,6 +4784,28 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(expectedInput.Value, input.Value);
         Assert.Equal(expectedInput.ConstantValue, input.ConstantValue);
         Assert.Equal(expectedInput.ReadOnlyValue, input.ReadOnlyValue);
+    }
+
+    private record ParameterListRecordWitDefaultValue(HttpContext HttpContext, [FromRoute] int Value = 42);
+
+    [Fact]
+    public async Task RequestDelegatePopulatesFromParameterListRecordUsesDefaultValue()
+    {
+        const int expectedValue = 42;
+
+        void TestAction([AsParameters] ParameterListRecordWitDefaultValue args)
+        {
+            args.HttpContext.Items.Add("input", args.Value);
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(expectedValue, httpContext.Items["input"]);
     }
 
     private class ParameterListWitDefaultValue
