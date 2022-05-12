@@ -39,22 +39,6 @@ public class ProjectFactoryFixture : IDisposable
         return project;
     }
 
-    public async Task<Project> GetOrCreateProject(string projectKey, ITestOutputHelper output)
-    {
-        await TemplatePackageInstaller.EnsureTemplatingEngineInitializedAsync(output);
-
-        // Different tests may have different output helpers, so need to fix up the output to write to the correct log
-        if (_projects.TryGetValue(projectKey, out var project))
-        {
-            project.Output = output;
-            return project;
-        }
-        return _projects.GetOrAdd(
-            projectKey,
-            (_, outputHelper) => CreateProjectImpl(outputHelper),
-            output);
-    }
-
     private Project CreateProjectImpl(ITestOutputHelper output)
     {
         var project = new Project
