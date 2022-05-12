@@ -104,10 +104,7 @@ namespace Templates.Test.Helpers
 
             using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
             await execution.Exited;
-
-            var result = new ProcessResult(execution);
-
-            return result;
+            return new ProcessResult(execution);
         }
 
         internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
@@ -132,7 +129,7 @@ namespace Templates.Test.Helpers
             // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
             // should avoid any global contention and we can execute a build or publish in a lock-free way
 
-            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {additionalArgs}", packageOptions);
             await result.Exited;
             CaptureBinLogOnFailure(result);
             return new ProcessResult(result);
