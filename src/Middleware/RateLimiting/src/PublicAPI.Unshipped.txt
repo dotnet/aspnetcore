@@ -8,4 +8,4 @@ Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.OnRejected.set -> void
 Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.RateLimiterOptions() -> void
 Microsoft.AspNetCore.RateLimiting.RateLimitingApplicationBuilderExtensions
 static Microsoft.AspNetCore.RateLimiting.RateLimitingApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.RateLimiting.RateLimitingApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Action<Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!> options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.RateLimiting.RateLimitingApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Action<Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!>! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
