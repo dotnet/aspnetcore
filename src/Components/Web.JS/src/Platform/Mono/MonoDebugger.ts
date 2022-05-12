@@ -9,7 +9,7 @@ const brands = navigatorUA.userAgentData && navigatorUA.userAgentData.brands;
 const currentBrowserIsChromeOrEdge = brands
   ? brands.some(b => b.brand === 'Google Chrome' || b.brand === 'Microsoft Edge')
   : (window as any).chrome;
-const platform = navigatorUA.userAgentData ? navigatorUA.userAgentData.platform : navigator.platform;
+const platform = navigatorUA.userAgentData?.platform ?? navigator.platform;
 
 let hasReferencedPdbs = false;
 let debugBuild = false;
