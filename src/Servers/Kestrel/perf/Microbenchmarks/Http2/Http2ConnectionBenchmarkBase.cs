@@ -55,10 +55,10 @@ public abstract class Http2ConnectionBenchmarkBase
 
         if (NumCookies > 0)
         {
-            var cookies = new StringValues("0=1");
+            var cookies = new string[NumCookies];
             for (var index = 1; index < NumCookies; index++)
             {
-                cookies = cookies.Append($"{index}={index + 1}").ToArray();
+                cookies[index] = $"{index}={index + 1}";
             }
             _httpRequestHeaders[HeaderNames.Cookie] = cookies;
         }
