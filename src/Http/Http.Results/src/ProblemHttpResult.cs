@@ -20,8 +20,6 @@ public sealed class ProblemHttpResult : IResult
     /// <param name="problemDetails">The <see cref="ProblemDetails"/> instance to format in the entity body.</param>
     internal ProblemHttpResult(ProblemDetails problemDetails)
     {
-        ArgumentNullException.ThrowIfNull(problemDetails);
-
         ProblemDetails = problemDetails;
         HttpResultsHelper.ApplyProblemDetailsDefaults(ProblemDetails, statusCode: null);
     }
