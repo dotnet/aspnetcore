@@ -48,7 +48,6 @@ internal sealed class Utf8HashLookup
         _slots[slotIndex].value = value;
         _slots[slotIndex].encodedValue = encodedValue;
 
-
         _slots[slotIndex].next = _buckets[bucketIndex] - 1;
         _slots[slotIndex].caseSensitiveNext = _caseSensitiveBuckets[caseSensitiveBucketIndex] - 1;
 
