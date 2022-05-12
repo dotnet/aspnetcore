@@ -107,12 +107,6 @@ namespace Templates.Test.Helpers
 
             var result = new ProcessResult(execution);
 
-            // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
-            if (errorOnRestoreError && (execution.Output.Contains("Restore failed.") || execution.Error.Contains("Restore failed.")))
-            {
-                result.ExitCode = -1;
-            }
-
             return result;
         }
 
@@ -125,41 +119,23 @@ namespace Templates.Test.Helpers
 
             var restoreArgs = noRestore ? "--no-restore" : null;
 
-            using var execution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
-            await execution.Exited;
-
-            var result = new ProcessResult(execution);
-
-            // Fail if there were build warnings
-            if (execution.Output.Contains(": warning") || execution.Error.Contains(": warning"))
-            {
-               result.ExitCode = -1;
-            }
-
-            CaptureBinLogOnFailure(execution);
-            return result;
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
+            await result.Exited;
+            CaptureBinLogOnFailure(result);
+            return new ProcessResult(result);
         }
 
-        internal async Task<ProcessResult> RunDotNetBuildAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool errorOnBuildWarning = true)
+        internal async Task<ProcessResult> RunDotNetBuildAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null)
         {
             Output.WriteLine("Building ASP.NET Core application...");
 
             // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
             // should avoid any global contention and we can execute a build or publish in a lock-free way
 
-            using var execution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {additionalArgs}", packageOptions);
-            await execution.Exited;
-
-            var result = new ProcessResult(execution);
-
-            // Fail if there were build warnings
-            if (errorOnBuildWarning && (execution.Output.Contains(": warning") || execution.Error.Contains(": warning")))
-            {
-                result.ExitCode = -1;
-            }
-
-            CaptureBinLogOnFailure(execution);
-            return result;
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish {restoreArgs} -c Release /bl {additionalArgs}", packageOptions);
+            await result.Exited;
+            CaptureBinLogOnFailure(result);
+            return new ProcessResult(result);
         }
 
         internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true, ILogger logger = null)
