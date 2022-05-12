@@ -31,6 +31,5 @@ public interface IPersistedDataProtector : IDataProtector
     /// Implementations should throw CryptographicException if the protected data is
     /// invalid or malformed.
     /// </remarks>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked);
 }
