@@ -44,6 +44,9 @@ public abstract class Http2ConnectionBenchmarkBase
 
     protected abstract Task ProcessRequest(HttpContext httpContext);
 
+    [Params(0, 1, 3)]
+    public int numCookies { get; set; }
+
     public virtual void GlobalSetup()
     {
         _memoryPool = PinnedBlockMemoryPoolFactory.Create();
@@ -58,6 +61,15 @@ public abstract class Http2ConnectionBenchmarkBase
         _httpRequestHeaders[HeaderNames.Scheme] = new StringValues("http");
         _httpRequestHeaders[HeaderNames.Authority] = new StringValues("localhost:80");
 
+        if (numCookies > 0) {
+            var cookies = new StringValues("0=1");
+            for (int i = 1; i < numCookies; i++)
+            {
+                cookies.Append($"{i}={i + 1}");
+            }
+            _httpRequestHeaders[HeaderNames.Cookie] = cookies;
+        }
+        
         _headersBuffer = new byte[1024 * 16];
         _hpackEncoder = new DynamicHPackEncoder();
 
