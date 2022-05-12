@@ -19,6 +19,9 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <SkipHelixQueues>
+      $(HelixQueueArmDebian11);
+    </SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup>

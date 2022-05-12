@@ -120,12 +120,19 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
+        [InlineData(false)]
+        [InlineData(true)]
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-        public async Task MvcTemplate_IndividualAuth(bool useLocalDB, bool useProgramMain)
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
+        public Task MvcTemplate_IndividualAuth_LocalDb(bool useProgramMain) => MvcTemplate_IndividualAuth_Core(useLocalDB: true, useProgramMain);
+
+        [ConditionalTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
+        public Task MvcTemplate_IndividualAuth(bool useProgramMain) => MvcTemplate_IndividualAuth_Core(useLocalDB: false, useProgramMain);
+
+        private async Task MvcTemplate_IndividualAuth_Core(bool useLocalDB, bool useProgramMain)
         {
             var project = await ProjectFactory.CreateProject(Output);
 
@@ -295,13 +302,17 @@ namespace Templates.Test
         [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
         [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
         [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        public Task MvcTemplate_IdentityWeb_IndividualB2C_BuildsAndPublishes(string auth, string[] args) => MvcTemplateBuildsAndPublishes(auth: auth, args: args);
+        
+        [ConditionalTheory]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         [InlineData("SingleOrg", null)]
         [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
         [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
         [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
         [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph })]
         [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
-        public Task MvcTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => MvcTemplateBuildsAndPublishes(auth: auth, args: args);
+        public Task MvcTemplate_IdentityWeb_SingleOrg_BuildsAndPublishes(string auth, string[] args) => MvcTemplateBuildsAndPublishes(auth: auth, args: args);
 
         private async Task<Project> MvcTemplateBuildsAndPublishes(string auth, string[] args)
         {
