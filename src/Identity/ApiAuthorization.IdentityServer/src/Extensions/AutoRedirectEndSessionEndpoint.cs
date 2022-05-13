@@ -18,7 +18,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
-internal class AutoRedirectEndSessionEndpoint : IEndpointHandler
+internal sealed class AutoRedirectEndSessionEndpoint : IEndpointHandler
 {
     private readonly ILogger _logger;
     private readonly IUserSession _session;
@@ -111,7 +111,7 @@ internal class AutoRedirectEndSessionEndpoint : IEndpointHandler
         return null;
     }
 
-    internal class RedirectResult : IEndpointResult
+    internal sealed class RedirectResult : IEndpointResult
     {
 
         public RedirectResult(string url)

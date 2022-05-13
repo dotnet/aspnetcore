@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
-internal class CompilationFailedException : Exception, ICompilationException
+internal sealed class CompilationFailedException : Exception, ICompilationException
 {
     public CompilationFailedException(
             IEnumerable<CompilationFailure> compilationFailures)

@@ -78,7 +78,7 @@ public static partial class Results
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
-    /// This is an alias for <see cref="Text(string, string?, Encoding?)"/>.
+    /// This is equivalent to <see cref="Text(string?, string?, Encoding?)"/>.
     /// </para>
     /// </summary>
     /// <param name="content">The content to write to the response.</param>
@@ -89,13 +89,31 @@ public static partial class Results
     /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
     /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
     /// </remarks>
-    public static IResult Content(string content, string? contentType = null, Encoding? contentEncoding = null)
-        => TypedResults.Content(content, contentType, contentEncoding);
+    public static IResult Content(string? content, string? contentType, Encoding? contentEncoding)
+        => Content(content, contentType, contentEncoding, null);
 
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
-    /// This is an alias for <see cref="Content(string, string?, Encoding?)"/>.
+    /// This is equivalent to <see cref="Text(string?, string?, Encoding?, int?)"/>.
+    /// </para>
+    /// </summary>
+    /// <param name="content">The content to write to the response.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    /// <param name="statusCode">The status code to return.</param>
+    /// <returns>The created <see cref="IResult"/> object for the response.</returns>
+    /// <remarks>
+    /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
+    /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
+    /// </remarks>
+    public static IResult Content(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
+        => TypedResults.Content(content, contentType, contentEncoding, statusCode);
+
+    /// <summary>
+    /// Writes the <paramref name="content"/> string to the HTTP response.
+    /// <para>
+    /// This is an alias for <see cref="Content(string?, string?, Encoding?)"/>.
     /// </para>
     /// </summary>
     /// <param name="content">The content to write to the response.</param>
@@ -106,8 +124,26 @@ public static partial class Results
     /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
     /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
     /// </remarks>
-    public static IResult Text(string content, string? contentType = null, Encoding? contentEncoding = null)
-        => TypedResults.Text(content, contentType, contentEncoding);
+    public static IResult Text(string? content, string? contentType, Encoding? contentEncoding)
+        => Text(content, contentType, contentEncoding, null);
+
+    /// <summary>
+    /// Writes the <paramref name="content"/> string to the HTTP response.
+    /// <para>
+    /// This is an alias for <see cref="Content(string?, string?, Encoding?, int?)"/>.
+    /// </para>
+    /// </summary>
+    /// <param name="content">The content to write to the response.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    /// <param name="statusCode">The status code to return.</param>
+    /// <returns>The created <see cref="IResult"/> object for the response.</returns>
+    /// <remarks>
+    /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
+    /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
+    /// </remarks>
+    public static IResult Text(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
+        => TypedResults.Text(content, contentType, contentEncoding, statusCode);
 
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
@@ -115,7 +151,7 @@ public static partial class Results
     /// <param name="content">The content to write to the response.</param>
     /// <param name="contentType">The content type (MIME type).</param>
     /// <returns>The created <see cref="IResult"/> object for the response.</returns>
-    public static IResult Content(string content, MediaTypeHeaderValue contentType)
+    public static IResult Content(string? content, MediaTypeHeaderValue contentType)
         => TypedResults.Content(content, contentType);
 
     /// <summary>

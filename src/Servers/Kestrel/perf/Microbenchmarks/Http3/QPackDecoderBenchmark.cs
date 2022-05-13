@@ -98,7 +98,7 @@ public class QPackDecoderBenchmark
         _decoder.Reset();
     }
 
-    private class TestHeadersHandler : IHttpStreamHeadersHandler
+    private sealed class TestHeadersHandler : IHttpStreamHeadersHandler
     {
         public void OnDynamicIndexedHeader(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {

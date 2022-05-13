@@ -98,6 +98,12 @@ public class TypedResultsTests
     }
 
     [Fact]
+    public void Accepted_WithNullUriAndValue_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>("uri", () => TypedResults.Accepted(default(Uri), default(object)));
+    }
+
+    [Fact]
     public void AcceptedAtRoute_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -197,6 +203,112 @@ public class TypedResultsTests
         new object[] { 1, "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
         new object[] { 1, default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) }
     };
+
+    [Theory]
+    [MemberData(nameof(PhysicalOrVirtualFile_ResultHasCorrectValues_Data))]
+    public void PhysicalFile_ResultHasCorrectValues(string contentType, string fileDownloadName, bool enableRangeProcessing, DateTimeOffset lastModified, EntityTagHeaderValue entityTag)
+    {
+        // Arrange
+        var path = "path";
+
+        // Act
+        var result = TypedResults.PhysicalFile(path, contentType, fileDownloadName, lastModified, entityTag, enableRangeProcessing);
+
+        // Assert
+        Assert.Equal(path, result.FileName);
+        Assert.Equal(contentType ?? "application/octet-stream", result.ContentType);
+        Assert.Equal(fileDownloadName, result.FileDownloadName);
+        Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
+        Assert.Equal(lastModified, result.LastModified);
+        Assert.Equal(entityTag, result.EntityTag);
+    }
+
+    [Theory]
+    [MemberData(nameof(PhysicalOrVirtualFile_ResultHasCorrectValues_Data))]
+    public void VirtualFile_ResultHasCorrectValues(string contentType, string fileDownloadName, bool enableRangeProcessing, DateTimeOffset lastModified, EntityTagHeaderValue entityTag)
+    {
+        // Arrange
+        var path = "path";
+
+        // Act
+        var result = TypedResults.VirtualFile(path, contentType, fileDownloadName, lastModified, entityTag, enableRangeProcessing);
+
+        // Assert
+        Assert.Equal(path, result.FileName);
+        Assert.Equal(contentType ?? "application/octet-stream", result.ContentType);
+        Assert.Equal(fileDownloadName, result.FileDownloadName);
+        Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
+        Assert.Equal(lastModified, result.LastModified);
+        Assert.Equal(entityTag, result.EntityTag);
+    }
+
+    public static IEnumerable<object[]> PhysicalOrVirtualFile_ResultHasCorrectValues_Data => new List<object[]>
+    {
+        new object[] { "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
+        new object[] { default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) },
+        new object[] { "text/plain", "testfile", true, new DateTimeOffset(2022, 1, 1, 0, 0, 1, TimeSpan.FromHours(-8)), EntityTagHeaderValue.Any },
+        new object[] { default(string), default(string), default(bool), default(DateTimeOffset?), default(EntityTagHeaderValue) }
+    };
+
+    [Fact]
+    public void Bytes_WithNullContents_ThrowsArgNullException()
+    {
+        Assert.Throws<ArgumentNullException>("contents", () => TypedResults.Bytes(null));
+    }
+
+    [Fact]
+    public void File_WithNullContents_ThrowsArgNullException()
+    {
+        Assert.Throws<ArgumentNullException>("fileContents", () => TypedResults.File(default(byte[])));
+    }
+
+    [Fact]
+    public void File_WithNullStream_ThrowsArgNullException()
+    {
+        Assert.Throws<ArgumentNullException>("fileStream", () => TypedResults.File(default(Stream)));
+    }
+
+    [Fact]
+    public void Stream_WithNullStream_ThrowsArgNullException()
+    {
+        Assert.Throws<ArgumentNullException>("stream", () => TypedResults.Stream(default(Stream)));
+    }
+
+    [Fact]
+    public void Stream_WithNullPipeReader_ThrowsArgNullException()
+    {
+        Assert.Throws<ArgumentNullException>("pipeReader", () => TypedResults.Stream(default(PipeReader)));
+    }
+
+    [Fact]
+    public void Stream_WithNullCallback_ThrowsArgNullException()
+    {
+        Assert.Throws<ArgumentNullException>("streamWriterCallback", () => TypedResults.Stream(default(Func<Stream, Task>)));
+    }
+
+    [Fact]
+    public void PhysicalFile_WithNullPath_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("path", () => TypedResults.PhysicalFile(default(string)));
+    }
+
+    [Fact]
+    public void PhysicalFile_WithEmptyPath_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("path", () => TypedResults.PhysicalFile(string.Empty));
+    }
+
+    [Fact]
+    public void VirtualFile_WithNullPath_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("path", () => TypedResults.VirtualFile(default(string)));
+    }
+
+    [Fact]
+    public void VirtualFile_WithEmptyPath_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("path", () => TypedResults.VirtualFile(string.Empty));
+    }
 
     [Theory]
     [MemberData(nameof(Stream_ResultHasCorrectValues_Data))]
@@ -363,12 +475,30 @@ public class TypedResultsTests
         var encoding = Encoding.UTF8;
 
         // Act
-        var result = TypedResults.Content(content, contentType, null);
+        var result = TypedResults.Content(content, contentType, encoding);
 
         // Assert
         Assert.Null(result.StatusCode);
         Assert.Equal(content, result.ResponseContent);
-        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal("text/plain; charset=utf-8", result.ContentType);
+    }
+
+    [Fact]
+    public void Content_WithContentAndContentTypeAndEncodingAndStatusCode_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content";
+        var contentType = "text/plain";
+        var encoding = Encoding.UTF8;
+        var statusCode = 201;
+
+        // Act
+        var result = TypedResults.Content(content, contentType, encoding, statusCode);
+
+        // Assert
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(content, result.ResponseContent);
+        Assert.Equal("text/plain; charset=utf-8", result.ContentType);
     }
 
     [Fact]
@@ -432,15 +562,39 @@ public class TypedResultsTests
     }
 
     [Fact]
-    public void Created_WithNullStringUri_ThrowsArgNullException()
+    public void Created_WithNullStringUri_ThrowsArgException()
     {
-        Assert.Throws<ArgumentNullException>("uri", () => TypedResults.Created(default(string)));
+        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(default(string)));
+    }
+
+    [Fact]
+    public void Created_WithEmptyStringUri_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(string.Empty));
     }
 
     [Fact]
     public void Created_WithNullUri_ThrowsArgNullException()
     {
         Assert.Throws<ArgumentNullException>("uri", () => TypedResults.Created(default(Uri)));
+    }
+
+    [Fact]
+    public void CreatedOfT_WithNullStringUri_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(default(string), default(object)));
+    }
+
+    [Fact]
+    public void CreatedOfT_WithEmptyStringUri_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("uri", () => TypedResults.Created(string.Empty, default(object)));
+    }
+
+    [Fact]
+    public void CreatedOfT_WithNullUri_ThrowsArgNullException()
+    {
+        Assert.Throws<ArgumentNullException>("uri", () => TypedResults.Created(default(Uri), default(object)));
     }
 
     [Fact]
@@ -548,6 +702,18 @@ public class TypedResultsTests
         Assert.Null(result.JsonSerializerOptions);
         Assert.Null(result.ContentType);
         Assert.Null(result.StatusCode);
+    }
+
+    [Fact]
+    public void LocalRedirect_WithNullStringUrl_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("localUrl", () => TypedResults.LocalRedirect(default(string)));
+    }
+
+    [Fact]
+    public void LocalRedirect_WithEmptyStringUrl_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("localUrl", () => TypedResults.LocalRedirect(string.Empty));
     }
 
     [Fact]
@@ -678,6 +844,12 @@ public class TypedResultsTests
     }
 
     [Fact]
+    public void Problem_WithNullProblem_ThrowsArgNullException()
+    {
+        Assert.Throws<ArgumentNullException>("problemDetails", () => TypedResults.Problem(default(ProblemDetails)));
+    }
+
+    [Fact]
     public void Problem_WithArgs_ResultHasCorrectValues()
     {
         // Arrange
@@ -750,6 +922,12 @@ public class TypedResultsTests
     }
 
     [Fact]
+    public void ValidationProblem_WithNullErrors_ThrowsArgNullException()
+    {
+        Assert.Throws<ArgumentNullException>("errors", () => TypedResults.ValidationProblem(default(IDictionary<string, string[]>)));
+    }
+
+    [Fact]
     public void ValidationProblem_WithValidationProblemArg_ResultHasCorrectValues()
     {
         // Arrange
@@ -773,6 +951,18 @@ public class TypedResultsTests
         Assert.Equal(type, result.ProblemDetails.Type);
         Assert.Equal("application/problem+json", result.ContentType);
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
+    public void Redirect_WithNullStringUrl_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("url", () => TypedResults.Redirect(default(string)));
+    }
+
+    [Fact]
+    public void Redirect_WithEmptyStringUrl_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentException>("url", () => TypedResults.Redirect(string.Empty));
     }
 
     [Fact]
@@ -867,6 +1057,22 @@ public class TypedResultsTests
     }
 
     [Fact]
+    public void Text_WithContentAndContentType_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content";
+        var contentType = "text/plain";
+
+        // Act
+        var result = TypedResults.Text(content, contentType);
+
+        // Assert
+        Assert.Null(result.StatusCode);
+        Assert.Equal(content, result.ResponseContent);
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
     public void Text_WithContentAndContentTypeAndEncoding_ResultHasCorrectValues()
     {
         // Arrange
@@ -879,6 +1085,26 @@ public class TypedResultsTests
 
         // Assert
         Assert.Null(result.StatusCode);
+        Assert.Equal(content, result.ResponseContent);
+        var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
+        expectedMediaType.Encoding = encoding;
+        Assert.Equal(expectedMediaType.ToString(), result.ContentType);
+    }
+
+    [Fact]
+    public void Text_WithContentAndContentTypeAndEncodingAndStatusCode_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content";
+        var contentType = "text/plain";
+        var encoding = Encoding.ASCII;
+        var statusCode = 201;
+
+        // Act
+        var result = TypedResults.Text(content, contentType, encoding, statusCode);
+
+        // Assert
+        Assert.Equal(statusCode, result.StatusCode);
         Assert.Equal(content, result.ResponseContent);
         var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
         expectedMediaType.Encoding = encoding;

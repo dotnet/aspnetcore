@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
+internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
 {
     private readonly Http3FrameWriter _frameWriter;
     private readonly TimingPipeFlusher _flusher;

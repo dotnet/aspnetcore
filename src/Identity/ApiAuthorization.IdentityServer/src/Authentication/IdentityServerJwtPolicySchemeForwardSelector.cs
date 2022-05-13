@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Authentication;
 
-internal class IdentityServerJwtPolicySchemeForwardSelector
+internal sealed class IdentityServerJwtPolicySchemeForwardSelector
 {
     private readonly PathString _identityPath;
     private readonly string _IdentityServerJwtScheme;

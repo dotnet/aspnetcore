@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 
 // Common type used by our HubLifetimeManager implementations to manage client results.
 // Handles cancellation, cleanup, and completion, so any bugs or improvements can be made in a single place
-internal class ClientResultsManager : IInvocationBinder
+internal sealed class ClientResultsManager : IInvocationBinder
 {
     private readonly ConcurrentDictionary<string, (Type Type, string ConnectionId, object Tcs, Action<object, CompletionMessage> Complete)> _pendingInvocations = new();
 

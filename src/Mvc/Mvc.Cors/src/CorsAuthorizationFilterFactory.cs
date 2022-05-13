@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors;
 /// <summary>
 /// A filter factory which creates a new instance of <see cref="CorsAuthorizationFilter"/>.
 /// </summary>
-internal class CorsAuthorizationFilterFactory : IFilterFactory, IOrderedFilter
+internal sealed class CorsAuthorizationFilterFactory : IFilterFactory, IOrderedFilter
 {
     private readonly string? _policyName;
 

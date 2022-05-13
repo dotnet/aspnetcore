@@ -16,9 +16,10 @@ using Log = Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcherLog;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
+internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
 {
-    private readonly Dictionary<string, HubMethodDescriptor> _methods = new Dictionary<string, HubMethodDescriptor>(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, HubMethodDescriptor> _methods = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Utf8HashLookup _cachedMethodNames = new();
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IHubContext<THub> _hubContext;
     private readonly ILogger<HubDispatcher<THub>> _logger;
@@ -688,6 +689,7 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
             var executor = ObjectMethodExecutor.Create(methodInfo, hubTypeInfo);
             var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
             _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizeAttributes);
+            _cachedMethodNames.Add(methodName);
 
             Log.HubMethodBound(_logger, hubName, methodName);
         }
@@ -700,5 +702,15 @@ internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where TH
             throw new HubException("Method does not exist.");
         }
         return descriptor.ParameterTypes;
+    }
+
+    public override string? GetTargetName(ReadOnlySpan<byte> targetUtf8Bytes)
+    {
+        if (_cachedMethodNames.TryGetValue(targetUtf8Bytes, out var targetName))
+        {
+            return targetName;
+        }
+
+        return null;
     }
 }

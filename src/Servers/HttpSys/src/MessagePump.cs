@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal partial class MessagePump : IServer
+internal sealed partial class MessagePump : IServer
 {
     private readonly ILogger _logger;
     private readonly HttpSysOptions _options;
@@ -53,7 +53,7 @@ internal partial class MessagePump : IServer
 
         if (HttpApi.SupportsDelegation)
         {
-            var delegationProperty = new ServerDelegationPropertyFeature(Listener.RequestQueue, _logger);
+            var delegationProperty = new ServerDelegationPropertyFeature(Listener.UrlGroup, _logger);
             Features.Set<IServerDelegationFeature>(delegationProperty);
         }
 

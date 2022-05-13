@@ -280,6 +280,24 @@ public class TestServerTests
     }
 
     [Fact]
+    public void TestServerConstructedWithoutFeatureCollectionHasServerAddressesFeature()
+    {
+        // Arrange
+        var builder = new WebHostBuilder()
+            .Configure(applicationBuilder =>
+            {
+                var serverAddressesFeature = applicationBuilder.ServerFeatures.Get<IServerAddressesFeature>();
+                Assert.NotNull(serverAddressesFeature);
+            });
+
+        // Act
+        new TestServer(builder);
+
+        // Assert
+        // Is inside configure callback
+    }
+
+    [Fact]
     public void TestServerConstructorWithNullFeatureCollectionThrows()
     {
         var builder = new WebHostBuilder()

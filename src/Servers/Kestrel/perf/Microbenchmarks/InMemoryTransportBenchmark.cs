@@ -101,7 +101,7 @@ public class InMemoryTransportBenchmark
         await _connection.ReadResponseAsync(_plaintextPipelinedExpectedResponse.Length);
     }
 
-    internal class InMemoryTransportFactory : IConnectionListenerFactory
+    internal sealed class InMemoryTransportFactory : IConnectionListenerFactory
     {
         private readonly int _connectionsPerEndPoint;
 
@@ -129,7 +129,7 @@ public class InMemoryTransportBenchmark
         }
     }
 
-    internal class InMemoryTransport : IConnectionListener
+    internal sealed class InMemoryTransport : IConnectionListener
     {
         private readonly IReadOnlyList<InMemoryConnection> _connections;
         private readonly TaskCompletionSource<ConnectionContext> _tcs = new TaskCompletionSource<ConnectionContext>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -165,7 +165,7 @@ public class InMemoryTransportBenchmark
         }
     }
 
-    internal class InMemoryConnection : TransportConnection
+    internal sealed class InMemoryConnection : TransportConnection
     {
         public InMemoryConnection()
         {

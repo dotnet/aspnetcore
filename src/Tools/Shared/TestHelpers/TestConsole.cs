@@ -69,7 +69,7 @@ public class TestConsole : IConsole
         _testWriter.ClearOutput();
     }
 
-    private class TestOutputWriter : TextWriter
+    private sealed class TestOutputWriter : TextWriter
     {
         private readonly ITestOutputHelper _output;
         private readonly StringBuilder _sb = new StringBuilder();

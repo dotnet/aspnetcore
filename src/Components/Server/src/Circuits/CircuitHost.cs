@@ -12,7 +12,9 @@ using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
+#pragma warning disable CA1852 // Seal internal types
 internal partial class CircuitHost : IAsyncDisposable
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly AsyncServiceScope _scope;
     private readonly CircuitOptions _options;

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents;
 /// <summary>
 /// Default implementation for <see cref="IViewComponentInvoker"/>.
 /// </summary>
-internal partial class DefaultViewComponentInvoker : IViewComponentInvoker
+internal sealed partial class DefaultViewComponentInvoker : IViewComponentInvoker
 {
     private readonly IViewComponentFactory _viewComponentFactory;
     private readonly ViewComponentInvokerCache _viewComponentInvokerCache;

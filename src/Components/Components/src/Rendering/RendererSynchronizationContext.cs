@@ -8,7 +8,7 @@ using System.Diagnostics;
 namespace Microsoft.AspNetCore.Components.Rendering;
 
 [DebuggerDisplay("{_state,nq}")]
-internal class RendererSynchronizationContext : SynchronizationContext
+internal sealed class RendererSynchronizationContext : SynchronizationContext
 {
     private static readonly ContextCallback ExecutionContextThunk = (object state) =>
     {
@@ -278,7 +278,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
         }
     }
 
-    private class State
+    private sealed class State
     {
         public bool IsBusy; // Just for debugging
         public object Lock = new object();
@@ -290,7 +290,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
         }
     }
 
-    private class WorkItem
+    private sealed class WorkItem
     {
         public RendererSynchronizationContext SynchronizationContext;
         public ExecutionContext ExecutionContext;
@@ -298,7 +298,7 @@ internal class RendererSynchronizationContext : SynchronizationContext
         public object State;
     }
 
-    private class RendererSynchronizationTaskCompletionSource<TCallback, TResult> : TaskCompletionSource<TResult>
+    private sealed class RendererSynchronizationTaskCompletionSource<TCallback, TResult> : TaskCompletionSource<TResult>
     {
         public RendererSynchronizationTaskCompletionSource(TCallback callback)
         {

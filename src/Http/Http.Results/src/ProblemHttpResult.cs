@@ -42,6 +42,8 @@ public sealed class ProblemHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger(typeof(ProblemHttpResult));
 
@@ -51,7 +53,7 @@ public sealed class ProblemHttpResult : IResult
             httpContext.Response.StatusCode = code;
         }
 
-        return HttpResultsHelper.WriteResultAsJsonAsync(
+        return HttpResultsHelper.WriteResultAsJsonAsync<object?>(
                 httpContext,
                 logger,
                 value: ProblemDetails,

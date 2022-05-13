@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
 internal partial class AsyncIOEngine
 {
-    internal class AsyncFlushOperation : AsyncIOOperation
+    internal sealed class AsyncFlushOperation : AsyncIOOperation
     {
         private readonly AsyncIOEngine _engine;
 

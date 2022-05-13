@@ -7,44 +7,30 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposable
+internal sealed unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposable
 {
     private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
     private readonly SafeNativeOverlapped? _overlapped;
     private readonly IntPtr _pinnedBuffer;
+    private readonly int _size;
     private readonly uint _dataAlreadyRead;
     private readonly TaskCompletionSource<int> _tcs;
     private readonly RequestStream _requestStream;
     private readonly AsyncCallback? _callback;
     private readonly CancellationTokenRegistration _cancellationRegistration;
 
-    internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback)
+    internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, byte[] buffer, int offset, int size, uint dataAlreadyRead, CancellationTokenRegistration cancellationRegistration)
     {
         _requestStream = requestStream;
         _tcs = new TaskCompletionSource<int>(userState);
         _callback = callback;
-    }
-
-    internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, uint dataAlreadyRead)
-        : this(requestStream, userState, callback)
-    {
-        _dataAlreadyRead = dataAlreadyRead;
-    }
-
-    internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, byte[] buffer, int offset, uint dataAlreadyRead)
-        : this(requestStream, userState, callback, buffer, offset, dataAlreadyRead, new CancellationTokenRegistration())
-    {
-    }
-
-    internal RequestStreamAsyncResult(RequestStream requestStream, object? userState, AsyncCallback? callback, byte[] buffer, int offset, uint dataAlreadyRead, CancellationTokenRegistration cancellationRegistration)
-        : this(requestStream, userState, callback)
-    {
         _dataAlreadyRead = dataAlreadyRead;
         var boundHandle = requestStream.RequestContext.Server.RequestQueue.BoundHandle;
         _overlapped = new SafeNativeOverlapped(boundHandle,
             boundHandle.AllocateNativeOverlapped(IOCallback, this, buffer));
         _pinnedBuffer = (Marshal.UnsafeAddrOfPinnedArrayElement(buffer, offset));
+        _size = size;
         _cancellationRegistration = cancellationRegistration;
     }
 
@@ -83,7 +69,13 @@ internal unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposable
     {
         try
         {
-            if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
+            // Zero-byte reads
+            if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA && asyncResult._size == 0)
+            {
+                // numBytes returns 1 to let us know there's data available. Don't count it against the request body size yet.
+                asyncResult.Complete(0, errorCode);
+            }
+            else if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
             {
                 asyncResult.Fail(new IOException(string.Empty, new HttpSysException((int)errorCode)));
             }
@@ -154,7 +146,7 @@ internal unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposable
         Dispose(true);
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (disposing)
         {

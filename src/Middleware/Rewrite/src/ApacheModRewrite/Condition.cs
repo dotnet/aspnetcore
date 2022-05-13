@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class Condition
+internal sealed class Condition
 {
     public Condition(Pattern input, UrlMatch match, bool orNext)
     {

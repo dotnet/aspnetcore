@@ -44,6 +44,6 @@ internal sealed class UnaryServerCallHandler<TService, TRequest, TResponse> : Se
 
         serverCallContext.EnsureResponseHeaders();
 
-        await JsonRequestHelpers.SendMessage(serverCallContext, SerializerOptions, response);
+        await JsonRequestHelpers.SendMessage(serverCallContext, SerializerOptions, response, CancellationToken.None);
     }
 }

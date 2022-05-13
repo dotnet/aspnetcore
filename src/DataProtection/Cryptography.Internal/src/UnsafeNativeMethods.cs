@@ -17,20 +17,14 @@ namespace Microsoft.AspNetCore.Cryptography;
 [SuppressUnmanagedCodeSecurity]
 internal static unsafe class UnsafeNativeMethods
 {
-    private const string BCRYPT_LIB = "bcrypt.dll";
-    private static readonly Lazy<SafeLibraryHandle> _lazyBCryptLibHandle = GetLazyLibraryHandle(BCRYPT_LIB);
+    internal const string BCRYPT_LIB = "bcrypt.dll";
+    private static SafeLibraryHandle? _lazyBCryptLibHandle;
 
     private const string CRYPT32_LIB = "crypt32.dll";
-    private static readonly Lazy<SafeLibraryHandle> _lazyCrypt32LibHandle = GetLazyLibraryHandle(CRYPT32_LIB);
+    private static SafeLibraryHandle? _lazyCrypt32LibHandle;
 
     private const string NCRYPT_LIB = "ncrypt.dll";
-    private static readonly Lazy<SafeLibraryHandle> _lazyNCryptLibHandle = GetLazyLibraryHandle(NCRYPT_LIB);
-
-    private static Lazy<SafeLibraryHandle> GetLazyLibraryHandle(string libraryName)
-    {
-        // We don't need to worry about race conditions: SafeLibraryHandle will clean up after itself
-        return new Lazy<SafeLibraryHandle>(() => SafeLibraryHandle.Open(libraryName), LazyThreadSafetyMode.PublicationOnly);
-    }
+    private static SafeLibraryHandle? _lazyNCryptLibHandle;
 
     /*
      * BCRYPT.DLL
@@ -304,6 +298,24 @@ internal static unsafe class UnsafeNativeMethods
     /*
      * HELPER FUNCTIONS
      */
+    private static SafeLibraryHandle GetLibHandle(string libraryName, ref SafeLibraryHandle? safeLibraryHandle)
+    {
+        if (safeLibraryHandle is null)
+        {
+            var newHandle = SafeLibraryHandle.Open(libraryName);
+            if (Interlocked.CompareExchange(ref safeLibraryHandle, newHandle, null) is not null)
+            {
+                newHandle.Dispose();
+            }
+        }
+
+        return safeLibraryHandle;
+    }
+
+    // We use methods instead of properties to access lazy handles in order to prevent debuggers from automatically attempting to load libraries on unsupported platforms.
+    private static SafeLibraryHandle GetBCryptLibHandle() => GetLibHandle(BCRYPT_LIB, ref _lazyBCryptLibHandle);
+    private static SafeLibraryHandle GetCrypt32LibHandle() => GetLibHandle(CRYPT32_LIB, ref _lazyCrypt32LibHandle);
+    private static SafeLibraryHandle GetNCryptLibHandle() => GetLibHandle(NCRYPT_LIB, ref _lazyNCryptLibHandle);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void ThrowExceptionForBCryptStatus(int ntstatus)
@@ -318,7 +330,7 @@ internal static unsafe class UnsafeNativeMethods
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowExceptionForBCryptStatusImpl(int ntstatus)
     {
-        var message = _lazyBCryptLibHandle.Value.FormatMessage(ntstatus);
+        var message = GetBCryptLibHandle().FormatMessage(ntstatus);
         throw new CryptographicException(message);
     }
 
@@ -327,7 +339,7 @@ internal static unsafe class UnsafeNativeMethods
         var lastError = Marshal.GetLastWin32Error();
         Debug.Assert(lastError != 0, "This method should only be called if there was an error.");
 
-        var message = _lazyCrypt32LibHandle.Value.FormatMessage(lastError);
+        var message = GetCrypt32LibHandle().FormatMessage(lastError);
         throw new CryptographicException(message);
     }
 
@@ -344,7 +356,7 @@ internal static unsafe class UnsafeNativeMethods
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowExceptionForNCryptStatusImpl(int ntstatus)
     {
-        var message = _lazyNCryptLibHandle.Value.FormatMessage(ntstatus);
+        var message = GetNCryptLibHandle().FormatMessage(ntstatus);
         throw new CryptographicException(message);
     }
 }

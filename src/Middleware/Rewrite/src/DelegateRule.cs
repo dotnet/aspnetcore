@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite;
 
-internal class DelegateRule : IRule
+internal sealed class DelegateRule : IRule
 {
     private readonly Action<RewriteContext> _onApplyRule;
 

@@ -147,7 +147,7 @@ internal static unsafe class UnsafeNclNativeMethods
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
         Justification = "Does not own the resource.")]
     [StructLayout(LayoutKind.Sequential)]
-    internal class SECURITY_ATTRIBUTES
+    internal sealed class SECURITY_ATTRIBUTES
     {
         public int nLength = 12;
         public SafeLocalMemHandle lpSecurityDescriptor = new SafeLocalMemHandle(IntPtr.Zero, false);

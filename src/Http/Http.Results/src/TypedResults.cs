@@ -64,7 +64,11 @@ public static class TypedResults
         ClaimsPrincipal principal,
         AuthenticationProperties? properties = null,
         string? authenticationScheme = null)
-        => new(principal, authenticationScheme, properties);
+    {
+        ArgumentNullException.ThrowIfNull(principal);
+
+        return new(principal, authenticationScheme, properties);
+    }
 
     /// <summary>
     /// Creates a <see cref="SignOutHttpResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, string?, AuthenticationProperties?)" />.
@@ -78,7 +82,7 @@ public static class TypedResults
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
-    /// This is an alias for <see cref="Text(string, string?, Encoding?)"/>.
+    /// This is equivalent to <see cref="Text(string?, string?, Encoding?)"/>.
     /// </para>
     /// </summary>
     /// <remarks>
@@ -89,13 +93,31 @@ public static class TypedResults
     /// <param name="contentType">The content type (MIME type).</param>
     /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
-    public static ContentHttpResult Content(string content, string? contentType = null, Encoding? contentEncoding = null)
-        => Text(content, contentType, contentEncoding);
+    public static ContentHttpResult Content(string? content, string? contentType, Encoding? contentEncoding)
+        => Content(content, contentType, contentEncoding, null);
 
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
-    /// This is an alias for <see cref="Content(string, string?, Encoding?)"/>.
+    /// This is equivalent to <see cref="Text(string?, string?, Encoding?, int?)"/>.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
+    /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
+    /// </remarks>
+    /// <param name="content">The content to write to the response.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    /// <param name="statusCode">The status code to return.</param>
+    /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
+    public static ContentHttpResult Content(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
+        => Text(content, contentType, contentEncoding, statusCode);
+
+    /// <summary>
+    /// Writes the <paramref name="content"/> string to the HTTP response.
+    /// <para>
+    /// This is an alias for <see cref="Content(string?, string?, Encoding?)"/>.
     /// </para>
     /// </summary>
     /// <remarks>
@@ -106,7 +128,25 @@ public static class TypedResults
     /// <param name="contentType">The content type (MIME type).</param>
     /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
-    public static ContentHttpResult Text(string content, string? contentType = null, Encoding? contentEncoding = null)
+    public static ContentHttpResult Text(string? content, string? contentType, Encoding? contentEncoding)
+        => Text(content, contentType, contentEncoding, null);
+
+    /// <summary>
+    /// Writes the <paramref name="content"/> string to the HTTP response.
+    /// <para>
+    /// This is an alias for <see cref="Content(string?, string?, Encoding?, int?)"/>.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
+    /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
+    /// </remarks>
+    /// <param name="content">The content to write to the response.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    /// <param name="statusCode">The status code to return.</param>
+    /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
+    public static ContentHttpResult Text(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
     {
         MediaTypeHeaderValue? mediaTypeHeaderValue = null;
         if (contentType is not null)
@@ -115,7 +155,7 @@ public static class TypedResults
             mediaTypeHeaderValue.Encoding = contentEncoding ?? mediaTypeHeaderValue.Encoding;
         }
 
-        return new(content, mediaTypeHeaderValue?.ToString());
+        return new(content, mediaTypeHeaderValue?.ToString(), statusCode);
     }
 
     /// <summary>
@@ -124,7 +164,7 @@ public static class TypedResults
     /// <param name="content">The content to write to the response.</param>
     /// <param name="contentType">The content type (MIME type).</param>
     /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
-    public static ContentHttpResult Content(string content, MediaTypeHeaderValue contentType)
+    public static ContentHttpResult Content(string? content, MediaTypeHeaderValue contentType)
         => new(content, contentType.ToString());
 
     /// <summary>
@@ -170,13 +210,17 @@ public static class TypedResults
         bool enableRangeProcessing = false,
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
-        => new(fileContents, contentType)
+    {
+        ArgumentNullException.ThrowIfNull(fileContents);
+
+        return new(fileContents, contentType)
         {
             FileDownloadName = fileDownloadName,
             EnableRangeProcessing = enableRangeProcessing,
             LastModified = lastModified,
             EntityTag = entityTag,
         };
+    }
 
     /// <summary>
     /// Writes the byte-array content to the response.
@@ -203,13 +247,17 @@ public static class TypedResults
         bool enableRangeProcessing = false,
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
-        => new(contents, contentType)
+    {
+        ArgumentNullException.ThrowIfNull(contents);
+
+        return new(contents, contentType)
         {
             FileDownloadName = fileDownloadName,
             EnableRangeProcessing = enableRangeProcessing,
             LastModified = lastModified,
             EntityTag = entityTag,
         };
+    }
 
     /// <summary>
     /// Writes the byte-array content to the response.
@@ -274,6 +322,8 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
+        ArgumentNullException.ThrowIfNull(fileStream);
+
         return new(fileStream, contentType)
         {
             LastModified = lastModified,
@@ -315,6 +365,8 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
+        ArgumentNullException.ThrowIfNull(stream);
+
         return new(stream, contentType)
         {
             LastModified = lastModified,
@@ -353,6 +405,8 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
+        ArgumentNullException.ThrowIfNull(pipeReader);
+
         return new(pipeReader.AsStream(), contentType)
         {
             LastModified = lastModified,
@@ -386,6 +440,8 @@ public static class TypedResults
         DateTimeOffset? lastModified = null,
         EntityTagHeaderValue? entityTag = null)
     {
+        ArgumentNullException.ThrowIfNull(streamWriterCallback);
+
         return new(streamWriterCallback, contentType)
         {
             LastModified = lastModified,
@@ -418,6 +474,11 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
+        if (string.IsNullOrEmpty(path))
+        {
+            throw new ArgumentException("Argument cannot be null or empty", nameof(path));
+        }
+
         return new(path, contentType)
         {
             FileDownloadName = fileDownloadName,
@@ -451,6 +512,11 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
+        if (string.IsNullOrEmpty(path))
+        {
+            throw new ArgumentException("Argument cannot be null or empty", nameof(path));
+        }
+
         return new(path, contentType)
         {
             FileDownloadName = fileDownloadName,
@@ -474,7 +540,14 @@ public static class TypedResults
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
     public static RedirectHttpResult Redirect(string url, bool permanent = false, bool preserveMethod = false)
-        => new(url, permanent, preserveMethod);
+    {
+        if (string.IsNullOrEmpty(url))
+        {
+            throw new ArgumentException("Argument cannot be null or empty", nameof(url));
+        }
+
+        return new(url, permanent, preserveMethod);
+    }
 
     /// <summary>
     /// Redirects to the specified <paramref name="localUrl"/>.
@@ -490,7 +563,14 @@ public static class TypedResults
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
     public static RedirectHttpResult LocalRedirect(string localUrl, bool permanent = false, bool preserveMethod = false)
-        => new(localUrl, acceptLocalUrlOnly: true, permanent, preserveMethod);
+    {
+        if (string.IsNullOrEmpty(localUrl))
+        {
+            throw new ArgumentException("Argument cannot be null or empty", nameof(localUrl));
+        }
+
+        return new(localUrl, acceptLocalUrlOnly: true, permanent, preserveMethod);
+    }
 
     /// <summary>
     /// Redirects to the specified route.
@@ -650,6 +730,8 @@ public static class TypedResults
     /// <returns>The created <see cref="ProblemHttpResult"/> for the response.</returns>
     public static ProblemHttpResult Problem(ProblemDetails problemDetails)
     {
+        ArgumentNullException.ThrowIfNull(problemDetails);
+
         return new(problemDetails);
     }
 
@@ -671,6 +753,8 @@ public static class TypedResults
         string? type = null,
         IDictionary<string, object?>? extensions = null)
     {
+        ArgumentNullException.ThrowIfNull(errors);
+
         var problemDetails = new HttpValidationProblemDetails(errors)
         {
             Detail = detail,
@@ -698,9 +782,9 @@ public static class TypedResults
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
     public static Created Created(string uri)
     {
-        if (uri == null)
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentNullException(nameof(uri));
+            throw new ArgumentException("Argument cannot be null or empty", nameof(uri));
         }
 
         return new(uri);
@@ -715,9 +799,9 @@ public static class TypedResults
     /// <returns>The created <see cref="HttpResults.Created{TValue}"/> for the response.</returns>
     public static Created<TValue> Created<TValue>(string uri, TValue? value)
     {
-        if (uri == null)
+        if (string.IsNullOrEmpty(uri))
         {
-            throw new ArgumentNullException(nameof(uri));
+            throw new ArgumentException("Argument cannot be null or empty", nameof(uri));
         }
 
         return new(uri, value);
@@ -730,10 +814,7 @@ public static class TypedResults
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
     public static Created Created(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return new(uri);
     }
@@ -747,10 +828,7 @@ public static class TypedResults
     /// <returns>The created <see cref="HttpResults.Created{TValue}"/> for the response.</returns>
     public static Created<TValue> Created<TValue>(Uri uri, TValue? value)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return new(uri, value);
     }
@@ -804,10 +882,7 @@ public static class TypedResults
     /// <returns>The created <see cref="HttpResults.Accepted"/> for the response.</returns>
     public static Accepted Accepted(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return new(uri);
     }
@@ -821,10 +896,7 @@ public static class TypedResults
     /// <returns>The created <see cref="HttpResults.Accepted{TValue}"/> for the response.</returns>
     public static Accepted<TValue> Accepted<TValue>(Uri uri, TValue? value)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         return new(uri, value);
     }

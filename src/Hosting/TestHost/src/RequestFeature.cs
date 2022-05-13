@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class RequestFeature : IHttpRequestFeature
+internal sealed class RequestFeature : IHttpRequestFeature
 {
     public RequestFeature()
     {

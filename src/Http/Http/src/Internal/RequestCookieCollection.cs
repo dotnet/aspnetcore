@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal class RequestCookieCollection : IRequestCookieCollection
+internal sealed class RequestCookieCollection : IRequestCookieCollection
 {
     public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
     private static readonly string[] EmptyKeys = Array.Empty<string>();

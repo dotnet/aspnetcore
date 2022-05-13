@@ -135,7 +135,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
         Assert.True(await manager.RoleExistsAsync(roleName));
     }
 
-    private class AlwaysBadValidator : IUserValidator<TUser>, IRoleValidator<TRole>,
+    private sealed class AlwaysBadValidator : IUserValidator<TUser>, IRoleValidator<TRole>,
         IPasswordValidator<TUser>
     {
         public static readonly IdentityError ErrorMessage = new IdentityError { Description = "I'm Bad.", Code = "BadValidator" };

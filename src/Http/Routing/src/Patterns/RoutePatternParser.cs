@@ -478,7 +478,7 @@ internal static class RoutePatternParser
     }
 
     [DebuggerDisplay("{DebuggerToString()}")]
-    private class Context
+    private sealed class Context
     {
         private readonly string _template;
         private int _index;

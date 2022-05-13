@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class NullRouter : IRouter
+internal sealed class NullRouter : IRouter
 {
     public static readonly IRouter Instance = new NullRouter();
 

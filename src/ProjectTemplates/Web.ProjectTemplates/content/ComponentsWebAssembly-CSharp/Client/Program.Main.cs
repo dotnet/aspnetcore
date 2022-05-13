@@ -9,7 +9,11 @@ using ComponentsWebAssembly_CSharp.Client;
 using ComponentsWebAssembly_CSharp;
 #endif
 
-namespace Company.WebApplication1;
+#if (Hosted)
+namespace ComponentsWebAssembly_CSharp.Client;
+#else
+namespace ComponentsWebAssembly_CSharp;
+#endif
 
 public class Program
 {

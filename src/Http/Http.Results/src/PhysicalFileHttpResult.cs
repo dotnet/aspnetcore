@@ -107,6 +107,8 @@ public sealed partial class PhysicalFileHttpResult : IResult
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         var fileInfo = GetFileInfoWrapper(FileName);
         if (!fileInfo.Exists)
         {

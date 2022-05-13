@@ -188,7 +188,7 @@ public static class WebHostBuilderExtensions
     }
 
 #pragma warning disable CS0612 // Type or member is obsolete
-    private class ConfigureTestServicesStartupConfigureServicesFilter : IStartupConfigureServicesFilter
+    private sealed class ConfigureTestServicesStartupConfigureServicesFilter : IStartupConfigureServicesFilter
 #pragma warning restore CS0612 // Type or member is obsolete
     {
         private readonly Action<IServiceCollection> _servicesConfiguration;
@@ -212,7 +212,7 @@ public static class WebHostBuilderExtensions
     }
 
 #pragma warning disable CS0612 // Type or member is obsolete
-    private class ConfigureTestServicesStartupConfigureContainerFilter<TContainer> : IStartupConfigureContainerFilter<TContainer>
+    private sealed class ConfigureTestServicesStartupConfigureContainerFilter<TContainer> : IStartupConfigureContainerFilter<TContainer>
 #pragma warning restore CS0612 // Type or member is obsolete
     {
         private readonly Action<TContainer> _servicesConfiguration;

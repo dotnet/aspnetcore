@@ -11,7 +11,7 @@ using static Microsoft.AspNetCore.SignalR.Crankier.Commands.CommandLineUtilities
 
 namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
 {
-    internal class WorkerCommand
+    internal sealed class WorkerCommand
     {
         public static void Register(CommandLineApplication app)
         {

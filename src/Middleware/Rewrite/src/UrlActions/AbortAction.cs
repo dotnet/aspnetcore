@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlActions;
 
-internal class AbortAction : UrlAction
+internal sealed class AbortAction : UrlAction
 {
     public override void ApplyAction(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
     {

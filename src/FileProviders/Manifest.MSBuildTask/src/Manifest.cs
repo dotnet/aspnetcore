@@ -69,7 +69,7 @@ public class Manifest
         }
     }
 
-    private class ElementNames
+    private sealed class ElementNames
     {
         public const string Directory = "Directory";
         public const string Name = "Name";

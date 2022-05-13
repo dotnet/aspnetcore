@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
-internal class ReflectedNegotiateStateFactory : INegotiateStateFactory
+internal sealed class ReflectedNegotiateStateFactory : INegotiateStateFactory
 {
     public INegotiateState CreateInstance()
     {

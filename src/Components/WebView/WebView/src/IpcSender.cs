@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebView;
 
 // Handles comunication between the component abstractions (Renderer, NavigationManager, JSInterop, etc.)
 // and the underlying transport channel
-internal class IpcSender
+internal sealed class IpcSender
 {
     private readonly Dispatcher _dispatcher;
     private readonly Action<string> _messageDispatcher;

@@ -448,6 +448,48 @@ public class EndpointMetadataApiDescriptionProviderTest
 #nullable disable
 
     [Fact]
+    public void AddsMultipleParametersFromParametersAttribute()
+    {
+        static void AssertParameters(ApiDescription apiDescription)
+        {
+            Assert.Collection(
+                apiDescription.ParameterDescriptions,
+                param =>
+                {
+                    Assert.Equal("Foo", param.Name);
+                    Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+                    Assert.Equal(BindingSource.Path, param.Source);
+                    Assert.True(param.IsRequired);
+                },
+                param =>
+                {
+                    Assert.Equal("Bar", param.Name);
+                    Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+                    Assert.Equal(BindingSource.Query, param.Source);
+                    Assert.True(param.IsRequired);
+                },
+                param =>
+                {
+                    Assert.Equal("FromBody", param.Name);
+                    Assert.Equal(typeof(InferredJsonClass), param.Type);
+                    Assert.Equal(typeof(InferredJsonClass), param.ModelMetadata.ModelType);
+                    Assert.Equal(BindingSource.Body, param.Source);
+                    Assert.False(param.IsRequired);
+                }
+            );
+        }
+
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListClass req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListClassWithReadOnlyProperties req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListStruct req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecord req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordStruct req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
+    }
+
+    [Fact]
     public void TestParameterIsRequired()
     {
         var apiDescription = GetApiDescription(([FromRoute] int foo, int? bar) => { });
@@ -1321,6 +1363,44 @@ public class EndpointMetadataApiDescriptionProviderTest
             throw new NotImplementedException();
         public static bool TryParse(string value, out BindAsyncRecord result) =>
             throw new NotImplementedException();
+    }
+
+    private record ArgumentListRecord([FromRoute] int Foo, int Bar, InferredJsonClass FromBody, HttpContext context);
+
+    private record struct ArgumentListRecordStruct([FromRoute] int Foo, int Bar, InferredJsonClass FromBody, HttpContext context);
+
+    private record ArgumentListRecordWithoutAttributes(int Foo, int Bar, InferredJsonClass FromBody, HttpContext context);
+
+    private record ArgumentListRecordWithoutPositionalParameters
+    {
+        [FromRoute]
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+        public InferredJsonClass FromBody { get; set; }
+        public HttpContext Context { get; set; }
+    }
+
+    private class ArgumentListClass
+    {
+        [FromRoute]
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+        public InferredJsonClass FromBody { get; set; }
+        public HttpContext Context { get; set; }
+    }
+
+    private class ArgumentListClassWithReadOnlyProperties : ArgumentListClass
+    {
+        public int ReadOnly { get; }
+    }
+
+    private struct ArgumentListStruct
+    {
+        [FromRoute]
+        public int Foo { get; set; }
+        public int Bar { get; set; }
+        public InferredJsonClass FromBody { get; set; }
+        public HttpContext Context { get; set; }
     }
 
     private class TestServiceProvider : IServiceProvider

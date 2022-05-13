@@ -11,7 +11,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.OpenApi.Commands;
 
-internal class RefreshCommand : BaseCommand
+internal sealed class RefreshCommand : BaseCommand
 {
     private const string CommandName = "refresh";
 

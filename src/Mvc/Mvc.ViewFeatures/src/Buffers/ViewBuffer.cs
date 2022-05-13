@@ -385,7 +385,7 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
         Clear();
     }
 
-    private class EncodingWrapper : IHtmlContent
+    private sealed class EncodingWrapper : IHtmlContent
     {
         private readonly string _unencoded;
 

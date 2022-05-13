@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ControllerActionInvokerProvider : IActionInvokerProvider
+internal sealed class ControllerActionInvokerProvider : IActionInvokerProvider
 {
     private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
     private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.HttpLogging;
 /// <summary>
 /// Middleware that logs HTTP requests and HTTP responses.
 /// </summary>
-internal class W3CLoggingMiddleware
+internal sealed class W3CLoggingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly W3CLogger _w3cLogger;

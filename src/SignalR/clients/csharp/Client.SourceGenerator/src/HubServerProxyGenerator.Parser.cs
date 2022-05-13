@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator;
 
 internal partial class HubServerProxyGenerator
 {
-    internal class Parser
+    internal sealed class Parser
     {
         internal static bool IsSyntaxTargetForAttribute(SyntaxNode node) => node is AttributeSyntax
         {
