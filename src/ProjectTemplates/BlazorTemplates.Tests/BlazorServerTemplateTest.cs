@@ -29,7 +29,7 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorServerTemplateWorks_NoAuth(BrowserKind browserKind)
     {
-        var project = await CreateBuildPublishAsync("blazorservernoauth" + browserKind);
+        var project = await CreateBuildPublishAsync();
 
         await using var browser = BrowserManager.IsAvailable(browserKind) ?
             await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo) :
@@ -83,9 +83,9 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [MemberData(nameof(BlazorServerTemplateWorks_IndividualAuthData))]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
-    public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind, bool useLocalDB)
+    public async Task BlazorServerTemplateWorks_IndividualAuth(BrowserKind browserKind)
     {
-        var project = await CreateBuildPublishAsync("blazorserverindividual" + browserKind + (useLocalDB ? "uld" : ""));
+        var project = await CreateBuildPublishAsync();
 
         var browser = !BrowserManager.IsAvailable(browserKind) ?
             null :
@@ -187,5 +187,5 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
     [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     [InlineData("SingleOrg", new string[] { "--calls-graph" })]
     public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args)
-        => CreateBuildPublishAsync("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), auth, args);
+        => CreateBuildPublishAsync(auth, args);
 }

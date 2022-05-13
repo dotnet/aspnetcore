@@ -53,7 +53,7 @@ public class EmptyWebTemplateTest : LoggedTest
 
     private async Task EmtpyTemplateCore(string languageOverride, string[] args = null)
     {
-        var project = await ProjectFactory.GetOrCreateProject("empty" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
+        var project = await ProjectFactory.CreateProject(Output);
 
         var createResult = await project.RunDotNetNewAsync("web", args: args, language: languageOverride);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));

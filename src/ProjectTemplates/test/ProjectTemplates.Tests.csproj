@@ -7,7 +7,7 @@
     <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
-    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
+    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
 
     <BaseOutputPath />
@@ -18,6 +18,9 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
+    <SkipHelixQueues>
+      $(HelixQueueArmDebian11);
+    </SkipHelixQueues>
   </PropertyGroup>
 
   <ItemGroup>
