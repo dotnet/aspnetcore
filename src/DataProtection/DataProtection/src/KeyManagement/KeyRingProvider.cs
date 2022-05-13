@@ -58,7 +58,6 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
 
     internal bool InAutoRefreshWindow() => DateTime.UtcNow < AutoRefreshWindowEnd;
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, IKey? keyJustAdded)
     {
         // Refresh the list of all keys
@@ -146,19 +145,16 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             allKeys: allKeys);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public IKeyRing GetCurrentKeyRing()
     {
         return GetCurrentKeyRingCore(DateTime.UtcNow);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     internal IKeyRing RefreshCurrentKeyRing()
     {
         return GetCurrentKeyRingCore(DateTime.UtcNow, forceRefresh: true);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     internal IKeyRing GetCurrentKeyRingCore(DateTime utcNow, bool forceRefresh = false)
     {
         Debug.Assert(utcNow.Kind == DateTimeKind.Utc);
@@ -277,7 +273,6 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         return (a < b) ? a : b;
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     CacheableKeyRing ICacheableKeyRingProvider.GetCacheableKeyRing(DateTimeOffset now)
     {
         // the entry point allows one recursive call
