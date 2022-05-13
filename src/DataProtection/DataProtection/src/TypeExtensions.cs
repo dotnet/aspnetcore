@@ -36,7 +36,7 @@ internal static class TypeExtensions
         }
         catch (TypeLoadException ex)
         {
-            throw new InvalidOperationException($"Unable to load type '{typeName}'. If the app is published with trimming then ensure the type's assembly is excluded from trimming.", ex);
+            throw new InvalidOperationException($"Unable to load type '{typeName}'. If the app is published with trimming then this type may have been trimmed. Ensure the type's assembly is excluded from trimming.", ex);
         }
     }
 }

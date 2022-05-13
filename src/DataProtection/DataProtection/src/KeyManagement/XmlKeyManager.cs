@@ -477,11 +477,11 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         {
             return _activator.CreateInstance<AuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
-        else if (type == typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer))
+        else if (type == typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             return _activator.CreateInstance<CngCbcAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
-        else if (type == typeof(CngGcmAuthenticatedEncryptorDescriptorDeserializer))
+        else if (type == typeof(CngGcmAuthenticatedEncryptorDescriptorDeserializer) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             return _activator.CreateInstance<CngGcmAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
