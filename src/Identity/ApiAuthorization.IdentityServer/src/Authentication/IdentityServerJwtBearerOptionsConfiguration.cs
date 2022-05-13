@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
@@ -17,18 +16,15 @@ internal sealed class IdentityServerJwtBearerOptionsConfiguration : IConfigureNa
     private readonly string _scheme;
     private readonly string _apiName;
     private readonly IIdentityServerJwtDescriptor _localApiDescriptor;
-    private readonly IIssuerNameService  _issuerService;
 
     public IdentityServerJwtBearerOptionsConfiguration(
         string scheme,
         string apiName,
-        IIdentityServerJwtDescriptor localApiDescriptor,
-        IIssuerNameService issuerService)
+        IIdentityServerJwtDescriptor localApiDescriptor)
     {
         _scheme = scheme;
         _apiName = apiName;
         _localApiDescriptor = localApiDescriptor;
-        _issuerService = issuerService;
     }
 
     public void Configure(string name, JwtBearerOptions options)
@@ -64,8 +60,9 @@ internal sealed class IdentityServerJwtBearerOptionsConfiguration : IConfigureNa
         if (options.TokenValidationParameters.ValidIssuer == null || options.TokenValidationParameters.IssuerSigningKey == null)
         {
             var store = messageReceivedContext.HttpContext.RequestServices.GetRequiredService<ISigningCredentialStore>();
+            var issuerService = messageReceivedContext.HttpContext.RequestServices.GetRequiredService<IIssuerNameService>();
             var credential = await store.GetSigningCredentialsAsync();
-            options.Authority = options.Authority ?? await _issuerService.GetCurrentAsync();
+            options.Authority = options.Authority ?? await issuerService.GetCurrentAsync();
             options.TokenValidationParameters.IssuerSigningKey = credential.Key;
             options.TokenValidationParameters.ValidIssuer = options.Authority;
         }
