@@ -216,7 +216,8 @@ namespace RunTests
                 var testProcessTimeout = Options.Timeout.Subtract(TimeSpan.FromMinutes(5));
                 var cts = new CancellationTokenSource(testProcessTimeout);
                 var diagLog = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"), "vstest.log");
-                var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;CollectDump;TestTimeout=15m\"";
+                var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger xunit --logger \"console;verbosity=normal\" " +
+                                    "--blame-crash --blame-hang-timeout 15m";
                 if (Options.Quarantined)
                 {
                     ProcessUtil.PrintMessage("Running quarantined tests.");
@@ -230,12 +231,12 @@ namespace RunTests
                         throwOnError: false,
                         cancellationToken: cts.Token);
 
+                    if (cts.Token.IsCancellationRequested)
+                    {
+                        ProcessUtil.PrintMessage($"Quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
+                    }
                     if (result.ExitCode != 0)
                     {
-                        if (cts.Token.IsCancellationRequested)
-                        {
-                            ProcessUtil.PrintMessage($"Quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
-                        }
                         ProcessUtil.PrintMessage($"Failure in quarantined tests. Exit code: {result.ExitCode}.");
                     }
                 }
@@ -252,13 +253,12 @@ namespace RunTests
                         throwOnError: false,
                         cancellationToken: cts.Token);
 
+                    if (cts.Token.IsCancellationRequested)
+                    {
+                        ProcessUtil.PrintMessage($"Non-quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
+                    }
                     if (result.ExitCode != 0)
                     {
-                        if (cts.Token.IsCancellationRequested)
-                        {
-                            ProcessUtil.PrintMessage($"Non-quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
-                        }
-
                         ProcessUtil.PrintMessage($"Failure in non-quarantined tests. Exit code: {result.ExitCode}.");
                         exitCode = result.ExitCode;
                     }
