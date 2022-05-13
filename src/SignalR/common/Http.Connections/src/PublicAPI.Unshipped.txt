@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Http.Connections.WebSocketOptions.WebSocketAcceptContextFactory.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Http.WebSocketAcceptContext!>?
+Microsoft.AspNetCore.Http.Connections.WebSocketOptions.WebSocketAcceptContextFactory.set -> void
