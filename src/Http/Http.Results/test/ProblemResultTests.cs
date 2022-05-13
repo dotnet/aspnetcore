@@ -59,6 +59,7 @@ public class ProblemResultTests
 
         // Act
         await result.ExecuteAsync(httpContext);
+
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         stream.Position = 0;
