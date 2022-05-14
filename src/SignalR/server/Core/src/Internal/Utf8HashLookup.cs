@@ -61,7 +61,7 @@ internal sealed class Utf8HashLookup
 
         for (var i = _caseSensitiveBuckets[caseSensitiveHashCode % _caseSensitiveBuckets.Length] - 1; i >= 0; i = _slots[i].caseSensitiveNext)
         {
-            if (_slots[i].caseSensitiveHashCode == caseSensitiveHashCode && encodedValue.SequenceEqual(_slots[i].encodedValue.Span))
+            if (_slots[i].caseSensitiveHashCode == caseSensitiveHashCode && encodedValue.SequenceEqual(_slots[i].encodedValue.AsSpan()))
             {
                 value = _slots[i].value;
                 return true;
@@ -152,7 +152,7 @@ internal sealed class Utf8HashLookup
         internal int caseSensitiveHashCode;
 
         internal string value;
-        internal Memory<byte> encodedValue;
+        internal byte[] encodedValue;
 
         internal int next;
         internal int caseSensitiveNext;
