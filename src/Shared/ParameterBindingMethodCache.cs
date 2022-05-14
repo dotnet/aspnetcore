@@ -51,15 +51,18 @@ internal sealed class ParameterBindingMethodCache
         _throwOnInvalidMethod = throwOnInvalidMethod;
     }
 
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public bool HasTryParseMethod(Type type)
     {
         var nonNullableParameterType = Nullable.GetUnderlyingType(type) ?? type;
         return FindTryParseMethod(nonNullableParameterType) is not null;
     }
 
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public bool HasBindAsyncMethod(ParameterInfo parameter) =>
         FindBindAsyncMethod(parameter).Expression is not null;
 
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type type)
     {
         Func<ParameterExpression, Expression, Expression>? Finder(Type type)
@@ -176,6 +179,7 @@ internal sealed class ParameterBindingMethodCache
         return _stringMethodCallCache.GetOrAdd(type, Finder);
     }
 
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public (Expression? Expression, int ParamCount) FindBindAsyncMethod(ParameterInfo parameter)
     {
         (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
@@ -406,6 +410,7 @@ internal sealed class ParameterBindingMethodCache
         return candidateInterfaceMethodInfo;
     }
 
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     private static MethodInfo? GetAnyMethodFromHierarchy(Type type, string name)
     {
         // Find first incorrectly formatted method

@@ -310,6 +310,7 @@ public class WebHostBuilder : IWebHostBuilder
     }
 
     [UnconditionalSuppressMessage("Trimmer", "IL2077", Justification = "Finding startup type in assembly requires unreferenced code. Surfaced to user in UseStartup(startupAssemblyName).")]
+    [UnconditionalSuppressMessage("Trimmer", "IL2072", Justification = "Finding startup type in assembly requires unreferenced code. Surfaced to user in UseStartup(startupAssemblyName).")]
     private void ScanAssemblyAndRegisterStartup(ServiceCollection services, string startupAssemblyName)
     {
         try
