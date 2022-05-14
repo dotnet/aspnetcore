@@ -201,6 +201,10 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         // Suppress pseudo headers from the public headers collection.
         HttpRequestHeaders.ClearPseudoRequestHeaders();
 
+        // Cookies should be merged into a single string separated by "; "
+        // https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.5
+        HttpRequestHeaders.MergeCookies();
+
         return true;
     }
 

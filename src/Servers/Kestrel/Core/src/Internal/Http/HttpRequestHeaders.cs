@@ -48,6 +48,15 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         Clear(headersToClear);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void MergeCookies()
+    {
+        if (HasCookie && _headers._Cookie.Count > 1)
+        {
+            _headers._Cookie = string.Join("; ", _headers._Cookie.ToArray());
+        }
+    }
+
     protected override void ClearFast()
     {
         if (!ReuseHeaderValues)
