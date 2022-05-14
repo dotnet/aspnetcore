@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -14,6 +15,7 @@ using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -290,9 +292,6 @@ internal static class JsonRequestHelpers
 
     private static async ValueTask<IMessage> ReadHttpBodyAsync(JsonTranscodingServerCallContext serverCallContext)
     {
-        var ms = new MemoryStream();
-        await serverCallContext.HttpContext.Request.Body.CopyToAsync(ms);
-
         var httpBody = (IMessage)Activator.CreateInstance(serverCallContext.DescriptorInfo.BodyDescriptor!.ClrType)!;
 
         var contentType = serverCallContext.HttpContext.Request.ContentType;
@@ -301,12 +300,38 @@ internal static class JsonRequestHelpers
             httpBody.Descriptor.Fields[HttpBody.ContentTypeFieldNumber].Accessor.SetValue(httpBody, contentType);
         }
 
-        var data = ms.TryGetBuffer(out var buffer)
-           ? UnsafeByteOperations.UnsafeWrap(buffer.AsMemory())
-           : UnsafeByteOperations.UnsafeWrap(ms.ToArray());
-        httpBody.Descriptor.Fields[HttpBody.DataFieldNumber].Accessor.SetValue(httpBody, data);
+        var data = await ReadDataAsync(serverCallContext);
+        httpBody.Descriptor.Fields[HttpBody.DataFieldNumber].Accessor.SetValue(httpBody, UnsafeByteOperations.UnsafeWrap(data));
 
         return httpBody;
+    }
+
+    private static async ValueTask<byte[]> ReadDataAsync(JsonTranscodingServerCallContext serverCallContext)
+    {
+        // Buffer to disk if content is larger than 30Kb.
+        // Based on value in XmlSerializer and NewtonsoftJson input formatters.
+        const int DefaultMemoryThreshold = 1024 * 30;
+
+        var memoryThreshold = DefaultMemoryThreshold;
+        var contentLength = serverCallContext.HttpContext.Request.ContentLength.GetValueOrDefault();
+        if (contentLength > 0 && contentLength < memoryThreshold)
+        {
+            // If the Content-Length is known and is smaller than the default buffer size, use it.
+            memoryThreshold = (int)contentLength;
+        }
+
+        using var fs = new FileBufferingReadStream(serverCallContext.HttpContext.Request.Body, memoryThreshold);
+
+        // Read the request body into buffer.
+        // No explicit cancellation token. Request body uses underlying request aborted token.
+        await fs.DrainAsync(CancellationToken.None);
+        fs.Seek(0, SeekOrigin.Begin);
+
+        var data = new byte[fs.Length];
+        var read = fs.Read(data);
+        Debug.Assert(read == data.Length);
+
+        return data;
     }
 
     private static List<FieldDescriptor>? GetPathDescriptors(JsonTranscodingServerCallContext serverCallContext, IMessage requestMessage, string path)

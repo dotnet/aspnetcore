@@ -637,6 +637,60 @@ public class UnaryServerCallHandlerTests : LoggedTest
         Assert.Equal(@"Hello World!", responseJson.RootElement.GetProperty("message").GetString());
     }
 
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(1, true)]
+    [InlineData(16 * 1024, false)]
+    [InlineData(16 * 1024, true)]
+    [InlineData(1024 * 1024, false)]
+    [InlineData(1024 * 1024, true)]
+    public async Task HandleCallAsync_HttpBodyRequestLarge_RawRequestAvailable(int requestSize, bool sendContentLength)
+    {
+        // Arrange
+        string? requestContentType = null;
+        byte[]? requestData = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HttpBody, HelloReply> invoker = (s, r, c) =>
+        {
+            requestContentType = r.ContentType;
+            requestData = r.Data.ToByteArray();
+
+            return Task.FromResult(new HelloReply { Message = $"Hello {requestData.Length}!" });
+        };
+
+        var unaryServerCallHandler = CreateCallHandler(
+            invoker,
+            CreateServiceMethod("HttpRequestBody", HttpBody.Parser, HelloReply.Parser),
+            descriptorInfo: TestHelpers.CreateDescriptorInfo(bodyDescriptor: HttpBody.Descriptor));
+
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.ContentType = "application/octet-stream";
+
+        var requestContent = new byte[requestSize];
+        for (var i = 0; i < requestContent.Length; i++)
+        {
+            requestContent[i] = (byte)(i % 10);
+        }
+        httpContext.Request.Body = new MemoryStream(requestContent);
+        if (sendContentLength)
+        {
+            httpContext.Request.ContentLength = requestSize;
+        }
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.Equal("application/octet-stream", requestContentType);
+        Assert.Equal(requestContent, requestData);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
+        Assert.Equal($"Hello {requestContent.Length}!", responseJson.RootElement.GetProperty("message").GetString());
+    }
+
     [Fact]
     public async Task HandleCallAsync_NullBody_WrapperType_Error()
     {
