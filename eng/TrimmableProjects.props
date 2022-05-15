@@ -52,6 +52,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.WsFederation" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authorization" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authorization.Policy" />
+    <TrimmableProject Include="Microsoft.AspNetCore.CookiePolicy" />
     <TrimmableProject Include="Microsoft.AspNetCore.Cors" />
     <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
