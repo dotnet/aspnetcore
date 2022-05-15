@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 /// <summary>
 /// Authenticates requests using Negotiate, Kerberos, or NTLM.
 /// </summary>
+[RequiresUnreferencedCode("Negotiate authentication uses types that cannot be statically analyzed.")]
 public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthenticationRequestHandler
 {
     private const string AuthPersistenceKey = nameof(AuthPersistence);
