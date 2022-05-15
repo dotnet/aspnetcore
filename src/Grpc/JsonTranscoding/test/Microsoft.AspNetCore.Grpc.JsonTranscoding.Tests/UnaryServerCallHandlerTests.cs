@@ -511,7 +511,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
         // Assert
         Assert.Equal(400, httpContext.Response.StatusCode);
 
-        var expectedError = "Request content-type of application/json is required.";
+        var expectedError = $"Unable to read the request as JSON because the request content type '{contentType}' is not a known JSON content type.";
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
         using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
         Assert.Equal(expectedError, responseJson.RootElement.GetProperty("message").GetString());

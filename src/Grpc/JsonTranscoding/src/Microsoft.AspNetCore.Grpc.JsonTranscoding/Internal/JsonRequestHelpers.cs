@@ -88,7 +88,7 @@ internal static class JsonRequestHelpers
         }
     }
 
-    public static async Task SendErrorResponse(HttpResponse response, Encoding encoding, Status status, JsonSerializerOptions options)
+    public static async ValueTask SendErrorResponse(HttpResponse response, Encoding encoding, Status status, JsonSerializerOptions options)
     {
         if (!response.HasStarted)
         {
@@ -150,7 +150,7 @@ internal static class JsonRequestHelpers
         return StatusCodes.Status500InternalServerError;
     }
 
-    public static async Task WriteResponseMessage(HttpResponse response, Encoding encoding, object responseBody, JsonSerializerOptions options, CancellationToken cancellationToken)
+    public static async ValueTask WriteResponseMessage(HttpResponse response, Encoding encoding, object responseBody, JsonSerializerOptions options, CancellationToken cancellationToken)
     {
         var (stream, usesTranscodingStream) = GetStream(response.Body, encoding);
 
@@ -167,7 +167,7 @@ internal static class JsonRequestHelpers
         }
     }
 
-    public static async Task<TRequest> ReadMessage<TRequest>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions) where TRequest : class
+    public static async ValueTask<TRequest> ReadMessage<TRequest>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions) where TRequest : class
     {
         try
         {
@@ -190,7 +190,7 @@ internal static class JsonRequestHelpers
                     if (!serverCallContext.IsJsonRequestContent)
                     {
                         GrpcServerLog.UnsupportedRequestContentType(serverCallContext.Logger, serverCallContext.HttpContext.Request.ContentType);
-                        throw new InvalidOperationException("Request content-type of application/json is required.");
+                        throw new InvalidOperationException($"Unable to read the request as JSON because the request content type '{serverCallContext.HttpContext.Request.ContentType}' is not a known JSON content type.");
                     }
 
                     var (stream, usesTranscodingStream) = GetStream(serverCallContext.HttpContext.Request.Body, serverCallContext.RequestEncoding);
@@ -281,12 +281,12 @@ internal static class JsonRequestHelpers
         catch (JsonException ex)
         {
             GrpcServerLog.ErrorReadingMessage(serverCallContext.Logger, ex);
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Request JSON payload is not correctly formatted."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Request JSON payload is not correctly formatted.", ex));
         }
         catch (Exception ex)
         {
             GrpcServerLog.ErrorReadingMessage(serverCallContext.Logger, ex);
-            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message, ex));
         }
     }
 
@@ -343,7 +343,7 @@ internal static class JsonRequestHelpers
         });
     }
 
-    public static async Task SendMessage<TResponse>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions, TResponse message, CancellationToken cancellationToken) where TResponse : class
+    public static async ValueTask SendMessage<TResponse>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions, TResponse message, CancellationToken cancellationToken) where TResponse : class
     {
         var response = serverCallContext.HttpContext.Response;
 
