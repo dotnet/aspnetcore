@@ -10,6 +10,10 @@ namespace Microsoft.AspNetCore.Mvc;
 /// <summary>
 /// Disables the request body size limit.
 /// </summary>
+/// <remarks>
+/// Disabling the request body size limit can be a security concern in regards to uncontrolled
+/// resource consumption, particularly if the request body is being buffered.
+/// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public class DisableRequestSizeLimitAttribute : Attribute, IFilterFactory, IOrderedFilter, IRequestSizeLimitMetadata
 {
