@@ -142,7 +142,7 @@ internal sealed class OpenApiGenerator
             if (discoveredTypeAnnotation is not null)
             {
                 GenerateDefaultContent(discoveredContentTypeAnnotation, discoveredTypeAnnotation);
-                eligibileAnnotations.Add(statusCode, (discoveredTypeAnnotation, discoveredContentTypeAnnotation));
+                eligibileAnnotations[statusCode] = (discoveredTypeAnnotation, discoveredContentTypeAnnotation);
             }
         }
 
@@ -182,7 +182,7 @@ internal sealed class OpenApiGenerator
                 : discoveredTypeAnnotation;
 
             GenerateDefaultContent(discoveredContentTypeAnnotation, discoveredTypeAnnotation);
-            eligibileAnnotations.Add(statusCode, (discoveredTypeAnnotation, discoveredContentTypeAnnotation));
+            eligibileAnnotations[statusCode] = (discoveredTypeAnnotation, discoveredContentTypeAnnotation);
         }
 
         if (eligibileAnnotations.Count == 0)
