@@ -4,7 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateRazorAssemblyInfo>false</GenerateRazorAssemblyInfo>
     <!-- Suppress warnings about lowercase variable names in generated code -->
-    <NoWarn>CS8981;$(NoWarn)</NoWarn>
+    <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
