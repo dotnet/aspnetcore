@@ -8,6 +8,9 @@
   <ItemGroup>
     <!-- Clear references, the SDK may add some depending on UsuingToolXxx settings, but we only want to restore the following -->
     <PackageReference Remove="@(PackageReference)"/>
+    <PackageReference Include="Microsoft.ManifestTool.CrossPlatform" Version="$(MicrosoftManifestToolCrossPlatformVersion)" />
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="$(MicrosoftVisualStudioEngMicroBuildCoreVersion)" />
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Plugins.SwixBuild" Version="$(MicrosoftVisualStudioEngMicroBuildPluginsSwixBuildVersion)" />
     <PackageReference Include="Microsoft.DotNet.IBCMerge" Version="$(MicrosoftDotNetIBCMergeVersion)" Condition="'$(UsingToolIbcOptimization)' == 'true'" />
     <PackageReference Include="Drop.App" Version="$(DropAppVersion)" ExcludeAssets="all" Condition="'$(UsingToolVisualStudioIbcTraining)' == 'true'"/>
   </ItemGroup>
