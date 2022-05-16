@@ -363,7 +363,7 @@ public class OpenApiOperationGeneratorTests
                 operation.Parameters,
                 param =>
                 {
-                    Assert.Equal("Foo", param.Name);
+                    Assert.Equal("Foo", param.Name, ignoreCase: true);
                     Assert.Equal("integer", param.Schema.Type);
                     Assert.Equal(ParameterLocation.Path, param.In);
                     Assert.True(param.Required);
@@ -787,6 +787,19 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("object", content.Value.Schema.Type);
         Assert.Equal("200", response.Key);
         Assert.Equal("application/json", content.Key);
+
+    }
+
+    [Theory]
+    [InlineData("/todos/{id}", "id")]
+    [InlineData("/todos/{Id}", "Id")]
+    [InlineData("/todos/{id:minlen(2)}", "id")]
+    public void FavorsParameterCasingInRoutePattern(string pattern, string expectedName)
+    {
+        var operation = GetOpenApiOperation((int Id) => "", pattern);
+
+        var param = Assert.Single(operation.Parameters);
+        Assert.Equal(expectedName, param.Name);
     }
 
     private static OpenApiOperation GetOpenApiOperation(

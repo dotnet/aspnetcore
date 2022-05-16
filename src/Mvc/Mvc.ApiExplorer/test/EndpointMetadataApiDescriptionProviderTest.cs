@@ -456,7 +456,7 @@ public class EndpointMetadataApiDescriptionProviderTest
                 apiDescription.ParameterDescriptions,
                 param =>
                 {
-                    Assert.Equal("Foo", param.Name);
+                    Assert.Equal("Foo", param.Name, ignoreCase: true);
                     Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
                     Assert.Equal(BindingSource.Path, param.Source);
                     Assert.True(param.IsRequired);
@@ -1248,6 +1248,34 @@ public class EndpointMetadataApiDescriptionProviderTest
         var summaryMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointSummaryMetadata>().SingleOrDefault();
         Assert.NotNull(summaryMetadata);
         Assert.Equal("A summary", summaryMetadata.Summary);
+    }
+
+    [Theory]
+    [InlineData("/todos/{id}", "id")]
+    [InlineData("/todos/{Id}", "Id")]
+    [InlineData("/todos/{id:minlen(2)}", "id")]
+    public void FavorsParameterCasingInRoutePattern(string pattern, string expectedName)
+    {
+        var builder = CreateBuilder();
+        builder.MapGet(pattern, (int Id) => "");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        var parameter = Assert.Single(apiDescription.ParameterDescriptions);
+        Assert.Equal(expectedName, parameter.Name);
+        Assert.Equal(expectedName, parameter.ParameterDescriptor.Name);
     }
 
     private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)
