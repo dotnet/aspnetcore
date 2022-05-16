@@ -1,6 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// Disables the request body size limit.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class DisableRequestSizeLimitAttribute : Attribute, IFilterFactory, IOrderedFilter
+public class DisableRequestSizeLimitAttribute : Attribute, IFilterFactory, IOrderedFilter, IRequestSizeLimitMetadata
 {
     /// <summary>
     /// Gets the order value for determining the order of execution of filters. Filters execute in
@@ -39,4 +40,7 @@ public class DisableRequestSizeLimitAttribute : Attribute, IFilterFactory, IOrde
         var filter = serviceProvider.GetRequiredService<DisableRequestSizeLimitFilter>();
         return filter;
     }
+
+    /// <inheritdoc />
+    long? IRequestSizeLimitMetadata.MaxRequestBodySize => null;
 }
