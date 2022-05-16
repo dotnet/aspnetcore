@@ -309,6 +309,72 @@ public class RequestDecompressionMiddlewareTests
     }
 
     [Fact]
+    public async Task Request_InvalidDataForContentEncoding_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var uncompressedBytes = GetUncompressedContent();
+        var compressedBytes = await GetGZipCompressedContent(uncompressedBytes);
+        var contentEncoding = "br";
+
+        Exception exception = null;
+
+        var sink = new TestSink(
+            TestSink.EnableWithTypeName<DefaultRequestDecompressionProvider>,
+            TestSink.EnableWithTypeName<DefaultRequestDecompressionProvider>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddRequestDecompression();
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
+                })
+                .Configure(app =>
+                {
+                    app.Use((context, next) =>
+                    {
+                        context.Features.Set<IHttpMaxRequestBodySizeFeature>(
+                            new FakeHttpMaxRequestBodySizeFeature());
+                        return next(context);
+                    });
+                    app.UseRequestDecompression();
+                    app.Run(async context =>
+                    {
+                        exception = await Record.ExceptionAsync(async () =>
+                        {
+                            using var ms = new MemoryStream();
+                            await context.Request.Body.CopyToAsync(ms, context.RequestAborted);
+                        });
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var client = server.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "");
+        request.Content = new ByteArrayContent(compressedBytes);
+        request.Content.Headers.ContentEncoding.Add(contentEncoding);
+
+        // Act
+        await client.SendAsync(request);
+
+        // Assert
+        var logMessages = sink.Writes.ToList();
+
+        AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
+
+        Assert.NotNull(exception);
+        Assert.IsAssignableFrom<InvalidOperationException>(exception);
+    }
+
+    [Fact]
     public async Task Options_RegisterCustomDecompressionProvider()
     {
         // Arrange
