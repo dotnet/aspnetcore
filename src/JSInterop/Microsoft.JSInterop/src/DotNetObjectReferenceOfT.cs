@@ -75,9 +75,6 @@ public sealed class DotNetObjectReference<[DynamicallyAccessedMembers(JSInvokabl
 
     object IDotNetObjectReference.Value => Value;
 
-    [DynamicallyAccessedMembers(JSInvokable)]
-    Type IDotNetObjectReference.Type => typeof(TValue);
-
     internal bool Disposed { get; private set; }
 
     /// <summary>

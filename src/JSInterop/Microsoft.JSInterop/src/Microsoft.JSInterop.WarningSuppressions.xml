@@ -67,5 +67,11 @@
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.JSInterop.JSRuntimeExtensions.&lt;InvokeAsync&gt;d__4`1.MoveNext</property>
     </attribute>
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2111</argument>
+      <property name="Scope">member</property>
+      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.GetCachedMethodInfo(Microsoft.JSInterop.Infrastructure.IDotNetObjectReference,System.String)</property>
+    </attribute>
   </assembly>
 </linker>

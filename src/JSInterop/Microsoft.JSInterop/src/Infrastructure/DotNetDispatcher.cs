@@ -381,11 +381,9 @@ public static class DotNetDispatcher
 
     private static Task CreateValueTaskConverter<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] T>(object result) => ((ValueTask<T>)result).AsTask();
 
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111:ReflectionToDynamicallyAccessedMembers",
-        Justification = "The Type being passed into GetOrAdd is annotated, but the trimmer warns anyway. See https://github.com/dotnet/linker/issues/2790")]
     private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
     {
-        var type = objectReference.Type;
+        var type = objectReference.Value.GetType();
         var assemblyMethods = _cachedMethodsByType.GetOrAdd(type, ScanTypeForCallableMethods);
         if (assemblyMethods.TryGetValue(methodIdentifier, out var result))
         {
