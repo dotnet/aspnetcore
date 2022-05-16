@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Authentication.Negotiate.Internal;
@@ -24,6 +25,7 @@ public static class NegotiateExtensions
     /// </summary>
     /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
     /// <returns>The original builder.</returns>
+    [RequiresUnreferencedCode("Negotiate authentication uses types that cannot be statically analyzed.")]
     public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder)
         => builder.AddNegotiate(NegotiateDefaults.AuthenticationScheme, _ => { });
 
@@ -37,6 +39,7 @@ public static class NegotiateExtensions
     /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
     /// <param name="configureOptions">Allows for configuring the authentication handler.</param>
     /// <returns>The original builder.</returns>
+    [RequiresUnreferencedCode("Negotiate authentication uses types that cannot be statically analyzed.")]
     public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder, Action<NegotiateOptions> configureOptions)
         => builder.AddNegotiate(NegotiateDefaults.AuthenticationScheme, configureOptions);
 
@@ -51,6 +54,7 @@ public static class NegotiateExtensions
     /// <param name="authenticationScheme">The scheme name used to identify the authentication handler internally.</param>
     /// <param name="configureOptions">Allows for configuring the authentication handler.</param>
     /// <returns>The original builder.</returns>
+    [RequiresUnreferencedCode("Negotiate authentication uses types that cannot be statically analyzed.")]
     public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder, string authenticationScheme, Action<NegotiateOptions> configureOptions)
         => builder.AddNegotiate(authenticationScheme, displayName: null, configureOptions: configureOptions);
 
@@ -66,6 +70,7 @@ public static class NegotiateExtensions
     /// <param name="displayName">The name displayed to users when selecting an authentication handler. The default is null to prevent this from displaying.</param>
     /// <param name="configureOptions">Allows for configuring the authentication handler.</param>
     /// <returns>The original builder.</returns>
+    [RequiresUnreferencedCode("Negotiate authentication uses types that cannot be statically analyzed.")]
     public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder, string authenticationScheme, string? displayName, Action<NegotiateOptions> configureOptions)
     {
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<NegotiateOptions>, PostConfigureNegotiateOptions>());

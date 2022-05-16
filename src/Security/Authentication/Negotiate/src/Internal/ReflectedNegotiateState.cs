@@ -3,6 +3,7 @@
 
 #pragma warning disable CA1810 // Initialize all static fields inline.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -12,6 +13,7 @@ using System.Security.Principal;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
+[RequiresUnreferencedCode("Negotiate authentication uses types that cannot be statically analyzed.")]
 internal sealed class ReflectedNegotiateState : INegotiateState
 {
     // https://www.gnu.org/software/gss/reference/gss.pdf
