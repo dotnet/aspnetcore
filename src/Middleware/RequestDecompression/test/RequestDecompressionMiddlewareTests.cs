@@ -649,7 +649,7 @@ public class RequestDecompressionMiddlewareTests
 
     private class FakeRequestSizeLimitMetadata : IRequestSizeLimitMetadata
     {
-        public long MaxRequestBodySize { get; set; }
+        public long? MaxRequestBodySize { get; set; }
     }
 
     private class FakeHttpMaxRequestBodySizeFeature : IHttpMaxRequestBodySizeFeature

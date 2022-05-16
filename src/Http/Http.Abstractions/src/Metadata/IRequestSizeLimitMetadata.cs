@@ -11,5 +11,5 @@ public interface IRequestSizeLimitMetadata
     /// <summary>
     /// The maximum allowed size of the current request body in bytes.
     /// </summary>
-    long MaxRequestBodySize { get; }
+    long? MaxRequestBodySize { get; }
 }

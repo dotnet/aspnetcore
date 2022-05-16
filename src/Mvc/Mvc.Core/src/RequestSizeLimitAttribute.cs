@@ -54,5 +54,5 @@ public class RequestSizeLimitAttribute : Attribute, IFilterFactory, IOrderedFilt
     }
 
     /// <inheritdoc />
-    long IRequestSizeLimitMetadata.MaxRequestBodySize => _bytes;
+    long? IRequestSizeLimitMetadata.MaxRequestBodySize => _bytes;
 }
