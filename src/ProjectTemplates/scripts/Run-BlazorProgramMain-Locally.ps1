@@ -10,4 +10,4 @@ $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\Test-Template.ps1
 
-Test-Template "blazorserver" "blazorserver --use-program-main" "Microsoft.DotNet.Web.ProjectTemplates.6.0.6.0.0-dev.nupkg" $false
+Test-Template "blazorserver" "blazorserver --use-program-main" "Microsoft.DotNet.Web.ProjectTemplates.6.0.6.0.6.nupkg" $false

@@ -35,13 +35,13 @@ namespace Templates.Test
         }
 
         [Theory]
-        [InlineData("angularind", "angular", "Individual")]
-        [InlineData("reactind", "react", "Individual")]
-        [InlineData("angularnoauth", "angular", null)]
-        [InlineData("reactnoauth", "react", null)]
-        public async Task SpaTemplates_BuildAndPublish(string projectKey, string template, string auth)
+        [InlineData("angular", "Individual")]
+        [InlineData("react", "Individual")]
+        [InlineData("angular", null)]
+        [InlineData("react", null)]
+        public async Task SpaTemplates_BuildAndPublish(string template, string auth)
         {
-            var project = await ProjectFactory.GetOrCreateProject(projectKey, Output);
+            var project = await ProjectFactory.CreateProject(Output);
             var args = new[] { "--NoSpaFrontEnd", "true" };
             var createResult = await project.RunDotNetNewAsync(template, auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage(template, project, createResult));

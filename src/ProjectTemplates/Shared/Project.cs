@@ -54,6 +54,7 @@ namespace Templates.Test.Helpers
             string language = null,
             bool useLocalDB = false,
             bool noHttps = false,
+            bool errorOnRestoreError = true,
             string[] args = null,
             // Used to set special options in MSBuild
             IDictionary<string, string> environmentVariables = null)
@@ -95,29 +96,15 @@ namespace Templates.Test.Helpers
 
             argString += $" -o {TemplateOutputDir}";
 
-            // Only run one instance of 'dotnet new' at once, as a workaround for
-            // https://github.com/aspnet/templating/issues/63
-
-            await DotNetNewLock.WaitAsync();
-            try
+            if (Directory.Exists(TemplateOutputDir))
             {
-                Output.WriteLine("Acquired DotNetNewLock");
-
-                if (Directory.Exists(TemplateOutputDir))
-                {
-                    Output.WriteLine($"Template directory already exists, deleting contents of {TemplateOutputDir}");
-                    Directory.Delete(TemplateOutputDir, recursive: true);
-                }
-
-                using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
-                await execution.Exited;
-                return new ProcessResult(execution);
+                Output.WriteLine($"Template directory already exists, deleting contents of {TemplateOutputDir}");
+                Directory.Delete(TemplateOutputDir, recursive: true);
             }
-            finally
-            {
-                DotNetNewLock.Release();
-                Output.WriteLine("Released DotNetNewLock");
-            }
+
+            using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+            await execution.Exited;
+            return new ProcessResult(execution);
         }
 
         internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
@@ -183,31 +170,19 @@ namespace Templates.Test.Helpers
         {
             var args = $"--verbose --no-build migrations add {migrationName}";
 
-            // Only run one instance of 'dotnet new' at once, as a workaround for
-            // https://github.com/aspnet/templating/issues/63
-            await DotNetNewLock.WaitAsync();
-            try
+            var command = DotNetMuxer.MuxerPathOrDefault();
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
             {
-                Output.WriteLine("Acquired DotNetNewLock");
-                var command = DotNetMuxer.MuxerPathOrDefault();
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-                {
-                    args = $"\"{DotNetEfFullPath}\" " + args;
-                }
-                else
-                {
-                    command = "dotnet-ef";
-                }
+                args = $"\"{DotNetEfFullPath}\" " + args;
+            }
+            else
+            {
+                command = "dotnet-ef";
+            }
 
-                using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
-                await result.Exited;
-                return new ProcessResult(result);
-            }
-            finally
-            {
-                DotNetNewLock.Release();
-                Output.WriteLine("Released DotNetNewLock");
-            }
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+            await result.Exited;
+            return new ProcessResult(result);
         }
 
         internal async Task<ProcessResult> RunDotNetEfUpdateDatabaseAsync()
@@ -216,31 +191,19 @@ namespace Templates.Test.Helpers
 
             var args = "--verbose --no-build database update";
 
-            // Only run one instance of 'dotnet new' at once, as a workaround for
-            // https://github.com/aspnet/templating/issues/63
-            await DotNetNewLock.WaitAsync();
-            try
+            var command = DotNetMuxer.MuxerPathOrDefault();
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
             {
-                Output.WriteLine("Acquired DotNetNewLock");
-                var command = DotNetMuxer.MuxerPathOrDefault();
-                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-                {
-                    args = $"\"{DotNetEfFullPath}\" " + args;
-                }
-                else
-                {
-                    command = "dotnet-ef";
-                }
+                args = $"\"{DotNetEfFullPath}\" " + args;
+            }
+            else
+            {
+                command = "dotnet-ef";
+            }
 
-                using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
-                await result.Exited;
-                return new ProcessResult(result);
-            }
-            finally
-            {
-                DotNetNewLock.Release();
-                Output.WriteLine("Released DotNetNewLock");
-            }
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+            await result.Exited;
+            return new ProcessResult(result);
         }
 
         // If this fails, you should generate new migrations via migrations/updateMigrations.cmd
@@ -294,25 +257,15 @@ namespace Templates.Test.Helpers
 
         internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)
         {
-            await DotNetNewLock.WaitAsync();
-            try
-            {
-                Output.WriteLine("Acquired DotNetNewLock");
-                var result = ProcessEx.Run(
-                    Output,
-                    AppContext.BaseDirectory,
-                    DotNetMuxer.MuxerPathOrDefault(),
-                    arguments +
-                        $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
-                        $" -o {TemplateOutputDir}");
-                await result.Exited;
-                return result;
-            }
-            finally
-            {
-                DotNetNewLock.Release();
-                Output.WriteLine("Released DotNetNewLock");
-            }
+            var result = ProcessEx.Run(
+                Output,
+                AppContext.BaseDirectory,
+                DotNetMuxer.MuxerPathOrDefault(),
+                arguments +
+                    $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
+                    $" -o {TemplateOutputDir}");
+            await result.Exited;
+            return result;
         }
 
         public void Dispose()

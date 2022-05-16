@@ -102,7 +102,7 @@ namespace Templates.Test
         public async Task IdentityUIPackage_WorksWithDifferentOptions()
         {
             var packageOptions = new Dictionary<string, string>();
-            var project = await ProjectFactory.GetOrCreateProject("identityuipackage" + string.Concat(packageOptions.Values), Output);
+            var project = await ProjectFactory.CreateProject(Output);
             var useLocalDB = false;
 
             var createResult = await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, environmentVariables: packageOptions);

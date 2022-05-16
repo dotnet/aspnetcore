@@ -25,7 +25,7 @@ namespace RunTests
                     keepGoing = await runner.InstallPlaywrightAsync();
                 }
 #else
-                Console.WriteLine("Playwright install skipped.");
+                ProcessUtil.PrintMessage("Playwright install skipped.");
 #endif
 
                 runner.DisplayContents();
@@ -34,23 +34,23 @@ namespace RunTests
                 {
                     if (!await runner.CheckTestDiscoveryAsync())
                     {
-                        Console.WriteLine("RunTest stopping due to test discovery failure.");
+                        ProcessUtil.PrintMessage("RunTest stopping due to test discovery failure.");
                         Environment.Exit(1);
                         return;
                     }
 
                     var exitCode = await runner.RunTestsAsync();
                     runner.UploadResults();
-                    Console.WriteLine($"Completed Helix job with exit code '{exitCode}'");
+                    ProcessUtil.PrintMessage($"Completed Helix job with exit code '{exitCode}'");
                     Environment.Exit(exitCode);
                 }
 
-                Console.WriteLine("Tests were not run due to previous failures. Exit code=1");
+                ProcessUtil.PrintMessage("Tests were not run due to previous failures. Exit code=1");
                 Environment.Exit(1);
             }
             catch (Exception e)
             {
-                Console.WriteLine($"RunTests uncaught exception: {e.ToString()}");
+                ProcessUtil.PrintMessage($"RunTests uncaught exception: {e.ToString()}");
                 Environment.Exit(1);
             }
         }

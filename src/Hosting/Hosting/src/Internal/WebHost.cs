@@ -81,12 +81,12 @@ namespace Microsoft.AspNetCore.Hosting
             // There's no way to to register multiple service types per definition. See https://github.com/aspnet/DependencyInjection/issues/360
 #pragma warning disable CS8634 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'class' constraint.
             _applicationServiceCollection.AddSingleton(services
-                => services.GetService<ApplicationLifetime>() as IHostApplicationLifetime);
+                => services.GetService<ApplicationLifetime>()! as IHostApplicationLifetime);
 #pragma warning disable CS0618 // Type or member is obsolete
             _applicationServiceCollection.AddSingleton(services
-                => services.GetService<ApplicationLifetime>() as AspNetCore.Hosting.IApplicationLifetime);
+                => services.GetService<ApplicationLifetime>()! as AspNetCore.Hosting.IApplicationLifetime);
             _applicationServiceCollection.AddSingleton(services
-                => services.GetService<ApplicationLifetime>() as Extensions.Hosting.IApplicationLifetime);
+                => services.GetService<ApplicationLifetime>()! as Extensions.Hosting.IApplicationLifetime);
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS8634 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'class' constraint.
             _applicationServiceCollection.AddSingleton<HostedServiceExecutor>();
