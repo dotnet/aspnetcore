@@ -11,8 +11,7 @@
 
   <PropertyGroup>
     <CreateHelixPayload>true</CreateHelixPayload>
-    <HelixTimeout>00:30:00</HelixTimeout>
-    <HelixTimeout Condition="$(HelixTargetQueue.StartsWith('Windows.10.Amd64'))">00:40:00</HelixTimeout>
+    <HelixTimeout>00:45:00</HelixTimeout>
     <RunQuarantinedTests>false</RunQuarantinedTests>
     <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>

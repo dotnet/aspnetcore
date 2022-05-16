@@ -25,7 +25,7 @@ namespace Templates.Items.Test
         [Fact]
         public async Task BlazorServerItemTemplate()
         {
-            Project = await ProjectFactory.GetOrCreateProject("razorcomponentitem", Output);
+            Project = await ProjectFactory.CreateProject(Output);
 
             var createResult = await Project.RunDotNetNewAsync("razorcomponent --name Different");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create", Project, createResult));

@@ -37,6 +37,7 @@ app.UseHttpsRedirection();
 #endif
 #if (WindowsAuth)
 app.UseAuthentication();
+app.UseAuthorization();
 #endif
 
 var summaries = new[]

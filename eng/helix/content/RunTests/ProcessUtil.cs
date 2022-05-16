@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -80,7 +81,7 @@ namespace RunTests
             Action<int>? onStart = null,
             CancellationToken cancellationToken = default)
         {
-            Console.WriteLine($"Running '{filename} {arguments}'");
+            PrintMessage($"Running '{filename} {arguments}'");
             using var process = new Process()
             {
                 StartInfo =
@@ -153,7 +154,7 @@ namespace RunTests
 
             process.Exited += (_, e) =>
             {
-                Console.WriteLine($"'{process.StartInfo.FileName} {process.StartInfo.Arguments}' completed with exit code '{process.ExitCode}'");
+                PrintMessage($"'{process.StartInfo.FileName} {process.StartInfo.Arguments}' completed with exit code '{process.ExitCode}'");
                 if (throwOnError && process.ExitCode != 0)
                 {
                     processLifetimeTask.TrySetException(new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode} output: {outputBuilder.ToString()}"));
@@ -208,5 +209,8 @@ namespace RunTests
 
             return await processLifetimeTask.Task;
         }
+
+        public static void PrintMessage(string message) => Console.WriteLine($"{DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)} {message}");
+        public static void PrintErrorMessage(string message) => Console.Error.WriteLine($"{DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)} {message}");
     }
 }

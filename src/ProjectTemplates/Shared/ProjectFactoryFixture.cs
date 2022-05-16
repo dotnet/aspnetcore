@@ -14,6 +14,7 @@ namespace Templates.Test.Helpers
 {
     public class ProjectFactoryFixture : IDisposable
     {
+        private const string LetterChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private readonly ConcurrentDictionary<string, Project> _projects = new ConcurrentDictionary<string, Project>();
 
         public IMessageSink DiagnosticsMessageSink { get; }
@@ -21,6 +22,21 @@ namespace Templates.Test.Helpers
         public ProjectFactoryFixture(IMessageSink diagnosticsMessageSink)
         {
             DiagnosticsMessageSink = diagnosticsMessageSink;
+        }
+
+        public async Task<Project> CreateProject(ITestOutputHelper output)
+        {
+            await TemplatePackageInstaller.EnsureTemplatingEngineInitializedAsync(output);
+
+            var project = CreateProjectImpl(output);
+
+            var projectKey = Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant();
+            if (!_projects.TryAdd(projectKey, project))
+            {
+                throw new InvalidOperationException($"Project key collision in {nameof(ProjectFactoryFixture)}.{nameof(CreateProject)}!");
+            }
+
+            return project;
         }
 
         public async Task<Project> GetOrCreateProject(string projectKey, ITestOutputHelper output)
@@ -34,23 +50,30 @@ namespace Templates.Test.Helpers
             }
             return _projects.GetOrAdd(
                 projectKey,
-                (key, outputHelper) =>
-                {
-                    var project = new Project
-                    {
-                        Output = outputHelper,
-                        DiagnosticsMessageSink = DiagnosticsMessageSink,
-                        ProjectGuid = Path.GetRandomFileName().Replace(".", string.Empty)
-                    };
-                    project.ProjectName = $"AspNet.{project.ProjectGuid}";
-
-                    var assemblyPath = GetType().Assembly;
-                    var basePath = GetTemplateFolderBasePath(assemblyPath);
-                    project.TemplateOutputDir = Path.Combine(basePath, project.ProjectName);
-                    return project;
-                },
+                (_, outputHelper) => CreateProjectImpl(outputHelper),
                 output);
         }
+
+        private Project CreateProjectImpl(ITestOutputHelper output)
+        {
+            var project = new Project
+            {
+                Output = output,
+                DiagnosticsMessageSink = DiagnosticsMessageSink,
+                // Ensure first character is a  letter to avoid random insertions of '_' into template namespace
+                // declarations (i.e. make it more stable for testing)
+                ProjectGuid = GetRandomLetter() + Path.GetRandomFileName().Replace(".", string.Empty)
+            };
+            project.ProjectName = $"AspNetCore.{project.ProjectGuid}";
+
+            var assemblyPath = GetType().Assembly;
+            var basePath = GetTemplateFolderBasePath(assemblyPath);
+            project.TemplateOutputDir = Path.Combine(basePath, project.ProjectName);
+
+            return project;
+        }
+
+        private static char GetRandomLetter() => LetterChars[Random.Shared.Next(LetterChars.Length - 1)];
 
         private static string GetTemplateFolderBasePath(Assembly assembly) =>
             (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))

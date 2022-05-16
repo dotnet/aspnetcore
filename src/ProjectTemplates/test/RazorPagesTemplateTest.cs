@@ -40,9 +40,9 @@ namespace Templates.Test
         [InlineData(false)]
         public async Task RazorPagesTemplate_NoAuth(bool useProgramMain)
         {
-            var project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
+            var project = await ProjectFactory.CreateProject(Output);
 
-            var args = useProgramMain ? new [] { "--use-program-main" } : null;
+            var args = useProgramMain ? new [] { ArgConstants.UseProgramMain } : null;
             var createResult = await project.RunDotNetNewAsync("razor", args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("razor", project, createResult));
 
@@ -107,16 +107,23 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-        public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB, bool useProgramMain)
-        {
-            var project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
+        [InlineData(false)]
+        [InlineData(true)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
+        public Task RazorPagesTemplate_IndividualAuth_LocalDb(bool useProgramMain) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: true, useProgramMain);
 
-            var args = useProgramMain ? new [] { "--use-program-main" } : null;
+        [ConditionalTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
+        public Task RazorPagesTemplate_IndividualAuth(bool useProgramMain) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: false, useProgramMain);
+
+        private async Task RazorPagesTemplate_IndividualAuth_Core(bool useLocalDB, bool useProgramMain)
+        {
+            var project = await ProjectFactory.CreateProject(Output);
+
+            var args = useProgramMain ? new [] { ArgConstants.UseProgramMain } : null;
             var createResult = await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
@@ -231,21 +238,27 @@ namespace Templates.Test
         [ConditionalTheory]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
         [InlineData("IndividualB2C", null)]
-        [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        [InlineData("IndividualB2C", new string[] { "--use-program-main --called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        [InlineData("SingleOrg", null)]
-        [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        [InlineData("SingleOrg", new string[] { "--use-program-main --called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-        public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
+        [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        public Task RazorPagesTemplate_IdentityWeb_IndividualB2C_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
 
         [ConditionalTheory]
-        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
-        [InlineData("SingleOrg", new string[] { "--use-program-main --calls-graph" })]
-        public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes_WithSingleOrg(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [InlineData("SingleOrg", null)]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
+        [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+        public Task RazorPagesTemplate_IdentityWeb_SingleOrg_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
+
+        [ConditionalTheory]
+        [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph })]
+        [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
+        public Task RazorPagesTemplate_IdentityWeb_SingleOrg_CallsGraph_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
 
         private async Task<Project> BuildAndPublishRazorPagesTemplate(string auth, string[] args)
         {
-            var project = await ProjectFactory.GetOrCreateProject("razorpages" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
+            var project = await ProjectFactory.CreateProject(Output);
 
             var createResult = await project.RunDotNetNewAsync("razor", auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));

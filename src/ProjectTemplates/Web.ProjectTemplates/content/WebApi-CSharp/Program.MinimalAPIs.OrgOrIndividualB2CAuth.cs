@@ -64,14 +64,14 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"];
+var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"] ?? "";
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
 #if (GenerateApi)
-app.MapGet("/weatherforecast", (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
+app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
@@ -97,13 +97,12 @@ app.MapGet("/weatherforecast", (HttpContext httpContext, IDownstreamWebApi downs
         .ToArray();
 
     return forecast;
-})
-#elseif (GenerateGraph)
-app.MapGet("/weahterforecast", (HttpContext httpContext, GraphServiceClient graphServiceClient) =>
+#elif (GenerateGraph)
+app.MapGet("/weatherforecast", async (HttpContext httpContext, Graph.GraphServiceClient graphServiceClient) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-    var user = await _graphServiceClient.Me.Request().GetAsync();
+    var user = await graphServiceClient.Me.Request().GetAsync();
 
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
@@ -115,7 +114,6 @@ app.MapGet("/weahterforecast", (HttpContext httpContext, GraphServiceClient grap
         .ToArray();
 
     return forecast;
-})
 #else
 app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 {
