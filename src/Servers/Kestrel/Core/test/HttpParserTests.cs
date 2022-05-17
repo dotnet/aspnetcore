@@ -52,6 +52,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(buffer.Slice(examined).IsEmpty);
         }
 
+        [Fact]
+        public void ParsesRequestLineWithTrailingSpace()
+        {
+            var parser = CreateParser(_nullTrace, allowSpaceAfterRequestLine: true);
+            var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n "));
+            var requestHandler = new RequestHandler();
+
+            Assert.False(ParseRequestLine(parser, requestHandler, buffer.Slice(0, buffer.Length - 1), out var consumed, out var examined));
+            Assert.True(buffer.Slice(0, consumed).IsEmpty);
+            Assert.Equal(buffer.Length - 1, buffer.Slice(0, examined).Length);
+
+            Assert.True(ParseRequestLine(parser, requestHandler, buffer, out consumed, out examined));
+            Assert.True(buffer.Slice(consumed).IsEmpty);
+            Assert.True(buffer.Slice(examined).IsEmpty);
+
+            Assert.Equal(HttpMethods.Get, requestHandler.Method);
+            Assert.Equal("HTTP/1.1", requestHandler.Version);
+            Assert.Equal("/", requestHandler.RawTarget);
+            Assert.Equal("/", requestHandler.RawPath);
+            Assert.Equal("HTTP/1.1", requestHandler.Version);
+        }
+
         [Theory]
         [MemberData(nameof(RequestLineIncompleteData))]
         public void ParseRequestLineReturnsFalseWhenGivenIncompleteRequestLines(string requestLine)
@@ -536,7 +558,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(buffer.Slice(reader.Position).IsEmpty);
         }
 
-        private IHttpParser<RequestHandler> CreateParser(IKestrelTrace log) => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information));
+        private IHttpParser<RequestHandler> CreateParser(IKestrelTrace log, bool allowSpaceAfterRequestLine = false)
+            => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information), allowSpaceAfterRequestLine);
 
         public static IEnumerable<object[]> RequestLineValidData => HttpParsingData.RequestLineValidData;
 

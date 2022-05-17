@@ -16,14 +16,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
     {
         private readonly bool _showErrorDetails;
+        private readonly bool _allowSpaceAfterRequestLine;
 
         public HttpParser() : this(showErrorDetails: true)
         {
         }
 
         public HttpParser(bool showErrorDetails)
+            : this (showErrorDetails, CheckAllowSpaceAfterRequestLine())
+        {
+        }
+
+        internal HttpParser(bool showErrorDetails, bool allowSpaceAfterRequestLine)
         {
             _showErrorDetails = showErrorDetails;
+            _allowSpaceAfterRequestLine = allowSpaceAfterRequestLine;
+        }
+
+        private static bool CheckAllowSpaceAfterRequestLine()
+        {
+            // This mitigation is temporary and 6.0 specific, we do not anticipate porting this feature to later versions.
+            AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.AllowSpaceAfterRequestLine", out var allowSpaceAfterRequestLine);
+            return allowSpaceAfterRequestLine;
         }
 
         // byte types don't have a data type annotation so we pre-cast them; to avoid in-place casts
@@ -48,7 +62,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, ByteLF, advancePastDelimiter: true))
             {
+                if (_allowSpaceAfterRequestLine)
+                {
+                    // Skip a space after the request line
+                    if (reader.TryPeek(out byte s) && s == ByteSpace)
+                    {
+                        reader.Advance(1);
+                    }
+                    // Don't parse the request line until we've started receiving headers.
+                    // Need to make sure we skipped an extra space if present.
+                    else if (reader.End)
+                    {
+                        // Reset state so we can try again.
+                        reader.Rewind(requestLine.Length + 1);
+                        return false;
+                    }
+                }
+
                 ParseRequestLine(handler, requestLine);
+
                 return true;
             }
 
