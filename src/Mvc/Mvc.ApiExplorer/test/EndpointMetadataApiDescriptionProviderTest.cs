@@ -450,13 +450,13 @@ public class EndpointMetadataApiDescriptionProviderTest
     [Fact]
     public void AddsMultipleParametersFromParametersAttribute()
     {
-        static void AssertParameters(ApiDescription apiDescription)
+        static void AssertParameters(ApiDescription apiDescription, string capturedName = "Foo")
         {
             Assert.Collection(
                 apiDescription.ParameterDescriptions,
                 param =>
                 {
-                    Assert.Equal("Foo", param.Name);
+                    Assert.Equal(capturedName, param.Name);
                     Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
                     Assert.Equal(BindingSource.Path, param.Source);
                     Assert.True(param.IsRequired);
@@ -485,7 +485,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecord req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordStruct req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
-        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"), "foo");
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
     }
 
@@ -1248,6 +1248,34 @@ public class EndpointMetadataApiDescriptionProviderTest
         var summaryMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointSummaryMetadata>().SingleOrDefault();
         Assert.NotNull(summaryMetadata);
         Assert.Equal("A summary", summaryMetadata.Summary);
+    }
+
+    [Theory]
+    [InlineData("/todos/{id}", "id")]
+    [InlineData("/todos/{Id}", "Id")]
+    [InlineData("/todos/{id:minlen(2)}", "id")]
+    public void FavorsParameterCasingInRoutePattern(string pattern, string expectedName)
+    {
+        var builder = CreateBuilder();
+        builder.MapGet(pattern, (int Id) => "");
+
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var hostEnvironment = new HostEnvironment
+        {
+            ApplicationName = nameof(EndpointMetadataApiDescriptionProviderTest)
+        };
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        var apiDescription = Assert.Single(context.Results);
+        var parameter = Assert.Single(apiDescription.ParameterDescriptions);
+        Assert.Equal(expectedName, parameter.Name);
+        Assert.Equal(expectedName, parameter.ParameterDescriptor.Name);
     }
 
     private static IEnumerable<string> GetSortedMediaTypes(ApiResponseType apiResponseType)

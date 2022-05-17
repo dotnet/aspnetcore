@@ -354,6 +354,11 @@ internal sealed class OpenApiGenerator
 
         foreach (var parameter in parameters)
         {
+            if (parameter.Name is null)
+            {
+                throw new InvalidOperationException($"Encountered a parameter of type '{parameter.ParameterType}' without a name. Parameters must have a name.");
+            }
+
             var (isBodyOrFormParameter, parameterLocation) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
 
             // If the parameter isn't something that would be populated in RequestBody
@@ -367,9 +372,10 @@ internal sealed class OpenApiGenerator
             var nullabilityContext = new NullabilityInfoContext();
             var nullability = nullabilityContext.Create(parameter);
             var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull;
+            var name = pattern.GetParameter(parameter.Name) is { } routeParameter ? routeParameter.Name : parameter.Name;
             var openApiParameter = new OpenApiParameter()
             {
-                Name = parameter.Name,
+                Name =  name,
                 In = parameterLocation,
                 Content = GetOpenApiParameterContent(metadata),
                 Schema = OpenApiSchemaGenerator.GetOpenApiSchema(parameter.ParameterType),

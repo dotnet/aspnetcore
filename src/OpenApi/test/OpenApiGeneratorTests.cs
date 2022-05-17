@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
@@ -47,6 +48,15 @@ public class OpenApiOperationGeneratorTests
         var tag = Assert.Single(operation.Tags);
 
         Assert.Equal(declaringTypeName, tag.Name);
+    }
+
+    [Fact]
+    public void ThrowsInvalidOperationExceptionGivenUnnamedParameter()
+    {
+        var unnamedParameter = Expression.Parameter(typeof(int));
+        var lambda = Expression.Lambda(Expression.Block(), unnamedParameter);
+        var ex = Assert.Throws<InvalidOperationException>(() => GetOpenApiOperation(lambda.Compile()));
+        Assert.Equal("Encountered a parameter of type 'System.Runtime.CompilerServices.Closure' without a name. Parameters must have a name.", ex.Message);
     }
 
     [Fact]
@@ -357,13 +367,13 @@ public class OpenApiOperationGeneratorTests
     [Fact]
     public void AddsMultipleParametersFromParametersAttribute()
     {
-        static void AssertParameters(OpenApiOperation operation)
+        static void AssertParameters(OpenApiOperation operation, string capturedName = "Foo")
         {
             Assert.Collection(
                 operation.Parameters,
                 param =>
                 {
-                    Assert.Equal("Foo", param.Name);
+                    Assert.Equal(capturedName, param.Name);
                     Assert.Equal("integer", param.Schema.Type);
                     Assert.Equal(ParameterLocation.Path, param.In);
                     Assert.True(param.Required);
@@ -391,7 +401,7 @@ public class OpenApiOperationGeneratorTests
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecord req) => { }));
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordStruct req) => { }));
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
-        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"));
+        AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"), "foo");
         AssertParameters(GetOpenApiOperation(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
     }
 
@@ -787,6 +797,19 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("object", content.Value.Schema.Type);
         Assert.Equal("200", response.Key);
         Assert.Equal("application/json", content.Key);
+
+    }
+
+    [Theory]
+    [InlineData("/todos/{id}", "id")]
+    [InlineData("/todos/{Id}", "Id")]
+    [InlineData("/todos/{id:minlen(2)}", "id")]
+    public void FavorsParameterCasingInRoutePattern(string pattern, string expectedName)
+    {
+        var operation = GetOpenApiOperation((int Id) => "", pattern);
+
+        var param = Assert.Single(operation.Parameters);
+        Assert.Equal(expectedName, param.Name);
     }
 
     private static OpenApiOperation GetOpenApiOperation(

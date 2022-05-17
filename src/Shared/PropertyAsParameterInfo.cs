@@ -74,6 +74,11 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
 
         for (var i = 0; i < parameters.Length; i++)
         {
+            if (parameters[i].Name is null)
+            {
+                throw new InvalidOperationException($"Encountered a parameter of type '{parameters[i].ParameterType}' without a name. Parameters must have a name.");
+            }
+
             if (parameters[i].CustomAttributes.Any(a => a.AttributeType == typeof(AsParametersAttribute)))
             {
                 // Initialize the list with all parameter already processed
