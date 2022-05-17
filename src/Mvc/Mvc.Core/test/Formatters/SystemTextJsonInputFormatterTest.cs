@@ -87,6 +87,28 @@ public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
     }
 
     [Fact]
+    public async Task ReadAsync_WithJsonNullLiteralWithoutTreatEmptyInputAsDefault_ShouldSetNullValueNotSupportedError()
+    {
+        // Arrange
+        var formatter = GetInputFormatter();
+
+        var contentBytes = Encoding.UTF8.GetBytes("null");
+        var httpContext = GetHttpContext(contentBytes);
+
+        var formatterContext = CreateInputFormatterContext(typeof(int?), httpContext);
+        // TreatEmptyInputAsDefaultValue is set to false so even if type is nullable we should gget 'null value not supported'
+
+        // Act
+        await formatter.ReadAsync(formatterContext);
+
+        Assert.False(formatterContext.ModelState.IsValid);
+        var kvp = Assert.Single(formatterContext.ModelState);
+        Assert.Empty(kvp.Key);
+        var error = Assert.Single(kvp.Value.Errors);
+        Assert.Equal("null value not supported", error.ErrorMessage);
+    }
+
+    [Fact]
     public async Task ReadAsync_DoesNotThrowFormatException()
     {
         // Arrange

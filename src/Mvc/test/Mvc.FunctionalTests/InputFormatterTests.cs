@@ -181,7 +181,7 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
             kvp =>
             {
                 Assert.Empty(kvp.Key);
-                Assert.Equal("The value 'null' is invalid.", Assert.Single(kvp.Value));
+                Assert.Equal("A non-empty request body is required.", Assert.Single(kvp.Value));
             });
     }
 
@@ -199,7 +199,7 @@ public class InputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite
             kvp =>
             {
                 Assert.Empty(kvp.Key);
-                Assert.Equal("The value 'null' is invalid.", Assert.Single(kvp.Value));
+                Assert.Equal("A non-empty request body is required.", Assert.Single(kvp.Value));
             },
             kvp =>
             {

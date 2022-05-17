@@ -5,11 +5,11 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using BasicWebSite.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using BasicWebSite.Models;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -110,7 +110,7 @@ public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixtu
                 kvp =>
                 {
                     var error = Assert.Single(kvp.Value);
-                    Assert.Equal("The value 'null' is invalid.", error);
+                    Assert.Equal("null value not supported", error);
                 }
             );
         }
@@ -428,13 +428,13 @@ public class ApiBehaviorTest : ApiBehaviorTestBase<BasicWebSite.StartupWithSyste
     {
         return base.ActionsReturnBadRequest_WhenModelStateIsInvalid();
     }
-    
+
     [Fact]
     public override Task ActionWithNonOptionalParameterReturnsNullIsNotPermited_WhenInvokedWithNullParameter()
     {
         return base.ActionWithNonOptionalParameterReturnsNullIsNotPermited_WhenInvokedWithNullParameter();
     }
-    
+
     [Fact]
     public override Task ActionWithNonOptionalParameterReturnsBodyCannotBeEmpty_WhenInvokedWithEmptyBody()
     {

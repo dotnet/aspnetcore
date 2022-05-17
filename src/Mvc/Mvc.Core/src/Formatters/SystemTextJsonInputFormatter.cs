@@ -104,11 +104,8 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
 
         if (model == null && !context.TreatEmptyInputAsDefaultValue)
         {
-            // Some nonempty inputs might deserialize as null, for example whitespace,
-            // or the JSON-encoded value "null". The upstream BodyModelBinder needs to
-            // be notified that we don't regard this as a real input so it can register
-            // a model binding error.
-            return InputFormatterResult.NoValue();
+            context.ModelState.TryAddModelError(context.ModelName, "null value not supported");
+            return InputFormatterResult.Failure();
         }
         else
         {
