@@ -79,7 +79,7 @@ public interface IOutputCachingContext
     /// <summary>
     /// Determines whether the output caching logic should be attempted for the incoming HTTP request.
     /// </summary>
-    bool AttemptResponseCaching { get; set; }
+    bool AttemptOutputCaching { get; set; }
 
     /// <summary>
     /// Determines whether a cache lookup is allowed for the incoming HTTP request.

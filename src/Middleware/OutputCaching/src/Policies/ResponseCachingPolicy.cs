@@ -15,7 +15,7 @@ public sealed class ResponseCachingPolicy : IOutputCachingPolicy
     /// <inheritdoc />
     public Task OnRequestAsync(IOutputCachingContext context)
     {
-        context.AttemptResponseCaching = AttemptOutputCaching(context);
+        context.AttemptOutputCaching = AttemptOutputCaching(context);
         context.AllowCacheLookup = AllowCacheLookup(context);
         context.AllowCacheStorage = AllowCacheStorage(context);
         context.AllowLocking = true;

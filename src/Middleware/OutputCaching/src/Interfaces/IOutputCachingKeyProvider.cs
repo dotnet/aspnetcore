@@ -6,9 +6,9 @@ namespace Microsoft.AspNetCore.OutputCaching;
 internal interface IOutputCachingKeyProvider
 {
     /// <summary>
-    /// Create a vary key for storing cached responses.
+    /// Create a key for storing cached responses.
     /// </summary>
     /// <param name="context">The <see cref="OutputCachingContext"/>.</param>
-    /// <returns>The created vary key.</returns>
-    string CreateStorageVaryByKey(OutputCachingContext context);
+    /// <returns>The created key.</returns>
+    string CreateStorageKey(OutputCachingContext context);
 }

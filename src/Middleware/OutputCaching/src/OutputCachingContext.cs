@@ -34,7 +34,7 @@ internal class OutputCachingContext : IOutputCachingContext
     /// <summary>
     /// Determine whether the response caching logic should be attempted for the incoming HTTP request.
     /// </summary>
-    public bool AttemptResponseCaching { get; set; }
+    public bool AttemptOutputCaching { get; set; }
 
     /// <summary>
     /// Determine whether a cache lookup is allowed for the incoming HTTP request.
@@ -68,6 +68,7 @@ internal class OutputCachingContext : IOutputCachingContext
     public TimeSpan? CachedEntryAge { get; internal set; }
 
     public CachedVaryByRules CachedVaryByRules { get; set; } = new();
+
     public HashSet<string> Tags { get; } = new();
 
     public ILogger Logger { get; }
@@ -76,7 +77,7 @@ internal class OutputCachingContext : IOutputCachingContext
 
     internal TimeSpan CachedResponseValidFor { get; set; }
 
-    internal OutputCacheEntry CachedResponse { get; set; }
+    internal IOutputCacheEntry CachedResponse { get; set; }
 
     internal bool ResponseStarted { get; set; }
 

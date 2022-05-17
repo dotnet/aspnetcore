@@ -20,7 +20,7 @@ public interface IOutputCacheStore
     /// </summary>
     /// <param name="key">The cache key to look up.</param>
     /// <returns>The response cache entry if it exists; otherwise <c>null</c>.</returns>
-    ValueTask<OutputCacheEntry?> GetAsync(string key);
+    ValueTask<IOutputCacheEntry?> GetAsync(string key);
 
     /// <summary>
     /// Stores the given response in the response cache.
@@ -28,5 +28,5 @@ public interface IOutputCacheStore
     /// <param name="key">The cache key to store the response under.</param>
     /// <param name="entry">The response cache entry to store.</param>
     /// <param name="validFor">The amount of time the entry will be kept in the cache before expiring, relative to now.</param>
-    ValueTask SetAsync(string key, OutputCacheEntry entry, TimeSpan validFor);
+    ValueTask SetAsync(string key, IOutputCacheEntry entry, TimeSpan validFor);
 }

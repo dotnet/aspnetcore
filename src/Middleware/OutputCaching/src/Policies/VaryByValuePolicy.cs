@@ -23,7 +23,7 @@ public sealed class VaryByValuePolicy : IOutputCachingPolicy
     /// </summary>
     public VaryByValuePolicy(Func<string> varyBy)
     {
-        _varyBy = (c) => c.VaryByPrefix = c.VaryByPrefix + varyBy();
+        _varyBy = (c) => c.VaryByPrefix += varyBy();
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public sealed class VaryByValuePolicy : IOutputCachingPolicy
     /// </summary>
     public VaryByValuePolicy(Func<Task<string>> varyBy)
     {
-        _varyByAsync = async (c) => c.VaryByPrefix = c.VaryByPrefix + await varyBy();
+        _varyByAsync = async (c) => c.VaryByPrefix += await varyBy();
     }
 
     /// <summary>

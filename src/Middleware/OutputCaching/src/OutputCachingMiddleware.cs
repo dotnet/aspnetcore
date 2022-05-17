@@ -26,8 +26,8 @@ public class OutputCachingMiddleware
     private readonly IOutputCachingPolicyProvider _policyProvider;
     private readonly IOutputCacheStore _cache;
     private readonly IOutputCachingKeyProvider _keyProvider;
-    private readonly WorkDispatcher<string, OutputCacheEntry?> _outputCacheEntryDispatcher;
-    private readonly WorkDispatcher<string, OutputCacheEntry?> _requestDispatcher;
+    private readonly WorkDispatcher<string, IOutputCacheEntry?> _outputCacheEntryDispatcher;
+    private readonly WorkDispatcher<string, IOutputCacheEntry?> _requestDispatcher;
 
     /// <summary>
     /// Creates a new <see cref="OutputCachingMiddleware"/>.
@@ -96,20 +96,12 @@ public class OutputCachingMiddleware
             await _policyProvider.OnRequestAsync(context);
 
             // Should we attempt any caching logic?
-            if (context.EnableOutputCaching && context.AttemptResponseCaching)
+            if (context.EnableOutputCaching && context.AttemptOutputCaching)
             {
                 // Can this request be served from cache?
                 if (context.AllowCacheLookup)
                 {
-                    CreateCacheKey(context);
-
-                    // Locking cache lookups by default
-                    // TODO: should it be part of the cache implementations or can we assume all caches would benefit from it?
-                    // It makes sense for caches that use IO (disk, network) or need to deserialize the state but could also be a global option
-
-                    var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(context.CacheKey, _cache, static async (key, cache) => await cache.GetAsync(key));
-
-                    if (await TryServeFromCacheAsync(context, cacheEntry))
+                    if (await TryServeFromCacheAsync(context))
                     {
                         return;
                     }
@@ -131,7 +123,7 @@ public class OutputCachingMiddleware
                             // If the result was processed by another request, serve it from cache
                             if (!executed)
                             {
-                                if (await TryServeFromCacheAsync(context, cacheEntry))
+                                if (await TryServeFromCacheAsync(context))
                                 {
                                     return;
                                 }
@@ -142,7 +134,7 @@ public class OutputCachingMiddleware
                             await ExecuteResponseAsync();
                         }
 
-                        async Task<OutputCacheEntry?> ExecuteResponseAsync()
+                        async Task<IOutputCacheEntry?> ExecuteResponseAsync()
                         {
                             // Hook up to listen to the response stream
                             ShimResponseStream(context);
@@ -183,10 +175,15 @@ public class OutputCachingMiddleware
         }
     }
 
-    internal async Task<bool> TryServeCachedResponseAsync(OutputCachingContext context, OutputCacheEntry cachedResponse)
+    internal async Task<bool> TryServeCachedResponseAsync(OutputCachingContext context, IOutputCacheEntry? cacheEntry)
     {
-        context.CachedResponse = cachedResponse;
-        context.CachedResponseHeaders = cachedResponse.Headers;
+        if (cacheEntry == null)
+        {
+            return false;
+        }
+
+        context.CachedResponse = cacheEntry;
+        context.CachedResponseHeaders = context.CachedResponse.Headers;
         context.ResponseTime = _options.SystemClock.UtcNow;
         var cachedEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
@@ -248,14 +245,19 @@ public class OutputCachingMiddleware
         return false;
     }
 
-    internal async Task<bool> TryServeFromCacheAsync(OutputCachingContext context, OutputCacheEntry? cacheEntry)
+    internal async Task<bool> TryServeFromCacheAsync(OutputCachingContext context)
     {
-        if (cacheEntry != null)
+        CreateCacheKey(context);
+
+        // Locking cache lookups by default
+        // TODO: should it be part of the cache implementations or can we assume all caches would benefit from it?
+        // It makes sense for caches that use IO (disk, network) or need to deserialize the state but could also be a global option
+
+        var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(context.CacheKey, _cache, static async (key, cache) => await cache.GetAsync(key));
+
+        if (await TryServeCachedResponseAsync(context, cacheEntry))
         {
-            if (await TryServeCachedResponseAsync(context, cacheEntry))
-            {
-                return true;
-            }
+            return true;
         }
 
         if (HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers.CacheControl, CacheControlHeaderValue.OnlyIfCachedString))
@@ -300,14 +302,14 @@ public class OutputCachingMiddleware
             }
         }
 
-        context.CacheKey = _keyProvider.CreateStorageVaryByKey(context);
+        context.CacheKey = _keyProvider.CreateStorageKey(context);
     }
 
     /// <summary>
     /// Finalize cache headers.
     /// </summary>
     /// <param name="context"></param>
-    private void FinalizeCacheHeaders(OutputCachingContext context)
+    internal void FinalizeCacheHeaders(OutputCachingContext context)
     {
         if (context.IsResponseCacheable)
         {
@@ -505,7 +507,11 @@ public class OutputCachingMiddleware
     // Normalize order and casing
     internal static StringValues GetOrderCasingNormalizedStringValues(StringValues stringValues)
     {
-        if (stringValues.Count == 1)
+        if (stringValues.Count == 0)
+        {
+            return StringValues.Empty;
+        }
+        else if (stringValues.Count == 1)
         {
             return new StringValues(stringValues.ToString().ToUpperInvariant());
         }
@@ -526,9 +532,14 @@ public class OutputCachingMiddleware
         }
     }
 
-    internal static StringValues GetOrderCasingNormalizedDictionary(Dictionary<string, string> dictionary)
+    internal static StringValues GetOrderCasingNormalizedDictionary(IDictionary<string, string> dictionary)
     {
         const char KeySubDelimiter = '\x1f';
+
+        if (dictionary.Count == 0)
+        {
+            return StringValues.Empty;
+        }
 
         var newArray = new string[dictionary.Count];
 

@@ -29,7 +29,7 @@ internal sealed class OutputCachingKeyProvider : IOutputCachingKeyProvider
     }
 
     // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2
-    public string CreateStorageVaryByKey(OutputCachingContext context)
+    public string CreateStorageKey(OutputCachingContext context)
     {
         ArgumentNullException.ThrowIfNull(_builderPool, nameof(context));
 

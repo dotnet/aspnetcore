@@ -11,5 +11,5 @@ internal sealed class SystemClock : ISystemClock
     /// <summary>
     /// Retrieves the current system time in UTC.
     /// </summary>
-    public DateTime UtcNow => DateTime.UtcNow;
+    public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
 }

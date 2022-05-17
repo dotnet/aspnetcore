@@ -9,13 +9,24 @@ Microsoft.AspNetCore.OutputCaching.CachedVaryByRules.Headers.get -> Microsoft.Ex
 Microsoft.AspNetCore.OutputCaching.CachedVaryByRules.Headers.set -> void
 Microsoft.AspNetCore.OutputCaching.CachedVaryByRules.QueryKeys.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.OutputCaching.CachedVaryByRules.QueryKeys.set -> void
-Microsoft.AspNetCore.OutputCaching.CachedVaryByRules.VaryByCustom.get -> System.Collections.Generic.Dictionary<string!, string!>!
+Microsoft.AspNetCore.OutputCaching.CachedVaryByRules.VaryByCustom.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.AspNetCore.OutputCaching.CachedVaryByRules.VaryByPrefix.get -> Microsoft.Extensions.Primitives.StringValues
 Microsoft.AspNetCore.OutputCaching.CachedVaryByRules.VaryByPrefix.set -> void
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.Body.get -> Microsoft.AspNetCore.OutputCaching.CachedResponseBody!
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.Body.set -> void
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.Created.get -> System.DateTimeOffset
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.Created.set -> void
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.Headers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.Headers.set -> void
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.StatusCode.get -> int
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.StatusCode.set -> void
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.Tags.get -> string![]?
+Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.Tags.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCacheStore
 Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.EvictByTagAsync(string! tag) -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.GetAsync(string! key) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.OutputCaching.OutputCacheEntry?>
-Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.SetAsync(string! key, Microsoft.AspNetCore.OutputCaching.OutputCacheEntry! entry, System.TimeSpan validFor) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.GetAsync(string! key) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry?>
+Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.SetAsync(string! key, Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry! entry, System.TimeSpan validFor) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowCacheLookup.get -> bool
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowCacheLookup.set -> void
@@ -23,8 +34,8 @@ Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowCacheStorage.get -
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowCacheStorage.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowLocking.get -> bool
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowLocking.set -> void
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AttemptResponseCaching.get -> bool
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AttemptResponseCaching.set -> void
+Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AttemptOutputCaching.get -> bool
+Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AttemptOutputCaching.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.CachedEntryAge.get -> System.TimeSpan?
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.CachedResponseHeaders.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.CachedVaryByRules.get -> Microsoft.AspNetCore.OutputCaching.CachedVaryByRules!
@@ -57,15 +68,3 @@ Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicyProvider.OnServeFromCache
 Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicyProvider.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.IPoliciesMetadata
 Microsoft.AspNetCore.OutputCaching.IPoliciesMetadata.Policies.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!>!
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.Body.get -> Microsoft.AspNetCore.OutputCaching.CachedResponseBody!
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.Body.set -> void
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.Created.get -> System.DateTimeOffset
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.Created.set -> void
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.Headers.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.Headers.set -> void
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.OutputCacheEntry() -> void
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.StatusCode.get -> int
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.StatusCode.set -> void
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.Tags.get -> string![]?
-Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.Tags.set -> void

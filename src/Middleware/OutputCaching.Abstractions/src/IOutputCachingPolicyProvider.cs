@@ -9,23 +9,20 @@ namespace Microsoft.AspNetCore.OutputCaching;
 public interface IOutputCachingPolicyProvider
 {
     /// <summary>
-    /// Determine whether the response caching logic should be attempted for the incoming HTTP request.
+    /// Determines whether the response caching logic should be attempted for the incoming HTTP request.
     /// </summary>
     /// <param name="context">The <see cref="IOutputCachingContext"/>.</param>
-    /// <returns><c>true</c> if response caching logic should be attempted; otherwise <c>false</c>.</returns>
     Task OnRequestAsync(IOutputCachingContext context);
 
     /// <summary>
-    /// Determine whether the response retrieved from the response cache is fresh and can be served.
+    /// Determines whether the response retrieved from the response cache is fresh and can be served.
     /// </summary>
     /// <param name="context">The <see cref="IOutputCachingContext"/>.</param>
-    /// <returns><c>true</c> if cache lookup for this cache entry is allowed; otherwise <c>false</c>.</returns>
     Task OnServeFromCacheAsync(IOutputCachingContext context);
 
     /// <summary>
-    /// Determine whether the response can be cached for future requests.
+    /// Determines whether the response can be cached for future requests.
     /// </summary>
     /// <param name="context">The <see cref="IOutputCachingContext"/>.</param>
-    /// <returns><c>true</c> if cache lookup for this request is allowed; otherwise <c>false</c>.</returns>
     Task OnServeResponseAsync(IOutputCachingContext context);
 }
