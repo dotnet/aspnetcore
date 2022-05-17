@@ -38,6 +38,7 @@
 /src/Mvc/                                                                         @dotnet/aspnet-blazor-eng
 /src/Mvc/Mvc.ApiExplorer                                                          @captainsafia @halter73 @brunolins16
 /src/Mvc/**/PublicAPI.*Shipped.txt                                                @dotnet/aspnet-api-review @dotnet/aspnet-blazor-eng
+/src/OpenApi                                                                      @captainsafia @dotnet/minimal-apis
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/        @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
 /src/Security/                                                                    @tratcher
