@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
@@ -568,25 +569,215 @@ public class RequestDecompressionMiddlewareTests
         }
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Endpoint_DoesNotHaveSizeLimitMetadata(bool isCompressed)
+    {
+        // Arrange
+        var sink = new TestSink();
+        var logger = new TestLogger<RequestDecompressionMiddleware>(
+            new TestLoggerFactory(sink, enabled: true));
+        IRequestDecompressionProvider provider = new FakeRequestDecompressionProvider(isCompressed);
+
+        var middleware = new RequestDecompressionMiddleware(
+            c =>
+            {
+                c.Response.StatusCode = StatusCodes.Status200OK;
+                return Task.CompletedTask;
+            },
+            logger,
+            provider);
+
+        var context = new DefaultHttpContext();
+
+        IEndpointFeature endpointFeature = new FakeEndpointFeature
+        {
+            Endpoint = new Endpoint(
+                requestDelegate: null,
+                metadata: new EndpointMetadataCollection(),
+                displayName: null)
+        };
+        context.HttpContext.Features.Set(endpointFeature);
+
+        long expectedRequestSizeLimit = 100;
+        IHttpMaxRequestBodySizeFeature maxRequestBodySizeFeature =
+            new FakeHttpMaxRequestBodySizeFeature(expectedRequestSizeLimit);
+        context.HttpContext.Features.Set(maxRequestBodySizeFeature);
+
+        // Act
+        await middleware.Invoke(context);
+
+        // Assert
+        var logMessages = sink.Writes.ToList();
+        AssertLog(Assert.Single(logMessages), LogLevel.Debug,
+            $"The endpoint does not specify the {nameof(IRequestSizeLimitMetadata)}.");
+
+        var actualRequestSizeLimit = maxRequestBodySizeFeature.MaxRequestBodySize;
+        Assert.Equal(expectedRequestSizeLimit, actualRequestSizeLimit);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Endpoint_DoesNotHaveBodySizeFeature(bool isCompressed)
+    {
+        // Arrange
+        var sink = new TestSink();
+        var logger = new TestLogger<RequestDecompressionMiddleware>(
+            new TestLoggerFactory(sink, enabled: true));
+        IRequestDecompressionProvider provider = new FakeRequestDecompressionProvider(isCompressed);
+
+        var middleware = new RequestDecompressionMiddleware(
+            c =>
+            {
+                c.Response.StatusCode = StatusCodes.Status200OK;
+                return Task.CompletedTask;
+            },
+            logger,
+            provider);
+
+        var context = new DefaultHttpContext();
+
+        IEndpointFeature endpointFeature = GetFakeEndpointFeature(100);
+        context.HttpContext.Features.Set(endpointFeature);
+
+        IHttpMaxRequestBodySizeFeature maxRequestBodySizeFeature = null;
+        context.HttpContext.Features.Set(maxRequestBodySizeFeature);
+
+        // Act
+        await middleware.Invoke(context);
+
+        // Assert
+        var logMessages = sink.Writes.ToList();
+        AssertLog(Assert.Single(logMessages), LogLevel.Warning,
+            $"A request body size limit could not be applied. This server does not support the {nameof(IHttpMaxRequestBodySizeFeature)}.");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Endpoint_BodySizeFeatureIsReadOnly(bool isCompressed)
+    {
+        // Arrange
+        var sink = new TestSink();
+        var logger = new TestLogger<RequestDecompressionMiddleware>(
+            new TestLoggerFactory(sink, enabled: true));
+        IRequestDecompressionProvider provider = new FakeRequestDecompressionProvider(isCompressed);
+
+        var middleware = new RequestDecompressionMiddleware(
+            c =>
+            {
+                c.Response.StatusCode = StatusCodes.Status200OK;
+                return Task.CompletedTask;
+            },
+            logger,
+            provider);
+
+        var context = new DefaultHttpContext();
+
+        IEndpointFeature endpointFeature = GetFakeEndpointFeature(100);
+        context.HttpContext.Features.Set(endpointFeature);
+
+        long expectedRequestSizeLimit = 50;
+        IHttpMaxRequestBodySizeFeature maxRequestBodySizeFeature =
+            new FakeHttpMaxRequestBodySizeFeature(expectedRequestSizeLimit, isReadOnly: true);
+        context.HttpContext.Features.Set(maxRequestBodySizeFeature);
+
+        // Act
+        await middleware.Invoke(context);
+
+        // Assert
+        var logMessages = sink.Writes.ToList();
+        AssertLog(Assert.Single(logMessages), LogLevel.Warning,
+            $"A request body size limit could not be applied. The {nameof(IHttpMaxRequestBodySizeFeature)} for the server is read-only.");
+
+        var actualRequestSizeLimit = maxRequestBodySizeFeature.MaxRequestBodySize;
+        Assert.Equal(expectedRequestSizeLimit, actualRequestSizeLimit);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public async Task Endpoint_HasBodySizeFeature_SetUsingSizeLimitMetadata(bool isCompressed, bool isRequestSizeLimitDisabled)
+    {
+        // Arrange
+        var sink = new TestSink();
+        var logger = new TestLogger<RequestDecompressionMiddleware>(
+            new TestLoggerFactory(sink, enabled: true));
+        IRequestDecompressionProvider provider = new FakeRequestDecompressionProvider(isCompressed);
+
+        var middleware = new RequestDecompressionMiddleware(
+            c =>
+            {
+                c.Response.StatusCode = StatusCodes.Status200OK;
+                return Task.CompletedTask;
+            },
+            logger,
+            provider);
+
+        var context = new DefaultHttpContext();
+
+        long? expectedRequestSizeLimit = isRequestSizeLimitDisabled ? null : 100;
+        IEndpointFeature endpointFeature = GetFakeEndpointFeature(expectedRequestSizeLimit);
+        context.HttpContext.Features.Set(endpointFeature);
+
+        IHttpMaxRequestBodySizeFeature maxRequestBodySizeFeature =
+            new FakeHttpMaxRequestBodySizeFeature(50);
+        context.HttpContext.Features.Set(maxRequestBodySizeFeature);
+
+        // Act
+        await middleware.Invoke(context);
+
+        // Assert
+        var logMessages = sink.Writes.ToList();
+
+        if (isRequestSizeLimitDisabled)
+        {
+            AssertLog(Assert.Single(logMessages), LogLevel.Debug,
+                "The maximum request body size as been disabled.");
+        }
+        else
+        {
+            AssertLog(Assert.Single(logMessages), LogLevel.Debug,
+                $"The maximum request body size has been set to {expectedRequestSizeLimit.Value.ToString(CultureInfo.InvariantCulture)}.");
+        }
+
+        var actualRequestSizeLimit = maxRequestBodySizeFeature.MaxRequestBodySize;
+        Assert.Equal(expectedRequestSizeLimit, actualRequestSizeLimit);
+    }
+
     [Fact]
     public void Ctor_NullRequestDelegate_Throws()
     {
         // Arrange
         RequestDelegate requestDelegate = null;
+        var logger = new TestLogger<RequestDecompressionMiddleware>(
+            new TestLoggerFactory(new TestSink(), enabled: true));
         var provider = new FakeRequestDecompressionProvider();
 
         // Act + Assert
         Assert.Throws<ArgumentNullException>(() =>
         {
-            new RequestDecompressionMiddleware(requestDelegate, provider);
+            new RequestDecompressionMiddleware(requestDelegate, logger, provider);
         });
     }
 
-    private class FakeRequestDecompressionProvider : IRequestDecompressionProvider
+    [Fact]
+    public void Ctor_NullLogger_Throws()
     {
-#nullable enable
-        public Stream? GetDecompressionStream(HttpContext context) => null;
-#nullable disable
+        // Arrange
+        static Task requestDelegate(HttpContext context) => Task.FromResult(context);
+        ILogger<RequestDecompressionMiddleware> logger = null;
+        var provider = new FakeRequestDecompressionProvider();
+
+        // Act + Assert
+        Assert.Throws<ArgumentNullException>(() =>
+        {
+            new RequestDecompressionMiddleware(requestDelegate, logger, provider);
+        });
     }
 
     [Fact]
@@ -594,13 +785,32 @@ public class RequestDecompressionMiddlewareTests
     {
         // Arrange
         static Task requestDelegate(HttpContext context) => Task.FromResult(context);
+        var logger = new TestLogger<RequestDecompressionMiddleware>(
+            new TestLoggerFactory(new TestSink(), enabled: true));
         IRequestDecompressionProvider provider = null;
 
         // Act + Assert
         Assert.Throws<ArgumentNullException>(() =>
         {
-            new RequestDecompressionMiddleware(requestDelegate, provider);
+            new RequestDecompressionMiddleware(requestDelegate, logger, provider);
         });
+    }
+
+    private class FakeRequestDecompressionProvider : IRequestDecompressionProvider
+    {
+        private readonly bool _isCompressed;
+
+        public FakeRequestDecompressionProvider(bool isCompressed = false)
+        {
+            _isCompressed = isCompressed;
+        }
+
+#nullable enable
+        public Stream? GetDecompressionStream(HttpContext context)
+            => _isCompressed
+                ? new MemoryStream()
+                : null;
+#nullable disable
     }
 
     private static void AssertLog(WriteContext log, LogLevel level, string message)
@@ -689,7 +899,7 @@ public class RequestDecompressionMiddlewareTests
         }
     }
 
-    private static FakeEndpointFeature GetFakeEndpointFeature(long requestSizeLimit)
+    private static FakeEndpointFeature GetFakeEndpointFeature(long? requestSizeLimit)
     {
         var requestSizeLimitMetadata = new FakeRequestSizeLimitMetadata
         {
@@ -720,12 +930,15 @@ public class RequestDecompressionMiddlewareTests
 
     private class FakeHttpMaxRequestBodySizeFeature : IHttpMaxRequestBodySizeFeature
     {
-        public FakeHttpMaxRequestBodySizeFeature(long? maxRequestBodySize = null)
+        public FakeHttpMaxRequestBodySizeFeature(
+            long? maxRequestBodySize = null,
+            bool isReadOnly = false)
         {
             MaxRequestBodySize = maxRequestBodySize;
+            IsReadOnly = isReadOnly;
         }
 
-        public bool IsReadOnly => false;
+        public bool IsReadOnly { get; }
 
         public long? MaxRequestBodySize { get; set; }
     }
