@@ -769,6 +769,26 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("A summary", operation.Summary);
     }
 
+    // Test case for https://github.com/dotnet/aspnetcore/issues/41622
+    [Fact]
+    public void HandlesEndpointWithMultipleResponses()
+    {
+        var operation = GetOpenApiOperation(() => TypedResults.Ok(new InferredJsonClass()),
+            additionalMetadata: new[]
+            {
+                // Metadata added by the `IEndpointMetadataProvider` on `TypedResults.Ok`
+                new ProducesResponseTypeMetadata(StatusCodes.Status200OK),
+                // Metadata added by the `Produces<Type>` extension method
+                new ProducesResponseTypeMetadata(typeof(InferredJsonClass), StatusCodes.Status200OK, "application/json"),
+            });
+
+        var response = Assert.Single(operation.Responses);
+        var content = Assert.Single(response.Value.Content);
+        Assert.Equal("object", content.Value.Schema.Type);
+        Assert.Equal("200", response.Key);
+        Assert.Equal("application/json", content.Key);
+    }
+
     private static OpenApiOperation GetOpenApiOperation(
         Delegate action,
         string pattern = null,
