@@ -46,7 +46,7 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo ExecuteValueTaskOfStringMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskOfString), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteTaskResultOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteValueResultTaskOfTMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskResult), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo ExecuteObjectReturnMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteObjectReturn), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo ExecuteAwaitedReturnMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteAwaitedReturn), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo GetRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetRequiredService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
     private static readonly MethodInfo GetServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(nameof(ServiceProviderServiceExtensions.GetService), BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(IServiceProvider) })!;
     private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -886,7 +886,7 @@ public static partial class RequestDelegateFactory
         }
         else if (returnType == typeof(object))
         {
-            return Expression.Call(ExecuteObjectReturnMethod, methodCall, HttpContextExpr);
+            return Expression.Call(ExecuteAwaitedReturnMethod, methodCall, HttpContextExpr);
         }
         else if (returnType == typeof(ValueTask<object>))
         {
@@ -1876,12 +1876,12 @@ public static partial class RequestDelegateFactory
     {
         static async Task ExecuteAwaited(ValueTask<object> valueTask, HttpContext httpContext)
         {
-            await ExecuteObjectReturn(await valueTask, httpContext);
+            await ExecuteAwaitedReturn(await valueTask, httpContext);
         }
 
         if (valueTask.IsCompletedSuccessfully)
         {
-            return ExecuteObjectReturn(valueTask.GetAwaiter().GetResult(), httpContext);
+            return ExecuteAwaitedReturn(valueTask.GetAwaiter().GetResult(), httpContext);
         }
 
         return ExecuteAwaited(valueTask, httpContext);
@@ -1891,45 +1891,21 @@ public static partial class RequestDelegateFactory
     {
         static async Task ExecuteAwaited(Task<object> task, HttpContext httpContext)
         {
-            await ExecuteObjectReturn(await task, httpContext);
+            await ExecuteAwaitedReturn(await task, httpContext);
         }
 
         if (task.IsCompletedSuccessfully)
         {
-            return ExecuteObjectReturn(task.GetAwaiter().GetResult(), httpContext);
+            return ExecuteAwaitedReturn(task.GetAwaiter().GetResult(), httpContext);
         }
 
         return ExecuteAwaited(task, httpContext);
     }
 
-    private static Task ExecuteObjectReturn(object obj, HttpContext httpContext)
+    private static Task ExecuteAwaitedReturn(object obj, HttpContext httpContext)
     {
-        if (obj is Task<object> taskObj)
-        {
-            return ExecuteTaskOfObject(taskObj, httpContext);
-        }
-        else if (obj is ValueTask<object> valueTaskObj)
-        {
-            return ExecuteValueTaskOfObject(valueTaskObj, httpContext);
-        }
-        else if (obj is Task<IResult?> task)
-        {
-            return ExecuteTaskResult(task, httpContext);
-        }
-        else if (obj is ValueTask<IResult?> valueTask)
-        {
-            return ExecuteValueTaskResult(valueTask, httpContext);
-        }
-        else if (obj is Task<string?> taskString)
-        {
-            return ExecuteTaskOfString(taskString, httpContext);
-        }
-        else if (obj is ValueTask<string?> valueTaskString)
-        {
-            return ExecuteValueTaskOfString(valueTaskString, httpContext);
-        }
         // Terminal built ins
-        else if (obj is IResult result)
+        if (obj is IResult result)
         {
             return ExecuteResultWriteResponse(result, httpContext);
         }
