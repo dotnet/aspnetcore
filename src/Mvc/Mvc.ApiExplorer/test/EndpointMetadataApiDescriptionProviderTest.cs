@@ -450,13 +450,13 @@ public class EndpointMetadataApiDescriptionProviderTest
     [Fact]
     public void AddsMultipleParametersFromParametersAttribute()
     {
-        static void AssertParameters(ApiDescription apiDescription)
+        static void AssertParameters(ApiDescription apiDescription, string capturedName = "Foo")
         {
             Assert.Collection(
                 apiDescription.ParameterDescriptions,
                 param =>
                 {
-                    Assert.Equal("Foo", param.Name, ignoreCase: true);
+                    Assert.Equal(capturedName, param.Name);
                     Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
                     Assert.Equal(BindingSource.Path, param.Source);
                     Assert.True(param.IsRequired);
@@ -485,7 +485,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecord req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordStruct req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
-        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"), "foo");
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
     }
 
