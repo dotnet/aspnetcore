@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Duende.IdentityServer.Configuration;
-using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -12,11 +11,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Extensions;
 
 public class DefaultClientRequestParametersProviderTests
 {
-    class NameService : IIssuerNameService
-    {
-        public Task<string> GetCurrentAsync() => Task.FromResult("http://localhost");
-    }
-
     [Fact]
     public void GetClientParameters_ReturnsParametersForExistingClients()
     {
@@ -41,8 +35,7 @@ public class DefaultClientRequestParametersProviderTests
         var clientRequestParametersProvider =
             new DefaultClientRequestParametersProvider(
                 absoluteUrlFactory.Object,
-                options,
-                new NameService());
+                options);
 
         var expectedParameters = new Dictionary<string, string>
         {

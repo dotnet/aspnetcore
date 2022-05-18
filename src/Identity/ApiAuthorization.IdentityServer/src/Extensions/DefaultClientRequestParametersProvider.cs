@@ -17,7 +17,6 @@ internal sealed class DefaultClientRequestParametersProvider : IClientRequestPar
     {
         UrlFactory = urlFactory;
         Options = options;
-        NameService = nameService;
     }
 
     public IAbsoluteUrlFactory UrlFactory { get; }
