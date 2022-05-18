@@ -176,6 +176,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal bool IsDevCertLoaded { get; set; }
 
+        private bool? _enableLineFeedTerminator;
+        internal bool EnableLineFeedTerminator
+        {
+            get
+            {
+                if (!_enableLineFeedTerminator.HasValue)
+                {
+                    _enableLineFeedTerminator = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.EnableLineFeedTerminator", out var enabled) && enabled;
+                }
+                
+                return _enableLineFeedTerminator.Value;
+            }
+            set => _enableLineFeedTerminator = value;
+        }
+
         /// <summary>
         /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
         /// the prior action.

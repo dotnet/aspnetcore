@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 Log = trace,
                 Scheduler = PipeScheduler.ThreadPool,
-                HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information)),
+                HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information), serverOptions.EnableLineFeedTerminator),
                 SystemClock = heartbeatManager,
                 DateHeaderValueManager = dateHeaderValueManager,
                 ConnectionManager = connectionManager,
