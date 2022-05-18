@@ -307,6 +307,21 @@ internal sealed class HostingApplicationDiagnostics
         HostingEventSource.Log.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
     }
 
+    private static bool TryParseActivityContext(string traceParent, string traceState, bool isRemote, out ActivityContext context)
+    {
+        if (ActivityContext.TryParse(traceParent, traceState, out context))
+        {
+            if (isRemote)
+            {
+                context = new ActivityContext(context.TraceId, context.SpanId, context.TraceFlags, context.TraceState, isRemote);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
     {
@@ -323,11 +338,20 @@ internal sealed class HostingApplicationDiagnostics
             out var requestId,
             out var traceState);
 
-        var activity = _activitySource.CreateActivity(
-            ActivityName,
-            ActivityKind.Server,
-            string.IsNullOrEmpty(requestId) ? null! : requestId
-            );
+        Activity? activity = null;
+        if (_activitySource.HasListeners())
+        {
+            if (TryParseActivityContext("Id", "", true, out ActivityContext context))
+            {
+                // We have an existing context, let's use it.
+                activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, context);
+            }
+            else
+            {
+                // Pass in the ID we got from the headers if there was one.
+                activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, string.IsNullOrEmpty(requestId) ? null! : requestId);
+            }
+        }
 
         if (activity is null)
         {
