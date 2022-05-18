@@ -4,6 +4,7 @@
   "localRerunCount" : 3,
   "retryOnRules": [
     {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess"}},
+    {"testName": {"contains": "AppOfflineDroppedWhileSiteIsDown_SiteReturns503_InProcess"}},
     {"testName": {"contains": "CheckFrebDisconnect"}},
     {"testName": {"contains": "CheckStdoutWithLargeWrites"}},
     {"testName": {"contains": "ServerShutsDownWhenMainExitsStress" }},
