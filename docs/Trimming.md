@@ -20,7 +20,7 @@ The first step to trimming an ASP.NET Core assembly is adding it to `Linkability
 
 1. Update the project file to enable trimming by adding `<IsTrimmable>true</IsTrimmable>`. This property configures the build to add metadata to the assembly to indicate it supports trimming. It also enables trimming analysis on the project.
 2. Run `eng/scripts/GenerateProjectList.ps1` to update the list of projects that are known to be trimmable. The script adds the project to the list of known trimmable projects at [`eng/TrimmableProjects.props`](../eng/TrimmableProjects.props).
-3. Open `eng/tools/tools.slnf`
+3. Open `src/Tools/Tools.slnf`
 4. Add the project to `tools.slnf`:
     1. Right-click `LinkabilityCheck` and select *Load Direct Dependencies*.
     2. Update the solution filter.
