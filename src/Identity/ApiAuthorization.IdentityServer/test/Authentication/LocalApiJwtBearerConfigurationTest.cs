@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography;
 using Duende.IdentityServer.Configuration;
-using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration;
 using Microsoft.AspNetCore.Authentication;
@@ -60,16 +59,12 @@ public class IdentityServerJwtBearerOptionsConfigurationTest
         credentialsStore.Setup(cs => cs.GetSigningCredentialsAsync())
                         .ReturnsAsync(new SigningCredentials(key, "RS256"));
 
-        var issuerName = new Mock<IIssuerNameService>();
-        issuerName.Setup(i => i.GetCurrentAsync()).ReturnsAsync("https://localhost");
-
         var context = new DefaultHttpContext();
         context.Request.Scheme = "https";
         context.Request.Host = new HostString("localhost");
         context.RequestServices = new ServiceCollection()
                         .AddSingleton(new IdentityServerOptions())
                         .AddSingleton(credentialsStore.Object)
-                        .AddSingleton(issuerName.Object)
                         .BuildServiceProvider();
 
         var options = new JwtBearerOptions();

@@ -32,19 +32,17 @@ public class DefaultClientRequestParametersProviderTests
                 .WithLogoutRedirectUri("authentication/logout-callback"));
 
         var context = new DefaultHttpContext();
-        var nameService = new NameService();
         context.Request.Scheme = "http";
         context.Request.Host = new HostString("localhost");
         context.RequestServices = new ServiceCollection()
             .AddSingleton(new IdentityServerOptions())
-            .AddSingleton<IIssuerNameService>(nameService)
             .BuildServiceProvider();
 
         var clientRequestParametersProvider =
             new DefaultClientRequestParametersProvider(
                 absoluteUrlFactory.Object,
                 options,
-                nameService);
+                new NameService());
 
         var expectedParameters = new Dictionary<string, string>
         {
