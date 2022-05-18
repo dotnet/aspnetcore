@@ -22,7 +22,7 @@ public static class OutputCachingServicesExtensions
     /// <returns></returns>
     public static IServiceCollection AddOutputCaching(this IServiceCollection services)
     {
-        ArgumentNullException.ThrowIfNull(nameof(services));
+        ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
@@ -45,8 +45,8 @@ public static class OutputCachingServicesExtensions
     /// <returns></returns>
     public static IServiceCollection AddOutputCaching(this IServiceCollection services, Action<OutputCachingOptions> configureOptions)
     {
-        ArgumentNullException.ThrowIfNull(services, nameof(services));
-        ArgumentNullException.ThrowIfNull(configureOptions, nameof(configureOptions));
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
         services.AddOutputCaching();

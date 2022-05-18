@@ -11,7 +11,7 @@ internal sealed class WorkDispatcher<TKey, TValue> where TKey : notnull
 
     public async Task<TValue?> ScheduleAsync(TKey key, Func<TKey, Task<TValue?>> valueFactory)
     {
-        ArgumentNullException.ThrowIfNull(key, nameof(key));
+        ArgumentNullException.ThrowIfNull(key);
 
         while (true)
         {
@@ -50,7 +50,7 @@ internal sealed class WorkDispatcher<TKey, TValue> where TKey : notnull
 
     public async Task<TValue?> ScheduleAsync<TState>(TKey key, TState state, Func<TKey, TState, Task<TValue?>> valueFactory)
     {
-        ArgumentNullException.ThrowIfNull(key, nameof(key));
+        ArgumentNullException.ThrowIfNull(key);
 
         while (true)
         {

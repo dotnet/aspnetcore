@@ -39,7 +39,7 @@ public class CachedResponseBody
     /// <returns></returns>
     public async Task CopyToAsync(PipeWriter destination, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(destination, nameof(destination));
+        ArgumentNullException.ThrowIfNull(destination);
 
         foreach (var segment in Segments)
         {

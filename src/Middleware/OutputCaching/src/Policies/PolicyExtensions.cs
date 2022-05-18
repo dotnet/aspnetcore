@@ -15,7 +15,7 @@ public static class PolicyExtensions
     /// </summary>
     public static TBuilder OutputCache<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
 
         var policiesMetadata = new PoliciesMetadata();
 
@@ -34,8 +34,8 @@ public static class PolicyExtensions
     /// </summary>
     public static TBuilder OutputCache<TBuilder>(this TBuilder builder, params IOutputCachingPolicy[] items) where TBuilder : IEndpointConventionBuilder
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        ArgumentNullException.ThrowIfNull(items, nameof(items));
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(items);
 
         var policiesMetadata = new PoliciesMetadata();
 
@@ -59,7 +59,7 @@ public static class PolicyExtensions
     /// </summary>
     public static TBuilder OutputCache<TBuilder>(this TBuilder builder, Action<OutputCachePolicyBuilder> policy) where TBuilder : IEndpointConventionBuilder
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
 
         var outputCachePolicyBuilder = new OutputCachePolicyBuilder();
         policy?.Invoke(outputCachePolicyBuilder);

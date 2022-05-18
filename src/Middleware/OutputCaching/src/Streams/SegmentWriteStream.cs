@@ -122,7 +122,7 @@ internal sealed class SegmentWriteStream : Stream
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-        ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
+        ArgumentNullException.ThrowIfNull(buffer);
 
         if (offset < 0)
         {

@@ -16,7 +16,7 @@ public static class OutputCachingExtensions
     /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
     public static IApplicationBuilder UseOutputCaching(this IApplicationBuilder app)
     {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMiddleware<OutputCachingMiddleware>();
     }

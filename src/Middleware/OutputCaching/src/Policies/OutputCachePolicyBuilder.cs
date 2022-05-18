@@ -31,7 +31,7 @@ public class OutputCachePolicyBuilder
     /// <param name="pathBase">The base path to limit the policy to.</param>
     public OutputCachePolicyBuilder Path(PathString pathBase)
     {
-        ArgumentNullException.ThrowIfNull(pathBase, nameof(pathBase));
+        ArgumentNullException.ThrowIfNull(pathBase);
 
         Requirements.Add(context =>
         {
@@ -47,7 +47,7 @@ public class OutputCachePolicyBuilder
     /// <param name="pathBases">The base paths to limit the policy to.</param>
     public OutputCachePolicyBuilder Path(params PathString[] pathBases)
     {
-        ArgumentNullException.ThrowIfNull(pathBases, nameof(pathBases));
+        ArgumentNullException.ThrowIfNull(pathBases);
 
         Requirements.Add(context =>
         {
@@ -63,7 +63,7 @@ public class OutputCachePolicyBuilder
     /// <param name="method">The method to limit the policy to.</param>
     public OutputCachePolicyBuilder Method(string method)
     {
-        ArgumentNullException.ThrowIfNull(method, nameof(method));
+        ArgumentNullException.ThrowIfNull(method);
 
         Requirements.Add(context =>
         {
@@ -80,7 +80,7 @@ public class OutputCachePolicyBuilder
     /// <param name="methods">The methods to limit the policy to.</param>
     public OutputCachePolicyBuilder Method(params string[] methods)
     {
-        ArgumentNullException.ThrowIfNull(methods, nameof(methods));
+        ArgumentNullException.ThrowIfNull(methods);
 
         Requirements.Add(context =>
         {
@@ -97,7 +97,7 @@ public class OutputCachePolicyBuilder
     /// <param name="queryKeys">The query keys to vary the cached responses by.</param>
     public OutputCachePolicyBuilder VaryByQuery(params string[] queryKeys)
     {
-        ArgumentNullException.ThrowIfNull(queryKeys, nameof(queryKeys));
+        ArgumentNullException.ThrowIfNull(queryKeys);
 
         Policies.Add(new VaryByQueryPolicy(queryKeys));
         return this;
@@ -109,7 +109,7 @@ public class OutputCachePolicyBuilder
     /// <param name="varyBy">The value to vary the cached responses by.</param>
     public OutputCachePolicyBuilder VaryByValue(Func<Task<string>> varyBy)
     {
-        ArgumentNullException.ThrowIfNull(varyBy, nameof(varyBy));
+        ArgumentNullException.ThrowIfNull(varyBy);
 
         Policies.Add(new VaryByValuePolicy(varyBy));
         return this;
@@ -121,7 +121,7 @@ public class OutputCachePolicyBuilder
     /// <param name="varyBy">The key/value to vary the cached responses by.</param>
     public OutputCachePolicyBuilder VaryByValue(Func<Task<(string, string)>> varyBy)
     {
-        ArgumentNullException.ThrowIfNull(varyBy, nameof(varyBy));
+        ArgumentNullException.ThrowIfNull(varyBy);
 
         Policies.Add(new VaryByValuePolicy(varyBy));
         return this;
@@ -133,7 +133,7 @@ public class OutputCachePolicyBuilder
     /// <param name="varyBy">The value to vary the cached responses by.</param>
     public OutputCachePolicyBuilder VaryByValue(Func<string> varyBy)
     {
-        ArgumentNullException.ThrowIfNull(varyBy, nameof(varyBy));
+        ArgumentNullException.ThrowIfNull(varyBy);
 
         Policies.Add(new VaryByValuePolicy(varyBy));
         return this;
@@ -145,7 +145,7 @@ public class OutputCachePolicyBuilder
     /// <param name="varyBy">The key/value to vary the cached responses by.</param>
     public OutputCachePolicyBuilder VaryByValue(Func<(string, string)> varyBy)
     {
-        ArgumentNullException.ThrowIfNull(varyBy, nameof(varyBy));
+        ArgumentNullException.ThrowIfNull(varyBy);
 
         Policies.Add(new VaryByValuePolicy(varyBy));
         return this;
@@ -157,7 +157,7 @@ public class OutputCachePolicyBuilder
     /// <param name="profileName">The name of the policy to add.</param>
     public OutputCachePolicyBuilder Profile(string profileName)
     {
-        ArgumentNullException.ThrowIfNull(profileName, nameof(profileName));
+        ArgumentNullException.ThrowIfNull(profileName);
 
         Policies.Add(new ProfilePolicy(profileName));
 
@@ -170,7 +170,7 @@ public class OutputCachePolicyBuilder
     /// <param name="tags">The tags to add to the cached reponse.</param>
     public OutputCachePolicyBuilder Tag(params string[] tags)
     {
-        ArgumentNullException.ThrowIfNull(tags, nameof(tags));
+        ArgumentNullException.ThrowIfNull(tags);
 
         Policies.Add(new TagsPolicy(tags));
         return this;

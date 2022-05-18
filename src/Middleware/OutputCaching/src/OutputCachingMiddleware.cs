@@ -62,12 +62,12 @@ public class OutputCachingMiddleware
         IOutputCacheStore cache,
         IOutputCachingKeyProvider keyProvider)
     {
-        ArgumentNullException.ThrowIfNull(next, nameof(next));
-        ArgumentNullException.ThrowIfNull(options, nameof(options));
-        ArgumentNullException.ThrowIfNull(loggerFactory, nameof(loggerFactory));
-        ArgumentNullException.ThrowIfNull(policyProvider, nameof(policyProvider));
-        ArgumentNullException.ThrowIfNull(cache, nameof(cache));
-        ArgumentNullException.ThrowIfNull(keyProvider, nameof(keyProvider));
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(policyProvider);
+        ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(keyProvider);
 
         _next = next;
         _options = options.Value;

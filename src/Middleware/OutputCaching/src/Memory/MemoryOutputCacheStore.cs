@@ -13,7 +13,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
     internal MemoryOutputCacheStore(IMemoryCache cache)
     {
-        ArgumentNullException.ThrowIfNull(cache, nameof(cache));
+        ArgumentNullException.ThrowIfNull(cache);
 
         _cache = cache;
     }
