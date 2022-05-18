@@ -241,6 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         // Returns the length of the line terminator (CRLF = 2, LF = 1)
         // If no valid EOL is detected then -1
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int ParseHeaderLineEnd(ReadOnlySpan<byte> headerSpan, int headerLineLength)
         {
             // This method needs to be called with a positive value representing the index of either CR or LF
