@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
-using Duende.IdentityServer.Services;
+using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
@@ -12,8 +12,7 @@ internal sealed class DefaultClientRequestParametersProvider : IClientRequestPar
 {
     public DefaultClientRequestParametersProvider(
         IAbsoluteUrlFactory urlFactory,
-        IOptions<ApiAuthorizationOptions> options,
-        IIssuerNameService nameService)
+        IOptions<ApiAuthorizationOptions> options)
     {
         UrlFactory = urlFactory;
         Options = options;
@@ -23,12 +22,10 @@ internal sealed class DefaultClientRequestParametersProvider : IClientRequestPar
 
     public IOptions<ApiAuthorizationOptions> Options { get; }
 
-    public IIssuerNameService NameService { get; }
-
     public IDictionary<string, string> GetClientParameters(HttpContext context, string clientId)
     {
         var client = Options.Value.Clients[clientId];
-        var authority = NameService.GetCurrentAsync().GetAwaiter().GetResult();
+        var authority = context.GetIdentityServerIssuerUri();
         if (!client.Properties.TryGetValue(ApplicationProfilesPropertyNames.Profile, out var type))
         {
             throw new InvalidOperationException($"Can't determine the type for the client '{clientId}'");
