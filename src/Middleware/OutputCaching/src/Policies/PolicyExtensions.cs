@@ -13,7 +13,7 @@ public static class PolicyExtensions
     /// <summary>
     /// Marks an endpoint to be cached.
     /// </summary>
-    public static TBuilder OutputCache<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
+    public static TBuilder CacheOutput<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -32,7 +32,7 @@ public static class PolicyExtensions
     /// <summary>
     /// Marks an endpoint to be cached with the specified policies.
     /// </summary>
-    public static TBuilder OutputCache<TBuilder>(this TBuilder builder, params IOutputCachingPolicy[] items) where TBuilder : IEndpointConventionBuilder
+    public static TBuilder CacheOutput<TBuilder>(this TBuilder builder, params IOutputCachingPolicy[] items) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(items);
@@ -55,9 +55,9 @@ public static class PolicyExtensions
     }
 
     /// <summary>
-    /// Marks an endpoint to be cached with the specified policies.
+    /// Marks an endpoint to be cached with the specified policy.
     /// </summary>
-    public static TBuilder OutputCache<TBuilder>(this TBuilder builder, Action<OutputCachePolicyBuilder> policy) where TBuilder : IEndpointConventionBuilder
+    public static TBuilder CacheOutput<TBuilder>(this TBuilder builder, Action<OutputCachePolicyBuilder> policy) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
 

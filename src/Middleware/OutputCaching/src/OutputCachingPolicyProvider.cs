@@ -17,9 +17,9 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 
     public async Task OnRequestAsync(IOutputCachingContext context)
     {
-        foreach (var policy in _options.Policies)
+        if (_options.DefaultPolicy != null)
         {
-            await policy.OnRequestAsync(context);
+            await _options.DefaultPolicy.OnRequestAsync(context);
         }
 
         var policiesMetadata = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPoliciesMetadata>();
@@ -42,9 +42,9 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 
     public async Task OnServeFromCacheAsync(IOutputCachingContext context)
     {
-        foreach (var policy in _options.Policies)
+        if (_options.DefaultPolicy != null)
         {
-            await policy.OnServeFromCacheAsync(context);
+            await _options.DefaultPolicy.OnServeFromCacheAsync(context);
         }
 
         // Apply response policies defined on the feature, e.g. from action attributes
@@ -72,9 +72,9 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 
     public async Task OnServeResponseAsync(IOutputCachingContext context)
     {
-        foreach (var policy in _options.Policies)
+        if (_options.DefaultPolicy != null)
         {
-            await policy.OnServeResponseAsync(context);
+            await _options.DefaultPolicy.OnServeResponseAsync(context);
         }
 
         // Apply response policies defined on the feature, e.g. from action attributes

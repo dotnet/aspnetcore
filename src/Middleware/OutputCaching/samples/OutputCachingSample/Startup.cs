@@ -9,13 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOutputCaching(options =>
 {
-    options.Policies.Add(new EnableCachingPolicy());
+    // Enable caching on all requests
+    // options.DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().Build();
 
-    options.Profiles["NoCache"] = new OutputCachePolicyBuilder().NoStore().Build();
-
-    // Tag any request to "/blog**
-    options.Policies.Add(new OutputCachePolicyBuilder().Path("/blog").Tag("blog").Build());
-
+    options.Policies["NoCache"] = new OutputCachePolicyBuilder().NoStore().Build();
 });
 
 var app = builder.Build();
@@ -24,16 +21,17 @@ app.UseOutputCaching();
 
 app.MapGet("/", Gravatar.WriteGravatar);
 
-app.MapGet("/cached", Gravatar.WriteGravatar).OutputCache();
+app.MapGet("/cached", Gravatar.WriteGravatar).CacheOutput();
 
-app.MapGet("/nocache", Gravatar.WriteGravatar).OutputCache(x => x.NoStore());
+app.MapGet("/nocache", Gravatar.WriteGravatar).CacheOutput(x => x.NoStore());
 
-app.MapGet("/profile", Gravatar.WriteGravatar).OutputCache(x => x.Profile("NoCache"));
+app.MapGet("/profile", Gravatar.WriteGravatar).CacheOutput(x => x.Profile("NoCache"));
 
 app.MapGet("/attribute", [OutputCache(Profile = "NoCache")] (c) => Gravatar.WriteGravatar(c));
 
-app.MapGet("/blog", Gravatar.WriteGravatar);
-app.MapGet("/blog/post/{id}", Gravatar.WriteGravatar);
+var blog = app.MapGroup("blog").CacheOutput(x => x.Tag("blog"));
+blog.MapGet("/", Gravatar.WriteGravatar);
+blog.MapGet("/post/{id}", Gravatar.WriteGravatar);
 
 app.MapPost("/purge/{tag}", async (IOutputCacheStore cache, string tag) =>
 {
@@ -43,9 +41,9 @@ app.MapPost("/purge/{tag}", async (IOutputCacheStore cache, string tag) =>
 });
 
 // Cached entries will vary by culture, but any other additional query is ignored and returns the same cached content
-app.MapGet("/query", Gravatar.WriteGravatar).OutputCache(p => p.VaryByQuery("culture"));
+app.MapGet("/query", Gravatar.WriteGravatar).CacheOutput(p => p.VaryByQuery("culture"));
 
-app.MapGet("/vary", Gravatar.WriteGravatar).OutputCache(c => c.VaryByValue(() => ("time", (DateTime.Now.Second % 2).ToString(CultureInfo.InvariantCulture))));
+app.MapGet("/vary", Gravatar.WriteGravatar).CacheOutput(c => c.VaryByValue(() => ("time", (DateTime.Now.Second % 2).ToString(CultureInfo.InvariantCulture))));
 
 long requests = 0;
 
@@ -54,7 +52,7 @@ app.MapGet("/lock", async (context) =>
 {
     await Task.Delay(1000);
     await context.Response.WriteAsync($"<pre>{requests++}</pre>");
-}).OutputCache(p => p.Lock(false).Expires(TimeSpan.FromMilliseconds(1)));
+}).CacheOutput(p => p.Lock(false).Expires(TimeSpan.FromMilliseconds(1)));
 
 // Cached because Response Caching policy and contains "Cache-Control: public"
 app.MapGet("/headers", async context =>
@@ -62,7 +60,7 @@ app.MapGet("/headers", async context =>
     // From a browser this endpoint won't be cached because of max-age: 0
     context.Response.Headers.CacheControl = "public";
     await Gravatar.WriteGravatar(context);
-}).OutputCache(new ResponseCachingPolicy());
+}).CacheOutput(new ResponseCachingPolicy());
 
 // Etag
 app.MapGet("/etag", async (context) =>
@@ -74,9 +72,9 @@ app.MapGet("/etag", async (context) =>
     context.Response.Headers.ETag = etag;
 
     await Gravatar.WriteGravatar(context);
-}).OutputCache();
+}).CacheOutput();
 
 // When the request header If-Modified-Since is provided, return 304 if the cached entry is older
-app.MapGet("/ims", Gravatar.WriteGravatar).OutputCache();
+app.MapGet("/ims", Gravatar.WriteGravatar).CacheOutput();
 
 await app.RunAsync();

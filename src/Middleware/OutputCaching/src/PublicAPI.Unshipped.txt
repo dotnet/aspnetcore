@@ -38,6 +38,7 @@ Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByQueryKeys.set -> v
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Build() -> Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Clear() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Enable() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Expires(System.TimeSpan expiration) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Lock(bool lockResponse = true) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Method(params string![]! methods) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
@@ -64,11 +65,12 @@ Microsoft.AspNetCore.OutputCaching.OutputCachingMiddleware.OutputCachingMiddlewa
 Microsoft.AspNetCore.OutputCaching.OutputCachingOptions
 Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.DefaultExpirationTimeSpan.get -> System.TimeSpan
 Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.DefaultExpirationTimeSpan.set -> void
+Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.DefaultPolicy.get -> Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy?
+Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.DefaultPolicy.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.MaximumBodySize.get -> long
 Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.MaximumBodySize.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.OutputCachingOptions() -> void
-Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.Policies.get -> System.Collections.Generic.List<Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!>!
-Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.Profiles.get -> System.Collections.Generic.IDictionary<string!, Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!>!
+Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.Policies.get -> System.Collections.Generic.IDictionary<string!, Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!>!
 Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.SizeLimit.get -> long
 Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.SizeLimit.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.UseCaseSensitivePaths.get -> bool
@@ -117,11 +119,13 @@ Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy.VaryByValuePolicy(System.Fu
 Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy.VaryByValuePolicy(System.Func<string!>! varyBy) -> void
 Microsoft.Extensions.DependencyInjection.OutputCachingServicesExtensions
 static Microsoft.AspNetCore.Builder.OutputCachingExtensions.UseOutputCaching(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy.Instance -> Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy!
-static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.OutputCache<TBuilder>(this TBuilder builder) -> TBuilder
-static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.OutputCache<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! policy) -> TBuilder
-static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.OutputCache<TBuilder>(this TBuilder builder, params Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy![]! items) -> TBuilder
+static Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Default.get -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+static Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Empty.get -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.CacheOutput<TBuilder>(this TBuilder builder) -> TBuilder
+static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.CacheOutput<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!>! policy) -> TBuilder
+static Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions.CacheOutput<TBuilder>(this TBuilder builder, params Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy![]! items) -> TBuilder
 static Microsoft.Extensions.DependencyInjection.OutputCachingServicesExtensions.AddOutputCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.OutputCachingServicesExtensions.AddOutputCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.OutputCaching.OutputCachingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static readonly Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy.Instance -> Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy!
 static readonly Microsoft.AspNetCore.OutputCaching.LockingPolicy.Disabled -> Microsoft.AspNetCore.OutputCaching.LockingPolicy!
 static readonly Microsoft.AspNetCore.OutputCaching.LockingPolicy.Enabled -> Microsoft.AspNetCore.OutputCaching.LockingPolicy!

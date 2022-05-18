@@ -34,15 +34,15 @@ public class OutputCachingOptions
     public bool UseCaseSensitivePaths { get; set; }
 
     /// <summary>
-    /// Gets the policies applied to all requests.
+    /// Gets the policy applied to all requests.
     /// </summary>
-    public List<IOutputCachingPolicy> Policies { get; } = new() { new DefaultOutputCachePolicy() };
+    public IOutputCachingPolicy? DefaultPolicy { get; set; } = new DefaultOutputCachePolicy();
 
     /// <summary>
     /// Gets a Dictionary of policy names, <see cref="IOutputCachingPolicy"/> which are pre-defined settings for
     /// output caching.
     /// </summary>
-    public IDictionary<string, IOutputCachingPolicy> Profiles { get; } = new Dictionary<string, IOutputCachingPolicy>(StringComparer.OrdinalIgnoreCase);
+    public IDictionary<string, IOutputCachingPolicy> Policies { get; } = new Dictionary<string, IOutputCachingPolicy>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// For testing purposes only.

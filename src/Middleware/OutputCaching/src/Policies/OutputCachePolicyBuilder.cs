@@ -16,6 +16,39 @@ public class OutputCachePolicyBuilder
     private List<Func<IOutputCachingContext, Task<bool>>> Requirements { get; } = new();
 
     /// <summary>
+    /// Gets an <see cref="OutputCachePolicyBuilder"/> initialized with a <see cref="DefaultOutputCachePolicy"/> instance.
+    /// </summary>
+    public static OutputCachePolicyBuilder Default
+    {
+        get
+        {
+            var builder = new OutputCachePolicyBuilder();
+            builder.Policies.Add(new DefaultOutputCachePolicy());
+            return builder;
+        }
+    }
+
+    /// <summary>
+    /// Gets an empty <see cref="OutputCachePolicyBuilder"/>.
+    /// </summary>
+    public static OutputCachePolicyBuilder Empty
+    {
+        get
+        {
+            return new OutputCachePolicyBuilder();
+        }
+    }
+
+    /// <summary>
+    /// Enables caching.
+    /// </summary>
+    public OutputCachePolicyBuilder Enable()
+    {
+        Policies.Add(new EnableCachingPolicy());
+        return this;
+    }
+
+    /// <summary>
     /// Adds a requirement to the current policy.
     /// </summary>
     /// <param name="predicate">The predicate applied to the policy.</param>

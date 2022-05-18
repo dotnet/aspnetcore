@@ -11,7 +11,7 @@ public sealed class EnableCachingPolicy : IOutputCachingPolicy
     /// <summary>
     /// Default instance of <see cref="EnableCachingPolicy"/>.
     /// </summary>
-    public static EnableCachingPolicy Instance = new EnableCachingPolicy();
+    public static readonly EnableCachingPolicy Instance = new();
 
     /// <inheritdoc />
     public Task OnRequestAsync(IOutputCachingContext context)
