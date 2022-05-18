@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("Non critical shadow copy tests are quarantined in release/6.0.")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task ShadowCopyRelativeInSameDirectoryWorks()
         {
@@ -76,6 +77,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("Non critical shadow copy tests are quarantined in release/6.0.")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task ShadowCopyRelativeOutsideDirectoryWorks()
         {
@@ -110,6 +112,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("Non critical shadow copy tests are quarantined in release/6.0.")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task ShadowCopySingleFileChangedWorks()
         {
@@ -146,6 +149,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("Non critical shadow copy tests are quarantined in release/6.0.")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task ShadowCopyE2EWorksWithFolderPresent()
         {
@@ -173,6 +177,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("Non critical shadow copy tests are quarantined in release/6.0.")]
         public async Task ShadowCopyE2EWorksWithOldFoldersPresent()
         {
             using var directory = TempDirectory.Create();
@@ -212,6 +217,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("Non critical shadow copy tests are quarantined in release/6.0.")]
         public async Task ShadowCopyCleansUpOlderFolders()
         {
             using var directory = TempDirectory.Create();
@@ -258,6 +264,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
 
         [ConditionalFact]
+        [QuarantinedTest("Non critical shadow copy tests are quarantined in release/6.0.")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task ShadowCopyIgnoresItsOwnDirectoryWithRelativePathSegmentWhenCopying()
         {
@@ -289,6 +296,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("Non critical shadow copy tests are quarantined in release/6.0.")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task ShadowCopyIgnoresItsOwnDirectoryWhenCopying()
         {
