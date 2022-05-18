@@ -1664,8 +1664,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Output
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{B5AC1D8B-9D43-4261-AE0F-6B7574656F2C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCaching.Tests", "src\Middleware\OutputCaching\test\Microsoft.AspNetCore.ResponseCaching.Tests.csproj", "{6EBAD7A2-0FA8-4314-89F5-54009E86EE2F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutputCachingSample", "src\Middleware\OutputCaching\samples\OutputCachingSample\OutputCachingSample.csproj", "{C3FFA4E4-0E7E-4866-A15F-034245BFD800}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LinkabilityChecker", "LinkabilityChecker", "{94F95276-7CDF-44A8-B159-D09702EF6794}"
