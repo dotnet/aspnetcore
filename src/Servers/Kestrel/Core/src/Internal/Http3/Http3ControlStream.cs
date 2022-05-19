@@ -331,6 +331,8 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
             case (long)Http3SettingType.QPackMaxTableCapacity:
             case (long)Http3SettingType.MaxFieldSectionSize:
             case (long)Http3SettingType.QPackBlockedStreams:
+            case (long)Http3SettingType.EnableWebTransport:
+            case (long)Http3SettingType.H3Datagram:
                 _context.StreamLifetimeHandler.OnInboundControlStreamSetting((Http3SettingType)id, value);
                 break;
             default:
