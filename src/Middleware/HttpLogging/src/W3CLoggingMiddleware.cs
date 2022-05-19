@@ -79,7 +79,9 @@ internal sealed class W3CLoggingMiddleware
     {
         var options = _options.CurrentValue;
 
-        var elements = new string[_fieldsLength];
+        var additionalHeadersLength = _options.CurrentValue.AdditionalRequestHeaders?.Count ?? 0;
+
+        var elements = new string[_fieldsLength + additionalHeadersLength];
 
         // Whether any of the requested fields actually had content
         bool shouldLog = false;
@@ -179,6 +181,17 @@ internal sealed class W3CLoggingMiddleware
                     if (headers.TryGetValue(HeaderNames.Cookie, out var cookie))
                     {
                         shouldLog |= AddToList(elements, _cookieIndex, cookie.ToString());
+                    }
+                }
+
+                if (_options.CurrentValue.AdditionalRequestHeaders != null)
+                {
+                    for (var i = 0; i < additionalHeadersLength; i++)
+                    {
+                        if (headers.TryGetValue(_options.CurrentValue.AdditionalRequestHeaders[i], out var headerValue))
+                        {
+                            shouldLog |= AddToList(elements, i + _fieldsLength, headerValue.ToString());
+                        }
                     }
                 }
             }

@@ -61,6 +61,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
         _flushInterval = loggerOptions.FlushInterval;
         _fields = loggerOptions.LoggingFields;
+
         _options.OnChange(options =>
         {
             lock (_pathLock)

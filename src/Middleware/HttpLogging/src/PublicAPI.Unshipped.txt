@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.AdditionalRequestHeaders.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.AdditionalRequestHeaders.set -> void

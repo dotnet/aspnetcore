@@ -14,10 +14,12 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
 #pragma warning restore CA1852 // Seal internal types
 {
     private readonly W3CLoggingFields _loggingFields;
+    private readonly IReadOnlyList<string>? _additionalRequestHeaders;
 
     public W3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
     {
         _loggingFields = options.CurrentValue.LoggingFields;
+        _additionalRequestHeaders = options.CurrentValue.AdditionalRequestHeaders;
     }
 
     public override async Task OnFirstWrite(StreamWriter streamWriter, CancellationToken cancellationToken)
@@ -101,6 +103,14 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
         if (_loggingFields.HasFlag(W3CLoggingFields.Referer))
         {
             sb.Append(" cs(Referer)");
+        }
+
+        if (_additionalRequestHeaders != null)
+        {
+            foreach (var header in _additionalRequestHeaders)
+            {
+                sb.Append($" cs({header})");
+            }
         }
 
         return sb.ToString();

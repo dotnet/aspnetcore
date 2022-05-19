@@ -47,7 +47,8 @@ internal class W3CLogger : IAsyncDisposable
         var firstElement = true;
         for (var i = 0; i < elements.Length; i++)
         {
-            if (_loggingFields.HasFlag((W3CLoggingFields)(1 << i)))
+            // Custom headers start at index 17
+            if (_loggingFields.HasFlag((W3CLoggingFields)(1 << i)) || i >= 17)
             {
                 if (!firstElement)
                 {
