@@ -42,7 +42,9 @@ public class PackageTests
     {
         if (!TestData.VerifyPackageAssemblyVersions())
         {
-            return;
+            // TODO - remove this, just verifying this doesn't get hit in CI
+            Assert.True(false);
+            //return;
         }
 
         var versionStringWithoutPrereleaseTag = TestData.GetSharedFxVersion().Split('-', 2)[0];
