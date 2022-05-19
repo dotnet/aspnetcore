@@ -52,7 +52,6 @@
       <_Parameter2>@(_ExpectedSharedFrameworkBinaries)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>PackageLayoutRoot</_Parameter1>
       <_Parameter2>$(PackagesLayoutRoot)</_Parameter2>
     </AssemblyAttribute>
