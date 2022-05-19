@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using MessagePack;
 using Microsoft.AspNetCore.Internal;
 
@@ -77,7 +78,7 @@ internal abstract class MessagePackHubProtocolWorker
             invocationId = null;
         }
 
-        var target = ReadString(ref reader, "target");
+        var target = ReadString(ref reader, binder, "target");
 
         object[]? arguments;
         try
@@ -566,6 +567,26 @@ internal abstract class MessagePackHubProtocolWorker
         catch (Exception ex)
         {
             throw new InvalidDataException($"Reading '{field}' as Int32 failed.", ex);
+        }
+    }
+
+    protected static string ReadString(ref MessagePackReader reader, IInvocationBinder binder, string field)
+    {
+        try
+        {
+#if NETCOREAPP
+            if (reader.TryReadStringSpan(out var span))
+            {
+                return binder.GetTarget(span) ?? Encoding.UTF8.GetString(span);
+            }
+            return reader.ReadString();
+#else
+            return reader.ReadString();
+#endif
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidDataException($"Reading '{field}' as String failed.", ex);
         }
     }
 

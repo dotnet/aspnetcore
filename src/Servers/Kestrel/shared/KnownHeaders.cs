@@ -101,6 +101,7 @@ public class KnownHeaders
         };
         var requestHeadersExistence = new[]
         {
+            HeaderNames.Cookie,
             HeaderNames.Connection,
             HeaderNames.TransferEncoding,
         };

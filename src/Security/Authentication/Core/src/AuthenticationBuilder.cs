@@ -29,11 +29,12 @@ public class AuthenticationBuilder
         where TOptions : AuthenticationSchemeOptions, new()
         where THandler : class, IAuthenticationHandler
     {
+        var state = new AddSchemeHelperState(typeof(THandler));
         Services.Configure<AuthenticationOptions>(o =>
         {
             o.AddScheme(authenticationScheme, scheme =>
             {
-                scheme.HandlerType = typeof(THandler);
+                scheme.HandlerType = state.HandlerType;
                 scheme.DisplayName = displayName;
             });
         });
@@ -48,6 +49,18 @@ public class AuthenticationBuilder
         });
         Services.AddTransient<THandler>();
         return this;
+    }
+
+    // Workaround for linker bug: https://github.com/dotnet/linker/issues/1981
+    private readonly struct AddSchemeHelperState
+    {
+        public AddSchemeHelperState([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType)
+        {
+            HandlerType = handlerType;
+        }
+
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+        public Type HandlerType { get; }
     }
 
     /// <summary>

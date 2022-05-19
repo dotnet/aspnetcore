@@ -383,6 +383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private HeaderReferences _headers;
 
         public bool HasConnection => (_bits & 0x2L) != 0;
+        public bool HasCookie => (_bits & 0x20000L) != 0;
         public bool HasTransferEncoding => (_bits & 0x20000000000L) != 0;
 
         public int HostCount => _headers._Host.Count;

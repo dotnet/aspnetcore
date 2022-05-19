@@ -178,7 +178,13 @@ public class SeleniumStandaloneServer : IDisposable
         // Log
         void LogOutput(object sender, DataReceivedEventArgs e)
         {
-            logOutput.TryAdd(e.Data);
+            try
+            {
+                logOutput.TryAdd(e.Data);
+            }
+            catch (Exception)
+            {
+            }
 
             // We avoid logging on the output here because it is unreliable. We can only log in the diagnostics sink.
             lock (_diagnosticsMessageSink)

@@ -246,7 +246,7 @@ public class Http3TlsTests : LoggedTest
 
         // https://github.com/dotnet/runtime/issues/57308, optional client certs aren't supported.
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.SendAsync(request, CancellationToken.None).DefaultTimeout());
-        Assert.StartsWith("Connection has been shutdown by transport.", ex.Message);
+        Assert.StartsWith("Connection has been shutdown by transport:", ex.Message);
 
         await host.StopAsync().DefaultTimeout();
     }

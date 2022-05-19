@@ -7,6 +7,7 @@ using Grpc.Core;
 using IntegrationTestsWebsite;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
+using Microsoft.AspNetCore.Testing;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests;
@@ -79,6 +80,7 @@ public class ServerStreamingTests : IntegrationTestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41629")]
     public async Task GetWithRouteParameter_WriteMultiple_CancellationBefore_CallCanceled()
     {
         // Arrange
@@ -106,11 +108,8 @@ public class ServerStreamingTests : IntegrationTestBase
         // Assert 1
         Assert.Equal("Hello test 1!", result1.RootElement.GetProperty("message").GetString());
 
-        // Act 2
+        // Act & Assert 2
         tcs.SetResult();
-        var ex = await Assert.ThrowsAsync<IOException>(() => streamReader.ReadLineAsync());
-
-        // Assert 2
-        Assert.Equal("The application aborted the request.", ex.InnerException!.Message);
+        await Assert.ThrowsAsync<IOException>(() => streamReader.ReadLineAsync());
     }
 }

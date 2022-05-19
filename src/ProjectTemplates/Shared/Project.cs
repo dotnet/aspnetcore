@@ -108,38 +108,24 @@ public class Project : IDisposable
 
         argString += $" -o {TemplateOutputDir}";
 
-        // Only run one instance of 'dotnet new' at once, as a workaround for
-        // https://github.com/aspnet/templating/issues/63
-
-        await DotNetNewLock.WaitAsync();
-        try
+        if (Directory.Exists(TemplateOutputDir))
         {
-            Output.WriteLine("Acquired DotNetNewLock");
-
-            if (Directory.Exists(TemplateOutputDir))
-            {
-                Output.WriteLine($"Template directory already exists, deleting contents of {TemplateOutputDir}");
-                Directory.Delete(TemplateOutputDir, recursive: true);
-            }
-
-            using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
-            await execution.Exited;
-
-            var result = new ProcessResult(execution);
-
-            // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
-            if (errorOnRestoreError && (execution.Output.Contains("Restore failed.") || execution.Error.Contains("Restore failed.")))
-            {
-                result.ExitCode = -1;
-            }
-
-            return result;
+            Output.WriteLine($"Template directory already exists, deleting contents of {TemplateOutputDir}");
+            Directory.Delete(TemplateOutputDir, recursive: true);
         }
-        finally
+
+        using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+        await execution.Exited;
+
+        var result = new ProcessResult(execution);
+
+        // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
+        if (errorOnRestoreError && (execution.Output.Contains("Restore failed.") || execution.Error.Contains("Restore failed.")))
         {
-            DotNetNewLock.Release();
-            Output.WriteLine("Released DotNetNewLock");
+            result.ExitCode = -1;
         }
+
+        return result;
     }
 
     internal async Task<ProcessResult> RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
@@ -223,62 +209,38 @@ public class Project : IDisposable
     {
         var args = $"--verbose --no-build migrations add {migrationName}";
 
-        // Only run one instance of 'dotnet new' at once, as a workaround for
-        // https://github.com/aspnet/templating/issues/63
-        await DotNetNewLock.WaitAsync();
-        try
+        var command = DotNetMuxer.MuxerPathOrDefault();
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
         {
-            Output.WriteLine("Acquired DotNetNewLock");
-            var command = DotNetMuxer.MuxerPathOrDefault();
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-            {
-                args = $"\"{DotNetEfFullPath}\" " + args;
-            }
-            else
-            {
-                command = "dotnet-ef";
-            }
+            args = $"\"{DotNetEfFullPath}\" " + args;
+        }
+        else
+        {
+            command = "dotnet-ef";
+        }
 
-            using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
-            await result.Exited;
-            return new ProcessResult(result);
-        }
-        finally
-        {
-            DotNetNewLock.Release();
-            Output.WriteLine("Released DotNetNewLock");
-        }
+        using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+        await result.Exited;
+        return new ProcessResult(result);
     }
 
     internal async Task<ProcessResult> RunDotNetEfUpdateDatabaseAsync()
     {
         var args = "--verbose --no-build database update";
 
-        // Only run one instance of 'dotnet new' at once, as a workaround for
-        // https://github.com/aspnet/templating/issues/63
-        await DotNetNewLock.WaitAsync();
-        try
+        var command = DotNetMuxer.MuxerPathOrDefault();
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
         {
-            Output.WriteLine("Acquired DotNetNewLock");
-            var command = DotNetMuxer.MuxerPathOrDefault();
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DotNetEfFullPath")))
-            {
-                args = $"\"{DotNetEfFullPath}\" " + args;
-            }
-            else
-            {
-                command = "dotnet-ef";
-            }
+            args = $"\"{DotNetEfFullPath}\" " + args;
+        }
+        else
+        {
+            command = "dotnet-ef";
+        }
 
-            using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
-            await result.Exited;
-            return new ProcessResult(result);
-        }
-        finally
-        {
-            DotNetNewLock.Release();
-            Output.WriteLine("Released DotNetNewLock");
-        }
+        using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+        await result.Exited;
+        return new ProcessResult(result);
     }
 
     // If this fails, you should generate new migrations via migrations/updateMigrations.cmd
@@ -334,25 +296,15 @@ public class Project : IDisposable
 
     internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)
     {
-        await DotNetNewLock.WaitAsync();
-        try
-        {
-            Output.WriteLine("Acquired DotNetNewLock");
-            var result = ProcessEx.Run(
-                Output,
-                AppContext.BaseDirectory,
-                DotNetMuxer.MuxerPathOrDefault(),
-                arguments +
-                    $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
-                    $" -o {TemplateOutputDir}");
-            await result.Exited;
-            return result;
-        }
-        finally
-        {
-            DotNetNewLock.Release();
-            Output.WriteLine("Released DotNetNewLock");
-        }
+        var result = ProcessEx.Run(
+            Output,
+            AppContext.BaseDirectory,
+            DotNetMuxer.MuxerPathOrDefault(),
+            arguments +
+                $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"" +
+                $" -o {TemplateOutputDir}");
+        await result.Exited;
+        return result;
     }
 
     public void Dispose()

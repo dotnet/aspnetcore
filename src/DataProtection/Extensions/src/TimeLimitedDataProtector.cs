@@ -47,7 +47,6 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         return retVal;
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public byte[] Protect(byte[] plaintext, DateTimeOffset expiration)
     {
         if (plaintext == null)
@@ -63,7 +62,6 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         return GetInnerProtectorWithTimeLimitedPurpose().Protect(plaintextWithHeader);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public byte[] Unprotect(byte[] protectedData, out DateTimeOffset expiration)
     {
         if (protectedData == null)
@@ -74,7 +72,6 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         return UnprotectCore(protectedData, DateTimeOffset.UtcNow, out expiration);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     internal byte[] UnprotectCore(byte[] protectedData, DateTimeOffset now, out DateTimeOffset expiration)
     {
         if (protectedData == null)
@@ -128,7 +125,6 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         return CreateProtector(purpose);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     byte[] IDataProtector.Protect(byte[] plaintext)
     {
         if (plaintext == null)
@@ -140,7 +136,6 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         return Protect(plaintext, DateTimeOffset.MaxValue);
     }
 
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     byte[] IDataProtector.Unprotect(byte[] protectedData)
     {
         if (protectedData == null)
