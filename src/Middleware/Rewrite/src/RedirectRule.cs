@@ -65,7 +65,7 @@ internal sealed class RedirectRule : IRule
             {
                 var host = default(HostString);
                 var schemeSplit = newPath.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
-                string? scheme = null;
+                string scheme = request.Scheme;
                 if (schemeSplit >= 0)
                 {
                     scheme = newPath.Substring(0, schemeSplit);
@@ -99,7 +99,7 @@ internal sealed class RedirectRule : IRule
                 }
 
                 encodedPath = host.HasValue
-                    ? UriHelper.BuildAbsolute(scheme ?? request.Scheme, host, pathBase, resolvedPath, resolvedQuery, default)
+                    ? UriHelper.BuildAbsolute(scheme, host, pathBase, resolvedPath, resolvedQuery, default)
                     : UriHelper.BuildRelative(pathBase, resolvedPath, resolvedQuery, default);
             }
 
