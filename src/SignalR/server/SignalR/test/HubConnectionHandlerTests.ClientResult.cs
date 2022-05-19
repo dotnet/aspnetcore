@@ -103,4 +103,68 @@ public partial class HubConnectionHandlerTests
             }
         }
     }
+
+    [Fact]
+    public async Task CanUseClientResultsWithIHubContext()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using var client = new TestClient();
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            // Wait for a connection, or for the endpoint to fail.
+            await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
+
+            var context = serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
+            var resultTask = context.Clients.Single(client.Connection.ConnectionId).InvokeAsync<int>("GetClientResult", 1);
+
+            var message = await client.ReadAsync().DefaultTimeout();
+            var invocation = Assert.IsType<InvocationMessage>(message);
+
+            Assert.Single(invocation.Arguments);
+            Assert.Equal(1L, invocation.Arguments[0]);
+            Assert.Equal("GetClientResult", invocation.Target);
+
+            await client.SendHubMessageAsync(CompletionMessage.WithResult(invocation.InvocationId, 2)).DefaultTimeout();
+
+            var result = await resultTask.DefaultTimeout();
+            Assert.Equal(2, result);
+        }
+    }
+
+    [Fact]
+    public async Task CanUseClientResultsWithIHubContextT()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubT>>();
+
+            using var client = new TestClient();
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            // Wait for a connection, or for the endpoint to fail.
+            await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
+
+            var context = serviceProvider.GetRequiredService<IHubContext<HubT, Test>>();
+            var resultTask = context.Clients.Single(client.Connection.ConnectionId).GetClientResult(1);
+
+            var message = await client.ReadAsync().DefaultTimeout();
+            var invocation = Assert.IsType<InvocationMessage>(message);
+
+            Assert.Single(invocation.Arguments);
+            Assert.Equal(1L, invocation.Arguments[0]);
+            Assert.Equal("GetClientResult", invocation.Target);
+
+            await client.SendHubMessageAsync(CompletionMessage.WithResult(invocation.InvocationId, 2)).DefaultTimeout();
+
+            var result = await resultTask.DefaultTimeout();
+            Assert.Equal(2, result);
+        }
+    }
 }
