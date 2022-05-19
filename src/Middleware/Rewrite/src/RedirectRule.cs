@@ -65,8 +65,10 @@ internal sealed class RedirectRule : IRule
             {
                 var host = default(HostString);
                 var schemeSplit = newPath.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
+                string? scheme = null;
                 if (schemeSplit >= 0)
                 {
+                    scheme = newPath.Substring(0, schemeSplit);
                     schemeSplit += Uri.SchemeDelimiter.Length;
                     var pathSplit = newPath.IndexOf('/', schemeSplit);
 
@@ -97,7 +99,7 @@ internal sealed class RedirectRule : IRule
                 }
 
                 encodedPath = host.HasValue
-                    ? UriHelper.BuildAbsolute(request.Scheme, host, pathBase, resolvedPath, resolvedQuery, default)
+                    ? UriHelper.BuildAbsolute(scheme ?? request.Scheme, host, pathBase, resolvedPath, resolvedQuery, default)
                     : UriHelper.BuildRelative(pathBase, resolvedPath, resolvedQuery, default);
             }
 
