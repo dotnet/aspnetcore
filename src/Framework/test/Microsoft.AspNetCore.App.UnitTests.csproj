@@ -86,10 +86,6 @@
       SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
-  <Target Name="DoThing" BeforeTargets="Test">
-    <Message Importance="High" Text="Hello bitches" />
-  </Target>
-
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="InitializeSourceControlInformation">
     <!-- Use the ref pack logic to compute the list of expected targeting pack content -->
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
