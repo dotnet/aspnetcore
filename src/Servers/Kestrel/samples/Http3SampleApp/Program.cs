@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using System.Net.Security;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
@@ -25,14 +27,50 @@ public class Program
                 webHost.UseKestrel()
                 .ConfigureKestrel((context, options) =>
                 {
-                    var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
-
-                    options.ConfigureHttpsDefaults(httpsOptions =>
+                    // CERTIFICATE STUFF THAT SHOULD BE MERGED WITH KESTREL EVENTUALLY///////////
+                    X509Certificate2 cert = null;
+                    var store = new X509Store("testing2", StoreLocation.CurrentUser);
+                    store.Open(OpenFlags.ReadWrite);
+                    if (store.Certificates.Count > 0)
                     {
-                        httpsOptions.ServerCertificate = cert;
-                        // httpsOptions.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
-                        // httpsOptions.AllowAnyClientCertificate();
-                    });
+                        cert = store.Certificates[store.Certificates.Count - 1];
+
+                        // rotate key after it expires
+                        if (DateTime.Parse(cert.GetExpirationDateString()) < DateTimeOffset.UtcNow)
+                        {
+                            cert = null;
+                        }
+                    }
+                    if (cert == null)
+                    {
+                        // generate a new cert
+                        var now = DateTimeOffset.UtcNow;
+                        SubjectAlternativeNameBuilder sanBuilder = new();
+                        sanBuilder.AddDnsName("localhost");
+                        using var ec = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+                        CertificateRequest req = new("CN=localhost", ec, HashAlgorithmName.SHA256);
+                        // Adds purpose
+                        req.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection
+                        {
+                            new("1.3.6.1.5.5.7.3.1") // serverAuth
+                        }, false));
+                        // Adds usage
+                        req.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
+                        // Adds subject alternate names
+                        req.CertificateExtensions.Add(sanBuilder.Build());
+                        // Sign
+                        using var crt = req.CreateSelfSigned(now, now.AddDays(14)); // 14 days is the max duration of a certificate for this
+                        cert = new(crt.Export(X509ContentType.Pfx));
+
+                        // Save
+                        store.Add(cert);
+                    }
+                    store.Close();
+
+                    var hash = SHA256.HashData(cert.RawData);
+                    var certStr = Convert.ToBase64String(hash);
+                    Console.WriteLine($"\n\n\n\n\nCertificate: {certStr}\n\n\n\n");
+                    ///////////////////////////////////////////////////////////////////////////
 
                     options.ListenAnyIP(5000, listenOptions =>
                     {
@@ -40,17 +78,17 @@ public class Program
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                     });
 
-                    options.ListenAnyIP(5001, listenOptions =>
+                    options.Listen(IPAddress.Any, 5001, listenOptions =>// USE THIS PORT FOR WEBTRANSPORT
                     {
-                        listenOptions.UseHttps();
+                        listenOptions.UseHttps(cert);
                         listenOptions.UseConnectionLogging();
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
                     });
 
                     options.ListenAnyIP(5002, listenOptions =>
                     {
-                        listenOptions.UseHttps(StoreName.My, "localhost");
                         listenOptions.UseConnectionLogging();
+                        listenOptions.UseHttps(StoreName.My, "localhost");
                         listenOptions.Protocols = HttpProtocols.Http3;
                     });
 
