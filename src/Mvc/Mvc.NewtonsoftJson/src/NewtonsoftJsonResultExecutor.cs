@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 /// <summary>
 /// Executes a <see cref="JsonResult"/> to write to the response.
 /// </summary>
-internal partial class NewtonsoftJsonResultExecutor : IActionResultExecutor<JsonResult>
+internal sealed partial class NewtonsoftJsonResultExecutor : IActionResultExecutor<JsonResult>
 {
     private static readonly string DefaultContentType = new MediaTypeHeaderValue("application/json")
     {

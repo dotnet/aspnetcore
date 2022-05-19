@@ -14,15 +14,8 @@ namespace Microsoft.AspNetCore.WebSockets;
 
 internal static class HandshakeHelpers
 {
-    // "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
-    private static ReadOnlySpan<byte> EncodedWebSocketKey => new byte[]
-    {
-            (byte)'2', (byte)'5', (byte)'8', (byte)'E', (byte)'A', (byte)'F', (byte)'A', (byte)'5', (byte)'-',
-            (byte)'E', (byte)'9', (byte)'1', (byte)'4', (byte)'-', (byte)'4', (byte)'7', (byte)'D', (byte)'A',
-            (byte)'-', (byte)'9', (byte)'5', (byte)'C', (byte)'A', (byte)'-', (byte)'C', (byte)'5', (byte)'A',
-            (byte)'B', (byte)'0', (byte)'D', (byte)'C', (byte)'8', (byte)'5', (byte)'B', (byte)'1', (byte)'1'
-    };
+    private static ReadOnlySpan<byte> EncodedWebSocketKey => "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"u8;
 
     // Verify Method, Upgrade, Connection, version,  key, etc..
     public static void GenerateResponseHeaders(string key, string? subProtocol, IHeaderDictionary headers)
@@ -147,7 +140,7 @@ internal static class HandshakeHelpers
                 }
 
                 hasClientMaxWindowBits = true;
-                if (!ParseWindowBits(value, WebSocketDeflateConstants.ClientMaxWindowBits, out var clientMaxWindowBits))
+                if (!ParseWindowBits(value, out var clientMaxWindowBits))
                 {
                     return false;
                 }
@@ -192,7 +185,7 @@ internal static class HandshakeHelpers
                 }
 
                 hasServerMaxWindowBits = true;
-                if (!ParseWindowBits(value, WebSocketDeflateConstants.ServerMaxWindowBits, out var parsedServerMaxWindowBits))
+                if (!ParseWindowBits(value, out var parsedServerMaxWindowBits))
                 {
                     return false;
                 }
@@ -211,7 +204,7 @@ internal static class HandshakeHelpers
                 parsedOptions.ServerMaxWindowBits = Math.Min(parsedServerMaxWindowBits ?? 15, serverMaxWindowBits);
             }
 
-            static bool ParseWindowBits(ReadOnlySpan<char> value, string propertyName, out int? parsedValue)
+            static bool ParseWindowBits(ReadOnlySpan<char> value, out int? parsedValue)
             {
                 var startIndex = value.IndexOf('=');
 

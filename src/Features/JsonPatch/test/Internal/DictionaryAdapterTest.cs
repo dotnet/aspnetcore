@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
@@ -226,6 +229,29 @@ public class DictionaryAdapterTest
         Assert.False(removeStatus);
         Assert.Equal("The target location specified by path segment 'Name' was not found.", message);
         Assert.Empty(dictionary);
+    }
+
+    [Fact]
+    public void Replace_UsesCustomConverter()
+    {
+        // Arrange
+        var nameKey = "Name";
+        var dictionary = new Dictionary<string, Rectangle>(StringComparer.Ordinal);
+        dictionary.Add(nameKey, new Rectangle()
+        {
+            RectangleProperty = "Mike"
+        });
+        var dictionaryAdapter = new DictionaryAdapter<string, Rectangle>();
+        var resolver = new RectangleContractResolver();
+
+        // Act
+        var replaceStatus = dictionaryAdapter.TryReplace(dictionary, nameKey, resolver, "James", out var message);
+
+        // Assert
+        Assert.True(replaceStatus);
+        Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+        Assert.Single(dictionary);
+        Assert.Equal("James", dictionary[nameKey].RectangleProperty);
     }
 
     [Fact]

@@ -72,8 +72,8 @@ jobs:
         lclSource: ${{ parameters.LclSource }}
         lclPackageId: ${{ parameters.LclPackageId }}
         isCreatePrSelected: ${{ parameters.CreatePr }}
+        isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
         ${{ if eq(parameters.CreatePr, true) }}:
-          isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
           isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
           ${{ if eq(parameters.RepoType, 'gitHub') }}:
             isShouldReusePrSelected: ${{ parameters.ReusePr }}

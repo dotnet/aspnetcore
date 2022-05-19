@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -175,15 +176,16 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                         throw new InvalidDataException($"Expected '{StreamIdsPropertyName}' to be of type {JTokenType.Array}.");
                                     }
 
-                                    var newStreamIds = new List<string>();
+                                    List<string>? newStreamIds = null;
                                     reader.Read();
                                     while (reader.TokenType != JsonToken.EndArray)
                                     {
+                                        newStreamIds ??= new();
                                         newStreamIds.Add(reader.Value?.ToString() ?? throw new InvalidDataException($"Null value for '{StreamIdsPropertyName}' is not valid."));
                                         reader.Read();
                                     }
 
-                                    streamIds = newStreamIds.ToArray();
+                                    streamIds = newStreamIds?.ToArray() ?? Array.Empty<string>();
                                     break;
                                 case TargetPropertyName:
                                     target = JsonUtils.ReadAsString(reader, TargetPropertyName);
@@ -214,7 +216,15 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                             throw new JsonReaderException("Unexpected end when reading JSON");
                                         }
 
-                                        result = PayloadSerializer.Deserialize(reader, returnType);
+                                        if (returnType == typeof(RawResult))
+                                        {
+                                            var token = JToken.Load(reader);
+                                            result = GetRawResult(token);
+                                        }
+                                        else
+                                        {
+                                            result = PayloadSerializer.Deserialize(reader, returnType);
+                                        }
                                     }
                                     break;
                                 case ItemPropertyName:
@@ -328,7 +338,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
 
                         message = argumentBindingException != null
                             ? new InvocationBindingFailureMessage(invocationId, target, argumentBindingException)
-                            : BindInvocationMessage(invocationId, target, arguments, hasArguments, streamIds, binder);
+                            : BindInvocationMessage(invocationId, target, arguments, hasArguments, streamIds);
                     }
                     break;
                 case HubProtocolConstants.StreamInvocationMessageType:
@@ -354,7 +364,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
 
                         message = argumentBindingException != null
                             ? new InvocationBindingFailureMessage(invocationId, target, argumentBindingException)
-                            : BindStreamInvocationMessage(invocationId, target, arguments, hasArguments, streamIds, binder);
+                            : BindStreamInvocationMessage(invocationId, target, arguments, hasArguments, streamIds);
                     }
                     break;
                 case HubProtocolConstants.StreamItemMessageType:
@@ -377,7 +387,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                         };
                     }
 
-                    message = BindStreamItemMessage(invocationId, item, hasItem, binder);
+                    message = BindStreamItemMessage(invocationId, item, hasItem);
                     break;
                 case HubProtocolConstants.CompletionMessageType:
                     if (invocationId is null)
@@ -388,10 +398,17 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                     if (resultToken != null)
                     {
                         var returnType = binder.GetReturnType(invocationId);
-                        result = resultToken.ToObject(returnType, PayloadSerializer);
+                        if (returnType == typeof(RawResult))
+                        {
+                            result = GetRawResult(resultToken);
+                        }
+                        else
+                        {
+                            result = resultToken.ToObject(returnType, PayloadSerializer);
+                        }
                     }
 
-                    message = BindCompletionMessage(invocationId, error, result, hasResult, binder);
+                    message = BindCompletionMessage(invocationId, error, result, hasResult);
                     break;
                 case HubProtocolConstants.CancelInvocationMessageType:
                     message = BindCancelInvocationMessage(invocationId);
@@ -531,7 +548,18 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         else if (message.HasResult)
         {
             writer.WritePropertyName(ResultPropertyName);
-            PayloadSerializer.Serialize(writer, message.Result);
+            if (message.Result is RawResult result)
+            {
+#if NETCOREAPP2_1_OR_GREATER
+                writer.WriteRawValue(Encoding.UTF8.GetString(result.RawSerializedData));
+#else
+                writer.WriteRawValue(Encoding.UTF8.GetString(result.RawSerializedData.ToArray()));
+#endif
+            }
+            else
+            {
+                PayloadSerializer.Serialize(writer, message.Result);
+            }
         }
     }
 
@@ -637,7 +665,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return new CancelInvocationMessage(invocationId);
     }
 
-    private static HubMessage BindCompletionMessage(string invocationId, string? error, object? result, bool hasResult, IInvocationBinder binder)
+    private static HubMessage BindCompletionMessage(string invocationId, string? error, object? result, bool hasResult)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
@@ -657,7 +685,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return new CompletionMessage(invocationId, error, result: null, hasResult: false);
     }
 
-    private static HubMessage BindStreamItemMessage(string invocationId, object? item, bool hasItem, IInvocationBinder binder)
+    private static HubMessage BindStreamItemMessage(string invocationId, object? item, bool hasItem)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
@@ -672,7 +700,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return new StreamItemMessage(invocationId, item);
     }
 
-    private static HubMessage BindStreamInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds, IInvocationBinder binder)
+    private static HubMessage BindStreamInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
@@ -694,7 +722,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return new StreamInvocationMessage(invocationId, target, arguments, streamIds);
     }
 
-    private static HubMessage BindInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds, IInvocationBinder binder)
+    private static HubMessage BindInvocationMessage(string? invocationId, string target, object?[]? arguments, bool hasArguments, string[]? streamIds)
     {
         if (string.IsNullOrEmpty(target))
         {
@@ -823,6 +851,23 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         return message;
     }
 
+    private static RawResult GetRawResult(JToken token)
+    {
+        var strm = MemoryBufferWriter.Get();
+        try
+        {
+            using var writer = new StreamWriter(strm);
+            using var jsonTextWriter = new JsonTextWriter(writer);
+            token.WriteTo(jsonTextWriter);
+            jsonTextWriter.Flush();
+            writer.Flush();
+            return new RawResult(new ReadOnlySequence<byte>(strm.ToArray()));
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(strm);
+        }
+    }
     internal static JsonSerializerSettings CreateDefaultSerializerSettings()
     {
         return new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };

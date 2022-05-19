@@ -679,7 +679,7 @@ Return Value:
     int     i      = 0;
     BYTE    ch;
     HRESULT hr      = S_OK;
-    SIZE_T  NewSize = 0;
+    ULONG64  NewSize = 0;
 
     // Set to true if any % escaping occurs
     BOOL fEscapingDone = FALSE;
@@ -695,13 +695,14 @@ Return Value:
 
     _ASSERTE( pch );
 
-    while (ch = pch[i])
+    while (pch[i] != NULL)
     {
         //
         //  Escape characters that are in the non-printable range
         //  but ignore CR and LF
         //
 
+        ch = pch[i];
         if ( pfnFShouldEscape( ch ) )
         {
             if (FALSE == fEscapingDone)
@@ -711,7 +712,7 @@ Return Value:
 
                 // guess that the size needs to be larger than
                 // what we used to have times two
-                NewSize = QueryCCH() * 2;
+                NewSize = static_cast<ULONG64>(QueryCCH()) * 2;
                 if ( NewSize > MAXDWORD )
                 {
                     hr = HRESULT_FROM_WIN32( ERROR_ARITHMETIC_OVERFLOW );
@@ -740,14 +741,14 @@ Return Value:
 
             // resize the temporary (if needed) with the slop of the entire buffer length
             // this fixes constant reallocation if the entire string needs to be escaped
-            NewSize = QueryCCH() + 2 * sizeof(CHAR) + 1 * sizeof(CHAR);
+            NewSize = static_cast<ULONG64>(QueryCCH()) + 2 * sizeof(CHAR) + 1 * sizeof(CHAR);
             if ( NewSize > MAXDWORD )
             {
                 hr = HRESULT_FROM_WIN32( ERROR_ARITHMETIC_OVERFLOW );
                 return hr;
             }
 
-            BOOL fRet = straTemp.m_Buff.Resize(NewSize);
+            BOOL fRet = straTemp.m_Buff.Resize(static_cast<size_t>(NewSize));
             if ( !fRet )
             {
                 hr = HRESULT_FROM_WIN32(GetLastError());
@@ -1038,6 +1039,8 @@ STRA::AuxAppendW(
 {
     HRESULT hr          = S_OK;
     DWORD   cbRet       = 0;
+    DWORD cbAvailable   = 0;
+    UNREFERENCED_PARAMETER(fFailIfNoTranslation);
 
     //
     // There are only two expect places to append
@@ -1058,7 +1061,7 @@ STRA::AuxAppendW(
         goto Finished;
     }
 
-    DWORD cbAvailable = m_Buff.QuerySize() - cbOffset;
+    cbAvailable = m_Buff.QuerySize() - cbOffset;
 
     cbRet = WideCharToMultiByte(
         CodePage,
@@ -1166,28 +1169,23 @@ STRA::AuxAppendWTruncate(
 // Cheesey WCHAR --> CHAR conversion
 //
 {
-    HRESULT hr = S_OK;
-
     _ASSERTE( NULL != pszAppendW );
     _ASSERTE( 0 == cbOffset || cbOffset == QueryCB() );
 
     if( !pszAppendW )
     {
-        hr = HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
-        goto Finished;
+        return HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
     }
 
     ULONGLONG cbNeeded = static_cast<ULONGLONG>(cbOffset) + cchAppendW + sizeof( CHAR );
     if( cbNeeded > MAXDWORD )
     {
-        hr = HRESULT_FROM_WIN32( ERROR_ARITHMETIC_OVERFLOW );
-        goto Finished;
+        return HRESULT_FROM_WIN32( ERROR_ARITHMETIC_OVERFLOW );
     }
 
     if( !m_Buff.Resize( static_cast<SIZE_T>(cbNeeded) ) )
     {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
+        return E_OUTOFMEMORY;
     }
 
     //
@@ -1202,9 +1200,7 @@ STRA::AuxAppendWTruncate(
     m_cchLen = cchAppendW + cbOffset;
     *( QueryStr() + m_cchLen ) = '\0';
 
-Finished:
-
-    return hr;
+    return S_OK;
 }
 
 // static
@@ -1440,30 +1436,26 @@ STRA::StartsWith(
     __in PCSTR          pszPrefix,
     __in bool           fIgnoreCase) const
 {
-    BOOL    fMatch      = FALSE;
-    size_t  cchPrefix   = 0;
-
     if (pszPrefix == NULL)
     {
-        goto Finished;
+        return FALSE;
     }
 
-    HRESULT hr = StringCchLengthA(pszPrefix,
-                                  STRSAFE_MAX_CCH,
-                                  &cchPrefix);
+    size_t  cchPrefix   = 0;
+    HRESULT hr = StringCchLengthA(pszPrefix, STRSAFE_MAX_CCH, &cchPrefix);
     if (FAILED(hr))
     {
-        goto Finished;
+        return FALSE;
     }
 
     _ASSERTE( cchPrefix <= MAXDWORD );
-
     if (cchPrefix > m_cchLen)
     {
-        goto Finished;
+        return FALSE;
     }
 
-    if( fIgnoreCase )
+    BOOL fMatch = FALSE;
+    if ( fIgnoreCase )
     {
         fMatch = ( 0 == _strnicmp( QueryStr(), pszPrefix, cchPrefix ) );
     }
@@ -1471,9 +1463,6 @@ STRA::StartsWith(
     {
         fMatch = ( 0 == strncmp( QueryStr(), pszPrefix, cchPrefix ) );
     }
-
-
-Finished:
 
     return fMatch;
 }
@@ -1551,33 +1540,30 @@ STRA::EndsWith(
     __in bool           fIgnoreCase) const
 {
     PSTR      pszString   = QueryStr();
-    BOOL      fMatch      = FALSE;
-    size_t    cchSuffix   = 0;
 
     if (pszSuffix == NULL)
     {
-        goto Finished;
+        return FALSE;
     }
 
-    HRESULT hr = StringCchLengthA(pszSuffix,
-                                  STRSAFE_MAX_CCH,
-                                  &cchSuffix);
+    size_t    cchSuffix   = 0;
+    HRESULT hr = StringCchLengthA(pszSuffix, STRSAFE_MAX_CCH, &cchSuffix);
     if (FAILED(hr))
     {
-        goto Finished;
+        return FALSE;
     }
 
     _ASSERTE( cchSuffix <= MAXDWORD );
-
     if (cchSuffix > m_cchLen)
     {
-        goto Finished;
+        return FALSE;
     }
 
     ptrdiff_t ixOffset = m_cchLen - cchSuffix;
     _ASSERTE(ixOffset >= 0 && ixOffset <= MAXDWORD);
 
-    if( fIgnoreCase )
+    BOOL fMatch = FALSE;
+    if ( fIgnoreCase )
     {
         fMatch = ( 0 == _strnicmp( pszString + ixOffset, pszSuffix, cchSuffix ) );
     }
@@ -1585,8 +1571,6 @@ STRA::EndsWith(
     {
         fMatch = ( 0 == strncmp( pszString + ixOffset, pszSuffix, cchSuffix ) );
     }
-
-Finished:
 
     return fMatch;
 }
@@ -1619,21 +1603,19 @@ STRA::IndexOf(
     INT nIndex = -1;
 
     // Make sure that there are no buffer overruns.
-    if( dwStartIndex >= QueryCCH() )
+    if ( dwStartIndex >= QueryCCH() )
     {
-        goto Finished;
+        return nIndex;
     }
 
     const CHAR* pChar = strchr( QueryStr() + dwStartIndex, charValue );
 
     // Determine the index if found
-    if( pChar )
+    if ( pChar )
     {
         // nIndex will be set to -1 on failure.
         (VOID)SizeTToInt( pChar - QueryStr(), &nIndex );
     }
-
-Finished:
 
     return nIndex;
 }
@@ -1663,14 +1645,12 @@ STRA::IndexOf(
     __in DWORD          dwStartIndex
     ) const
 {
-    HRESULT hr = S_OK;
     INT nIndex = -1;
-    SIZE_T cchValue = 0;
 
     // Validate input parameters
     if( dwStartIndex >= QueryCCH() || !pszValue )
     {
-        goto Finished;
+        return nIndex;
     }
 
     const CHAR* pChar = strstr( QueryStr() + dwStartIndex, pszValue );
@@ -1681,8 +1661,6 @@ STRA::IndexOf(
         // nIndex will be set to -1 on failure.
         (VOID)SizeTToInt( pChar - QueryStr(), &nIndex );
     }
-
-Finished:
 
     return nIndex;
 }
@@ -1717,7 +1695,7 @@ STRA::LastIndexOf(
     // Make sure that there are no buffer overruns.
     if( dwStartIndex >= QueryCCH() )
     {
-        goto Finished;
+        return nIndex;
     }
 
     const CHAR* pChar = strrchr( QueryStr() + dwStartIndex, charValue );
@@ -1728,8 +1706,6 @@ STRA::LastIndexOf(
         // nIndex will be set to -1 on failure.
         (VOID)SizeTToInt( pChar - QueryStr(), &nIndex );
     }
-
-Finished:
 
     return nIndex;
 }

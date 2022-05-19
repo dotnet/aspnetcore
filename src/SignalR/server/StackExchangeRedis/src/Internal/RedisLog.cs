@@ -9,100 +9,54 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 
 // We don't want to use our nested static class here because RedisHubLifetimeManager is generic.
 // We'd end up creating separate instances of all the LoggerMessage.Define values for each Hub.
-internal static class RedisLog
+internal static partial class RedisLog
 {
-    private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
-
-    private static readonly Action<ILogger, string, string, Exception?> _connectingToEndpoints =
-        LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(1, "ConnectingToEndpoints"), "Connecting to Redis endpoints: {Endpoints}. Using Server Name: {ServerName}", SkipEnabledCheckLogOptions);
-
-    private static readonly Action<ILogger, Exception?> _connected =
-        LoggerMessage.Define(LogLevel.Information, new EventId(2, "Connected"), "Connected to Redis.");
-
-    private static readonly Action<ILogger, string, Exception?> _subscribing =
-        LoggerMessage.Define<string>(LogLevel.Trace, new EventId(3, "Subscribing"), "Subscribing to channel: {Channel}.");
-
-    private static readonly Action<ILogger, string, Exception?> _receivedFromChannel =
-        LoggerMessage.Define<string>(LogLevel.Trace, new EventId(4, "ReceivedFromChannel"), "Received message from Redis channel {Channel}.");
-
-    private static readonly Action<ILogger, string, Exception?> _publishToChannel =
-        LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, "PublishToChannel"), "Publishing message to Redis channel {Channel}.");
-
-    private static readonly Action<ILogger, string, Exception?> _unsubscribe =
-        LoggerMessage.Define<string>(LogLevel.Trace, new EventId(6, "Unsubscribe"), "Unsubscribing from channel: {Channel}.");
-
-    private static readonly Action<ILogger, Exception?> _notConnected =
-        LoggerMessage.Define(LogLevel.Error, new EventId(7, "Connected"), "Not connected to Redis.");
-
-    private static readonly Action<ILogger, Exception?> _connectionRestored =
-        LoggerMessage.Define(LogLevel.Information, new EventId(8, "ConnectionRestored"), "Connection to Redis restored.");
-
-    private static readonly Action<ILogger, Exception> _connectionFailed =
-        LoggerMessage.Define(LogLevel.Error, new EventId(9, "ConnectionFailed"), "Connection to Redis failed.");
-
-    private static readonly Action<ILogger, Exception> _failedWritingMessage =
-        LoggerMessage.Define(LogLevel.Debug, new EventId(10, "FailedWritingMessage"), "Failed writing message.");
-
-    private static readonly Action<ILogger, Exception> _internalMessageFailed =
-        LoggerMessage.Define(LogLevel.Warning, new EventId(11, "InternalMessageFailed"), "Error processing message for internal server message.");
-
     public static void ConnectingToEndpoints(ILogger logger, EndPointCollection endpoints, string serverName)
     {
         if (logger.IsEnabled(LogLevel.Information) && endpoints.Count > 0)
         {
-            _connectingToEndpoints(logger, string.Join(", ", endpoints.Select(e => EndPointCollection.ToString(e))), serverName, null);
+            ConnectingToEndpoints(logger, string.Join(", ", endpoints.Select(e => EndPointCollection.ToString(e))), serverName);
         }
     }
 
-    public static void Connected(ILogger logger)
-    {
-        _connected(logger, null);
-    }
+    [LoggerMessage(1, LogLevel.Information, "Connecting to Redis endpoints: {Endpoints}. Using Server Name: {ServerName}", EventName = "ConnectingToEndpoints")]
+    private static partial void ConnectingToEndpoints(ILogger logger, string endpoints, string serverName);
 
-    public static void Subscribing(ILogger logger, string channelName)
-    {
-        _subscribing(logger, channelName, null);
-    }
+    [LoggerMessage(2, LogLevel.Information, "Connected to Redis.", EventName = "Connected")]
+    public static partial void Connected(ILogger logger);
 
-    public static void ReceivedFromChannel(ILogger logger, string channelName)
-    {
-        _receivedFromChannel(logger, channelName, null);
-    }
+    [LoggerMessage(3, LogLevel.Trace, "Subscribing to channel: {Channel}.", EventName = "Subscribing")]
+    public static partial void Subscribing(ILogger logger, string channel);
 
-    public static void PublishToChannel(ILogger logger, string channelName)
-    {
-        _publishToChannel(logger, channelName, null);
-    }
+    [LoggerMessage(4, LogLevel.Trace, "Received message from Redis channel {Channel}.", EventName = "ReceivedFromChannel")]
+    public static partial void ReceivedFromChannel(ILogger logger, string channel);
 
-    public static void Unsubscribe(ILogger logger, string channelName)
-    {
-        _unsubscribe(logger, channelName, null);
-    }
+    [LoggerMessage(5, LogLevel.Trace, "Publishing message to Redis channel {Channel}.", EventName = "PublishToChannel")]
+    public static partial void PublishToChannel(ILogger logger, string channel);
 
-    public static void NotConnected(ILogger logger)
-    {
-        _notConnected(logger, null);
-    }
+    [LoggerMessage(6, LogLevel.Trace, "Unsubscribing from channel: {Channel}.", EventName = "Unsubscribe")]
+    public static partial void Unsubscribe(ILogger logger, string channel);
 
-    public static void ConnectionRestored(ILogger logger)
-    {
-        _connectionRestored(logger, null);
-    }
+    [LoggerMessage(7, LogLevel.Error, "Not connected to Redis.", EventName = "Connected")]
+    public static partial void NotConnected(ILogger logger);
 
-    public static void ConnectionFailed(ILogger logger, Exception exception)
-    {
-        _connectionFailed(logger, exception);
-    }
+    [LoggerMessage(8, LogLevel.Information, "Connection to Redis restored.", EventName = "ConnectionRestored")]
+    public static partial void ConnectionRestored(ILogger logger);
 
-    public static void FailedWritingMessage(ILogger logger, Exception exception)
-    {
-        _failedWritingMessage(logger, exception);
-    }
+    [LoggerMessage(9, LogLevel.Error, "Connection to Redis failed.", EventName = "ConnectionFailed")]
+    public static partial void ConnectionFailed(ILogger logger, Exception exception);
 
-    public static void InternalMessageFailed(ILogger logger, Exception exception)
-    {
-        _internalMessageFailed(logger, exception);
-    }
+    [LoggerMessage(10, LogLevel.Debug, "Failed writing message.", EventName = "FailedWritingMessage")]
+    public static partial void FailedWritingMessage(ILogger logger, Exception exception);
+
+    [LoggerMessage(11, LogLevel.Warning, "Error processing message for internal server message.", EventName = "InternalMessageFailed")]
+    public static partial void InternalMessageFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(12, LogLevel.Error, "Received a client result for protocol {HubProtocol} which is not supported by this server. This likely means you have different versions of your server deployed.", EventName = "MismatchedServers")]
+    public static partial void MismatchedServers(ILogger logger, string hubProtocol);
+
+    [LoggerMessage(13, LogLevel.Error, "Error forwarding client result with ID '{InvocationID}' to server.", EventName = "ErrorForwardingResult")]
+    public static partial void ErrorForwardingResult(ILogger logger, string invocationId, Exception ex);
 
     // This isn't DefineMessage-based because it's just the simple TextWriter logging from ConnectionMultiplexer
     public static void ConnectionMultiplexerMessage(ILogger logger, string? message)

@@ -1,17 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace CodeGenerator.HttpUtilities;
 
-internal class HttpUtilitiesGeneratorHelpers
+internal sealed class HttpUtilitiesGeneratorHelpers
 {
-    public class ShiftInfo<TMask>
+    public sealed class ShiftInfo<TMask>
     {
         public TMask Mask;
         public byte Shift;

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "AzureAD.WebSite": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:55927;http://localhost:55928"
+    }
+  }
+}

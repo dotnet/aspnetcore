@@ -239,8 +239,7 @@ public class DefaultKeyResolverTests
 
     private static IDefaultKeyResolver CreateDefaultKeyResolver()
     {
-        var options = Options.Create(new KeyManagementOptions());
-        return new DefaultKeyResolver(options, NullLoggerFactory.Instance);
+        return new DefaultKeyResolver(NullLoggerFactory.Instance);
     }
 
     private static IKey CreateKey(string activationDate, string expirationDate, string creationDate = null, bool isRevoked = false, bool createEncryptorThrows = false)

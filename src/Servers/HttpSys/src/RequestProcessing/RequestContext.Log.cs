@@ -7,30 +7,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal partial class RequestContext
 {
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, Exception?> _abortError =
-            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.AbortError, "Abort");
+        [LoggerMessage(LoggerEventIds.AbortError, LogLevel.Debug, "Abort", EventName = "AbortError")]
+        public static partial void AbortError(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _channelBindingNeedsHttps =
-            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ChannelBindingNeedsHttps, "TryGetChannelBinding; Channel binding requires HTTPS.");
+        [LoggerMessage(LoggerEventIds.ChannelBindingNeedsHttps, LogLevel.Debug, "TryGetChannelBinding; Channel binding requires HTTPS.", EventName = "ChannelBindingNeedsHttps")]
+        public static partial void ChannelBindingNeedsHttps(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _channelBindingRetrieved =
-            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ChannelBindingRetrieved, "Channel binding retrieved.");
-
-        public static void AbortError(ILogger logger, Exception exception)
-        {
-            _abortError(logger, exception);
-        }
-
-        public static void ChannelBindingNeedsHttps(ILogger logger)
-        {
-            _channelBindingNeedsHttps(logger, null);
-        }
-
-        public static void ChannelBindingRetrieved(ILogger logger)
-        {
-            _channelBindingRetrieved(logger, null);
-        }
+        [LoggerMessage(LoggerEventIds.ChannelBindingRetrieved, LogLevel.Debug, "Channel binding retrieved.", EventName = "ChannelBindingRetrieved")]
+        public static partial void ChannelBindingRetrieved(ILogger logger);
     }
 }

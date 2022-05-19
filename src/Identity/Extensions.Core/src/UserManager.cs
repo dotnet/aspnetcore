@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -718,7 +719,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var success = result != PasswordVerificationResult.Failed;
         if (!success)
         {
-            Logger.LogWarning(LoggerEventIds.InvalidPassword, "Invalid password for user.");
+            Logger.LogDebug(LoggerEventIds.InvalidPassword, "Invalid password for user.");
         }
         return success;
     }
@@ -765,7 +766,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var hash = await passwordStore.GetPasswordHashAsync(user, CancellationToken).ConfigureAwait(false);
         if (hash != null)
         {
-            Logger.LogWarning(LoggerEventIds.UserAlreadyHasPassword, "User already has a password.");
+            Logger.LogDebug(LoggerEventIds.UserAlreadyHasPassword, "User already has a password.");
             return IdentityResult.Failed(ErrorDescriber.UserAlreadyHasPassword());
         }
         var result = await UpdatePasswordHash(passwordStore, user, password).ConfigureAwait(false);
@@ -805,7 +806,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             }
             return await UpdateUserAsync(user).ConfigureAwait(false);
         }
-        Logger.LogWarning(LoggerEventIds.ChangePasswordFailed, "Change password failed for user.");
+        Logger.LogDebug(LoggerEventIds.ChangePasswordFailed, "Change password failed for user.");
         return IdentityResult.Failed(ErrorDescriber.PasswordMismatch());
     }
 
@@ -866,7 +867,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var stamp = await securityStore.GetSecurityStampAsync(user, CancellationToken).ConfigureAwait(false);
         if (stamp == null)
         {
-            Logger.LogWarning(LoggerEventIds.GetSecurityStampFailed, "GetSecurityStampAsync for user failed because stamp was null.");
+            Logger.LogDebug(LoggerEventIds.GetSecurityStampFailed, "GetSecurityStampAsync for user failed because stamp was null.");
             throw new InvalidOperationException(Resources.NullSecurityStamp);
         }
         return stamp;
@@ -1022,7 +1023,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var existingUser = await FindByLoginAsync(login.LoginProvider, login.ProviderKey).ConfigureAwait(false);
         if (existingUser != null)
         {
-            Logger.LogWarning(LoggerEventIds.AddLoginFailed, "AddLogin for user failed because it was already associated with another user.");
+            Logger.LogDebug(LoggerEventIds.AddLoginFailed, "AddLogin for user failed because it was already associated with another user.");
             return IdentityResult.Failed(ErrorDescriber.LoginAlreadyAssociated());
         }
         await loginStore.AddLoginAsync(user, login, CancellationToken).ConfigureAwait(false);
@@ -1286,13 +1287,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
     private IdentityResult UserAlreadyInRoleError(string role)
     {
-        Logger.LogWarning(LoggerEventIds.UserAlreadyInRole, "User is already in role {role}.", role);
+        Logger.LogDebug(LoggerEventIds.UserAlreadyInRole, "User is already in role {role}.", role);
         return IdentityResult.Failed(ErrorDescriber.UserAlreadyInRole(role));
     }
 
     private IdentityResult UserNotInRoleError(string role)
     {
-        Logger.LogWarning(LoggerEventIds.UserNotInRole, "User is not in role {role}.", role);
+        Logger.LogDebug(LoggerEventIds.UserNotInRole, "User is not in role {role}.", role);
         return IdentityResult.Failed(ErrorDescriber.UserNotInRole(role));
     }
 
@@ -1591,7 +1592,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
     /// of the operation.
     /// </returns>
-    public virtual async Task<IdentityResult> SetPhoneNumberAsync(TUser user, string phoneNumber)
+    public virtual async Task<IdentityResult> SetPhoneNumberAsync(TUser user, string? phoneNumber)
     {
         ThrowIfDisposed();
         var store = GetPhoneNumberStore();
@@ -1628,7 +1629,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         if (!await VerifyChangePhoneNumberTokenAsync(user, token, phoneNumber).ConfigureAwait(false))
         {
-            Logger.LogWarning(LoggerEventIds.PhoneNumberChanged, "Change phone number for user failed with invalid token.");
+            Logger.LogDebug(LoggerEventIds.PhoneNumberChanged, "Change phone number for user failed with invalid token.");
             return IdentityResult.Failed(ErrorDescriber.InvalidToken());
         }
         await store.SetPhoneNumberAsync(user, phoneNumber, CancellationToken).ConfigureAwait(false);
@@ -1828,7 +1829,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var result = await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user).ConfigureAwait(false);
         if (!result)
         {
-            Logger.LogWarning(LoggerEventIds.VerifyTwoFactorTokenFailed, $"{nameof(VerifyTwoFactorTokenAsync)}() failed for user.");
+            Logger.LogDebug(LoggerEventIds.VerifyTwoFactorTokenFailed, $"{nameof(VerifyTwoFactorTokenAsync)}() failed for user.");
         }
         return result;
     }
@@ -2001,7 +2002,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         if (!await store.GetLockoutEnabledAsync(user, CancellationToken).ConfigureAwait(false))
         {
-            Logger.LogWarning(LoggerEventIds.LockoutFailed, "Lockout for user failed because lockout is not enabled for this user.");
+            Logger.LogDebug(LoggerEventIds.LockoutFailed, "Lockout for user failed because lockout is not enabled for this user.");
             return IdentityResult.Failed(ErrorDescriber.UserLockoutNotEnabled());
         }
         await store.SetLockoutEndDateAsync(user, lockoutEnd, CancellationToken).ConfigureAwait(false);
@@ -2030,7 +2031,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             return await UpdateUserAsync(user).ConfigureAwait(false);
         }
-        Logger.LogWarning(LoggerEventIds.UserLockedOut, "User is locked out.");
+        Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
         await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
             CancellationToken).ConfigureAwait(false);
         await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
@@ -2276,7 +2277,59 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </summary>
     /// <returns></returns>
     protected virtual string CreateTwoFactorRecoveryCode()
-        => Guid.NewGuid().ToString().Substring(0, 8);
+    {
+        var recoveryCode = new StringBuilder(11);
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append('-');
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        recoveryCode.Append(GetRandomRecoveryCodeChar());
+        return recoveryCode.ToString();
+    }
+
+    // We don't want to use any confusing characters like 0/O 1/I/L/l
+    // Taken from windows valid product key source
+    private static readonly char[] AllowedChars = "23456789BCDFGHJKMNPQRTVWXY".ToCharArray();
+    private static char GetRandomRecoveryCodeChar()
+    {
+        // Based on RandomNumberGenerator implementation of GetInt32
+        uint range = (uint)AllowedChars.Length - 1;
+
+        // Create a mask for the bits that we care about for the range. The other bits will be
+        // masked away.
+        uint mask = range;
+        mask |= mask >> 1;
+        mask |= mask >> 2;
+        mask |= mask >> 4;
+        mask |= mask >> 8;
+        mask |= mask >> 16;
+
+#if NETCOREAPP
+        Span<uint> resultBuffer = stackalloc uint[1];
+#else
+        var resultBuffer = new byte[1];
+#endif
+        uint result;
+
+        do
+        {
+#if NETCOREAPP
+            RandomNumberGenerator.Fill(MemoryMarshal.AsBytes(resultBuffer));
+#else
+            _rng.GetBytes(resultBuffer);
+#endif
+            result = mask & resultBuffer[0];
+        }
+        while (result > range);
+
+        return AllowedChars[(int)result];
+    }
 
     /// <summary>
     /// Returns whether a recovery code is valid for a user. Note: recovery codes are only valid
@@ -2508,7 +2561,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
         if (errors.Count > 0)
         {
-            Logger.LogWarning(LoggerEventIds.UserValidationFailed, "User validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
+            Logger.LogDebug(LoggerEventIds.UserValidationFailed, "User validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
             return IdentityResult.Failed(errors.ToArray());
         }
         return IdentityResult.Success;
@@ -2540,7 +2593,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
         if (!isValid)
         {
-            Logger.LogWarning(LoggerEventIds.PasswordValidationFailed, "User password validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
+            Logger.LogDebug(LoggerEventIds.PasswordValidationFailed, "User password validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
             return IdentityResult.Failed(errors.ToArray());
         }
         return IdentityResult.Success;

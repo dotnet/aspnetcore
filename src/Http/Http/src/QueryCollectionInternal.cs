@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// The HttpRequest query string collection
 /// </summary>
-internal class QueryCollectionInternal : IQueryCollection
+internal sealed class QueryCollectionInternal : IQueryCollection
 {
     private AdaptiveCapacityDictionary<string, StringValues> Store { get; }
 

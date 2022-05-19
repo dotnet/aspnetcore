@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 public sealed class RequestDelegateFactoryOptions
 {
     /// <summary>
-    /// The <see cref="IServiceProvider"/> instance used to detect if handler parameters are services.
+    /// The <see cref="IServiceProvider"/> instance used to access application services.
     /// </summary>
     public IServiceProvider? ServiceProvider { get; init; }
 
@@ -31,4 +31,20 @@ public sealed class RequestDelegateFactoryOptions
     /// Prevent the <see cref="RequestDelegateFactory" /> from inferring a parameter should be bound from the request body without an attribute that implements <see cref="IFromBodyMetadata"/>.
     /// </summary>
     public bool DisableInferBodyFromParameters { get; init; }
+
+    /// <summary>
+    /// The list of filters that must run in the pipeline for a given route handler.
+    /// </summary>
+    public IReadOnlyList<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? RouteHandlerFilterFactories { get; init; }
+
+    /// <summary>
+    /// The initial endpoint metadata to add as part of the creation of the <see cref="RequestDelegateResult.RequestDelegate"/>.
+    /// </summary>
+    /// <remarks>
+    /// This metadata will be included in <see cref="RequestDelegateResult.EndpointMetadata" /> <b>before</b> any metadata inferred during creation of the
+    /// <see cref="RequestDelegateResult.RequestDelegate"/> and <b>before</b> any metadata provided by types in the delegate signature that implement
+    /// <see cref="IEndpointMetadataProvider" /> or <see cref="IEndpointParameterMetadataProvider" />, i.e. this metadata will be less specific than any
+    /// inferred by the call to <see cref="RequestDelegateFactory.Create(Delegate, RequestDelegateFactoryOptions?)"/>.
+    /// </remarks>
+    public IEnumerable<object>? InitialEndpointMetadata { get; init; }
 }

@@ -12,21 +12,6 @@ public partial class StartupAnalyzer : DiagnosticAnalyzer
     [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
     internal static class Diagnostics
     {
-        public static readonly ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics;
-
-        static Diagnostics()
-        {
-            SupportedDiagnostics = ImmutableArray.Create<DiagnosticDescriptor>(new[]
-            {
-                    // ASP
-                    BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
-                    IncorrectlyConfiguredAuthorizationMiddleware,
-
-                    // MVC
-                    UnsupportedUseMvcWithEndpointRouting,
-                });
-        }
-
         internal static readonly DiagnosticDescriptor BuildServiceProviderShouldNotCalledInConfigureServicesMethod = new DiagnosticDescriptor(
             "ASP0000",
             "Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'",
@@ -53,5 +38,15 @@ public partial class StartupAnalyzer : DiagnosticAnalyzer
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             helpLinkUri: "https://aka.ms/AA64fv1");
+
+        public static readonly ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics = ImmutableArray.Create<DiagnosticDescriptor>(new[]
+        {
+            // ASP
+            BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
+            IncorrectlyConfiguredAuthorizationMiddleware,
+
+            // MVC
+            UnsupportedUseMvcWithEndpointRouting,
+        });
     }
 }

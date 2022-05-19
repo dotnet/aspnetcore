@@ -9,8 +9,6 @@ using System.Globalization;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
@@ -130,6 +128,48 @@ public class Http3ConnectionTests : Http3TestBase
         Assert.Equal($"End", Encoding.ASCII.GetString(responseData.ToArray()));
 
         await requestStream.ExpectReceiveEndOfStream();
+    }
+
+    [Fact]
+    public async Task HEADERS_CookiesMergedIntoOne()
+    {
+        var requestHeaders = new[]
+        {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "a=0"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "b=1"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "c=2"),
+            };
+
+        var receivedHeaders = "";
+
+        await Http3Api.InitializeConnectionAsync(async context =>
+        {
+            var buffer = new byte[16 * 1024];
+            var received = 0;
+
+            // verify that the cookies are all merged into a single string
+            receivedHeaders = context.Request.Headers[HeaderNames.Cookie];
+
+            while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await context.Response.Body.WriteAsync(buffer, 0, received);
+            }
+        });
+
+        await Http3Api.CreateControlStream();
+        await Http3Api.GetInboundControlStream();
+        var requestStream = await Http3Api.CreateRequestStream();
+
+        await requestStream.SendHeadersAsync(requestHeaders, endStream: true);
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        await requestStream.ExpectReceiveEndOfStream();
+        await requestStream.OnDisposedTask.DefaultTimeout();
+
+        Assert.Equal("a=0; b=1; c=2", receivedHeaders);
     }
 
     [Theory]

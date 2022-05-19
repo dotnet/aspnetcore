@@ -352,7 +352,7 @@ public class BrowserFixture : IAsyncLifetime
     }
 
     // This is a workaround for https://github.com/SeleniumHQ/selenium/issues/8229
-    private class RemoteWebDriverWithLogs : RemoteWebDriver, ISupportsLogs
+    private sealed class RemoteWebDriverWithLogs : RemoteWebDriver, ISupportsLogs
     {
         public RemoteWebDriverWithLogs(Uri remoteAddress, ICapabilities desiredCapabilities, TimeSpan commandTimeout)
             : base(remoteAddress, desiredCapabilities, commandTimeout)

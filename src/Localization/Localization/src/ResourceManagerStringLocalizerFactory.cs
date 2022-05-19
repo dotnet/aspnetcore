@@ -153,13 +153,19 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
             throw new ArgumentNullException(nameof(resourceSource));
         }
 
-        var typeInfo = resourceSource.GetTypeInfo();
+        // Get without Add to prevent unnecessary lambda allocation
+        if (!_localizerCache.TryGetValue(resourceSource.AssemblyQualifiedName!, out var localizer))
+        {
+            var typeInfo = resourceSource.GetTypeInfo();
+            var baseName = GetResourcePrefix(typeInfo);
+            var assembly = typeInfo.Assembly;
 
-        var baseName = GetResourcePrefix(typeInfo);
+            localizer = CreateResourceManagerStringLocalizer(assembly, baseName);
+            
+            _localizerCache[resourceSource.AssemblyQualifiedName!] = localizer;
+        }
 
-        var assembly = typeInfo.Assembly;
-
-        return _localizerCache.GetOrAdd(baseName, _ => CreateResourceManagerStringLocalizer(assembly, baseName));
+        return localizer;
     }
 
     /// <summary>

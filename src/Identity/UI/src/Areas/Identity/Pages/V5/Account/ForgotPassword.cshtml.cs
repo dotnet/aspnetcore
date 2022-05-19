@@ -25,7 +25,7 @@ public abstract class ForgotPasswordModel : PageModel
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [BindProperty]
-    public InputModel Input { get; set; }
+    public InputModel Input { get; set; } = default!;
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -39,7 +39,7 @@ public abstract class ForgotPasswordModel : PageModel
         /// </summary>
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = default!;
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public abstract class ForgotPasswordModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class ForgotPasswordModel<TUser> : ForgotPasswordModel where TUser : class
+internal sealed class ForgotPasswordModel<TUser> : ForgotPasswordModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly IEmailSender _emailSender;
@@ -79,7 +79,7 @@ internal class ForgotPasswordModel<TUser> : ForgotPasswordModel where TUser : cl
                 "/Account/ResetPassword",
                 pageHandler: null,
                 values: new { area = "Identity", code },
-                protocol: Request.Scheme);
+                protocol: Request.Scheme)!;
 
             await _emailSender.SendEmailAsync(
                 Input.Email,

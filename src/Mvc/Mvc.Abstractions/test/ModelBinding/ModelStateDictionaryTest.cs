@@ -994,7 +994,7 @@ public class ModelStateDictionaryTest
         var expected = "Hmm, the supplied value is not valid for Length.";
         var dictionary = new ModelStateDictionary();
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetUnknownValueIsInvalidAccessor(
@@ -1020,7 +1020,7 @@ public class ModelStateDictionaryTest
         var expected = "Hmm, the supplied value is not valid.";
         var dictionary = new ModelStateDictionary();
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyUnknownValueIsInvalidAccessor(
@@ -1048,7 +1048,7 @@ public class ModelStateDictionaryTest
         var expected = "Hmm, the supplied value is not valid.";
         var dictionary = new ModelStateDictionary();
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyUnknownValueIsInvalidAccessor(
@@ -1109,7 +1109,7 @@ public class ModelStateDictionaryTest
         var dictionary = new ModelStateDictionary();
         dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetAttemptedValueIsInvalidAccessor(
@@ -1136,7 +1136,7 @@ public class ModelStateDictionaryTest
         var dictionary = new ModelStateDictionary();
         dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(
@@ -1165,7 +1165,7 @@ public class ModelStateDictionaryTest
         var dictionary = new ModelStateDictionary();
         dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
 
-        var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+        var bindingMetadataProvider = CreateBindingMetadataProvider();
         var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
         var optionsAccessor = new OptionsAccessor();
         optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(
@@ -1598,6 +1598,9 @@ public class ModelStateDictionaryTest
         // Assert
         Assert.Equal("value1", property.RawValue);
     }
+
+    private DefaultBindingMetadataProvider CreateBindingMetadataProvider()
+        => new DefaultBindingMetadataProvider();
 
     private class OptionsAccessor : IOptions<MvcOptions>
     {

@@ -1,15 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
     <VerifyPackageAssemblyVersions Condition="'$(VersionSuffixDateStamp)' != ''">true</VerifyPackageAssemblyVersions>
-    <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetAppPackages>true</TestDependsOnAspNetAppPackages>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Grab RuntimeList.xml because it's not placed in the .dotnet/ folder. -->
+    <None Include="$(ArtifactsObjDir)Microsoft.AspNetCore.App.Runtime\RuntimeList.xml"
+        CopyToOutputDirectory="PreserveNewest" />
+
     <!-- Ignore aspnetcorev2_inprocess because tests expect only managed assemblies in this item group. -->
     <_SharedFrameworkBinariesFromRepo Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage)" />
 
@@ -49,13 +52,6 @@
       <_Parameter2>@(_ExpectedSharedFrameworkBinaries)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>SharedFrameworkLayoutRoot</_Parameter1>
-      <_Parameter2>$(SharedFrameworkLayoutRoot)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>TargetingPackLayoutRoot</_Parameter1>
-      <_Parameter2>$(TargetingPackLayoutRoot)</_Parameter2>
-    </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>PackageLayoutRoot</_Parameter1>
       <_Parameter2>$(PackagesLayoutRoot)</_Parameter2>
@@ -69,8 +65,8 @@
       <_Parameter2>$(VerifyPackageAssemblyVersions)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>ArtifactsPackagesDir</_Parameter1>
-      <_Parameter2>$(ArtifactsPackagesDir)</_Parameter2>
+      <_Parameter1>PackagesFolder</_Parameter1>
+      <_Parameter2>$(ArtifactsShippingPackagesDir)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
@@ -125,17 +121,6 @@
         <_Parameter1>RepositoryCommit</_Parameter1>
         <_Parameter2>$(SourceRevisionId)</_Parameter2>
       </AssemblyAttribute>
-
-      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-        <_Parameter1>RuntimePackageVersion</_Parameter1>
-        <_Parameter2>$(SharedFxVersion)</_Parameter2>
-      </AssemblyAttribute>
-
-      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-        <_Parameter1>TargetingPackVersion</_Parameter1>
-        <_Parameter2>$(TargetingPackVersion)</_Parameter2>
-      </AssemblyAttribute>
     </ItemGroup>
   </Target>
-
 </Project>

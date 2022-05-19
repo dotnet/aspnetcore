@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator;
 
 [Generator]
-internal partial class HubClientProxyGenerator : IIncrementalGenerator
+internal sealed partial class HubClientProxyGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {

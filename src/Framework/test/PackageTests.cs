@@ -22,7 +22,7 @@ public class PackageTests
     public PackageTests(ITestOutputHelper output)
     {
         _output = output;
-        var packageRoot = TestData.GetTestDataValue("ArtifactsPackagesDir");
+        var packageRoot = TestData.GetPackagesFolder();
         _packageLayoutRoot = TestData.GetTestDataValue("PackageLayoutRoot");
         var packages = Directory
                         .GetFiles(packageRoot, "*.nupkg", SearchOption.AllDirectories)
@@ -40,10 +40,10 @@ public class PackageTests
     [Fact]
     public void PackageAssembliesHaveExpectedAssemblyVersions()
     {
-        /*if (!TestData.VerifyPackageAssemblyVersions())
+        if (!TestData.VerifyPackageAssemblyVersions())
         {
             return;
-        } */
+        }
 
         var versionStringWithoutPrereleaseTag = TestData.GetSharedFxVersion().Split('-', 2)[0];
         var version = Version.Parse(versionStringWithoutPrereleaseTag);

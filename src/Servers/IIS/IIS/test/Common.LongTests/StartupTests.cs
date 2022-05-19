@@ -1,17 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -19,7 +13,6 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Win32;
-using Xunit;
 
 #if !IIS_FUNCTIONALS
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -38,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
 [Collection(PublishedSitesCollection.Name)]
-[SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/25107")]
 public class StartupTests : IISFunctionalTestBase
 {
     public StartupTests(PublishedSitesFixture fixture) : base(fixture)
@@ -49,7 +41,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38260")]
     public async Task ExpandEnvironmentVariableInWebConfig()
     {
         // Point to dotnet installed in user profile.
@@ -244,7 +235,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38732")]
     public async Task LogsStartupExceptionExitError()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -418,7 +408,7 @@ public class StartupTests : IISFunctionalTestBase
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             var responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains("500.31", responseContent);
-            Assert.Contains("The framework 'Microsoft.NETCore.App', version '2.9.9'", responseContent);
+            Assert.Contains("Framework: 'Microsoft.NETCore.App', version '2.9.9'", responseContent);
         }
         else
         {
@@ -1037,7 +1027,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37932")]
     public async Task Gets500_30_ErrorPage()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -1362,7 +1351,8 @@ public class StartupTests : IISFunctionalTestBase
         };
         var client = new HttpClient(handler)
         {
-            BaseAddress = new Uri(deploymentParameters.ApplicationBaseUriHint)
+            BaseAddress = new Uri(deploymentParameters.ApplicationBaseUriHint),
+            Timeout = TimeSpan.FromSeconds(200),
         };
 
         if (DeployerSelector.HasNewHandler)

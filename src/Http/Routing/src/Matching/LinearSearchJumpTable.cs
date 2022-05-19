@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
-internal class LinearSearchJumpTable : JumpTable
+internal sealed class LinearSearchJumpTable : JumpTable
 {
     private readonly int _defaultDestination;
     private readonly int _exitDestination;

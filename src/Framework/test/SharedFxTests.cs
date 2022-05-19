@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
@@ -14,7 +15,6 @@ public class SharedFxTests
 {
     private readonly string _expectedTfm;
     private readonly string _expectedRid;
-    private readonly string _expectedVersionFileName;
     private readonly string _sharedFxRoot;
     private readonly ITestOutputHelper _output;
 
@@ -23,12 +23,11 @@ public class SharedFxTests
         _output = output;
         _expectedTfm = TestData.GetDefaultNetCoreTargetFramework();
         _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-        _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
-            ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
-            : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
-        _expectedVersionFileName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
-            ? ".version"
-            : "Microsoft.AspNetCore.App.versions.txt";
+        _sharedFxRoot = Path.Combine(
+            Environment.GetEnvironmentVariable("DOTNET_ROOT"),
+            "shared",
+            "Microsoft.AspNetCore.App",
+            TestData.GetSharedFxVersion());
     }
 
     [Fact]
@@ -106,7 +105,7 @@ public class SharedFxTests
 
         var target = $".NETCoreApp,Version=v{_expectedTfm.Substring(3)}/{_expectedRid}";
         var ridPackageId = $"Microsoft.AspNetCore.App.Runtime.{_expectedRid}";
-        var libraryId = $"{ridPackageId}/{TestData.GetTestDataValue("RuntimePackageVersion")}";
+        var libraryId = $"{ridPackageId}/{TestData.GetSharedFxVersion()}";
 
         AssertEx.FileExists(depsFilePath);
 
@@ -228,22 +227,22 @@ public class SharedFxTests
     [Fact]
     public void ItContainsVersionFile()
     {
-        var versionFile = Path.Combine(_sharedFxRoot, _expectedVersionFileName);
+        var versionFile = Path.Combine(_sharedFxRoot, ".version");
         AssertEx.FileExists(versionFile);
         var lines = File.ReadAllLines(versionFile);
         Assert.Equal(2, lines.Length);
         Assert.Equal(TestData.GetRepositoryCommit(), lines[0]);
-        Assert.Equal(TestData.GetTestDataValue("RuntimePackageVersion"), lines[1]);
+        Assert.Equal(TestData.GetSharedFxVersion(), lines[1]);
     }
 
     [Fact]
-    public void RuntimeListListsContainsCorrectEntries()
+    public void RuntimeListContainsCorrectEntries()
     {
         var expectedAssemblies = TestData.GetSharedFxDependencies()
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
-        var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
+        var runtimeListPath = "RuntimeList.xml";
         AssertEx.FileExists(runtimeListPath);
 
         var runtimeListDoc = XDocument.Load(runtimeListPath);
@@ -294,15 +293,21 @@ public class SharedFxTests
     }
 
     [Fact]
-    public void RuntimeListListsContainsCorrectPaths()
+    public void RuntimeListContainsCorrectPaths()
     {
-        var runtimeListPath = Path.Combine(_sharedFxRoot, "RuntimeList.xml");
+        var runtimeListPath = "RuntimeList.xml";
         AssertEx.FileExists(runtimeListPath);
 
         var runtimeListDoc = XDocument.Load(runtimeListPath);
         var runtimeListEntries = runtimeListDoc.Root.Descendants();
 
-        var sharedFxPath = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), ("Microsoft.AspNetCore.App.Runtime.win-x64." + TestData.GetSharedFxVersion() + ".nupkg"));
+        var packageFolder = SkipOnHelixAttribute.OnHelix() ?
+            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            TestData.GetPackagesFolder();
+        var sharedFxPath = Path.Combine(
+            packageFolder,
+            "Microsoft.AspNetCore.App.Runtime.win-x64." + TestData.GetSharedFxVersion() + ".nupkg");
+        AssertEx.FileExists(sharedFxPath);
 
         ZipArchive archive = ZipFile.OpenRead(sharedFxPath);
 

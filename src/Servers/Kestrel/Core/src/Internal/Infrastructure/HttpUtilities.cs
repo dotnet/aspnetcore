@@ -552,4 +552,4 @@ internal static partial class HttpUtilities
     }
 }
 
-internal record AltSvcHeader(string Value, byte[] RawBytes);
+internal sealed record AltSvcHeader(string Value, byte[] RawBytes);

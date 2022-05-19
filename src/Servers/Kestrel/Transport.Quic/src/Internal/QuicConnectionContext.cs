@@ -185,7 +185,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         }
     }
 
-    public override ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default)
+    public override async ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default)
     {
         QuicStream quicStream;
 
@@ -194,16 +194,16 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         {
             if (streamDirectionFeature.CanRead)
             {
-                quicStream = _connection.OpenBidirectionalStream();
+                quicStream = await _connection.OpenBidirectionalStreamAsync(cancellationToken);
             }
             else
             {
-                quicStream = _connection.OpenUnidirectionalStream();
+                quicStream = await _connection.OpenUnidirectionalStreamAsync(cancellationToken);
             }
         }
         else
         {
-            quicStream = _connection.OpenBidirectionalStream();
+            quicStream = await _connection.OpenBidirectionalStreamAsync(cancellationToken);
         }
 
         // Only a handful of control streams are created by the server and they last for the
@@ -214,7 +214,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
 
         QuicLog.ConnectedStream(_log, context);
 
-        return new ValueTask<ConnectionContext>(context);
+        return context;
     }
 
     internal bool TryReturnStream(QuicStreamContext stream)

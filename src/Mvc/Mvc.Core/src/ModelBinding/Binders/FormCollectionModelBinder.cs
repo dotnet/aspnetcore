@@ -59,7 +59,7 @@ public class FormCollectionModelBinder : IModelBinder
         _logger.DoneAttemptingToBindModel(bindingContext);
     }
 
-    private class EmptyFormCollection : IFormCollection
+    private sealed class EmptyFormCollection : IFormCollection
     {
         public StringValues this[string key] => StringValues.Empty;
 
@@ -91,7 +91,7 @@ public class FormCollectionModelBinder : IModelBinder
         }
     }
 
-    private class EmptyFormFileCollection : List<IFormFile>, IFormFileCollection
+    private sealed class EmptyFormFileCollection : List<IFormFile>, IFormFileCollection
     {
         public IFormFile? this[string name] => null;
 

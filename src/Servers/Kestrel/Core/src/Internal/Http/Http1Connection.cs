@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -511,9 +512,20 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             previousValue == null || previousValue.Length != target.Length ||
             !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
         {
-            // The previous string does not match what the bytes would convert to,
-            // so we will need to generate a new string.
-            RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+            try
+            {
+                // The previous string does not match what the bytes would convert to,
+                // so we will need to generate a new string.
+                RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
+            }
+            catch (InvalidOperationException)
+            {
+                // GetAsciiStringNonNullCharacters throws an InvalidOperationException if there are
+                // invalid characters in the string. This is hard to understand/diagnose, so let's
+                // catch it and instead throw a more meaningful error. This matches the behavior in
+                // the origin-form case.
+                ThrowRequestTargetRejected(target);
+            }
 
             // Validation of absolute URIs is slow, but clients
             // should not be sending this form anyways, so perf optimization

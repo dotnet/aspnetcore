@@ -8,10 +8,6 @@ parameters:
   # Optional: Enable publishing using release pipelines
   enablePublishUsingPipelines: false
 
-  # Optional: Disable component governance detection. In general, component governance
-  # should be on for all jobs. Use only in the event of issues.
-  disableComponentGovernance: false
-
   # Optional: Enable running the source-build jobs to build repo from source
   enableSourceBuild: false
 
@@ -30,6 +26,13 @@ parameters:
 
   # Optional: Override automatically derived dependsOn value for "publish build assets" job
   publishBuildAssetsDependsOn: ''
+
+  # Optional: Publish the assets as soon as the publish to BAR stage is complete, rather doing so in a separate stage.
+  publishAssetsImmediately: false
+
+  # Optional: If using publishAssetsImmediately and additional parameters are needed, can be used to send along additional parameters (normally sent to post-build.yml)
+  artifactsPublishingAdditionalParameters: ''
+  signingValidationAdditionalParameters: ''
 
   # Optional: should run as a public build even in the internal project
   #           if 'true', the build won't run any of the internal only steps, even if it is running in non-public projects.
@@ -72,7 +75,6 @@ jobs:
         ${{ parameter.key }}: ${{ parameter.value }}
 
 - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-  
   - ${{ if or(eq(parameters.enablePublishBuildAssets, true), eq(parameters.artifacts.publish.manifests, 'true'), ne(parameters.artifacts.publish.manifests, '')) }}:
     - template: ../job/publish-build-assets.yml
       parameters:
@@ -98,4 +100,7 @@ jobs:
 
         runAsPublic: ${{ parameters.runAsPublic }}
         publishUsingPipelines: ${{ parameters.enablePublishUsingPipelines }}
+        publishAssetsImmediately: ${{ parameters.publishAssetsImmediately }}
         enablePublishBuildArtifacts: ${{ parameters.enablePublishBuildArtifacts }}
+        artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+        signingValidationAdditionalParameters: ${{ parameters.signingValidationAdditionalParameters }}

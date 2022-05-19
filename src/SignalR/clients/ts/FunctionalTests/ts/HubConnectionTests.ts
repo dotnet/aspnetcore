@@ -513,6 +513,60 @@ describe("hubConnection", () => {
                     await hubConnection.stop();
                 }
             });
+
+            it("can return result to server", async () => {
+                const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
+                    .withHubProtocol(protocol)
+                    .build();
+
+                hubConnection.on("Result", () => {
+                    return 10;
+                });
+
+                await hubConnection.start();
+
+                const response = await httpClient.get(ENDPOINT_BASE_URL + `/clientresult/${hubConnection.connectionId}`);
+
+                expect(response.content).toEqual("10");
+
+                await hubConnection.stop();
+            });
+
+            it("can throw result to server", async () => {
+                const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
+                    .withHubProtocol(protocol)
+                    .build();
+
+                hubConnection.on("Result", () => {
+                    throw new Error("from callback");
+                });
+
+                try {
+                    await hubConnection.start();
+
+                    const response = await httpClient.get(ENDPOINT_BASE_URL + `/clientresult/${hubConnection.connectionId}`);
+
+                    expect(response.content).toEqual("Error: from callback");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+
+            it("returns result error to server when no result given", async () => {
+                const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
+                    .withHubProtocol(protocol)
+                    .build();
+
+                try {
+                    await hubConnection.start();
+
+                    const response = await httpClient.get(ENDPOINT_BASE_URL + `/clientresult/${hubConnection.connectionId}`);
+
+                    expect(response.content).toEqual("Client didn't provide a result.");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
         });
     });
 

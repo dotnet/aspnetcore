@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.DataProtection.Internal;
 
@@ -15,5 +16,5 @@ public interface IActivator
     /// Creates an instance of <paramref name="implementationTypeName"/> and ensures
     /// that it is assignable to <paramref name="expectedBaseType"/>.
     /// </summary>
-    object CreateInstance(Type expectedBaseType, string implementationTypeName);
+    object CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type expectedBaseType, string implementationTypeName);
 }

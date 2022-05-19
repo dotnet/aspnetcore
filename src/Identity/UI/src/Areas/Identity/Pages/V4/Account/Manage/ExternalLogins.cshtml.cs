@@ -19,13 +19,13 @@ public abstract class ExternalLoginsModel : PageModel
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public IList<UserLoginInfo> CurrentLogins { get; set; }
+    public IList<UserLoginInfo>? CurrentLogins { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public IList<AuthenticationScheme> OtherLogins { get; set; }
+    public IList<AuthenticationScheme>? OtherLogins { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -38,7 +38,7 @@ public abstract class ExternalLoginsModel : PageModel
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [TempData]
-    public string StatusMessage { get; set; }
+    public string? StatusMessage { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -65,7 +65,7 @@ public abstract class ExternalLoginsModel : PageModel
     public virtual Task<IActionResult> OnGetLinkLoginCallbackAsync() => throw new NotImplementedException();
 }
 
-internal class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUser : class
+internal sealed class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly SignInManager<TUser> _signInManager;
@@ -94,7 +94,7 @@ internal class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUser : cl
             .Where(auth => CurrentLogins.All(ul => auth.Name != ul.LoginProvider))
             .ToList();
 
-        string passwordHash = null;
+        string? passwordHash = null;
         if (_userStore is IUserPasswordStore<TUser> userPasswordStore)
         {
             passwordHash = await userPasswordStore.GetPasswordHashAsync(user, HttpContext.RequestAborted);

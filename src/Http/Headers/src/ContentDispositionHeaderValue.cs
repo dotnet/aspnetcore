@@ -17,7 +17,7 @@ namespace Microsoft.Net.Http.Headers;
 /// Represents the value of a <c>Content-Disposition</c> header.
 /// </summary>
 /// <remarks>
-/// Note this is for use both in HTTP (https://tools.ietf.org/html/rfc6266) and MIME (https://tools.ietf.org/html/rfc2183)
+/// Note this is for use both in HTTP (<see href="https://tools.ietf.org/html/rfc6266"/>) and MIME (<see href="https://tools.ietf.org/html/rfc2183"/>).
 /// </remarks>
 public class ContentDispositionHeaderValue
 {
@@ -32,8 +32,8 @@ public class ContentDispositionHeaderValue
     private static readonly char[] QuestionMark = new char[] { '?' };
     private static readonly char[] SingleQuote = new char[] { '\'' };
     private static readonly char[] EscapeChars = new char[] { '\\', '"' };
-    private static ReadOnlySpan<byte> MimePrefix => new byte[] { (byte)'"', (byte)'=', (byte)'?', (byte)'u', (byte)'t', (byte)'f', (byte)'-', (byte)'8', (byte)'?', (byte)'B', (byte)'?' };
-    private static ReadOnlySpan<byte> MimeSuffix => new byte[] { (byte)'?', (byte)'=', (byte)'"' };
+    private static ReadOnlySpan<byte> MimePrefix => "\"=?utf-8?B?"u8;
+    private static ReadOnlySpan<byte> MimeSuffix => "?=\""u8;
 
     private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
         = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);

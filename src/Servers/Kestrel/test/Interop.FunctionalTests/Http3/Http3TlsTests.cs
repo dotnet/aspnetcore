@@ -112,6 +112,7 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.DelayCertificate)]
     [MsQuicSupported]
     [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41131")]
     public async Task ClientCertificate_NoOrDelayed_Available_Ignored(ClientCertificateMode mode)
     {
         var builder = CreateHostBuilder(async context =>
@@ -245,7 +246,7 @@ public class Http3TlsTests : LoggedTest
 
         // https://github.com/dotnet/runtime/issues/57308, optional client certs aren't supported.
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.SendAsync(request, CancellationToken.None).DefaultTimeout());
-        Assert.StartsWith("Connection has been shutdown by transport.", ex.Message);
+        Assert.StartsWith("Connection has been shutdown by transport:", ex.Message);
 
         await host.StopAsync().DefaultTimeout();
     }

@@ -29,10 +29,10 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 
   <PropertyGroup>
-    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).rpm</TargetFileName>
-    <CblMarinerTargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-cm.1.rpm</CblMarinerTargetFileName>
+    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-$(RpmArch).rpm</TargetFileName>
     <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
-    <CblMarinerTargetPath>$(InstallersOutputPath)$(CblMarinerTargetFileName)</CblMarinerTargetPath>
+    <CblMarinerBaseName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)</CblMarinerBaseName>
+    <CblMarinerExtension>-$(RpmArch).rpm</CblMarinerExtension>
 
     <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
 

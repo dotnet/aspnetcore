@@ -27,7 +27,7 @@ internal static class AsyncEnumerableAdapters
         return new ChannelAsyncEnumerator<T>(channel, cancellationToken);
     }
 
-    private class ChannelAsyncEnumerator<T> : IAsyncEnumerator<object?>
+    private sealed class ChannelAsyncEnumerator<T> : IAsyncEnumerator<object?>
     {
         private readonly ChannelReader<T> _channel;
         private readonly CancellationToken _cancellationToken;
@@ -63,7 +63,7 @@ internal static class AsyncEnumerableAdapters
         public ValueTask DisposeAsync() => default;
     }
 
-    private class CancelableTypedAsyncEnumerable<TResult> : IAsyncEnumerable<TResult>
+    private sealed class CancelableTypedAsyncEnumerable<TResult> : IAsyncEnumerable<TResult>
     {
         private readonly IAsyncEnumerable<TResult> _asyncEnumerable;
         private readonly CancellationTokenSource _cts;
@@ -90,7 +90,7 @@ internal static class AsyncEnumerableAdapters
             return enumerator;
         }
 
-        private class CancelableEnumerator<T> : IAsyncEnumerator<T>
+        private sealed class CancelableEnumerator<T> : IAsyncEnumerator<T>
         {
             private readonly IAsyncEnumerator<T> _asyncEnumerator;
             private readonly CancellationTokenRegistration _cancellationTokenRegistration;
@@ -116,7 +116,7 @@ internal static class AsyncEnumerableAdapters
         }
     }
 
-    private class BoxedAsyncEnumerator<T> : IAsyncEnumerator<object?>
+    private sealed class BoxedAsyncEnumerator<T> : IAsyncEnumerator<object?>
     {
         private readonly IAsyncEnumerator<T> _asyncEnumerator;
 

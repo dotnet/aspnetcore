@@ -1,15 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -64,12 +64,12 @@ public static class IdentityBuilderUIExtensions
         return builder;
     }
 
-    private static Assembly GetApplicationAssembly(IdentityBuilder builder)
+    private static Assembly? GetApplicationAssembly(IdentityBuilder builder)
     {
         // This is the same logic that MVC follows to find the application assembly.
         var environment = builder.Services.Where(d => d.ServiceType == typeof(IWebHostEnvironment)).ToArray();
-        var applicationName = ((IWebHostEnvironment)environment.LastOrDefault()?.ImplementationInstance)
-            .ApplicationName;
+        var applicationName = ((IWebHostEnvironment?)environment.LastOrDefault()?.ImplementationInstance)
+            ?.ApplicationName;
 
         if (applicationName == null)
         {
@@ -79,7 +79,7 @@ public static class IdentityBuilderUIExtensions
         return appAssembly;
     }
 
-    private static bool TryResolveUIFramework(Assembly assembly, out UIFramework uiFramework)
+    private static bool TryResolveUIFramework(Assembly? assembly, out UIFramework uiFramework)
     {
         uiFramework = default;
 
@@ -101,7 +101,7 @@ public static class IdentityBuilderUIExtensions
         return true;
     }
 
-    internal class ViewVersionFeatureProvider : IApplicationFeatureProvider<ViewsFeature>
+    internal sealed class ViewVersionFeatureProvider : IApplicationFeatureProvider<ViewsFeature>
     {
         private readonly UIFramework _framework;
 
@@ -117,7 +117,7 @@ public static class IdentityBuilderUIExtensions
                     switch (_framework)
                     {
                         case UIFramework.Bootstrap4:
-                            if (descriptor.Type.FullName.Contains("V5"))
+                            if (descriptor.Type?.FullName?.Contains("V5", StringComparison.Ordinal) is true)
                             {
                                 // Remove V5 views
                                 viewsToRemove.Add(descriptor);
@@ -129,7 +129,7 @@ public static class IdentityBuilderUIExtensions
                             }
                             break;
                         case UIFramework.Bootstrap5:
-                            if (descriptor.Type.FullName.Contains("V4"))
+                            if (descriptor.Type?.FullName?.Contains("V4", StringComparison.Ordinal) is true)
                             {
                                 // Remove V4 views
                                 viewsToRemove.Add(descriptor);
@@ -152,6 +152,7 @@ public static class IdentityBuilderUIExtensions
             }
         }
 
-        private static bool IsIdentityUIView(CompiledViewDescriptor desc) => desc.RelativePath.StartsWith("/Areas/Identity", StringComparison.OrdinalIgnoreCase) && desc.Type.Assembly == typeof(IdentityBuilderUIExtensions).Assembly;
+        private static bool IsIdentityUIView(CompiledViewDescriptor desc) => desc.RelativePath.StartsWith("/Areas/Identity", StringComparison.OrdinalIgnoreCase) &&
+            desc.Type?.Assembly == typeof(IdentityBuilderUIExtensions).Assembly;
     }
 }

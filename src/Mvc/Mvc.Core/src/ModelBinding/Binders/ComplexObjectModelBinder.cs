@@ -656,7 +656,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
             return GreedyPropertiesMayHaveData;
         }
 
-        _logger.CannotBindToComplexType(bindingContext);
+        Log.CannotBindToComplexType(_logger, bindingContext);
 
         return NoDataAvailable;
     }
@@ -747,5 +747,11 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
         {
             NoPublicSettableItems(logger, bindingContext.ModelName, bindingContext.ModelType);
         }
+
+        public static void CannotBindToComplexType(ILogger logger, ModelBindingContext bindingContext)
+            => CannotBindToComplexType(logger, bindingContext.ModelType);
+
+        [LoggerMessage(18, LogLevel.Debug, "Could not bind to model of type '{ModelType}' as there were no values in the request for any of the properties.", EventName = "CannotBindToComplexType")]
+        private static partial void CannotBindToComplexType(ILogger logger, Type modelType);
     }
 }

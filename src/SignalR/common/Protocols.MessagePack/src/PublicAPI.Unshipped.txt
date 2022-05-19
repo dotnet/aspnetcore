@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*~Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.MessagePackHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions!>! options) -> void
+Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol.MessagePackHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions!>! options) -> void

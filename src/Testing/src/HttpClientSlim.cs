@@ -144,7 +144,11 @@ public static class HttpClientSlim
             throw new InvalidDataException($"No StatusCode found in '{response}'");
         }
 
+#if NETSTANDARD2_0 || NETFRAMEWORK
         return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength), CultureInfo.InvariantCulture);
+#else
+        return (HttpStatusCode)int.Parse(response.AsSpan(statusStart, statusLength), CultureInfo.InvariantCulture);
+#endif
     }
 
     private static async Task<Stream> GetStream(Uri requestUri, bool validateCertificate)

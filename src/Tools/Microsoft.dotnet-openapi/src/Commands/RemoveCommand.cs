@@ -11,7 +11,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.OpenApi.Commands;
 
-internal class RemoveCommand : BaseCommand
+internal sealed class RemoveCommand : BaseCommand
 {
     private const string CommandName = "remove";
 

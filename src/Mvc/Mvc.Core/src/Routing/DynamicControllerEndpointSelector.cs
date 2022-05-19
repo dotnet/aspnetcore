@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class DynamicControllerEndpointSelector : IDisposable
+internal sealed class DynamicControllerEndpointSelector : IDisposable
 {
     private readonly DataSourceDependentCache<ActionSelectionTable<Endpoint>> _cache;
 

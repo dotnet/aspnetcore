@@ -2,38 +2,53 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Reflection;
+using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Internal;
+
+[assembly: MetadataUpdateHandler(typeof(HtmlAttributePropertyHelper))]
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-internal class HtmlAttributePropertyHelper : PropertyHelper
+internal sealed class HtmlAttributePropertyHelper
 {
-    private static readonly ConcurrentDictionary<Type, PropertyHelper[]> ReflectionCache =
-        new ConcurrentDictionary<Type, PropertyHelper[]>();
+    private static readonly ConcurrentDictionary<Type, HtmlAttributePropertyHelper[]> ReflectionCache =
+        new ConcurrentDictionary<Type, HtmlAttributePropertyHelper[]>();
+    private readonly PropertyHelper _propertyHelper;
 
-    public static new PropertyHelper[] GetProperties(Type type)
+    public HtmlAttributePropertyHelper(PropertyHelper propertyHelper)
     {
-        return GetProperties(type, CreateInstance, ReflectionCache);
+        _propertyHelper = propertyHelper;
+        Name = propertyHelper.Name is string name ? name.Replace('_', '-') : null;
     }
 
-    private static PropertyHelper CreateInstance(PropertyInfo property)
+    /// <summary>
+    /// Part of <see cref="MetadataUpdateHandlerAttribute"/> contract.
+    /// </summary>
+    /// <param name="_"></param>
+    public static void UpdateCache(Type _)
     {
-        return new HtmlAttributePropertyHelper(property);
+        ReflectionCache.Clear();
     }
 
-    public HtmlAttributePropertyHelper(PropertyInfo property)
-        : base(property)
-    {
-    }
+    public string Name { get; }
 
-    public override string Name
+    public static HtmlAttributePropertyHelper[] GetProperties(Type type)
     {
-        get => base.Name;
-
-        protected set
+        if (!ReflectionCache.TryGetValue(type, out var result))
         {
-            base.Name = value == null ? null : value.Replace('_', '-');
+            var propertyHelpers = PropertyHelper.GetProperties(type, cache: null);
+            result = new HtmlAttributePropertyHelper[propertyHelpers.Length];
+            for (var i = 0; i < propertyHelpers.Length; i++)
+            {
+                result[i] = new(propertyHelpers[i]);
+            }
+
+            ReflectionCache[type] = result;
         }
+
+        return result;
     }
+
+    internal object GetValue(object instance) => _propertyHelper.GetValue(instance);
 }

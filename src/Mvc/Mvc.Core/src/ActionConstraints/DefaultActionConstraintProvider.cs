@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints;
 /// <see cref="IActionConstraintMetadata"/> implements <see cref="IActionConstraint"/> or
 /// <see cref="IActionConstraintFactory"/>/
 /// </remarks>
-internal class DefaultActionConstraintProvider : IActionConstraintProvider
+internal sealed class DefaultActionConstraintProvider : IActionConstraintProvider
 {
     /// <inheritdoc />
     public int Order => -1000;

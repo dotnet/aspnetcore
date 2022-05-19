@@ -264,7 +264,7 @@ public class IISDeployer : IISDeployerBase
             var workerProcess = appPool.WorkerProcesses.SingleOrDefault();
             if (workerProcess == null)
             {
-                throw new InvalidOperationException("Site is started but no worked process found");
+                throw new InvalidOperationException("Site is started but no worker process found");
             }
 
             HostProcess = Process.GetProcessById(workerProcess.ProcessId);
@@ -413,7 +413,7 @@ public class IISDeployer : IISDeployerBase
                     }
                 }
 
-                if (!HostProcess.HasExited)
+                if (HostProcess is not null && !HostProcess.HasExited)
                 {
                     throw new InvalidOperationException("Site is stopped but host process is not");
                 }

@@ -8,170 +8,69 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal partial class WebSocketsTransport
+internal sealed partial class WebSocketsTransport
 {
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, TransferFormat, Uri, Exception?> _startTransport =
-            LoggerMessage.Define<TransferFormat, Uri>(LogLevel.Information, new EventId(1, "StartTransport"), "Starting transport. Transfer mode: {TransferFormat}. Url: '{WebSocketUrl}'.");
+        [LoggerMessage(1, LogLevel.Information, "Starting transport. Transfer mode: {TransferFormat}. Url: '{WebSocketUrl}'.", EventName = "StartTransport")]
+        public static partial void StartTransport(ILogger logger, TransferFormat transferFormat, Uri webSocketUrl);
 
-        private static readonly Action<ILogger, Exception?> _transportStopped =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(2, "TransportStopped"), "Transport stopped.");
+        [LoggerMessage(2, LogLevel.Debug, "Transport stopped.", EventName = "TransportStopped")]
+        public static partial void TransportStopped(ILogger logger, Exception? exception);
 
-        private static readonly Action<ILogger, Exception?> _startReceive =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(3, "StartReceive"), "Starting receive loop.");
+        [LoggerMessage(3, LogLevel.Debug, "Starting receive loop.", EventName = "StartReceive")]
+        public static partial void StartReceive(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _receiveStopped =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(4, "ReceiveStopped"), "Receive loop stopped.");
+        [LoggerMessage(6, LogLevel.Information, "Transport is stopping.", EventName = "TransportStopping")]
+        public static partial void TransportStopping(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _receiveCanceled =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(5, "ReceiveCanceled"), "Receive loop canceled.");
+        [LoggerMessage(10, LogLevel.Debug, "Passing message to application. Payload size: {Count}.", EventName = "MessageToApp")]
+        public static partial void MessageToApp(ILogger logger, int count);
 
-        private static readonly Action<ILogger, Exception?> _transportStopping =
-            LoggerMessage.Define(LogLevel.Information, new EventId(6, "TransportStopping"), "Transport is stopping.");
+        [LoggerMessage(5, LogLevel.Debug, "Receive loop canceled.", EventName = "ReceiveCanceled")]
+        public static partial void ReceiveCanceled(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _sendStarted =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(7, "SendStarted"), "Starting the send loop.");
+        [LoggerMessage(4, LogLevel.Debug, "Receive loop stopped.", EventName = "ReceiveStopped")]
+        public static partial void ReceiveStopped(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _sendStopped =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(8, "SendStopped"), "Send loop stopped.");
+        [LoggerMessage(7, LogLevel.Debug, "Starting the send loop.", EventName = "SendStarted")]
+        public static partial void SendStarted(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _sendCanceled =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(9, "SendCanceled"), "Send loop canceled.");
+        [LoggerMessage(9, LogLevel.Debug, "Send loop canceled.", EventName = "SendCanceled")]
+        public static partial void SendCanceled(ILogger logger);
 
-        private static readonly Action<ILogger, int, Exception?> _messageToApp =
-            LoggerMessage.Define<int>(LogLevel.Debug, new EventId(10, "MessageToApp"), "Passing message to application. Payload size: {Count}.");
+        [LoggerMessage(8, LogLevel.Debug, "Send loop stopped.", EventName = "SendStopped")]
+        public static partial void SendStopped(ILogger logger);
 
-        private static readonly Action<ILogger, WebSocketCloseStatus?, Exception?> _webSocketClosed =
-            LoggerMessage.Define<WebSocketCloseStatus?>(LogLevel.Information, new EventId(11, "WebSocketClosed"), "WebSocket closed by the server. Close status {CloseStatus}.");
+        [LoggerMessage(11, LogLevel.Information, "WebSocket closed by the server. Close status {CloseStatus}.", EventName = "WebSocketClosed")]
+        public static partial void WebSocketClosed(ILogger logger, WebSocketCloseStatus? closeStatus);
 
-        private static readonly Action<ILogger, WebSocketMessageType, int, bool, Exception?> _messageReceived =
-            LoggerMessage.Define<WebSocketMessageType, int, bool>(LogLevel.Debug, new EventId(12, "MessageReceived"), "Message received. Type: {MessageType}, size: {Count}, EndOfMessage: {EndOfMessage}.");
+        [LoggerMessage(12, LogLevel.Debug, "Message received. Type: {MessageType}, size: {Count}, EndOfMessage: {EndOfMessage}.", EventName = "MessageReceived")]
+        public static partial void MessageReceived(ILogger logger, WebSocketMessageType messageType, int count, bool endOfMessage);
 
-        private static readonly Action<ILogger, long, Exception?> _receivedFromApp =
-            LoggerMessage.Define<long>(LogLevel.Debug, new EventId(13, "ReceivedFromApp"), "Received message from application. Payload size: {Count}.");
+        [LoggerMessage(13, LogLevel.Debug, "Received message from application. Payload size: {Count}.", EventName = "ReceivedFromApp")]
+        public static partial void ReceivedFromApp(ILogger logger, long count);
 
-        private static readonly Action<ILogger, Exception?> _sendMessageCanceled =
-            LoggerMessage.Define(LogLevel.Information, new EventId(14, "SendMessageCanceled"), "Sending a message canceled.");
+        [LoggerMessage(14, LogLevel.Information, "Sending a message canceled.", EventName = "SendMessageCanceled")]
+        public static partial void SendMessageCanceled(ILogger logger);
 
-        private static readonly Action<ILogger, Exception> _errorSendingMessage =
-            LoggerMessage.Define(LogLevel.Error, new EventId(15, "ErrorSendingMessage"), "Error while sending a message.");
+        [LoggerMessage(15, LogLevel.Error, "Error while sending a message.", EventName = "ErrorSendingMessage")]
+        public static partial void ErrorSendingMessage(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _closingWebSocket =
-            LoggerMessage.Define(LogLevel.Information, new EventId(16, "ClosingWebSocket"), "Closing WebSocket.");
+        [LoggerMessage(16, LogLevel.Information, "Closing WebSocket.", EventName = "ClosingWebSocket")]
+        public static partial void ClosingWebSocket(ILogger logger);
 
-        private static readonly Action<ILogger, Exception> _closingWebSocketFailed =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(17, "ClosingWebSocketFailed"), "Closing webSocket failed.");
+        [LoggerMessage(17, LogLevel.Debug, "Closing webSocket failed.", EventName = "ClosingWebSocketFailed")]
+        public static partial void ClosingWebSocketFailed(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _cancelMessage =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(18, "CancelMessage"), "Canceled passing message to application.");
+        [LoggerMessage(18, LogLevel.Debug, "Canceled passing message to application.", EventName = "CancelMessage")]
+        public static partial void CancelMessage(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _startedTransport =
-            LoggerMessage.Define(LogLevel.Debug, new EventId(19, "StartedTransport"), "Started transport.");
+        [LoggerMessage(19, LogLevel.Debug, "Started transport.", EventName = "StartedTransport")]
+        public static partial void StartedTransport(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _headersNotSupported =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(20, "HeadersNotSupported"),
-                $"Configuring request headers using {nameof(HttpConnectionOptions)}.{nameof(HttpConnectionOptions.Headers)} is not supported when using websockets transport " +
-                "on the browser platform.");
-
-        public static void StartTransport(ILogger logger, TransferFormat transferFormat, Uri webSocketUrl)
-        {
-            _startTransport(logger, transferFormat, webSocketUrl, null);
-        }
-
-        public static void TransportStopped(ILogger logger, Exception? exception)
-        {
-            _transportStopped(logger, exception);
-        }
-
-        public static void StartReceive(ILogger logger)
-        {
-            _startReceive(logger, null);
-        }
-
-        public static void TransportStopping(ILogger logger)
-        {
-            _transportStopping(logger, null);
-        }
-
-        public static void MessageToApp(ILogger logger, int count)
-        {
-            _messageToApp(logger, count, null);
-        }
-
-        public static void ReceiveCanceled(ILogger logger)
-        {
-            _receiveCanceled(logger, null);
-        }
-
-        public static void ReceiveStopped(ILogger logger)
-        {
-            _receiveStopped(logger, null);
-        }
-
-        public static void SendStarted(ILogger logger)
-        {
-            _sendStarted(logger, null);
-        }
-
-        public static void SendCanceled(ILogger logger)
-        {
-            _sendCanceled(logger, null);
-        }
-
-        public static void SendStopped(ILogger logger)
-        {
-            _sendStopped(logger, null);
-        }
-
-        public static void WebSocketClosed(ILogger logger, WebSocketCloseStatus? closeStatus)
-        {
-            _webSocketClosed(logger, closeStatus, null);
-        }
-
-        public static void MessageReceived(ILogger logger, WebSocketMessageType messageType, int count, bool endOfMessage)
-        {
-            _messageReceived(logger, messageType, count, endOfMessage, null);
-        }
-
-        public static void ReceivedFromApp(ILogger logger, long count)
-        {
-            _receivedFromApp(logger, count, null);
-        }
-
-        public static void SendMessageCanceled(ILogger logger)
-        {
-            _sendMessageCanceled(logger, null);
-        }
-
-        public static void ErrorSendingMessage(ILogger logger, Exception exception)
-        {
-            _errorSendingMessage(logger, exception);
-        }
-
-        public static void ClosingWebSocket(ILogger logger)
-        {
-            _closingWebSocket(logger, null);
-        }
-
-        public static void ClosingWebSocketFailed(ILogger logger, Exception exception)
-        {
-            _closingWebSocketFailed(logger, exception);
-        }
-
-        public static void CancelMessage(ILogger logger)
-        {
-            _cancelMessage(logger, null);
-        }
-
-        public static void StartedTransport(ILogger logger)
-        {
-            _startedTransport(logger, null);
-        }
-
-        public static void HeadersNotSupported(ILogger logger)
-        {
-            _headersNotSupported(logger, null);
-        }
+        [LoggerMessage(20, LogLevel.Warning, $"Configuring request headers using {nameof(HttpConnectionOptions)}.{nameof(HttpConnectionOptions.Headers)} is not supported when using websockets transport " +
+                "on the browser platform.", EventName = "HeadersNotSupported")]
+        public static partial void HeadersNotSupported(ILogger logger);
     }
 }

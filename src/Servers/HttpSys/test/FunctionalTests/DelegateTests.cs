@@ -1,13 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Net.Http;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests;
 
@@ -17,17 +19,32 @@ public class DelegateTests
 
     [ConditionalFact]
     [DelegateSupportedCondition(true)]
+    public void IServerDelegationFeature_IsAvailableFromServices()
+    {
+        var builder = new HostBuilder();
+        builder.ConfigureWebHost(webHost =>
+        {
+            webHost.UseHttpSys();
+        });
+        using var host = builder.Build();
+        var server = host.Services.GetRequiredService<IServer>();
+        var delegationFeature = host.Services.GetRequiredService<IServerDelegationFeature>();
+        Assert.Same(server, delegationFeature);
+    }
+
+    [ConditionalFact]
+    [DelegateSupportedCondition(true)]
     public async Task DelegateRequestTest()
     {
         var queueName = Guid.NewGuid().ToString();
         using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
-       {
-           await httpContext.Response.WriteAsync(_expectedResponseString);
-       },
-       options =>
-       {
-           options.RequestQueueName = queueName;
-       });
+        {
+            await httpContext.Response.WriteAsync(_expectedResponseString);
+        },
+        options =>
+        {
+            options.RequestQueueName = queueName;
+        });
 
         DelegationRule destination = default;
 
@@ -195,6 +212,56 @@ public class DelegateTests
         destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
         responseString = await SendRequestAsync(delegatorAddress);
         Assert.Equal(_expectedResponseString, responseString);
+        destination?.Dispose();
+    }
+
+    [ConditionalFact]
+    [DelegateSupportedCondition(true)]
+    public async Task DelegateAfterReceiverRestart()
+    {
+        var queueName = Guid.NewGuid().ToString();
+        using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
+        {
+            await httpContext.Response.WriteAsync(_expectedResponseString);
+        },
+        options =>
+        {
+            options.RequestQueueName = queueName;
+        });
+
+        DelegationRule destination = default;
+        using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
+        {
+            var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
+            delegateFeature.DelegateRequest(destination);
+            return Task.CompletedTask;
+        });
+
+        var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
+        destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
+
+        var responseString = await SendRequestAsync(delegatorAddress);
+        Assert.Equal(_expectedResponseString, responseString);
+
+        // Stop the receiver
+        receiver?.Dispose();
+
+        // Start the receiver again but this time we need to use CreateOrAttach to attach to the existing queue and setup the UrlPrefixes
+        using var receiverRestarted = (MessagePump)Utilities.CreateHttpServer(out receiverAddress, async httpContext =>
+        {
+            await httpContext.Response.WriteAsync(_expectedResponseString);
+        },
+        options =>
+        {
+            options.RequestQueueName = queueName;
+            options.RequestQueueMode = RequestQueueMode.CreateOrAttach;
+            options.UrlPrefixes.Clear();
+            options.UrlPrefixes.Add(receiverAddress);
+        });
+
+        responseString = await SendRequestAsync(delegatorAddress);
+        Assert.Equal(_expectedResponseString, responseString);
+
         destination?.Dispose();
     }
 

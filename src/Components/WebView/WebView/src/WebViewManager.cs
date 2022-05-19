@@ -10,7 +10,7 @@ using Microsoft.Extensions.FileProviders;
 namespace Microsoft.AspNetCore.Components.WebView;
 
 /// <summary>
-/// Manages activities within a web view that hosts Blazor components. Platform authors
+/// Manages activities within a web view that hosts Razor components. Platform authors
 /// should subclass this to wire up the abstract and protected methods to the APIs of
 /// the platform's web view.
 /// </summary>
@@ -210,7 +210,7 @@ public abstract class WebViewManager : IAsyncDisposable
     private static Uri EnsureTrailingSlash(Uri uri)
         => uri.AbsoluteUri.EndsWith('/') ? uri : new Uri(uri.AbsoluteUri + '/');
 
-    private class RootComponent
+    private sealed class RootComponent
     {
         public Type ComponentType { get; init; }
         public ParameterView Parameters { get; init; }
@@ -241,7 +241,7 @@ public abstract class WebViewManager : IAsyncDisposable
         await DisposeAsyncCore();
     }
 
-    private class StaticWebAssetsLoader
+    private sealed class StaticWebAssetsLoader
     {
         internal static IFileProvider UseStaticWebAssets(IFileProvider fileProvider)
         {

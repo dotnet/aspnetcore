@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class HttpRequestStream : ReadOnlyStream
+internal sealed class HttpRequestStream : ReadOnlyStream
 {
     private readonly IHttpBodyControlFeature _bodyControl;
     private IISHttpContext? _body;

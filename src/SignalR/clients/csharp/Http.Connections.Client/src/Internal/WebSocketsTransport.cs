@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal partial class WebSocketsTransport : ITransport
+internal sealed partial class WebSocketsTransport : ITransport
 {
     private WebSocket? _webSocket;
     private IDuplexPipe? _application;

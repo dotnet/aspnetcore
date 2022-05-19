@@ -46,7 +46,7 @@ public class StaticWebAssetsLoader
     {
         try
         {
-            var candidate = configuration.GetValue<string>(WebHostDefaults.StaticWebAssetsKey) ?? ResolveRelativeToAssembly(environment);
+            var candidate = configuration[WebHostDefaults.StaticWebAssetsKey] ?? ResolveRelativeToAssembly(environment);
             if (candidate != null && File.Exists(candidate))
             {
                 return File.OpenRead(candidate);
@@ -63,8 +63,12 @@ public class StaticWebAssetsLoader
         }
     }
 
-    private static string ResolveRelativeToAssembly(IWebHostEnvironment environment)
+    private static string? ResolveRelativeToAssembly(IWebHostEnvironment environment)
     {
+        if (string.IsNullOrEmpty(environment.ApplicationName))
+        {
+            return null;
+        }
         var assembly = Assembly.Load(environment.ApplicationName);
         var basePath = string.IsNullOrEmpty(assembly.Location) ? AppContext.BaseDirectory : Path.GetDirectoryName(assembly.Location);
         return Path.Combine(basePath!, $"{environment.ApplicationName}.staticwebassets.runtime.json");

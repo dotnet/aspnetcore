@@ -80,7 +80,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         var serverStreamTask = serverConnection.AcceptAsync().DefaultTimeout();
 
         // Client creates stream
-        using var clientStream = quicConnection.OpenBidirectionalStream();
+        using var clientStream = await quicConnection.OpenBidirectionalStreamAsync();
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         // Server finishes accepting
@@ -111,7 +111,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
         using var clientConnection = new QuicConnection(options);
 
-        var qex = await Assert.ThrowsAsync<QuicException>(async () => await clientConnection.ConnectAsync().DefaultTimeout());
-        Assert.StartsWith("Connection has been shutdown by transport.", qex.Message);
+        var qex = await Assert.ThrowsAnyAsync<QuicException>(async () => await clientConnection.ConnectAsync().DefaultTimeout());
+        Assert.StartsWith("Connection has been shutdown by transport:", qex.Message);
     }
 }

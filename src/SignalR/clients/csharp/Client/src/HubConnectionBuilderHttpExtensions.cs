@@ -154,7 +154,7 @@ public static class HubConnectionBuilderHttpExtensions
         return hubConnectionBuilder;
     }
 
-    private class HttpConnectionOptionsDerivedHttpEndPoint : UriEndPoint
+    private sealed class HttpConnectionOptionsDerivedHttpEndPoint : UriEndPoint
     {
         public HttpConnectionOptionsDerivedHttpEndPoint(IOptions<HttpConnectionOptions> httpConnectionOptions)
             : base(httpConnectionOptions.Value.Url!)
@@ -162,7 +162,7 @@ public static class HubConnectionBuilderHttpExtensions
         }
     }
 
-    private class HubProtocolDerivedHttpOptionsConfigurer : IConfigureNamedOptions<HttpConnectionOptions>
+    private sealed class HubProtocolDerivedHttpOptionsConfigurer : IConfigureNamedOptions<HttpConnectionOptions>
     {
         private readonly TransferFormat _defaultTransferFormat;
 
@@ -171,7 +171,7 @@ public static class HubConnectionBuilderHttpExtensions
             _defaultTransferFormat = hubProtocol.TransferFormat;
         }
 
-        public void Configure(string name, HttpConnectionOptions options)
+        public void Configure(string? name, HttpConnectionOptions options)
         {
             Configure(options);
         }

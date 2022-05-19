@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class ConnectionDispatcher<T> where T : BaseConnectionContext
+internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 {
     private readonly ServiceContext _serviceContext;
     private readonly Func<T, Task> _connectionDelegate;

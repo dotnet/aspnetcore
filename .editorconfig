@@ -99,7 +99,7 @@ dotnet_diagnostic.CA1802.severity = warning
 dotnet_diagnostic.CA1805.severity = warning
 
 # CA1810: Do not initialize unnecessarily
-dotnet_diagnostic.CA1810.severity = suggestion
+dotnet_diagnostic.CA1810.severity = warning
 
 # CA1821: Remove empty Finalizers
 dotnet_diagnostic.CA1821.severity = warning
@@ -178,6 +178,9 @@ dotnet_diagnostic.CA1846.severity = warning
 # CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
 dotnet_diagnostic.CA1847.severity = warning
 
+# CA1852: Seal internal types
+dotnet_diagnostic.CA1852.severity = warning
+
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = warning
 
@@ -240,10 +243,14 @@ dotnet_diagnostic.IDE0044.severity = warning
 dotnet_diagnostic.IDE0051.severity = warning
 
 # IDE0055: All formatting rules
-dotnet_diagnostic.IDE0055.severity = warning
+dotnet_diagnostic.IDE0055.severity = suggestion
 
 # IDE0059: Unnecessary assignment to a value
 dotnet_diagnostic.IDE0059.severity = warning
+
+# IDE0060: Remove unused parameter
+dotnet_code_quality_unused_parameters = non_public
+dotnet_diagnostic.IDE0060.severity = warning
 
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = warning
@@ -259,7 +266,7 @@ dotnet_diagnostic.IDE0161.severity = warning
 dotnet_style_allow_multiple_blank_lines_experimental = false
 dotnet_diagnostic.IDE2000.severity = warning
 
-[{eng/tools/**.cs,**/{test,samples,perf}/**.cs}]
+[{eng/tools/**.cs,**/{test,testassets,samples,Samples,perf,scripts}/**.cs}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = suggestion
 # CA1507: Use nameof to express symbol names
@@ -268,6 +275,8 @@ dotnet_diagnostic.CA1507.severity = suggestion
 dotnet_diagnostic.CA1802.severity = suggestion
 # CA1805: Do not initialize unnecessarily
 dotnet_diagnostic.CA1805.severity = suggestion
+# CA1810: Do not initialize unnecessarily
+dotnet_diagnostic.CA1810.severity = suggestion
 # CA1822: Make member static
 dotnet_diagnostic.CA1822.severity = suggestion
 # CA1823: Avoid zero-length array allocations
@@ -296,6 +305,10 @@ dotnet_diagnostic.CA1845.severity = suggestion
 dotnet_diagnostic.CA1846.severity = suggestion
 # CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
 dotnet_diagnostic.CA1847.severity = suggestion
+# CA1852: Seal internal types
+dotnet_diagnostic.CA1852.severity = suggestion
+# CA2007: Consider calling ConfigureAwait on the awaited task
+dotnet_diagnostic.CA2007.severity = suggestion
 # CA2008: Do not create tasks without passing a TaskScheduler
 dotnet_diagnostic.CA2008.severity = suggestion
 # CA2012: Use ValueTask correctly
@@ -310,6 +323,8 @@ dotnet_diagnostic.IDE0044.severity = suggestion
 dotnet_diagnostic.IDE0051.severity = suggestion
 # IDE0059: Unnecessary assignment to a value
 dotnet_diagnostic.IDE0059.severity = suggestion
+# IDE0060: Remove unused parameters
+dotnet_diagnostic.IDE0060.severity = suggestion
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = suggestion
 
@@ -325,6 +340,8 @@ dotnet_diagnostic.CA1822.severity = silent
 dotnet_diagnostic.IDE0011.severity = silent
 # IDE0055: Fix formatting
 dotnet_diagnostic.IDE0055.severity = silent
+# IDE0060: Remove unused parameters
+dotnet_diagnostic.IDE0060.severity = silent
 # IDE0062: Make local function static
 dotnet_diagnostic.IDE0062.severity = silent
 # IDE0161: Convert to file-scoped namespace

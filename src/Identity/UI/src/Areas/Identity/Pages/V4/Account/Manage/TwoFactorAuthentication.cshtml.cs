@@ -44,7 +44,7 @@ public abstract class TwoFactorAuthenticationModel : PageModel
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [TempData]
-    public string StatusMessage { get; set; }
+    public string? StatusMessage { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -59,7 +59,7 @@ public abstract class TwoFactorAuthenticationModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class TwoFactorAuthenticationModel<TUser> : TwoFactorAuthenticationModel where TUser : class
+internal sealed class TwoFactorAuthenticationModel<TUser> : TwoFactorAuthenticationModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly SignInManager<TUser> _signInManager;

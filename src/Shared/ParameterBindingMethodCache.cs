@@ -17,6 +17,9 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http;
 
+[UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2065", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
+[UnconditionalSuppressMessage("Trimmer", "IL2070", Justification = "Trimmer warnings are presented in RequestDelegateFactory.")]
 internal sealed class ParameterBindingMethodCache
 {
     private static readonly MethodInfo ConvertValueTaskMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -26,21 +29,26 @@ internal sealed class ParameterBindingMethodCache
     internal static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
 
     private readonly MethodInfo _enumTryParseMethod;
+    private readonly bool _throwOnInvalidMethod;
 
     // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
-    private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression>?> _stringMethodCallCache = new();
+    private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression, Expression>?> _stringMethodCallCache = new();
     private readonly ConcurrentDictionary<Type, (Func<ParameterInfo, Expression>?, int)> _bindAsyncMethodCallCache = new();
+    private readonly ConcurrentDictionary<Type, (ConstructorInfo?, ConstructorParameter[])> _constructorCache = new();
 
     // If IsDynamicCodeSupported is false, we can't use the static Enum.TryParse<T> since there's no easy way for
     // this code to generate the specific instantiation for any enums used
-    public ParameterBindingMethodCache() : this(preferNonGenericEnumParseOverload: !RuntimeFeature.IsDynamicCodeSupported)
+    public ParameterBindingMethodCache(bool throwOnInvalidMethod = true)
+        : this(preferNonGenericEnumParseOverload: !RuntimeFeature.IsDynamicCodeSupported,
+              throwOnInvalidMethod)
     {
     }
 
     // This is for testing
-    public ParameterBindingMethodCache(bool preferNonGenericEnumParseOverload)
+    public ParameterBindingMethodCache(bool preferNonGenericEnumParseOverload, bool throwOnInvalidMethod = true)
     {
         _enumTryParseMethod = GetEnumTryParseMethod(preferNonGenericEnumParseOverload);
+        _throwOnInvalidMethod = throwOnInvalidMethod;
     }
 
     public bool HasTryParseMethod(Type type)
@@ -52,9 +60,9 @@ internal sealed class ParameterBindingMethodCache
     public bool HasBindAsyncMethod(ParameterInfo parameter) =>
         FindBindAsyncMethod(parameter).Expression is not null;
 
-    public Func<ParameterExpression, Expression>? FindTryParseMethod(Type type)
+    public Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type type)
     {
-        Func<ParameterExpression, Expression>? Finder(Type type)
+        Func<ParameterExpression, Expression, Expression>? Finder(Type type)
         {
             MethodInfo? methodInfo;
 
@@ -64,10 +72,10 @@ internal sealed class ParameterBindingMethodCache
                 {
                     methodInfo = _enumTryParseMethod.MakeGenericMethod(type);
 
-                    return (expression) => Expression.Call(methodInfo!, TempSourceStringExpr, expression);
+                    return (expression, formatProvider) => Expression.Call(methodInfo!, TempSourceStringExpr, expression);
                 }
 
-                return (expression) =>
+                return (expression, formatProvider) =>
                 {
                     var enumAsObject = Expression.Variable(typeof(object), "enumAsObject");
                     var success = Expression.Variable(typeof(bool), "success");
@@ -108,21 +116,21 @@ internal sealed class ParameterBindingMethodCache
                     _ => DateTimeStyles.AllowWhiteSpaces
                 };
 
-                return (expression) => Expression.Call(
+                return (expression, formatProvider) => Expression.Call(
                     methodInfo!,
                     TempSourceStringExpr,
-                    Expression.Constant(CultureInfo.InvariantCulture),
+                    formatProvider,
                     Expression.Constant(dateTimeStyles),
                     expression);
             }
 
             if (TryGetNumberStylesTryGetMethod(type, out methodInfo, out var numberStyle))
             {
-                return (expression) => Expression.Call(
+                return (expression, formatProvider) => Expression.Call(
                     methodInfo!,
                     TempSourceStringExpr,
                     Expression.Constant(numberStyle),
-                    Expression.Constant(CultureInfo.InvariantCulture),
+                    formatProvider,
                     expression);
             }
 
@@ -130,10 +138,10 @@ internal sealed class ParameterBindingMethodCache
 
             if (methodInfo is not null)
             {
-                return (expression) => Expression.Call(
+                return (expression, formatProvider) => Expression.Call(
                     methodInfo,
                     TempSourceStringExpr,
-                    Expression.Constant(CultureInfo.InvariantCulture),
+                    formatProvider,
                     expression);
             }
 
@@ -141,10 +149,10 @@ internal sealed class ParameterBindingMethodCache
 
             if (methodInfo is not null)
             {
-                return (expression) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
+                return (expression, formatProvider) => Expression.Call(methodInfo, TempSourceStringExpr, expression);
             }
 
-            if (GetAnyMethodFromHierarchy(type, "TryParse") is MethodInfo invalidMethod)
+            if (_throwOnInvalidMethod && GetAnyMethodFromHierarchy(type, "TryParse") is MethodInfo invalidMethod)
             {
                 var stringBuilder = new StringBuilder();
                 stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"TryParse method found on {TypeNameHelper.GetTypeDisplayName(type, fullName: false)} with incorrect format. Must be a static method with format");
@@ -170,7 +178,7 @@ internal sealed class ParameterBindingMethodCache
 
     public (Expression? Expression, int ParamCount) FindBindAsyncMethod(ParameterInfo parameter)
     {
-        static (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
+        (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
         {
             var hasParameterInfo = true;
             // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
@@ -204,8 +212,11 @@ internal sealed class ParameterBindingMethodCache
                         {
                             typedCall = Expression.Call(methodInfo, HttpContextExpr);
                         }
-                        return Expression.Call(ConvertValueTaskMethod.MakeGenericMethod(nonNullableParameterType), typedCall);
+                        return Expression.Call(GetGenericConvertValueTask(nonNullableParameterType), typedCall);
                     }, hasParameterInfo ? 2 : 1);
+
+                    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Linker workaround. The type is annotated with RequiresUnreferencedCode")]
+                    static MethodInfo GetGenericConvertValueTask(Type nonNullableParameterType) => ConvertValueTaskMethod.MakeGenericMethod(nonNullableParameterType);
                 }
                 // ValueTask<Nullable<{type}>>?
                 else if (valueTaskResultType.IsGenericType &&
@@ -225,12 +236,15 @@ internal sealed class ParameterBindingMethodCache
                         {
                             typedCall = Expression.Call(methodInfo, HttpContextExpr);
                         }
-                        return Expression.Call(ConvertValueTaskOfNullableResultMethod.MakeGenericMethod(nonNullableParameterType), typedCall);
+                        return Expression.Call(GetGenericConvertValueTaskOfNullableResult(nonNullableParameterType), typedCall);
                     }, hasParameterInfo ? 2 : 1);
+
+                    [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Linker workaround. The type is annotated with RequiresUnreferencedCode")]
+                    static MethodInfo GetGenericConvertValueTaskOfNullableResult(Type nonNullableParameterType) => ConvertValueTaskOfNullableResultMethod.MakeGenericMethod(nonNullableParameterType);
                 }
             }
 
-            if (GetAnyMethodFromHierarchy(nonNullableParameterType, "BindAsync") is MethodInfo invalidBindMethod)
+            if (_throwOnInvalidMethod && GetAnyMethodFromHierarchy(nonNullableParameterType, "BindAsync") is MethodInfo invalidBindMethod)
             {
                 var stringBuilder = new StringBuilder();
                 stringBuilder.AppendLine(CultureInfo.InvariantCulture, $"BindAsync method found on {TypeNameHelper.GetTypeDisplayName(nonNullableParameterType, fullName: false)} with incorrect format. Must be a static method with format");
@@ -259,7 +273,103 @@ internal sealed class ParameterBindingMethodCache
         }
     }
 
-    private static MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
+    public (ConstructorInfo?, ConstructorParameter[]) FindConstructor(Type type)
+    {
+        static (ConstructorInfo? constructor, ConstructorParameter[] parameters) Finder(Type type)
+        {
+            var constructor = GetConstructor(type);
+
+            if (constructor is null || constructor.GetParameters().Length == 0)
+            {
+                return (constructor, Array.Empty<ConstructorParameter>());
+            }
+
+            var properties = type.GetProperties();
+            var lookupTable = new Dictionary<ParameterLookupKey, PropertyInfo>(properties.Length);
+            for (var i = 0; i < properties.Length; i++)
+            {
+                lookupTable.Add(new ParameterLookupKey(properties[i].Name, properties[i].PropertyType), properties[i]);
+            }
+
+            // This behavior diverge from the JSON serialization
+            // since we don't have an attribute, eg. JsonConstructor,
+            // we need to be very restrictive about the ctor
+            // and only accept if the parameterized ctor has
+            // only arguments that we can match (Type and Name)
+            // with a public property.
+
+            var parameters = constructor.GetParameters();
+            var parametersWithPropertyInfo = new ConstructorParameter[parameters.Length];
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var key = new ParameterLookupKey(parameters[i].Name!, parameters[i].ParameterType);
+                if (!lookupTable.TryGetValue(key, out var property))
+                {
+                    throw new InvalidOperationException(
+                        $"The public parameterized constructor must contain only parameters that match the declared public properties for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.");
+                }
+
+                parametersWithPropertyInfo[i] = new ConstructorParameter(parameters[i], property);
+            }
+
+            return (constructor, parametersWithPropertyInfo);
+        }
+
+        return _constructorCache.GetOrAdd(type, Finder);
+    }
+
+    private static ConstructorInfo? GetConstructor(Type type)
+    {
+        if (type.IsAbstract)
+        {
+            throw new InvalidOperationException($"The abstract type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}' is not supported.");
+        }
+
+        var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+
+        // if only one constructor is declared
+        // we will use it to try match the properties
+        if (constructors.Length == 1)
+        {
+            return constructors[0];
+        }
+
+        // We will try to get the parameterless ctor
+        // as priority before visit the others
+        var parameterlessConstructor = constructors.SingleOrDefault(c => c.GetParameters().Length == 0);
+        if (parameterlessConstructor is not null)
+        {
+            return parameterlessConstructor;
+        }
+
+        // If a parameterized constructors is not found at this point
+        // we will use a default constructor that is always available
+        // for value types.
+        if (type.IsValueType)
+        {
+            return null;
+        }
+
+        // We don't have an attribute, similar to JsonConstructor, to
+        // disambiguate ctors, so, we will throw if more than one
+        // ctor is defined without a parameterless constructor.
+        // Eg.:
+        // public class X
+        // {
+        //   public X(int foo)
+        //   public X(int foo, int bar)
+        //   ...
+        // }
+        if (parameterlessConstructor is null && constructors.Length > 1)
+        {
+            throw new InvalidOperationException($"Only a single public parameterized constructor is allowed for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.");
+        }
+
+        throw new InvalidOperationException($"No public parameterless constructor found for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.");
+    }
+
+    private MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
     {
         bool IsMatch(MethodInfo? method) => method is not null && !method.IsAbstract && validateReturnType(method);
 
@@ -281,7 +391,12 @@ internal sealed class ParameterBindingMethodCache
             {
                 if (candidateInterfaceMethodInfo is not null)
                 {
-                    throw new InvalidOperationException($"{TypeNameHelper.GetTypeDisplayName(type, fullName: false)} implements multiple interfaces defining a static {interfaceMethod} method causing ambiguity.");
+                    if (_throwOnInvalidMethod)
+                    {
+                        throw new InvalidOperationException($"{TypeNameHelper.GetTypeDisplayName(type, fullName: false)} implements multiple interfaces defining a static {interfaceMethod} method causing ambiguity.");
+                    }
+
+                    return null;
                 }
 
                 candidateInterfaceMethodInfo = interfaceMethod;
@@ -516,5 +631,42 @@ internal sealed class ParameterBindingMethodCache
 
         static async ValueTask<object?> ConvertAwaited(ValueTask<Nullable<T>> typedValueTask) => await typedValueTask;
         return ConvertAwaited(typedValueTask);
+    }
+
+    private sealed class ParameterLookupKey
+    {
+        public ParameterLookupKey(string name, Type type)
+        {
+            Name = name;
+            Type = type;
+        }
+
+        public string Name { get; }
+        public Type Type { get; }
+
+        public override int GetHashCode()
+        {
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
+        }
+
+        public override bool Equals([NotNullWhen(true)] object? obj)
+        {
+            Debug.Assert(obj is ParameterLookupKey);
+
+            var other = (ParameterLookupKey)obj;
+            return Type == other.Type && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    internal sealed class ConstructorParameter
+    {
+        public ConstructorParameter(ParameterInfo parameter, PropertyInfo propertyInfo)
+        {
+            ParameterInfo = parameter;
+            PropertyInfo = propertyInfo;
+        }
+
+        public ParameterInfo ParameterInfo { get; }
+        public PropertyInfo PropertyInfo { get; }
     }
 }

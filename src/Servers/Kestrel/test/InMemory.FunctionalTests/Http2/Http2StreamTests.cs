@@ -103,22 +103,41 @@ public class Http2StreamTests : Http2TestBase
             };
         await InitializeConnectionAsync(_echoMethodNoBody);
 
+        // First request
         await StartStreamAsync(1, headers, endStream: true);
 
-        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+        var headersFrame1 = await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 45 + method.Length,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
 
-        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+        _hpackDecoder.Decode(headersFrame1.PayloadSequence, endHeaders: false, handler: this);
 
         Assert.Equal(4, _decodedHeaders.Count);
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         Assert.Equal(method, _decodedHeaders["Method"]);
+        _decodedHeaders.Clear();
+
+        // Second request (will use dynamic table indexes)
+        await StartStreamAsync(3, headers, endStream: true);
+
+        var headersFrame2 = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 7,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 3);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+
+        _hpackDecoder.Decode(headersFrame2.PayloadSequence, endHeaders: false, handler: this);
+
+        Assert.Equal(4, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        Assert.Equal(method, _decodedHeaders["Method"]);
+        _decodedHeaders.Clear();
     }
 
     [Fact]
@@ -3084,14 +3103,10 @@ public class Http2StreamTests : Http2TestBase
         await InitializeConnectionAsync(async context =>
         {
             context.Response.Headers["too_long"] = new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.WriteAsync("Hello World")).DefaultTimeout();
-            appFinished.TrySetResult(ex.InnerException.Message);
+            await context.Response.WriteAsync("Hello World");
         });
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
-
-        var message = await appFinished.Task.DefaultTimeout();
-        Assert.Equal(SR.net_http_hpack_encode_failure, message);
 
         // Just the StatusCode gets written before aborting in the continuation frame
         await ExpectAsync(Http2FrameType.HEADERS,
@@ -3606,6 +3621,84 @@ public class Http2StreamTests : Http2TestBase
     }
 
     [Fact]
+    public async Task BodyWriterWriteAsync_OnAbortedRequest_ReturnsResultWithIsCompletedTrue()
+    {
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var headers = new[]
+        {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+        };
+        await InitializeConnectionAsync(async httpContext =>
+        {
+            try
+            {
+                httpContext.Abort();
+                var payload = Encoding.ASCII.GetBytes("hello,");
+                var result = await httpContext.Response.BodyWriter.WriteAsync(payload);
+                Assert.True(result.IsCompleted);
+                appTcs.SetResult();
+            }
+            catch (Exception e)
+            {
+                appTcs.SetException(e);
+            }
+        });
+
+        await StartStreamAsync(1, headers, endStream: true);
+        await ExpectAsync(Http2FrameType.RST_STREAM,
+            withLength: 4,
+            withFlags: (byte)Http2HeadersFrameFlags.NONE,
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true);
+        await appTcs.Task;
+    }
+
+    [Fact]
+    public async Task BodyWriterWriteAsync_OnCanceledPendingFlush_ReturnsResultWithIsCanceled()
+    {
+        var headers = new[]
+        {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+        };
+        await InitializeConnectionAsync(async httpContext =>
+        {
+            httpContext.Response.BodyWriter.CancelPendingFlush();
+            var payload = Encoding.ASCII.GetBytes("hello,");
+            var cancelledResult = await httpContext.Response.BodyWriter.WriteAsync(payload);
+            Assert.True(cancelledResult.IsCanceled);
+
+            var secondPayload = Encoding.ASCII.GetBytes(" world");
+            var goodResult = await httpContext.Response.BodyWriter.WriteAsync(secondPayload);
+            Assert.False(goodResult.IsCanceled);
+        });
+
+        await StartStreamAsync(1, headers, endStream: true);
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 6,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 6,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 0,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true);
+    }
+
+    [Fact]
     public async Task WriteAsync_BothPipeAndStreamWorks()
     {
         var headers = new[]
@@ -3613,7 +3706,7 @@ public class Http2StreamTests : Http2TestBase
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            };
+        };
         await InitializeConnectionAsync(async httpContext =>
         {
             var response = httpContext.Response;

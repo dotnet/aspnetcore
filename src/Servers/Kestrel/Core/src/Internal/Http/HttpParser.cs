@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -54,6 +55,14 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// </summary>
     public bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
     {
+        // Skip any leading \r or \n on the request line. This is not technically allowed,
+        // but apparently there are enough clients relying on this that it's worth allowing.
+        // Peek first as a minor performance optimization; it's a quick inlined check.
+        if (reader.TryPeek(out byte b) && (b == ByteCR || b == ByteLF))
+        {
+            reader.AdvancePastAny(ByteCR, ByteLF);
+        }
+
         if (reader.TryReadTo(out ReadOnlySpan<byte> requestLine, ByteLF, advancePastDelimiter: true))
         {
             ParseRequestLine(handler, requestLine);

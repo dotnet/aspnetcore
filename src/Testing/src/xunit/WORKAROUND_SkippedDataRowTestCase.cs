@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Testing;
 // from xUnit with the exception of fixing the bug.
 //
 // This will only work with [ConditionalTheory].
-internal class WORKAROUND_SkippedDataRowTestCase : XunitTestCase
+internal sealed class WORKAROUND_SkippedDataRowTestCase : XunitTestCase
 {
     string skipReason;
 

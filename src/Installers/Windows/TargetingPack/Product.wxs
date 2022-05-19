@@ -13,7 +13,7 @@
             <Media Id="1" Cabinet="$(var.Cabinet)" CompressionLevel="high" EmbedCab="no" />
         <?endif?>
 
-        <WixVariable Id="WixUILicenseRtf" Value="$(var.files)\eula.rtf" />
+        <WixVariable Id="WixUILicenseRtf" Value="$(var.files)\eula.txt" />
         <UIRef Id="WixUI_Minimal" />
 
         <FeatureRef Id="FT_DepProvider" />

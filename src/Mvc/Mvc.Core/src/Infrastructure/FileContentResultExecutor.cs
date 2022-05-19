@@ -35,7 +35,7 @@ public partial class FileContentResultExecutor : FileResultExecutorBase, IAction
             throw new ArgumentNullException(nameof(result));
         }
 
-        Logger.ExecutingFileResult(result);
+        Log.ExecutingFileResult(Logger, result);
 
         var (range, rangeLength, serveBody) = SetHeadersAndLog(
             context,
@@ -88,6 +88,18 @@ public partial class FileContentResultExecutor : FileResultExecutorBase, IAction
 
     private static partial class Log
     {
+        public static void ExecutingFileResult(ILogger logger, FileResult fileResult)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var fileResultType = fileResult.GetType().Name;
+                ExecutingFileResultWithNoFileName(logger, fileResultType, fileResult.FileDownloadName);
+            }
+        }
+
+        [LoggerMessage(2, LogLevel.Information, "Executing {FileResultType}, sending file with download name '{FileDownloadName}' ...", EventName = "ExecutingFileResultWithNoFileName", SkipEnabledCheck = true)]
+        private static partial void ExecutingFileResultWithNoFileName(ILogger logger, string fileResultType, string fileDownloadName);
+
         [LoggerMessage(17, LogLevel.Debug, "Writing the requested range of bytes to the body...", EventName = "WritingRangeToBody")]
         public static partial void WritingRangeToBody(ILogger logger);
     }

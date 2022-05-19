@@ -3,10 +3,16 @@
     Test asset publication support intended for case where an asset is referenced in a single test project.
     References in more than one or two test projects would slow the build because each restore or publish
     operation gets unique (per-test project) global properties.
+
+    Hook into Build target in addition to Publish (for Helix), RunTests (for Arcade), and VSTest (for dotnet test)
+    because VS does not use a target when discovering or executing tests (examines test assembly instead). Need
+    those targets too to ensure everything is up-to-date when executing tests.
   -->
   <Target Name="PublishTestAssets"
-      BeforeTargets="Publish;RunTests;VSTest"
-      Condition=" '@(TestAssetProjectReference->Count())' != '0' ">
+      BeforeTargets="Build;Publish;RunTests;VSTest"
+      Condition=" '$(ExcludeFromBuild)' != 'true' AND
+        '$(DotNetBuildFromSource)' != 'true' AND
+        '@(TestAssetProjectReference->Count())' != '0' ">
     <ItemGroup>
       <_ProjectsToPublish Include="@(TestAssetProjectReference)" />
 

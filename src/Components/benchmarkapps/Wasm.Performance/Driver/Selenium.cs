@@ -8,7 +8,7 @@ using OpenQA.Selenium.Remote;
 
 namespace Wasm.Performance.Driver;
 
-class Selenium
+internal sealed class Selenium
 {
     const int SeleniumPort = 4444;
     const bool RunHeadlessBrowser = true;

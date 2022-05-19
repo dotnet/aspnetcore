@@ -25,6 +25,12 @@ This folder also contains the infrastructure for our partners' service reference
 - [dotnet-getdocument](dotnet-getdocument/README.md) the outside man of OpenAPI document generation tool.
 - [GetDocument.Insider](GetDocumentInsider/README.md) the inside man of OpenAPI document generation tool.
 
+## Internal tools
+
+The following tools support the internal development of ASP.NET Core. They aren't designed to be used outside of this repository.
+
+- [LinkabilityChecker](LinkabilityChecker/README.md) for testing and validating trimming of ASP.NET Core assemblies.
+
 ## Usage
 
 The command line tools can be invoked as a subcommand of `dotnet`.

@@ -1,43 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class AcceptedAtRouteResultTests
 {
-    [Fact]
-    public async Task ExecuteResultAsync_FormatsData()
-    {
-        // Arrange
-        var url = "testAction";
-        var linkGenerator = new TestLinkGenerator { Url = url };
-        var httpContext = GetHttpContext(linkGenerator);
-        var stream = new MemoryStream();
-        httpContext.Response.Body = stream;
-
-        var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
-            {
-                { "test", "case" },
-                { "sample", "route" }
-            });
-
-        // Act
-        var result = new AcceptedAtRouteResult(
-            routeName: "sample",
-            routeValues: routeValues,
-            value: "Hello world");
-        await result.ExecuteAsync(httpContext);
-
-        // Assert
-        var response = Encoding.UTF8.GetString(stream.ToArray());
-        Assert.Equal("\"Hello world\"", response);
-    }
-
     public static TheoryData<object> AcceptedAtRouteData
     {
         get
@@ -69,7 +43,7 @@ public class AcceptedAtRouteResultTests
         var httpContext = GetHttpContext(linkGenerator);
 
         // Act
-        var result = new AcceptedAtRouteResult(routeValues: values, value: null);
+        var result = new AcceptedAtRoute(routeValues: values);
         await result.ExecuteAsync(httpContext);
 
         // Assert
@@ -85,16 +59,52 @@ public class AcceptedAtRouteResultTests
         var httpContext = GetHttpContext(linkGenerator);
 
         // Act
-        var result = new AcceptedAtRouteResult(
+        var result = new AcceptedAtRoute(
             routeName: null,
-            routeValues: new Dictionary<string, object>(),
-            value: null);
+            routeValues: new Dictionary<string, object>());
 
         // Assert
         await ExceptionAssert.ThrowsAsync<InvalidOperationException>(() =>
             result.ExecuteAsync(httpContext),
             "No route matches the supplied values.");
     }
+
+    [Fact]
+    public void PopulateMetadata_AddsResponseTypeMetadata()
+    {
+        // Arrange
+        AcceptedAtRoute MyApi() { throw new NotImplementedException(); }
+        var metadata = new List<object>();
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+
+        // Act
+        PopulateMetadata<AcceptedAtRoute>(context);
+
+        // Assert
+        var producesResponseTypeMetadata = context.EndpointMetadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status202Accepted, producesResponseTypeMetadata.StatusCode);
+    }
+
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new AcceptedAtRoute(null);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
+    [Fact]
+    public void PopulateMetadata_ThrowsArgumentNullException_WhenContextIsNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<AcceptedAtRoute>(null));
+    }
+
+    private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
+        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 
     private static HttpContext GetHttpContext(LinkGenerator linkGenerator)
     {

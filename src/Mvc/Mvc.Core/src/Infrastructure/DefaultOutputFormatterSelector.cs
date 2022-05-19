@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Collections.ObjectModel;
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -157,7 +158,7 @@ public partial class DefaultOutputFormatterSelector : OutputFormatterSelector
 
         if (selectedFormatter != null)
         {
-            _logger.FormatterSelected(selectedFormatter, context);
+            Log.FormatterSelected(_logger, selectedFormatter, context);
         }
 
         return selectedFormatter;
@@ -299,6 +300,21 @@ public partial class DefaultOutputFormatterSelector : OutputFormatterSelector
 
     private static partial class Log
     {
+        public static void FormatterSelected(
+            ILogger logger,
+            IOutputFormatter outputFormatter,
+            OutputFormatterCanWriteContext context)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = Convert.ToString(context.ContentType, CultureInfo.InvariantCulture);
+                FormatterSelected(logger, outputFormatter, contentType);
+            }
+        }
+
+        [LoggerMessage(2, LogLevel.Debug, "Selected output formatter '{OutputFormatter}' and content type '{ContentType}' to write the response.", EventName = "FormatterSelected", SkipEnabledCheck = true)]
+        public static partial void FormatterSelected(ILogger logger, IOutputFormatter outputFormatter, string? contentType);
+
         [LoggerMessage(4, LogLevel.Debug, "No information found on request to perform content negotiation.", EventName = "NoAcceptForNegotiation")]
         public static partial void NoAcceptForNegotiation(ILogger logger);
 

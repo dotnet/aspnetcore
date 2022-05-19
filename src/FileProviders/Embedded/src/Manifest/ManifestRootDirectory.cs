@@ -3,7 +3,7 @@
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
 
-internal class ManifestRootDirectory : ManifestDirectory
+internal sealed class ManifestRootDirectory : ManifestDirectory
 {
     public ManifestRootDirectory(ManifestEntry[] children)
         : base(name: string.Empty, children: children)

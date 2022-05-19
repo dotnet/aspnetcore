@@ -8,37 +8,24 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal class RequestQueue
+internal sealed partial class RequestQueue
 {
-    private static readonly int BindingInfoSize =
-        Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
-
     private readonly RequestQueueMode _mode;
     private readonly ILogger _logger;
     private bool _disposed;
 
-    internal RequestQueue(string requestQueueName, string urlPrefix, ILogger logger, bool receiver)
-        : this(urlGroup: null!, requestQueueName, RequestQueueMode.Attach, logger, receiver)
+    internal RequestQueue(string requestQueueName, ILogger logger)
+        : this(requestQueueName, RequestQueueMode.Attach, logger, receiver: true)
     {
-        try
-        {
-            UrlGroup = new UrlGroup(this, UrlPrefix.Create(urlPrefix), logger);
-        }
-        catch
-        {
-            Dispose();
-            throw;
-        }
     }
 
-    internal RequestQueue(UrlGroup urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger)
-        : this(urlGroup, requestQueueName, mode, logger, false)
+    internal RequestQueue(string? requestQueueName, RequestQueueMode mode, ILogger logger)
+        : this(requestQueueName, mode, logger, false)
     { }
 
-    private RequestQueue(UrlGroup urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
+    private RequestQueue(string? requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
     {
         _mode = mode;
-        UrlGroup = urlGroup;
         _logger = logger;
 
         var flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
@@ -115,45 +102,6 @@ internal class RequestQueue
     internal SafeHandle Handle { get; }
     internal ThreadPoolBoundHandle BoundHandle { get; }
 
-    internal UrlGroup UrlGroup { get; }
-
-    internal unsafe void AttachToUrlGroup()
-    {
-        Debug.Assert(Created);
-        CheckDisposed();
-        // Set the association between request queue and url group. After this, requests for registered urls will
-        // get delivered to this request queue.
-
-        var info = new HttpApiTypes.HTTP_BINDING_INFO();
-        info.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-        info.RequestQueueHandle = Handle.DangerousGetHandle();
-
-        var infoptr = new IntPtr(&info);
-
-        UrlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
-            infoptr, (uint)BindingInfoSize);
-    }
-
-    internal unsafe void DetachFromUrlGroup()
-    {
-        Debug.Assert(Created);
-        CheckDisposed();
-        // Break the association between request queue and url group. After this, requests for registered urls
-        // will get 503s.
-        // Note that this method may be called multiple times (Stop() and then Abort()). This
-        // is fine since http.sys allows to set HttpServerBindingProperty multiple times for valid
-        // Url groups.
-
-        var info = new HttpApiTypes.HTTP_BINDING_INFO();
-        info.Flags = HttpApiTypes.HTTP_FLAGS.NONE;
-        info.RequestQueueHandle = IntPtr.Zero;
-
-        var infoptr = new IntPtr(&info);
-
-        UrlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
-            infoptr, (uint)BindingInfoSize, throwOnError: false);
-    }
-
     // The listener must be active for this to work.
     internal unsafe void SetLengthLimit(long length)
     {
@@ -206,14 +154,9 @@ internal class RequestQueue
         }
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, string?, Exception?> _attachedToQueue =
-            LoggerMessage.Define<string?>(LogLevel.Information, LoggerEventIds.AttachedToQueue, "Attached to an existing request queue '{RequestQueueName}', some options do not apply.");
-
-        public static void AttachedToQueue(ILogger logger, string? requestQueueName)
-        {
-            _attachedToQueue(logger, requestQueueName, null);
-        }
+        [LoggerMessage(LoggerEventIds.AttachedToQueue, LogLevel.Information, "Attached to an existing request queue '{RequestQueueName}', some options do not apply.", EventName = "AttachedToQueue")]
+        public static partial void AttachedToQueue(ILogger logger, string? requestQueueName);
     }
 }

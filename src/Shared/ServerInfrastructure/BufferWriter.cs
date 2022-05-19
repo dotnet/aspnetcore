@@ -49,12 +49,12 @@ internal ref struct BufferWriter<T> where T : IBufferWriter<byte>
     /// <summary>
     /// Gets the result of the last call to <see cref="IBufferWriter{T}.GetSpan(int)"/>.
     /// </summary>
-    public Span<byte> Span => _span;
+    public readonly Span<byte> Span => _span;
 
     /// <summary>
     /// Gets the total number of bytes written with this writer.
     /// </summary>
-    public long BytesCommitted => _bytesCommitted;
+    public readonly long BytesCommitted => _bytesCommitted;
 
     /// <summary>
     /// Calls <see cref="IBufferWriter{T}.Advance(int)"/> on the underlying writer

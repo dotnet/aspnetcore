@@ -20,7 +20,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// <param name="requestCredentials">The <see cref="BrowserRequestCredentials"/> option.</param>
     /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
     /// <remarks>
-    /// See https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
+    /// See <see href="https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials"/>.
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestCredentials(this HttpRequestMessage requestMessage, BrowserRequestCredentials requestCredentials)
     {
@@ -47,7 +47,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// <param name="requestCache">The <see cref="BrowserRequestCache"/> option.</param>
     /// <returns>The <see cref="HttpRequestMessage"/>.</returns>\
     /// <remarks>
-    /// See https://developer.mozilla.org/en-US/docs/Web/API/Request/cache
+    /// See <see href="https://developer.mozilla.org/en-US/docs/Web/API/Request/cache"/>.
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestCache(this HttpRequestMessage requestMessage, BrowserRequestCache requestCache)
     {
@@ -77,7 +77,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// <param name="requestMode">The <see cref="BrowserRequestMode"/>.</param>
     /// <returns>The <see cref="HttpRequestMessage"/>.</returns>\
     /// <remarks>
-    /// See https://developer.mozilla.org/en-US/docs/Web/API/Request/mode
+    /// See <see href="https://developer.mozilla.org/en-US/docs/Web/API/Request/mode"/>.
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestMode(this HttpRequestMessage requestMessage, BrowserRequestMode requestMode)
     {
@@ -105,7 +105,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// <param name="integrity">The subresource integrity descriptor.</param>
     /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
     /// <remarks>
-    /// See https://developer.mozilla.org/en-US/docs/Web/API/Request/integrity
+    /// See <see href="https://developer.mozilla.org/en-US/docs/Web/API/Request/integrity"/>.
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestIntegrity(this HttpRequestMessage requestMessage, string integrity)
         => SetBrowserRequestOption(requestMessage, "integrity", integrity);
@@ -114,11 +114,11 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// Configures a value for the HTTP request.
     /// </summary>
     /// <param name="requestMessage">The <see cref="HttpRequestMessage"/>.</param>
-    /// <param name="name">The name of the option, which should correspond to a key defined on https://fetch.spec.whatwg.org/#requestinit</param>
+    /// <param name="name">The name of the option, which should correspond to a key defined on <see href="https://fetch.spec.whatwg.org/#requestinit"/>.</param>
     /// <param name="value">The value, which must be JSON-serializable.</param>
     /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
     /// <remarks>
-    /// See https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
+    /// See <see href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch"/>.
     /// </remarks>
     public static HttpRequestMessage SetBrowserRequestOption(this HttpRequestMessage requestMessage, string name, object value)
     {
@@ -151,7 +151,7 @@ public static class WebAssemblyHttpRequestMessageExtensions
     /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
     /// <remarks>
     /// This API is only effective when the browser HTTP Fetch supports streaming.
-    /// See https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream.
+    /// See <see href="https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream"/>.
     /// </remarks>
     public static HttpRequestMessage SetBrowserResponseStreamingEnabled(this HttpRequestMessage requestMessage, bool streamingEnabled)
     {

@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposable
+internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposable
 {
     private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
@@ -210,16 +209,10 @@ internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposa
 
     internal void IOCompleted(uint errorCode)
     {
-        IOCompleted(this, errorCode, BytesSent);
+        IOCompleted(this, errorCode);
     }
 
-    internal void IOCompleted(uint errorCode, uint numBytes)
-    {
-        IOCompleted(this, errorCode, numBytes);
-    }
-
-    [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Redirecting to callback")]
-    private static void IOCompleted(ResponseStreamAsyncResult asyncResult, uint errorCode, uint numBytes)
+    private static void IOCompleted(ResponseStreamAsyncResult asyncResult, uint errorCode)
     {
         var logger = asyncResult._responseStream.RequestContext.Logger;
         try
@@ -267,10 +260,10 @@ internal unsafe partial class ResponseStreamAsyncResult : IAsyncResult, IDisposa
         }
     }
 
-    private static unsafe void Callback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
+    private static unsafe void Callback(uint errorCode, uint _, NativeOverlapped* nativeOverlapped)
     {
         var asyncResult = (ResponseStreamAsyncResult)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped)!;
-        IOCompleted(asyncResult, errorCode, numBytes);
+        IOCompleted(asyncResult, errorCode);
     }
 
     internal void Complete()

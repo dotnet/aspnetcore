@@ -183,7 +183,7 @@ export module DotNet {
       try {
           const jsObjectReference = createJSObjectReference(streamReference);
           result[jsObjectIdKey] = jsObjectReference[jsObjectIdKey];
-      } catch {
+      } catch (error) {
           throw new Error(`Cannot create a JSStreamReference from the value '${streamReference}'.`);
       }
 

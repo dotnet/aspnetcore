@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
-internal class RewriteMapSegment : PatternSegment
+internal sealed class RewriteMapSegment : PatternSegment
 {
     private readonly IISRewriteMap _rewriteMap;
     private readonly Pattern _pattern;

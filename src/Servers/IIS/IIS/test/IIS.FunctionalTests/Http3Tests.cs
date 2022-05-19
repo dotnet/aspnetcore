@@ -11,6 +11,7 @@ using System.Net.Quic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 [MsQuicSupported]
 [HttpSysHttp3Supported]
 [Collection(IISHttpsTestSiteCollection.Name)]
-public class Http3Tests
+public class Http3Tests : FunctionalTestsBase
 {
     public Http3Tests(IISTestSiteFixture fixture)
     {
@@ -172,6 +173,6 @@ public class Http3Tests
         var handler = new HttpClientHandler();
         // Needed on CI, the IIS Express cert we use isn't trusted there.
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return new HttpClient(handler);
+        return new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(200) };
     }
 }

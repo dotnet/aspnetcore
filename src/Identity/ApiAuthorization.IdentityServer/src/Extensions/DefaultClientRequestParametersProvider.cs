@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
-internal class DefaultClientRequestParametersProvider : IClientRequestParametersProvider
+internal sealed class DefaultClientRequestParametersProvider : IClientRequestParametersProvider
 {
     public DefaultClientRequestParametersProvider(
         IAbsoluteUrlFactory urlFactory,
@@ -25,7 +25,10 @@ internal class DefaultClientRequestParametersProvider : IClientRequestParameters
     public IDictionary<string, string> GetClientParameters(HttpContext context, string clientId)
     {
         var client = Options.Value.Clients[clientId];
+#pragma warning disable 0618
+        // Deprecated in Identity Server 6.0
         var authority = context.GetIdentityServerIssuerUri();
+#pragma warning restore 0618
         if (!client.Properties.TryGetValue(ApplicationProfilesPropertyNames.Profile, out var type))
         {
             throw new InvalidOperationException($"Can't determine the type for the client '{clientId}'");

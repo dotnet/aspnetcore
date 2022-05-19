@@ -3,7 +3,9 @@
 
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.Logging;
 
@@ -47,14 +49,11 @@ internal sealed class HtmlRenderer : Renderer
 
     public async Task<ComponentRenderedText> RenderComponentAsync(Type componentType, ParameterView initialParameters)
     {
-        var (componentId, frames) = await CreateInitialRenderAsync(componentType, initialParameters);
+        var component = InstantiateComponent(componentType);
+        var componentId = AssignRootComponentId(component);
 
-        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
-
-        var context = new HtmlRenderingContext { HtmlContentBuilder = viewBuffer, };
-        var newPosition = RenderFrames(context, frames, 0, frames.Count);
-        Debug.Assert(newPosition == frames.Count);
-        return new ComponentRenderedText(componentId, context.HtmlContentBuilder);
+        await RenderRootComponentAsync(componentId, initialParameters);
+        return new ComponentRenderedText(componentId, new ComponentHtmlContent(this, componentId));
     }
 
     public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterView initialParameters) where TComponent : IComponent
@@ -248,21 +247,50 @@ internal sealed class HtmlRenderer : Renderer
         return position + maxElements;
     }
 
-    private async Task<(int, ArrayRange<RenderTreeFrame>)> CreateInitialRenderAsync(Type componentType, ParameterView initialParameters)
+    private ViewBuffer GetRenderedHtmlContent(int componentId)
     {
-        var component = InstantiateComponent(componentType);
-        var componentId = AssignRootComponentId(component);
+        var viewBuffer = new ViewBuffer(_viewBufferScope, nameof(HtmlRenderer), ViewBuffer.ViewPageSize);
+        var context = new HtmlRenderingContext(viewBuffer);
 
-        await RenderRootComponentAsync(componentId, initialParameters);
+        var frames = GetCurrentRenderTreeFrames(componentId);
+        var newPosition = RenderFrames(context, frames, 0, frames.Count);
+        Debug.Assert(newPosition == frames.Count);
 
-        return (componentId, GetCurrentRenderTreeFrames(componentId));
+        return viewBuffer;
     }
 
     private sealed class HtmlRenderingContext
     {
-        public ViewBuffer HtmlContentBuilder { get; init; }
+        public HtmlRenderingContext(ViewBuffer viewBuffer)
+        {
+            HtmlContentBuilder = viewBuffer;
+        }
+
+        public ViewBuffer HtmlContentBuilder { get; }
 
         public string ClosestSelectValueAsString { get; set; }
+    }
+
+    /// <summary>
+    /// A <see cref="IHtmlContent"/> that defers rendering component markup until <see cref="IHtmlContent.WriteTo(TextWriter, HtmlEncoder)"/>
+    /// is called.
+    /// </summary>
+    private sealed class ComponentHtmlContent : IHtmlContent
+    {
+        private readonly HtmlRenderer _renderer;
+        private readonly int _componentId;
+
+        public ComponentHtmlContent(HtmlRenderer renderer, int componentId)
+        {
+            _renderer = renderer;
+            _componentId = componentId;
+        }
+
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+        {
+            var actualHtmlContent = _renderer.GetRenderedHtmlContent(_componentId);
+            actualHtmlContent.WriteTo(writer, encoder);
+        }
     }
 }
 

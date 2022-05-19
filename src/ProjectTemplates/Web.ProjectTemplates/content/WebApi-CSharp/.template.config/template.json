@@ -38,15 +38,36 @@
           ]
         },
         {
+          "condition": "(!UseProgramMain)",
+          "exclude": [
+            "Program.Main.cs"
+          ]
+        },
+        {
+          "condition": "(UseProgramMain)",
+          "exclude": [
+            "Program.cs",
+            "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs",
+            "Program.MinimalAPIs.WindowsOrNoAuth.cs"
+          ],
+          "rename": {
+            "Program.Main.cs": "Program.cs"
+          }
+        },
+        {
           "condition": "(UseMinimalAPIs)",
           "exclude": [
-            "Controllers/WeatherForecastController.cs",
-            "Program.cs",
+            "Controllers/WeatherForecastController.cs"
+          ]
+        },
+        {
+          "condition": "(UseMinimalAPIs && !UseProgramMain)",
+          "exclude": [
             "WeatherForecast.cs"
           ]
         },
         {
-          "condition": "(UseMinimalAPIs && (NoAuth || WindowsAuth))",
+          "condition": "(!UseProgramMain && UseMinimalAPIs && (NoAuth || WindowsAuth))",
           "rename": {
             "Program.MinimalAPIs.WindowsOrNoAuth.cs": "Program.cs"
           },
@@ -55,7 +76,7 @@
           ]
         },
         {
-          "condition": "(UseMinimalAPIs && (IndividualAuth || OrganizationalAuth))",
+          "condition": "(!UseProgramMain && UseMinimalAPIs && (IndividualAuth || OrganizationalAuth))",
           "rename": {
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs": "Program.cs"
           },
@@ -364,6 +385,13 @@
     "UseControllers": {
       "type": "computed",
       "value": "(!UseMinimalAPIs)"
+    },
+    "UseProgramMain": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Do not use top-level statements",
+      "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
     }
   },
   "primaryOutputs": [
