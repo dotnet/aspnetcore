@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache.RedisCache(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions!>! optionsAccessor, Microsoft.Extensions.Logging.ILogger<Microsoft.Extensions.Caching.StackExchangeRedis.RedisCache!>! logger) -> void

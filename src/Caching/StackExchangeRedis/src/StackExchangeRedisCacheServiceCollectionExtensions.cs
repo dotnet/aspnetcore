@@ -4,6 +4,8 @@
 using System;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -32,6 +34,14 @@ public static class StackExchangeRedisCacheServiceCollectionExtensions
         }
 
         services.AddOptions();
+
+#if NET7_0_OR_GREATER
+        services.AddLogging();
+#else
+        services.TryAddSingleton<ILoggerFactory>(Logging.Abstractions.NullLoggerFactory.Instance);
+        services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(Logger<>)));
+#endif
+
         services.Configure(setupAction);
         services.Add(ServiceDescriptor.Singleton<IDistributedCache, RedisCache>());
 
