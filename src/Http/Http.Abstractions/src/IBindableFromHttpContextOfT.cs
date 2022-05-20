@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http;
 /// route handler delegate.
 /// </summary>
 /// <typeparam name="TSelf">The type that implements this interface.</typeparam>
-public interface IBindableFromHttpContext<TSelf> where TSelf : class?, IBindableFromHttpContext<TSelf>
+public interface IBindableFromHttpContext<TSelf> where TSelf : class, IBindableFromHttpContext<TSelf>
 {
     /// <summary>
     /// Creates an instance of <typeparamref name="TSelf"/> from the <see cref="HttpContext"/>.
