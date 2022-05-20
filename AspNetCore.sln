@@ -1661,6 +1661,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RequestDecompressionSample", "src\Middleware\RequestDecompression\sample\RequestDecompressionSample.csproj", "{37144E52-611B-40E8-807C-2821F5A814CB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RequestDecompression", "src\Middleware\RequestDecompression\src\Microsoft.AspNetCore.RequestDecompression.csproj", "{559FE354-7E08-4310-B4F3-AE30F34DEED5}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LinkabilityChecker", "LinkabilityChecker", "{94F95276-7CDF-44A8-B159-D09702EF6794}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LinkabilityChecker", "src\Tools\LinkabilityChecker\LinkabilityChecker.csproj", "{EA7D844B-C180-41C7-9D55-273AD88BF71F}"
@@ -1716,6 +1717,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Html.Abstractions.Tests", "src\Html.Abstractions\test\Microsoft.AspNetCore.Html.Abstractions.Tests.csproj", "{487EF7BE-5009-4C70-B79E-45519BDD9603}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RateLimiting", "RateLimiting", "{1D865E78-7A66-4CA9-92EE-2B350E45281F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RequestDecompression.Microbenchmarks", "src\Middleware\RequestDecompression\perf\Microbenchmarks\Microsoft.AspNetCore.RequestDecompression.Microbenchmarks.csproj", "{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10302,6 +10305,22 @@ Global
 		{487EF7BE-5009-4C70-B79E-45519BDD9603}.Release|x64.Build.0 = Release|Any CPU
 		{487EF7BE-5009-4C70-B79E-45519BDD9603}.Release|x86.ActiveCfg = Release|Any CPU
 		{487EF7BE-5009-4C70-B79E-45519BDD9603}.Release|x86.Build.0 = Release|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Debug|arm64.Build.0 = Debug|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Debug|x64.Build.0 = Debug|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Debug|x86.Build.0 = Debug|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Release|arm64.ActiveCfg = Release|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Release|arm64.Build.0 = Release|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Release|x64.ActiveCfg = Release|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Release|x64.Build.0 = Release|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Release|x86.ActiveCfg = Release|Any CPU
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11153,6 +11172,7 @@ Global
 		{51D07AA9-6297-4F66-A7BD-71CE7E3F4A3F} = {0F84F170-57D0-496B-8E2C-7984178EF69F}
 		{487EF7BE-5009-4C70-B79E-45519BDD9603} = {412D4C15-F48F-4DB1-940A-131D1AA87088}
 		{1D865E78-7A66-4CA9-92EE-2B350E45281F} = {E5963C9F-20A6-4385-B364-814D2581FADF}
+		{3309FA1E-4E95-49E9-BE2A-827D01FD63C0} = {5465F96F-33D5-454E-9C40-494E58AEEE5D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

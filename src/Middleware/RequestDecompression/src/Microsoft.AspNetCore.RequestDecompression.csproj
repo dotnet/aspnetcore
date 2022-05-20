@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.RequestDecompression.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.RequestDecompression.Microbenchmarks" />
   </ItemGroup>
 
 </Project>
