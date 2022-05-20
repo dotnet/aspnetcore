@@ -21,19 +21,25 @@ public class PackageTests
 
     public PackageTests(ITestOutputHelper output)
     {
+        if (!TestData.VerifyPackageAssemblyVersions())
+        {
+            return;
+        }
+
         _output = output;
         var packageRoot = TestData.GetPackagesFolder();
         _packageLayoutRoot = TestData.GetPackageLayoutRoot();
         var packages = Directory
                         .GetFiles(packageRoot, "*.nupkg", SearchOption.AllDirectories)
                         .Where(file => !file.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase));
+        if (Directory.Exists(_packageLayoutRoot))
+        {
+            Directory.Delete(_packageLayoutRoot, true);
+        }
         foreach (var package in packages)
         {
             var outputPath = _packageLayoutRoot + Path.GetFileNameWithoutExtension(package);
-            if (!Directory.Exists(outputPath))
-            {
-                ZipFile.ExtractToDirectory(package, outputPath);
-            }
+            ZipFile.ExtractToDirectory(package, outputPath);
         }
     }
 
@@ -48,12 +54,12 @@ public class PackageTests
         }
 
         var versionStringWithoutPrereleaseTag = TestData.GetSharedFxVersion().Split('-', 2)[0];
-        var version = Version.Parse(versionStringWithoutPrereleaseTag);
+        var expectedVersion = Version.Parse(versionStringWithoutPrereleaseTag);
 
         foreach (var packageDir in Directory.GetDirectories(_packageLayoutRoot))
         {
             // Don't test the Shared Framework or Ref pack
-            if (packageDir.Contains("Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase))
+            if (packageDir.StartsWith("Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -68,21 +74,21 @@ public class PackageTests
                         using var fileStream = File.OpenRead(assembly);
                         using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
                         var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
-                        var assemblyDefinition = reader.GetAssemblyDefinition();
+                        var assemblyVersion = reader.GetAssemblyDefinition().Version;
 
                         // net & netstandard assembly versions should all match Major.Minor.0.0
                         // netfx assembly versions should match Major.Minor.Patch.0
-                        Assert.Equal(version.Major, assemblyDefinition.Version.Major);
-                        Assert.Equal(version.Minor, assemblyDefinition.Version.Minor);
+                        Assert.Equal(expectedVersion.Major, assemblyVersion.Major);
+                        Assert.Equal(expectedVersion.Minor, assemblyVersion.Minor);
                         if (IsNetFx(tfm))
                         {
-                            Assert.Equal(version.Build, assemblyDefinition.Version.Build);
+                            Assert.Equal(expectedVersion.Build, assemblyVersion.Build);
                         }
                         else
                         {
-                            Assert.Equal(0, assemblyDefinition.Version.Build);
+                            Assert.Equal(0, assemblyVersion.Build);
                         }
-                        Assert.Equal(0, assemblyDefinition.Version.Revision);
+                        Assert.Equal(0, assemblyVersion.Revision);
                     }
                 }
             }
