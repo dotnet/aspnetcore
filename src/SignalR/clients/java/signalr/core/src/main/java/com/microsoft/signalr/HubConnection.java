@@ -471,20 +471,57 @@ public class HubConnection implements AutoCloseable {
                     logger.error("Failed to bind arguments received in invocation '{}' of '{}'.", msg.getInvocationId(), msg.getTarget(), msg.getException());
                     break;
                 case INVOCATION:
-
                     InvocationMessage invocationMessage = (InvocationMessage) message;
                     List<InvocationHandler> handlers = this.handlers.get(invocationMessage.getTarget());
-                    if (handlers != null) {
+                    boolean expectsResult = invocationMessage.getInvocationId() != null;
+                    if (handlers == null) {
+                        if (expectsResult) {
+                            logger.warn("Failed to find a value returning handler for '{}' method. Sending error to server.", invocationMessage.getTarget());
+                            sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                                null, "Client did not provide a result."));
+                        } else {
+                            logger.warn("Failed to find handler for '{}' method.", invocationMessage.getTarget());
+                        }
+                        return;
+                    }
+                    //new Thread(() -> {
+                        Object result = null;
+                        Exception resultException = null;
+                        Boolean hasResult = false;
                         for (InvocationHandler handler : handlers) {
                             try {
-                                handler.getAction().invoke(invocationMessage.getArguments());
+                                Object action = handler.getAction();
+                                if (handler.getHasResult()) {
+                                    FunctionBase function = (FunctionBase)action;
+                                    result = function.invoke(invocationMessage.getArguments()).blockingGet();
+                                    hasResult = true;
+                                } else {
+                                    ((ActionBase)action).invoke(invocationMessage.getArguments()).blockingAwait();
+                                }
                             } catch (Exception e) {
                                 logger.error("Invoking client side method '{}' failed:", invocationMessage.getTarget(), e);
+                                if (handler.getHasResult()) {
+                                    resultException = e;
+                                }
                             }
                         }
-                    } else {
-                        logger.warn("Failed to find handler for '{}' method.", invocationMessage.getTarget());
-                    }
+
+                        if (expectsResult) {
+                            if (resultException != null) {
+                                sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                                    null, resultException.getMessage()));
+                            } else if (hasResult) {
+                                sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                                    result, null));
+                            } else {
+                                logger.warn("Failed to find a value returning handler for '{}' method. Sending error to server.", invocationMessage.getTarget());
+                                sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                                    null, "Client did not provide a result."));
+                            }
+                        } else if (hasResult) {
+                            logger.warn("Result given for '{}' method but server is not expecting a result.", invocationMessage.getTarget());
+                        }
+                    //}).start();
                     break;
                 case CLOSE:
                     logger.info("Close message received from server.");
@@ -868,7 +905,30 @@ public class HubConnection implements AutoCloseable {
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public Subscription on(String target, Action callback) {
-        ActionBase action = args -> callback.invoke();
+        ActionBase action = args -> {
+            callback.invoke();
+            return Completable.complete();
+        };
+        return registerHandler(target, action);
+    }
+
+    public <T> Subscription on(String target, Function<T> callback) {
+        FunctionBase action = args -> Single.just(callback.invoke());
+        return registerHandler(target, action);
+    }
+
+    public <T> Subscription on(String target, FunctionSingle<T> callback) {
+        FunctionBase action = args -> callback.invoke().cast(Object.class);
+        return registerHandler(target, action);
+    }
+
+    public <T1, T> Subscription on(String target, Function1<T1, T> callback, Class<T1> param1) {
+        FunctionBase action = params -> Single.just(callback.invoke(Utils.<T1>cast(param1, params[0])));
+        return registerHandler(target, action);
+    }
+
+    public <T1, T> Subscription on(String target, Function1Single<T1, T> callback, Class<T1> param1) {
+        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0])).cast(Object.class);
         return registerHandler(target, action);
     }
 
@@ -883,9 +943,11 @@ public class HubConnection implements AutoCloseable {
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1> Subscription on(String target, Action1<T1> callback, Class<T1> param1) {
-        ActionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0]));
+        ActionBase action = params -> {
+            callback.invoke(Utils.<T1>cast(param1, params[0]));
+            return Completable.complete();
+        };
         return registerHandler(target, action, param1);
-
     }
 
     /**
@@ -903,6 +965,7 @@ public class HubConnection implements AutoCloseable {
     public <T1, T2> Subscription on(String target, Action2<T1, T2> callback, Class<T1> param1, Class<T2> param2) {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2);
     }
@@ -925,6 +988,7 @@ public class HubConnection implements AutoCloseable {
                                         Class<T1> param1, Class<T2> param2, Class<T3> param3) {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3);
     }
@@ -950,6 +1014,7 @@ public class HubConnection implements AutoCloseable {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
                 Utils.<T4>cast(param4, params[3]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3, param4);
     }
@@ -977,6 +1042,7 @@ public class HubConnection implements AutoCloseable {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
                 Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5);
     }
@@ -1006,6 +1072,7 @@ public class HubConnection implements AutoCloseable {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
                 Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6);
     }
@@ -1037,6 +1104,7 @@ public class HubConnection implements AutoCloseable {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
                 Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]), Utils.<T7>cast(param7, params[6]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7);
     }
@@ -1071,6 +1139,7 @@ public class HubConnection implements AutoCloseable {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
                 Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]), Utils.<T7>cast(param7, params[6]),
                 Utils.<T8>cast(param8, params[7]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7, param8);
     }
@@ -1089,6 +1158,7 @@ public class HubConnection implements AutoCloseable {
     public <T1> Subscription on(String target, Action1<T1> callback, Type param1) {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1);
     }
@@ -1109,6 +1179,7 @@ public class HubConnection implements AutoCloseable {
     public <T1, T2> Subscription on(String target, Action2<T1, T2> callback, Type param1, Type param2) {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2);
     }
@@ -1132,6 +1203,7 @@ public class HubConnection implements AutoCloseable {
                                         Type param1, Type param2, Type param3) {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3);
     }
@@ -1158,6 +1230,7 @@ public class HubConnection implements AutoCloseable {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
                 Utils.<T4>cast(param4, params[3]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3, param4);
     }
@@ -1186,6 +1259,7 @@ public class HubConnection implements AutoCloseable {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
                 Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5);
     }
@@ -1216,6 +1290,7 @@ public class HubConnection implements AutoCloseable {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
                 Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6);
     }
@@ -1248,6 +1323,7 @@ public class HubConnection implements AutoCloseable {
         ActionBase action = params -> {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
                 Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]), Utils.<T7>cast(param7, params[6]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7);
     }
@@ -1284,11 +1360,12 @@ public class HubConnection implements AutoCloseable {
             callback.invoke(Utils.<T1>cast(param1, params[0]), Utils.<T2>cast(param2, params[1]), Utils.<T3>cast(param3, params[2]),
                 Utils.<T4>cast(param4, params[3]), Utils.<T5>cast(param5, params[4]), Utils.<T6>cast(param6, params[5]), Utils.<T7>cast(param7, params[6]),
                 Utils.<T8>cast(param8, params[7]));
+            return Completable.complete();
         };
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7, param8);
     }
 
-    private Subscription registerHandler(String target, ActionBase action, Type... types) {
+    private Subscription registerHandler(String target, Object action, Type... types) {
         InvocationHandler handler = handlers.put(target, action, types);
         logger.debug("Registering handler for client method: '{}'.", target);
         return new Subscription(handlers, handler, target);

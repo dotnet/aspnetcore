@@ -2512,7 +2512,9 @@ class HubConnectionTest {
 
             hubConnection.on("inc", (param1) -> {
                 value1.set(param1);
-                throw new RuntimeException("throw from on handler");
+                if (true) {
+                    throw new RuntimeException("throw from on handler");
+                }
             }, String.class);
             hubConnection.on("inc", (param1) -> {
                 value2.set(param1);

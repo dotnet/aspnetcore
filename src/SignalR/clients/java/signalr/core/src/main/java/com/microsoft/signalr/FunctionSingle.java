@@ -3,10 +3,13 @@
 
 package com.microsoft.signalr;
 
-import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
 
-interface ActionBase {
+/**
+ * A callback that takes no parameters.
+ */
+public interface FunctionSingle<T> {
     // We can't use the @FunctionalInterface annotation because it's only
     // available on Android API Level 24 and above.
-    Completable invoke(Object ... params);
+    Single<T> invoke();
 }

@@ -14,14 +14,24 @@ class CallbackMap {
     private final Map<String, List<InvocationHandler>> handlers = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
-    public InvocationHandler put(String target, ActionBase action, Type... types) {
+    public InvocationHandler put(String target, Object action, Type... types) {
         try {
             lock.lock();
             InvocationHandler handler = new InvocationHandler(action, types);
             if (!handlers.containsKey(target)) {
                 handlers.put(target, new ArrayList<>());
             }
-            handlers.get(target).add(handler);
+
+            List<InvocationHandler> methodHandlers;
+            methodHandlers = handlers.get(target);
+            if (handler.getHasResult()) {
+                for (InvocationHandler existingHandler : methodHandlers) {
+                    if (existingHandler.getHasResult()) {
+                        throw new RuntimeException(String.format("'%s' already has a value returning handler. Multiple return values are not supported.", target));
+                    }
+                }
+            }
+            methodHandlers.add(handler);
             return handler;
         } finally {
             lock.unlock();
