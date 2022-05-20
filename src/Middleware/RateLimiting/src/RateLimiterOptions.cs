@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// </summary>
 public sealed class RateLimiterOptions
 {
-    // TODO - Provide a default?
     private PartitionedRateLimiter<HttpContext> _limiter = new NoLimiter<HttpContext>();
     private Func<HttpContext, RateLimitLease, Task> _onRejected = (context, lease) =>
     {
