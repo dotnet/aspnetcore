@@ -106,4 +106,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor RoutePatternIssue = new(
+        "RP0001",
+        new LocalizableResourceString(nameof(Resources.Invalid_Route_pattern), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.Route_issue_0), Resources.ResourceManager, typeof(Resources)),
+        "Style",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }
