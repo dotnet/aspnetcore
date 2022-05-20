@@ -23,7 +23,7 @@ public class PackageTests
     {
         _output = output;
         var packageRoot = TestData.GetPackagesFolder();
-        _packageLayoutRoot = TestData.GetTestDataValue("PackageLayoutRoot");
+        _packageLayoutRoot = TestData.GetPackageLayoutRoot();
         var packages = Directory
                         .GetFiles(packageRoot, "*.nupkg", SearchOption.AllDirectories)
                         .Where(file => !file.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase));
@@ -50,7 +50,6 @@ public class PackageTests
         var versionStringWithoutPrereleaseTag = TestData.GetSharedFxVersion().Split('-', 2)[0];
         var version = Version.Parse(versionStringWithoutPrereleaseTag);
 
-        Debugger.Launch();
         foreach (var packageDir in Directory.GetDirectories(_packageLayoutRoot))
         {
             // Don't test the Shared Framework or Ref pack
