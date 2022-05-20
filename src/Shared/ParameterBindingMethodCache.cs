@@ -400,7 +400,6 @@ internal sealed class ParameterBindingMethodCache
         return TValue.BindAsync(httpContext, parameter);
     }
         
-
     private MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
     {
         bool IsMatch(MethodInfo? method) => method is not null && !method.IsAbstract && validateReturnType(method);
