@@ -326,12 +326,8 @@ internal sealed class HostingApplicationDiagnostics
         Activity? activity = null;
         if (_activitySource.HasListeners())
         {
-            if (ActivityContext.TryParse(requestId, traceState, true, out ActivityContext context))
+            if (ActivityContext.TryParse(requestId, traceState, isRemote: true, out ActivityContext context))
             {
-                // The requestId used W3C ID format. Unfortunately the ActivitySource.CreateActivity overload that
-                // takes a string ID sets ActivityContext.IsRemote = false when it parses the string internally.
-                // We work around that by using the ActivityContext ID overload and setting ActivityContext.IsRemote
-                // to true after parsing it.
                 activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, context);
             }
             else
