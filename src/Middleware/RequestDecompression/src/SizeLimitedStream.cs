@@ -25,7 +25,7 @@ internal sealed class SizeLimitedStream : Stream
 
     public override bool CanSeek => _innerStream.CanSeek;
 
-    public override bool CanWrite => false;
+    public override bool CanWrite => _innerStream.CanWrite;
 
     public override long Length => _innerStream.Length;
 
@@ -43,7 +43,7 @@ internal sealed class SizeLimitedStream : Stream
 
     public override void Flush()
     {
-        throw new NotSupportedException();
+        _innerStream.Flush();
     }
 
     public override int Read(byte[] buffer, int offset, int count)
@@ -71,7 +71,7 @@ internal sealed class SizeLimitedStream : Stream
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-        throw new NotSupportedException();
+        _innerStream.Write(buffer, offset, count);
     }
 
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
