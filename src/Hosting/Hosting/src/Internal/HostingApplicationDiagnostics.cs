@@ -307,15 +307,11 @@ internal sealed class HostingApplicationDiagnostics
         HostingEventSource.Log.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
     }
 
-    private static bool TryParseActivityContext(string traceParent, string traceState, bool isRemote, out ActivityContext context)
+    private static bool TryParseActivityContext(string? traceParent, string? traceState, out ActivityContext context)
     {
         if (ActivityContext.TryParse(traceParent, traceState, out context))
         {
-            if (isRemote)
-            {
-                context = new ActivityContext(context.TraceId, context.SpanId, context.TraceFlags, context.TraceState, isRemote);
-            }
-
+            context = new ActivityContext(context.TraceId, context.SpanId, context.TraceFlags, context.TraceState, isRemote: true);
             return true;
         }
 
@@ -341,9 +337,12 @@ internal sealed class HostingApplicationDiagnostics
         Activity? activity = null;
         if (_activitySource.HasListeners())
         {
-            if (TryParseActivityContext("Id", "", true, out ActivityContext context))
+            if (TryParseActivityContext(requestId, traceState, out ActivityContext context))
             {
-                // We have an existing context, let's use it.
+                // The requestId used W3C ID format. Unfortunately the ActivitySource.CreateActivity overload that
+                // takes a string ID sets ActivityContext.IsRemote = false when it parses the string internally.
+                // We work around that by using the ActivityContext ID overload and setting ActivityContext.IsRemote
+                // to true after parsing it.
                 activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, context);
             }
             else
