@@ -467,6 +467,50 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
+        public void SamplersReceiveCorrectParentAndTraceIds()
+        {
+            var testSource = new ActivitySource(Path.GetRandomFileName());
+            var hostingApplication = CreateApplication(out var features, activitySource: testSource);
+            var parentId = "";
+            var parentSpanId = "";
+            var traceId = "";
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+                Sample = (ref ActivityCreationOptions<ActivityContext> options) => ComputeActivitySamplingResult(ref options),
+                ActivityStarted = activity =>
+                {
+                    parentId = activity.ParentId;
+                    parentSpanId = activity.ParentSpanId.ToHexString();
+                    traceId = activity.TraceId.ToHexString();
+                }
+            };
+
+            ActivitySource.AddActivityListener(listener);
+
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+            {
+                Headers = new HeaderDictionary()
+                    {
+                        {"traceparent", "00-35aae61e3e99044eb5ea5007f2cd159b-40a8bd87c078cb4c-00"},
+                    }
+            });
+
+            hostingApplication.CreateContext(features);
+            Assert.Equal("00-35aae61e3e99044eb5ea5007f2cd159b-40a8bd87c078cb4c-00", parentId);
+            Assert.Equal("40a8bd87c078cb4c", parentSpanId);
+            Assert.Equal("35aae61e3e99044eb5ea5007f2cd159b", traceId);
+
+            static ActivitySamplingResult ComputeActivitySamplingResult(ref ActivityCreationOptions<ActivityContext> options)
+            {
+                Assert.Equal("35aae61e3e99044eb5ea5007f2cd159b", options.TraceId.ToHexString());
+                Assert.Equal("40a8bd87c078cb4c", options.Parent.SpanId.ToHexString());
+
+                return ActivitySamplingResult.AllDataAndRecorded;
+            }
+        }
+
+        [Fact]
         public void ActivityOnImportHookIsCalled()
         {
             var diagnosticListener = new DiagnosticListener("DummySource");

@@ -267,21 +267,22 @@ namespace Microsoft.AspNetCore.Hosting
         {
             HostingEventSource.Log.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
         }
+        private static bool TryParseActivityContext(string? traceParent, string? traceState, out ActivityContext context)
+        {
+            if (ActivityContext.TryParse(traceParent, traceState, out context))
+            {
+                context = new ActivityContext(context.TraceId, context.SpanId, context.TraceFlags, context.TraceState, isRemote: true);
+                return true;
+            }
+
+            return false;
+        }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
         {
-            var activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server);
-            if (activity is null && (loggingEnabled || diagnosticListenerActivityCreationEnabled))
-            {
-                activity = new Activity(ActivityName);
-            }
             hasDiagnosticListener = false;
 
-            if (activity is null)
-            {
-                return null;
-            }
             var headers = httpContext.Request.Headers;
             _propagator.ExtractTraceIdAndState(headers,
                 static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
@@ -293,9 +294,44 @@ namespace Microsoft.AspNetCore.Hosting
                 out var requestId,
                 out var traceState);
 
+            Activity? activity = null;
+            if (_activitySource.HasListeners())
+            {
+                if (TryParseActivityContext(requestId, traceState, out ActivityContext context))
+                {
+                    // The requestId used W3C ID format. Unfortunately the ActivitySource.CreateActivity overload that
+                    // takes a string ID sets ActivityContext.IsRemote = false when it parses the string internally.
+                    // We work around that by using the ActivityContext ID overload and setting ActivityContext.IsRemote
+                    // to true after parsing it.
+                    activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, context);
+                }
+                else
+                {
+                    // Pass in the ID we got from the headers if there was one.
+                    activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, string.IsNullOrEmpty(requestId) ? null! : requestId);
+                }
+            }
+
+            if (activity is null)
+            {
+                // CreateActivity didn't create an Activity (this is an optimization for the
+                // case when there are no listeners). Let's create it here if needed.
+                if (loggingEnabled || diagnosticListenerActivityCreationEnabled)
+                {
+                    activity = new Activity(ActivityName);
+                    if (!string.IsNullOrEmpty(requestId))
+                    {
+                        activity.SetParentId(requestId);
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
             if (!string.IsNullOrEmpty(requestId))
             {
-                activity.SetParentId(requestId);
                 if (!string.IsNullOrEmpty(traceState))
                 {
                     activity.TraceStateString = traceState;
@@ -308,7 +344,7 @@ namespace Microsoft.AspNetCore.Hosting
                 });
 
                 // AddBaggage adds items at the beginning  of the list, so we need to add them in reverse to keep the same order as the client
-                // By contract, the propagator has already reversed the order of items so we need not reverse it again 
+                // By contract, the propagator has already reversed the order of items so we need not reverse it again
                 // Order could be important if baggage has two items with the same key (that is allowed by the contract)
                 if (baggage is not null)
                 {
