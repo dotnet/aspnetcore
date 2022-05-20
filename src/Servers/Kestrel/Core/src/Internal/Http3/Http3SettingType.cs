@@ -22,7 +22,7 @@ internal enum Http3SettingType : long
     EnableWebTransport = 0x2b603742,
 
     /// <summary>
-    /// H3_DATAGRAM, default is 1
+    /// H3_DATAGRAM, default is 0 (off)
     /// indicates that the server suppprts sending individual datagrams over Http/3
     /// rather than just streams.
     /// </summary>

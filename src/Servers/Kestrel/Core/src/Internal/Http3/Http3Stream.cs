@@ -29,12 +29,14 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private static ReadOnlySpan<byte> AuthorityBytes => ":authority"u8;
     private static ReadOnlySpan<byte> MethodBytes => ":method"u8;
     private static ReadOnlySpan<byte> PathBytes => ":path"u8;
+    private static ReadOnlySpan<byte> ProtocolBytes => ":protocol"u8;
     private static ReadOnlySpan<byte> SchemeBytes => ":scheme"u8;
     private static ReadOnlySpan<byte> StatusBytes => ":status"u8;
     private static ReadOnlySpan<byte> ConnectionBytes => "connection"u8;
     private static ReadOnlySpan<byte> TeBytes => "te"u8;
     private static ReadOnlySpan<byte> TrailersBytes => "trailers"u8;
     private static ReadOnlySpan<byte> ConnectBytes => "CONNECT"u8;
+    private static ReadOnlySpan<byte> WebTransportBytes => "webtransport"u8;
 
     private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
         PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
@@ -51,6 +53,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
+    private bool _isProtocolWebTransport;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
 
@@ -435,6 +438,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             {
                 _isMethodConnect = value.SequenceEqual(ConnectBytes);
             }
+            else if (headerField == PseudoHeaderFields.Protocol)
+            {
+                _isProtocolWebTransport = value.SequenceEqual(WebTransportBytes);
+            }
 
             _parsedPseudoHeaderFields |= headerField;
         }
@@ -448,7 +455,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     {
         Debug.Assert(staticTableIndex >= 0, "Static table starts at 0.");
 
-        var headerField = staticTableIndex switch
+        var headerField = staticTableIndex switch // TODO DO I NEED TO UPDATE THIS WITH THE PROTOCOL PSEUDOHEADER?
         {
             0 => PseudoHeaderFields.Authority,
             1 => PseudoHeaderFields.Path,
@@ -483,7 +490,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     private static PseudoHeaderFields GetPseudoHeaderField(ReadOnlySpan<byte> name)
     {
-        if (name.IsEmpty || name[0] != (byte)':')
+        if (name.IsEmpty || name[0] != (byte)':') // TODO Can this be switched to a switch statement?
         {
             return PseudoHeaderFields.None;
         }
@@ -506,6 +513,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         else if (name.SequenceEqual(AuthorityBytes))
         {
             return PseudoHeaderFields.Authority;
+        }
+        else if (name.SequenceEqual(ProtocolBytes))
+        {
+            return PseudoHeaderFields.Protocol;
         }
         else
         {
@@ -821,7 +832,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             await OnEndStreamReceived();
         }
 
-        if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
+        if ((!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields) || !_isProtocolWebTransport) // todo do this in a better way that doesn't just accept anythingif it is web transport
         {
             // All HTTP/3 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header
             // fields, unless it is a CONNECT request. An HTTP request that omits mandatory pseudo-header
@@ -925,7 +936,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         // CONNECT - :scheme and :path must be excluded
-        if (Method == Http.HttpMethod.Connect)
+        if (Method == Http.HttpMethod.Connect && !_isProtocolWebTransport) // todo find a better way
         {
             if (!string.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
             {
@@ -1153,6 +1164,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         Path = 0x4,
         Scheme = 0x8,
         Status = 0x10,
+        Protocol = 0x20,
         Unknown = 0x40000000
     }
 
