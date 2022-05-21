@@ -232,9 +232,12 @@ public class TestRedisServer
     {
         if (_subscriptions.TryGetValue(channel, out var handlers))
         {
-            foreach (var (_, handler) in handlers)
+            lock (handlers)
             {
-                handler(channel, message);
+                foreach (var (_, handler) in handlers)
+                {
+                    handler(channel, message);
+                }
             }
         }
 
@@ -253,7 +256,10 @@ public class TestRedisServer
 
         _subscriptions.AddOrUpdate(messageQueue.Channel, _ => new List<(int, Action<RedisChannel, RedisValue>)> { (subscriberId, handler) }, (_, list) =>
         {
-            list.Add((subscriberId, handler));
+            lock (list)
+            {
+                list.Add((subscriberId, handler));
+            }
             return list;
         });
     }
@@ -262,7 +268,10 @@ public class TestRedisServer
     {
         if (_subscriptions.TryGetValue(channel, out var list))
         {
-            list.RemoveAll((item) => item.Item1 == subscriberId);
+            lock (list)
+            {
+                list.RemoveAll((item) => item.Item1 == subscriberId);
+            }
         }
     }
 }
