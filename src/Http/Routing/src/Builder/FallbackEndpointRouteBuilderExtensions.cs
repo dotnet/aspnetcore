@@ -37,8 +37,8 @@ public static class FallbackEndpointRouteBuilderExtensions
     /// </remarks>
     public static IEndpointConventionBuilder MapFallback(this IEndpointRouteBuilder endpoints, RequestDelegate requestDelegate)
     {
-        ArgumentNullException.ThrowIfNull(endpoints, nameof(endpoints));
-        ArgumentNullException.ThrowIfNull(requestDelegate, nameof(requestDelegate));
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(requestDelegate);
 
         return endpoints.MapFallback("{*path:nonfile}", requestDelegate);
     }
@@ -69,9 +69,9 @@ public static class FallbackEndpointRouteBuilderExtensions
         string pattern,
         RequestDelegate requestDelegate)
     {
-        ArgumentNullException.ThrowIfNull(endpoints, nameof(endpoints));
-        ArgumentNullException.ThrowIfNull(pattern, nameof(pattern));
-        ArgumentNullException.ThrowIfNull(requestDelegate, nameof(requestDelegate));
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(requestDelegate);
 
         var conventionBuilder = endpoints.Map(pattern, requestDelegate);
         conventionBuilder.WithDisplayName("Fallback " + pattern);

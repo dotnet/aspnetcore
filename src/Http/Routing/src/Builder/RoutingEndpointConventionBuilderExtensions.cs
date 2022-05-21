@@ -22,8 +22,8 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : IEndpointConventionBuilder
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        ArgumentNullException.ThrowIfNull(hosts, nameof(hosts));
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(hosts);
 
         builder.Add(endpointBuilder =>
         {
@@ -41,7 +41,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
     public static TBuilder WithDisplayName<TBuilder>(this TBuilder builder, string displayName) where TBuilder : IEndpointConventionBuilder
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Add(b =>
         {
@@ -60,8 +60,8 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
     public static TBuilder WithDisplayName<TBuilder>(this TBuilder builder, Func<EndpointBuilder, string> func) where TBuilder : IEndpointConventionBuilder
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        ArgumentNullException.ThrowIfNull(func, nameof(func));
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(func);
 
         builder.Add(b =>
         {
@@ -80,8 +80,8 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
     public static TBuilder WithMetadata<TBuilder>(this TBuilder builder, params object[] items) where TBuilder : IEndpointConventionBuilder
     {
-        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        ArgumentNullException.ThrowIfNull(items, nameof(items));
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(items);
 
         builder.Add(b =>
         {
