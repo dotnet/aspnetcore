@@ -328,6 +328,10 @@ internal sealed class HostingApplicationDiagnostics
         {
             if (ActivityContext.TryParse(requestId, traceState, isRemote: true, out ActivityContext context))
             {
+                // The requestId used the W3C ID format. Unfortunately, the ActivitySource.CreateActivity overload that
+                // takes a string parentId never sets HasRemoteParent to true. We work around that by calling the
+                // ActivityContext overload instead which sets HasRemoteParent to parentContext.IsRemote.
+                // https://github.com/dotnet/aspnetcore/pull/41568#discussion_r868733305
                 activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, context);
             }
             else
