@@ -19,15 +19,8 @@ public static class RoutingBuilderExtensions
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public static IApplicationBuilder UseRouter(this IApplicationBuilder builder, IRouter router)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (router == null)
-        {
-            throw new ArgumentNullException(nameof(router));
-        }
+        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(router, nameof(router));
 
         if (builder.ApplicationServices.GetService(typeof(RoutingMarkerService)) == null)
         {
@@ -49,15 +42,8 @@ public static class RoutingBuilderExtensions
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public static IApplicationBuilder UseRouter(this IApplicationBuilder builder, Action<IRouteBuilder> action)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentNullException.ThrowIfNull(action, nameof(action));
 
         if (builder.ApplicationServices.GetService(typeof(RoutingMarkerService)) == null)
         {
