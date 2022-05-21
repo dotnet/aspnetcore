@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -60,7 +59,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
     private readonly RedisCacheOptions _options;
     private readonly string _instance;
-    private readonly ILogger<RedisCache> _logger;
+    private readonly ILogger _logger;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
@@ -78,8 +77,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
     /// </summary>
     /// <param name="optionsAccessor">The configuration options.</param>
     /// <param name="logger">The logger.</param>
-    [ActivatorUtilitiesConstructor]
-    public RedisCache(IOptions<RedisCacheOptions> optionsAccessor, ILogger<RedisCache> logger)
+    internal RedisCache(IOptions<RedisCacheOptions> optionsAccessor, ILogger logger)
     {
         if (optionsAccessor == null)
         {

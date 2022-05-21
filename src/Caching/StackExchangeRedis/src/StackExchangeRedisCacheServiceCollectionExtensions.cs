@@ -43,7 +43,7 @@ public static class StackExchangeRedisCacheServiceCollectionExtensions
 #endif
 
         services.Configure(setupAction);
-        services.Add(ServiceDescriptor.Singleton<IDistributedCache, RedisCache>());
+        services.Add(ServiceDescriptor.Singleton<IDistributedCache, RedisCacheImpl>());
 
         return services;
     }
