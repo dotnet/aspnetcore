@@ -184,17 +184,32 @@ internal
                 var i = (nint)0;
                 var n = (nint)(uint)buffer.Length;
 
-                if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
+                if (Vector256.IsHardwareAccelerated && n >= Vector256<ushort>.Count)
+                {
+                    var vecPlus = Vector256.Create((ushort)'+');
+                    var vecSpace = Vector256.Create((ushort)' ');
+
+                    do
+                    {
+                        var vec = Vector256.Load(input + i);
+                        var mask = Vector256.Equals(vec, vecPlus);
+                        var res = Vector256.ConditionalSelect(mask, vecSpace, vec);
+                        res.Store(output + i);
+                        i += Vector256<ushort>.Count;
+                    } while (i <= n - Vector256<ushort>.Count);
+                }
+
+                if (Vector128.IsHardwareAccelerated && n - i >= Vector128<ushort>.Count)
                 {
                     var vecPlus = Vector128.Create((ushort)'+');
                     var vecSpace = Vector128.Create((ushort)' ');
 
                     do
                     {
-                        var vec = Sse2.LoadVector128(input + i);
-                        var mask = Sse2.CompareEqual(vec, vecPlus);
-                        var res = Sse41.BlendVariable(vec, vecSpace, mask);
-                        Sse2.Store(output + i, res);
+                        var vec = Vector128.Load(input + i);
+                        var mask = Vector128.Equals(vec, vecPlus);
+                        var res = Vector128.ConditionalSelect(mask, vecSpace, vec);
+                        res.Store(output + i);
                         i += Vector128<ushort>.Count;
                     } while (i <= n - Vector128<ushort>.Count);
                 }
