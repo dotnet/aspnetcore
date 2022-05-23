@@ -56,11 +56,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         _serverSettings.HeaderTableSize = (uint)httpLimits.Http3.HeaderTableSize;
         _serverSettings.MaxRequestHeaderFieldSectionSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
-        _serverSettings.EnableWebTransport = 1; // indicate that webtranport is supported on the server
-        _serverSettings.H3Datagram = 1; // indicate that webtranport is supported on the server
+        _serverSettings.EnableWebTransport = 1;
+        _serverSettings.H3Datagram = 1;
     }
 
-private void UpdateHighestOpenedRequestStreamId(long streamId)
+    private void UpdateHighestOpenedRequestStreamId(long streamId)
     {
         // Only one thread will update the highest stream ID value at a time.
         // Additional thread safty not required.
@@ -659,8 +659,8 @@ private void UpdateHighestOpenedRequestStreamId(long streamId)
             case Http3SettingType.QPackBlockedStreams:
                 break;
             case Http3SettingType.EnableWebTransport:
-                break;
             case Http3SettingType.H3Datagram:
+                // todo track this so we reject webtransport streams later if the client did not say they use webtransport
                 break;
             default:
                 throw new InvalidOperationException("Unexpected setting: " + type);

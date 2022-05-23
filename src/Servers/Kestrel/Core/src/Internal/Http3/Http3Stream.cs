@@ -455,7 +455,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     {
         Debug.Assert(staticTableIndex >= 0, "Static table starts at 0.");
 
-        var headerField = staticTableIndex switch // TODO DO I NEED TO UPDATE THIS WITH THE PROTOCOL PSEUDOHEADER?
+        var headerField = staticTableIndex switch
         {
             0 => PseudoHeaderFields.Authority,
             1 => PseudoHeaderFields.Path,
@@ -832,7 +832,20 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             await OnEndStreamReceived();
         }
 
-        if ((!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields) || !_isProtocolWebTransport) // todo do this in a better way that doesn't just accept anythingif it is web transport
+        if (_isProtocolWebTransport)
+        {
+            /* todo validate the following things:
+               *  SETTINGS_ENABLE_WEBTRANSPORT = 1 on client as well as on server
+               *  SETTINGS_H3_DATAGRAM = 1 on client as well as on server
+               *  client's initial_max_bidi_streams = 0
+               *  (HTTP/2 only) set the server's SETTINGS_ENABLE_CONNECT_PROTOCOL = 1
+               *  :protocol = webtransport (given as this is the conditional here)
+               *  :scheme = https (http not allowed)
+               *  :authority and :path are set
+               *  Origin is set
+            */
+        }
+        else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
         {
             // All HTTP/3 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header
             // fields, unless it is a CONNECT request. An HTTP request that omits mandatory pseudo-header

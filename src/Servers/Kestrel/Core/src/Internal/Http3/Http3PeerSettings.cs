@@ -19,9 +19,9 @@ internal sealed class Http3PeerSettings
     // Gets the settings that are different from the protocol defaults (as opposed to the server defaults).
     internal List<Http3PeerSetting> GetNonProtocolDefaults()
     {
-        // By default, there are only two settings that is sent from server to client.
+        // By default, there is only one setting that is sent from server to client.
         // Set capacity to that value.
-        var list = new List<Http3PeerSetting>(3);
+        var list = new List<Http3PeerSetting>(1);
 
         if (HeaderTableSize != DefaultHeaderTableSize)
         {
@@ -33,11 +33,17 @@ internal sealed class Http3PeerSettings
             list.Add(new Http3PeerSetting(Http3SettingType.MaxFieldSectionSize, MaxRequestHeaderFieldSectionSize));
         }
 
-        // indicate that Kestrel supports WebTransport (TODO move into WebTransport project and inline)
-        list.Add(new Http3PeerSetting(Http3SettingType.EnableWebTransport, EnableWebTransport));
+        // indicate that Kestrel supports WebTransport
+        if (EnableWebTransport != DefaultEnableWebTransport)
+        {
+            list.Add(new Http3PeerSetting(Http3SettingType.EnableWebTransport, EnableWebTransport));
+        }
 
-        // indicate that Kestrel supports Http3 datgrams (TODO move into WebTransport project and inline)
-        list.Add(new Http3PeerSetting(Http3SettingType.H3Datagram, H3Datagram));
+        // indicate that Kestrel supports Http/3 datagrams
+        if (H3Datagram != DefaultH3Datagram)
+        {
+            list.Add(new Http3PeerSetting(Http3SettingType.H3Datagram, H3Datagram));
+        }
 
         return list;
     }
