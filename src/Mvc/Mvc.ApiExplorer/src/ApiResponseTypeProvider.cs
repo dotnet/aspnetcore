@@ -81,7 +81,15 @@ internal class ApiResponseTypeProvider
         var contentTypes = new MediaTypeCollection();
         var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
 
-        // Read response metadata from providers
+        var responseTypes = ReadResponseMetadata(
+            producesResponseMetadata,
+            type,
+            responseTypeMetadataProviders,
+            _modelMetadataProvider);
+
+        // Read response metadata from providers and
+        // overwrite responseTypes from the metadata based
+        // on the status code
         var responseTypesFromProvider = ReadResponseMetadata(
             responseMetadataAttributes,
             type,
@@ -89,18 +97,15 @@ internal class ApiResponseTypeProvider
             contentTypes,
             responseTypeMetadataProviders);
 
-        var responseTypesFromEndpointMetadata = ReadResponseMetadata(
-            producesResponseMetadata,
-            type,
-            responseTypeMetadataProviders,
-            _modelMetadataProvider);
-
-        var responseTypes = responseTypesFromProvider.Concat(responseTypesFromEndpointMetadata.Values).ToList();
+        foreach (var responseType in responseTypesFromProvider)
+        {
+            responseTypes[responseType.Key] = responseType.Value;
+        }
 
         // Set the default status only when no status has already been set explicitly
         if (responseTypes.Count == 0 && type != null)
         {
-            responseTypes.Add(new ApiResponseType
+            responseTypes.Add(StatusCodes.Status200OK, new ApiResponseType
             {
                 StatusCode = StatusCodes.Status200OK,
                 Type = type,
@@ -117,16 +122,16 @@ internal class ApiResponseTypeProvider
             contentTypes.Add((string)null!);
         }
 
-        foreach (var apiResponse in responseTypes)
+        foreach (var apiResponse in responseTypes.Values)
         {
             CalculateResponseFormatForType(apiResponse, contentTypes, responseTypeMetadataProviders, _modelMetadataProvider);
         }
 
-        return responseTypes;
+        return responseTypes.Values;
     }
 
     // Shared with EndpointMetadataApiDescriptionProvider
-    internal static IEnumerable<ApiResponseType> ReadResponseMetadata(
+    internal static Dictionary<int, ApiResponseType> ReadResponseMetadata(
         IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
         Type? type,
         Type defaultErrorType,
@@ -207,7 +212,7 @@ internal class ApiResponseTypeProvider
             }
         }
 
-        return results.Values;
+        return results;
     }
 
     internal static Dictionary<int, ApiResponseType> ReadResponseMetadata(

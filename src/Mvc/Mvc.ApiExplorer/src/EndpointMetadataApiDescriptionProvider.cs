@@ -345,7 +345,7 @@ internal class EndpointMetadataApiDescriptionProvider : IApiDescriptionProvider
 
         // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
         // over those that are added via attributes.
-        var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(responseProviderMetadataTypes);
+        var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(responseProviderMetadataTypes.Values);
 
         if (responseMetadataTypes.Any())
         {

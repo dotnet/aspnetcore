@@ -520,9 +520,8 @@ public class DefaultApiDescriptionProviderTest
     public void GetApiDescription_PopulatesResponseType_ForResultOfT_WithEndpointMetadata(string methodName)
     {
         // Arrange
-        var action = CreateActionDescriptor(
-            methodName,
-            endpointMetadata: new[] { new ProducesResponseTypeMetadata(typeof(Product), 200) });
+        var action = CreateActionDescriptor(methodName);
+        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(typeof(Product), 200) };
 
         // Act
         var descriptions = GetApiDescriptions(action);
@@ -531,6 +530,28 @@ public class DefaultApiDescriptionProviderTest
         var description = Assert.Single(descriptions);
         var responseType = Assert.Single(description.SupportedResponseTypes);
         Assert.Equal(typeof(Product), responseType.Type);
+        Assert.NotNull(responseType.ModelMetadata);
+    }
+
+    [Theory]
+    [InlineData(nameof(ReturnsResultOfProductWithEndpointMetadata))]
+    [InlineData(nameof(ReturnsTaskOfResultOfProductWithEndpointMetadata))]
+    public void GetApiDescription_PopulatesResponseType_ForResultOfT_WithEndpointMetadata_PreferProducesAttribute(string methodName)
+    {
+        // Arrange
+        var action = CreateActionDescriptor(methodName);
+        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(typeof(Product), 200) };
+        action.FilterDescriptors = new List<FilterDescriptor>{
+            new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(Customer), 200), FilterScope.Action)
+        };
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        var responseType = Assert.Single(description.SupportedResponseTypes);
+        Assert.Equal(typeof(Customer), responseType.Type);
         Assert.NotNull(responseType.ModelMetadata);
     }
 
@@ -1236,9 +1257,8 @@ public class DefaultApiDescriptionProviderTest
     public void GetApiDescription_IncludesRequestFormats_FilteredByAcceptsMetadata()
     {
         // Arrange
-        var action = CreateActionDescriptor(
-            nameof(AcceptsProduct_Body),
-            endpointMetadata: new[] { new XmlOnlyMetadata() });
+        var action = CreateActionDescriptor(nameof(AcceptsProduct_Body));
+        action.EndpointMetadata = new List<object>() { new XmlOnlyMetadata() };
 
         // Act
         var descriptions = GetApiDescriptions(action);
@@ -2151,7 +2171,7 @@ public class DefaultApiDescriptionProviderTest
         return formatters;
     }
 
-    private ControllerActionDescriptor CreateActionDescriptor(string methodName = null, Type controllerType = null, object[] endpointMetadata = null)
+    private ControllerActionDescriptor CreateActionDescriptor(string methodName = null, Type controllerType = null)
     {
         var action = new ControllerActionDescriptor();
         action.SetProperty(new ApiDescriptionActionData());
@@ -2184,11 +2204,6 @@ public class DefaultApiDescriptionProviderTest
             action.MethodInfo = GetType().GetMethod(
                 methodName ?? "ReturnsObject",
                 BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
-        if (endpointMetadata != null)
-        {
-            action.EndpointMetadata = new List<object>(endpointMetadata);
         }
 
         action.Parameters = new List<ParameterDescriptor>();
