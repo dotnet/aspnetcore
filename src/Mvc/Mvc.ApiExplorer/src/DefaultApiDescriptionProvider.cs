@@ -509,7 +509,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         return endpointGroupName?.EndpointGroupName ?? extensionData.GroupName;
     }
 
-    private class ApiParameterDescriptionContext
+    private sealed class ApiParameterDescriptionContext
     {
         public ModelMetadata ModelMetadata { get; }
 
@@ -535,7 +535,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         }
     }
 
-    private class PseudoModelBindingVisitor
+    private sealed class PseudoModelBindingVisitor
     {
         public PseudoModelBindingVisitor(ApiParameterContext context, ParameterDescriptor parameter)
         {
@@ -686,7 +686,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             }
         }
 
-        private class PropertyKeyEqualityComparer : IEqualityComparer<PropertyKey>
+        private sealed class PropertyKeyEqualityComparer : IEqualityComparer<PropertyKey>
         {
             public bool Equals(PropertyKey x, PropertyKey y)
             {

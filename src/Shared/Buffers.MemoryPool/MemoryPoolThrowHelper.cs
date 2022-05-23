@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -7,7 +7,7 @@ using System.Text;
 
 namespace System.Buffers;
 
-internal class MemoryPoolThrowHelper
+internal sealed class MemoryPoolThrowHelper
 {
     public static void ThrowArgumentOutOfRangeException(int sourceLength, int offset)
     {

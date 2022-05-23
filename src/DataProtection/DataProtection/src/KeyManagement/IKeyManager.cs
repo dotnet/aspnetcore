@@ -29,7 +29,6 @@ public interface IKeyManager
     /// Fetches all keys from the underlying repository.
     /// </summary>
     /// <returns>The collection of all keys.</returns>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     IReadOnlyCollection<IKey> GetAllKeys();
 
     /// <summary>

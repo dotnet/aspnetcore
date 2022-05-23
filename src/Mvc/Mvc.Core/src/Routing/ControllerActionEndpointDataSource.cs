@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class ControllerActionEndpointDataSource : ActionEndpointDataSourceBase
+internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSourceBase
 {
     private readonly ActionEndpointFactory _endpointFactory;
     private readonly OrderedEndpointsSequenceProvider _orderSequence;

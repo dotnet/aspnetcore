@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Hosting;
 
 using static HostingRequestStartingLog;
 
-internal class HostingRequestFinishedLog : IReadOnlyList<KeyValuePair<string, object?>>
+internal sealed class HostingRequestFinishedLog : IReadOnlyList<KeyValuePair<string, object?>>
 {
     internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HostingRequestFinishedLog)state).ToString();
 

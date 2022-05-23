@@ -2443,6 +2443,9 @@ public class DefaultApiDescriptionProviderTest
         [FromHeader]
         public string UserId { get; set; }
 
+        [FromServices]
+        public ITestService TestService { get; set; }
+
         [ModelBinder]
         public string Comments { get; set; }
 
@@ -2535,6 +2538,9 @@ public class DefaultApiDescriptionProviderTest
 
         [FromHeader]
         public string UserId { get; set; }
+
+        [FromServices]
+        public ITestService TestService { get; set; }
 
         public string Comments { get; set; }
     }

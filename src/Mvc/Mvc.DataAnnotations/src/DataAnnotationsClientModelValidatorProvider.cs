@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 /// The logic to support <see cref="IClientModelValidator"/>
 /// is implemented in <see cref="ValidationAttributeAdapter{TAttribute}"/>.
 /// </summary>
-internal class DataAnnotationsClientModelValidatorProvider : IClientModelValidatorProvider
+internal sealed class DataAnnotationsClientModelValidatorProvider : IClientModelValidatorProvider
 {
     private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _options;
     private readonly IStringLocalizerFactory? _stringLocalizerFactory;

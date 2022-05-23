@@ -19,8 +19,8 @@ internal abstract class ActionMethodExecutor
             new SyncObjectResultExecutor(),
 
             // Executors for async methods
-            new AwaitableResultExecutor(),
             new TaskResultExecutor(),
+            new AwaitableResultExecutor(),
             new TaskOfIActionResultExecutor(),
             new TaskOfActionResultExecutor(),
             new AwaitableObjectResultExecutor(),
@@ -49,7 +49,7 @@ internal abstract class ActionMethodExecutor
     }
 
     // void LogMessage(..)
-    private class VoidResultExecutor : ActionMethodExecutor
+    private sealed class VoidResultExecutor : ActionMethodExecutor
     {
         public override ValueTask<IActionResult> Execute(
             IActionResultTypeMapper mapper,
@@ -67,7 +67,7 @@ internal abstract class ActionMethodExecutor
 
     // IActionResult Post(..)
     // CreatedAtResult Put(..)
-    private class SyncActionResultExecutor : ActionMethodExecutor
+    private sealed class SyncActionResultExecutor : ActionMethodExecutor
     {
         public override ValueTask<IActionResult> Execute(
             IActionResultTypeMapper mapper,
@@ -87,7 +87,7 @@ internal abstract class ActionMethodExecutor
 
     // Person GetPerson(..)
     // object Index(..)
-    private class SyncObjectResultExecutor : ActionMethodExecutor
+    private sealed class SyncObjectResultExecutor : ActionMethodExecutor
     {
         public override ValueTask<IActionResult> Execute(
             IActionResultTypeMapper mapper,
@@ -106,7 +106,7 @@ internal abstract class ActionMethodExecutor
     }
 
     // Task SaveState(..)
-    private class TaskResultExecutor : ActionMethodExecutor
+    private sealed class TaskResultExecutor : ActionMethodExecutor
     {
         public override async ValueTask<IActionResult> Execute(
             IActionResultTypeMapper mapper,
@@ -123,7 +123,7 @@ internal abstract class ActionMethodExecutor
 
     // CustomAsync PerformActionAsync(..)
     // Custom task-like type with no return value.
-    private class AwaitableResultExecutor : ActionMethodExecutor
+    private sealed class AwaitableResultExecutor : ActionMethodExecutor
     {
         public override async ValueTask<IActionResult> Execute(
             IActionResultTypeMapper mapper,
@@ -143,7 +143,7 @@ internal abstract class ActionMethodExecutor
     }
 
     // Task<IActionResult> Post(..)
-    private class TaskOfIActionResultExecutor : ActionMethodExecutor
+    private sealed class TaskOfIActionResultExecutor : ActionMethodExecutor
     {
         public override async ValueTask<IActionResult> Execute(
             IActionResultTypeMapper mapper,
@@ -166,7 +166,7 @@ internal abstract class ActionMethodExecutor
 
     // Task<PhysicalFileResult> DownloadFile(..)
     // ValueTask<ViewResult> GetViewsAsync(..)
-    private class TaskOfActionResultExecutor : ActionMethodExecutor
+    private sealed class TaskOfActionResultExecutor : ActionMethodExecutor
     {
         public override async ValueTask<IActionResult> Execute(
             IActionResultTypeMapper mapper,
@@ -190,7 +190,7 @@ internal abstract class ActionMethodExecutor
 
     // Task<object> GetPerson(..)
     // Task<Customer> GetCustomerAsync(..)
-    private class AwaitableObjectResultExecutor : ActionMethodExecutor
+    private sealed class AwaitableObjectResultExecutor : ActionMethodExecutor
     {
         public override async ValueTask<IActionResult> Execute(
             IActionResultTypeMapper mapper,

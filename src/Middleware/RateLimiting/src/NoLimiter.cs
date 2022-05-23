@@ -4,7 +4,7 @@
 using System.Threading.RateLimiting;
 
 namespace Microsoft.AspNetCore.RateLimiting;
-internal class NoLimiter<TResource> : PartitionedRateLimiter<TResource>
+internal sealed class NoLimiter<TResource> : PartitionedRateLimiter<TResource>
 {
     public override int GetAvailablePermits(TResource resourceID)
     {
@@ -22,7 +22,7 @@ internal class NoLimiter<TResource> : PartitionedRateLimiter<TResource>
     }
 }
 
-internal class NoLimiterLease : RateLimitLease
+internal sealed class NoLimiterLease : RateLimitLease
 {
     public override bool IsAcquired => true;
 

@@ -10,7 +10,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 /// <summary>
 /// A default implementation of <see cref="ICompositeMetadataDetailsProvider"/>.
 /// </summary>
+#pragma warning disable CA1852 // Seal internal types
 internal class DefaultCompositeMetadataDetailsProvider : ICompositeMetadataDetailsProvider
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly IEnumerable<IMetadataDetailsProvider> _providers;
 

@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
-internal class DfaMatcherBuilder : MatcherBuilder
+internal sealed class DfaMatcherBuilder : MatcherBuilder
 {
     private readonly List<RouteEndpoint> _endpoints = new List<RouteEndpoint>();
 
@@ -111,7 +111,7 @@ internal class DfaMatcherBuilder : MatcherBuilder
         return root;
     }
 
-    private class DfaBuilderWorker
+    private sealed class DfaBuilderWorker
     {
         private List<DfaBuilderWorkerWorkItem> _previousWork;
         private List<DfaBuilderWorkerWorkItem> _work;

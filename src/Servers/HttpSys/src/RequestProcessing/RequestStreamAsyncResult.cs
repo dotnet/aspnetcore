@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposable
+internal sealed unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposable
 {
     private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
@@ -146,7 +146,7 @@ internal unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposable
         Dispose(true);
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (disposing)
         {

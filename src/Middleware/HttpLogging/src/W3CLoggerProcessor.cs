@@ -9,7 +9,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class W3CLoggerProcessor : FileLoggerProcessor
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly W3CLoggingFields _loggingFields;
 

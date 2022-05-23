@@ -139,7 +139,7 @@ public static class MapRouteRouteBuilderExtensions
         return new BackCompatInlineConstraintResolver(inlineConstraintResolver, parameterPolicyFactory);
     }
 
-    private class BackCompatInlineConstraintResolver : IInlineConstraintResolver
+    private sealed class BackCompatInlineConstraintResolver : IInlineConstraintResolver
     {
         private readonly IInlineConstraintResolver _inner;
         private readonly ParameterPolicyFactory _parameterPolicyFactory;

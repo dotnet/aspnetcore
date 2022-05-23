@@ -1,11 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-internal class UnsupportedJavaScriptRuntime : IJSRuntime
+internal sealed class UnsupportedJavaScriptRuntime : IJSRuntime
 {
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
     {

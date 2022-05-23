@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
+internal sealed class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
 {
     private readonly DynamicControllerEndpointSelectorCache _selectorCache;
     private readonly EndpointMetadataComparer _comparer;

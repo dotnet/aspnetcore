@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -19,13 +20,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter;
 /// <summary>
 /// Authentication handler for Twitter's OAuth based authentication.
 /// </summary>
-public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
+public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
 {
-    private static readonly JsonSerializerOptions ErrorSerializerOptions = new JsonSerializerOptions
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private HttpClient Backchannel => Options.Backchannel;
 
     /// <summary>
@@ -361,7 +357,7 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
         {
             // Failure, attempt to parse Twitters error message
             var errorContentStream = await response.Content.ReadAsStreamAsync(Context.RequestAborted);
-            errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, ErrorSerializerOptions);
+            errorResponse = await JsonSerializer.DeserializeAsync(errorContentStream, TwitterJsonContext.DefaultWithOptions.TwitterErrorResponse);
         }
         catch
         {
@@ -389,5 +385,14 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
         }
 
         throw new InvalidOperationException(errorMessageStringBuilder.ToString());
+    }
+
+    [JsonSerializable(typeof(TwitterErrorResponse))]
+    internal sealed partial class TwitterJsonContext : JsonSerializerContext
+    {
+        public static readonly TwitterJsonContext DefaultWithOptions = new TwitterJsonContext(new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
     }
 }

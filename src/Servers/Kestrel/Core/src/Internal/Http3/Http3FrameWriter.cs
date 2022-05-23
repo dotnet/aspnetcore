@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class Http3FrameWriter
+internal sealed class Http3FrameWriter
 {
     // These bytes represent a ":status: 100" continue response header frame encoded with
     // QPACK. To arrive at this, we first take the index in the QPACK static table for status

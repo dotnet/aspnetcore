@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Wasm.Performance.ConsoleHost;
 
-internal class NullDispatcher : Dispatcher
+internal sealed class NullDispatcher : Dispatcher
 {
     public override bool CheckAccess()
         => true;

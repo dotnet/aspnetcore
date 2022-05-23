@@ -55,7 +55,7 @@ public class LeakTrackingObjectPool<T> : ObjectPool<T> where T : class
         _inner.Return(obj);
     }
 
-    private class Tracker : IDisposable
+    private sealed class Tracker : IDisposable
     {
         private readonly string _stack;
         private bool _disposed;

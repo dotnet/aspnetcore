@@ -530,6 +530,8 @@ public interface Test
 {
     Task Send(string message);
     Task Broadcast(string message);
+
+    Task<int> GetClientResult(int value);
 }
 
 public class OnConnectedThrowsHub : Hub

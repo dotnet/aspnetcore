@@ -10,7 +10,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
 
-internal class RoutePatternMatcher
+internal sealed class RoutePatternMatcher
 {
     // Perf: This is a cache to avoid looking things up in 'Defaults' each request.
     private readonly bool[] _hasDefaultValue;

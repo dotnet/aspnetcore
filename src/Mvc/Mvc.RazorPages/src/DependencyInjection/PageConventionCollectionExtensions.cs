@@ -558,7 +558,7 @@ public static class PageConventionCollectionExtensions
         };
     }
 
-    private class ParameterModelBaseConventionAdapter : IPageConvention, IParameterModelBaseConvention
+    private sealed class ParameterModelBaseConventionAdapter : IPageConvention, IParameterModelBaseConvention
     {
         private readonly IParameterModelBaseConvention _convention;
 

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class ConnectionLimitMiddleware<T> where T : BaseConnectionContext
+internal sealed class ConnectionLimitMiddleware<T> where T : BaseConnectionContext
 {
     private readonly Func<T, Task> _next;
     private readonly ResourceCounter _concurrentConnectionCounter;
@@ -49,7 +49,7 @@ internal class ConnectionLimitMiddleware<T> where T : BaseConnectionContext
         }
     }
 
-    private class ConnectionReleasor : IDecrementConcurrentConnectionCountFeature
+    private sealed class ConnectionReleasor : IDecrementConcurrentConnectionCountFeature
     {
         private readonly ResourceCounter _concurrentConnectionCounter;
         private bool _connectionReleased;

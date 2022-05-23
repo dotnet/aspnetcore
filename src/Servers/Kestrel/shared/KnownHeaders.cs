@@ -101,6 +101,7 @@ public class KnownHeaders
         };
         var requestHeadersExistence = new[]
         {
+            HeaderNames.Cookie,
             HeaderNames.Connection,
             HeaderNames.TransferEncoding,
         };
@@ -1493,21 +1494,21 @@ $@"        private void Clear(long bitsToClear)
         return groupedHeaders;
     }
 
-    private class QPackGroup
+    private sealed class QPackGroup
     {
         public (int Index, System.Net.Http.QPack.HeaderField Field)[] QPackStaticTableFields { get; set; }
         public KnownHeader Header { get; set; }
         public string Name { get; set; }
     }
 
-    private class HPackGroup
+    private sealed class HPackGroup
     {
         public int[] HPackStaticTableIndexes { get; set; }
         public KnownHeader Header { get; set; }
         public string Name { get; set; }
     }
 
-    private class KnownHeaderComparer : IComparer<KnownHeader>
+    private sealed class KnownHeaderComparer : IComparer<KnownHeader>
     {
         public static readonly KnownHeaderComparer Instance = new KnownHeaderComparer();
 

@@ -65,7 +65,7 @@ public abstract class ExternalLoginsModel : PageModel
     public virtual Task<IActionResult> OnGetLinkLoginCallbackAsync() => throw new NotImplementedException();
 }
 
-internal class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUser : class
+internal sealed class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly SignInManager<TUser> _signInManager;

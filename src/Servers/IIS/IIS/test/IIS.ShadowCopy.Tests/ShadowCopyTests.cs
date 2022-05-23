@@ -74,6 +74,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40628")]
     public async Task ShadowCopyRelativeOutsideDirectoryWorks()
     {
         using var directory = TempDirectory.Create();

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class PageActionEndpointDataSource : ActionEndpointDataSourceBase
+internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBase
 {
     private readonly ActionEndpointFactory _endpointFactory;
     private readonly OrderedEndpointsSequenceProvider _orderSequence;

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SpaProxy;
 
-internal class SpaProxyLaunchManager : IDisposable
+internal sealed class SpaProxyLaunchManager : IDisposable
 {
     private readonly SpaDevelopmentServerOptions _options;
     private readonly ILogger<SpaProxyLaunchManager> _logger;
@@ -305,7 +305,7 @@ rm {scriptPath};
         return Task.CompletedTask;
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!_disposedValue)
         {

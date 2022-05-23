@@ -73,7 +73,7 @@ public abstract class LoginWith2faModel : PageModel
     public virtual Task<IActionResult> OnPostAsync(bool rememberMe, string? returnUrl = null) => throw new NotImplementedException();
 }
 
-internal class LoginWith2faModel<TUser> : LoginWith2faModel where TUser : class
+internal sealed class LoginWith2faModel<TUser> : LoginWith2faModel where TUser : class
 {
     private readonly SignInManager<TUser> _signInManager;
     private readonly UserManager<TUser> _userManager;

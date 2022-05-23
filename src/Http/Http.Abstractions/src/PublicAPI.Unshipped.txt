@@ -3,6 +3,8 @@
 *REMOVED*Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object?
 Microsoft.AspNetCore.Builder.EndpointBuilder.ServiceProvider.get -> System.IServiceProvider?
 Microsoft.AspNetCore.Builder.EndpointBuilder.ServiceProvider.set -> void
+Microsoft.AspNetCore.Http.AsParametersAttribute
+Microsoft.AspNetCore.Http.AsParametersAttribute.AsParametersAttribute() -> void
 Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext
 Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.DefaultRouteHandlerInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!

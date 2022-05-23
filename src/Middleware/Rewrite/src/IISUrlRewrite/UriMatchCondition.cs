@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Rewrite.UrlMatches;
 
 namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-internal class UriMatchCondition : Condition
+internal sealed class UriMatchCondition : Condition
 {
     private static readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
 

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class AddressBindContext
+internal sealed class AddressBindContext
 {
     public AddressBindContext(
         ServerAddressesFeature serverAddressesFeature,

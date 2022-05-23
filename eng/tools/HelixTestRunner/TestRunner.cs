@@ -22,33 +22,34 @@ public class TestRunner
             EnvironmentVariables.Add("PATH", Options.Path);
             EnvironmentVariables.Add("helix", Options.HelixQueue);
 
-            Console.WriteLine($"Current Directory: {Options.HELIX_WORKITEM_ROOT}");
+            ProcessUtil.PrintMessage($"Current Directory: {Options.HELIX_WORKITEM_ROOT}");
             var helixDir = Options.HELIX_WORKITEM_ROOT;
-            Console.WriteLine($"Setting HELIX_DIR: {helixDir}");
+            ProcessUtil.PrintMessage($"Setting HELIX_DIR: {helixDir}");
             EnvironmentVariables.Add("HELIX_DIR", helixDir);
             EnvironmentVariables.Add("NUGET_FALLBACK_PACKAGES", helixDir);
             var nugetRestore = Path.Combine(helixDir, "nugetRestore");
             EnvironmentVariables.Add("NUGET_RESTORE", nugetRestore);
             var dotnetEFFullPath = Path.Combine(nugetRestore, helixDir, "dotnet-ef.exe");
-            Console.WriteLine($"Set DotNetEfFullPath: {dotnetEFFullPath}");
+            ProcessUtil.PrintMessage($"Set DotNetEfFullPath: {dotnetEFFullPath}");
             EnvironmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
             var dumpPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
-            Console.WriteLine($"Set VSTEST_DUMP_PATH: {dumpPath}");
+            ProcessUtil.PrintMessage($"Set VSTEST_DUMP_PATH: {dumpPath}");
             EnvironmentVariables.Add("VSTEST_DUMP_PATH", dumpPath);
+            EnvironmentVariables.Add("DOTNET_CLI_VSTEST_TRACE", "1");
 
             if (Options.InstallPlaywright)
             {
                 // Playwright will download and look for browsers to this directory
                 var playwrightBrowsers = Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH");
-                Console.WriteLine($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
+                ProcessUtil.PrintMessage($"Setting PLAYWRIGHT_BROWSERS_PATH: {playwrightBrowsers}");
                 EnvironmentVariables.Add("PLAYWRIGHT_BROWSERS_PATH", playwrightBrowsers);
             }
             else
             {
-                Console.WriteLine($"Skipping setting PLAYWRIGHT_BROWSERS_PATH");
+                ProcessUtil.PrintMessage($"Skipping setting PLAYWRIGHT_BROWSERS_PATH");
             }
 
-            Console.WriteLine($"Creating nuget restore directory: {nugetRestore}");
+            ProcessUtil.PrintMessage($"Creating nuget restore directory: {nugetRestore}");
             Directory.CreateDirectory(nugetRestore);
 
             // Rename default.runner.json to xunit.runner.json if there is not a custom one from the project
@@ -66,7 +67,7 @@ public class TestRunner
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in SetupEnvironment: {e}");
+            ProcessUtil.PrintMessage($"Exception in SetupEnvironment: {e}");
             return false;
         }
     }
@@ -76,20 +77,20 @@ public class TestRunner
         try
         {
             Console.WriteLine();
-            Console.WriteLine($"Displaying directory contents for {path}:");
+            ProcessUtil.PrintMessage($"Displaying directory contents for {path}:");
             foreach (var file in Directory.EnumerateFiles(path))
             {
-                Console.WriteLine(Path.GetFileName(file));
+                ProcessUtil.PrintMessage(Path.GetFileName(file));
             }
             foreach (var file in Directory.EnumerateDirectories(path))
             {
-                Console.WriteLine(Path.GetFileName(file));
+                ProcessUtil.PrintMessage(Path.GetFileName(file));
             }
             Console.WriteLine();
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in DisplayContents: {e}");
+            ProcessUtil.PrintMessage($"Exception in DisplayContents: {e}");
         }
     }
 
@@ -97,7 +98,7 @@ public class TestRunner
     {
         try
         {
-            Console.WriteLine($"Installing Playwright Browsers to {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")}");
+            ProcessUtil.PrintMessage($"Installing Playwright Browsers to {Environment.GetEnvironmentVariable("PLAYWRIGHT_BROWSERS_PATH")}");
 
             var exitCode = Microsoft.Playwright.Program.Main(new[] { "install" });
 
@@ -106,7 +107,7 @@ public class TestRunner
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception installing playwright: {e}");
+            ProcessUtil.PrintMessage($"Exception installing playwright: {e}");
             return false;
         }
     }
@@ -127,30 +128,30 @@ public class TestRunner
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                 $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
                 environmentVariables: EnvironmentVariables,
-                outputDataReceived: Console.WriteLine,
-                errorDataReceived: Console.Error.WriteLine,
+                outputDataReceived: ProcessUtil.PrintMessage,
+                errorDataReceived: ProcessUtil.PrintErrorMessage,
                 throwOnError: false,
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                 $"tool install dotnet-ef --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
                 environmentVariables: EnvironmentVariables,
-                outputDataReceived: Console.WriteLine,
-                errorDataReceived: Console.Error.WriteLine,
+                outputDataReceived: ProcessUtil.PrintMessage,
+                errorDataReceived: ProcessUtil.PrintErrorMessage,
                 throwOnError: false,
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                 $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
                 environmentVariables: EnvironmentVariables,
-                outputDataReceived: Console.WriteLine,
-                errorDataReceived: Console.Error.WriteLine,
+                outputDataReceived: ProcessUtil.PrintMessage,
+                errorDataReceived: ProcessUtil.PrintErrorMessage,
                 throwOnError: false,
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in InstallDotnetTools: {e}");
+            ProcessUtil.PrintMessage($"Exception in InstallDotnetTools: {e}");
             return false;
         }
         finally
@@ -160,13 +161,13 @@ public class TestRunner
 
         try
         {
-            Console.WriteLine($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
+            ProcessUtil.PrintMessage($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
 
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                 $"nuget add source {Options.HELIX_WORKITEM_ROOT} --configfile {filename}",
                 environmentVariables: EnvironmentVariables,
-                outputDataReceived: Console.WriteLine,
-                errorDataReceived: Console.Error.WriteLine,
+                outputDataReceived: ProcessUtil.PrintMessage,
+                errorDataReceived: ProcessUtil.PrintErrorMessage,
                 throwOnError: false,
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
@@ -174,14 +175,14 @@ public class TestRunner
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                 "nuget list source",
                 environmentVariables: EnvironmentVariables,
-                outputDataReceived: Console.WriteLine,
-                errorDataReceived: Console.Error.WriteLine,
+                outputDataReceived: ProcessUtil.PrintMessage,
+                errorDataReceived: ProcessUtil.PrintErrorMessage,
                 throwOnError: false,
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in InstallDotnetTools: {e}");
+            ProcessUtil.PrintMessage($"Exception in InstallDotnetTools: {e}");
             return false;
         }
 
@@ -200,15 +201,15 @@ public class TestRunner
 
             if (discoveryResult.StandardOutput.Contains("Exception thrown"))
             {
-                Console.WriteLine("Exception thrown during test discovery.");
-                Console.WriteLine(discoveryResult.StandardOutput);
+                ProcessUtil.PrintMessage("Exception thrown during test discovery.");
+                ProcessUtil.PrintMessage(discoveryResult.StandardOutput);
                 return false;
             }
             return true;
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in CheckTestDiscovery: {e}");
+            ProcessUtil.PrintMessage($"Exception in CheckTestDiscovery: {e}");
             return false;
         }
     }
@@ -219,50 +220,60 @@ public class TestRunner
         try
         {
             // Timeout test run 5 minutes before the Helix job would timeout
-            var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
+            var testProcessTimeout = Options.Timeout.Subtract(TimeSpan.FromMinutes(5));
+            var cts = new CancellationTokenSource(testProcessTimeout);
             var diagLog = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"), "vstest.log");
-            var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=15m\"";
+            var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger xunit --logger \"console;verbosity=normal\" " +
+                                 "--blame-crash --blame-hang-timeout 15m";
             if (Options.Quarantined)
             {
-                Console.WriteLine("Running quarantined tests.");
+                ProcessUtil.PrintMessage("Running quarantined tests.");
 
                 // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                 var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    commonTestArgs + " --TestCaseFilter:\"Quarantined=true\"",
+                    commonTestArgs + " --filter \"Quarantined=true\"",
                     environmentVariables: EnvironmentVariables,
-                    outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.Error.WriteLine,
+                    outputDataReceived: ProcessUtil.PrintMessage,
+                    errorDataReceived: ProcessUtil.PrintErrorMessage,
                     throwOnError: false,
                     cancellationToken: cts.Token);
 
+                if (cts.Token.IsCancellationRequested)
+                {
+                    ProcessUtil.PrintMessage($"Quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
+                }
                 if (result.ExitCode != 0)
                 {
-                    Console.WriteLine($"Failure in quarantined tests. Exit code: {result.ExitCode}.");
+                    ProcessUtil.PrintMessage($"Failure in quarantined tests. Exit code: {result.ExitCode}.");
                 }
             }
             else
             {
-                Console.WriteLine("Running non-quarantined tests.");
+                ProcessUtil.PrintMessage("Running non-quarantined tests.");
 
                 // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                 var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    commonTestArgs + " --TestCaseFilter:\"Quarantined!=true|Quarantined=false\"",
+                    commonTestArgs + " --filter \"Quarantined!=true|Quarantined=false\"",
                     environmentVariables: EnvironmentVariables,
-                    outputDataReceived: Console.WriteLine,
-                    errorDataReceived: Console.Error.WriteLine,
+                    outputDataReceived: ProcessUtil.PrintMessage,
+                    errorDataReceived: ProcessUtil.PrintErrorMessage,
                     throwOnError: false,
                     cancellationToken: cts.Token);
 
+                if (cts.Token.IsCancellationRequested)
+                {
+                    ProcessUtil.PrintMessage($"Non-quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
+                }
                 if (result.ExitCode != 0)
                 {
-                    Console.WriteLine($"Failure in non-quarantined tests. Exit code: {result.ExitCode}.");
+                    ProcessUtil.PrintMessage($"Failure in non-quarantined tests. Exit code: {result.ExitCode}.");
                     exitCode = result.ExitCode;
                 }
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception in HelixTestRunner: {e}");
+            ProcessUtil.PrintMessage($"Exception in HelixTestRunner: {e}");
             exitCode = 1;
         }
         return exitCode;
@@ -271,24 +282,24 @@ public class TestRunner
     public void UploadResults()
     {
         // 'testResults.xml' is the file Helix looks for when processing test results
-        Console.WriteLine("Trying to upload results...");
+        ProcessUtil.PrintMessage("Trying to upload results...");
         if (File.Exists("TestResults/TestResults.xml"))
         {
-            Console.WriteLine("Copying TestResults/TestResults.xml to ./testResults.xml");
+            ProcessUtil.PrintMessage("Copying TestResults/TestResults.xml to ./testResults.xml");
             File.Copy("TestResults/TestResults.xml", "testResults.xml", overwrite: true);
         }
         else
         {
-            Console.WriteLine("No test results found.");
+            ProcessUtil.PrintMessage("No test results found.");
         }
 
         var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
         if (string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
         {
-            Console.WriteLine("No HELIX_WORKITEM_UPLOAD_ROOT specified, skipping log copy");
+            ProcessUtil.PrintMessage("No HELIX_WORKITEM_UPLOAD_ROOT specified, skipping log copy");
             return;
         }
-        Console.WriteLine($"Copying artifacts/log/ to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+        ProcessUtil.PrintMessage($"Copying artifacts/log/ to {HELIX_WORKITEM_UPLOAD_ROOT}/");
         if (Directory.Exists("artifacts/log"))
         {
             foreach (var file in Directory.EnumerateFiles("artifacts/log", "*.log", SearchOption.AllDirectories))
@@ -296,27 +307,27 @@ public class TestRunner
                 // Combine the directory name + log name for the copied log file name to avoid overwriting
                 // duplicate test names in different test projects
                 var logName = $"{Path.GetFileName(Path.GetDirectoryName(file))}_{Path.GetFileName(file)}";
-                Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName)}");
+                ProcessUtil.PrintMessage($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName)}");
                 File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName));
             }
         }
         else
         {
-            Console.WriteLine("No logs found in artifacts/log");
+            ProcessUtil.PrintMessage("No logs found in artifacts/log");
         }
-        Console.WriteLine($"Copying TestResults/**/Sequence*.xml to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+        ProcessUtil.PrintMessage($"Copying TestResults/**/Sequence*.xml to {HELIX_WORKITEM_UPLOAD_ROOT}/");
         if (Directory.Exists("TestResults"))
         {
             foreach (var file in Directory.EnumerateFiles("TestResults", "Sequence*.xml", SearchOption.AllDirectories))
             {
                 var fileName = Path.GetFileName(file);
-                Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
+                ProcessUtil.PrintMessage($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
                 File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
             }
         }
         else
         {
-            Console.WriteLine("No TestResults directory found.");
+            ProcessUtil.PrintMessage("No TestResults directory found.");
         }
     }
 }

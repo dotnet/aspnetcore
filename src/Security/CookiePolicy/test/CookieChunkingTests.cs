@@ -127,22 +127,57 @@ public class CookieChunkingTests
     public void DeleteChunkedCookieWithOptions_AllDeleted()
     {
         HttpContext context = new DefaultHttpContext();
-        context.Request.Headers.Append("Cookie", "TestCookie=chunks-7");
+        context.Request.Headers.Append("Cookie", "TestCookie=chunks-7;TestCookieC1=1;TestCookieC2=2;TestCookieC3=3;TestCookieC4=4;TestCookieC5=5;TestCookieC6=6;TestCookieC7=7");
 
         new ChunkingCookieManager().DeleteCookie(context, "TestCookie", new CookieOptions() { Domain = "foo.com", Secure = true });
         var cookies = context.Response.Headers["Set-Cookie"];
         Assert.Equal(8, cookies.Count);
         Assert.Equal(new[]
         {
-                "TestCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
-                "TestCookieC1=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
-                "TestCookieC2=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
-                "TestCookieC3=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
-                "TestCookieC4=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
-                "TestCookieC5=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
-                "TestCookieC6=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
-                "TestCookieC7=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
-            }, cookies);
+            "TestCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC1=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC2=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC3=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC4=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC5=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC6=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC7=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+        }, cookies);
+    }
+
+    [Fact]
+    public void DeleteChunkedCookieWithMissingRequestCookies_OnlyPresentCookiesDeleted()
+    {
+        HttpContext context = new DefaultHttpContext();
+        context.Request.Headers.Append("Cookie", "TestCookie=chunks-7;TestCookieC1=1;TestCookieC2=2");
+
+        new ChunkingCookieManager().DeleteCookie(context, "TestCookie", new CookieOptions() { Domain = "foo.com", Secure = true });
+        var cookies = context.Response.Headers["Set-Cookie"];
+        Assert.Equal(3, cookies.Count);
+        Assert.Equal(new[]
+        {
+            "TestCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC1=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC2=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+        }, cookies);
+    }
+
+    [Fact]
+    public void DeleteChunkedCookieWithMissingRequestCookies_StopsAtMissingChunk()
+    {
+        HttpContext context = new DefaultHttpContext();
+        // C3 is missing so we don't try to delete C4 either.
+        context.Request.Headers.Append("Cookie", "TestCookie=chunks-7;TestCookieC1=1;TestCookieC2=2;TestCookieC4=4");
+
+        new ChunkingCookieManager().DeleteCookie(context, "TestCookie", new CookieOptions() { Domain = "foo.com", Secure = true });
+        var cookies = context.Response.Headers["Set-Cookie"];
+        Assert.Equal(3, cookies.Count);
+        Assert.Equal(new[]
+        {
+            "TestCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC1=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+            "TestCookieC2=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+        }, cookies);
     }
 
     [Fact]

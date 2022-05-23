@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.WebView;
 /// <summary>
 /// Provides a mapping between file extensions and MIME types.
 /// </summary>
-internal class FileExtensionContentTypeProvider : IContentTypeProvider
+internal sealed class FileExtensionContentTypeProvider : IContentTypeProvider
 {
     // Notes:
     // - This table was initially copied from IIS and has many legacy entries we will maintain for backwards compatibility.
