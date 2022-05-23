@@ -80,7 +80,8 @@ public class MultipartReader
     public int HeadersLengthLimit { get; set; } = DefaultHeadersLengthLimit;
 
     /// <summary>
-    /// The optional limit for the total response body length.
+    /// The optional limit for the body length of each multipart section.
+    /// The hosting server is responsible for limiting the overall body length.
     /// </summary>
     public long? BodyLengthLimit { get; set; }
 

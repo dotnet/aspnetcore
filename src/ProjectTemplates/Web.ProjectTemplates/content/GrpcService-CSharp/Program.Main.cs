@@ -1,6 +1,6 @@
 using GrpcService_CSharp.Services;
 
-namespace Company.WebApplication1;
+namespace GrpcService_CSharp;
 
 public class Program
 {

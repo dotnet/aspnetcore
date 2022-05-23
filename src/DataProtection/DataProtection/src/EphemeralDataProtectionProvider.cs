@@ -95,7 +95,6 @@ public sealed class EphemeralDataProtectionProvider : IDataProtectionProvider
             return (keyId == default(Guid)) ? DefaultAuthenticatedEncryptor : null;
         }
 
-        [RequiresUnreferencedCode(TrimmerWarning.Message)]
         public IKeyRing GetCurrentKeyRing()
         {
             return this;

@@ -27,7 +27,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [Fact]
     public async Task BlazorWasmStandaloneTemplateCanCreateBuildPublish()
     {
-        var project = await CreateBuildPublishAsync("blazorstandalone");
+        var project = await CreateBuildPublishAsync();
 
         // The service worker assets manifest isn't generated for non-PWA projects
         var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
@@ -35,18 +35,18 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     }
 
     [Fact]
-    public Task BlazorWasmHostedTemplateCanCreateBuildPublish() => CreateBuildPublishAsync("blazorhosted", args: new[] { ArgConstants.Hosted }, serverProject: true);
+    public Task BlazorWasmHostedTemplateCanCreateBuildPublish() => CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted }, serverProject: true);
 
     [Fact]
-    public Task BlazorWasmHostedTemplateWithProgamMainCanCreateBuildPublish() => CreateBuildPublishAsync("blazorhosted", args: new[] { ArgConstants.UseProgramMain, ArgConstants.Hosted }, serverProject: true);
+    public Task BlazorWasmHostedTemplateWithProgamMainCanCreateBuildPublish() => CreateBuildPublishAsync(args: new[] { ArgConstants.UseProgramMain, ArgConstants.Hosted }, serverProject: true);
 
     [Fact]
-    public Task BlazorWasmStandalonePwaTemplateCanCreateBuildPublish() => CreateBuildPublishAsync("blazorstandalonepwa", args: new[] { ArgConstants.Pwa });
+    public Task BlazorWasmStandalonePwaTemplateCanCreateBuildPublish() => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa });
 
     [Fact]
     public async Task BlazorWasmHostedPwaTemplateCanCreateBuildPublish()
     {
-        var project = await CreateBuildPublishAsync("blazorhostedpwa", args: new[] { ArgConstants.Hosted, ArgConstants.Pwa }, serverProject: true);
+        var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted, ArgConstants.Pwa }, serverProject: true);
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -105,8 +105,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
         Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-        var project = await CreateBuildPublishAsync("blazorhostedindividual" + (useLocalDb ? "uld" : ""),
-            args: new[] { ArgConstants.Hosted, ArgConstants.Auth, "Individual", useLocalDb ? "-uld" : "", useProgramMain ? ArgConstants.UseProgramMain : "" });
+        var project = await CreateBuildPublishAsync("Individual", args: new[] { ArgConstants.Hosted, useLocalDb ? "-uld" : "", useProgramMain ? ArgConstants.UseProgramMain : "" });
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -150,9 +149,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [Fact]
     public async Task BlazorWasmStandaloneTemplate_IndividualAuth_CreateBuildPublish()
     {
-        var project = await CreateBuildPublishAsync("blazorstandaloneindividual", args: new[] {
-                ArgConstants.Auth,
-                "Individual",
+        var project = await CreateBuildPublishAsync("Individual", args: new[] {
                 "--authority",
                 "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
                 ArgConstants.ClientId,
@@ -160,7 +157,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
             });
     }
 
-    public static TheoryData<TemplateInstance> TemplateData => new TheoryData<TemplateInstance>
+    public static TheoryData<TemplateInstance> TemplateDataIndividualB2C => new TheoryData<TemplateInstance>
         {
             new TemplateInstance(
                 "blazorwasmhostedaadb2c", "-ho",
@@ -184,69 +181,6 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
                 ArgConstants.AppIdClientId, "1234123413241324",
                 ArgConstants.UseProgramMain),
             new TemplateInstance(
-                "blazorwasmhostedaad", "-ho",
-                ArgConstants.Auth, "SingleOrg",
-                ArgConstants.Domain, "my-domain",
-                ArgConstants.TenantId, "tenantId",
-                ArgConstants.ClientId, "clientId",
-                ArgConstants.DefaultScope, "full",
-                ArgConstants.AppIdUri, "ApiUri",
-                ArgConstants.AppIdClientId, "1234123413241324"),
-            new TemplateInstance(
-                "blazorwasmhostedaad_program_main", "-ho",
-                ArgConstants.Auth, "SingleOrg",
-                ArgConstants.Domain, "my-domain",
-                ArgConstants.TenantId, "tenantId",
-                ArgConstants.ClientId, "clientId",
-                ArgConstants.DefaultScope, "full",
-                ArgConstants.AppIdUri, "ApiUri",
-                ArgConstants.AppIdClientId, "1234123413241324",
-                ArgConstants.UseProgramMain),
-            new TemplateInstance(
-                "blazorwasmhostedaadgraph", "-ho",
-                ArgConstants.Auth, "SingleOrg",
-                ArgConstants.CallsGraph,
-                ArgConstants.Domain, "my-domain",
-                ArgConstants.TenantId, "tenantId",
-                ArgConstants.ClientId, "clientId",
-                ArgConstants.DefaultScope, "full",
-                ArgConstants.AppIdUri, "ApiUri",
-                ArgConstants.AppIdClientId, "1234123413241324"),
-            new TemplateInstance(
-                "blazorwasmhostedaadgraph_program_main", "-ho",
-                ArgConstants.Auth, "SingleOrg",
-                ArgConstants.CallsGraph,
-                ArgConstants.Domain, "my-domain",
-                ArgConstants.TenantId, "tenantId",
-                ArgConstants.ClientId, "clientId",
-                ArgConstants.DefaultScope, "full",
-                ArgConstants.AppIdUri, "ApiUri",
-                ArgConstants.AppIdClientId, "1234123413241324",
-                ArgConstants.UseProgramMain),
-            new TemplateInstance(
-                "blazorwasmhostedaadapi", "-ho",
-                ArgConstants.Auth, "SingleOrg",
-                ArgConstants.CalledApiUrl, "\"https://graph.microsoft.com\"",
-                ArgConstants.CalledApiScopes, "user.readwrite",
-                ArgConstants.Domain, "my-domain",
-                ArgConstants.TenantId, "tenantId",
-                ArgConstants.ClientId, "clientId",
-                ArgConstants.DefaultScope, "full",
-                ArgConstants.AppIdUri, "ApiUri",
-                ArgConstants.AppIdClientId, "1234123413241324"),
-            new TemplateInstance(
-                "blazorwasmhostedaadapi_program_main", "-ho",
-                ArgConstants.Auth, "SingleOrg",
-                ArgConstants.CalledApiUrl, "\"https://graph.microsoft.com\"",
-                ArgConstants.CalledApiScopes, "user.readwrite",
-                ArgConstants.Domain, "my-domain",
-                ArgConstants.TenantId, "tenantId",
-                ArgConstants.ClientId, "clientId",
-                ArgConstants.DefaultScope, "full",
-                ArgConstants.AppIdUri, "ApiUri",
-                ArgConstants.AppIdClientId, "1234123413241324",
-                ArgConstants.UseProgramMain),
-            new TemplateInstance(
                 "blazorwasmstandaloneaadb2c",
                 ArgConstants.Auth, "IndividualB2C",
                 ArgConstants.AadB2cInstance, "example.b2clogin.com",
@@ -261,12 +195,83 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
                 ArgConstants.ClientId, "clientId",
                 ArgConstants.Domain, "my-domain",
                 ArgConstants.UseProgramMain),
+        };
+
+    public static TheoryData<TemplateInstance> TemplateDataSingleOrg => new TheoryData<TemplateInstance>
+        {
+            new TemplateInstance(
+                "blazorwasmhostedaad", "-ho",
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324"),
+            new TemplateInstance(
+                "blazorwasmhostedaadgraph", "-ho",
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.CallsGraph,
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324"),
+            new TemplateInstance(
+                "blazorwasmhostedaadapi", "-ho",
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.CalledApiUrl, "\"https://graph.microsoft.com\"",
+                ArgConstants.CalledApiScopes, "user.readwrite",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324"),
             new TemplateInstance(
                 "blazorwasmstandaloneaad",
                 ArgConstants.Auth, "SingleOrg",
                 ArgConstants.Domain, "my-domain",
                 ArgConstants.TenantId, "tenantId",
                 ArgConstants.ClientId, "clientId"),
+        };
+
+    public static TheoryData<TemplateInstance> TemplateDataSingleOrgProgramMain => new TheoryData<TemplateInstance>
+        {
+            new TemplateInstance(
+                "blazorwasmhostedaad_program_main", "-ho",
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324",
+                ArgConstants.UseProgramMain),
+            new TemplateInstance(
+                "blazorwasmhostedaadgraph_program_main", "-ho",
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.CallsGraph,
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324",
+                ArgConstants.UseProgramMain),
+            new TemplateInstance(
+                "blazorwasmhostedaadapi_program_main", "-ho",
+                ArgConstants.Auth, "SingleOrg",
+                ArgConstants.CalledApiUrl, "\"https://graph.microsoft.com\"",
+                ArgConstants.CalledApiScopes, "user.readwrite",
+                ArgConstants.Domain, "my-domain",
+                ArgConstants.TenantId, "tenantId",
+                ArgConstants.ClientId, "clientId",
+                ArgConstants.DefaultScope, "full",
+                ArgConstants.AppIdUri, "ApiUri",
+                ArgConstants.AppIdClientId, "1234123413241324",
+                ArgConstants.UseProgramMain),
             new TemplateInstance(
                 "blazorwasmstandaloneaad_program_main",
                 ArgConstants.Auth, "SingleOrg",
@@ -288,10 +293,20 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         public string[] Arguments { get; }
     }
 
-    [Theory]
-    [MemberData(nameof(TemplateData))]
-    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
-        => CreateBuildPublishAsync(instance.Name, args: instance.Arguments, targetFramework: "netstandard2.1");
+    [ConditionalTheory]
+    [MemberData(nameof(TemplateDataIndividualB2C))]
+    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_IndividualB2C_Works(TemplateInstance instance)
+        => CreateBuildPublishAsync(args: instance.Arguments, targetFramework: "netstandard2.1");
+
+    [ConditionalTheory]
+    [MemberData(nameof(TemplateDataSingleOrg))]
+    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_Works(TemplateInstance instance)
+        => CreateBuildPublishAsync(args: instance.Arguments, targetFramework: "netstandard2.1");
+
+    [ConditionalTheory]
+    [MemberData(nameof(TemplateDataSingleOrgProgramMain))]
+    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_ProgramMain_Works(TemplateInstance instance)
+        => CreateBuildPublishAsync(args: instance.Arguments, targetFramework: "netstandard2.1");
 
     private string ReadFile(string basePath, string path)
     {

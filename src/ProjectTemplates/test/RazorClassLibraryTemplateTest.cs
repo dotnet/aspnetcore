@@ -33,7 +33,7 @@ public class RazorClassLibraryTemplateTest : LoggedTest
     [Fact]
     public async Task RazorClassLibraryTemplate_WithViews_Async()
     {
-        var project = await ProjectFactory.GetOrCreateProject("razorclasslibwithviews", Output);
+        var project = await ProjectFactory.CreateProject(Output);
 
         var createResult = await project.RunDotNetNewAsync("razorclasslib", args: new[] { "--support-pages-and-views", "true" });
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
@@ -53,7 +53,7 @@ public class RazorClassLibraryTemplateTest : LoggedTest
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     public async Task RazorClassLibraryTemplateAsync()
     {
-        var project = await ProjectFactory.GetOrCreateProject("razorclasslib", Output);
+        var project = await ProjectFactory.CreateProject(Output);
 
         var createResult = await project.RunDotNetNewAsync("razorclasslib");
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));

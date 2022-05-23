@@ -24,12 +24,12 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
     public abstract string ProjectType { get; }
 
-    protected async Task<Project> CreateBuildPublishAsync(string projectName, string auth = null, string[] args = null, string targetFramework = null, bool serverProject = false, bool onlyCreate = false)
+    protected async Task<Project> CreateBuildPublishAsync(string auth = null, string[] args = null, string targetFramework = null, bool serverProject = false, bool onlyCreate = false)
     {
         // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
         Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-        var project = await ProjectFactory.GetOrCreateProject(projectName, Output);
+        var project = await ProjectFactory.CreateProject(Output);
         if (targetFramework != null)
         {
             project.TargetFramework = targetFramework;

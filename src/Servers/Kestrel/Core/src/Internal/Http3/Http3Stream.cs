@@ -918,6 +918,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         // Suppress pseudo headers from the public headers collection.
         HttpRequestHeaders.ClearPseudoRequestHeaders();
 
+        // Cookies should be merged into a single string separated by "; "
+        // https://datatracker.ietf.org/doc/html/draft-ietf-quic-http-34#section-4.1.1.2
+        HttpRequestHeaders.MergeCookies();
+
         return true;
     }
 

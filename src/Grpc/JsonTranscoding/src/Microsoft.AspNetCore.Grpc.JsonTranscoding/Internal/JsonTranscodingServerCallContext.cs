@@ -18,8 +18,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 
 internal sealed class JsonTranscodingServerCallContext : ServerCallContext, IServerCallContextFeature
 {
-    // TODO(JamesNK): Remove nullable override after Grpc.Core.Api update
-    private static readonly AuthContext UnauthenticatedContext = new AuthContext(null!, new Dictionary<string, List<AuthProperty>>());
+    private static readonly AuthContext UnauthenticatedContext = new AuthContext(null, new Dictionary<string, List<AuthProperty>>());
 
     private readonly IMethod _method;
 
@@ -168,7 +167,7 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
 
     protected override Status StatusCore { get; set; }
 
-    protected override WriteOptions WriteOptionsCore
+    protected override WriteOptions? WriteOptionsCore
     {
         get => throw new NotImplementedException();
         set => throw new NotImplementedException();
@@ -191,7 +190,6 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
         }
     }
 
-    // TODO(JamesNK): Remove nullable override after Grpc.Core.Api update
     protected override IDictionary<object, object> UserStateCore => HttpContext.Items!;
 
     protected override ContextPropagationToken CreatePropagationTokenCore(ContextPropagationOptions? options)
@@ -227,12 +225,12 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
         return HttpContext.Response.BodyWriter.FlushAsync().GetAsTask();
     }
 
-    internal void EnsureResponseHeaders()
+    internal void EnsureResponseHeaders(string? contentType = null)
     {
         if (!HttpContext.Response.HasStarted)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            HttpContext.Response.ContentType = MediaType.ReplaceEncoding("application/json", RequestEncoding);
+            HttpContext.Response.ContentType = contentType ?? MediaType.ReplaceEncoding("application/json", RequestEncoding);
         }
     }
 }

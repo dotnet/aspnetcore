@@ -45,4 +45,13 @@ public class RequestScopedServiceController : Controller
     {
         return requestIdService.RequestId;
     }
+
+    [FromServices]
+    public RequestIdService RequestIdService { get; set; }
+
+    [HttpGet]
+    public string FromProperty()
+    {
+        return RequestIdService.RequestId;
+    }
 }
