@@ -282,7 +282,7 @@ do
 done;
 rm {scriptPath};
 ";
-            File.WriteAllText(scriptPath, stopScript);
+            File.WriteAllText(scriptPath, stopScript.ReplaceLineEndings());
 
             var stopScriptInfo = new ProcessStartInfo("/bin/bash", scriptPath)
             {
