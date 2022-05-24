@@ -134,7 +134,7 @@ internal sealed class CreateCommand
         {
             if (!ParseDate(expiresOnOption.Value(), out expiresOn))
             {
-                Console.WriteLine(@"The date provided for -expires-on could not be parsed. Ensure you use the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'.");
+                Console.WriteLine(@"The date provided for --expires-on could not be parsed. Ensure you use the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'.");
                 isValid = false;
             }
         }
@@ -143,7 +143,7 @@ internal sealed class CreateCommand
         {
             if (!TimeSpan.TryParseExact(validForOption.Value(), _timeSpanFormats, CultureInfo.InvariantCulture, out var validForValue))
             {
-                Console.WriteLine("The period provided for --valid-for could not be parsed. Ensure you use a format like '10d', '24h', etc.");
+                Console.WriteLine("The period provided for --valid-for could not be parsed. Ensure you use a format like '10d', '22h', '45s' etc.");
             }
             expiresOn = notBefore.Add(validForValue);
         }

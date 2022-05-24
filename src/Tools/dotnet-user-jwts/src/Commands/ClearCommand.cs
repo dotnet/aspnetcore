@@ -43,16 +43,16 @@ internal sealed class ClearCommand
 
         if (count == 0)
         {
-            Console.WriteLine($"There are no JWTs to delete from {project}");
+            Console.WriteLine($"There are no JWTs to delete from {project}.");
             return 0;
         }
 
         if (!force)
         {
-            Console.WriteLine($"Are you sure you want to delete {count} JWT(s) for {project}? \n [Y]es / [N]o");
+            Console.WriteLine($"Are you sure you want to delete {count} JWT(s) for {project}?{Environment.NewLine} [Y]es / [N]o");
             if (Console.ReadKey().Key != ConsoleKey.Y)
             {
-                Console.WriteLine("Cancelled, no JWTs were deleted");
+                Console.WriteLine("Canceled, no JWTs were deleted.");
                 return 0;
             }
         }
@@ -60,7 +60,7 @@ internal sealed class ClearCommand
         jwtStore.Jwts.Clear();
         jwtStore.Save();
 
-        Console.WriteLine($"Deleted {count} token(s) from {project} successfully");
+        Console.WriteLine($"Deleted {count} token(s) from {project} successfully.");
 
         return 0;
     }
