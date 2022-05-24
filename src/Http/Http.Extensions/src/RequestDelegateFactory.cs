@@ -56,7 +56,7 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo ValueTaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ValueTaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo ArrayEmptyMethod = typeof(Array).GetMethod(nameof(Array.Empty), BindingFlags.Public | BindingFlags.Static)!;
+    private static readonly MethodInfo ArrayEmptyOfObjectMethod = typeof(Array).GetMethod(nameof(Array.Empty), BindingFlags.Public | BindingFlags.Static)!.MakeGenericMethod(new Type[] { typeof(object) });
 
     // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
     // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
@@ -391,7 +391,7 @@ public static partial class RequestDelegateFactory
         // non-generic implementation of RouteHandlerInvocationContext.
         Expression paramArray = factoryContext.BoxedArgs.Length > 0
             ? Expression.NewArrayInit(typeof(object), factoryContext.BoxedArgs)
-            : Expression.Call(ArrayEmptyMethod.MakeGenericMethod(new Type[] { typeof(object) }));
+            : Expression.Call(ArrayEmptyOfObjectMethod);
         var fallbackConstruction = Expression.New(
             DefaultRouteHandlerInvocationContextConstructor,
             new Expression[] { HttpContextExpr, paramArray });
