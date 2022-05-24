@@ -29,27 +29,27 @@ public static class EndpointRouteBuilderExtensions
     private static readonly string[] PatchVerb = new[] { HttpMethods.Patch };
 
     /// <summary>
-    /// Creates a <see cref="GroupRouteBuilder"/> for defining endpoints all prefixed with the specified <paramref name="prefix"/>.
+    /// Creates a <see cref="RouteGroupBuilder"/> for defining endpoints all prefixed with the specified <paramref name="prefix"/>.
     /// </summary>
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the group to.</param>
     /// <param name="prefix">The pattern that prefixes all routes in this group.</param>
     /// <returns>
-    /// A <see cref="GroupRouteBuilder"/> that is both an <see cref="IEndpointRouteBuilder"/> and an <see cref="IEndpointConventionBuilder"/>.
+    /// A <see cref="RouteGroupBuilder"/> that is both an <see cref="IEndpointRouteBuilder"/> and an <see cref="IEndpointConventionBuilder"/>.
     /// The same builder can be used to add endpoints with the given <paramref name="prefix"/>, and to customize those endpoints using conventions.
     /// </returns>
-    public static GroupRouteBuilder MapGroup(this IEndpointRouteBuilder endpoints, string prefix) =>
+    public static RouteGroupBuilder MapGroup(this IEndpointRouteBuilder endpoints, string prefix) =>
         endpoints.MapGroup(RoutePatternFactory.Parse(prefix ?? throw new ArgumentNullException(nameof(prefix))));
 
     /// <summary>
-    /// Creates a <see cref="GroupRouteBuilder"/> for defining endpoints all prefixed with the specified <paramref name="prefix"/>.
+    /// Creates a <see cref="RouteGroupBuilder"/> for defining endpoints all prefixed with the specified <paramref name="prefix"/>.
     /// </summary>
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the group to.</param>
     /// <param name="prefix">The pattern that prefixes all routes in this group.</param>
     /// <returns>
-    /// A <see cref="GroupRouteBuilder"/> that is both an <see cref="IEndpointRouteBuilder"/> and an <see cref="IEndpointConventionBuilder"/>.
+    /// A <see cref="RouteGroupBuilder"/> that is both an <see cref="IEndpointRouteBuilder"/> and an <see cref="IEndpointConventionBuilder"/>.
     /// The same builder can be used to add endpoints with the given <paramref name="prefix"/>, and to customize those endpoints using conventions.
     /// </returns>
-    public static GroupRouteBuilder MapGroup(this IEndpointRouteBuilder endpoints, RoutePattern prefix)
+    public static RouteGroupBuilder MapGroup(this IEndpointRouteBuilder endpoints, RoutePattern prefix)
     {
         ArgumentNullException.ThrowIfNull(endpoints, nameof(endpoints));
         ArgumentNullException.ThrowIfNull(prefix, nameof(prefix));
@@ -525,7 +525,7 @@ public static class EndpointRouteBuilderExtensions
 
         var fullPattern = pattern;
 
-        if (endpoints is GroupRouteBuilder group)
+        if (endpoints is RouteGroupBuilder group)
         {
             fullPattern = RoutePatternFactory.Combine(group.GroupPrefix, pattern);
         }
