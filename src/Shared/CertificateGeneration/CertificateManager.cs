@@ -177,7 +177,7 @@ internal abstract class CertificateManager
         var result = EnsureCertificateResult.Succeeded;
 
         var currentUserCertificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
-        var trustedCertificates = ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
+        var trustedCertificates = ListCertificates(StoreName.Root, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
         var certificates = currentUserCertificates.Concat(trustedCertificates);
 
         var filteredCertificates = certificates.Where(c => c.Subject == Subject);
@@ -433,6 +433,9 @@ internal abstract class CertificateManager
             RemoveCertificate(certificate, RemoveLocations.All);
         }
     }
+
+    public virtual IList<CertificateTrustPrerequisite> CheckTrustPrerequisites() =>
+        Array.Empty<CertificateTrustPrerequisite>();
 
     public abstract bool IsTrusted(X509Certificate2 certificate);
 
@@ -970,6 +973,112 @@ internal abstract class CertificateManager
 
         [Event(64, Level = EventLevel.Error, Message = "The provided certificate '{0}' is not a valid ASP.NET Core HTTPS development certificate.")]
         internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, description);
+
+        [Event(65, Level = EventLevel.Error, Message = "The Open SSL version '{0}' installed is too old. Open SSL 1.1.1k or higher is required.")]
+        internal void OldOpenSSLVersion(string version) => WriteEvent(65, version);
+
+        [Event(66, Level = EventLevel.Error, Message = "Unable to find 'certutil'. Check on what package to install it from in your distribution.")]
+        internal void MissingCertUtil(string error) => WriteEvent(66, error);
+
+        [Event(67, Level = EventLevel.Verbose, Message = "Found a valid Open SSL version '{0}'.")]
+        internal void ValidOpenSSLVersion(string version) => WriteEvent(67, version);
+
+        [Event(68, Level = EventLevel.Verbose, Message = "'certutil' is available.")]
+        internal void FoundCertUtil() => WriteEvent(68);
+
+        [Event(69, Level = EventLevel.Verbose, Message = "Removing the certificate from the Open SSL trust roots.")]
+        public void UnixRemoveCertificateFromRootStoreStart() => WriteEvent(69);
+
+        [Event(70, Level = EventLevel.Verbose, Message = "Finished removing the certificate from the Open SSL trust roots.")]
+        public void UnixRemoveCertificateFromRootStoreEnd() => WriteEvent(70);
+
+        [Event(71, Level = EventLevel.Verbose, Message = "The certificate was not found in the Open SSL trust roots.")]
+        public void UnixRemoveCertificateFromRootStoreNotFound() => WriteEvent(71);
+
+        [Event(72, Level = EventLevel.Error, Message = "Failed to delete file '{0}'. Error: '{1}'")]
+        public void UnixRemoveCertificateFromRootStoreFailedtoDeleteFile(string path, string error) => WriteEvent(72, path, error);
+
+        [Event(73, Level = EventLevel.Error, Message = "Open SSL 'c_rehash' failed: '{0}'.")]
+        public void UnixRemoveCertificateFromRootStoreOpenSSLRehashFailed(string error) => WriteEvent(73, error);
+
+        [Event(74, Level = EventLevel.Verbose, Message = "Firefox profile not found. Search locations: '{0}', '{1}'.")]
+        internal void UnixFirefoxProfileNotFound(string primary, string secondary) => WriteEvent(74, primary, secondary);
+
+        [Event(75, Level = EventLevel.Verbose, Message = "Firefox profile found at: '{0}'.")]
+        internal void UnixFirefoxProfileFound(string firefoxDbPath) => WriteEvent(75, firefoxDbPath);
+
+        [Event(76, Level = EventLevel.Verbose, Message = "Certificate store for Edge and Chrome not found. Search location: '{0}'.")]
+        internal void UnixCommonChromeAndEdgeCertificateDbNotFound(string primary) => WriteEvent(76, primary);
+
+        [Event(77, Level = EventLevel.Verbose, Message = "Certificate store for Edge and Chrome found at: '{0}'.")]
+        internal void UnixCommonChromeAndEdgeCertificateDbFound(string edgeChromeDbPath) => WriteEvent(77, edgeChromeDbPath);
+
+        [Event(78, Level = EventLevel.Error, Message = "An error has occurred while removing the certificate from the Edge and Chrome trust roots: '{0}'.")]
+        internal void UnixRemoveCertificateFromCommonEdgeChromeRootStoreError(string error) => WriteEvent(78, error);
+
+        [Event(79, Level = EventLevel.Error, Message = "An error has occurred while removing the certificate from the Firefox trust roots: '{0}'.")]
+        internal void UnixRemoveCertificateFromFirefoxRootStoreError(string error) => WriteEvent(79, error);
+
+        [Event(80, Level = EventLevel.Error, Message = "Failed to find the Open SSL certificates directory.")]
+        internal void UnixFailedToLocateOpenSSLDirectory(string error) => WriteEvent(80, error);
+
+        [Event(81, Level = EventLevel.Verbose, Message = "Open SSL directory found at: '{0}'.")]
+        internal void UnixOpenSSLDirectoryLocatedAt(string openSSLDirectory) => WriteEvent(81, openSSLDirectory);
+
+        [Event(82, Level = EventLevel.Error, Message = "An error has occurred while copying the ASP.NET Core certificate to the Open SSL certificate store: '{0}'.")]
+        internal void UnixCopyCertificateToOpenSSLCertificateStoreError(string copyError) => WriteEvent(82, copyError);
+
+        [Event(83, Level = EventLevel.Error, Message = "An error has occurred while running 'c_rehash' to trust the certificate in Open SSL.")]
+        internal void UnixTrustCertificateFromRootStoreOpenSSLRehashFailed(string rehashError) => WriteEvent(83, rehashError);
+
+        [Event(84, Level = EventLevel.Error, Message = "An error has occurred while adding the certificate to the Firefox trust roots: '{0}'.")]
+        internal void UnixTrustCertificateFirefoxRootStoreError(string error) => WriteEvent(84, error);
+
+        [Event(85, Level = EventLevel.Error, Message = "An error has occurred while adding the certificate to the Chrome and Edge trust roots: '{0}'.")]
+        internal void UnixTrustCertificateCommonEdgeChromeRootStoreError(string error) => WriteEvent(85, error);
+
+        [Event(86, Level = EventLevel.Verbose, Message = "Open SSL not found in the path.")]
+        internal void MissingOpenSsl() => WriteEvent(86);
+
+        [Event(87, Level = EventLevel.Verbose, Message = "The dotnet to dotnet trust can not be checked because the necessary tools are not available.")]
+        internal void UnixNoDotNetToDotNetTrustCheck() => WriteEvent(87);
+
+        [Event(88, Level = EventLevel.Verbose, Message = "The certificate can not be trusted by dotnet because the necessary tools are not available.")]
+        internal void UnixCannotTrustDotNetToDotNet() => WriteEvent(88);
+
+        [Event(89, Level = EventLevel.Verbose, Message = "Certificate '{0}' already trusted by Open SSL.")]
+        internal void UnixOpensslCertificateAlreadyTrusted(string certificate) => WriteEvent(89, certificate);
+
+        [Event(90, Level = EventLevel.Verbose, Message = "The certificate can not be trusted by Firefox because the necessary tools are not available.")]
+        internal void UnixCannotTrustFirefox() => WriteEvent(90);
+
+        [Event(91, Level = EventLevel.Verbose, Message = "Certificate '{0}' already trusted by Firefox.")]
+        internal void UnixFirefoxCertificateAlreadyTrusted(string certificate) => WriteEvent(91, certificate);
+
+        [Event(92, Level = EventLevel.Verbose, Message = "The certificate can not be trusted by Edge/Chrome because the necessary tools are not available.")]
+        internal void UnixCannotTrustEdgeChrome() => WriteEvent(92);
+
+        [Event(93, Level = EventLevel.Verbose, Message = "Certificate '{0}' already trusted by Edge/Chrome.")]
+        internal void UnixEdgeChromeCertificateAlreadyTrusted(string certificate) => WriteEvent(93, certificate);
+
+        [Event(94, Level = EventLevel.Verbose, Message = "Certificate '{0}' was not trusted by Open SSL.")]
+        internal void UnixOpensslCertificateAlreadyUntrusted(string certificate) => WriteEvent(94, certificate);
+
+        [Event(95, Level = EventLevel.Verbose, Message = "Certificate '{0}' was not trusted by Firefox.")]
+        internal void UnixFirefoxCertificateAlreadyUntrusted(string certificate) => WriteEvent(95, certificate);
+
+        [Event(96, Level = EventLevel.Verbose, Message = "Certificate '{0}' was not trusted by Edge/Chrome.")]
+        internal void UnixEdgeChromeCertificateAlreadyUntrusted(string certificate) => WriteEvent(96, certificate);
+
+        [Event(97, Level = EventLevel.Verbose, Message = "The certificate trust for dotnet can not be removed because the necessary tools are not available.")]
+        internal void UnixCannotUntrustDotNetToDotNet() => WriteEvent(97);
+
+        [Event(98, Level = EventLevel.Verbose, Message = "The certificate trust for Firefox can not be removed because the necessary tools are not available.")]
+        internal void UnixCannotUntrustFirefox() => WriteEvent(98);
+
+        [Event(99, Level = EventLevel.Verbose, Message = "The certificate for Edge/Chrome can not be removed because the necessary tools are not available.")]
+        internal void UnixCannotUntrustEdgeChrome() => WriteEvent(99);
+
     }
 
     internal sealed class UserCancelledTrustException : Exception

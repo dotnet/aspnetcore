@@ -253,6 +253,13 @@ internal sealed class Program
                 reporter.Output("Cleaning HTTPS development certificates from the machine. This operation might " +
                     "require elevated privileges. If that is the case, a prompt for credentials will be displayed.");
             }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                ReportLinuxPrerequisitesCheck(reporter, manager);
+
+                reporter.Output("Cleaning HTTPS development certificates from the machine. This operation might " +
+                "require elevated privileges. If that is the case you will be prompted for your password.");
+            }
 
             manager.CleanupHttpsCertificates();
             reporter.Output("HTTPS development certificates successfully removed from the machine.");
@@ -296,32 +303,26 @@ internal sealed class Program
 
         if (trust != null && trust.HasValue())
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var trustedCertificates = certificates.Where(c => certificateManager.IsTrusted(c)).ToList();
-                if (!trustedCertificates.Any())
-                {
-                    reporter.Output($@"The following certificates were found, but none of them is trusted: {CertificateManager.ToCertificateDescription(certificates)}");
-                    return ErrorCertificateNotTrusted;
-                }
-                else
-                {
-                    ReportCertificates(reporter, trustedCertificates, "trusted");
-                }
+                ReportLinuxPrerequisitesCheck(reporter, certificateManager);
+            }
+
+            var trustedCertificates = certificates.Where(c => certificateManager.IsTrusted(c)).ToList();
+            if (!trustedCertificates.Any())
+            {
+                reporter.Output($@"The following certificates were found, but none of them is trusted: {CertificateManager.ToCertificateDescription(certificates)}");
+                return ErrorCertificateNotTrusted;
             }
             else
             {
-                reporter.Warn("Checking the HTTPS development certificate trust status was requested. Checking whether the certificate is trusted or not is not supported on Linux distributions." +
-                    "For instructions on how to manually validate the certificate is trusted on your Linux distribution, go to https://aka.ms/dev-certs-trust");
+                ReportCertificates(reporter, trustedCertificates, "trusted");
             }
         }
         else
         {
             ReportCertificates(reporter, validCertificates, "valid");
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                reporter.Output("Run the command with both --check and --trust options to ensure that the certificate is not only valid but also trusted.");
-            }
+            reporter.Output("Run the command with both --check and --trust options to ensure that the certificate is not only valid but also trusted.");
         }
 
         return Success;
@@ -370,16 +371,23 @@ internal sealed class Program
                     "on the system keychain. To undo these changes: 'sudo security remove-trusted-cert -d <<certificate>>'");
             }
 
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                ReportLinuxPrerequisitesCheck(reporter, manager);
+
+                reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
+                    "already trusted we will run the following commands:" + Environment.NewLine +
+                    "'sudo cp <<certificate>> <<openssl-dir>>/certs/aspnetcore-localhost-<<certificate-thumbprint>>.crt'" + Environment.NewLine +
+                    "'sudo c_rehash'" + Environment.NewLine +
+                    "'certutil -A -d sql:<<firefox-profile-certificate-db>> -t \"C,,\", -n \"aspnetcore-localhost-<<certificate-thumbprint[0..6]>>'" + Environment.NewLine +
+                    "'certutil -A -d sql:~/.pki/nssdb -t \"C,,\", -n \"aspnetcore-localhost-<<certificate-thumbprint[0..6]>>'" + Environment.NewLine +
+                    "These commands might prompt you for your password to trust the certificate");
+            }
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 reporter.Warn("Trusting the HTTPS development certificate was requested. A confirmation prompt will be displayed " +
                     "if the certificate was not previously trusted. Click yes on the prompt to trust the certificate.");
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                reporter.Warn("Trusting the HTTPS development certificate was requested. Trusting the certificate on Linux distributions automatically is not supported. " +
-                    "For instructions on how to manually trust the certificate on your Linux distribution, go to https://aka.ms/dev-certs-trust");
             }
         }
 
@@ -394,7 +402,7 @@ internal sealed class Program
             now,
             now.Add(HttpsCertificateValidity),
             exportPath.Value(),
-            trust == null ? false : trust.HasValue() && !RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+            trust?.HasValue() == true,
             password.HasValue() || (noPassword.HasValue() && format == CertificateKeyExportFormat.Pem),
             password.Value(),
             exportFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx);
@@ -433,6 +441,49 @@ internal sealed class Program
             default:
                 reporter.Error("Something went wrong. The HTTPS developer certificate could not be created.");
                 return CriticalError;
+        }
+    }
+
+    private static void ReportLinuxPrerequisitesCheck(IReporter reporter, CertificateManager manager)
+    {
+        IList<CertificateTrustPrerequisite> prerequisites = Array.Empty<CertificateTrustPrerequisite>();
+        try
+        {
+            prerequisites = manager.CheckTrustPrerequisites();
+        }
+        catch (Exception ex)
+        {
+            reporter.Error($"There was an error checking the prerequisites: {ex.Message}");
+        }
+        if (prerequisites.Where(p => p.IsImportant).Any())
+        {
+            reporter.Warn("Some required tools are missing in the path. Check your distribution instructions on how to " +
+                "install each missing dependency. In most distros, trying to run the tool will indicate the missing package " +
+                "to install it. We will continue to trust the certificate where possible but you might need to run the tool again " +
+                "if you decide to install some additional tools or browsers afterwards.");
+
+            foreach (var prerequisite in prerequisites)
+            {
+                if (prerequisite.IsImportant)
+                {
+                    reporter.Warn($"  '{prerequisite.Tool}': {prerequisite.Message}.");
+                }
+            }
+            reporter.Output(Environment.NewLine);
+        }
+
+        if (prerequisites.Where(p => !p.IsImportant).Any())
+        {
+            reporter.Output("Some optional tools are missing in the path. If you install them afterwards you might need to run the tool again. Use --verbose for more details.");
+            foreach (var prerequisite in prerequisites)
+            {
+                if (!prerequisite.IsImportant)
+                {
+                    reporter.Verbose($"  '{prerequisite.Tool}': {prerequisite.Message}.");
+                }
+            }
+
+            reporter.Output(Environment.NewLine);
         }
     }
 }
