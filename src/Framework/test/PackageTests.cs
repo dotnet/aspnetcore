@@ -10,6 +10,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore;
