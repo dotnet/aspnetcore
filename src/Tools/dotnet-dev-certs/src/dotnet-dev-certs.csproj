@@ -10,12 +10,15 @@
     <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
     <IsShippingPackage>false</IsShippingPackage>
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <DefineConstants>$(DefineConstants);DEVCERTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
+
+    <EmbeddedResource Include="scripts\**" />
   </ItemGroup>
 
 </Project>

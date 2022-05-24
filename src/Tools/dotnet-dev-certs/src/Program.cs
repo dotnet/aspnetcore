@@ -97,6 +97,15 @@ internal sealed class Program
                     "Export the certificate in the given format. Valid values are Pfx and Pem. Pfx is the default.",
                     CommandOptionType.SingleValue);
 
+                CommandOption wsl = null;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    wsl = c.Option(
+                        "--wsl",
+                        "Apply the command to the default WSL distro using the certificate from the host Windows machine.",
+                        CommandOptionType.NoValue);
+                }
+
                 CommandOption trust = null;
                 trust = c.Option("-t|--trust",
                     "Trust the certificate on the current platform. When combined with the --check option, validates that the certificate is trusted.",
@@ -165,12 +174,12 @@ internal sealed class Program
 
                     if (check.HasValue())
                     {
-                        return CheckHttpsCertificate(trust, reporter);
+                        return CheckHttpsCertificate(trust, wsl?.HasValue() == true, reporter);
                     }
 
                     if (clean.HasValue())
                     {
-                        var clean = CleanHttpsCertificates(reporter);
+                        var clean = CleanHttpsCertificates(reporter, wsl?.HasValue() == true);
                         if (clean != Success || !import.HasValue())
                         {
                             return clean;
@@ -179,7 +188,7 @@ internal sealed class Program
                         return ImportCertificate(import, password, reporter);
                     }
 
-                    return EnsureHttpsCertificate(exportPath, password, noPassword, trust, format, reporter);
+                    return EnsureHttpsCertificate(exportPath, password, noPassword, trust, format, wsl, reporter);
                 });
             });
 
@@ -238,9 +247,9 @@ internal sealed class Program
         return Success;
     }
 
-    private static int CleanHttpsCertificates(IReporter reporter)
+    private static int CleanHttpsCertificates(IReporter reporter, bool useWsl)
     {
-        var manager = CertificateManager.Instance;
+        var manager = !useWsl ? CertificateManager.Instance : CertificateManager.CreateWslCertificateManager();
         try
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -267,9 +276,9 @@ internal sealed class Program
         }
     }
 
-    private static int CheckHttpsCertificate(CommandOption trust, IReporter reporter)
+    private static int CheckHttpsCertificate(CommandOption trust, bool useWsl, IReporter reporter)
     {
-        var certificateManager = CertificateManager.Instance;
+        var certificateManager = !useWsl ? CertificateManager.Instance : CertificateManager.CreateWslCertificateManager();
         var certificates = certificateManager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
         var validCertificates = new List<X509Certificate2>();
         if (certificates.Count == 0)
@@ -336,10 +345,17 @@ internal sealed class Program
         });
     }
 
-    private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter)
+    private static int EnsureHttpsCertificate(
+        CommandOption exportPath,
+        CommandOption password,
+        CommandOption noPassword,
+        CommandOption trust,
+        CommandOption exportFormat,
+        CommandOption wsl,
+        IReporter reporter)
     {
         var now = DateTimeOffset.Now;
-        var manager = CertificateManager.Instance;
+        var manager = wsl != null && wsl.HasValue() ? CertificateManager.CreateWslCertificateManager() : CertificateManager.Instance;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {

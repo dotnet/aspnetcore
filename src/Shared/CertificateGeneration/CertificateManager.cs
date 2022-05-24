@@ -409,6 +409,13 @@ internal abstract class CertificateManager
         return ImportCertificateResult.Succeeded;
     }
 
+#if DEVCERTS
+    internal static CertificateManager CreateWslCertificateManager()
+    {
+        return new WslCertificateManager();
+    }
+#endif
+
     public void CleanupHttpsCertificates()
     {
         // On OS X we don't have a good way to manage trusted certificates in the system keychain
@@ -745,7 +752,7 @@ internal abstract class CertificateManager
         }
     }
 
-    private static void RemoveCertificateFromUserStore(X509Certificate2 certificate)
+    protected virtual void RemoveCertificateFromUserStore(X509Certificate2 certificate)
     {
         try
         {

@@ -1,0 +1,62 @@
+using System.Security.Cryptography.X509Certificates;
+
+using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+using var certificate = new X509Certificate2(args[1]);
+switch (args[0])
+{
+    case "--check":
+        store.Open(OpenFlags.ReadOnly);
+        if (store.Certificates.OfType<X509Certificate2>().Any(c => c.Thumbprint == certificate.Thumbprint))
+        {
+            store.Close();
+            return 0;
+        }
+        else
+        {
+            store.Close();
+            return 1;
+        }
+    case "--install":
+        Console.WriteLine($"Installing certificate {certificate.Thumbprint} on the store.");
+        store.Open(OpenFlags.ReadWrite);
+        var certificates = store.Certificates.Where(c => c.Extensions.OfType<X509Extension>()
+            .Any(e => string.Equals("1.3.6.1.4.1.311.84.1.1", e.Oid?.Value, StringComparison.Ordinal)))
+            .ToList();
+
+        var exists = false;
+
+        foreach (var cert in certificates)
+        {
+            if (cert.Thumbprint == certificate.Thumbprint)
+            {
+                exists = true;
+            }
+            else
+            {
+                store.Remove(cert);
+            }
+        }
+
+        if (!exists)
+        {
+            store.Add(certificate);
+        }
+        store.Close();
+        return 0;
+
+    case "--clean":
+        Console.WriteLine("Cleaning HTTPS certificates from the store.");
+        store.Open(OpenFlags.ReadWrite);
+        var certsToClean = store.Certificates.Where(c => c.Extensions.OfType<X509Extension>()
+    .Any(e => string.Equals("1.3.6.1.4.1.311.84.1.1", e.Oid?.Value, StringComparison.Ordinal)))
+    .ToList();
+
+        foreach (var cert in certsToClean)
+        {
+            store.Remove(cert);
+        }
+        store.Close();
+        return 0;
+}
+
+return 0;

@@ -11,7 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
 [SupportedOSPlatform("windows")]
-internal sealed class WindowsCertificateManager : CertificateManager
+internal class WindowsCertificateManager : CertificateManager
 {
     private const int UserCancelledErrorCode = 1223;
 
