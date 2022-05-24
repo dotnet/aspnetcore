@@ -6,43 +6,39 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-<<<<<<< HEAD
-internal class KeyCommand
-=======
 internal sealed class KeyCommand
->>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
-    public static void Register(CommandLineApplication app)
+    public static void Register(ProjectCommandLineApplication app)
     {
         app.Command("key", cmd =>
         {
             cmd.Description = "Display or reset the signing key used to issue JWTs";
-
-            var projectOption = cmd.Option(
-                "--project",
-                "The path of the project to operate on. Defaults to the project in the current directory.",
-                CommandOptionType.SingleValue);
 
             var resetOption = cmd.Option(
                 "--reset",
                 "Reset the signing key. This will invalidate all previously issued JWTs for this project.",
                 CommandOptionType.NoValue);
 
+            var forceOption = cmd.Option(
+                "--force",
+                "Don't prompt for confirmation before resetting the signing key.",
+                CommandOptionType.NoValue);
+
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
             {
-                return Execute(projectOption.Value(), resetOption.HasValue());
+                return Execute(app.ProjectOption.Value(), resetOption.HasValue(), forceOption.HasValue());
             });
         });
     }
 
-    private static int Execute(string projectPath, bool reset)
+    private static int Execute(string projectPath, bool reset, bool force)
     {
         var project = DevJwtCliHelpers.GetProject(projectPath);
         if (project == null)
         {
-            Console.WriteLine($"No project found at `--project` path or current directory.");
+            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
             return 1;
         }
 
@@ -50,16 +46,19 @@ internal sealed class KeyCommand
 
         if (reset == true)
         {
-            Console.WriteLine("Are you sure you want to reset the JWT signing key? This will invalidate all JWTs previously issued for this project.\n [Y]es / [N]o");
-            if (Console.ReadKey().Key == ConsoleKey.Y)
+            if (!force)
             {
-                var key = DevJwtCliHelpers.CreateSigningKeyMaterial(userSecretsId, reset: true);
-                Console.WriteLine($"New signing key created: {Convert.ToBase64String(key)}");
-                return 0;
+                Console.WriteLine("Are you sure you want to reset the JWT signing key? This will invalidate all JWTs previously issued for this project.\n [Y]es / [N]o");
+                if (Console.ReadLine().Trim().ToUpperInvariant() != "Y")
+                {
+                    Console.WriteLine("Key reset canceled.");
+                    return 0;
+                }
             }
 
-            Console.WriteLine("Key reset canceled.");
-            return 0;
+            var key = DevJwtCliHelpers.CreateSigningKeyMaterial(userSecretsId, reset: true);
+            Console.WriteLine($"New signing key created: {Convert.ToBase64String(key)}");
+            return 0; 
         }
 
         var projectConfiguration = new ConfigurationBuilder()

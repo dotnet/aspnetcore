@@ -10,11 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Extensions.CommandLineUtils;
 
-<<<<<<< HEAD
-internal class ConsoleTable
-=======
 internal sealed class ConsoleTable
->>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
     private readonly List<string> _columns = new();
     private readonly List<object[]> _rows = new();
@@ -24,7 +20,7 @@ internal sealed class ConsoleTable
         _columns.AddRange(names);
     }
 
-    public void AddRows(params object[] values)
+    public void AddRow(params object[] values)
     {
         if (values == null)
         {
@@ -51,7 +47,7 @@ internal sealed class ConsoleTable
 
         var maxColumnLengths = _columns
             .Select((t, i) => _rows.Select(x => x[i])
-                .Union(new[] { _columns[i] })
+                .Concat(new[] { _columns[i] })
                 .Where(x => x != null)
                 .Select(x => x!.ToString()!.Length).Max())
             .ToList();
@@ -61,13 +57,8 @@ internal sealed class ConsoleTable
             .Aggregate((previousRowColumn, nextRowColumn) => previousRowColumn + nextRowColumn) + " |";
 
         var formattedRows = _rows.Select(row => string.Format(CultureInfo.InvariantCulture, formatRow, row)).ToList();
-
-        var maxRowLength = Math.Max(0, _rows.Any() ? _rows.Max(row => formattedRows.Count) : 0);
         var columnHeaders = string.Format(CultureInfo.InvariantCulture, formatRow, _columns.ToArray());
-
-        var maxTotalLength = Math.Max(maxRowLength, columnHeaders.Length);
-
-        var rowDivider = $" {string.Join("", Enumerable.Repeat("-", maxTotalLength - 1))} ";
+        var rowDivider = $" {new string('-', columnHeaders.Length - 1)} ";
 
         builder.AppendLine(rowDivider);
         builder.AppendLine(columnHeaders);

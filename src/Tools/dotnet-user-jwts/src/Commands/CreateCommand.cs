@@ -6,11 +6,7 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-<<<<<<< HEAD
-internal class CreateCommand
-=======
 internal sealed class CreateCommand
->>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
     private static readonly string[] _dateTimeFormats = new[] {
         "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd", "yyyy/MM/dd HH:mm", "yyyy/MM/dd HH:mm:ss" };
@@ -21,16 +17,11 @@ internal sealed class CreateCommand
         @"s\s"
     };
 
-    public static void Register(CommandLineApplication app)
+    public static void Register(ProjectCommandLineApplication app)
     {
         app.Command("create", cmd =>
         {
             cmd.Description = "Issue a new JSON Web Token";
-
-            var projectOption = cmd.Option(
-                "--project",
-                "The path of the project to operate on. Defaults to the project in the current directory.",
-                CommandOptionType.SingleValue);
 
             var schemeNameOption = cmd.Option(
                 "--scheme",
@@ -90,14 +81,14 @@ internal sealed class CreateCommand
             cmd.OnExecute(() =>
             {
                 var (options, isValid) = ValidateArguments(
-                    projectOption, schemeNameOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption);
+                    app.ProjectOption, schemeNameOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption);
 
                 if (!isValid)
                 {
                     return 1;
                 }
 
-                return Execute(projectOption.Value(), options);
+                return Execute(app.ProjectOption.Value(), options);
             });
         });
     }
@@ -183,7 +174,7 @@ internal sealed class CreateCommand
         var project = DevJwtCliHelpers.GetProject(projectPath);
         if (project == null)
         {
-            Console.WriteLine($"No project found at `--project` path or current directory.");
+            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
             return 1;
         }
 

@@ -5,22 +5,13 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-<<<<<<< HEAD
-internal class ClearCommand
-=======
 internal sealed class ClearCommand
->>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
-    public static void Register(CommandLineApplication app)
+    public static void Register(ProjectCommandLineApplication app)
     {
         app.Command("clear", cmd =>
         {
             cmd.Description = "Delete all issued JWTs for a project";
-
-            var projectOption = cmd.Option(
-                "--project",
-                "The path of the project to operate on. Defaults to the project in the current directory.",
-                CommandOptionType.SingleValue);
 
             var forceOption = cmd.Option(
                 "--force",
@@ -31,7 +22,7 @@ internal sealed class ClearCommand
 
             cmd.OnExecute(() =>
             {
-                return Execute(projectOption.Value(), forceOption.HasValue());
+                return Execute(app.ProjectOption.Value(), forceOption.HasValue());
             });
         });
     }
@@ -41,7 +32,7 @@ internal sealed class ClearCommand
         var project = DevJwtCliHelpers.GetProject(projectPath);
         if (project == null)
         {
-            Console.WriteLine($"No project found at `--project` path or current directory.");
+            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
             return 1;
         }
 

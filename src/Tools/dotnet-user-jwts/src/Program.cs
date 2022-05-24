@@ -4,32 +4,27 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 
-<<<<<<< HEAD
-=======
-#pragma warning disable CA1852 // Seal internal types
->>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
-CommandLineApplication devJwts = new()
+ProjectCommandLineApplication userJwts = new()
 {
     Name = "dotnet user-jwts"
 };
 
-devJwts.HelpOption("-h|--help");
+userJwts.HelpOption("-h|--help");
 
 // dotnet user-jwts list
-ListCommand.Register(devJwts);
+ListCommand.Register(userJwts);
 // dotnet user-jwts create
-CreateCommand.Register(devJwts);
+CreateCommand.Register(userJwts);
 // dotnet user-jwts print ecd045
-PrintCommand.Register(devJwts);
+PrintCommand.Register(userJwts);
 // dotnet user-jwts delete ecd045
-DeleteCommand.Register(devJwts);
+DeleteCommand.Register(userJwts);
 // dotnet user-jwts clear
-ClearCommand.Register(devJwts);
+ClearCommand.Register(userJwts);
 // dotnet user-jwts key
-KeyCommand.Register(devJwts);
+KeyCommand.Register(userJwts);
 
-devJwts.Execute(args);
-<<<<<<< HEAD
-=======
-#pragma warning restore CA1852 // Seal internal types
->>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
+// Show help information if no subcommand/option was specified.
+userJwts.OnExecute(() => userJwts.ShowHelp());
+
+userJwts.Execute(args);

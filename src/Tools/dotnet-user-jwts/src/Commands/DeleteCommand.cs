@@ -5,30 +5,25 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-<<<<<<< HEAD
-internal class DeleteCommand
-=======
 internal sealed class DeleteCommand
->>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
-    public static void Register(CommandLineApplication app)
+    public static void Register(ProjectCommandLineApplication app)
     {
         app.Command("delete", cmd =>
         {
             cmd.Description = "Delete a given JWT";
 
-            var idArgument = cmd.Argument("id", "The ID of the JWT to delete");
-
-            var projectOption = cmd.Option(
-                "--project",
-                "The path of the project to operate on. Defaults to the project in the current directory.",
-                CommandOptionType.SingleValue);
-
+            var idArgument = cmd.Argument("[id]", "The ID of the JWT to delete");
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
             {
-                return Execute(projectOption.Value(), idArgument.Value);
+                if (idArgument.Value is null)
+                {
+                    cmd.ShowHelp();
+                    return 0;
+                }
+                return Execute(app.ProjectOption.Value(), idArgument.Value);
             });
         });
     }
@@ -38,7 +33,7 @@ internal sealed class DeleteCommand
         var project = DevJwtCliHelpers.GetProject(projectPath);
         if (project == null)
         {
-            Console.WriteLine($"No project found at `--project` path or current directory.");
+            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
             return 1;
         }
 

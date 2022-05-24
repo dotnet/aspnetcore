@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -63,16 +64,7 @@ internal static class DevJwtCliHelpers
     {
         // Create signing material and save to user secrets
         var newKeyMaterial = System.Security.Cryptography.RandomNumberGenerator.GetBytes(DevJwtsDefaults.SigningKeyLength);
-
-        string secretsFilePath;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            secretsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", userSecretsId, "secrets.json");
-        }
-        else
-        {
-            secretsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", userSecretsId, "secrets.json");
-        }
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
 
         IDictionary<string, string> secrets = null;
         if (File.Exists(secretsFilePath))
@@ -143,43 +135,13 @@ internal static class DevJwtCliHelpers
 
     public static void PrintJwt(Jwt jwt, JwtSecurityToken fullToken = null)
     {
-        var table = new ConsoleTable();
-        table.AddColumns("Id", "Name", "Audience", "Expires", "Issued", "Scopes", "Roles", "Custom Claims");
-        if (fullToken is not null)
-        {
-            table.AddColumns("Token Header", "Token Payload");
-        }
+        Console.WriteLine(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
 
         if (fullToken is not null)
         {
-            table.AddRows(
-                jwt.Id,
-                jwt.Name,
-                jwt.Audience,
-                jwt.Expires.ToString("O"),
-                jwt.Issued.ToString("O"),
-                jwt.Scopes.Any() ? string.Join(", ", jwt.Scopes) : "[none]",
-                jwt.Roles.Any() ? string.Join(", ", jwt.Roles) : "[none]",
-                jwt.CustomClaims?.Count > 0 ? string.Join(", ", jwt.CustomClaims.Select(kvp => $"{kvp.Key}={kvp.Value}")) : "[none]",
-                fullToken.Header.SerializeToJson(),
-                fullToken.Payload.SerializeToJson()
-            );
+            Console.WriteLine($"Token Header: {fullToken.Header.SerializeToJson()}");
+            Console.WriteLine($"Token Payload: {fullToken.Payload.SerializeToJson()}");
         }
-        else
-        {
-            table.AddRows(
-                jwt.Id,
-                jwt.Name,
-                jwt.Audience,
-                jwt.Expires.ToString("O"),
-                jwt.Issued.ToString("O"),
-                jwt.Scopes is not null ? string.Join(", ", jwt.Scopes) : "[none]",
-                jwt.Roles is not null ? string.Join(", ", jwt.Roles) : "[none]",
-                jwt.CustomClaims?.Count > 0 ? jwt.CustomClaims.Select(kvp => $"{kvp.Key}={kvp.Value}") : "[none]"
-            );
-        }
-
-        table.Write();
         Console.WriteLine($"Compact Token: {jwt.Token}");
     }
 

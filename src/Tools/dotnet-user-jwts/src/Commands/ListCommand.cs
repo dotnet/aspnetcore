@@ -5,22 +5,13 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-<<<<<<< HEAD
-internal class ListCommand
-=======
 internal sealed class ListCommand
->>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
 {
-    public static void Register(CommandLineApplication app)
+    public static void Register(ProjectCommandLineApplication app)
     {
         app.Command("list", cmd =>
         {
             cmd.Description = "Lists the JWTs issued for the project";
-
-            var projectOption = cmd.Option(
-                "--project",
-                "The path of the project to operate on. Defaults to the project in the current directory",
-                CommandOptionType.SingleValue);
 
             var showTokensOption = cmd.Option(
                 "--show-tokens",
@@ -31,7 +22,7 @@ internal sealed class ListCommand
 
             cmd.OnExecute(() =>
             {
-                return Execute(projectOption.Value(), showTokensOption.HasValue());
+                return Execute(app.ProjectOption.Value(), showTokensOption.HasValue());
             });
         });
     }
@@ -41,7 +32,7 @@ internal sealed class ListCommand
         var project = DevJwtCliHelpers.GetProject(projectPath);
         if (project == null)
         {
-            Console.WriteLine($"No project found at `--project` path or current directory.");
+            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
             return 1;
         }
         var userSecretsId = DevJwtCliHelpers.GetUserSecretsId(project);
@@ -70,11 +61,11 @@ internal sealed class ListCommand
                 var jwt = jwtRow.Value;
                 if (showTokens)
                 {
-                    table.AddRows(jwt.Id, jwt.Name, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"), jwt.Token);
+                    table.AddRow(jwt.Id, jwt.Name, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"), jwt.Token);
                 }
                 else
                 {
-                    table.AddRows(jwt.Id, jwt.Name, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"));
+                    table.AddRow(jwt.Id, jwt.Name, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"));
                 }
             }
 
