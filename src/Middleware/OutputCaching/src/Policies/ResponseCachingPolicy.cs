@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 public sealed class ResponseCachingPolicy : IOutputCachingPolicy
 {
     /// <inheritdoc />
-    public Task OnRequestAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
     {
         context.AttemptOutputCaching = AttemptOutputCaching(context);
         context.AllowCacheLookup = AllowCacheLookup(context);
@@ -27,7 +27,7 @@ public sealed class ResponseCachingPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    public Task OnServeResponseAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
     {
         context.IsResponseCacheable = IsResponseCacheable(context);
 
@@ -35,7 +35,7 @@ public sealed class ResponseCachingPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    public Task OnServeFromCacheAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
     {
         context.IsCacheEntryFresh = IsCachedEntryFresh(context);
 

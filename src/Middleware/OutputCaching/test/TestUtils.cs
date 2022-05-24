@@ -32,34 +32,8 @@ internal class TestUtils
     private static bool TestRequestDelegate(HttpContext context, string guid)
     {
         var headers = context.Response.GetTypedHeaders();
-
-        var expires = context.Request.Query["Expires"];
-        if (!string.IsNullOrEmpty(expires))
-        {
-            headers.Expires = DateTimeOffset.Now.AddSeconds(int.Parse(expires, CultureInfo.InvariantCulture));
-        }
-
-        if (headers.CacheControl == null)
-        {
-            headers.CacheControl = new CacheControlHeaderValue
-            {
-                Public = true,
-                MaxAge = string.IsNullOrEmpty(expires) ? TimeSpan.FromSeconds(10) : (TimeSpan?)null
-            };
-        }
-        else
-        {
-            headers.CacheControl.Public = true;
-            headers.CacheControl.MaxAge = string.IsNullOrEmpty(expires) ? TimeSpan.FromSeconds(10) : (TimeSpan?)null;
-        }
         headers.Date = DateTimeOffset.UtcNow;
         headers.Headers["X-Value"] = guid;
-
-        var contentLength = context.Request.Query["ContentLength"];
-        if (!string.IsNullOrEmpty(contentLength))
-        {
-            headers.ContentLength = long.Parse(contentLength, CultureInfo.InvariantCulture);
-        }
 
         if (context.Request.Method != "HEAD")
         {
@@ -119,23 +93,23 @@ internal class TestUtils
         Action<HttpContext> contextAction = null)
     {
         return CreateBuildersWithOutputCaching(configureDelegate, options, new RequestDelegate[]
+        {
+            context =>
             {
-                    context =>
-                    {
-                        contextAction?.Invoke(context);
-                        return TestRequestDelegateWrite(context);
-                    },
-                    context =>
-                    {
-                        contextAction?.Invoke(context);
-                        return TestRequestDelegateWriteAsync(context);
-                    },
-                    context =>
-                    {
-                        contextAction?.Invoke(context);
-                        return TestRequestDelegateSendFileAsync(context);
-                    },
-            });
+                contextAction?.Invoke(context);
+                return TestRequestDelegateWrite(context);
+            },
+            context =>
+            {
+                contextAction?.Invoke(context);
+                return TestRequestDelegateWriteAsync(context);
+            },
+            context =>
+            {
+                contextAction?.Invoke(context);
+                return TestRequestDelegateSendFileAsync(context);
+            },
+        });
     }
 
     private static IEnumerable<IHostBuilder> CreateBuildersWithOutputCaching(
@@ -173,6 +147,13 @@ internal class TestUtils
                                 outputCachingOptions.MaximumBodySize = options.MaximumBodySize;
                                 outputCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
                                 outputCachingOptions.SystemClock = options.SystemClock;
+                                outputCachingOptions.DefaultPolicy = options.DefaultPolicy;
+                                outputCachingOptions.DefaultExpirationTimeSpan = options.DefaultExpirationTimeSpan;
+                                outputCachingOptions.SizeLimit = options.SizeLimit;
+                            }
+                            else
+                            {
+                                outputCachingOptions.DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().Build();
                             }
                         });
                     })
@@ -228,6 +209,8 @@ internal class TestUtils
     {
         return new OutputCachingContext(new DefaultHttpContext(), NullLogger.Instance)
         {
+            AllowCacheStorage = true,
+            IsResponseCacheable = true,
             ResponseTime = DateTimeOffset.UtcNow
         };
     }
@@ -236,6 +219,8 @@ internal class TestUtils
     {
         return new OutputCachingContext(httpContext, NullLogger.Instance)
         {
+            AllowCacheStorage = true,
+            IsResponseCacheable = true,
             ResponseTime = DateTimeOffset.UtcNow
         };
     }
@@ -244,6 +229,8 @@ internal class TestUtils
     {
         return new OutputCachingContext(new DefaultHttpContext(), new TestLogger("OutputCachingTests", testSink, true))
         {
+            AllowCacheStorage = true,
+            IsResponseCacheable = true,
             ResponseTime = DateTimeOffset.UtcNow
         };
     }
@@ -251,7 +238,7 @@ internal class TestUtils
     internal static void AssertLoggedMessages(IEnumerable<WriteContext> messages, params LoggedMessage[] expectedMessages)
     {
         var messageList = messages.ToList();
-        Assert.Equal(messageList.Count, expectedMessages.Length);
+        Assert.Equal(expectedMessages.Length, messageList.Count);
 
         for (var i = 0; i < messageList.Count; i++)
         {
@@ -316,6 +303,7 @@ internal class LoggedMessage
     internal static LoggedMessage ResponseNotCached => new LoggedMessage(27, LogLevel.Information);
     internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(28, LogLevel.Warning);
     internal static LoggedMessage ExpirationInfiniteMaxStaleSatisfied => new LoggedMessage(29, LogLevel.Debug);
+    internal static LoggedMessage ExpirationExpiresExceededNoExpiration => new LoggedMessage(30, LogLevel.Debug);
 
     private LoggedMessage(int evenId, LogLevel logLevel)
     {

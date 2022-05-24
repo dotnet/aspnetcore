@@ -45,6 +45,14 @@ public class OutputCacheAttribute : Attribute, IPoliciesMetadata
     public string[]? VaryByQueryKeys { get; set; }
 
     /// <summary>
+    /// Gets or sets the headers to vary by.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="VaryByHeaders"/> requires the output cache middleware.
+    /// </remarks>
+    public string[]? VaryByHeaders { get; set; }
+
+    /// <summary>
     /// Gets or sets the value of the cache profile name.
     /// </summary>
     public string? Profile { get; set; }
@@ -71,6 +79,11 @@ public class OutputCacheAttribute : Attribute, IPoliciesMetadata
         if (VaryByQueryKeys != null)
         {
             policies.Add(new VaryByQueryPolicy(VaryByQueryKeys));
+        }
+
+        if (VaryByHeaders != null)
+        {
+            policies.Add(new VaryByHeaderPolicy(VaryByHeaders));
         }
 
         if (_duration != null)

@@ -2,28 +2,13 @@
 Microsoft.AspNetCore.Builder.OutputCachingExtensions
 Microsoft.AspNetCore.OutputCaching.DefaultOutputCachePolicy
 Microsoft.AspNetCore.OutputCaching.DefaultOutputCachePolicy.DefaultOutputCachePolicy() -> void
-Microsoft.AspNetCore.OutputCaching.DefaultOutputCachePolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.DefaultOutputCachePolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.DefaultOutputCachePolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy
 Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy.EnableCachingPolicy() -> void
-Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.EnableCachingPolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.ExpirationPolicy
 Microsoft.AspNetCore.OutputCaching.ExpirationPolicy.ExpirationPolicy(System.TimeSpan expiration) -> void
-Microsoft.AspNetCore.OutputCaching.ExpirationPolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.ExpirationPolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.ExpirationPolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.LockingPolicy
-Microsoft.AspNetCore.OutputCaching.LockingPolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.LockingPolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.LockingPolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.NoStorePolicy
 Microsoft.AspNetCore.OutputCaching.NoStorePolicy.NoStorePolicy() -> void
-Microsoft.AspNetCore.OutputCaching.NoStorePolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.NoStorePolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.NoStorePolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Duration.get -> int
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Duration.set -> void
@@ -33,6 +18,8 @@ Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.OutputCacheAttribute() -
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Policies.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!>!
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Profile.get -> string?
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Profile.set -> void
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByHeaders.get -> string![]?
+Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByHeaders.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByQueryKeys.get -> string![]?
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.VaryByQueryKeys.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder
@@ -49,6 +36,7 @@ Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Path(Microsoft.AspNe
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Path(params Microsoft.AspNetCore.Http.PathString[]! pathBases) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Profile(string! profileName) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Tag(params string![]! tags) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByHeader(params string![]! headers) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByQuery(params string![]! queryKeys) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<(string!, string!)>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<System.Threading.Tasks.Task<(string!, string!)>!>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
@@ -77,41 +65,24 @@ Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.UseCaseSensitivePaths.ge
 Microsoft.AspNetCore.OutputCaching.OutputCachingOptions.UseCaseSensitivePaths.set -> void
 Microsoft.AspNetCore.OutputCaching.Policies.CompositePolicy
 Microsoft.AspNetCore.OutputCaching.Policies.CompositePolicy.CompositePolicy(params Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy![]! policies) -> void
-Microsoft.AspNetCore.OutputCaching.Policies.CompositePolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.Policies.CompositePolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.Policies.CompositePolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.Policies.PolicyExtensions
 Microsoft.AspNetCore.OutputCaching.Policies.PredicatePolicy
-Microsoft.AspNetCore.OutputCaching.Policies.PredicatePolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.Policies.PredicatePolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.Policies.PredicatePolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.Policies.PredicatePolicy.PredicatePolicy(System.Func<Microsoft.AspNetCore.OutputCaching.IOutputCachingContext!, System.Threading.Tasks.Task<bool>!>! predicate, Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy! policy) -> void
 Microsoft.AspNetCore.OutputCaching.ProfilePolicy
-Microsoft.AspNetCore.OutputCaching.ProfilePolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.ProfilePolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.ProfilePolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.ProfilePolicy.ProfilePolicy(string! profileName) -> void
 Microsoft.AspNetCore.OutputCaching.ResponseCachingPolicy
-Microsoft.AspNetCore.OutputCaching.ResponseCachingPolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.ResponseCachingPolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.ResponseCachingPolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.ResponseCachingPolicy.ResponseCachingPolicy() -> void
 Microsoft.AspNetCore.OutputCaching.TagsPolicy
-Microsoft.AspNetCore.OutputCaching.TagsPolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.TagsPolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.TagsPolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.TagsPolicy.TagsPolicy(params string![]! tags) -> void
+Microsoft.AspNetCore.OutputCaching.VaryByHeaderPolicy
+Microsoft.AspNetCore.OutputCaching.VaryByHeaderPolicy.VaryByHeaderPolicy() -> void
+Microsoft.AspNetCore.OutputCaching.VaryByHeaderPolicy.VaryByHeaderPolicy(params string![]! headers) -> void
+Microsoft.AspNetCore.OutputCaching.VaryByHeaderPolicy.VaryByHeaderPolicy(string! header) -> void
 Microsoft.AspNetCore.OutputCaching.VaryByQueryPolicy
-Microsoft.AspNetCore.OutputCaching.VaryByQueryPolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.VaryByQueryPolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.VaryByQueryPolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.VaryByQueryPolicy.VaryByQueryPolicy() -> void
 Microsoft.AspNetCore.OutputCaching.VaryByQueryPolicy.VaryByQueryPolicy(params string![]! queryKeys) -> void
 Microsoft.AspNetCore.OutputCaching.VaryByQueryPolicy.VaryByQueryPolicy(string! queryKey) -> void
 Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy
-Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy.VaryByValuePolicy() -> void
 Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy.VaryByValuePolicy(System.Func<(string!, string!)>! varyBy) -> void
 Microsoft.AspNetCore.OutputCaching.VaryByValuePolicy.VaryByValuePolicy(System.Func<System.Threading.Tasks.Task<(string!, string!)>!>! varyBy) -> void

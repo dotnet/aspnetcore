@@ -48,7 +48,7 @@ internal static partial class LoggerExtensions
     [LoggerMessage(9, LogLevel.Debug, "The age of the entry is {Age} and has exceeded the maximum age of {MaxAge} specified by the 'max-age' cache directive.", EventName = "ExpirationMaxAgeExceeded")]
     internal static partial void ExpirationMaxAgeExceeded(this ILogger logger, TimeSpan age, TimeSpan maxAge);
 
-    [LoggerMessage(10, LogLevel.Debug, "The response time of the entry is {ResponseTime} and has exceeded the expiry date of {Expired} specified by the 'Expires' header.",
+    [LoggerMessage(10, LogLevel.Debug, "The response time of the entry is {ResponseTime} and has exceeded its expiry date of {Expired} specified by the 'Expires' header.",
         EventName = "ExpirationExpiresExceeded")]
     internal static partial void ExpirationExpiresExceeded(this ILogger logger, DateTimeOffset responseTime, DateTimeOffset expired);
 
@@ -120,4 +120,9 @@ internal static partial class LoggerExtensions
         "However, the 'max-stale' cache directive was specified without an assigned value and a stale response of any age is accepted.",
         EventName = "ExpirationInfiniteMaxStaleSatisfied")]
     internal static partial void ExpirationInfiniteMaxStaleSatisfied(this ILogger logger, TimeSpan age, TimeSpan maxAge);
+
+    [LoggerMessage(30, LogLevel.Debug, "The response time of the entry is {ResponseTime} and has exceeded its expiry date.",
+        EventName = "ExpirationExpiresExceeded")]
+    internal static partial void ExpirationExpiresExceeded(this ILogger logger, DateTimeOffset responseTime);
+
 }

@@ -20,7 +20,7 @@ public sealed class TagsPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    public Task OnRequestAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
     {
         foreach (var tag in _tags)
         {
@@ -31,13 +31,13 @@ public sealed class TagsPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    public Task OnServeFromCacheAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public Task OnServeResponseAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
     {
         return Task.CompletedTask;
     }

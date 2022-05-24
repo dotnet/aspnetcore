@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 public sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
 {
     /// <inheritdoc />
-    public Task OnRequestAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
     {
         context.AttemptOutputCaching = AttemptOutputCaching(context);
         context.AllowCacheLookup = true;
@@ -27,15 +27,41 @@ public sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    public Task OnServeFromCacheAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
     {
         context.IsCacheEntryFresh = true;
+
+        // Validate expiration
+        if (context.CachedEntryAge <= TimeSpan.Zero)
+        {
+            context.Logger.ExpirationExpiresExceeded(context.ResponseTime!.Value);
+            context.IsCacheEntryFresh = false;
+        }
+
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public Task OnServeResponseAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
     {
+        var response = context.HttpContext.Response;
+
+        // Verify existence of cookie headers
+        if (!StringValues.IsNullOrEmpty(response.Headers.SetCookie))
+        {
+            context.Logger.ResponseWithSetCookieNotCacheable();
+            context.IsResponseCacheable = false;
+            return Task.CompletedTask;
+        }
+
+        // Check response code
+        if (response.StatusCode != StatusCodes.Status200OK)
+        {
+            context.Logger.ResponseWithUnsuccessfulStatusCodeNotCacheable(response.StatusCode);
+            context.IsResponseCacheable = false;
+            return Task.CompletedTask;
+        }
+
         context.IsResponseCacheable = true;
         return Task.CompletedTask;
     }

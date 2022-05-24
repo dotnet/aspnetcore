@@ -271,9 +271,9 @@ public class OutputCachingMiddleware
         return false;
     }
 
-    private void CreateCacheKey(OutputCachingContext context)
+    internal void CreateCacheKey(OutputCachingContext context)
     {
-        var varyHeaders = new StringValues(context.HttpContext.Response.Headers.GetCommaSeparatedValues(HeaderNames.Vary));
+        var varyHeaders = context.CachedVaryByRules.Headers;
         var varyQueryKeys = context.CachedVaryByRules.QueryKeys;
         var varyByCustomKeys = context.CachedVaryByRules.VaryByCustom;
         var varyByPrefix = context.CachedVaryByRules.VaryByPrefix;

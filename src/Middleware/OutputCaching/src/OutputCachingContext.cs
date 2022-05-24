@@ -57,7 +57,7 @@ internal class OutputCachingContext : IOutputCachingContext
     public bool IsResponseCacheable { get; set; }
 
     /// <summary>
-    /// Determine whether the response retrieved from the response cache is fresh and can be served.
+    /// Determine whether the response retrieved from the cache store is fresh and can be served.
     /// </summary>
     public bool IsCacheEntryFresh { get; set; }
 

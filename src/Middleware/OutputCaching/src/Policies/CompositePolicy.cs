@@ -20,7 +20,7 @@ public sealed class CompositePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc/>
-    public async Task OnRequestAsync(IOutputCachingContext context)
+    async Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
     {
         foreach (var policy in _policies)
         {
@@ -29,7 +29,7 @@ public sealed class CompositePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc/>
-    public async Task OnServeFromCacheAsync(IOutputCachingContext context)
+    async Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
     {
         foreach (var policy in _policies)
         {
@@ -38,7 +38,7 @@ public sealed class CompositePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc/>
-    public async Task OnServeResponseAsync(IOutputCachingContext context)
+    async Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
     {
         foreach (var policy in _policies)
         {

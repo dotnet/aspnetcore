@@ -137,6 +137,18 @@ public class OutputCachePolicyBuilder
     }
 
     /// <summary>
+    /// Adds a policy to vary the cached responses by header.
+    /// </summary>
+    /// <param name="headers">The headers to vary the cached responses by.</param>
+    public OutputCachePolicyBuilder VaryByHeader(params string[] headers)
+    {
+        ArgumentNullException.ThrowIfNull(headers);
+
+        Policies.Add(new VaryByHeaderPolicy(headers));
+        return this;
+    }
+
+    /// <summary>
     /// Adds a policy to vary the cached responses by custom values.
     /// </summary>
     /// <param name="varyBy">The value to vary the cached responses by.</param>

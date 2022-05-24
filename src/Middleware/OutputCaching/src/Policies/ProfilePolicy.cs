@@ -23,7 +23,7 @@ public sealed class ProfilePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    public Task OnServeResponseAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -36,7 +36,7 @@ public sealed class ProfilePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    public Task OnServeFromCacheAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -49,7 +49,7 @@ public sealed class ProfilePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    public Task OnRequestAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
     {
         var policy = GetProfilePolicy(context);
 

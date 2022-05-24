@@ -47,11 +47,6 @@ public interface IOutputCachingContext
     TimeSpan? ResponseMaxAge { get; }
 
     /// <summary>
-    /// The custom expiration timespan for the response
-    /// </summary>
-    public TimeSpan? ResponseExpirationTimeSpan { get; set; }
-
-    /// <summary>
     /// Gets the cached response headers.
     /// </summary>
     IHeaderDictionary CachedResponseHeaders { get; }
@@ -70,6 +65,11 @@ public interface IOutputCachingContext
     /// Gets the logger.
     /// </summary>
     ILogger Logger { get; }
+
+    /// <summary>
+    /// Gets or sets the custom expiration timespan for the response
+    /// </summary>
+    public TimeSpan? ResponseExpirationTimeSpan { get; set; }
 
     /// <summary>
     /// Determines whether the output caching logic should be configured for the incoming HTTP request.
@@ -102,7 +102,7 @@ public interface IOutputCachingContext
     bool IsResponseCacheable { get; set; }
 
     /// <summary>
-    /// Determines whether the response retrieved from the response cache is fresh and can be served.
+    /// Determines whether the response retrieved from the cache store is fresh and can be served.
     /// </summary>
     bool IsCacheEntryFresh { get; set; }
 }

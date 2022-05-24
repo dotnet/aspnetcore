@@ -21,7 +21,7 @@ public sealed class VaryByQueryPolicy : IOutputCachingPolicy
     }
 
     /// <summary>
-    /// Creates a policy that vary the cached content based on the specified query string key.
+    /// Creates a policy that varies the cached content based on the specified query string key.
     /// </summary>
     public VaryByQueryPolicy(string queryKey)
     {
@@ -29,7 +29,7 @@ public sealed class VaryByQueryPolicy : IOutputCachingPolicy
     }
 
     /// <summary>
-    /// Creates a policy that vary the cached content based on the specified query string keys.
+    /// Creates a policy that varies the cached content based on the specified query string keys.
     /// </summary>
     public VaryByQueryPolicy(params string[] queryKeys)
     {
@@ -37,7 +37,7 @@ public sealed class VaryByQueryPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    public Task OnRequestAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
     {
         // No vary by query?
         if (_queryKeys.Count == 0)
@@ -59,13 +59,13 @@ public sealed class VaryByQueryPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    public Task OnServeFromCacheAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public Task OnServeResponseAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
     {
         return Task.CompletedTask;
     }

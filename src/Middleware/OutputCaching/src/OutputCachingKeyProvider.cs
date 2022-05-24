@@ -113,7 +113,7 @@ internal sealed class OutputCachingKeyProvider : IOutputCachingKeyProvider
                 builder.Append(KeyDelimiter)
                     .Append('Q');
 
-                if (varyByRules.QueryKeys.Count == 1 && string.Equals(varyByRules.QueryKeys[0], "*", StringComparison.Ordinal))
+                if (varyByRules.QueryKeys.Count == 1 && string.Equals(varyByRules.QueryKeys[0], "*", StringComparison.Ordinal) && context.HttpContext.Request.Query.Count > 0)
                 {
                     // Vary by all available query keys
                     var queryArray = context.HttpContext.Request.Query.ToArray();
