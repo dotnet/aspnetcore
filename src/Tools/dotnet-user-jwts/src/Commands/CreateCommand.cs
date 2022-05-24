@@ -32,6 +32,12 @@ internal sealed class CreateCommand
                 "The path of the project to operate on. Defaults to the project in the current directory.",
                 CommandOptionType.SingleValue);
 
+            var schemeNameOption = cmd.Option(
+                "--scheme",
+                "The scheme name to use for the generated token. Defaults to 'Bearer'",
+                CommandOptionType.SingleValue
+                );
+
             var nameOption = cmd.Option(
                 "--name",
                 "The name of the user to create the JWT for. Defaults to the current environment user.",
@@ -83,21 +89,22 @@ internal sealed class CreateCommand
 
             cmd.OnExecute(() =>
             {
-                var (name, audience, issuer, notBefore, expiresOn, roles, scopes, claims, isValid) = ValidateArguments(
-                    projectOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption);
+                var (options, isValid) = ValidateArguments(
+                    projectOption, schemeNameOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption);
 
                 if (!isValid)
                 {
                     return 1;
                 }
 
-                return Execute(projectOption.Value(), name, audience, issuer, scopes, roles, claims, notBefore, expiresOn);
+                return Execute(projectOption.Value(), options);
             });
         });
     }
 
-    private static (string, string, string, DateTime, DateTime, List<string>, List<string>, Dictionary<string, string>, bool) ValidateArguments(
+    private static (JwtCreatorOptions, bool) ValidateArguments(
         CommandOption projectOption,
+        CommandOption schemeNameOption,
         CommandOption nameOption,
         CommandOption audienceOption,
         CommandOption issuerOption,
@@ -109,8 +116,10 @@ internal sealed class CreateCommand
         CommandOption claimsOption)
     {
         var isValid = true;
-        var name = nameOption.HasValue() ? nameOption.Value() : Environment.UserName;
         var project = DevJwtCliHelpers.GetProject(projectOption.Value());
+        var scheme = schemeNameOption.HasValue() ? schemeNameOption.Value() : "Bearer";
+        var name = nameOption.HasValue() ? nameOption.Value() : Environment.UserName;
+
         var audience = audienceOption.HasValue() ? audienceOption.Value() : DevJwtCliHelpers.GetApplicationUrl(project);
         if (audience is null)
         {
@@ -134,7 +143,7 @@ internal sealed class CreateCommand
         {
             if (!ParseDate(expiresOnOption.Value(), out expiresOn))
             {
-                Console.WriteLine(@"The date provided for --expires-on could not be parsed. Ensure you use the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'.");
+                Console.WriteLine(@"The date provided for -expires-on could not be parsed. Ensure you use the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'.");
                 isValid = false;
             }
         }
@@ -161,7 +170,7 @@ internal sealed class CreateCommand
             }
         }
 
-        return (name, audience, issuer, notBefore, expiresOn, roles, scopes, claims, isValid);
+        return (new JwtCreatorOptions(scheme, name, audience, issuer, notBefore, expiresOn, roles, scopes, claims), isValid);
 
         static bool ParseDate(string datetime, out DateTime parsedDateTime) =>
             DateTime.TryParseExact(datetime, _dateTimeFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out parsedDateTime);
@@ -169,14 +178,7 @@ internal sealed class CreateCommand
 
     private static int Execute(
         string projectPath,
-        string name,
-        string audience,
-        string issuer,
-        List<string> scopes,
-        List<string> roles,
-        IDictionary<string, string> claims,
-        DateTime notBefore,
-        DateTime expiresOn)
+        JwtCreatorOptions options)
     {
         var project = DevJwtCliHelpers.GetProject(projectPath);
         if (project == null)
@@ -188,17 +190,21 @@ internal sealed class CreateCommand
         var userSecretsId = DevJwtCliHelpers.GetUserSecretsId(project);
         var keyMaterial = DevJwtCliHelpers.GetOrCreateSigningKeyMaterial(userSecretsId);
 
-        var jwtIssuer = new JwtIssuer(issuer, keyMaterial);
-        var jwtToken = jwtIssuer.Create(name, audience, notBefore, expiresOn, issuedAt: DateTime.UtcNow, scopes: scopes, roles, claims);
+        var jwtIssuer = new JwtIssuer(options.Issuer, keyMaterial);
+        var jwtToken = jwtIssuer.Create(options);
 
         var jwtStore = new JwtStore(userSecretsId);
-        var jwt = Jwt.Create(jwtToken, jwtIssuer.WriteToken(jwtToken), scopes, roles, claims);
-        if (claims is { } customClaims)
+        var jwt = Jwt.Create(jwtToken, JwtIssuer.WriteToken(jwtToken), options.Scopes, options.Roles, options.Claims);
+        if (options.Claims is { } customClaims)
         {
             jwt.CustomClaims = customClaims;
         }
         jwtStore.Jwts.Add(jwtToken.Id, jwt);
         jwtStore.Save();
+
+        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var settingsToWrite = new JwtAuthenticationSchemeSettings(options.Scheme, options.Name, options.Audience, options.Issuer);
+        settingsToWrite.Save(appsettingsFilePath);
 
         Console.WriteLine("New JWT saved!");
 

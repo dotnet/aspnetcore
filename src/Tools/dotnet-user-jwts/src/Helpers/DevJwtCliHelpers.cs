@@ -71,11 +71,7 @@ internal static class DevJwtCliHelpers
         }
         else
         {
-<<<<<<< HEAD
-            secretsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "microsoft", "usersecrets", userSecretsId, "secret.json");
-=======
             secretsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", userSecretsId, "secrets.json");
->>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
         }
 
         IDictionary<string, string> secrets = null;
@@ -148,11 +144,7 @@ internal static class DevJwtCliHelpers
     public static void PrintJwt(Jwt jwt, JwtSecurityToken fullToken = null)
     {
         var table = new ConsoleTable();
-<<<<<<< HEAD
-        table.AddColumns("Name", "Id", "Audience", "Expires", "Issued", "Scopes", "Roles", "Custom Claims");
-=======
         table.AddColumns("Id", "Name", "Audience", "Expires", "Issued", "Scopes", "Roles", "Custom Claims");
->>>>>>> aed8a228a7 (Add dotnet dev-jwts tool)
         if (fullToken is not null)
         {
             table.AddColumns("Token Header", "Token Payload");
@@ -166,9 +158,9 @@ internal static class DevJwtCliHelpers
                 jwt.Audience,
                 jwt.Expires.ToString("O"),
                 jwt.Issued.ToString("O"),
-                jwt.Scopes is not null ? string.Join(", ", jwt.Scopes) : "[none]",
-                jwt.Roles is not null ? string.Join(", ", jwt.Roles) : "[none]",
-                jwt.CustomClaims?.Count > 0 ? jwt.CustomClaims.Select(kvp => $"{kvp.Key}={kvp.Value}") : "[none]",
+                jwt.Scopes.Any() ? string.Join(", ", jwt.Scopes) : "[none]",
+                jwt.Roles.Any() ? string.Join(", ", jwt.Roles) : "[none]",
+                jwt.CustomClaims?.Count > 0 ? string.Join(", ", jwt.CustomClaims.Select(kvp => $"{kvp.Key}={kvp.Value}")) : "[none]",
                 fullToken.Header.SerializeToJson(),
                 fullToken.Payload.SerializeToJson()
             );

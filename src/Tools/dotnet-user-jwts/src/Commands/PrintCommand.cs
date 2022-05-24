@@ -60,11 +60,10 @@ internal sealed class PrintCommand
         Console.WriteLine($"Found JWT with ID '{id}'");
         var jwt = jwtStore.Jwts[id];
         JwtSecurityToken fullToken;
+
         if (showFull)
         {
-            var keyMaterial = DevJwtCliHelpers.GetOrCreateSigningKeyMaterial(userSecretsId);
-            var jwtIssuer = new JwtIssuer(DevJwtsDefaults.Issuer, keyMaterial);
-            fullToken = jwtIssuer.Extract(jwt.Token);
+            fullToken = JwtIssuer.Extract(jwt.Token);
             DevJwtCliHelpers.PrintJwt(jwt, fullToken);
         }
 

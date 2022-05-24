@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-public class JwtIssuer
+internal class JwtIssuer
 {
     private readonly SymmetricSecurityKey _signingKey;
 
@@ -22,51 +22,43 @@ public class JwtIssuer
 
     public string Issuer { get; }
 
-    public JwtSecurityToken Create(
-        string name,
-        string audience,
-        DateTime notBefore,
-        DateTime expires,
-        DateTime issuedAt,
-        IEnumerable<string> scopes = null,
-        IEnumerable<string> roles = null,
-        IDictionary<string, string> claims = null)
+    public JwtSecurityToken Create(JwtCreatorOptions options)
     {
-        var identity = new GenericIdentity(name);
+        var identity = new GenericIdentity(options.Name);
 
-        identity.AddClaim(new Claim(JwtRegisteredClaimNames.Sub, name));
+        identity.AddClaim(new Claim(JwtRegisteredClaimNames.Sub, options.Name));
 
         var id = Guid.NewGuid().ToString().GetHashCode().ToString("x", CultureInfo.InvariantCulture);
         identity.AddClaim(new Claim(JwtRegisteredClaimNames.Jti, id));
 
-        if (scopes is { } scopesToAdd)
+        if (options.Scopes is { } scopesToAdd)
         {
             identity.AddClaims(scopesToAdd.Select(s => new Claim("scope", s)));
         }
 
-        if (roles is { } rolesToAdd)
+        if (options.Roles is { } rolesToAdd)
         {
             identity.AddClaims(rolesToAdd.Select(r => new Claim(ClaimTypes.Role, r)));
         }
 
-        if (claims is { Count: > 0 } claimsToAdd)
+        if (options.Claims is { Count: > 0 } claimsToAdd)
         {
             identity.AddClaims(claimsToAdd.Select(kvp => new Claim(kvp.Key, kvp.Value)));
         }
 
         var handler = new JwtSecurityTokenHandler();
         var jwtSigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256Signature);
-        var jwtToken = handler.CreateJwtSecurityToken(Issuer, audience, identity, notBefore, expires, issuedAt, jwtSigningCredentials);
+        var jwtToken = handler.CreateJwtSecurityToken(Issuer, options.Audience, identity, options.NotBefore, options.ExpiresOn, issuedAt: DateTime.UtcNow, jwtSigningCredentials);
         return jwtToken;
     }
 
-    public string WriteToken(JwtSecurityToken token)
+    public static string WriteToken(JwtSecurityToken token)
     {
         var handler = new JwtSecurityTokenHandler();
         return handler.WriteToken(token);
     }
 
-    public JwtSecurityToken Extract(string token) => new JwtSecurityToken(token);
+    public static JwtSecurityToken Extract(string token) => new JwtSecurityToken(token);
 
     public bool IsValid(string encodedToken)
     {
