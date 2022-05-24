@@ -21,7 +21,8 @@ public class PackageTests
 
     public PackageTests(ITestOutputHelper output)
     {
-        if (!TestData.VerifyPackageAssemblyVersions())
+        // Do nothing if this is a dev build
+        if (!TestData.VerifyPackageAssemblyVersions() && !SkipOnHelixAttribute.OnHelix())
         {
             return;
         }
@@ -46,7 +47,8 @@ public class PackageTests
     [Fact]
     public void PackageAssembliesHaveExpectedAssemblyVersions()
     {
-        if (!TestData.VerifyPackageAssemblyVersions())
+        // Do nothing if this is a dev build
+        if (!TestData.VerifyPackageAssemblyVersions() && !SkipOnHelixAttribute.OnHelix())
         {
             // TODO - remove this, just verifying this doesn't get hit in CI
             Assert.True(false);
