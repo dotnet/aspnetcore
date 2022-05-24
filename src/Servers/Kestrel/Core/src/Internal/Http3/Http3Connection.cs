@@ -52,12 +52,13 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
 
-        var httpLimits = context.ServiceContext.ServerOptions.Limits;
+        var serverOptions = context.ServiceContext.ServerOptions;
+        var httpLimits = serverOptions.Limits;
 
         _serverSettings.HeaderTableSize = (uint)httpLimits.Http3.HeaderTableSize;
         _serverSettings.MaxRequestHeaderFieldSectionSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
-        _serverSettings.EnableWebTransport = 1;
-        _serverSettings.H3Datagram = 1;
+        _serverSettings.EnableWebTransport = Convert.ToUInt32(serverOptions.EnableWebTransport);
+        _serverSettings.H3Datagram = Convert.ToUInt32(serverOptions.EnableHttp3Datagrams);
     }
 
     private void UpdateHighestOpenedRequestStreamId(long streamId)
