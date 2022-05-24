@@ -323,7 +323,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
         catch (NotSupportedException ex)
         {
-            Log.GetServerNotSupported(_logger, ex);
+            Log.CouldNotDetermineServerVersion(_logger, ex);
 
             // The GetServer call may not be supported with some configurations, in which
             // case let's also fall back to using the older command.

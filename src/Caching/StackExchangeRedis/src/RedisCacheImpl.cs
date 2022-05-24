@@ -8,8 +8,13 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 
 internal sealed class RedisCacheImpl : RedisCache
 {
-    public RedisCacheImpl(IOptions<RedisCacheOptions> optionsAccessor, ILogger<RedisCacheImpl> logger)
+    public RedisCacheImpl(IOptions<RedisCacheOptions> optionsAccessor, ILogger<RedisCache> logger)
         : base(optionsAccessor, logger)
+    {
+    }
+
+    public RedisCacheImpl(IOptions<RedisCacheOptions> optionsAccessor)
+        : base(optionsAccessor)
     {
     }
 }

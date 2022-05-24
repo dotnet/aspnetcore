@@ -58,6 +58,39 @@ public class CacheServiceExtensionsTests
     }
 
     [Fact]
+    public void AddStackExchangeRedisCache_IDistributedCacheWithoutLoggingCanBeResolved()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddStackExchangeRedisCache(options => { });
+
+        // Assert
+        using var serviceProvider = services.BuildServiceProvider();
+        var distributedCache = serviceProvider.GetRequiredService<IDistributedCache>();
+
+        Assert.NotNull(distributedCache);
+    }
+
+    [Fact]
+    public void AddStackExchangeRedisCache_IDistributedCacheWithLoggingCanBeResolved()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddStackExchangeRedisCache(options => { });
+        services.AddLogging();
+
+        // Assert
+        using var serviceProvider = services.BuildServiceProvider();
+        var distributedCache = serviceProvider.GetRequiredService<IDistributedCache>();
+
+        Assert.NotNull(distributedCache);
+    }
+
+    [Fact]
     public void AddStackExchangeRedisCache_UsesLoggerFactoryAlreadyRegisteredWithServiceCollection()
     {
         // Arrange
@@ -74,6 +107,7 @@ public class CacheServiceExtensionsTests
         services.AddScoped(typeof(ILoggerFactory), _ => loggerFactory.Object);
 
         // Act
+        services.AddLogging();
         services.AddStackExchangeRedisCache(options => { });
 
         // Assert
