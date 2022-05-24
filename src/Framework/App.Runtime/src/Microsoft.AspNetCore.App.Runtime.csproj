@@ -223,6 +223,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       $(CrossGenDependsOn);
       _BatchCrossGenAssemblies;
     </CrossGenDependsOn>
+    <CrossGenDependsOn>
+      _GenerateComposites;
+    </CrossGenDependsOn>
     <!-- _GetBuildOutputFilesWithTfm executes in a separate context from Build, GenerateNuspec, and so on. -->
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);
@@ -459,6 +462,43 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <Exec Command="&quot;$(CrossgenToolPath)&quot; $(Crossgen2Args) -o:&quot;$(TargetDir)%(FileName)%(Extension)&quot; &quot;%(IntermediateCrossgenAssembly.Identity)&quot;"
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="High" />
+  </Target>
+
+  <Target Name="_GenerateComposites"
+    DependsOnTargets="_ExpandRuntimePackageRoot">
+
+    <!-- These were used for debugging and log analyzing. Will be removed when
+         the PR is merged.
+
+    <Message Text="MESSAGEY: IN GENERATE COMPOSITES TARGET RULE" Importance="high" />
+    <Message Text="MESSAGEY RUNTIME PACKAGE ROOT: $(RuntimePackageRoot)" Importance="high" />
+    <Message Text="MESSAGEY TARGET DIR: $(TargetDir)" Importance="high" />
+    <Message Text="MESSAGEY TARGET ARCHITECTURE: $(TargetArchitecture)" Importance="high" />
+    -->
+
+    <PropertyGroup>
+      <CompositeTargetDir>$(TargetDir)Composite\</CompositeTargetDir>
+      <RemoveDir Directories="$(CompositeTargetDir)" />
+      <MakeDir Directories="$(CompositeTargetDir)" />
+
+      <CompositeTargetOs>$(TargetOsName)</CompositeTargetOs>
+      <CompositeTargetOs Condition="'$(TargetOsName)' == 'win'">windows</CompositeTargetOs>
+      <CompositeTargetOs Condition="'$(TargetOsName)' == 'linux-musl'">linux</CompositeTargetOs>
+
+      <RuntimesPath>$(RuntimePackageRoot)runtimes\$(TargetOsName)-$(TargetArchitecture)\</RuntimesPath>
+
+      <!-- Is there away to get the 'net7.0' programmatically? -->
+      <BaseAssemblies>$(RuntimesPath)lib\net7.0\*.dll</BaseAssemblies>
+      <BaseAssemblies>$(BaseAssemblies) $(RuntimesPath)native\*.dll</BaseAssemblies>
+
+      <CompositeArgs>--composite</CompositeArgs>
+      <CompositeArgs>$(CompositeArgs) --targetarch:$(TargetArchitecture)</CompositeArgs>
+      <CompositeArgs>$(CompositeArgs) --targetos:$(CompositeTargetOs)</CompositeArgs>
+      <CompositeArgs>$(CompositeArgs) $(BaseAssemblies)</CompositeArgs>
+      <CompositeArgs>$(CompositeArgs) $(TargetDir)*.dll</CompositeArgs>
+    </PropertyGroup>
+
+    <Exec Command="&quot;$(CrossgenToolPath)&quot; $(CompositeArgs) -o:&quot;$(CompositeTargetDir)full-composite.r2r.dll&quot;" />
   </Target>
 
   <!--
