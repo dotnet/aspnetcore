@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-internal record JwtCreatorOptions(
+internal sealed record JwtCreatorOptions(
     string Scheme,
     string Name,
     string Audience,

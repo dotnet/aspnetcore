@@ -5,7 +5,7 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-internal class ProjectCommandLineApplication : CommandLineApplication
+internal sealed class ProjectCommandLineApplication : CommandLineApplication
 {
     public CommandOption ProjectOption { get; private set; }
 

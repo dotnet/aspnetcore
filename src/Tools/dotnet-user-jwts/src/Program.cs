@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 
+#pragma warning disable CA1852 // Seal internal types
 ProjectCommandLineApplication userJwts = new()
 {
     Name = "dotnet user-jwts"
@@ -28,3 +29,4 @@ KeyCommand.Register(userJwts);
 userJwts.OnExecute(() => userJwts.ShowHelp());
 
 userJwts.Execute(args);
+#pragma warning restore CA1852 // Seal internal types

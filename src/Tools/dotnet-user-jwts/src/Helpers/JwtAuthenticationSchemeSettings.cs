@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-internal record JwtAuthenticationSchemeSettings(string SchemeName, string UserName, string Audience, string ClaimsIssuer)
+internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, string UserName, string Audience, string ClaimsIssuer)
 {
     private const string AuthenticationKey = "Authentication";
     private const string SchemesKey = "Schemes";
