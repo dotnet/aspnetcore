@@ -660,8 +660,10 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             case Http3SettingType.QPackBlockedStreams:
                 break;
             case Http3SettingType.EnableWebTransport:
+                _clientSettings.EnableWebTransport = (uint)value;
+                break;
             case Http3SettingType.H3Datagram:
-                // todo track this so we reject webtransport streams later if the client did not say they use webtransport
+                _clientSettings.H3Datagram = (uint)value;
                 break;
             default:
                 throw new InvalidOperationException("Unexpected setting: " + type);

@@ -834,10 +834,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         if (_isProtocolWebTransport)
         {
-            if (Scheme != SchemeHttps)
-            {
-                throw new Http3StreamErrorException("Scheme must be HTTPS." /*todo unhardcode*/, Http3ErrorCode.MessageError);
-            }
+            // Requirement in the spec but this is handled by the Http/3 layer already, so leaving commented out for posterity
+            //if (Scheme != SchemeHttps)
+            //{
+            //    throw new Http3StreamErrorException("Scheme must be HTTPS." /*todo unhardcode*/, Http3ErrorCode.MessageError);
+            //}
 
             if (!_isMethodConnect)
             {
@@ -851,7 +852,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             if (!_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Authority) || !_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Path))
             {
-                throw new Http3StreamErrorException("WebTrasport requires the authority and path pseudoheaders to be set" /*todo unhardcode*/, Http3ErrorCode.MessageError);
+                throw new Http3StreamErrorException("WebTransport requires the authority and path pseudoheaders to be set" /*todo unhardcode*/, Http3ErrorCode.MessageError);
             }
 
             if (_context.ClientPeerSettings.EnableWebTransport == 0)

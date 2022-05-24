@@ -27,6 +27,9 @@ public class Program
                 webHost.UseKestrel()
                 .ConfigureKestrel((context, options) =>
                 {
+                    options.EnableHttp3Datagrams = true;
+                    options.EnableWebTransport = true;
+
                     // CERTIFICATE STUFF THAT SHOULD BE MERGED WITH KESTREL EVENTUALLY///////////
                     X509Certificate2 cert = null;
                     var store = new X509Store("testing2", StoreLocation.CurrentUser);

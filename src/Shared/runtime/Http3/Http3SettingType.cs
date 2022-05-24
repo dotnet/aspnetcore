@@ -33,6 +33,19 @@ namespace System.Net.Http
         /// The maximum number of request streams that can be blocked waiting for QPack instructions. The default is 0.
         /// https://tools.ietf.org/html/draft-ietf-quic-qpack-11#section-5
         /// </summary>
-        QPackBlockedStreams = 0x7
+        QPackBlockedStreams = 0x7,
+
+        /// <summary>
+        /// SETTINGS_ENABLE_WEBTRANSPORT, default is 0 (off)
+        /// https://www.ietf.org/archive/id/draft-ietf-webtrans-http3-01.html#name-http-3-settings-parameter-r
+        /// </summary>
+        EnableWebTransport = 0x2b603742,
+
+        /// <summary>
+        /// H3_DATAGRAM, default is 0 (off)
+        /// indicates that the server suppprts sending individual datagrams over Http/3
+        /// rather than just streams.
+        /// </summary>
+        H3Datagram = 0xffd277
     }
 }

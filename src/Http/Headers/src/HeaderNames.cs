@@ -299,4 +299,7 @@ public static class HeaderNames
 
     /// <summary>Gets the <c>X-XSS-Protection</c> HTTP header name.</summary>
     public static readonly string XXSSProtection = "X-XSS-Protection";
+
+    /// <summary>Gets the <c>Protocol</c> HTTP header name.</summary>
+    public static readonly string Protocol = ":protocol";
 }
