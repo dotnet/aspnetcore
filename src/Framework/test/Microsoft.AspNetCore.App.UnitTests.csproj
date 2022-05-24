@@ -4,7 +4,7 @@
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
     <!-- Only verify assembly versions in non-dev builds. Dev builds always produce assembly version `42.42.42.42` -->
-    <VerifyPackageAssemblyVersions Condition="'$(VersionSuffixDateStamp)' != ''">true</VerifyPackageAssemblyVersions>
+    <VerifyPackageAssemblyVersions Condition="'$(OfficialBuild)' == 'true' or '$(DotNetUseShippingVersions)' == 'true'">true</VerifyPackageAssemblyVersions>
     <TestDependsOnAspNetAppPackages>true</TestDependsOnAspNetAppPackages>
     <SkipHelixArm>true</SkipHelixArm>
     <PackagesLayoutRoot>$([MSBuild]::NormalizeDirectory('$(DOTNET_ROOT)', '$(ArtifactsObjDir)', 'Packages.Layout', '$(Configuration)'))</PackagesLayoutRoot>
