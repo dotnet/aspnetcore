@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// and <see cref="IEndpointConventionBuilder"/> interfaces. This can be used to add endpoints with the given <see cref="GroupPrefix"/>,
 /// and to customize those endpoints using conventions.
 /// </summary>
-public sealed class GroupRouteBuilder : IEndpointRouteBuilder, IEndpointConventionBuilder
+public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventionBuilder
 {
     private readonly IEndpointRouteBuilder _outerEndpointRouteBuilder;
     private readonly RoutePattern _pattern;
@@ -21,12 +21,12 @@ public sealed class GroupRouteBuilder : IEndpointRouteBuilder, IEndpointConventi
     private readonly List<EndpointDataSource> _dataSources = new();
     private readonly List<Action<EndpointBuilder>> _conventions = new();
 
-    internal GroupRouteBuilder(IEndpointRouteBuilder outerEndpointRouteBuilder, RoutePattern pattern)
+    internal RouteGroupBuilder(IEndpointRouteBuilder outerEndpointRouteBuilder, RoutePattern pattern)
     {
         _outerEndpointRouteBuilder = outerEndpointRouteBuilder;
         _pattern = pattern;
 
-        if (outerEndpointRouteBuilder is GroupRouteBuilder outerGroup)
+        if (outerEndpointRouteBuilder is RouteGroupBuilder outerGroup)
         {
             GroupPrefix = RoutePatternFactory.Combine(outerGroup.GroupPrefix, pattern);
         }
@@ -39,7 +39,7 @@ public sealed class GroupRouteBuilder : IEndpointRouteBuilder, IEndpointConventi
     }
 
     /// <summary>
-    /// The <see cref="RoutePattern"/> prefixing all endpoints defined using this <see cref="GroupRouteBuilder"/>.
+    /// The <see cref="RoutePattern"/> prefixing all endpoints defined using this <see cref="RouteGroupBuilder"/>.
     /// This accounts for nested groups and gives the full group prefix, not just the prefix supplied to the last call to
     /// <see cref="EndpointRouteBuilderExtensions.MapGroup(IEndpointRouteBuilder, RoutePattern)"/>.
     /// </summary>
@@ -54,9 +54,9 @@ public sealed class GroupRouteBuilder : IEndpointRouteBuilder, IEndpointConventi
 
     private sealed class GroupDataSource : EndpointDataSource
     {
-        private readonly GroupRouteBuilder _groupRouteBuilder;
+        private readonly RouteGroupBuilder _groupRouteBuilder;
 
-        public GroupDataSource(GroupRouteBuilder groupRouteBuilder)
+        public GroupDataSource(RouteGroupBuilder groupRouteBuilder)
         {
             _groupRouteBuilder = groupRouteBuilder;
         }
