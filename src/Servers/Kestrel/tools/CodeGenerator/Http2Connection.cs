@@ -27,5 +27,6 @@ public static class Http2Connection
         yield return ("Te", "te");
         yield return ("Trailers", "trailers");
         yield return ("Connect", "CONNECT");
+        yield return ("Protocol", ":protocol");
     }
 }

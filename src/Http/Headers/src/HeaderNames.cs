@@ -189,7 +189,7 @@ public static class HeaderNames
     /// <summary>Gets the <c>Pragma</c> HTTP header name.</summary>
     public static readonly string Pragma = "Pragma";
 
-    /// <summary>Gets the <c>Protocol</c> HTTP header name.</summary>
+    /// <summary>Gets the <c>:protocol</c> HTTP header name.</summary>
     public static readonly string Protocol = ":protocol";
 
     /// <summary>Gets the <c>Proxy-Authenticate</c> HTTP header name.</summary>

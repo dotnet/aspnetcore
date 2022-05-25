@@ -226,18 +226,37 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             return false;
         }
 
-        // CONNECT - :scheme and :path must be excluded
         if (Method == HttpMethod.Connect)
         {
-            if (!String.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || !String.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
+            // https://datatracker.ietf.org/doc/html/rfc8441#section-4
+            // HTTP/2 WebSockets
+            if (!StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderProtocol))
+            {
+                // On requests that contain the :protocol pseudo-header field, the :scheme and :path pseudo-header fields of the target URI MUST also be included.
+                if (StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
+                {
+                    ResetAndAbort(new ConnectionAbortedException("':protocol' requres ':scheme' and ':path'."), Http2ErrorCode.PROTOCOL_ERROR);
+                    return false;
+                }
+                ConnectProtocol = HttpRequestHeaders.HeaderProtocol;
+                HttpRequestHeaders.HeaderProtocol = default;
+            }
+            // CONNECT - :scheme and :path must be excluded
+            else if (!StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || !StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
             {
                 ResetAndAbort(new ConnectionAbortedException(CoreStrings.Http2ErrorConnectMustNotSendSchemeOrPath), Http2ErrorCode.PROTOCOL_ERROR);
                 return false;
             }
-
-            RawTarget = hostText;
-
-            return true;
+            else
+            {
+                RawTarget = hostText;
+                return true;
+            }
+        }
+        else if (!StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderProtocol))
+        {
+            ResetAndAbort(new ConnectionAbortedException("':protocol' is only allowed with the 'CONNECT' method."), Http2ErrorCode.PROTOCOL_ERROR);
+            return false;
         }
 
         // :scheme https://tools.ietf.org/html/rfc7540#section-8.1.2.3

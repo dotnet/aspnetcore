@@ -21,5 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private static ReadOnlySpan<byte> TeBytes => new byte[2] { (byte)'t', (byte)'e' };
         private static ReadOnlySpan<byte> TrailersBytes => new byte[8] { (byte)'t', (byte)'r', (byte)'a', (byte)'i', (byte)'l', (byte)'e', (byte)'r', (byte)'s' };
         private static ReadOnlySpan<byte> ConnectBytes => new byte[7] { (byte)'C', (byte)'O', (byte)'N', (byte)'N', (byte)'E', (byte)'C', (byte)'T' };
+        private static ReadOnlySpan<byte> ProtocolBytes => new byte[9] { (byte)':', (byte)'p', (byte)'r', (byte)'o', (byte)'t', (byte)'o', (byte)'c', (byte)'o', (byte)'l' };
     }
 }

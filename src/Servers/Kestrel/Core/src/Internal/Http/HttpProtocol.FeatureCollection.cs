@@ -25,6 +25,12 @@ internal partial class HttpProtocol
         set => _httpProtocol = value;
     }
 
+    string? IHttpRequestFeature.ConnectProtocol
+    {
+        get => _connectProtocol ??= ConnectProtocol;
+        set => _connectProtocol = value;
+    }
+
     string IHttpRequestFeature.Scheme
     {
         get => Scheme ?? "http";

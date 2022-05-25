@@ -1617,6 +1617,10 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         {
             return PseudoHeaderFields.Authority;
         }
+        else if (name.SequenceEqual(ProtocolBytes))
+        {
+            return PseudoHeaderFields.Protocol;
+        }
         else
         {
             return PseudoHeaderFields.Unknown;
@@ -1721,6 +1725,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         Path = 0x4,
         Scheme = 0x8,
         Status = 0x10,
+        Protocol = 0x20,
         Unknown = 0x40000000
     }
 

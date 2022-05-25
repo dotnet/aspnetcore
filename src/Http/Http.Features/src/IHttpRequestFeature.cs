@@ -15,6 +15,16 @@ public interface IHttpRequestFeature
     string Protocol { get; set; }
 
     /// <summary>
+    /// Gets or sets the :protocol field used with the CONNECT method.
+    /// See https://datatracker.ietf.org/doc/html/rfc8441.
+    /// </summary>
+    string? ConnectProtocol
+    {
+        get { return null; }
+        set { }
+    }
+
+    /// <summary>
     /// Gets or set the request uri scheme. E.g. "http" or "https".
     /// <para>
     /// Note this value is not included in the original request,
