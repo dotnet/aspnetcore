@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -79,6 +80,7 @@ public sealed class WebApplicationBuilder
 
         Host = new ConfigureHostBuilder(bootstrapHostBuilder.Context, Configuration, Services);
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
+        Authentication = new WebApplicationAuthenticationBuilder(Services);
     }
 
     /// <summary>
@@ -112,6 +114,11 @@ public sealed class WebApplicationBuilder
     /// To build after configuration, call <see cref="Build"/>.
     /// </summary>
     public ConfigureHostBuilder Host { get; }
+
+    /// <summary>
+    /// An <see cref="AuthenticationBuilder"/> for configuration authentication-related properties.
+    /// </summary>
+    public AuthenticationBuilder Authentication { get; }
 
     /// <summary>
     /// Builds the <see cref="WebApplication"/>.
@@ -164,6 +171,12 @@ public sealed class WebApplicationBuilder
                 // UseEndpoints will be looking for the RouteBuilder so make sure it's set
                 app.Properties[EndpointRouteBuilderKey] = localRouteBuilder;
             }
+        }
+
+        if (Authentication is WebApplicationAuthenticationBuilder webAuthBuilder && webAuthBuilder.IsAuthenticationConfigured is true)
+        {
+            app.UseAuthentication();
+            app.UseAuthorization();
         }
 
         // Wire the source pipeline to run in the destination pipeline

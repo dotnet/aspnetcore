@@ -50,7 +50,7 @@ internal sealed class JwtIssuer
         // creator methods and constructors don't provide a way of setting multiple
         // audiences. Instead, we have to register an `aud` claim for each audience
         // we want to add so that the multiple audiences are populated correctly.
-        if (options.Audiences is {  Count: > 0} audiences)
+        if (options.Audiences is { Count: > 0} audiences)
         {
             identity.AddClaims(audiences.Select(aud => new Claim(JwtRegisteredClaimNames.Aud, aud)));
         }
