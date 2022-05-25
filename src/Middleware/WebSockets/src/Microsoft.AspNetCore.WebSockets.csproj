@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core web socket middleware for use on top of opaque servers.</Description>
@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
@@ -25,4 +26,5 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.WebSockets.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.WebSockets.MicroBenchmarks" />
   </ItemGroup>
+
 </Project>
