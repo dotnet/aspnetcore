@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Policies;
 /// <summary>
 /// A policy that adds a requirement to another policy.
 /// </summary>
-public sealed class PredicatePolicy : IOutputCachingPolicy
+internal sealed class PredicatePolicy : IOutputCachingPolicy
 {
     // TODO: Accept a non async predicate too?
 

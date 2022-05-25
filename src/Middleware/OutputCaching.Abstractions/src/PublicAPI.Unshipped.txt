@@ -67,4 +67,4 @@ Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicyProvider.OnRequestAsync(M
 Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicyProvider.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicyProvider.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.IPoliciesMetadata
-Microsoft.AspNetCore.OutputCaching.IPoliciesMetadata.Policies.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!>!
+Microsoft.AspNetCore.OutputCaching.IPoliciesMetadata.Policy.get -> Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!

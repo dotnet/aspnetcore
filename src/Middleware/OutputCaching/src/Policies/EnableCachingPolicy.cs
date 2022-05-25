@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that enables caching
 /// </summary>
-public sealed class EnableCachingPolicy : IOutputCachingPolicy
+internal sealed class EnableCachingPolicy : IOutputCachingPolicy
 {
     /// <summary>
     /// Default instance of <see cref="EnableCachingPolicy"/>.

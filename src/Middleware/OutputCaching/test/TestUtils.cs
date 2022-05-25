@@ -153,7 +153,7 @@ internal class TestUtils
                             }
                             else
                             {
-                                outputCachingOptions.DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().Build();
+                                outputCachingOptions.DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build();
                             }
                         });
                     })

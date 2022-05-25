@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Provides the policy implemented by Response caching
 /// </summary>
-public sealed class ResponseCachingPolicy : IOutputCachingPolicy
+internal sealed class ResponseCachingPolicy : IOutputCachingPolicy
 {
     /// <inheritdoc />
     Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Policies;
 /// <summary>
 /// A composite policy.
 /// </summary>
-public sealed class CompositePolicy : IOutputCachingPolicy
+internal sealed class CompositePolicy : IOutputCachingPolicy
 {
     private readonly IOutputCachingPolicy[] _policies;
 

@@ -18,25 +18,19 @@ public class OutputCachePolicyBuilder
     /// <summary>
     /// Gets an <see cref="OutputCachePolicyBuilder"/> initialized with a <see cref="DefaultOutputCachePolicy"/> instance.
     /// </summary>
-    public static OutputCachePolicyBuilder Default
+    public OutputCachePolicyBuilder Default()
     {
-        get
-        {
-            var builder = new OutputCachePolicyBuilder();
-            builder.Policies.Add(new DefaultOutputCachePolicy());
-            return builder;
-        }
+        Policies.Add(new DefaultOutputCachePolicy());
+        return this;
     }
 
     /// <summary>
-    /// Gets an empty <see cref="OutputCachePolicyBuilder"/>.
+    /// Adds a policy instance.
     /// </summary>
-    public static OutputCachePolicyBuilder Empty
+    public OutputCachePolicyBuilder Add(IOutputCachingPolicy policy)
     {
-        get
-        {
-            return new OutputCachePolicyBuilder();
-        }
+        Policies.Add(policy);
+        return this;
     }
 
     /// <summary>
@@ -52,7 +46,7 @@ public class OutputCachePolicyBuilder
     /// Adds a requirement to the current policy.
     /// </summary>
     /// <param name="predicate">The predicate applied to the policy.</param>
-    public OutputCachePolicyBuilder When(Func<IOutputCachingContext, Task<bool>> predicate)
+    public OutputCachePolicyBuilder WithCondition(Func<IOutputCachingContext, Task<bool>> predicate)
     {
         Requirements.Add(predicate);
         return this;
@@ -62,7 +56,7 @@ public class OutputCachePolicyBuilder
     /// Adds a requirement to the current policy based on the request path.
     /// </summary>
     /// <param name="pathBase">The base path to limit the policy to.</param>
-    public OutputCachePolicyBuilder Path(PathString pathBase)
+    public OutputCachePolicyBuilder WithPath(PathString pathBase)
     {
         ArgumentNullException.ThrowIfNull(pathBase);
 
@@ -78,7 +72,7 @@ public class OutputCachePolicyBuilder
     /// Adds a requirement to the current policy based on the request path.
     /// </summary>
     /// <param name="pathBases">The base paths to limit the policy to.</param>
-    public OutputCachePolicyBuilder Path(params PathString[] pathBases)
+    public OutputCachePolicyBuilder WithPath(params PathString[] pathBases)
     {
         ArgumentNullException.ThrowIfNull(pathBases);
 
@@ -94,7 +88,7 @@ public class OutputCachePolicyBuilder
     /// Adds a requirement to the current policy based on the request method.
     /// </summary>
     /// <param name="method">The method to limit the policy to.</param>
-    public OutputCachePolicyBuilder Method(string method)
+    public OutputCachePolicyBuilder WithMethod(string method)
     {
         ArgumentNullException.ThrowIfNull(method);
 
@@ -111,7 +105,7 @@ public class OutputCachePolicyBuilder
     /// Adds a requirement to the current policy based on the request method.
     /// </summary>
     /// <param name="methods">The methods to limit the policy to.</param>
-    public OutputCachePolicyBuilder Method(params string[] methods)
+    public OutputCachePolicyBuilder WithMethod(params string[] methods)
     {
         ArgumentNullException.ThrowIfNull(methods);
 
@@ -225,7 +219,7 @@ public class OutputCachePolicyBuilder
     /// Adds a policy to change the cached response expiration.
     /// </summary>
     /// <param name="expiration">The expiration of the cached reponse.</param>
-    public OutputCachePolicyBuilder Expires(TimeSpan expiration)
+    public OutputCachePolicyBuilder Expire(TimeSpan expiration)
     {
         Policies.Add(new ExpirationPolicy(expiration));
         return this;

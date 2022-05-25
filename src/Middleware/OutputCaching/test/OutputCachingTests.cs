@@ -221,7 +221,7 @@ public class OutputCachingTests
     {
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions
         {
-            DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().VaryByHeader(HeaderNames.From).Build(),
+            DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().VaryByHeader(HeaderNames.From).Build(),
             DefaultExpirationTimeSpan = TimeSpan.FromMicroseconds(100)
         });
 
@@ -294,7 +294,7 @@ public class OutputCachingTests
     [Fact]
     public async Task ServesFreshContent_IfVaryHeader_Mismatches()
     {
-        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().VaryByHeader(HeaderNames.From).Build() });
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().VaryByHeader(HeaderNames.From).Build() });
 
         foreach (var builder in builders)
         {
@@ -318,7 +318,7 @@ public class OutputCachingTests
     [Fact]
     public async Task ServesCachedContent_IfVaryQueryKeys_Matches()
     {
-        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().VaryByQuery("query").Build() });
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().VaryByQuery("query").Build() });
 
         foreach (var builder in builders)
         {
@@ -340,7 +340,7 @@ public class OutputCachingTests
     [Fact]
     public async Task ServesCachedContent_IfVaryQueryKeysExplicit_Matches_QueryKeyCaseInsensitive()
     {
-        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().VaryByQuery("QueryA", "queryb").Build() });
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().VaryByQuery("QueryA", "queryb").Build() });
 
         foreach (var builder in builders)
         {
@@ -362,7 +362,7 @@ public class OutputCachingTests
     [Fact]
     public async Task ServesCachedContent_IfVaryQueryKeyStar_Matches_QueryKeyCaseInsensitive()
     {
-        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().VaryByQuery("*").Build() });
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().VaryByQuery("*").Build() });
 
         foreach (var builder in builders)
         {
@@ -384,7 +384,7 @@ public class OutputCachingTests
     [Fact]
     public async Task ServesCachedContent_IfVaryQueryKeyExplicit_Matches_OrderInsensitive()
     {
-        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().VaryByQuery("QueryB", "QueryA").Build() });
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().VaryByQuery("QueryB", "QueryA").Build() });
 
         foreach (var builder in builders)
         {
@@ -406,7 +406,7 @@ public class OutputCachingTests
     [Fact]
     public async Task ServesCachedContent_IfVaryQueryKeyStar_Matches_OrderInsensitive()
     {
-        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().VaryByQuery("*").Build() });
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().VaryByQuery("*").Build() });
 
         foreach (var builder in builders)
         {
@@ -428,7 +428,7 @@ public class OutputCachingTests
     [Fact]
     public async Task ServesFreshContent_IfVaryQueryKey_Mismatches()
     {
-        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().VaryByQuery("query").Build() });
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().VaryByQuery("query").Build() });
 
         foreach (var builder in builders)
         {
@@ -450,7 +450,7 @@ public class OutputCachingTests
     [Fact]
     public async Task ServesCachedContent_IfOtherVaryQueryKey_Mismatches()
     {
-        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().VaryByQuery("query").Build() });
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().VaryByQuery("query").Build() });
 
         foreach (var builder in builders)
         {
@@ -774,7 +774,7 @@ public class OutputCachingTests
     {
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: new OutputCachingOptions()
         {
-            DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().Build(),
+            DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build(),
             MaximumBodySize = 1000
         });
 

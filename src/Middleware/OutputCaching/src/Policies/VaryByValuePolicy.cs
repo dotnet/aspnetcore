@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// When applied, the cached content will be different for every provided value.
 /// </summary>
-public sealed class VaryByValuePolicy : IOutputCachingPolicy
+internal sealed class VaryByValuePolicy : IOutputCachingPolicy
 {
     private readonly Action<CachedVaryByRules>? _varyBy;
     private readonly Func<CachedVaryByRules, Task>? _varyByAsync;

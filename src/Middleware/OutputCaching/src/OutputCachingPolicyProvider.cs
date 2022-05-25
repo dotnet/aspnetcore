@@ -33,10 +33,7 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
                 throw new InvalidOperationException("Can't define output caching policies after headers have been sent to client.");
             }
 
-            foreach (var policy in policiesMetadata.Policies)
-            {
-                await policy.OnRequestAsync(context);
-            }
+            await policiesMetadata.Policy.OnRequestAsync(context);
         }
     }
 
@@ -63,10 +60,7 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 
         if (policiesMetadata != null)
         {
-            foreach (var policy in policiesMetadata.Policies)
-            {
-                await policy.OnServeFromCacheAsync(context);
-            }
+            await policiesMetadata.Policy.OnServeFromCacheAsync(context);
         }
     }
 
@@ -93,10 +87,7 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 
         if (policiesMetadata != null)
         {
-            foreach (var policy in policiesMetadata.Policies)
-            {
-                await policy.OnServeResponseAsync(context);
-            }
+            await policiesMetadata.Policy.OnServeResponseAsync(context);
         }
     }
 }

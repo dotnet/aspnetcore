@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// When applied, the cached content will be different for every value of the provided headers.
 /// </summary>
-public sealed class VaryByHeaderPolicy : IOutputCachingPolicy
+internal sealed class VaryByHeaderPolicy : IOutputCachingPolicy
 {
     private StringValues _headers { get; set; }
 

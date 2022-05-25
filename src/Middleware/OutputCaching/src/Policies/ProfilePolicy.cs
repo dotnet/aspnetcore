@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy represented by a named profile.
 /// </summary>
-public sealed class ProfilePolicy : IOutputCachingPolicy
+internal sealed class ProfilePolicy : IOutputCachingPolicy
 {
     private readonly string _profileName;
 

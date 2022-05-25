@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that defines custom tags on the cache entry.
 /// </summary>
-public sealed class TagsPolicy : IOutputCachingPolicy
+internal sealed class TagsPolicy : IOutputCachingPolicy
 {
     private readonly string[] _tags;
 

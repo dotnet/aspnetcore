@@ -17,35 +17,8 @@ public static class PolicyExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var policiesMetadata = new PoliciesMetadata();
-
         // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        policiesMetadata.Add(EnableCachingPolicy.Instance);
-
-        builder.Add(endpointBuilder =>
-        {
-            endpointBuilder.Metadata.Add(policiesMetadata);
-        });
-        return builder;
-    }
-
-    /// <summary>
-    /// Marks an endpoint to be cached with the specified policies.
-    /// </summary>
-    public static TBuilder CacheOutput<TBuilder>(this TBuilder builder, params IOutputCachingPolicy[] items) where TBuilder : IEndpointConventionBuilder
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(items);
-
-        var policiesMetadata = new PoliciesMetadata();
-
-        // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        policiesMetadata.Add(EnableCachingPolicy.Instance);
-
-        foreach (var item in items)
-        {
-            policiesMetadata.Add(item);
-        }
+        var policiesMetadata = new PoliciesMetadata(EnableCachingPolicy.Instance);
 
         builder.Add(endpointBuilder =>
         {
@@ -57,6 +30,23 @@ public static class PolicyExtensions
     /// <summary>
     /// Marks an endpoint to be cached with the specified policy.
     /// </summary>
+    public static TBuilder CacheOutput<TBuilder>(this TBuilder builder, IOutputCachingPolicy policy) where TBuilder : IEndpointConventionBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        // Enable caching if this method is invoked on an endpoint, extra policies can disable it
+        var policiesMetadata = new PoliciesMetadata(new OutputCachePolicyBuilder().Enable().Add(policy).Build());
+
+        builder.Add(endpointBuilder =>
+        {
+            endpointBuilder.Metadata.Add(policiesMetadata);
+        });
+        return builder;
+    }
+
+    /// <summary>
+    /// Marks an endpoint to be cached using the specified policy builder.
+    /// </summary>
     public static TBuilder CacheOutput<TBuilder>(this TBuilder builder, Action<OutputCachePolicyBuilder> policy) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -64,12 +54,10 @@ public static class PolicyExtensions
         var outputCachePolicyBuilder = new OutputCachePolicyBuilder();
         policy?.Invoke(outputCachePolicyBuilder);
 
-        var policiesMetadata = new PoliciesMetadata();
-
         // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        policiesMetadata.Add(EnableCachingPolicy.Instance);
+        outputCachePolicyBuilder.Enable();
 
-        policiesMetadata.Add(outputCachePolicyBuilder.Build());
+        var policiesMetadata = new PoliciesMetadata(outputCachePolicyBuilder.Build());
 
         builder.Add(endpointBuilder =>
         {

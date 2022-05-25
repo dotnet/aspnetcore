@@ -21,7 +21,7 @@ Microsoft.AspNetCore.Mvc.OutputCacheAttribute.NoStore.set -> void
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Order.get -> int
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Order.set -> void
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.OutputCacheAttribute() -> void
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Policies.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!>!
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Policy.get -> Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Profile.get -> string?
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Profile.set -> void
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.VaryByQueryKeys.get -> string![]?

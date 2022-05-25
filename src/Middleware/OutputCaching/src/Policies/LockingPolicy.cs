@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that changes the locking behavior.
 /// </summary>
-public class LockingPolicy : IOutputCachingPolicy
+internal class LockingPolicy : IOutputCachingPolicy
 {
     private readonly bool _lockResponse;
 

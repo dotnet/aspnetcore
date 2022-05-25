@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that defines a custom expiration duration.
 /// </summary>
-public sealed class ExpirationPolicy : IOutputCachingPolicy
+internal sealed class ExpirationPolicy : IOutputCachingPolicy
 {
     private readonly TimeSpan _expiration;
 

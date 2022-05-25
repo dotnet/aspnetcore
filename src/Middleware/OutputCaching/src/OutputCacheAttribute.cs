@@ -15,7 +15,7 @@ public class OutputCacheAttribute : Attribute, IPoliciesMetadata
     private int? _duration;
     private bool? _noStore;
 
-    private List<IOutputCachingPolicy>? _policies;
+    private IOutputCachingPolicy? _policy;
 
     /// <summary>
     /// Gets or sets the duration in seconds for which the response is cached.
@@ -58,39 +58,32 @@ public class OutputCacheAttribute : Attribute, IPoliciesMetadata
     public string? Profile { get; set; }
 
     /// <inheritdoc />
-    public IReadOnlyList<IOutputCachingPolicy> Policies => _policies ??= GetPolicies();
+    public IOutputCachingPolicy Policy => _policy ??= GetPolicy();
 
-    private List<IOutputCachingPolicy> GetPolicies()
+    private IOutputCachingPolicy GetPolicy()
     {
-        var policies = new List<IOutputCachingPolicy>(5);
-
-        policies.Add(EnableCachingPolicy.Instance);
+        var builder = new OutputCachePolicyBuilder().Enable();
 
         if (_noStore != null && _noStore.Value)
         {
-            policies.Add(new NoStorePolicy());
+            builder.NoStore();
         }
 
         if (Profile != null)
         {
-            policies.Add(new ProfilePolicy(Profile));
+            builder.Profile(Profile);
         }
 
         if (VaryByQueryKeys != null)
         {
-            policies.Add(new VaryByQueryPolicy(VaryByQueryKeys));
-        }
-
-        if (VaryByHeaders != null)
-        {
-            policies.Add(new VaryByHeaderPolicy(VaryByHeaders));
+            builder.VaryByQuery(VaryByQueryKeys);
         }
 
         if (_duration != null)
         {
-            policies.Add(new ExpirationPolicy(TimeSpan.FromSeconds(_duration.Value)));
+            builder.Expire(TimeSpan.FromSeconds(_duration.Value));
         }
 
-        return policies;
+        return builder.Build();
     }
 }

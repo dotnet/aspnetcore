@@ -52,7 +52,7 @@ app.MapGet("/lock", async (context) =>
 {
     await Task.Delay(1000);
     await context.Response.WriteAsync($"<pre>{requests++}</pre>");
-}).CacheOutput(p => p.Lock(false).Expires(TimeSpan.FromMilliseconds(1)));
+}).CacheOutput(p => p.Lock(false).Expire(TimeSpan.FromMilliseconds(1)));
 
 // Cached because Response Caching policy and contains "Cache-Control: public"
 app.MapGet("/headers", async context =>
@@ -68,7 +68,7 @@ app.MapGet("/etag", async (context) =>
     // If the client sends an If-None-Match header with the etag value, the server
     // returns 304 if the cache entry is fresh instead of the full response
 
-    var etag = $"\"{Guid.NewGuid().ToString("n")}\"";
+    var etag = $"\"{Guid.NewGuid():n}\"";
     context.Response.Headers.ETag = etag;
 
     await Gravatar.WriteGravatar(context);
