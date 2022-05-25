@@ -15,17 +15,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class WebTransportTests : Http3TestBase
 {
-
     [Fact]
-    public async Task WebTransportHandshake_ClientToServerPasses() // TODO: the test works but client peer settings is not set correctly because the OnInboundControlStreamSetting function is not being called. So webtransport is off
+    public async Task WebTransportHandshake_ClientToServerPasses()
     {
         _serviceContext.ServerOptions.EnableWebTransport = true;
         _serviceContext.ServerOptions.EnableHttp3Datagrams = true;
 
-        await Http3Api.InitializeConnectionAsync(_noopApplication); // todo should I replace noopApp to fix the issue?
-        await Http3Api.CreateControlStream();
-
-        var controlStream = await Http3Api.GetInboundControlStream();
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+        var controlStream = await Http3Api.CreateControlStream();
+        var controlStream2 = await Http3Api.GetInboundControlStream();
 
         var settings = new Http3PeerSettings()
         {
@@ -34,7 +32,9 @@ public class WebTransportTests : Http3TestBase
         };
 
         await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
-        var response1 = await controlStream.ExpectSettingsAsync();
+        var response1 = await controlStream2.ExpectSettingsAsync();
+
+        await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
         Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
         Assert.Equal(settings.H3Datagram, response1[(long)Http3SettingType.H3Datagram]);
@@ -55,6 +55,8 @@ public class WebTransportTests : Http3TestBase
         var response2 = await requestStream.ExpectHeadersAsync();
 
         Assert.Equal((int)HttpStatusCode.OK, Convert.ToInt32(response2[HeaderNames.Status]));
+
+        await requestStream.OnDisposedTask.DefaultTimeout();
     }
 
 
