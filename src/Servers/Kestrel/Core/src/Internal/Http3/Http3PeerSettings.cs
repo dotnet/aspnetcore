@@ -34,16 +34,16 @@ internal sealed class Http3PeerSettings
         }
 
         // indicate that Kestrel supports WebTransport
-        if (EnableWebTransport != DefaultEnableWebTransport)
-        {
+        //if (EnableWebTransport != DefaultEnableWebTransport)
+        //{
             list.Add(new Http3PeerSetting(Http3SettingType.EnableWebTransport, EnableWebTransport));
-        }
+        //}
 
         // indicate that Kestrel supports Http/3 datagrams
-        if (H3Datagram != DefaultH3Datagram)
-        {
+        //if (H3Datagram != DefaultH3Datagram)
+        //{
             list.Add(new Http3PeerSetting(Http3SettingType.H3Datagram, H3Datagram));
-        }
+        //}
 
         return list;
     }

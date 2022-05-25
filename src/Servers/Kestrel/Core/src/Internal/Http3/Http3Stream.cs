@@ -842,27 +842,27 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             if (!_isMethodConnect)
             {
-                throw new Http3StreamErrorException("Method must be CONNECT." /*todo unhardcode*/, Http3ErrorCode.MessageError);
+                throw new Http3StreamErrorException("Method must be CONNECT." /*todo unhardcode*/, Http3ErrorCode.MessageError); // todo return a 404 as per the spec
             }
 
             if (!ServerOptions.EnableWebTransport)
             {
-                throw new Http3StreamErrorException("Server has WebTransport disabled. Please enable it prior to setting up WebTransport sessions." /*todo unhardcode*/, Http3ErrorCode.MessageError);
+                throw new Http3StreamErrorException("Server has WebTransport disabled. Please enable it prior to setting up WebTransport sessions." /*todo unhardcode*/, Http3ErrorCode.SettingsError);
             }
 
             if (!_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Authority) || !_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Path))
             {
-                throw new Http3StreamErrorException("WebTransport requires the authority and path pseudoheaders to be set" /*todo unhardcode*/, Http3ErrorCode.MessageError);
+                throw new Http3StreamErrorException("WebTransport requires the authority and path pseudoheaders to be set" /*todo unhardcode*/, Http3ErrorCode.MessageError); // todo return a 404 as per the spec
             }
 
             if (_context.ClientPeerSettings.EnableWebTransport == 0)
             {
-                throw new Http3StreamErrorException("To use WebTransport you first need to send a settings frame to enable it." /*todo unhardcode*/, Http3ErrorCode.MessageError);
+                throw new Http3StreamErrorException("To use WebTransport you first need to send a settings frame to enable it." /*todo unhardcode*/, Http3ErrorCode.SettingsError);
             }
 
             if (_context.ClientPeerSettings.H3Datagram != _context.ServerPeerSettings.H3Datagram)
             {
-                throw new Http3StreamErrorException($"HTTP/3 datagrams negotiation mismatch. Currently client has it {((_context.ClientPeerSettings.H3Datagram == 1) ? "ON" : "OFF")} and server has it {((_context.ServerPeerSettings.H3Datagram == 1) ? "ON" : "OFF")}." /*todo unhardcode*/, Http3ErrorCode.MessageError);
+                throw new Http3StreamErrorException($"HTTP/3 datagrams negotiation mismatch. Currently client has it {((_context.ClientPeerSettings.H3Datagram == 1) ? "ON" : "OFF")} and server has it {((_context.ServerPeerSettings.H3Datagram == 1) ? "ON" : "OFF")}." /*todo unhardcode*/, Http3ErrorCode.SettingsError);
             }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
