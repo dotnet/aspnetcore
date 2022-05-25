@@ -77,8 +77,18 @@ export class WebSocketTransport implements ITransport {
             }
 
             if (!webSocket) {
+
+              //add headers to query string
+              let parameters = '';
+              if (this._headers != null && Object.entries(this._headers).length > 0) {
+                parameters = '&'
+                for (let index = 0; index < Object.entries(this._headers).length; index++) {
+                  parameters += Object.entries(this._headers)[index][0] + '=' + encodeURIComponent(Object.entries(this._headers)[index][1]);
+                }
+              }
+
                 // Chrome is not happy with passing 'undefined' as protocol
-                webSocket = new this._webSocketConstructor(url);
+                webSocket = new this._webSocketConstructor(url + parameters);
             }
 
             if (transferFormat === TransferFormat.Binary) {
@@ -110,7 +120,7 @@ export class WebSocketTransport implements ITransport {
                     try {
                         this.onreceive(message.data);
                     } catch (error) {
-                        this._close(error);
+                        this._close(<Error>error);
                         return;
                     }
                 }
