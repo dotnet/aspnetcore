@@ -2553,7 +2553,7 @@
         {
           "name": "addMilestone",
           "parameters": {
-            "milestoneName": "7.0-preview5"
+            "milestoneName": "7.0-preview6"
           }
         }
       ],
