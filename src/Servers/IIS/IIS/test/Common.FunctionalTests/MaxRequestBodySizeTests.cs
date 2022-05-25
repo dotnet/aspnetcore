@@ -91,6 +91,7 @@ public class MaxRequestBodySizeTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41845")]
     public async Task SetIISLimitMaxRequestBodySizeE2EWorksWithIntMaxValue()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
