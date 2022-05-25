@@ -864,6 +864,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             {
                 throw new Http3StreamErrorException($"HTTP/3 datagrams negotiation mismatch. Currently client has it {((_context.ClientPeerSettings.H3Datagram == 1) ? "ON" : "OFF")} and server has it {((_context.ServerPeerSettings.H3Datagram == 1) ? "ON" : "OFF")}." /*todo unhardcode*/, Http3ErrorCode.SettingsError);
             }
+
+            if (_currentIHttpRequestFeature == null || _currentIHttpRequestFeature.Headers.Origin.Count == 0)
+            {
+                throw new Http3StreamErrorException($"The {nameof(_currentIHttpRequestFeature.Headers.Origin)} header must be set." /*todo unhardcode*/, Http3ErrorCode.MessageError); // todo return a 404 as per the spec. Also, does it need to validate the server somehow?
+            }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
         {
@@ -973,7 +978,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         // CONNECT - :scheme and :path must be excluded
-        if (Method == Http.HttpMethod.Connect && !_isProtocolWebTransport) // todo find a better way
+        if (Method == Http.HttpMethod.Connect && !_isProtocolWebTransport)
         {
             if (!string.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
             {

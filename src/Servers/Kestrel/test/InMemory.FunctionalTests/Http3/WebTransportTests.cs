@@ -20,7 +20,6 @@ public class WebTransportTests : Http3TestBase
         _serviceContext.ServerOptions.EnableWebTransport = true;
         _serviceContext.ServerOptions.EnableHttp3Datagrams = datagramsEnabled;
 
-        // We are testing default behaviour so this is the minimal behaviour required for it to work
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();
         var controlStream2 = await Http3Api.GetInboundControlStream();
@@ -34,11 +33,11 @@ public class WebTransportTests : Http3TestBase
         await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
         var response1 = await controlStream2.ExpectSettingsAsync();
 
+        // wait for the server to have time to receive the settings and update its values
         await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
         Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
         Assert.Equal(settings.H3Datagram, response1[(long)Http3SettingType.H3Datagram]);
-
 
         var requestStream = await Http3Api.CreateRequestStream();
         var headersConnectFrame = new[]
@@ -65,7 +64,6 @@ public class WebTransportTests : Http3TestBase
     {
         _serviceContext.ServerOptions.EnableWebTransport = false;
 
-        // We are testing default behaviour so this is the minimal behaviour required for it to work
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();
         var controlStream2 = await Http3Api.GetInboundControlStream();
@@ -79,6 +77,7 @@ public class WebTransportTests : Http3TestBase
         await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
         var response1 = await controlStream2.ExpectSettingsAsync();
 
+        // wait for the server to have time to receive the settings and update its values
         await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
         Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
@@ -110,13 +109,6 @@ public class WebTransportTests : Http3TestBase
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]
-    [InlineData(
-        ((long)Http3ErrorCode.MessageError), // todo should be 404
-        nameof(HeaderNames.Method), "CONNECT",
-        nameof(HeaderNames.Scheme), "http",
-        nameof(HeaderNames.Path), "/",
-        nameof(HeaderNames.Authority), "server.example.com",
-        nameof(HeaderNames.Origin), "server.example.com")] // missing protocol field
     //[InlineData(
     //    ((long)Http3ErrorCode..MessageError, // todo should be 404
     //    nameof(HeaderNames.Method), "CONNECT",
@@ -151,7 +143,6 @@ public class WebTransportTests : Http3TestBase
         _serviceContext.ServerOptions.EnableWebTransport = true;
         _serviceContext.ServerOptions.EnableHttp3Datagrams = true;
 
-        // We are testing default behaviour so this is the minimal behaviour required for it to work
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();
         var controlStream2 = await Http3Api.GetInboundControlStream();
@@ -165,6 +156,7 @@ public class WebTransportTests : Http3TestBase
         await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
         var response1 = await controlStream2.ExpectSettingsAsync();
 
+        // wait for the server to have time to receive the settings and update its values
         await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
         Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
@@ -175,7 +167,7 @@ public class WebTransportTests : Http3TestBase
         var headersConnectFrame = new List<KeyValuePair<string, string>>();
         for (var i = 0; i < headers.Length; i += 2)
         {
-            headersConnectFrame.Add(new KeyValuePair<string, string>(headers[i], headers[i + 1]));
+            headersConnectFrame.Add(new KeyValuePair<string, string>(GetHeaderFromName(headers[i]), headers[i + 1]));
         }
         await requestStream.SendHeadersAsync(headersConnectFrame);
 
@@ -201,6 +193,7 @@ public class WebTransportTests : Http3TestBase
         await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
         var response1 = await controlStream2.ExpectSettingsAsync();
 
+        // wait for the server to have time to receive the settings and update its values
         await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
         Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
@@ -229,4 +222,18 @@ public class WebTransportTests : Http3TestBase
     //{
     //    // TODO test where client sends message with enable webtransport settings are set but the initial_max_bidi_streams tranport parameter is 0. Server should return a H3_SETTINGS_ERROR error.
     //}
+
+    private static string GetHeaderFromName(string headerName)
+    {
+        return headerName switch
+        {
+            nameof(HeaderNames.Method) => HeaderNames.Method,
+            nameof(HeaderNames.Protocol) => HeaderNames.Protocol,
+            nameof(HeaderNames.Scheme) => HeaderNames.Scheme,
+            nameof(HeaderNames.Path) => HeaderNames.Path,
+            nameof(HeaderNames.Authority) => HeaderNames.Authority,
+            nameof(HeaderNames.Origin) => HeaderNames.Origin,
+            _ => throw new Exception("Header name not mapped yet")
+        };
+    }
 }
