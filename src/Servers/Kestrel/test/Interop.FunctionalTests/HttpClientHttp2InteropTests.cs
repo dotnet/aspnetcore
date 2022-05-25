@@ -635,6 +635,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
 
     [Theory]
     [MemberData(nameof(SupportedSchemes))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41843")]
     public async Task ServerReset_AfterEndStream_NoError(string scheme)
     {
         var hostBuilder = new HostBuilder()
