@@ -553,6 +553,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41858")]
     public async Task ClientDisconnectsWithoutCompletingClientResultOnSecondServer()
     {
         var backplane = CreateBackplane();
