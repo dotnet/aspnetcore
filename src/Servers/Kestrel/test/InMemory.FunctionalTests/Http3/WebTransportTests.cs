@@ -58,7 +58,6 @@ public class WebTransportTests : Http3TestBase
         await requestStream.OnDisposedTask.DefaultTimeout();
     }
 
-
     [Fact]
     public async Task WebTransport_WhenOffRequests404()
     {
@@ -83,7 +82,6 @@ public class WebTransportTests : Http3TestBase
         Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
         Assert.Equal(settings.H3Datagram, response1[(long)Http3SettingType.H3Datagram]);
 
-
         var requestStream = await Http3Api.CreateRequestStream();
         var headersConnectFrame = new[]
         {
@@ -102,7 +100,7 @@ public class WebTransportTests : Http3TestBase
 
     [Theory]
     [InlineData(
-        ((long)Http3ErrorCode.MessageError), // todo should be 404
+        ((long)Http3ErrorCode.ProtocolError),
         nameof(HeaderNames.Method), "GET", // incorrect method
         nameof(HeaderNames.Protocol), "webtransport",
         nameof(HeaderNames.Scheme), "http",
@@ -110,7 +108,7 @@ public class WebTransportTests : Http3TestBase
         nameof(HeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]
     //[InlineData(
-    //    ((long)Http3ErrorCode..MessageError, // todo should be 404
+    //    ((long)Http3ErrorCode..ProtocolError,
     //    nameof(HeaderNames.Method), "CONNECT",
     //    nameof(HeaderNames.Protocol), "webtransport...NOT",
     //    nameof(HeaderNames.Scheme), "http", // incorrect scheme <-- it should be https but the tests don't work with it so I commented it out (also it is given by http/3)
@@ -118,21 +116,21 @@ public class WebTransportTests : Http3TestBase
     //    nameof(HeaderNames.Authority), "server.example.com",
     //    nameof(HeaderNames.Origin), "server.example.com")]
     [InlineData(
-        ((long)Http3ErrorCode.MessageError), // todo should be 404
+        ((long)Http3ErrorCode.ProtocolError),
         nameof(HeaderNames.Method), "CONNECT",
         nameof(HeaderNames.Protocol), "webtransport",
         nameof(HeaderNames.Scheme), "http",
         nameof(HeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]  // no path protocol
     [InlineData(
-        ((long)Http3ErrorCode.MessageError), // todo should be 404
+        ((long)Http3ErrorCode.ProtocolError),
         nameof(HeaderNames.Method), "CONNECT",
         nameof(HeaderNames.Protocol), "webtransport",
         nameof(HeaderNames.Scheme), "http",
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Origin), "server.example.com")]  // no authority
     [InlineData(
-        ((long)Http3ErrorCode.MessageError), // todo should be 404
+        ((long)Http3ErrorCode.ProtocolError),
         nameof(HeaderNames.Method), "CONNECT",
         nameof(HeaderNames.Protocol), "webtransport",
         nameof(HeaderNames.Scheme), "http",
@@ -199,7 +197,6 @@ public class WebTransportTests : Http3TestBase
         Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
         Assert.Equal(settings.H3Datagram, response1[(long)Http3SettingType.H3Datagram]);
 
-
         var requestStream = await Http3Api.CreateRequestStream();
         var headersConnectFrame = new[]
         {
@@ -215,13 +212,6 @@ public class WebTransportTests : Http3TestBase
 
         await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.SettingsError);
     }
-
-    // todo add this
-    //[Fact]
-    //public async Task WebTransportHandshake_ZeroMaxStreams_Rejects()
-    //{
-    //    // TODO test where client sends message with enable webtransport settings are set but the initial_max_bidi_streams tranport parameter is 0. Server should return a H3_SETTINGS_ERROR error.
-    //}
 
     private static string GetHeaderFromName(string headerName)
     {

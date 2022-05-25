@@ -842,7 +842,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             if (!_isMethodConnect)
             {
-                throw new Http3StreamErrorException("Method must be CONNECT." /*todo unhardcode*/, Http3ErrorCode.MessageError); // todo return a 404 as per the spec
+                throw new Http3StreamErrorException("Method must be CONNECT." /*todo unhardcode*/, Http3ErrorCode.ProtocolError); // todo should this be a 400 response instead?
             }
 
             if (!ServerOptions.EnableWebTransport)
@@ -852,7 +852,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             if (!_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Authority) || !_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Path))
             {
-                throw new Http3StreamErrorException("WebTransport requires the authority and path pseudoheaders to be set" /*todo unhardcode*/, Http3ErrorCode.MessageError); // todo return a 404 as per the spec
+                throw new Http3StreamErrorException("WebTransport requires the authority and path pseudoheaders to be set" /*todo unhardcode*/, Http3ErrorCode.ProtocolError); // todo should this be a 400 response instead?
             }
 
             if (_context.ClientPeerSettings.EnableWebTransport == 0)
@@ -867,7 +867,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             if (_currentIHttpRequestFeature == null || _currentIHttpRequestFeature.Headers.Origin.Count == 0)
             {
-                throw new Http3StreamErrorException($"The {nameof(_currentIHttpRequestFeature.Headers.Origin)} header must be set." /*todo unhardcode*/, Http3ErrorCode.MessageError); // todo return a 404 as per the spec. Also, does it need to validate the server somehow?
+                throw new Http3StreamErrorException($"The {nameof(_currentIHttpRequestFeature.Headers.Origin)} header must be set." /*todo unhardcode*/, Http3ErrorCode.ProtocolError);  // todo should this be a 400 response instead?
             }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
