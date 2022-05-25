@@ -95,19 +95,19 @@ internal sealed partial class RequestDecompressionMiddleware
             return;
         }
 
-        var maxRequestSizeBodyFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
-        if (maxRequestSizeBodyFeature == null)
+        var maxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
+        if (maxRequestBodySizeFeature == null)
         {
             Log.FeatureNotFound(_logger);
         }
-        else if (maxRequestSizeBodyFeature.IsReadOnly)
+        else if (maxRequestBodySizeFeature.IsReadOnly)
         {
             Log.FeatureIsReadOnly(_logger);
         }
         else
         {
             var maxRequestBodySize = sizeLimitMetadata.MaxRequestBodySize;
-            maxRequestSizeBodyFeature.MaxRequestBodySize = maxRequestBodySize;
+            maxRequestBodySizeFeature.MaxRequestBodySize = maxRequestBodySize;
 
             if (maxRequestBodySize.HasValue)
             {
