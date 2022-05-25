@@ -182,19 +182,14 @@ public class OpenApiRouteHandlerBuilderExtensionsTest
         Action<RouteHandlerBuilder> specificSetup,
         Action<EndpointBuilder> assert)
     {
-        var testBuilder0 = new TestEndointConventionBuilder();
-        genericSetup(testBuilder0);
-        assert(testBuilder0);
-
-        var (testBuilder1, routeHandlerBuilder) = CreateRouteHandlerBuilder();
-        specificSetup(routeHandlerBuilder);
-        assert(testBuilder1);
-    }
-
-    private (TestEndointConventionBuilder, RouteHandlerBuilder) CreateRouteHandlerBuilder()
-    {
         var testBuilder = new TestEndointConventionBuilder();
-        return (testBuilder, new RouteHandlerBuilder(new[] { testBuilder }));
+        genericSetup(testBuilder);
+        assert(testBuilder);
+
+        var routeTestBuilder = new TestEndointConventionBuilder();
+        var routeHandlerBuilder = new RouteHandlerBuilder(new[] { routeTestBuilder });
+        specificSetup(routeHandlerBuilder);
+        assert(routeTestBuilder);
     }
 
     private sealed class TestEndointConventionBuilder : EndpointBuilder, IEndpointConventionBuilder

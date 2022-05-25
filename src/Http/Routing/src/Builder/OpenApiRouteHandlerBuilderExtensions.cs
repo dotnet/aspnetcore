@@ -336,16 +336,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
         => builder.WithMetadata(new EndpointDescriptionAttribute(description));
 
     /// <summary>
-    /// Adds <see cref="IEndpointDescriptionMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
-    /// produced by <paramref name="builder"/>.
-    /// </summary>
-    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
-    /// <param name="description">A string representing a detailed description of the endpoint.</param>
-    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
-    public static RouteHandlerBuilder WithDescription(this RouteHandlerBuilder builder, string description)
-        => WithDescription<RouteHandlerBuilder>(builder, description);
-
-    /// <summary>
     /// Adds <see cref="IEndpointSummaryMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
     /// produced by <paramref name="builder"/>.
     /// </summary>
@@ -354,16 +344,6 @@ public static class OpenApiRouteHandlerBuilderExtensions
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
     public static TBuilder WithSummary<TBuilder>(this TBuilder builder, string summary) where TBuilder : IEndpointConventionBuilder
         => builder.WithMetadata(new EndpointSummaryAttribute(summary));
-
-    /// <summary>
-    /// Adds <see cref="IEndpointSummaryMetadata"/> to <see cref="EndpointBuilder.Metadata"/> for all endpoints
-    /// produced by <paramref name="builder"/>.
-    /// </summary>
-    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
-    /// <param name="summary">A string representing a brief description of the endpoint.</param>
-    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
-    public static RouteHandlerBuilder WithSummary(this RouteHandlerBuilder builder, string summary)
-        => WithSummary<RouteHandlerBuilder>(builder, summary);
 
     private static string[] GetAllContentTypes(string contentType, string[] additionalContentTypes)
     {
