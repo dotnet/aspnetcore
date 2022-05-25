@@ -417,6 +417,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
     [Theory]
     [MemberData(nameof(ConnectionMiddlewareData))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41850")]
     public async Task ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug(ListenOptions listenOptions)
     {
         // Attempt multiple connections to be extra sure the resets are consistently logged appropriately.
