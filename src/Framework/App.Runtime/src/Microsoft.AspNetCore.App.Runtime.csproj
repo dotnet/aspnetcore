@@ -224,6 +224,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _BatchCrossGenAssemblies;
     </CrossGenDependsOn>
     <CrossGenDependsOn>
+      $(CrossGenDependsOn);
       _GenerateComposites;
     </CrossGenDependsOn>
     <!-- _GetBuildOutputFilesWithTfm executes in a separate context from Build, GenerateNuspec, and so on. -->
@@ -467,19 +468,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="_GenerateComposites"
     DependsOnTargets="_ExpandRuntimePackageRoot">
 
-    <!-- These were used for debugging and log analyzing. Will be removed when
-         the PR is merged.
-
-    <Message Text="MESSAGEY: IN GENERATE COMPOSITES TARGET RULE" Importance="high" />
-    <Message Text="MESSAGEY RUNTIME PACKAGE ROOT: $(RuntimePackageRoot)" Importance="high" />
-    <Message Text="MESSAGEY TARGET DIR: $(TargetDir)" Importance="high" />
-    <Message Text="MESSAGEY TARGET ARCHITECTURE: $(TargetArchitecture)" Importance="high" />
-    -->
-
     <PropertyGroup>
       <CompositeTargetDir>$(TargetDir)Composite\</CompositeTargetDir>
-      <RemoveDir Directories="$(CompositeTargetDir)" />
-      <MakeDir Directories="$(CompositeTargetDir)" />
 
       <CompositeTargetOs>$(TargetOsName)</CompositeTargetOs>
       <CompositeTargetOs Condition="'$(TargetOsName)' == 'win'">windows</CompositeTargetOs>
@@ -487,8 +477,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
       <RuntimesPath>$(RuntimePackageRoot)runtimes\$(TargetOsName)-$(TargetArchitecture)\</RuntimesPath>
 
-      <!-- Is there away to get the 'net7.0' programmatically? -->
-      <BaseAssemblies>$(RuntimesPath)lib\net7.0\*.dll</BaseAssemblies>
+      <BaseAssemblies>$(RuntimesPath)lib\$(DefaultNetCoreTargetFramework)\*.dll</BaseAssemblies>
       <BaseAssemblies>$(BaseAssemblies) $(RuntimesPath)native\*.dll</BaseAssemblies>
 
       <CompositeArgs>--composite</CompositeArgs>
@@ -497,6 +486,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <CompositeArgs>$(CompositeArgs) $(BaseAssemblies)</CompositeArgs>
       <CompositeArgs>$(CompositeArgs) $(TargetDir)*.dll</CompositeArgs>
     </PropertyGroup>
+
+    <RemoveDir Directories="$(CompositeTargetDir)" />
+    <MakeDir Directories="$(CompositeTargetDir)" />
 
     <Exec Command="&quot;$(CrossgenToolPath)&quot; $(CompositeArgs) -o:&quot;$(CompositeTargetDir)full-composite.r2r.dll&quot;" />
   </Target>
