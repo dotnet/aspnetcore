@@ -11,8 +11,12 @@ namespace Microsoft.AspNetCore.DataProtection;
 public class DataProtectionUtilityExtensionsTests
 {
     [Theory]
-    [InlineData("app-path", "app-path")]
-    [InlineData("app-path ", "app-path")] // normalized trim
+    [InlineData("app-path", "app-path\\")]
+    [InlineData("app-path ", "app-path\\")] // normalized trim
+    [InlineData("app-path\\", "app-path\\")]
+    [InlineData("app-path/", "app-path/")]
+    [InlineData(" /", "/")]
+    [InlineData(" \\ ", "\\")]
     [InlineData("  ", null)] // normalized whitespace -> null
     [InlineData(null, null)] // nothing provided at all
     public void GetApplicationUniqueIdentifierFromHosting(string contentRootPath, string expected)
