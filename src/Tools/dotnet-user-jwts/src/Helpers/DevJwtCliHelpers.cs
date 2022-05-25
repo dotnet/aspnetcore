@@ -3,11 +3,9 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 
@@ -35,7 +33,9 @@ internal static class DevJwtCliHelpers
             return projectPath;
         }
 
-        var csprojFiles = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.csproj");
+        var csprojFiles = Directory.EnumerateFileSystemEntries(Directory.GetCurrentDirectory(), "*.*proj", SearchOption.TopDirectoryOnly)
+                .Where(f => !".xproj".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
+                .ToList();
         if (csprojFiles is [var path])
         {
             return path;
@@ -90,7 +90,7 @@ internal static class DevJwtCliHelpers
         return newKeyMaterial;
     }
 
-    public static string GetApplicationUrl(string project)
+    public static string[] GetAudienceCandidatesFromLaunchSettings(string project)
     {
         ArgumentException.ThrowIfNullOrEmpty(nameof(project));
 
@@ -115,12 +115,7 @@ internal static class DevJwtCliHelpers
                                     var value = applicationUrl.GetString();
                                     if (value is { } applicationUrls)
                                     {
-                                        var urls = applicationUrls.Split(";");
-                                        var firstHttpsUrl = urls.FirstOrDefault(u => u.StartsWith("https:", StringComparison.OrdinalIgnoreCase));
-                                        if (firstHttpsUrl is { } result)
-                                        {
-                                            return result;
-                                        }
+                                        return applicationUrls.Split(";");
                                     }
                                 }
                             }

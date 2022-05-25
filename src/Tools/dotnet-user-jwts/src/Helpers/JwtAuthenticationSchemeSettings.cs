@@ -1,12 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, string UserName, string Audience, string ClaimsIssuer)
+internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<string> Audiences, string ClaimsIssuer)
 {
     private const string AuthenticationKey = "Authentication";
     private const string SchemesKey = "Schemes";
@@ -24,9 +25,8 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, string
 
         var settingsObject = new JsonObject
         {
-            [nameof(UserName)] = UserName,
-            [nameof(Audience)] = Audience,
-            [nameof(ClaimsIssuer)] = ClaimsIssuer,
+            [nameof(Audiences)] = new JsonArray(Audiences.Select(aud => JsonValue.Create(aud)).ToArray()),
+            [nameof(ClaimsIssuer)] = ClaimsIssuer
         };
 
         if (config[AuthenticationKey] is JsonObject authentication)

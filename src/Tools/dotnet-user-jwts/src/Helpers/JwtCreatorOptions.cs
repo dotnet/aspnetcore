@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 internal sealed record JwtCreatorOptions(
     string Scheme,
     string Name,
-    string Audience,
+    List<string> Audiences,
     string Issuer,
     DateTime NotBefore,
     DateTime ExpiresOn,

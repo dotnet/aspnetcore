@@ -46,9 +46,18 @@ internal sealed class JwtIssuer
             identity.AddClaims(claimsToAdd.Select(kvp => new Claim(kvp.Key, kvp.Value)));
         }
 
+        // Although the JwtPayload supports having multiple audiences registered, the
+        // creator methods and constructors don't provide a way of setting multiple
+        // audiences. Instead, we have to register an `aud` claim for each audience
+        // we want to add so that the multiple audiences are populated correctly.
+        if (options.Audiences is {  Count: > 0} audiences)
+        {
+            identity.AddClaims(audiences.Select(aud => new Claim(JwtRegisteredClaimNames.Aud, aud)));
+        }
+
         var handler = new JwtSecurityTokenHandler();
         var jwtSigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256Signature);
-        var jwtToken = handler.CreateJwtSecurityToken(Issuer, options.Audience, identity, options.NotBefore, options.ExpiresOn, issuedAt: DateTime.UtcNow, jwtSigningCredentials);
+        var jwtToken = handler.CreateJwtSecurityToken(Issuer, audience: null, identity, options.NotBefore, options.ExpiresOn, issuedAt: DateTime.UtcNow, jwtSigningCredentials);
         return jwtToken;
     }
 

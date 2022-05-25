@@ -50,7 +50,7 @@ internal sealed class ClearCommand
         if (!force)
         {
             Console.WriteLine($"Are you sure you want to delete {count} JWT(s) for {project}?{Environment.NewLine} [Y]es / [N]o");
-            if (Console.ReadKey().Key != ConsoleKey.Y)
+            if (Console.ReadLine().Trim().ToUpperInvariant() != "Y")
             {
                 Console.WriteLine("Canceled, no JWTs were deleted.");
                 return 0;

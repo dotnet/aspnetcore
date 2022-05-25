@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
@@ -9,7 +10,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 internal sealed class CreateCommand
 {
     private static readonly string[] _dateTimeFormats = new[] {
-        "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd", "yyyy/MM/dd HH:mm", "yyyy/MM/dd HH:mm:ss" };
+        "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy/MM/dd", "yyyy/MM/dd HH:mm" };
     private static readonly string[] _timeSpanFormats = new[] {
         @"d\dh\hm\ms\s", @"d\dh\hm\m", @"d\dh\h", @"d\d",
         @"h\hm\ms\s", @"h\hm\m", @"h\h",
@@ -36,8 +37,8 @@ internal sealed class CreateCommand
 
             var audienceOption = cmd.Option(
                 "--audience",
-                "The audience to create the JWT for. Defaults to the first HTTPS URL configured in the project's launchSettings.json",
-                CommandOptionType.SingleValue);
+                "The audiences to create the JWT for. Defaults to the URLs configured in the project's launchSettings.json",
+                CommandOptionType.MultipleValue);
 
             var issuerOption = cmd.Option(
                 "--issuer",
@@ -111,7 +112,7 @@ internal sealed class CreateCommand
         var scheme = schemeNameOption.HasValue() ? schemeNameOption.Value() : "Bearer";
         var name = nameOption.HasValue() ? nameOption.Value() : Environment.UserName;
 
-        var audience = audienceOption.HasValue() ? audienceOption.Value() : DevJwtCliHelpers.GetApplicationUrl(project);
+        var audience = audienceOption.HasValue() ? audienceOption.Values : DevJwtCliHelpers.GetAudienceCandidatesFromLaunchSettings(project).ToList();
         if (audience is null)
         {
             Console.WriteLine("Could not determine the project's HTTPS URL. Please specify an audience for the JWT using the --audience option.");
@@ -124,17 +125,17 @@ internal sealed class CreateCommand
         {
             if (!ParseDate(notBeforeOption.Value(), out notBefore))
             {
-                Console.WriteLine(@"The date provided for --not-before could not be parsed. Ensure you use the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'.");
+                Console.WriteLine(@"The date provided for --not-before could not be parsed. Dates must consist of a date and can include an optional timestamp.");
                 isValid = false;
             }
         }
 
-        var expiresOn = notBefore.AddMonths(6);
+        var expiresOn = notBefore.AddMonths(3);
         if (expiresOnOption.HasValue())
         {
             if (!ParseDate(expiresOnOption.Value(), out expiresOn))
             {
-                Console.WriteLine(@"The date provided for --expires-on could not be parsed. Ensure you use the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'.");
+                Console.WriteLine(@"The date provided for --expires-on could not be parsed. Dates must consist of a date and can include an optional timestamp.");
                 isValid = false;
             }
         }
@@ -194,7 +195,7 @@ internal sealed class CreateCommand
         jwtStore.Save();
 
         var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
-        var settingsToWrite = new JwtAuthenticationSchemeSettings(options.Scheme, options.Name, options.Audience, options.Issuer);
+        var settingsToWrite = new JwtAuthenticationSchemeSettings(options.Scheme, options.Audiences, options.Issuer);
         settingsToWrite.Save(appsettingsFilePath);
 
         Console.WriteLine("New JWT saved!");

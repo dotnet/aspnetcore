@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
 public class JwtStore
 {
-    private const string FileName = "dev-jwts.json";
+    private const string FileName = "user-jwts.json";
     private readonly string _userSecretsId;
     private readonly string _filePath;
 
