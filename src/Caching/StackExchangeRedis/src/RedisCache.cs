@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
@@ -16,7 +17,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 /// Distributed cache implementation using Redis.
 /// <para>Uses <c>StackExchange.Redis</c> as the Redis client.</para>
 /// </summary>
-public class RedisCache : IDistributedCache, IDisposable
+public partial class RedisCache : IDistributedCache, IDisposable
 {
     // -- Explanation of why two kinds of SetScript are used --
     // * Redis 2.0 had HSET key field value for setting individual hash fields,
@@ -58,6 +59,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
     private readonly RedisCacheOptions _options;
     private readonly string _instance;
+    private readonly ILogger _logger;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
@@ -66,13 +68,29 @@ public class RedisCache : IDistributedCache, IDisposable
     /// </summary>
     /// <param name="optionsAccessor">The configuration options.</param>
     public RedisCache(IOptions<RedisCacheOptions> optionsAccessor)
+        : this(optionsAccessor, Logging.Abstractions.NullLoggerFactory.Instance.CreateLogger<RedisCache>())
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="RedisCache"/>.
+    /// </summary>
+    /// <param name="optionsAccessor">The configuration options.</param>
+    /// <param name="logger">The logger.</param>
+    internal RedisCache(IOptions<RedisCacheOptions> optionsAccessor, ILogger logger)
     {
         if (optionsAccessor == null)
         {
             throw new ArgumentNullException(nameof(optionsAccessor));
         }
 
+        if (logger == null)
+        {
+            throw new ArgumentNullException(nameof(logger));
+        }
+
         _options = optionsAccessor.Value;
+        _logger = logger;
 
         // This allows partitioning a single backend cache for use with multiple apps/services.
         _instance = _options.InstanceName ?? string.Empty;
@@ -303,8 +321,10 @@ public class RedisCache : IDistributedCache, IDisposable
                 }
             }
         }
-        catch (NotSupportedException)
+        catch (NotSupportedException ex)
         {
+            Log.CouldNotDetermineServerVersion(_logger, ex);
+
             // The GetServer call may not be supported with some configurations, in which
             // case let's also fall back to using the older command.
             _setScript = SetScriptPreExtendedSetCommand;
