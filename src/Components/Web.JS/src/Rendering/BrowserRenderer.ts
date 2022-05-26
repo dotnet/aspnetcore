@@ -397,7 +397,7 @@ export class BrowserRenderer {
     let value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
 
     if (value && element.tagName === 'INPUT') {
-      value = normalizeInputValue(value, element.getAttribute('type'));
+      value = normalizeInputValue(value, element);
     }
 
     switch (element.tagName) {
@@ -494,20 +494,23 @@ function parseMarkup(markup: string, isSvg: boolean) {
   }
 }
 
-function normalizeInputValue(value: string, type: string | null): string {
+function normalizeInputValue(value: string, element: Element): string {
   // Time inputs (e.g. 'time' and 'datetime-local') misbehave on chromium-based
   // browsers when a time is set that includes a seconds value of '00', most notably
   // when entered from keyboard input. This behavior is not limited to specific
   // 'step' attribute values, so we always remove the trailing seconds value if the
   // time ends in '00'.
+  // Similarly, if a time-related element doesn't have any 'step' attribute, browsers
+  // treat this as "round to whole number of minutes" making it invalid to pass any
+  // 'seconds' value, so in that case we strip off the 'seconds' part of the value.
 
-  switch (type) {
+  switch (element.getAttribute('type')) {
     case 'time':
-      return value.length === 8 && value.endsWith('00')
+      return value.length === 8 && (value.endsWith('00') || !element.hasAttribute('step'))
         ? value.substring(0, 5)
         : value;
     case 'datetime-local':
-      return value.length === 19 && value.endsWith('00')
+      return value.length === 19 && (value.endsWith('00') || !element.hasAttribute('step'))
         ? value.substring(0, 16)
         : value;
     default:
