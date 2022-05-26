@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components
 {
-    private static readonly char[] UriPathEndChar = new[] { '#', '?' };
-
     /// <summary>
     /// Provides an abstraction for querying and managing URI navigation.
     /// </summary>
     public abstract class NavigationManager
     {
+        private static readonly char[] UriPathEndChar = new[] { '#', '?' };
+
         /// <summary>
         /// An event that fires when the navigation location has changed.
         /// </summary>
