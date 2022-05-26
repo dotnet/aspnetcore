@@ -365,9 +365,9 @@ internal sealed class Program
             {
                 reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
                     "already trusted we will run the following command:" + Environment.NewLine +
-                    "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
+                    "'add-trusted-cert -r trustRoot -p basic -p ssl -k <<login-keychain>> <<certificate>>'" +
                     Environment.NewLine + "This command might prompt you for your password to install the certificate " +
-                    "on the system keychain. To undo these changes: 'sudo security remove-trusted-cert -d <<certificate>>'");
+                    "on the system keychain. To undo these changes: 'sudo security remove-trusted-cert <<certificate>>'");
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 internal sealed class MacOSCertificateManager : CertificateManager
 {
     private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
+<<<<<<< HEAD
     private static readonly string MacOSUserKeyChain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
     private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
     private const string MacOSFindCertificateCommandLine = "security";
@@ -23,10 +24,18 @@ internal sealed class MacOSCertificateManager : CertificateManager
     private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
     private const string MacOSRemoveCertificateTrustCommandLine = "sudo";
     private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "security remove-trusted-cert -d {0}";
+=======
+    private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";
+    private const string MacOSVerifyCertificateCommandLine = "security";
+    private const string MacOSVerifyCertificateCommandLineArgumentsFormat = $"verify-cert -c {{0}} -s {{1}}";
+    private const string MacOSRemoveCertificateTrustCommandLine = "security";
+    private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "remove-trusted-cert {0}";
+>>>>>>> 1104c254b6 ([dotnet-dev-certs] Updates Mac OS certificate manager)
     private const string MacOSDeleteCertificateCommandLine = "sudo";
     private const string MacOSDeleteCertificateCommandLineArgumentsFormat = "security delete-certificate -Z {0} {1}";
-    private const string MacOSTrustCertificateCommandLine = "sudo";
-    private const string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
+    private const string MacOSTrustCertificateCommandLine = "security";
+    private static readonly string MacOSTrustCertificateCommandLineArguments = $"add-trusted-cert -r trustRoot -p basic -p ssl -k {MacOSUserKeyChain} ";
+    private static readonly string MacOSUserHttpsCertificateLocation = Path.Combine(Environment.GetEnvironmentVariable("HOME")!, ".aspnet", "https");
 
     private const string MacOSAddCertificateToKeyChainCommandLine = "security";
     private static readonly string MacOSAddCertificateToKeyChainCommandLineArgumentsFormat = "import {0} -k " + MacOSUserKeyChain + " -t cert -f pkcs12 -P {1} -A";
@@ -54,6 +63,12 @@ internal sealed class MacOSCertificateManager : CertificateManager
 
     protected override void TrustCertificateCore(X509Certificate2 publicCertificate)
     {
+        if (IsTrusted(publicCertificate))
+        {
+            Log.MacOSCertificateAlreadyTrusted();
+            return;
+        }
+
         var tmpFile = Path.GetTempFileName();
         try
         {
@@ -140,23 +155,35 @@ internal sealed class MacOSCertificateManager : CertificateManager
 
     public override bool IsTrusted(X509Certificate2 certificate)
     {
-        var subjectMatch = Regex.Match(certificate.Subject, CertificateSubjectRegex, RegexOptions.Singleline, MaxRegexTimeout);
-        if (!subjectMatch.Success)
+        var tmpFile = Path.GetTempFileName();
+        try
         {
-            throw new InvalidOperationException($"Can't determine the subject for the certificate with subject '{certificate.Subject}'.");
+            ExportCertificate(certificate, tmpFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
+            var subjectMatch = Regex.Match(certificate.Subject, CertificateSubjectRegex, RegexOptions.Singleline, MaxRegexTimeout);
+            if (!subjectMatch.Success)
+            {
+                throw new InvalidOperationException($"Can't determine the subject for the certificate with subject '{certificate.Subject}'.");
+            }
+            var subject = subjectMatch.Groups[1].Value;
+            using var checkTrustProcess = Process.Start(new ProcessStartInfo(
+                MacOSVerifyCertificateCommandLine,
+                string.Format(CultureInfo.InvariantCulture, MacOSVerifyCertificateCommandLineArgumentsFormat, tmpFile, subject))
+            {
+                RedirectStandardOutput = true,
+                // Do this to avoid showing output to the console when the cert is not trusted. It is trivial to export the cert
+                // and replicate the command to see details.
+                RedirectStandardError = true,
+            });
+            checkTrustProcess!.WaitForExit();
+            return checkTrustProcess.ExitCode == 0;
         }
-        var subject = subjectMatch.Groups[1].Value;
-        using var checkTrustProcess = Process.Start(new ProcessStartInfo(
-            MacOSFindCertificateCommandLine,
-            string.Format(CultureInfo.InvariantCulture, MacOSFindCertificateCommandLineArgumentsFormat, subject))
+        finally
         {
-            RedirectStandardOutput = true
-        });
-        var output = checkTrustProcess!.StandardOutput.ReadToEnd();
-        checkTrustProcess.WaitForExit();
-        var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
-        var hashes = matches.OfType<Match>().Select(m => m.Groups[1].Value).ToList();
-        return hashes.Any(h => string.Equals(h, certificate.Thumbprint, StringComparison.Ordinal));
+            if (File.Exists(tmpFile))
+            {
+                File.Delete(tmpFile);
+            }
+        }
     }
 
     protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
@@ -179,12 +206,56 @@ internal sealed class MacOSCertificateManager : CertificateManager
             {
             }
 
-            RemoveCertificateFromKeyChain(MacOSSystemKeyChain, certificate);
+            // Making the certificate trusted will automatically added it to the user key chain
+            RemoveCertificateFromKeyChain(MacOSUserKeyChain, certificate);
+
+            var certificatePath = Path.Combine(MacOSUserHttpsCertificateLocation, GetCertificateFileName(certificate));
+            if (File.Exists(certificatePath))
+            {
+                File.Delete(certificatePath);
+            }
         }
         else
         {
             Log.MacOSCertificateUntrusted(GetDescription(certificate));
         }
+    }
+
+    private static void RemoveCertificateFromKeyChain(string keyChain, X509Certificate2 certificate)
+    {
+        var processInfo = new ProcessStartInfo(
+            MacOSDeleteCertificateCommandLine,
+            string.Format(
+                CultureInfo.InvariantCulture,
+                MacOSDeleteCertificateCommandLineArgumentsFormat,
+                certificate.Thumbprint.ToUpperInvariant(),
+                keyChain
+            ))
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+
+        if (Log.IsEnabled())
+        {
+            Log.MacOSRemoveCertificateFromKeyChainStart(keyChain, GetDescription(certificate));
+        }
+
+        using (var process = Process.Start(processInfo))
+        {
+            var output = process!.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                Log.MacOSRemoveCertificateFromKeyChainError(process.ExitCode);
+                throw new InvalidOperationException($@"There was an error removing the certificate with thumbprint '{certificate.Thumbprint}'.
+
+{output}");
+            }
+        }
+
+        Log.MacOSRemoveCertificateFromKeyChainEnd();
     }
 
     private static void RemoveCertificateTrustRule(X509Certificate2 certificate)
@@ -226,47 +297,50 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
     }
 
-    private static void RemoveCertificateFromKeyChain(string keyChain, X509Certificate2 certificate)
-    {
-        var processInfo = new ProcessStartInfo(
-            MacOSDeleteCertificateCommandLine,
-            string.Format(
-                CultureInfo.InvariantCulture,
-                MacOSDeleteCertificateCommandLineArgumentsFormat,
-                certificate.Thumbprint.ToUpperInvariant(),
-                keyChain
-            ))
-        {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-
-        if (Log.IsEnabled())
-        {
-            Log.MacOSRemoveCertificateFromKeyChainStart(keyChain, GetDescription(certificate));
-        }
-
-        using (var process = Process.Start(processInfo))
-        {
-            var output = process!.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
-            {
-                Log.MacOSRemoveCertificateFromKeyChainError(process.ExitCode);
-                throw new InvalidOperationException($@"There was an error removing the certificate with thumbprint '{certificate.Thumbprint}'.
-
-{output}");
-            }
-        }
-
-        Log.MacOSRemoveCertificateFromKeyChainEnd();
-    }
-
     // We don't have a good way of checking on the underlying implementation if ti is exportable, so just return true.
     protected override bool IsExportable(X509Certificate2 c) => true;
 
     protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation)
+    {
+        if (Log.IsEnabled())
+        {
+            Log.MacOSAddCertificateToKeyChainStart(MacOSUserKeyChain, GetDescription(certificate));
+        }
+
+        try
+        {
+            // We do this for backwards compatibility with previous versions. .NET 7.0 and onwards will ignore the
+            // certificate on the keychain and load it directly from disk.
+            certificate = SaveCertificateToUserKeychain(certificate);
+        }
+        catch (Exception ex)
+        {
+
+            Log.MacOSAddCertificateToKeyChainError($@"There was an error saving the certificate into the user keychain '{certificate.Thumbprint}'.
+
+{ex.Message}");
+        }
+
+        try
+        {
+            var certBytes = certificate.Export(X509ContentType.Pfx);
+            EnsureCertificateFolder();
+            var certificatePath = Path.Combine(MacOSUserHttpsCertificateLocation, GetCertificateFileName(certificate));
+            File.WriteAllBytes(certificatePath, certBytes);
+        }
+        catch (Exception ex)
+        {
+                Log.MacOSAddCertificateToKeyChainError($@"There was an error saving the certificate into the user profile folder '{certificate.Thumbprint}'.
+
+{ex.Message}");
+        }
+
+        Log.MacOSAddCertificateToKeyChainEnd();
+
+        return certificate;
+    }
+
+    private static X509Certificate2 SaveCertificateToUserKeychain(X509Certificate2 certificate)
     {
         // security import https.pfx -k $loginKeyChain -t cert -f pkcs12 -P password -A;
         var passwordBytes = new byte[48];
@@ -300,10 +374,9 @@ internal sealed class MacOSCertificateManager : CertificateManager
             process.WaitForExit();
 
             if (process.ExitCode != 0)
-            {
-                Log.MacOSAddCertificateToKeyChainError(process.ExitCode);
+{
+                Log.MacOSAddCertificateToKeyChainError($"There was an error importing the certificate into the user key chain. The process exited with code '{process.ExitCode}'");
                 throw new InvalidOperationException($@"There was an error importing the certificate into the user key chain '{certificate.Thumbprint}'.
-
 {output}");
             }
         }
@@ -313,8 +386,68 @@ internal sealed class MacOSCertificateManager : CertificateManager
         return certificate;
     }
 
+    private static string GetCertificateFileName(X509Certificate2 certificate)
+    {
+        return $"aspnetcore-localhost-{certificate.Thumbprint}.pfx";
+    }
+
+    private static void EnsureCertificateFolder()
+    {
+        if (!Directory.Exists(MacOSUserHttpsCertificateLocation))
+        {
+            Directory.CreateDirectory(MacOSUserHttpsCertificateLocation);
+        }
+    }
+
     protected override IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation)
     {
         return ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false);
+    }
+
+    protected override void PopulateCertificatesFromStore(X509Store store, List<X509Certificate2> certificates)
+    {
+        if (store.Name! != StoreName.My.ToString() || store.Location != store.Location)
+        {
+            base.PopulateCertificatesFromStore(store, certificates);
+        }
+        else
+        {
+            if (Directory.Exists(MacOSUserHttpsCertificateLocation))
+            {
+                var certificateFiles = Directory.EnumerateFiles(MacOSUserHttpsCertificateLocation, "aspnetcore-localhost-*.pfx");
+                foreach (var file in certificateFiles)
+                {
+                    try
+                    {
+                        var certificate = new X509Certificate2(file);
+                        certificates.Add(certificate);
+                    }
+                    catch (Exception)
+                    {
+                        // Log exception
+                        throw;
+                    }
+                }
+            }
+
+        }
+    }
+
+    protected override void RemoveCertificateFromUserStoreCore(X509Certificate2 certificate)
+    {
+        try
+        {
+            var certificatePath = Path.Combine(MacOSUserHttpsCertificateLocation, GetCertificateFileName(certificate));
+            if (File.Exists(certificatePath))
+            {
+                File.Delete(certificatePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.MacOSAddCertificateToKeyChainError($@"There was an error importing the certificate into the user key chain '{certificate.Thumbprint}'.
+
+{ex.Message}");
+        }
     }
 }
