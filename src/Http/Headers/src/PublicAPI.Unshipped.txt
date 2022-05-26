@@ -1,1 +1,2 @@
 #nullable enable
+static readonly Microsoft.Net.Http.Headers.HeaderNames.Protocol -> string!
