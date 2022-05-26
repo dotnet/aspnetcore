@@ -24,7 +24,7 @@ internal sealed class ComponentParametersTypeCache
         }
     }
 
-    [RequiresUnreferencedCode("This type attempts to load component parameters that may be trimmed.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to preserve component parameters.")]
     private static Type? ResolveType(Key key, Assembly[] assemblies)
     {
         Assembly? assembly = null;

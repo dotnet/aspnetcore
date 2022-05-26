@@ -87,6 +87,7 @@ public sealed class WebAssemblyHostBuilder
         };
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
     private void InitializeRegisteredRootComponents(IJSUnmarshalledRuntime jsRuntime)
     {
         var componentsCount = jsRuntime.InvokeUnmarshalled<int>(RegisteredComponentsInterop.GetRegisteredComponentsCount);

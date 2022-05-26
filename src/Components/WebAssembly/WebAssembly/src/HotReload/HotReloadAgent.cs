@@ -4,6 +4,7 @@
 // Based on the implementation in https://raw.githubusercontent.com/dotnet/sdk/aad0424c0bfaa60c8bd136a92fd131e53d14561a/src/BuiltInTools/DotNetDeltaApplier/HotReloadAgent.cs
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -153,6 +154,7 @@ internal sealed class HotReloadAgent : IDisposable
             Visit(assemblies, assembly, sortedAssemblies, visited);
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
         static void Visit(Assembly[] assemblies, Assembly assembly, List<Assembly> sortedAssemblies, HashSet<string> visited)
         {
             var assemblyIdentifier = assembly.GetName().Name!;
@@ -214,6 +216,7 @@ internal sealed class HotReloadAgent : IDisposable
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
     private static Type[] GetMetadataUpdateTypes(IReadOnlyList<UpdateDelta> deltas)
     {
         List<Type>? types = null;

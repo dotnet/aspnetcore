@@ -83,6 +83,7 @@ public static class EditContextDataAnnotationsExtensions
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
         {
             var fieldIdentifier = eventArgs.FieldIdentifier;
@@ -108,6 +109,7 @@ public static class EditContextDataAnnotationsExtensions
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
         {
             var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
@@ -152,6 +154,7 @@ public static class EditContextDataAnnotationsExtensions
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2080", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private static bool TryGetValidatableProperty(in FieldIdentifier fieldIdentifier, [NotNullWhen(true)] out PropertyInfo? propertyInfo)
         {
             var cacheKey = (ModelType: fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
