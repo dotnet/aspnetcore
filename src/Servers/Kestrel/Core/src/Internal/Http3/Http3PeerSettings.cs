@@ -41,10 +41,6 @@ internal sealed class Http3PeerSettings
             // https://www.ietf.org/archive/id/draft-ietf-webtrans-http3-01.html#name-establishing-a-transport-ca
             list.Add(new Http3PeerSetting(Http3SettingType.H3Datagram, H3Datagram));
         }
-        else if (H3Datagram != DefaultH3Datagram)
-        {
-            list.Add(new Http3PeerSetting(Http3SettingType.H3Datagram, H3Datagram));
-        }
 
         return list;
     }

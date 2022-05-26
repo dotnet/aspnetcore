@@ -842,12 +842,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             if (!_isMethodConnect)
             {
-                throw new Http3StreamErrorException("Method must be CONNECT." /*todo unhardcode*/, Http3ErrorCode.ProtocolError); // todo should this be a 400 response instead?
+                throw new Http3StreamErrorException("Method must be CONNECT." /*todo unhardcode*/, Http3ErrorCode.ProtocolError);
             }
 
             if (!_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Authority) || !_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Path))
             {
-                throw new Http3StreamErrorException("WebTransport requires the authority and path pseudoheaders to be set" /*todo unhardcode*/, Http3ErrorCode.ProtocolError); // todo should this be a 400 response instead?
+                throw new Http3StreamErrorException("WebTransport requires the authority and path pseudoheaders to be set" /*todo unhardcode*/, Http3ErrorCode.ProtocolError);
             }
 
             if (_context.ClientPeerSettings.EnableWebTransport == 0)
