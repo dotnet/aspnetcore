@@ -111,7 +111,9 @@ class OidcAuthorizeService implements AuthorizeService {
                 const parameters = request && request.scopes ?
                     { scope: request.scopes.join(' ') } : undefined;
 
-                const newUser = await this._userManager.signinSilent(parameters);
+                const newUser = await this._userManager.signinSilent(Object.assign({}, {
+                    response_type: 'id_token token'
+                }, parameters));
 
                 return {
                     status: AccessTokenResultStatus.Success,
