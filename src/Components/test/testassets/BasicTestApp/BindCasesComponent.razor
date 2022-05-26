@@ -453,6 +453,13 @@
     <input id="time-step-textbox-nullable-timeonly-mirror" @bind="timeStepTextboxNullableTimeOnlyValue" @bind:format="HH:mm:ss" readonly />
 </p>
 
+<h3>datetime-local with no step attribute bound to a value with seconds</h3>
+<p>
+    DateTime:
+    <input id="datetime-local-default-step-textbox-datetime" @bind="timeStepTextboxDateTimeValue" type="datetime-local" />
+    <span id="datetime-local-default-step-textbox-datetime-value">@timeStepTextboxDateTimeValue</span>
+</p>
+
 <h3>time with no step attribute bound to a value with seconds</h3>
 <p>
     DateTime:

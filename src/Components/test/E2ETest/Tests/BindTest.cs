@@ -2022,6 +2022,30 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     }
 
     [Fact]
+    public void CanBindDateTimeLocalDefaultStepTextboxDateTime()
+    {
+        // This test differs from the other "step"-related test in that the DOM element has no "step" attribute
+        // and hence defaults to step=60, and for this the framework has explicit logic to strip off the "seconds"
+        // part of the bound value (otherwise the browser reports it as invalid - issue #41731)
+
+        var target = Browser.Exists(By.Id("datetime-local-default-step-textbox-datetime"));
+        var boundValue = Browser.Exists(By.Id("datetime-local-default-step-textbox-datetime-value"));
+        var expected = DateTime.Now.Date.Add(new TimeSpan(8, 5, 0)); // Notice the "seconds" part is zero here, even though the original data has seconds=30
+        Assert.Equal(expected, DateTime.Parse(target.GetAttribute("value"), CultureInfo.InvariantCulture));
+
+        // Clear textbox; value updates to 00:00 because that's the default
+        target.Clear();
+        expected = default;
+        Browser.Equal(default, () => DateTime.Parse(target.GetAttribute("value"), CultureInfo.InvariantCulture));
+        Assert.Equal(default, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+
+        // We have to do it this way because the browser gets in the way when sending keys to the input element directly.
+        ApplyInputValue("#datetime-local-default-step-textbox-datetime", "2000-01-02T04:05");
+        expected = new DateTime(2000, 1, 2, 04, 05, 0);
+        Browser.Equal(expected, () => DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
     public void CanBindTimeDefaultStepTextboxDateTime()
     {
         // This test differs from the other "step"-related test in that the DOM element has no "step" attribute
@@ -2032,7 +2056,6 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         var boundValue = Browser.Exists(By.Id("time-default-step-textbox-datetime-value"));
         var expected = DateTime.Now.Date.Add(new TimeSpan(8, 5, 0)); // Notice the "seconds" part is zero here, even though the original data has seconds=30
         Assert.Equal(expected, DateTime.Parse(target.GetAttribute("value"), CultureInfo.InvariantCulture));
-        Assert.Equal(expected, DateTime.Parse(boundValue.Text, CultureInfo.InvariantCulture));
 
         // Clear textbox; value updates to 00:00 because that's the default
         target.Clear();
@@ -2057,7 +2080,6 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         var boundValue = Browser.Exists(By.Id("time-default-step-textbox-timeonly-value"));
         var expected = new TimeOnly(8, 5, 0); // Notice the "seconds" part is zero here, even though the original data has seconds=30
         Assert.Equal(expected, TimeOnly.Parse(target.GetAttribute("value"), CultureInfo.InvariantCulture));
-        Assert.Equal(expected, TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
 
         // Clear textbox; value updates to 00:00 because that's the default
         target.Clear();
