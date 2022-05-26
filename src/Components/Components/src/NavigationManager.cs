@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components
 {
+    private static readonly char[] UriPathEndChar = new[] { '#', '?' };
+
     /// <summary>
     /// Provides an abstraction for querying and managing URI navigation.
     /// </summary>
@@ -218,9 +220,9 @@ namespace Microsoft.AspNetCore.Components
                 return uri.Substring(_baseUri.OriginalString.Length);
             }
 
-            var hashIndex = uri.IndexOf('#');
-            var uriWithoutHash = hashIndex < 0 ? uri : uri.Substring(0, hashIndex);
-            if ($"{uriWithoutHash}/".Equals(_baseUri.OriginalString, StringComparison.Ordinal))
+            var pathEndIndex = uri.IndexOfAny(UriPathEndChar);
+            var uriPathOnly = pathEndIndex < 0 ? uri : uri.Substring(0, pathEndIndex);
+            if ($"{uriPathOnly}/".Equals(_baseUri.OriginalString, StringComparison.Ordinal))
             {
                 // Special case: for the base URI "/something/", if you're at
                 // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -284,9 +286,9 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            var hashIndex = uri.IndexOf('#');
-            var uriWithoutHash = hashIndex < 0 ? uri : uri.Substring(0, hashIndex);
-            if ($"{uriWithoutHash}/".Equals(baseUri.OriginalString, StringComparison.Ordinal))
+            var pathEndIndex = uri.IndexOfAny(UriPathEndChar);
+            var uriPathOnly = pathEndIndex < 0 ? uri : uri.Substring(0, pathEndIndex);
+            if ($"{uriPathOnly}/".Equals(baseUri.OriginalString, StringComparison.Ordinal))
             {
                 // Special case: for the base URI "/something/", if you're at
                 // "/something" then treat it as if you were at "/something/" (i.e.,

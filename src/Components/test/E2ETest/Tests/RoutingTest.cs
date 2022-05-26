@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var app = Browser.MountTestComponent<TestRouter>();
             Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
-            AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
+            AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)", "Default, no trailing slash (matches all)");
         }
 
         [Fact]
@@ -276,6 +276,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanFollowLinkToDefaultPage_NoTrailingSlash()
+        {
+            SetUrlViaPushState("/Other");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            app.FindElement(By.LinkText("Default, no trailing slash (matches all)")).Click();
+            Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
+            AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)", "Default, no trailing slash (matches all)");
+        }
+
+        [Fact]
         public void CanFollowLinkToOtherPageWithQueryString()
         {
             SetUrlViaPushState("/");
@@ -298,6 +309,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanFollowLinkToDefaultPageWithQueryString_NoTrailingSlash()
+        {
+            SetUrlViaPushState("/Other");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            app.FindElement(By.LinkText("Default with query, no trailing slash")).Click();
+            Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
+            AssertHighlightedLinks("Default with query, no trailing slash");
+        }
+
+        [Fact]
         public void CanFollowLinkToOtherPageWithHash()
         {
             SetUrlViaPushState("/");
@@ -317,6 +339,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             app.FindElement(By.LinkText("Default with hash")).Click();
             Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default with hash");
+        }
+
+        [Fact]
+        public void CanFollowLinkToDefaultPageWithHash_NoTrailingSlash()
+        {
+            SetUrlViaPushState("/Other");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            app.FindElement(By.LinkText("Default with hash, no trailing slash")).Click();
+            Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
+            AssertHighlightedLinks("Default with hash, no trailing slash");
         }
 
         [Fact]
