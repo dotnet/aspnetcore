@@ -29,7 +29,7 @@ public class PackageTests
         }
 
         _output = output;
-        var packageFolder = SkipOnHelixAttribute.OnHelix() ?
+        var packageRoot = SkipOnHelixAttribute.OnHelix() ?
             Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
             TestData.GetPackagesFolder();
         _packageLayoutRoot = TestData.GetPackageLayoutRoot();
