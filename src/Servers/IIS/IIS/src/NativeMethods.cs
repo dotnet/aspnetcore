@@ -23,8 +23,8 @@ internal static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool CloseHandle(IntPtr handle);
 
-    [LibraryImport(KERNEL32, EntryPoint = "GetModuleHandleW", StringMarshalling = StringMarshalling.Utf16)]
-    private static partial IntPtr GetModuleHandle(string lpModuleName);
+    [LibraryImport(KERNEL32, EntryPoint = "GetModuleHandleW")]
+    private static partial IntPtr GetModuleHandle([MarshalAs(UnmanagedType.LPWStr)] string lpModuleName);
 
     public static bool IsAspNetCoreModuleLoaded()
     {
@@ -88,7 +88,7 @@ internal static partial class NativeMethods
     private static partial int http_set_managed_context(NativeSafeHandle pInProcessHandler, IntPtr pvManagedContext);
 
     [LibraryImport(AspNetCoreModuleDll)]
-    private static partial int http_get_application_properties(out IISConfigurationData iiConfigData);
+    private static partial int http_get_application_properties(ref IISConfigurationData iiConfigData);
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_get_server_variable(
@@ -227,7 +227,8 @@ internal static partial class NativeMethods
 
     internal static IISConfigurationData HttpGetApplicationProperties()
     {
-        Validate(http_get_application_properties(out IISConfigurationData iisConfigurationData));
+        var iisConfigurationData = new IISConfigurationData();
+        Validate(http_get_application_properties(ref iisConfigurationData));
         return iisConfigurationData;
     }
 

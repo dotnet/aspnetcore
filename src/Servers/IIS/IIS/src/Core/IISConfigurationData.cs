@@ -21,7 +21,7 @@ internal struct IISConfigurationData
     public string pwzBindings;
     public uint maxRequestBodySize;
 
-    [CustomTypeMarshaller(typeof(IISConfigurationData), CustomTypeMarshallerKind.Value, Direction = CustomTypeMarshallerDirection.Ref, Features = CustomTypeMarshallerFeatures.UnmanagedResources | CustomTypeMarshallerFeatures.TwoStageMarshalling)]
+    [CustomTypeMarshaller(typeof(IISConfigurationData), CustomTypeMarshallerKind.Value, Features = CustomTypeMarshallerFeatures.UnmanagedResources | CustomTypeMarshallerFeatures.TwoStageMarshalling)]
     public unsafe ref struct Native
     {
         public IntPtr pNativeApplication;

@@ -180,14 +180,14 @@ public partial class Startup
             });
     }
 
-    [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
-    private static partial uint GetDllDirectory(uint nBufferLength, [Out] char[] lpBuffer);
+    [LibraryImport("kernel32.dll")]
+    private static partial uint GetDllDirectory(uint nBufferLength, [Out, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U2)] char[] lpBuffer);
 
     private async Task DllDirectory(HttpContext context)
     {
-        var builder = new char[1024];
-        GetDllDirectory(1024, builder);
-        await context.Response.WriteAsync(builder.ToString());
+        var buffer = new char[1024];
+        GetDllDirectory(1024, buffer);
+        await context.Response.WriteAsync(buffer.ToString());
     }
 
     private async Task GetEnvironmentVariable(HttpContext ctx)
