@@ -12,35 +12,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class WebTransportTests : Http3TestBase
 {
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task WebTransportHandshake_ClientToServerPasses(bool datagramsEnabled)
+    [Fact]
+    public async Task WebTransportHandshake_ClientToServerPasses()
     {
-        _serviceContext.ServerOptions.EnableWebTransport = true;
-        _serviceContext.ServerOptions.EnableHttp3Datagrams = datagramsEnabled;
-
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();
         var controlStream2 = await Http3Api.GetInboundControlStream();
 
-        var settings = new Http3PeerSettings()
-        {
-            EnableWebTransport = 1,
-            H3Datagram = (uint)(datagramsEnabled ? 1 : 0)
-        };
-
-        await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
+        await controlStream.SendSettingsAsync(new Http3PeerSettings().GetNonProtocolDefaults());
         var response1 = await controlStream2.ExpectSettingsAsync();
 
-        // wait for the server to have time to receive the settings and update its values
         await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
-        Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
-        if (datagramsEnabled)
-        {
-            Assert.Equal(settings.H3Datagram, response1[(long)Http3SettingType.H3Datagram]);
-        }
+        Assert.Equal(1, response1[(long)Http3SettingType.EnableWebTransport]);
 
         var requestStream = await Http3Api.CreateRequestStream();
         var headersConnectFrame = new[]
@@ -59,46 +43,6 @@ public class WebTransportTests : Http3TestBase
         Assert.Equal((int)HttpStatusCode.OK, Convert.ToInt32(response2[HeaderNames.Status]));
 
         await requestStream.OnDisposedTask.DefaultTimeout();
-    }
-
-    [Theory]
-    [InlineData(true, 0)]
-    [InlineData(false, 0)]
-    [InlineData(false, 1)]
-    public async Task WebTransport_WhenOffRequestsAreRejected(bool serverHasWebTransportEnabled, uint clientHasWebTransportEnabled)
-    {
-        _serviceContext.ServerOptions.EnableWebTransport = serverHasWebTransportEnabled;
-
-        await Http3Api.InitializeConnectionAsync(_noopApplication);
-        var controlStream = await Http3Api.CreateControlStream();
-        var controlStream2 = await Http3Api.GetInboundControlStream();
-
-        var settings = new Http3PeerSettings()
-        {
-            EnableWebTransport = clientHasWebTransportEnabled,
-            H3Datagram = 0
-        };
-
-        await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
-        var response1 = await controlStream2.ExpectSettingsAsync();
-
-        // Note: we do not need to wait for the server to have time to receive the settings and update its values
-        // because if the vlaues haven't changed, it does not update them and thus doesn't fire the readAsync task.
-
-        var requestStream = await Http3Api.CreateRequestStream();
-        var headersConnectFrame = new[]
-        {
-            new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
-            new KeyValuePair<string, string>(HeaderNames.Protocol, "webtransport"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
-            new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com")
-        };
-
-        await requestStream.SendHeadersAsync(headersConnectFrame);
-
-        await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.SettingsError);
     }
 
     [Theory]
@@ -141,27 +85,17 @@ public class WebTransportTests : Http3TestBase
         nameof(HeaderNames.Authority), "server.example.com")]  // no origin
     public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, params string[] headers)
     {
-        _serviceContext.ServerOptions.EnableWebTransport = true;
-        _serviceContext.ServerOptions.EnableHttp3Datagrams = true;
-
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();
         var controlStream2 = await Http3Api.GetInboundControlStream();
 
-        var settings = new Http3PeerSettings()
-        {
-            EnableWebTransport = 1,
-            H3Datagram = 1
-        };
-
-        await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
+        await controlStream.SendSettingsAsync(new Http3PeerSettings().GetNonProtocolDefaults());
         var response1 = await controlStream2.ExpectSettingsAsync();
 
-        // wait for the server to have time to receive the settings and update its values
         await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
-        Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
-        Assert.Equal(settings.H3Datagram, response1[(long)Http3SettingType.H3Datagram]);
+        Assert.Equal(1, response1[(long)Http3SettingType.EnableWebTransport]);
+        Assert.Equal(0, response1[(long)Http3SettingType.H3Datagram]);
 
         var requestStream = await Http3Api.CreateRequestStream();
 

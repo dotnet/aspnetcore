@@ -57,8 +57,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         _serverSettings.HeaderTableSize = (uint)httpLimits.Http3.HeaderTableSize;
         _serverSettings.MaxRequestHeaderFieldSectionSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
-        _serverSettings.EnableWebTransport = Convert.ToUInt32(serverOptions.EnableWebTransport);
-        _serverSettings.H3Datagram = Convert.ToUInt32(serverOptions.EnableHttp3Datagrams);
+        _serverSettings.EnableWebTransport = 1;
+        _serverSettings.H3Datagram = 0; // we don't support this yet
     }
 
     private void UpdateHighestOpenedRequestStreamId(long streamId)

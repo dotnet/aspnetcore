@@ -845,11 +845,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 throw new Http3StreamErrorException("Method must be CONNECT." /*todo unhardcode*/, Http3ErrorCode.ProtocolError); // todo should this be a 400 response instead?
             }
 
-            if (!ServerOptions.EnableWebTransport)
-            {
-                throw new Http3StreamErrorException("Server has WebTransport disabled. Please enable it prior to setting up WebTransport sessions." /*todo unhardcode*/, Http3ErrorCode.SettingsError);
-            }
-
             if (!_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Authority) || !_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Path))
             {
                 throw new Http3StreamErrorException("WebTransport requires the authority and path pseudoheaders to be set" /*todo unhardcode*/, Http3ErrorCode.ProtocolError); // todo should this be a 400 response instead?
@@ -863,11 +858,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             if (_context.ClientPeerSettings.H3Datagram != _context.ServerPeerSettings.H3Datagram)
             {
                 throw new Http3StreamErrorException($"HTTP/3 datagrams negotiation mismatch. Currently client has it {((_context.ClientPeerSettings.H3Datagram == 1) ? "ON" : "OFF")} and server has it {((_context.ServerPeerSettings.H3Datagram == 1) ? "ON" : "OFF")}." /*todo unhardcode*/, Http3ErrorCode.SettingsError);
-            }
-
-            if (_currentIHttpRequestFeature == null || _currentIHttpRequestFeature.Headers.Origin.Count == 0)
-            {
-                throw new Http3StreamErrorException($"The {nameof(_currentIHttpRequestFeature.Headers.Origin)} header must be set." /*todo unhardcode*/, Http3ErrorCode.ProtocolError);  // todo should this be a 400 response instead?
             }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)

@@ -91,22 +91,6 @@ public class KestrelServerOptions
     /// </remarks>
     public bool DisableStringReuse { get; set; }
 
-
-    /// <summary>
-    /// Gets or sets a value that controls if Kestrel will accept incoming WebTransport connections.
-    /// </summary>
-    /// <remarks>
-    /// Defaults to false.
-    /// </remarks>
-    public bool EnableWebTransport { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value that controls if Kestrel will send and receive datagrams over Http/3.
-    /// </summary>
-    /// <remarks>
-    /// Defaults to false.
-    /// </remarks>
-    public bool EnableHttp3Datagrams { get; set; }
     /// <summary>
     /// Controls whether to return the "Alt-Svc" header from an HTTP/2 or lower response for HTTP/3.
     /// </summary>
@@ -238,12 +222,6 @@ public class KestrelServerOptions
 
         writer.WriteString(nameof(RequestHeaderEncodingSelector), RequestHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
         writer.WriteString(nameof(ResponseHeaderEncodingSelector), ResponseHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
-
-        writer.WritePropertyName(nameof(EnableWebTransport));
-        writer.WriteBooleanValue(EnableWebTransport);
-
-        writer.WritePropertyName(nameof(EnableHttp3Datagrams));
-        writer.WriteBooleanValue(EnableHttp3Datagrams);
 
         // Limits
         writer.WritePropertyName(nameof(Limits));
