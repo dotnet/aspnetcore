@@ -93,7 +93,7 @@ public class KestrelServerOptions
 
 
     /// <summary>
-    /// Gets or sets a value that controls if Kestrell will accept incoming WebTransport connections.
+    /// Gets or sets a value that controls if Kestrel will accept incoming WebTransport connections.
     /// </summary>
     /// <remarks>
     /// Defaults to false.
@@ -101,7 +101,7 @@ public class KestrelServerOptions
     public bool EnableWebTransport { get; set; }
 
     /// <summary>
-    /// Gets or sets a value that controls if Kestrell will send and receive datagrams over Http/3.
+    /// Gets or sets a value that controls if Kestrel will send and receive datagrams over Http/3.
     /// </summary>
     /// <remarks>
     /// Defaults to false.
