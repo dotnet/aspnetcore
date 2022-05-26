@@ -4,22 +4,58 @@
 using Microsoft.AspNetCore.DataProtection.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
 public class DataProtectionUtilityExtensionsTests
 {
-    [Theory]
+    [ConditionalTheory]
     [InlineData("app-path", "app-path\\")]
     [InlineData("app-path ", "app-path\\")] // normalized trim
     [InlineData("app-path\\", "app-path\\")]
-    [InlineData("app-path/", "app-path/")]
-    [InlineData(" /", "/")]
+    [InlineData("app-path \\", "app-path \\")]
+    [InlineData("app-path/", "app-path/\\")]
+    [InlineData("app-path /", "app-path /\\")]
+    [InlineData(" /", "/\\")]
     [InlineData(" \\ ", "\\")]
     [InlineData("  ", null)] // normalized whitespace -> null
     [InlineData(null, null)] // nothing provided at all
-    public void GetApplicationUniqueIdentifierFromHosting(string contentRootPath, string expected)
+    [OSSkipCondition(OperatingSystems.Linux)]
+    [OSSkipCondition(OperatingSystems.MacOSX)]
+    public void GetApplicationUniqueIdentifierFromHostingWindows(string contentRootPath, string expected)
+    {
+        // Arrange
+        var mockEnvironment = new Mock<IHostEnvironment>();
+        mockEnvironment.Setup(o => o.ContentRootPath).Returns(contentRootPath);
+
+        var services = new ServiceCollection()
+            .AddSingleton(mockEnvironment.Object)
+            .AddDataProtection()
+            .Services
+            .BuildServiceProvider();
+
+        // Act
+        var actual = services.GetApplicationUniqueIdentifier();
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [ConditionalTheory]
+    [InlineData("app-path", "app-path/")]
+    [InlineData("app-path ", "app-path/")] // normalized trim
+    [InlineData("app-path\\", "app-path\\/")]
+    [InlineData("app-path \\", "app-path \\/")]
+    [InlineData("app-path/", "app-path/")]
+    [InlineData("app-path /", "app-path /")]
+    [InlineData(" /", "/")]
+    [InlineData(" \\ ", "\\/")]
+    [InlineData("  ", null)] // normalized whitespace -> null
+    [InlineData(null, null)] // nothing provided at all
+    [OSSkipCondition(OperatingSystems.Windows)]
+    public void GetApplicationUniqueIdentifierFromHostingNonWindows(string contentRootPath, string expected)
     {
         // Arrange
         var mockEnvironment = new Mock<IHostEnvironment>();
