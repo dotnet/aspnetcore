@@ -75,8 +75,8 @@ internal static partial class NativeMethods
     [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_disable_buffering(NativeSafeHandle pInProcessHandler);
 
-    [LibraryImport(AspNetCoreModuleDll, StringMarshalling = StringMarshalling.Utf16)]
-    private static partial int http_set_response_status_code(NativeSafeHandle pInProcessHandler, ushort statusCode, string pszReason);
+    [LibraryImport(AspNetCoreModuleDll)]
+    private static partial int http_set_response_status_code(NativeSafeHandle pInProcessHandler, ushort statusCode, [MarshalAs(UnmanagedType.LPStr)] string pszReason);
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static unsafe partial int http_read_request_bytes(NativeSafeHandle pInProcessHandler, byte* pvBuffer, int cbBuffer, out int dwBytesReceived, [MarshalAs(UnmanagedType.Bool)] out bool fCompletionExpected);
