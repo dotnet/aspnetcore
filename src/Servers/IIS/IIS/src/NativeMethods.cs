@@ -88,7 +88,7 @@ internal static partial class NativeMethods
     private static partial int http_set_managed_context(NativeSafeHandle pInProcessHandler, IntPtr pvManagedContext);
 
     [LibraryImport(AspNetCoreModuleDll)]
-    private static partial int http_get_application_properties(ref IISConfigurationData iiConfigData);
+    private static partial int http_get_application_properties(out IISConfigurationData iiConfigData);
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_get_server_variable(
@@ -227,8 +227,7 @@ internal static partial class NativeMethods
 
     internal static IISConfigurationData HttpGetApplicationProperties()
     {
-        var iisConfigurationData = new IISConfigurationData();
-        Validate(http_get_application_properties(ref iisConfigurationData));
+        Validate(http_get_application_properties(out IISConfigurationData iisConfigurationData));
         return iisConfigurationData;
     }
 

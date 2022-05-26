@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-[NativeMarshalling(typeof(Native))]
+[NativeMarshalling(typeof(Marshaller))]
 [StructLayout(LayoutKind.Sequential)]
 internal struct IISConfigurationData
 {
@@ -22,64 +20,66 @@ internal struct IISConfigurationData
     public uint maxRequestBodySize;
 
     [CustomTypeMarshaller(typeof(IISConfigurationData), CustomTypeMarshallerKind.Value, Features = CustomTypeMarshallerFeatures.UnmanagedResources | CustomTypeMarshallerFeatures.TwoStageMarshalling)]
-    public unsafe ref struct Native
+    public unsafe ref struct Marshaller
     {
-        public IntPtr pNativeApplication;
-        public IntPtr pwzFullApplicationPath;
-        public IntPtr pwzVirtualApplicationPath;
-        public int fWindowsAuthEnabled;
-        public int fBasicAuthEnabled;
-        public int fAnonymousAuthEnable;
-        public IntPtr pwzBindings;
-        public uint maxRequestBodySize;
-
-        public Native(IISConfigurationData managed)
+        public struct Native
         {
-            pNativeApplication = managed.pNativeApplication;
-            pwzFullApplicationPath = managed.pwzFullApplicationPath is null ? IntPtr.Zero : Marshal.StringToBSTR(managed.pwzFullApplicationPath);
-            pwzVirtualApplicationPath = managed.pwzVirtualApplicationPath is null ? IntPtr.Zero : Marshal.StringToBSTR(managed.pwzVirtualApplicationPath);
-            fWindowsAuthEnabled = managed.fWindowsAuthEnabled ? 1 : 0;
-            fBasicAuthEnabled = managed.fBasicAuthEnabled ? 1 : 0;
-            fAnonymousAuthEnable = managed.fAnonymousAuthEnable ? 1 : 0;
-            pwzBindings = managed.pwzBindings is null ? IntPtr.Zero : Marshal.StringToBSTR(managed.pwzBindings);
-            maxRequestBodySize = managed.maxRequestBodySize;
+            public IntPtr pNativeApplication;
+            public IntPtr pwzFullApplicationPath;
+            public IntPtr pwzVirtualApplicationPath;
+            public int fWindowsAuthEnabled;
+            public int fBasicAuthEnabled;
+            public int fAnonymousAuthEnable;
+            public IntPtr pwzBindings;
+            public uint maxRequestBodySize;
         }
 
-        public IntPtr ToNativeValue() => (IntPtr)Unsafe.AsPointer(ref pNativeApplication);
+        private Native _native;
 
-        public void FromNativeValue(IntPtr value)
+        public Marshaller(IISConfigurationData managed)
         {
-            Debug.Assert(value == ToNativeValue());
+            _native.pNativeApplication = managed.pNativeApplication;
+            _native.pwzFullApplicationPath = managed.pwzFullApplicationPath is null ? IntPtr.Zero : Marshal.StringToBSTR(managed.pwzFullApplicationPath);
+            _native.pwzVirtualApplicationPath = managed.pwzVirtualApplicationPath is null ? IntPtr.Zero : Marshal.StringToBSTR(managed.pwzVirtualApplicationPath);
+            _native.fWindowsAuthEnabled = managed.fWindowsAuthEnabled ? 1 : 0;
+            _native.fBasicAuthEnabled = managed.fBasicAuthEnabled ? 1 : 0;
+            _native.fAnonymousAuthEnable = managed.fAnonymousAuthEnable ? 1 : 0;
+            _native.pwzBindings = managed.pwzBindings is null ? IntPtr.Zero : Marshal.StringToBSTR(managed.pwzBindings);
+            _native.maxRequestBodySize = managed.maxRequestBodySize;
         }
+
+        public Native ToNativeValue() => _native;
+
+        public void FromNativeValue(Native value) => _native = value;
 
         public IISConfigurationData ToManaged()
         {
             return new()
             {
-                pNativeApplication = pNativeApplication,
-                pwzFullApplicationPath = pwzFullApplicationPath == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(pwzFullApplicationPath),
-                pwzVirtualApplicationPath = pwzVirtualApplicationPath == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(pwzVirtualApplicationPath),
-                fWindowsAuthEnabled = fWindowsAuthEnabled != 0,
-                fBasicAuthEnabled = fBasicAuthEnabled != 0,
-                fAnonymousAuthEnable = fAnonymousAuthEnable != 0,
-                pwzBindings = pwzBindings == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(pwzBindings),
-                maxRequestBodySize = maxRequestBodySize
+                pNativeApplication = _native.pNativeApplication,
+                pwzFullApplicationPath = _native.pwzFullApplicationPath == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(_native.pwzFullApplicationPath),
+                pwzVirtualApplicationPath = _native.pwzVirtualApplicationPath == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(_native.pwzVirtualApplicationPath),
+                fWindowsAuthEnabled = _native.fWindowsAuthEnabled != 0,
+                fBasicAuthEnabled = _native.fBasicAuthEnabled != 0,
+                fAnonymousAuthEnable = _native.fAnonymousAuthEnable != 0,
+                pwzBindings = _native.pwzBindings == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(_native.pwzBindings),
+                maxRequestBodySize = _native.maxRequestBodySize
             };
         }
 
         public void FreeNative()
         {
-            if (pwzFullApplicationPath != IntPtr.Zero)
+            if (_native.pwzFullApplicationPath != IntPtr.Zero)
             {
-                Marshal.FreeBSTR(pwzFullApplicationPath);
+                Marshal.FreeBSTR(_native.pwzFullApplicationPath);
             }
-            if (pwzVirtualApplicationPath != IntPtr.Zero)
+            if (_native.pwzVirtualApplicationPath != IntPtr.Zero)
             {
-                Marshal.FreeBSTR(pwzVirtualApplicationPath);
+                Marshal.FreeBSTR(_native.pwzVirtualApplicationPath);
             }
-            if (pwzBindings != IntPtr.Zero)
+            if (_native.pwzBindings != IntPtr.Zero)
             {
-                Marshal.FreeBSTR(pwzBindings);
+                Marshal.FreeBSTR(_native.pwzBindings);
             }
         }
     }
