@@ -29,7 +29,9 @@ public class PackageTests
         }
 
         _output = output;
-        var packageRoot = TestData.GetPackagesFolder();
+        var packageFolder = SkipOnHelixAttribute.OnHelix() ?
+            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            TestData.GetPackagesFolder();
         _packageLayoutRoot = TestData.GetPackageLayoutRoot();
         var packages = Directory
                         .GetFiles(packageRoot, "*.nupkg", SearchOption.AllDirectories)
