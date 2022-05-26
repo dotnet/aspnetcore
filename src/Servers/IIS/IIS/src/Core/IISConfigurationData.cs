@@ -8,6 +8,7 @@ using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
+[NativeMarshalling(typeof(Native))]
 [StructLayout(LayoutKind.Sequential)]
 internal struct IISConfigurationData
 {

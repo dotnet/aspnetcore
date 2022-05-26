@@ -143,15 +143,4 @@ internal static unsafe partial class UnsafeNclNativeMethods
             public TOKENBINDING_RESULT_DATA* resultData;
         }
     }
-
-    // DACL related stuff
-
-    [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "Instantiated natively")]
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct SECURITY_ATTRIBUTES
-    {
-        public uint nLength;
-        public IntPtr lpSecurityDescriptor;
-        public int bInheritHandle;
-    }
 }

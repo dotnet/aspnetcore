@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core;
 
@@ -89,13 +88,13 @@ internal static partial class NativeMethods
     private static partial int http_set_managed_context(NativeSafeHandle pInProcessHandler, IntPtr pvManagedContext);
 
     [LibraryImport(AspNetCoreModuleDll)]
-    private static partial int http_get_application_properties([MarshalUsing(typeof(IISConfigurationData.Native))] ref IISConfigurationData iiConfigData);
+    private static partial int http_get_application_properties(out IISConfigurationData iiConfigData);
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_get_server_variable(
         NativeSafeHandle pInProcessHandler,
         [MarshalAs(UnmanagedType.LPStr)] string variableName,
-        [MarshalUsing(typeof(BstrStringMarshaller))] out string value);
+        [MarshalAs(UnmanagedType.BStr)] out string value);
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_set_server_variable(
@@ -149,7 +148,7 @@ internal static partial class NativeMethods
     private static unsafe partial int http_response_set_known_header(NativeSafeHandle pInProcessHandler, int headerId, byte* pHeaderValue, ushort length, [MarshalAs(UnmanagedType.Bool)] bool fReplace);
 
     [LibraryImport(AspNetCoreModuleDll)]
-    private static partial int http_get_authentication_information(NativeSafeHandle pInProcessHandler, [MarshalUsing(typeof(BstrStringMarshaller))] out string authType, out IntPtr token);
+    private static partial int http_get_authentication_information(NativeSafeHandle pInProcessHandler, [MarshalAs(UnmanagedType.BStr)] out string authType, out IntPtr token);
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static unsafe partial int http_set_startup_error_page_content(byte* content, int contentLength);
@@ -228,8 +227,7 @@ internal static partial class NativeMethods
 
     internal static IISConfigurationData HttpGetApplicationProperties()
     {
-        var iisConfigurationData = new IISConfigurationData();
-        Validate(http_get_application_properties(ref iisConfigurationData));
+        Validate(http_get_application_properties(out IISConfigurationData iisConfigurationData));
         return iisConfigurationData;
     }
 
@@ -339,35 +337,6 @@ internal static partial class NativeMethods
         if (hr != HR_OK)
         {
             throw Marshal.GetExceptionForHR(hr)!;
-        }
-    }
-
-    /// <summary>
-    /// Marshaller for BSTR strings
-    /// </summary>
-    [CustomTypeMarshaller(typeof(string),
-        Features = CustomTypeMarshallerFeatures.UnmanagedResources | CustomTypeMarshallerFeatures.TwoStageMarshalling)]
-    internal ref struct BstrStringMarshaller
-    {
-        private IntPtr _allocated;
-
-        public BstrStringMarshaller(string? str)
-        {
-            _allocated = Marshal.StringToBSTR(str);
-        }
-
-        public IntPtr ToNativeValue() => _allocated;
-
-        public void FromNativeValue(IntPtr value) => _allocated = value;
-
-        public string? ToManaged() => Marshal.PtrToStringBSTR(_allocated);
-
-        public void FreeNative()
-        {
-            if (_allocated != IntPtr.Zero)
-            {
-                Marshal.FreeBSTR(_allocated);
-            }
         }
     }
 }

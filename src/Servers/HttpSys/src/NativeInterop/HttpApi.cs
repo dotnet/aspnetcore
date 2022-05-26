@@ -68,7 +68,7 @@ internal static unsafe partial class HttpApi
 
     [LibraryImport(HTTPAPI, SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     internal static unsafe partial uint HttpCreateRequestQueue(HTTPAPI_VERSION version, string? pName,
-        UnsafeNclNativeMethods.SECURITY_ATTRIBUTES? pSecurityAttributes, HTTP_CREATE_REQUEST_QUEUE_FLAG flags, out HttpRequestQueueV2Handle pReqQueueHandle);
+        IntPtr pSecurityAttributes, HTTP_CREATE_REQUEST_QUEUE_FLAG flags, out HttpRequestQueueV2Handle pReqQueueHandle);
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
     internal static unsafe partial uint HttpCloseRequestQueue(IntPtr pReqQueueHandle);

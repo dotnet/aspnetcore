@@ -17,7 +17,7 @@ namespace HelixTestRunner;
 
 public static partial class ProcessUtil
 {
-    [LibraryImportAttribute("libc", SetLastError = true, EntryPoint = "kill")]
+    [LibraryImport("libc", SetLastError = true, EntryPoint = "kill")]
     private static partial int sys_kill(int pid, int sig);
 
     public static Task CaptureDumpAsync()
