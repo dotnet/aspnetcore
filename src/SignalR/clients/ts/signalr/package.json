@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "abort-controller": "^3.0.0",
-    "eventsource": "^1.0.7",
+    "eventsource": "^2.0.2",
     "fetch-cookie": "^0.11.0",
     "node-fetch": "^2.6.7",
     "ws": "^7.4.5"
