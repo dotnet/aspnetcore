@@ -37,7 +37,10 @@ public class WebTransportTests : Http3TestBase
         await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
         Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
-        Assert.Equal(settings.H3Datagram, response1[(long)Http3SettingType.H3Datagram]);
+        if (datagramsEnabled)
+        {
+            Assert.Equal(settings.H3Datagram, response1[(long)Http3SettingType.H3Datagram]);
+        }
 
         var requestStream = await Http3Api.CreateRequestStream();
         var headersConnectFrame = new[]
@@ -58,10 +61,13 @@ public class WebTransportTests : Http3TestBase
         await requestStream.OnDisposedTask.DefaultTimeout();
     }
 
-    [Fact]
-    public async Task WebTransport_WhenOffRequests404()
+    [Theory]
+    [InlineData(true, 0)]
+    [InlineData(false, 0)]
+    [InlineData(false, 1)]
+    public async Task WebTransport_WhenOffRequestsAreRejected(bool serverHasWebTransportEnabled, uint clientHasWebTransportEnabled)
     {
-        _serviceContext.ServerOptions.EnableWebTransport = false;
+        _serviceContext.ServerOptions.EnableWebTransport = serverHasWebTransportEnabled;
 
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();
@@ -69,18 +75,15 @@ public class WebTransportTests : Http3TestBase
 
         var settings = new Http3PeerSettings()
         {
-            EnableWebTransport = 0,
+            EnableWebTransport = clientHasWebTransportEnabled,
             H3Datagram = 0
         };
 
         await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
         var response1 = await controlStream2.ExpectSettingsAsync();
 
-        // wait for the server to have time to receive the settings and update its values
-        await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
-
-        Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
-        Assert.Equal(settings.H3Datagram, response1[(long)Http3SettingType.H3Datagram]);
+        // Note: we do not need to wait for the server to have time to receive the settings and update its values
+        // because if the vlaues haven't changed, it does not update them and thus doesn't fire the readAsync task.
 
         var requestStream = await Http3Api.CreateRequestStream();
         var headersConnectFrame = new[]
@@ -170,47 +173,6 @@ public class WebTransportTests : Http3TestBase
         await requestStream.SendHeadersAsync(headersConnectFrame);
 
         await requestStream.WaitForStreamErrorAsync((Http3ErrorCode)error);
-    }
-
-    [Fact]
-    public async Task WebTransportHandshake_NoDatagramNegotiatedRejects()
-    {
-        _serviceContext.ServerOptions.EnableWebTransport = false;
-
-        // We are testing default behaviour so this is the minimal behaviour required for it to work
-        await Http3Api.InitializeConnectionAsync(_noopApplication);
-        var controlStream = await Http3Api.CreateControlStream();
-        var controlStream2 = await Http3Api.GetInboundControlStream();
-
-        var settings = new Http3PeerSettings()
-        {
-            EnableWebTransport = 0,
-            // H3Datagram = 0 ommited on purpose for this test
-        };
-
-        await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
-        var response1 = await controlStream2.ExpectSettingsAsync();
-
-        // wait for the server to have time to receive the settings and update its values
-        await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
-
-        Assert.Equal(settings.EnableWebTransport, response1[(long)Http3SettingType.EnableWebTransport]);
-        Assert.Equal(settings.H3Datagram, response1[(long)Http3SettingType.H3Datagram]);
-
-        var requestStream = await Http3Api.CreateRequestStream();
-        var headersConnectFrame = new[]
-        {
-            new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
-            new KeyValuePair<string, string>(HeaderNames.Protocol, "webtransport"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
-            new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com")
-        };
-
-        await requestStream.SendHeadersAsync(headersConnectFrame);
-
-        await requestStream.WaitForStreamErrorAsync(Http3ErrorCode.SettingsError);
     }
 
     private static string GetHeaderFromName(string headerName)

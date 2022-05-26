@@ -490,7 +490,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     private static PseudoHeaderFields GetPseudoHeaderField(ReadOnlySpan<byte> name)
     {
-        if (name.IsEmpty || name[0] != (byte)':') // TODO Can this be switched to a switch statement?
+        if (name.IsEmpty || name[0] != (byte)':')
         {
             return PseudoHeaderFields.None;
         }
