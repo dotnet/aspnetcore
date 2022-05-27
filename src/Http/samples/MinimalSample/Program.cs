@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,14 @@ if (app.Environment.IsDevelopment())
 
 string Plaintext() => "Hello, World!";
 app.MapGet("/plaintext", Plaintext);
+
+var message =
+    $"""
+    Operating System is: {Environment.OSVersion}.
+    Currently running .NET version {Environment.Version}.
+    """;
+
+app.MapGet("/", () => message);
 
 var nestedGroup = app.MapGroup("/group/{groupName}")
    .MapGroup("/nested/{nestedName}")
