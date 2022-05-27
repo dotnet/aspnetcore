@@ -19,7 +19,12 @@ public class WebTransportTests : Http3TestBase
         var controlStream = await Http3Api.CreateControlStream();
         var controlStream2 = await Http3Api.GetInboundControlStream();
 
-        await controlStream.SendSettingsAsync(new Http3PeerSettings().GetNonProtocolDefaults());
+        var settings = new Http3PeerSettings()
+        {
+            EnableWebTransport = 1
+        };
+
+        await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
         var response1 = await controlStream2.ExpectSettingsAsync();
 
         await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
@@ -48,7 +53,7 @@ public class WebTransportTests : Http3TestBase
     [Theory]
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
-        nameof(HeaderNames.Method), "GET", // incorrect method
+        nameof(HeaderNames.Method), "GET", // incorrect method (verifies that webtransport doesn't break regular Http/3 get)
         nameof(HeaderNames.Protocol), "webtransport",
         nameof(HeaderNames.Scheme), "http",
         nameof(HeaderNames.Path), "/",
@@ -57,7 +62,7 @@ public class WebTransportTests : Http3TestBase
     //[InlineData(
     //    ((long)Http3ErrorCode..ProtocolError,
     //    nameof(HeaderNames.Method), "CONNECT",
-    //    nameof(HeaderNames.Protocol), "webtransport...NOT",
+    //    nameof(HeaderNames.Protocol), "webtransport",
     //    nameof(HeaderNames.Scheme), "http", // incorrect scheme <-- it should be https but the tests don't work with it so I commented it out (also it is given by http/3)
     //    nameof(HeaderNames.Path), "/",
     //    nameof(HeaderNames.Authority), "server.example.com",
@@ -68,7 +73,7 @@ public class WebTransportTests : Http3TestBase
         nameof(HeaderNames.Protocol), "webtransport",
         nameof(HeaderNames.Scheme), "http",
         nameof(HeaderNames.Authority), "server.example.com",
-        nameof(HeaderNames.Origin), "server.example.com")]  // no path protocol
+        nameof(HeaderNames.Origin), "server.example.com")]  // no path
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
         nameof(HeaderNames.Method), "CONNECT",
@@ -76,26 +81,30 @@ public class WebTransportTests : Http3TestBase
         nameof(HeaderNames.Scheme), "http",
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Origin), "server.example.com")]  // no authority
-    [InlineData(
-        ((long)Http3ErrorCode.ProtocolError),
-        nameof(HeaderNames.Method), "CONNECT",
-        nameof(HeaderNames.Protocol), "webtransport",
-        nameof(HeaderNames.Scheme), "http",
-        nameof(HeaderNames.Path), "/",
-        nameof(HeaderNames.Authority), "server.example.com")]  // no origin
+    //[InlineData(
+    //    ((long)Http3ErrorCode.ProtocolError),
+    //    nameof(HeaderNames.Method), "CONNECT",
+    //    nameof(HeaderNames.Protocol), "webtransport",
+    //    nameof(HeaderNames.Scheme), "http",
+    //    nameof(HeaderNames.Path), "/",
+    //    nameof(HeaderNames.Authority), "server.example.com")]  // no origin -- handled on middleware layer. Uncomment once that is implemented
     public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, params string[] headers)
     {
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();
         var controlStream2 = await Http3Api.GetInboundControlStream();
 
-        await controlStream.SendSettingsAsync(new Http3PeerSettings().GetNonProtocolDefaults());
+        var settings = new Http3PeerSettings()
+        {
+            EnableWebTransport = 1
+        };
+
+        await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
         var response1 = await controlStream2.ExpectSettingsAsync();
 
         await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
         Assert.Equal(1, response1[(long)Http3SettingType.EnableWebTransport]);
-        Assert.Equal(0, response1[(long)Http3SettingType.H3Datagram]);
 
         var requestStream = await Http3Api.CreateRequestStream();
 

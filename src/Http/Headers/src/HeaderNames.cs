@@ -189,6 +189,9 @@ public static class HeaderNames
     /// <summary>Gets the <c>Pragma</c> HTTP header name.</summary>
     public static readonly string Pragma = "Pragma";
 
+    /// <summary>Gets the <c>Protocol</c> HTTP header name.</summary>
+    public static readonly string Protocol = ":protocol";
+
     /// <summary>Gets the <c>Proxy-Authenticate</c> HTTP header name.</summary>
     public static readonly string ProxyAuthenticate = "Proxy-Authenticate";
 
@@ -299,7 +302,4 @@ public static class HeaderNames
 
     /// <summary>Gets the <c>X-XSS-Protection</c> HTTP header name.</summary>
     public static readonly string XXSSProtection = "X-XSS-Protection";
-
-    /// <summary>Gets the <c>Protocol</c> HTTP header name.</summary>
-    public static readonly string Protocol = ":protocol";
 }

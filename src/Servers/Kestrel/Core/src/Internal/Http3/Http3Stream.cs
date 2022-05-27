@@ -53,7 +53,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
-    private bool _isProtocolWebTransport;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
 
@@ -437,10 +436,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             if (headerField == PseudoHeaderFields.Method)
             {
                 _isMethodConnect = value.SequenceEqual(ConnectBytes);
-            }
-            else if (headerField == PseudoHeaderFields.Protocol)
-            {
-                _isProtocolWebTransport = value.SequenceEqual(WebTransportBytes);
             }
 
             _parsedPseudoHeaderFields |= headerField;
@@ -832,7 +827,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             await OnEndStreamReceived();
         }
 
-        if (_isProtocolWebTransport)
+        if (HttpRequestHeaders.HeaderProtocol.Count > 0)
         {
             // Requirement in the spec but this is handled by the Http/3 layer already, so leaving commented out for posterity
             //if (Scheme != SchemeHttps)
@@ -847,12 +842,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             if (!_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Authority) || !_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Path))
             {
-                throw new Http3StreamErrorException("WebTransport requires the authority and path pseudoheaders to be set" /*todo unhardcode*/, Http3ErrorCode.ProtocolError);
-            }
-
-            if (_context.ClientPeerSettings.EnableWebTransport == 0)
-            {
-                throw new Http3StreamErrorException("To use WebTransport you first need to send a settings frame to enable it." /*todo unhardcode*/, Http3ErrorCode.SettingsError);
+                throw new Http3StreamErrorException("WebTransport requires the authority and path pseudo-headers to be set" /*todo unhardcode*/, Http3ErrorCode.ProtocolError);
             }
 
             if (_context.ClientPeerSettings.H3Datagram != _context.ServerPeerSettings.H3Datagram)
@@ -967,8 +957,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             return false;
         }
 
-        // CONNECT - :scheme and :path must be excluded
-        if (Method == Http.HttpMethod.Connect && !_isProtocolWebTransport)
+        // CONNECT - :scheme and :path must be excluded=
+        if (Method == Http.HttpMethod.Connect && HttpRequestHeaders.HeaderProtocol.Count == 0)
         {
             if (!string.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
             {

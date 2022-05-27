@@ -36,9 +36,10 @@ internal sealed class Http3PeerSettings
         if (EnableWebTransport != DefaultEnableWebTransport)
         {
             list.Add(new Http3PeerSetting(Http3SettingType.EnableWebTransport, EnableWebTransport));
+        }
 
-            // datagrams must be negotiated along with webtransport
-            // https://www.ietf.org/archive/id/draft-ietf-webtrans-http3-01.html#name-establishing-a-transport-ca
+        if (H3Datagram != DefaultH3Datagram)
+        {
             list.Add(new Http3PeerSetting(Http3SettingType.H3Datagram, H3Datagram));
         }
 
