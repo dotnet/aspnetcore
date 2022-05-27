@@ -24,21 +24,16 @@ public class Program
         }
         else if (args.Length < 4)
         {
-            Console.Error.WriteLine("Missing path to Http2Connection.Generated.cs");
-            return 1;
-        }
-        else if (args.Length < 5)
-        {
             Console.Error.WriteLine("Missing path to TransportMultiplexedConnection.Generated.cs");
             return 1;
         }
-        else if (args.Length < 6)
+        else if (args.Length < 5)
         {
             Console.Error.WriteLine("Missing path to TransportConnection.Generated.cs");
             return 1;
         }
 
-        Run(args[0], args[1], args[2], args[3], args[4], args[5]);
+        Run(args[0], args[1], args[2], args[3], args[4]);
 
         return 0;
     }
@@ -47,7 +42,6 @@ public class Program
         string knownHeadersPath,
         string httpProtocolFeatureCollectionPath,
         string httpUtilitiesPath,
-        string http2ConnectionPath,
         string transportMultiplexedConnectionFeatureCollectionPath,
         string transportConnectionFeatureCollectionPath)
     {
@@ -56,12 +50,10 @@ public class Program
         var httpUtilitiesContent = HttpUtilities.HttpUtilities.GeneratedFile();
         var transportMultiplexedConnectionFeatureCollectionContent = TransportMultiplexedConnectionFeatureCollection.GenerateFile();
         var transportConnectionFeatureCollectionContent = TransportConnectionFeatureCollection.GenerateFile();
-        var http2ConnectionContent = Http2Connection.GenerateFile();
 
         UpdateFile(knownHeadersPath, knownHeadersContent);
         UpdateFile(httpProtocolFeatureCollectionPath, httpProtocolFeatureCollectionContent);
         UpdateFile(httpUtilitiesPath, httpUtilitiesContent);
-        UpdateFile(http2ConnectionPath, http2ConnectionContent);
         UpdateFile(transportMultiplexedConnectionFeatureCollectionPath, transportMultiplexedConnectionFeatureCollectionContent);
         UpdateFile(transportConnectionFeatureCollectionPath, transportConnectionFeatureCollectionContent);
     }
