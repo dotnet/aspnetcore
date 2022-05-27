@@ -36,7 +36,7 @@ public class Program
                         cert = store.Certificates[^1];
 
                         // rotate key after it expires
-                        if (DateTime.Parse(cert.GetExpirationDateString()) < DateTimeOffset.UtcNow)
+                        if (DateTime.Parse(cert.GetExpirationDateString(), null) < DateTimeOffset.UtcNow)
                         {
                             cert = null;
                         }

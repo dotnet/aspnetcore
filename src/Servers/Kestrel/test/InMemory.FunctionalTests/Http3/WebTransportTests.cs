@@ -21,7 +21,8 @@ public class WebTransportTests : Http3TestBase
 
         var settings = new Http3PeerSettings()
         {
-            EnableWebTransport = 1
+            EnableWebTransport = 1,
+            H3Datagram = 1,
         };
 
         await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
@@ -45,7 +46,7 @@ public class WebTransportTests : Http3TestBase
         await requestStream.SendHeadersAsync(headersConnectFrame);
         var response2 = await requestStream.ExpectHeadersAsync();
 
-        Assert.Equal((int)HttpStatusCode.OK, Convert.ToInt32(response2[HeaderNames.Status]));
+        Assert.Equal((int)HttpStatusCode.OK, Convert.ToInt32(response2[HeaderNames.Status], null));
 
         await requestStream.OnDisposedTask.DefaultTimeout();
     }
@@ -89,7 +90,8 @@ public class WebTransportTests : Http3TestBase
 
         var settings = new Http3PeerSettings()
         {
-            EnableWebTransport = 1
+            EnableWebTransport = 1,
+            H3Datagram = 1,
         };
 
         await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
