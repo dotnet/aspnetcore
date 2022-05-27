@@ -17,7 +17,7 @@ public static class Http2Connection
 
     private static IEnumerable<(string Name, string Value)> GetStrings()
     {
-        yield return ("ClientPreface", "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n");
+        yield return ("ClientPreface", "PRI * HTTP/2.0\\r\\n\\r\\nSM\\r\\n\\r\\n");
         yield return ("Authority", HeaderNames.Authority);
         yield return ("Method", HeaderNames.Method);
         yield return ("Path", HeaderNames.Path);

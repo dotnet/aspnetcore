@@ -246,15 +246,15 @@ public partial class WebSocketMiddleware
 
             var foundHeader = false;
 
-            var values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Connection);
+            var values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Upgrade);
             foreach (var value in values)
             {
-                if (string.Equals(value, HeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(value, Constants.Headers.UpgradeWebSocket, StringComparison.OrdinalIgnoreCase))
                 {
                     // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
                     if (values.Length == 1)
                     {
-                        requestHeaders.Connection = HeaderNames.Upgrade;
+                        requestHeaders.Upgrade = Constants.Headers.UpgradeWebSocket;
                     }
                     foundHeader = true;
                     break;
@@ -266,15 +266,15 @@ public partial class WebSocketMiddleware
             }
             foundHeader = false;
 
-            values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Upgrade);
+            values = requestHeaders.GetCommaSeparatedValues(HeaderNames.Connection);
             foreach (var value in values)
             {
-                if (string.Equals(value, Constants.Headers.UpgradeWebSocket, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(value, HeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase))
                 {
                     // WebSockets are long lived; so if the header values are valid we switch them out for the interned versions.
                     if (values.Length == 1)
                     {
-                        requestHeaders.Upgrade = Constants.Headers.UpgradeWebSocket;
+                        requestHeaders.Connection = HeaderNames.Upgrade;
                     }
                     foundHeader = true;
                     break;

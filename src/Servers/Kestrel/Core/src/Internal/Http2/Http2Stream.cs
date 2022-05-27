@@ -235,7 +235,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                 // On requests that contain the :protocol pseudo-header field, the :scheme and :path pseudo-header fields of the target URI MUST also be included.
                 if (StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
                 {
-                    ResetAndAbort(new ConnectionAbortedException("':protocol' requres ':scheme' and ':path'."), Http2ErrorCode.PROTOCOL_ERROR);
+                    ResetAndAbort(new ConnectionAbortedException("':protocol' requires ':scheme' and ':path'."), Http2ErrorCode.PROTOCOL_ERROR);
                     return false;
                 }
                 ConnectProtocol = HttpRequestHeaders.HeaderProtocol;

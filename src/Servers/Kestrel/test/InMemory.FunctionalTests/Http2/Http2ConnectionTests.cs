@@ -5382,7 +5382,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendAsync(Http2Connection.ClientPreface);
 
         await ExpectAsync(Http2FrameType.SETTINGS,
-            withLength: 3 * Http2FrameReader.SettingSize,
+            withLength: 4 * Http2FrameReader.SettingSize,
             withFlags: 0,
             withStreamId: 0);
 

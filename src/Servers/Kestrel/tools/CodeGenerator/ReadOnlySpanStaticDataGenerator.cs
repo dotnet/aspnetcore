@@ -29,7 +29,7 @@ namespace {namespaceName}
     {{
         // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
      {Each(properties, p => $@"
-        private static ReadOnlySpan<byte> {p.Data.Name}Bytes => new byte[{p.Data.Value.Length}] {{ {GetDataAsBytes(p.Data.Value)} }};")}
+        private static ReadOnlySpan<byte> {p.Data.Name}Bytes => ""{p.Data.Value}""u8;")}
     }}
 }}
 ";
@@ -40,35 +40,6 @@ namespace {namespaceName}
     private static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
     {
         return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
-    }
-
-    private static string GetDataAsBytes(string value)
-    {
-        var stringBuilder = new StringBuilder();
-
-        for (var i = 0; i < value.Length; ++i)
-        {
-            var c = value[i];
-            if (c == '\n')
-            {
-                stringBuilder.Append("(byte)'\\n'");
-            }
-            else if (c == '\r')
-            {
-                stringBuilder.Append("(byte)'\\r'");
-            }
-            else
-            {
-                stringBuilder.AppendFormat(CultureInfo.InvariantCulture, "(byte)'{0}'", c);
-            }
-
-            if (i < value.Length - 1)
-            {
-                stringBuilder.Append(", ");
-            }
-        }
-
-        return stringBuilder.ToString();
     }
 
     private sealed class Property
