@@ -81,13 +81,6 @@ public class WebTransportTests : Http3TestBase
         nameof(HeaderNames.Scheme), "http",
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Origin), "server.example.com")]  // no authority
-    //[InlineData(
-    //    ((long)Http3ErrorCode.ProtocolError),
-    //    nameof(HeaderNames.Method), "CONNECT",
-    //    nameof(HeaderNames.Protocol), "webtransport",
-    //    nameof(HeaderNames.Scheme), "http",
-    //    nameof(HeaderNames.Path), "/",
-    //    nameof(HeaderNames.Authority), "server.example.com")]  // no origin -- handled on middleware layer. Uncomment once that is implemented
     public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, params string[] headers)
     {
         await Http3Api.InitializeConnectionAsync(_noopApplication);

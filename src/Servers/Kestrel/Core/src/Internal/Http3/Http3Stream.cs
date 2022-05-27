@@ -36,7 +36,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private static ReadOnlySpan<byte> TeBytes => "te"u8;
     private static ReadOnlySpan<byte> TrailersBytes => "trailers"u8;
     private static ReadOnlySpan<byte> ConnectBytes => "CONNECT"u8;
-    private static ReadOnlySpan<byte> WebTransportBytes => "webtransport"u8;
 
     private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
         PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
@@ -827,14 +826,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             await OnEndStreamReceived();
         }
 
+        // https://www.rfc-editor.org/rfc/rfc8441#section-4
         if (HttpRequestHeaders.HeaderProtocol.Count > 0)
         {
-            // Requirement in the spec but this is handled by the Http/3 layer already, so leaving commented out for posterity
-            //if (Scheme != SchemeHttps)
-            //{
-            //    throw new Http3StreamErrorException("Scheme must be HTTPS." /*todo unhardcode*/, Http3ErrorCode.MessageError);
-            //}
-
             if (!_isMethodConnect)
             {
                 throw new Http3StreamErrorException(CoreStrings.@Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader, Http3ErrorCode.ProtocolError);
