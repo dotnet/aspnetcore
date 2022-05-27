@@ -675,6 +675,6 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
     <value>Method must be CONNECT when using the :protocol pseudo-header.</value>
   </data>
   <data name="Http3MissingAuthorityOrPathPseudoHeaders" xml:space="preserve">
-    <value>The :authority and/or :path pseudo-headersare are missing.</value>
+    <value>The :authority and/or :path pseudo-headers are missing.</value>
   </data>
 </root>
