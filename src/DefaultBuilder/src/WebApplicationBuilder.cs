@@ -17,9 +17,11 @@ namespace Microsoft.AspNetCore.Builder;
 public sealed class WebApplicationBuilder
 {
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+    private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
+    private readonly WebApplicationAuthenticationBuilder _webAuthBuilder;
 
     private WebApplication? _builtApplication;
 
@@ -80,7 +82,7 @@ public sealed class WebApplicationBuilder
 
         Host = new ConfigureHostBuilder(bootstrapHostBuilder.Context, Configuration, Services);
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
-        Authentication = new WebApplicationAuthenticationBuilder(Services);
+        _webAuthBuilder = new WebApplicationAuthenticationBuilder(Services);
     }
 
     /// <summary>
@@ -118,7 +120,7 @@ public sealed class WebApplicationBuilder
     /// <summary>
     /// An <see cref="AuthenticationBuilder"/> for configuration authentication-related properties.
     /// </summary>
-    public AuthenticationBuilder Authentication { get; }
+    public AuthenticationBuilder Authentication => _webAuthBuilder;
 
     /// <summary>
     /// Builds the <see cref="WebApplication"/>.
@@ -173,10 +175,13 @@ public sealed class WebApplicationBuilder
             }
         }
 
-        if (Authentication is WebApplicationAuthenticationBuilder webAuthBuilder && webAuthBuilder.IsAuthenticationConfigured is true)
+        if (_webAuthBuilder.IsAuthenticationConfigured)
         {
-            app.UseAuthentication();
-            app.UseAuthorization();
+            if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
+            {
+                app.UseAuthentication();
+                app.UseAuthorization();
+            }
         }
 
         // Wire the source pipeline to run in the destination pipeline
