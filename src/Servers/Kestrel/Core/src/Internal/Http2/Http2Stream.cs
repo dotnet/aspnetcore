@@ -235,11 +235,10 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                 // On requests that contain the :protocol pseudo-header field, the :scheme and :path pseudo-header fields of the target URI MUST also be included.
                 if (StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
                 {
-                    ResetAndAbort(new ConnectionAbortedException("':protocol' requires ':scheme' and ':path'."), Http2ErrorCode.PROTOCOL_ERROR);
+                    ResetAndAbort(new ConnectionAbortedException(CoreStrings.ConnectRequestsWithProtocolRequireSchemeAndPath), Http2ErrorCode.PROTOCOL_ERROR);
                     return false;
                 }
                 ConnectProtocol = HttpRequestHeaders.HeaderProtocol;
-                HttpRequestHeaders.HeaderProtocol = default;
             }
             // CONNECT - :scheme and :path must be excluded
             else if (!StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || !StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
@@ -255,7 +254,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         }
         else if (!StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderProtocol))
         {
-            ResetAndAbort(new ConnectionAbortedException("':protocol' is only allowed with the 'CONNECT' method."), Http2ErrorCode.PROTOCOL_ERROR);
+            ResetAndAbort(new ConnectionAbortedException(CoreStrings.ProtocolRequiresConnect), Http2ErrorCode.PROTOCOL_ERROR);
             return false;
         }
 

@@ -297,7 +297,6 @@ public partial class WebSocketMiddleware
         // sec-websocket-extensions = permessage-deflate
         // sec-websocket-version = 13
         // origin = http://www.example.com
-
         public static bool CheckSupportedWebSocketRequestH2(string method, IHeaderDictionary requestHeaders)
         {
             return HttpMethods.IsConnect(method) && CheckWebSocketVersion(requestHeaders);
