@@ -837,17 +837,17 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             if (!_isMethodConnect)
             {
-                throw new Http3StreamErrorException("Method must be CONNECT." /*todo unhardcode*/, Http3ErrorCode.ProtocolError);
+                throw new Http3StreamErrorException(CoreStrings.@Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader, Http3ErrorCode.ProtocolError);
             }
 
             if (!_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Authority) || !_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Path))
             {
-                throw new Http3StreamErrorException("WebTransport requires the authority and path pseudo-headers to be set" /*todo unhardcode*/, Http3ErrorCode.ProtocolError);
+                throw new Http3StreamErrorException(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders, Http3ErrorCode.ProtocolError);
             }
 
             if (_context.ClientPeerSettings.H3Datagram != _context.ServerPeerSettings.H3Datagram)
             {
-                throw new Http3StreamErrorException($"HTTP/3 datagrams negotiation mismatch. Currently client has it {((_context.ClientPeerSettings.H3Datagram == 1) ? "ON" : "OFF")} and server has it {((_context.ServerPeerSettings.H3Datagram == 1) ? "ON" : "OFF")}." /*todo unhardcode*/, Http3ErrorCode.SettingsError);
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);
             }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
