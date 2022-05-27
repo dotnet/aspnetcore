@@ -1,3 +1,5 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature! priorFeature) -> void
+Microsoft.AspNetCore.Http.Features.HttpRequestFeature.ConnectProtocol.get -> string?
+Microsoft.AspNetCore.Http.Features.HttpRequestFeature.ConnectProtocol.set -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature? priorFeature) -> void
