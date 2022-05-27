@@ -162,8 +162,7 @@ public partial class WebSocketMiddleware
                 }
             }
 
-            var key = _context.Request.Headers.SecWebSocketKey.ToString();
-            HandshakeHelpers.GenerateResponseHeaders(!_isH2WebSocket, key, subProtocol, _context.Response.Headers);
+            HandshakeHelpers.GenerateResponseHeaders(!_isH2WebSocket, _context.Request.Headers, subProtocol, _context.Response.Headers);
 
             WebSocketDeflateOptions? deflateOptions = null;
             if (enableCompression)

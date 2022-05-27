@@ -17,17 +17,17 @@ internal static class HandshakeHelpers
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
     private static ReadOnlySpan<byte> EncodedWebSocketKey => "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"u8;
 
-    public static void GenerateResponseHeaders(bool isHttp1, string key, string? subProtocol, IHeaderDictionary headers)
+    public static void GenerateResponseHeaders(bool isHttp1, IHeaderDictionary requestHeaders, string? subProtocol, IHeaderDictionary responseHeaders)
     {
         if (isHttp1)
         {
-            headers.Connection = HeaderNames.Upgrade;
-            headers.Upgrade = Constants.Headers.UpgradeWebSocket;
-            headers.SecWebSocketAccept = CreateResponseKey(key);
+            responseHeaders.Connection = HeaderNames.Upgrade;
+            responseHeaders.Upgrade = Constants.Headers.UpgradeWebSocket;
+            responseHeaders.SecWebSocketAccept = CreateResponseKey(requestHeaders.SecWebSocketKey.ToString());
         }
         if (!string.IsNullOrWhiteSpace(subProtocol))
         {
-            headers.SecWebSocketProtocol = subProtocol;
+            responseHeaders.SecWebSocketProtocol = subProtocol;
         }
     }
 
