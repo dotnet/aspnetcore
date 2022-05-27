@@ -104,6 +104,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
     // https://github.com/dotnet/runtime/issues/57308, RemoteCertificateValidationCallback should allow us to accept a null cert,
     // but it doesn't right now.
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41894")]
     public async Task ClientCertificate_Required_NotSent_ConnectionAborted()
     {
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, clientCertificateRequired: true);
