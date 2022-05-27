@@ -299,6 +299,70 @@ $@"<OpenApiReference Include=""{expectedJsonName}"" SourceUrl=""{FakeOpenApiUrl}
     }
 
     [Fact]
+    public async Task OpenApi_Add_Url_KiotaCSharp()
+    {
+        var project = CreateBasicProject(withOpenApi: false);
+
+        var app = GetApplication();
+        var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--code-generator", "KiotaCSharp" });
+
+        AssertNoErrors(run);
+
+        var expectedJsonName = "filename.json";
+
+        // csproj contents
+        using (var csprojStream = new FileInfo(project.Project.Path).OpenRead())
+        using (var reader = new StreamReader(csprojStream))
+        {
+            var content = await reader.ReadToEndAsync();
+            Assert.Contains("<PackageReference Include=\"Microsoft.OpenApi.Kiota.ApiDescription.Client\" Version=\"", content);
+            Assert.Contains(
+$@"<OpenApiReference Include=""{expectedJsonName}"" SourceUrl=""{FakeOpenApiUrl}"" CodeGenerator=""KiotaCSharp"" />", content);
+        }
+
+        var resultFile = Path.Combine(_tempDir.Root, expectedJsonName);
+        Assert.True(File.Exists(resultFile));
+        using (var jsonStream = new FileInfo(resultFile).OpenRead())
+        using (var reader = new StreamReader(jsonStream))
+        {
+            var content = await reader.ReadToEndAsync();
+            Assert.Equal(Content, content);
+        }
+    }
+
+    [Fact]
+    public async Task OpenApi_Add_Url_KiotaTypeScript()
+    {
+        var project = CreateBasicProject(withOpenApi: false);
+
+        var app = GetApplication();
+        var run = app.Execute(new[] { "add", "url", FakeOpenApiUrl, "--code-generator", "KiotaTypeScript" });
+
+        AssertNoErrors(run);
+
+        var expectedJsonName = "filename.json";
+
+        // csproj contents
+        using (var csprojStream = new FileInfo(project.Project.Path).OpenRead())
+        using (var reader = new StreamReader(csprojStream))
+        {
+            var content = await reader.ReadToEndAsync();
+            Assert.Contains("<PackageReference Include=\"Microsoft.OpenApi.Kiota.ApiDescription.Client\" Version=\"", content);
+            Assert.Contains(
+$@"<OpenApiReference Include=""{expectedJsonName}"" SourceUrl=""{FakeOpenApiUrl}"" CodeGenerator=""KiotaTypeScript"" />", content);
+        }
+
+        var resultFile = Path.Combine(_tempDir.Root, expectedJsonName);
+        Assert.True(File.Exists(resultFile));
+        using (var jsonStream = new FileInfo(resultFile).OpenRead())
+        using (var reader = new StreamReader(jsonStream))
+        {
+            var content = await reader.ReadToEndAsync();
+            Assert.Equal(Content, content);
+        }
+    }
+
+    [Fact]
     public async Task OpenApi_Add_Url_OutputFile()
     {
         var project = CreateBasicProject(withOpenApi: false);

@@ -31,5 +31,10 @@
       <_Parameter2>$(NewtonsoftJsonVersion)</_Parameter2>
       <_Parameter3>NSwagCSharp;NSwagTypeScript</_Parameter3>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.DotNet.Openapi.Tools.Internal.OpenApiDependencyAttribute">
+      <_Parameter1>Microsoft.OpenApi.Kiota.ApiDescription.Client</_Parameter1>
+      <_Parameter2>$(KiotaApiDescriptionClientVersion)</_Parameter2>
+      <_Parameter3>KiotaCSharp;KiotaTypeScript</_Parameter3>
+    </AssemblyAttribute>
   </ItemGroup>
 </Project>

@@ -143,6 +143,46 @@ public class OpenApiAddFileTests : OpenApiTestBase
     }
 
     [Fact]
+    public async Task OpenApi_Add_KiotaCSharp()
+    {
+        var project = CreateBasicProject(withOpenApi: true);
+        var nswagJsonFile = project.NSwagJsonFile;
+
+        var app = GetApplication();
+        var run = app.Execute(new[] { "add", "file", nswagJsonFile, "--code-generator", "KiotaCSharp" });
+
+        AssertNoErrors(run);
+
+        // csproj contents
+        var csproj = new FileInfo(project.Project.Path);
+        using var csprojStream = csproj.OpenRead();
+        using var reader = new StreamReader(csprojStream);
+        var content = await reader.ReadToEndAsync();
+        Assert.Contains("<PackageReference Include=\"Microsoft.OpenApi.Kiota.ApiDescription.Client\" Version=\"", content);
+        Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFile}\" CodeGenerator=\"KiotaCSharp\" />", content);
+    }
+
+    [Fact]
+    public async Task OpenApi_Add_KiotaTypeScript()
+    {
+        var project = CreateBasicProject(withOpenApi: true);
+        var nswagJsonFile = project.NSwagJsonFile;
+
+        var app = GetApplication();
+        var run = app.Execute(new[] { "add", "file", nswagJsonFile, "--code-generator", "KiotaTypeScript" });
+
+        AssertNoErrors(run);
+
+        // csproj contents
+        var csproj = new FileInfo(project.Project.Path);
+        using var csprojStream = csproj.OpenRead();
+        using var reader = new StreamReader(csprojStream);
+        var content = await reader.ReadToEndAsync();
+        Assert.Contains("<PackageReference Include=\"Microsoft.OpenApi.Kiota.ApiDescription.Client\" Version=\"", content);
+        Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFile}\" CodeGenerator=\"KiotaTypeScript\" />", content);
+    }
+
+    [Fact]
     public async Task OpenApi_Add_FromJson()
     {
         var project = CreateBasicProject(withOpenApi: true);
