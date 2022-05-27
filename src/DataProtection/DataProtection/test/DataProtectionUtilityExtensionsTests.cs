@@ -16,9 +16,9 @@ public class DataProtectionUtilityExtensionsTests
     [InlineData("app-path ", "app-path\\")] // normalized trim
     [InlineData("app-path\\", "app-path\\")]
     [InlineData("app-path \\", "app-path \\")]
-    [InlineData("app-path/", "app-path/\\")]
-    [InlineData("app-path /", "app-path /\\")]
-    [InlineData(" /", "/\\")]
+    [InlineData("app-path/", "app-path/")]
+    [InlineData("app-path /", "app-path /")]
+    [InlineData(" /", "/")]
     [InlineData(" \\ ", "\\")]
     [InlineData("  ", null)] // normalized whitespace -> null
     [InlineData(null, null)] // nothing provided at all
@@ -46,9 +46,9 @@ public class DataProtectionUtilityExtensionsTests
     [ConditionalTheory]
     [InlineData("app-path", "app-path/")]
     [InlineData("app-path ", "app-path/")] // normalized trim
-    [InlineData("app-path\\", "app-path\\/")]
-    [InlineData("app-path \\", "app-path \\/")]
-    [InlineData("app-path/", "app-path/")]
+    [InlineData("app-path\\", "app-path\\")]
+    [InlineData("app-path \\", "app-path \\")]
+    [InlineData("app-path/", "app-path")]
     [InlineData("app-path /", "app-path /")]
     [InlineData(" /", "/")]
     [InlineData(" \\ ", "\\/")]

@@ -12,6 +12,7 @@ internal sealed class HostingApplicationDiscriminator : IApplicationDiscriminato
 {
     private readonly IHostEnvironment? _hosting;
     private readonly string DirectorySeparator = Path.DirectorySeparatorChar.ToString();
+    private readonly string AltDirectorySeparator = Path.AltDirectorySeparatorChar.ToString();
 
     // the optional constructor for when IHostingEnvironment is not available from DI
     public HostingApplicationDiscriminator()
@@ -32,7 +33,8 @@ internal sealed class HostingApplicationDiscriminator : IApplicationDiscriminato
         {
             var contentRoot = _hosting?.ContentRootPath?.Trim();
             if (string.IsNullOrEmpty(contentRoot) ||
-                contentRoot.EndsWith(DirectorySeparator, StringComparison.OrdinalIgnoreCase))
+                contentRoot.EndsWith(DirectorySeparator, StringComparison.OrdinalIgnoreCase) ||
+                contentRoot.EndsWith(AltDirectorySeparator, StringComparison.OrdinalIgnoreCase))
             {
                 return contentRoot;
             }
