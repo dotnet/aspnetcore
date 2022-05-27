@@ -36,7 +36,7 @@ public class Program
                     store.Open(OpenFlags.ReadWrite);
                     if (store.Certificates.Count > 0)
                     {
-                        cert = store.Certificates[store.Certificates.Count - 1];
+                        cert = store.Certificates[^1];
 
                         // rotate key after it expires
                         if (DateTime.Parse(cert.GetExpirationDateString()) < DateTimeOffset.UtcNow)
