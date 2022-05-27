@@ -38,7 +38,7 @@ internal sealed class HostingApplicationDiscriminator : IApplicationDiscriminato
             {
                 return contentRoot;
             }
-            return contentRoot.Trim() + DirectorySeparator;
+            return contentRoot + DirectorySeparator;
         }
     }
 }
