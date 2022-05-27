@@ -446,13 +446,13 @@ public partial class IISExpressDeployer : IISDeployerBase
         internal delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
         [LibraryImport("user32.dll")]
         internal static partial uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
-        [LibraryImport("user32.dll")]
+        [LibraryImport("user32.dll", EntryPoint = "PostMessageW")]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool PostMessage([MarshalUsing(typeof(HandleRefMarshaller))] HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
         [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
-        [LibraryImport("user32.dll", SetLastError = true)]
+        [LibraryImport("user32.dll", EntryPoint = "GetClassNameW", SetLastError = true)]
         internal static partial int GetClassName(IntPtr hWnd, [Out, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U2)] char[] lpClassName, int nMaxCount);
 
         [CustomTypeMarshaller(typeof(HandleRef), Direction = CustomTypeMarshallerDirection.In, Features = CustomTypeMarshallerFeatures.UnmanagedResources | CustomTypeMarshallerFeatures.TwoStageMarshalling)]

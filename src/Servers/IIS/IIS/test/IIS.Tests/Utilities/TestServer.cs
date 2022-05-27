@@ -193,8 +193,8 @@ public partial class TestServer : IDisposable
     [LibraryImport(InProcessHandlerDll)]
     private static partial int set_main_handler(hostfxr_main_fn main);
 
-    [LibraryImport("kernel32", SetLastError = true)]
-    private static partial IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
+    [LibraryImport("kernel32", EntryPoint = "LoadLibraryW", SetLastError = true)]
+    private static partial IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPWStr)] string lpFileName);
 
     private void Retry(Action func, int attempts)
     {
