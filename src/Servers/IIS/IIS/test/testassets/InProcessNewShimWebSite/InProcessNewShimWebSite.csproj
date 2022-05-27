@@ -13,16 +13,14 @@
     <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=$(DefaultNetCoreTargetFramework)" />
 
     <!-- ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482 -->
-    <TestAssetPublishProfile Include="Standalone-x64"
-        Condition=" '$(TargetArchitecture)' != 'arm' "
-        Properties="RuntimeIdentifier=win-x64;ReferenceTestTasks=false" />
+    <TestAssetPublishProfile Include="Standalone-x64" Condition=" '$(TargetArchitecture)' != 'arm' " Properties="RuntimeIdentifier=win-x64;ReferenceTestTasks=false" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />
     <Compile Include="..\InProcessWebSite\*.cs" />
     <Compile Include="..\InProcessWebSite\Properties\*.cs" />
-    <None Include="..\InProcessWebSite\wwwroot\**" CopyToOutputDirectory="PreserveNewest" LinkBase="wwwroot/"/>
+    <None Include="..\InProcessWebSite\wwwroot\**" CopyToOutputDirectory="PreserveNewest" LinkBase="wwwroot/" />
     <None Include="..\InProcessWebSite\web.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
@@ -34,34 +32,34 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.0" >
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" >
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.0" >
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" >
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" >
+    <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" >
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" >
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" >
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
-    <PackageReference Include="System.Private.Uri" Version="4.3.2" >
+    <PackageReference Include="System.Private.Uri" Version="4.3.2">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" >
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
     <Reference Include="xunit.assert" />

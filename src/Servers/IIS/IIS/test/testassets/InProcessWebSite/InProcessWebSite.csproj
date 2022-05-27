@@ -10,9 +10,7 @@
     <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=$(DefaultNetCoreTargetFramework)" />
 
     <!-- ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482 -->
-    <TestAssetPublishProfile Include="Standalone-x64"
-        Condition=" '$(TargetArchitecture)' != 'arm' "
-        Properties="RuntimeIdentifier=win-x64;ReferenceTestTasks=false" />
+    <TestAssetPublishProfile Include="Standalone-x64" Condition=" '$(TargetArchitecture)' != 'arm' " Properties="RuntimeIdentifier=win-x64;ReferenceTestTasks=false" />
   </ItemGroup>
 
   <ItemGroup>
