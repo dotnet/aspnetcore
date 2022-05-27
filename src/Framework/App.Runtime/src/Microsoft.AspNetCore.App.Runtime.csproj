@@ -470,27 +470,24 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <PropertyGroup>
       <CompositeTargetDir>$(TargetDir)Composite\</CompositeTargetDir>
+      <ManagedAssetsFullPath>$(RuntimePackageRoot)$(ManagedAssetsPackagePath)</ManagedAssetsFullPath>
+      <NativeAssetsFullPath>$(RuntimePackageRoot)$(NativeAssetsPackagePath)</NativeAssetsFullPath>
 
-      <CompositeTargetOs>$(TargetOsName)</CompositeTargetOs>
-      <CompositeTargetOs Condition="'$(TargetOsName)' == 'win'">windows</CompositeTargetOs>
-      <CompositeTargetOs Condition="'$(TargetOsName)' == 'linux-musl'">linux</CompositeTargetOs>
-
-      <RuntimesPath>$(RuntimePackageRoot)runtimes\$(TargetOsName)-$(TargetArchitecture)\</RuntimesPath>
-
-      <BaseAssemblies>$(RuntimesPath)lib\$(DefaultNetCoreTargetFramework)\*.dll</BaseAssemblies>
-      <BaseAssemblies>$(BaseAssemblies) $(RuntimesPath)native\*.dll</BaseAssemblies>
+      <BaseAssemblies>$(ManagedAssetsFullPath)\*.dll</BaseAssemblies>
+      <BaseAssemblies Condition="Exists($(ManagedAssetsFullPath))">$(BaseAssemblies) $(NativeAssetsFullPath)\*.dll</BaseAssemblies>
 
       <CompositeArgs>--composite</CompositeArgs>
       <CompositeArgs>$(CompositeArgs) --targetarch:$(TargetArchitecture)</CompositeArgs>
-      <CompositeArgs>$(CompositeArgs) --targetos:$(CompositeTargetOs)</CompositeArgs>
+      <CompositeArgs>$(CompositeArgs) --targetos:$(Crossgen2TargetOs)</CompositeArgs>
       <CompositeArgs>$(CompositeArgs) $(BaseAssemblies)</CompositeArgs>
       <CompositeArgs>$(CompositeArgs) $(TargetDir)*.dll</CompositeArgs>
+      <CompositeArgs>$(CompositeArgs) --out:&quot;$(CompositeTargetDir)full-composite.r2r.dll&quot;</CompositeArgs>
     </PropertyGroup>
 
     <RemoveDir Directories="$(CompositeTargetDir)" />
     <MakeDir Directories="$(CompositeTargetDir)" />
 
-    <Exec Command="&quot;$(CrossgenToolPath)&quot; $(CompositeArgs) -o:&quot;$(CompositeTargetDir)full-composite.r2r.dll&quot;" />
+    <Exec Command="&quot;$(CrossgenToolPath)&quot; $(CompositeArgs)" />
   </Target>
 
   <!--
