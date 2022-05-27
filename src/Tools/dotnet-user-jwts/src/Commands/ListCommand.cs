@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -22,34 +23,26 @@ internal sealed class ListCommand
 
             cmd.OnExecute(() =>
             {
-                return Execute(app.ProjectOption.Value(), showTokensOption.HasValue());
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), showTokensOption.HasValue());
             });
         });
     }
 
-    private static int Execute(string projectPath, bool showTokens)
+    private static int Execute(IReporter reporter, string projectPath, bool showTokens)
     {
-        var project = DevJwtCliHelpers.GetProject(projectPath);
-        if (project == null)
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
         {
-            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
-            return 1;
-        }
-        var userSecretsId = DevJwtCliHelpers.GetUserSecretsId(project);
-        if (userSecretsId == null)
-        {
-            Console.WriteLine($"Project does not contain a user secrets ID.");
             return 1;
         }
         var jwtStore = new JwtStore(userSecretsId);
 
-        Console.WriteLine($"Project: {project}");
-        Console.WriteLine($"User Secrets ID: {userSecretsId}");
+        reporter.Output($"Project: {project}");
+        reporter.Output($"User Secrets ID: {userSecretsId}");
 
         if (jwtStore.Jwts is { Count: > 0 } jwts)
         {
-            var table = new ConsoleTable();
-            table.AddColumns("Id", "Name", "Audience", "Issued", "Expires");
+            var table = new ConsoleTable(reporter);
+            table.AddColumns("Id", "Scheme Name", "Audience", "Issued", "Expires");
 
             if (showTokens)
             {
@@ -61,11 +54,11 @@ internal sealed class ListCommand
                 var jwt = jwtRow.Value;
                 if (showTokens)
                 {
-                    table.AddRow(jwt.Id, jwt.Name, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"), jwt.Token);
+                    table.AddRow(jwt.Id, jwt.Scheme, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"), jwt.Token);
                 }
                 else
                 {
-                    table.AddRow(jwt.Id, jwt.Name, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"));
+                    table.AddRow(jwt.Id, jwt.Scheme, jwt.Audience, jwt.Issued.ToString("O"), jwt.Expires.ToString("O"));
                 }
             }
 
@@ -73,7 +66,7 @@ internal sealed class ListCommand
         }
         else
         {
-            Console.WriteLine("No JWTs created yet!");
+            reporter.Output("No JWTs created yet!");
         }
 
         return 0;

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -23,33 +24,32 @@ internal sealed class DeleteCommand
                     cmd.ShowHelp();
                     return 0;
                 }
-                return Execute(app.ProjectOption.Value(), idArgument.Value);
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), idArgument.Value);
             });
         });
     }
 
-    private static int Execute(string projectPath, string id)
+    private static int Execute(IReporter reporter, string projectPath, string id)
     {
-        var project = DevJwtCliHelpers.GetProject(projectPath);
-        if (project == null)
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
         {
-            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
             return 1;
         }
-
-        var userSecretsId = DevJwtCliHelpers.GetUserSecretsId(project);
         var jwtStore = new JwtStore(userSecretsId);
 
         if (!jwtStore.Jwts.ContainsKey(id))
         {
-            Console.WriteLine($"[ERROR] No JWT with ID '{id}' found");
+            reporter.Error($"[ERROR] No JWT with ID '{id}' found");
             return 1;
         }
 
+        var jwt = jwtStore.Jwts[id];
+        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        JwtAuthenticationSchemeSettings.RemoveScheme(appsettingsFilePath, jwt.Scheme);
         jwtStore.Jwts.Remove(id);
         jwtStore.Save();
 
-        Console.WriteLine($"Deleted JWT with ID '{id}'");
+        reporter.Output($"Deleted JWT with ID '{id}'");
 
         return 0;
     }

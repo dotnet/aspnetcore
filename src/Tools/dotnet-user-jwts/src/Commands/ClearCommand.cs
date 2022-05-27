@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -22,45 +23,46 @@ internal sealed class ClearCommand
 
             cmd.OnExecute(() =>
             {
-                return Execute(app.ProjectOption.Value(), forceOption.HasValue());
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), forceOption.HasValue());
             });
         });
     }
 
-    private static int Execute(string projectPath, bool force)
+    private static int Execute(IReporter reporter, string projectPath, bool force)
     {
-        var project = DevJwtCliHelpers.GetProject(projectPath);
-        if (project == null)
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
         {
-            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
             return 1;
         }
-
-        var userSecretsId = DevJwtCliHelpers.GetUserSecretsId(project);
         var jwtStore = new JwtStore(userSecretsId);
-
         var count = jwtStore.Jwts.Count;
 
         if (count == 0)
         {
-            Console.WriteLine($"There are no JWTs to delete from {project}.");
+            reporter.Output($"There are no JWTs to delete from {project}.");
             return 0;
         }
 
         if (!force)
         {
-            Console.WriteLine($"Are you sure you want to delete {count} JWT(s) for {project}?{Environment.NewLine} [Y]es / [N]o");
+            reporter.Output($"Are you sure you want to delete {count} JWT(s) for {project}?{Environment.NewLine} [Y]es / [N]o");
             if (Console.ReadLine().Trim().ToUpperInvariant() != "Y")
             {
-                Console.WriteLine("Canceled, no JWTs were deleted.");
+                reporter.Output("Canceled, no JWTs were deleted.");
                 return 0;
             }
+        }
+
+        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        foreach (var jwt in jwtStore.Jwts)
+        {
+            JwtAuthenticationSchemeSettings.RemoveScheme(appsettingsFilePath, jwt.Value.Scheme);
         }
 
         jwtStore.Jwts.Clear();
         jwtStore.Save();
 
-        Console.WriteLine($"Deleted {count} token(s) from {project} successfully.");
+        reporter.Output($"Deleted {count} token(s) from {project} successfully.");
 
         return 0;
     }

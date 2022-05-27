@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -28,36 +29,32 @@ internal sealed class KeyCommand
 
             cmd.OnExecute(() =>
             {
-                return Execute(app.ProjectOption.Value(), resetOption.HasValue(), forceOption.HasValue());
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), resetOption.HasValue(), forceOption.HasValue());
             });
         });
     }
 
-    private static int Execute(string projectPath, bool reset, bool force)
+    private static int Execute(IReporter reporter, string projectPath, bool reset, bool force)
     {
-        var project = DevJwtCliHelpers.GetProject(projectPath);
-        if (project == null)
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
         {
-            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
             return 1;
         }
-
-        var userSecretsId = DevJwtCliHelpers.GetUserSecretsId(project);
 
         if (reset == true)
         {
             if (!force)
             {
-                Console.WriteLine("Are you sure you want to reset the JWT signing key? This will invalidate all JWTs previously issued for this project.\n [Y]es / [N]o");
+                reporter.Output("Are you sure you want to reset the JWT signing key? This will invalidate all JWTs previously issued for this project.\n [Y]es / [N]o");
                 if (Console.ReadLine().Trim().ToUpperInvariant() != "Y")
                 {
-                    Console.WriteLine("Key reset canceled.");
+                    reporter.Output("Key reset canceled.");
                     return 0;
                 }
             }
 
             var key = DevJwtCliHelpers.CreateSigningKeyMaterial(userSecretsId, reset: true);
-            Console.WriteLine($"New signing key created: {Convert.ToBase64String(key)}");
+            reporter.Output($"New signing key created: {Convert.ToBase64String(key)}");
             return 0; 
         }
 
@@ -68,11 +65,11 @@ internal sealed class KeyCommand
 
         if (signingKeyMaterial is null)
         {
-            Console.WriteLine("Signing key for JWTs was not found. One will be created automatically when the first JWT is created, or you can force creation of a key with the --reset option.");
+            reporter.Output("Signing key for JWTs was not found. One will be created automatically when the first JWT is created, or you can force creation of a key with the --reset option.");
             return 0;
         }
 
-        Console.WriteLine($"Signing Key: {signingKeyMaterial}");
+        reporter.Output($"Signing Key: {signingKeyMaterial}");
         return 0;
     }
 }

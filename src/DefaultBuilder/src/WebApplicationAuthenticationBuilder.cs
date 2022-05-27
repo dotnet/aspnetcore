@@ -38,8 +38,11 @@ internal class WebApplicationAuthenticationBuilder : AuthenticationBuilder
 
     private void RegisterServices(string authenticationScheme)
     {
-        IsAuthenticationConfigured = true;
-        Services.AddAuthentication(authenticationScheme);
-        Services.AddAuthorization();
+        if (!IsAuthenticationConfigured)
+        {
+            IsAuthenticationConfigured = true;
+            Services.AddAuthentication(authenticationScheme);
+            Services.AddAuthorization();
+        }
     }
 }

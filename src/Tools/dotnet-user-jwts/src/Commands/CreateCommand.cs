@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -82,19 +83,20 @@ internal sealed class CreateCommand
             cmd.OnExecute(() =>
             {
                 var (options, isValid) = ValidateArguments(
-                    app.ProjectOption, schemeNameOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption);
+                    cmd.Reporter, cmd.ProjectOption, schemeNameOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption);
 
                 if (!isValid)
                 {
                     return 1;
                 }
 
-                return Execute(app.ProjectOption.Value(), options);
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options);
             });
         });
     }
 
     private static (JwtCreatorOptions, bool) ValidateArguments(
+        IReporter reporter,
         CommandOption projectOption,
         CommandOption schemeNameOption,
         CommandOption nameOption,
@@ -115,7 +117,7 @@ internal sealed class CreateCommand
         var audience = audienceOption.HasValue() ? audienceOption.Values : DevJwtCliHelpers.GetAudienceCandidatesFromLaunchSettings(project).ToList();
         if (audience is null)
         {
-            Console.WriteLine("Could not determine the project's HTTPS URL. Please specify an audience for the JWT using the --audience option.");
+            reporter.Error("Could not determine the project's HTTPS URL. Please specify an audience for the JWT using the --audience option.");
             isValid = false;
         }
         var issuer = issuerOption.HasValue() ? issuerOption.Value() : DevJwtsDefaults.Issuer;
@@ -125,7 +127,7 @@ internal sealed class CreateCommand
         {
             if (!ParseDate(notBeforeOption.Value(), out notBefore))
             {
-                Console.WriteLine(@"The date provided for --not-before could not be parsed. Dates must consist of a date and can include an optional timestamp.");
+                reporter.Error(@"The date provided for --not-before could not be parsed. Dates must consist of a date and can include an optional timestamp.");
                 isValid = false;
             }
         }
@@ -135,7 +137,7 @@ internal sealed class CreateCommand
         {
             if (!ParseDate(expiresOnOption.Value(), out expiresOn))
             {
-                Console.WriteLine(@"The date provided for --expires-on could not be parsed. Dates must consist of a date and can include an optional timestamp.");
+                reporter.Error(@"The date provided for --expires-on could not be parsed. Dates must consist of a date and can include an optional timestamp.");
                 isValid = false;
             }
         }
@@ -144,7 +146,7 @@ internal sealed class CreateCommand
         {
             if (!TimeSpan.TryParseExact(validForOption.Value(), _timeSpanFormats, CultureInfo.InvariantCulture, out var validForValue))
             {
-                Console.WriteLine("The period provided for --valid-for could not be parsed. Ensure you use a format like '10d', '22h', '45s' etc.");
+                reporter.Error("The period provided for --valid-for could not be parsed. Ensure you use a format like '10d', '22h', '45s' etc.");
             }
             expiresOn = notBefore.Add(validForValue);
         }
@@ -157,7 +159,7 @@ internal sealed class CreateCommand
         {
             if (!DevJwtCliHelpers.TryParseClaims(claimsOption.Values, out claims))
             {
-                Console.WriteLine("Malformed claims supplied. Ensure each claim is in the format \"name=value\".");
+                reporter.Error("Malformed claims supplied. Ensure each claim is in the format \"name=value\".");
                 isValid = false;
             }
         }
@@ -169,24 +171,21 @@ internal sealed class CreateCommand
     }
 
     private static int Execute(
+        IReporter reporter,
         string projectPath,
         JwtCreatorOptions options)
     {
-        var project = DevJwtCliHelpers.GetProject(projectPath);
-        if (project == null)
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
         {
-            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
             return 1;
         }
-
-        var userSecretsId = DevJwtCliHelpers.GetUserSecretsId(project);
         var keyMaterial = DevJwtCliHelpers.GetOrCreateSigningKeyMaterial(userSecretsId);
 
         var jwtIssuer = new JwtIssuer(options.Issuer, keyMaterial);
         var jwtToken = jwtIssuer.Create(options);
 
         var jwtStore = new JwtStore(userSecretsId);
-        var jwt = Jwt.Create(jwtToken, JwtIssuer.WriteToken(jwtToken), options.Scopes, options.Roles, options.Claims);
+        var jwt = Jwt.Create(options.Scheme, jwtToken, JwtIssuer.WriteToken(jwtToken), options.Scopes, options.Roles, options.Claims);
         if (options.Claims is { } customClaims)
         {
             jwt.CustomClaims = customClaims;
@@ -198,7 +197,7 @@ internal sealed class CreateCommand
         var settingsToWrite = new JwtAuthenticationSchemeSettings(options.Scheme, options.Audiences, options.Issuer);
         settingsToWrite.Save(appsettingsFilePath);
 
-        Console.WriteLine("New JWT saved!");
+        reporter.Output($"New JWT saved with ID '{jwtToken.Id}'.");
 
         return 0;
     }

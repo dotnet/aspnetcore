@@ -74,7 +74,7 @@ public static class JwtBearerExtensions
     /// <returns>A reference to <paramref name="builder"/> after the operation has completed.</returns>
     public static AuthenticationBuilder AddJwtBearer(this AuthenticationBuilder builder, string authenticationScheme, string? displayName, Action<JwtBearerOptions> configureOptions)
     {
-        builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, AuthenticationConfigurationOptions>();
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JwtBearerOptions>, JwtBearerConfigureOptions>());
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, JwtBearerPostConfigureOptions>());
         return builder.AddScheme<JwtBearerOptions, JwtBearerHandler>(authenticationScheme, displayName, configureOptions);
     }

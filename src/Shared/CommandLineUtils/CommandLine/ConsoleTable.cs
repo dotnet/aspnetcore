@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.CommandLineUtils;
 
@@ -14,6 +15,12 @@ internal sealed class ConsoleTable
 {
     private readonly List<string> _columns = new();
     private readonly List<object[]> _rows = new();
+    private readonly IReporter _reporter;
+
+    public ConsoleTable(IReporter reporter)
+    {
+        _reporter = reporter;
+    }
 
     public void AddColumns(params string[] names)
     {
@@ -71,6 +78,6 @@ internal sealed class ConsoleTable
 
         builder.AppendLine(rowDivider);
 
-        Console.WriteLine(builder.ToString());
+        _reporter.Output(builder.ToString());
     }
 }

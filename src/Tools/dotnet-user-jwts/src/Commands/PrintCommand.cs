@@ -3,6 +3,7 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 internal sealed class PrintCommand
@@ -29,37 +30,33 @@ internal sealed class PrintCommand
                     cmd.ShowHelp();
                     return 0;
                 }
-                return Execute(app.ProjectOption.Value(), idArgument.Value, showFullOption.HasValue());
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), idArgument.Value, showFullOption.HasValue());
             });
         });
     }
 
-    private static int Execute(string projectPath, string id, bool showFull)
+    private static int Execute(IReporter reporter, string projectPath, string id, bool showFull)
     {
-        var project = DevJwtCliHelpers.GetProject(projectPath);
-        if (project == null)
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
         {
-            Console.WriteLine($"No project found at `-p|--project` path or current directory.");
             return 1;
         }
-
-        var userSecretsId = DevJwtCliHelpers.GetUserSecretsId(project);
         var jwtStore = new JwtStore(userSecretsId);
 
         if (!jwtStore.Jwts.ContainsKey(id))
         {
-            Console.WriteLine($"No token with ID '{id}' found");
+            reporter.Output($"No token with ID '{id}' found");
             return 1;
         }
 
-        Console.WriteLine($"Found JWT with ID '{id}'");
+        reporter.Output($"Found JWT with ID '{id}'");
         var jwt = jwtStore.Jwts[id];
         JwtSecurityToken fullToken;
 
         if (showFull)
         {
             fullToken = JwtIssuer.Extract(jwt.Token);
-            DevJwtCliHelpers.PrintJwt(jwt, fullToken);
+            DevJwtCliHelpers.PrintJwt(reporter, jwt, fullToken);
         }
 
         return 0;

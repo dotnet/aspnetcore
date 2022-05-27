@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -41,6 +42,25 @@ internal static class DevJwtCliHelpers
             return path;
         }
         return null;
+    }
+
+    public static bool GetProjectAndSecretsId(string projectPath, IReporter reporter, out string project, out string userSecretsId)
+    {
+        project = GetProject(projectPath);
+        userSecretsId = null;
+        if (project == null)
+        {
+            reporter.Error($"No project found at `-p|--project` path or current directory.");
+            return false;
+        }
+
+        userSecretsId = GetUserSecretsId(project);
+        if (userSecretsId == null)
+        {
+            reporter.Error($"Project does not contain a user secrets ID.");
+            return false;
+        }
+        return true;
     }
 
     public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId)
@@ -128,16 +148,16 @@ internal static class DevJwtCliHelpers
         return null;
     }
 
-    public static void PrintJwt(Jwt jwt, JwtSecurityToken fullToken = null)
+    public static void PrintJwt(IReporter reporter, Jwt jwt, JwtSecurityToken fullToken = null)
     {
-        Console.WriteLine(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
+        reporter.Output(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
 
         if (fullToken is not null)
         {
-            Console.WriteLine($"Token Header: {fullToken.Header.SerializeToJson()}");
-            Console.WriteLine($"Token Payload: {fullToken.Payload.SerializeToJson()}");
+            reporter.Output($"Token Header: {fullToken.Header.SerializeToJson()}");
+            reporter.Output($"Token Payload: {fullToken.Payload.SerializeToJson()}");
         }
-        Console.WriteLine($"Compact Token: {jwt.Token}");
+        reporter.Output($"Compact Token: {jwt.Token}");
     }
 
     public static bool TryParseClaims(List<string> input, out Dictionary<string, string> claims)

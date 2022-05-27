@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -9,18 +10,21 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication;
 
-internal class AuthenticationConfigurationOptions : IConfigureNamedOptions<JwtBearerOptions>
+internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBearerOptions>
 {
-    private readonly IAuthenticationConfigurationProvider _configurationProvider;
+    private readonly IAuthenticationConfigurationProvider _authenticationConfigurationProvider;
+    private readonly IConfiguration _configuration;
 
     /// <summary>
-    /// Initializes a new <see cref="AuthenticationConfigurationOptions"/> given the configuration
+    /// Initializes a new <see cref="JwtBearerConfigureOptions"/> given the configuration
     /// provided by the <paramref name="configurationProvider"/>.
     /// </summary>
     /// <param name="configurationProvider">An <see cref="IAuthenticationConfigurationProvider"/> instance.</param>
-    public AuthenticationConfigurationOptions(IAuthenticationConfigurationProvider configurationProvider)
+    /// <param name="configuration">An <see cref="IConfiguration"/> instance for accessing configuration elements not in the schema.</param>
+    public JwtBearerConfigureOptions(IAuthenticationConfigurationProvider configurationProvider, IConfiguration configuration)
     {
-        _configurationProvider = configurationProvider;
+        _authenticationConfigurationProvider = configurationProvider;
+        _configuration = configuration;
     }
 
     /// <inheritdoc />
@@ -31,7 +35,7 @@ internal class AuthenticationConfigurationOptions : IConfigureNamedOptions<JwtBe
             return;
         }
 
-        var configSection = _configurationProvider.GetSection(name);
+        var configSection = _authenticationConfigurationProvider.GetAuthenticationSchemeConfiguration(name);
 
         if (configSection is null)
         {
@@ -47,7 +51,7 @@ internal class AuthenticationConfigurationOptions : IConfigureNamedOptions<JwtBe
             ValidateAudience = audiences.Length > 0,
             ValidAudiences = audiences,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = GetIssuerSigningKey(_configurationProvider.Configuration, issuer),
+            IssuerSigningKey = GetIssuerSigningKey(_configuration, issuer),
         };
     }
 
@@ -56,7 +60,7 @@ internal class AuthenticationConfigurationOptions : IConfigureNamedOptions<JwtBe
         var jwtKeyMaterialSecret = configuration[$"{issuer}:KeyMaterial"];
         var jwtKeyMaterial = !string.IsNullOrEmpty(jwtKeyMaterialSecret)
             ? Convert.FromBase64String(jwtKeyMaterialSecret)
-            : System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
+            : RandomNumberGenerator.GetBytes(32);
         return new SymmetricSecurityKey(jwtKeyMaterial);
     }
 

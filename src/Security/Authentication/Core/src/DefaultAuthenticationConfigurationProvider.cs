@@ -7,19 +7,15 @@ namespace Microsoft.AspNetCore.Authentication;
 
 internal sealed class DefaultAuthenticationConfigurationProvider : IAuthenticationConfigurationProvider
 {
-    public IConfigurationRoot Configuration { get;  }
+    private readonly IConfiguration _configuration;
 
     public DefaultAuthenticationConfigurationProvider(IConfiguration configuration)
     {
-        if (configuration is not IConfigurationRoot configurationRoot)
-        {
-            throw new ArgumentException("Could not resolve IConfigurationRoot instance.");
-        }
-        Configuration = configurationRoot;
+        _configuration = configuration;
     }
 
-    public IConfiguration GetSection(string name)
+    public IConfiguration GetAuthenticationSchemeConfiguration(string authenticationScheme)
     {
-        return Configuration.GetSection($"Authentication:Schemes:{name}");
+        return _configuration.GetSection($"Authentication:Schemes:{authenticationScheme}");
     }
 }
