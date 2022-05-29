@@ -173,4 +173,47 @@ public partial class HubConnectionHandlerTests
             await AssertClientResult(context.Clients.Client(connectionId).GetClientResult(1));
         }
     }
+
+    [Fact]
+    public async Task CanReturnClientResultToTypedHubThreeWays()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                // Waiting for a client result blocks the hub dispatcher pipeline, need to allow multiple invocations
+                builder.AddSignalR(o => o.MaximumParallelInvocationsPerClient = 2);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubT>>();
+
+            using var client = new TestClient(invocationBinder: new GetClientResultThreeWaysInvocationBinder());
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+            var invocationId = await client.SendHubMessageAsync(new InvocationMessage(
+                invocationId: "1",
+                nameof(HubT.GetClientResultThreeWays),
+                new object[] { 5, 6, 7 })).DefaultTimeout();
+
+            // Send back "value + 4" to all three invocations.
+            for (int i = 0; i < 3; i++)
+            {
+                // Hub asks client for a result, this is an invocation message with an ID.
+                var invocationMessage = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.NotNull(invocationMessage.InvocationId);
+                var res = 4 + (int)invocationMessage.Arguments[0];
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage.InvocationId, res)).DefaultTimeout();
+            }
+
+            var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal(new ClientResults(9, 10, 11), completion.Result);
+        }
+    }
+
+    private class GetClientResultThreeWaysInvocationBinder : IInvocationBinder
+    {
+        public IReadOnlyList<Type> GetParameterTypes(string methodName) => new[] { typeof(int) };
+        public Type GetReturnType(string invocationId) => typeof(ClientResults);
+        public Type GetStreamItemType(string streamId) => throw new NotImplementedException();
+    }
 }

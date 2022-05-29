@@ -524,6 +524,12 @@ public class HubT : Hub<ITest>
     {
         return Clients.Caller.Send(message);
     }
+
+    public async Task<ClientResults> GetClientResultThreeWays(int singleValue, int clientValue, int callerValue) =>
+        new ClientResults(
+            await Clients.Single(Context.ConnectionId).GetClientResult(singleValue),
+            await Clients.Client(Context.ConnectionId).GetClientResult(clientValue),
+            await Clients.Caller.GetClientResult(callerValue));
 }
 
 public interface ITest
@@ -533,6 +539,8 @@ public interface ITest
 
     Task<int> GetClientResult(int value);
 }
+
+public record ClientResults(int SingleResult, int ClientResult, int CallerResult);
 
 public class OnConnectedThrowsHub : Hub
 {
