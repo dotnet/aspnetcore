@@ -440,7 +440,7 @@ public class DynamicTestHub : DynamicHub
     }
 }
 
-public class HubT : Hub<Test>
+public class HubT : Hub<ITest>
 {
     public override Task OnConnectedAsync()
     {
@@ -526,7 +526,7 @@ public class HubT : Hub<Test>
     }
 }
 
-public interface Test
+public interface ITest
 {
     Task Send(string message);
     Task Broadcast(string message);

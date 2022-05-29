@@ -145,26 +145,32 @@ public partial class HubConnectionHandlerTests
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubT>>();
 
             using var client = new TestClient();
+            var connectionId = client.Connection.ConnectionId;
 
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
             // Wait for a connection, or for the endpoint to fail.
             await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
 
-            var context = serviceProvider.GetRequiredService<IHubContext<HubT, Test>>();
-            var resultTask = context.Clients.Single(client.Connection.ConnectionId).GetClientResult(1);
+            var context = serviceProvider.GetRequiredService<IHubContext<HubT, ITest>>();
 
-            var message = await client.ReadAsync().DefaultTimeout();
-            var invocation = Assert.IsType<InvocationMessage>(message);
+            async Task AssertClientResult(Task<int> resultTask)
+            {
+                var message = await client.ReadAsync().DefaultTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(message);
 
-            Assert.Single(invocation.Arguments);
-            Assert.Equal(1L, invocation.Arguments[0]);
-            Assert.Equal("GetClientResult", invocation.Target);
+                Assert.Single(invocation.Arguments);
+                Assert.Equal(1L, invocation.Arguments[0]);
+                Assert.Equal("GetClientResult", invocation.Target);
 
-            await client.SendHubMessageAsync(CompletionMessage.WithResult(invocation.InvocationId, 2)).DefaultTimeout();
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocation.InvocationId, 2)).DefaultTimeout();
 
-            var result = await resultTask.DefaultTimeout();
-            Assert.Equal(2, result);
+                var result = await resultTask.DefaultTimeout();
+                Assert.Equal(2, result);
+            }
+
+            await AssertClientResult(context.Clients.Single(connectionId).GetClientResult(1));
+            await AssertClientResult(context.Clients.Client(connectionId).GetClientResult(1));
         }
     }
 }
