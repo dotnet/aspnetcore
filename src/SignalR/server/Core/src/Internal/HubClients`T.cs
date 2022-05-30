@@ -17,7 +17,7 @@ internal sealed class HubClients<THub, T> : IHubClients<T> where THub : Hub
 
     public T Single(string connectionId)
     {
-        return TypedClientBuilder<T>.Build(new SingleClientProxyWithInvoke<THub>(_lifetimeManager, connectionId));
+        return TypedClientBuilder<T>.Build(new SingleClientProxy<THub>(_lifetimeManager, connectionId));
     }
 
     public T AllExcept(IReadOnlyList<string> excludedConnectionIds)
