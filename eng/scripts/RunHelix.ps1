@@ -16,7 +16,7 @@
     OSX.1015.Amd64.Open
     OSX.1100.Amd64.Open
     Windows.10.Amd64.Server20H2.Open
-    Windows.11.Amd64.ClientPre.Open
+    Windows.11.Amd64.Client.Open
     Windows.Amd64.Server2022.Open
 .PARAMETER RunQuarantinedTests
     By default quarantined tests are not run. Set this to $true to run only the quarantined tests.
