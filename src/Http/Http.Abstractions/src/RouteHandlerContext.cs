@@ -16,10 +16,12 @@ public sealed class RouteHandlerContext
     /// </summary>
     /// <param name="methodInfo">The <see cref="MethodInfo"/> associated with the route handler of the current request.</param>
     /// <param name="endpointMetadata">The <see cref="EndpointMetadataCollection"/> associated with the endpoint the filter is targeting.</param>
-    public RouteHandlerContext(MethodInfo methodInfo, EndpointMetadataCollection endpointMetadata)
+    /// <param name="services">The <see cref="IServiceProvider"/> instance used to access the application services.</param>
+    public RouteHandlerContext(MethodInfo methodInfo, EndpointMetadataCollection endpointMetadata, IServiceProvider? services)
     {
         MethodInfo = methodInfo;
         EndpointMetadata = endpointMetadata;
+        Services = services;
     }
 
     /// <summary>
@@ -31,4 +33,9 @@ public sealed class RouteHandlerContext
     /// The <see cref="EndpointMetadataCollection"/> associated with the current endpoint.
     /// </summary>
     public EndpointMetadataCollection EndpointMetadata { get; }
+
+    /// <summary>
+    /// Gets the <see cref="IServiceProvider"/> instance used to access application services.
+    /// </summary>
+    public IServiceProvider? Services { get; }
 }

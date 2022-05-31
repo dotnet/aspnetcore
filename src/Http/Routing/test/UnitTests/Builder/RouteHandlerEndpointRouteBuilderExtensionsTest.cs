@@ -901,6 +901,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                 {
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
+                    Assert.NotNull(routeHandlerContext.Services);
                     Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
                     context.Arguments[0] = context.GetArgument<int>(0) + 1;
                     return await next(context);
@@ -971,6 +972,31 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var body = streamReader.ReadToEndAsync().Result;
         Assert.Equal("loggerErrorIsEnabled: True, parentName: RouteHandlerEndpointRouteBuilderExtensionsTest", body);
     }
+
+    [Fact]
+    public void RequestDelegateFactory_ProvidesAppServiceProvider_ToFilterFactory()
+    {
+        var appServiceCollection = new ServiceCollection();
+        var appService = new MyService();
+        appServiceCollection.AddSingleton(appService);
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(appServiceCollection.BuildServiceProvider()));
+
+        string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
+        var routeHandlerBuilder = builder.Map("/", PrintLogger);
+        routeHandlerBuilder.AddFilter((rhc, next) =>
+        {
+            Assert.NotNull(rhc.Services);
+            var myService = rhc.Services?.GetRequiredService<MyService>();
+            Assert.Equal(appService, myService);
+            return next;
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+    }
+
+    class MyService { }
 
     class ServiceAccessingRouteHandlerFilter : IRouteHandlerFilter
     {

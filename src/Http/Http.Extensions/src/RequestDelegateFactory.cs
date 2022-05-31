@@ -305,7 +305,8 @@ public static partial class RequestDelegateFactory
             FilterContextExpr).Compile();
         var routeHandlerContext = new RouteHandlerContext(
             methodInfo,
-            new EndpointMetadataCollection(factoryContext.Metadata));
+            new EndpointMetadataCollection(factoryContext.Metadata),
+            factoryContext.ServiceProvider);
 
         for (var i = factoryContext.Filters.Count - 1; i >= 0; i--)
         {

@@ -15,7 +15,8 @@ Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.RouteHandlerContext
 Microsoft.AspNetCore.Http.RouteHandlerContext.EndpointMetadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection!
 Microsoft.AspNetCore.Http.RouteHandlerContext.MethodInfo.get -> System.Reflection.MethodInfo!
-Microsoft.AspNetCore.Http.RouteHandlerContext.RouteHandlerContext(System.Reflection.MethodInfo! methodInfo, Microsoft.AspNetCore.Http.EndpointMetadataCollection! endpointMetadata) -> void
+Microsoft.AspNetCore.Http.RouteHandlerContext.RouteHandlerContext(System.Reflection.MethodInfo! methodInfo, Microsoft.AspNetCore.Http.EndpointMetadataCollection! endpointMetadata, System.IServiceProvider? services) -> void
+Microsoft.AspNetCore.Http.RouteHandlerContext.Services.get -> System.IServiceProvider?
 Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate
 Microsoft.AspNetCore.Http.RouteHandlerInvocationContext
 Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.RouteHandlerInvocationContext() -> void
