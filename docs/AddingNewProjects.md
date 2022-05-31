@@ -3,7 +3,7 @@
 Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
 
 ## Creating a new project
-1. Create a new folder that will house your `.csproj` and other project related files.
+1. Create a new folder that will house your `.csproj` and other project-related files.
 2. In VS, Add a new `Solution Folder` in the same place as the new folder from the previous step.
 3. Create the project via the VS `Add` menu (select the folder -> right click -> Add -> follow the wizard).
 4. Add the following `ItemGroup` to your newly generated `.csproj`:
@@ -27,17 +27,17 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
   - Lists publically visible APIs that are exported from your final compiled `.dll`.
   - This only lists APIs that have already been shipped to customers and cannot be changed.
 - `PublicAPI.UnShipped.txt`
-  - Lists publically visible APIs that are exported from your final compiled `.dll`. If this is not configured properly, you will get build errors. VS will warn you though with green squiggly lines. If you see these squiggly lines, open the VS Quick Actions (CTRL + '.') and select the option to ad it to the public API.
+  - Lists publicly visible APIs that are exported from your final compiled `.dll`. If this is not configured properly, you will get build errors. VS will warn you though with green squiggly lines. If you see these squiggly lines, open the VS Quick Actions (CTRL + '.') and select the option to and it to the public API.
   - This only lists APIs that have NOT already been shipped to customers. So, these can still change.
 
 ## Adding to the rest of the repo
-- VS Should have already registered your CS projec in the corresponding solution (`.sln`) and solution filter (`.slnf`) files. See this [Example](https://github.com/dotnet/aspnetcore/pull/41945/files#diff-cd977e0a76b37d35c04d9d819ea66ef8a35d9ef7f86a9a7c774d751e8119db4fR1713-R11118)
+- VS Should have already registered your `.csproj` in the corresponding solution (`.sln`) and solution filter (`.slnf`) files. See this [Example](https://github.com/dotnet/aspnetcore/pull/41945/files#diff-cd977e0a76b37d35c04d9d819ea66ef8a35d9ef7f86a9a7c774d751e8119db4fR1713-R11118)
   - If VS has not already modified these files, make sure to add it manually as is visible in the example listed above.
 - Add the following new line to the `eng/ProjectReferences.props` file to include your new project:
     ```XML
     <ProjectReferenceProvider Include="[Your project id]" ProjectPath="$(RepoRoot)src\[Rest of the path to your project]" />
     ```
-- Add the following new line to the `eng/SharedFramework.Local.props` file to include your new project:
+- (OPTIONAL: only necessary if you want to add your project to the SharedFX API)Add the following new line to the `eng/SharedFramework.Local.props` file to include your new project:
     ```XML
     <AspNetCoreAppReference Include="[Your project id]" />
     ```
