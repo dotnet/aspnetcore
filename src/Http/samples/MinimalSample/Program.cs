@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +18,8 @@ app.MapGet("/plaintext", Plaintext);
 
 var message =
     $"""
-    Operating System is: {Environment.OSVersion}.
-    Currently running .NET version {Environment.Version}.
+    Operating System: {Environment.OSVersion}
+    .NET version: {Environment.Version}
     """;
 
 app.MapGet("/", () => message);
