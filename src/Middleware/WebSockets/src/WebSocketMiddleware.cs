@@ -61,10 +61,8 @@ public partial class WebSocketMiddleware
     /// <returns>The <see cref="Task"/> that represents the completion of the middleware pipeline.</returns>
     public Task Invoke(HttpContext context)
     {
-        var requestFeature = context.Features.Get<IHttpRequestFeature>()!;
         // Detect if an opaque upgrade is available. If so, add a websocket upgrade.
         var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
-        // TODO: All of our servers add IHttpUpgradeFeature on every request. Should we even check this here?
         if (upgradeFeature != null && context.Features.Get<IHttpWebSocketFeature>() == null)
         {
             var webSocketFeature = new WebSocketHandshake(context, upgradeFeature, _options, _logger);
@@ -93,13 +91,13 @@ public partial class WebSocketMiddleware
     private sealed class WebSocketHandshake : IHttpWebSocketFeature
     {
         private readonly HttpContext _context;
-        private readonly IHttpUpgradeFeature? _upgradeFeature;
+        private readonly IHttpUpgradeFeature _upgradeFeature;
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
         private bool? _isWebSocketRequest;
         private bool _isH2WebSocket;
 
-        public WebSocketHandshake(HttpContext context, IHttpUpgradeFeature? upgradeFeature, WebSocketOptions options, ILogger logger)
+        public WebSocketHandshake(HttpContext context, IHttpUpgradeFeature upgradeFeature, WebSocketOptions options, ILogger logger)
         {
             _context = context;
             _upgradeFeature = upgradeFeature;
@@ -119,7 +117,7 @@ public partial class WebSocketMiddleware
                         _isH2WebSocket = CheckSupportedWebSocketRequestH2(_context.Request.Method, _context.Request.Headers);
                         _isWebSocketRequest = _isH2WebSocket;
                     }
-                    else if (!_upgradeFeature!.IsUpgradableRequest)
+                    else if (!_upgradeFeature.IsUpgradableRequest)
                     {
                         _isWebSocketRequest = false;
                     }
