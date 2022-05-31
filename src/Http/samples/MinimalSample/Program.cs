@@ -51,22 +51,18 @@ app.MapGet("/todo/{id}", Results<Ok<Todo>, NotFound, BadRequest> (int id) => id 
 
 var extensions = new Dictionary<string, object>() { { "traceId", "traceId123" } };
 
-app.MapGet("/problem", () =>
-    Results.Problem(statusCode: 500, extensions: extensions));
-
-app.MapGet("/problem-object", () =>
-    Results.Problem(new ProblemDetails() { Status = 500, Extensions = { { "traceId", "traceId123" } } }));
-
 var errors = new Dictionary<string, string[]>() { { "Title", new[] { "The Title field is required." } } };
 
-app.MapGet("/validation-problem", () =>
-    Results.ValidationProblem(errors, statusCode: 400, extensions: extensions));
+app.MapGet("/problem/{problemType}", (string problemType) => problemType switch
+    {
+        "plain" => Results.Problem(statusCode: 500, extensions: extensions),
+        "object" => Results.Problem(new ProblemDetails() { Status = 500, Extensions = { { "traceId", "traceId123" } } }),
+        "validation" => Results.ValidationProblem(errors, statusCode: 400, extensions: extensions),
+        "objectValidation" => Results.Problem(new HttpValidationProblemDetails(errors) { Status = 400, Extensions = { { "traceId", "traceId123" } } }),
+        "validationTyped" => TypedResults.ValidationProblem(errors, extensions: extensions),
+        _ => TypedResults.NotFound()
 
-app.MapGet("/validation-problem-object", () =>
-    Results.Problem(new HttpValidationProblemDetails(errors) { Status = 400, Extensions = { { "traceId", "traceId123" } } }));
-
-app.MapGet("/validation-problem-typed", () =>
-    TypedResults.ValidationProblem(errors, extensions: extensions));
+    });
 
 app.Run();
 
