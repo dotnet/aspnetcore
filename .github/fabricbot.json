@@ -3330,7 +3330,7 @@
         {
           "name": "addReply",
           "parameters": {
-            "comment": "Hey @aspnet-build, looks like this PR is something you want to take a look at."
+            "comment": "Hey @dotnet/aspnet-build, looks like this PR is something you want to take a look at."
           }
         },
         {
