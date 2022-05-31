@@ -3310,12 +3310,6 @@
             "parameters": {
               "action": "labeled"
             }
-          },
-          {
-            "name": "hasLabel",
-            "parameters": {
-              "label": "INTERNAL: Debug"
-            }
           }
         ]
       },
