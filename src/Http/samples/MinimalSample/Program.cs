@@ -56,23 +56,6 @@ app.MapGet("/problem/{problemType}", (string problemType) => problemType switch
 
     });
 
-/*
-app.MapGet("/problem", () =>
-    Results.Problem(statusCode: 500, extensions: extensions));
-
-app.MapGet("/problem-object", () =>
-    Results.Problem(new ProblemDetails() { Status = 500, Extensions = { { "traceId", "traceId123" } } }));
-
-app.MapGet("/validation-problem", () =>
-    Results.ValidationProblem(errors, statusCode: 400, extensions: extensions));
-
-app.MapGet("/validation-problem-object", () =>
-    Results.Problem(new HttpValidationProblemDetails(errors) { Status = 400, Extensions = { { "traceId", "traceId123" } } }));
-
-app.MapGet("/validation-problem-typed", () =>
-    TypedResults.ValidationProblem(errors, extensions: extensions));
-*/
-
 app.Run();
 
 internal record Todo(int Id, string Title);
