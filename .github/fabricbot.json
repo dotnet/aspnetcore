@@ -3314,7 +3314,7 @@
           {
             "name": "hasLabel",
             "parameters": {
-              "label": "Internal: Debug"
+              "label": "INTERNAL: Debug"
             }
           }
         ]
