@@ -5,15 +5,8 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
 ## Creating a new project
 1. Create a new folder that will house your `.csproj` and other project-related files.
 2. (EXTREMELY IMPORTANT) Inside our new folder make a new folder called `src`.
-2. In VS, Add a new `Solution Folder` in the new `src` folder from the previous step.
-3. Create the project via the VS `Add` menu (select the folder -> right click -> Add -> follow the wizard).
-4. To make sure that Public API is marked and handled properly, we use a PublicAPI analyzer. Add the following `ItemGroup` to your newly generated `.csproj`:
-    ```XML
-    <ItemGroup>
-        <None Remove="PublicAPI.Shipped.txt" />
-        <None Remove="PublicAPI.Unshipped.txt" />
-    </ItemGroup>
-    ```
+3. In VS, Add a new `Solution Folder` in the new `src` folder from the previous step.
+4. Create the project via the VS `Add` menu (select the folder -> right click -> Add -> follow the wizard).
 5. (OPTIONAL) Add the following line to the `.csproj`'s `PropertyGroup` to include your project in the SharedFx API:
     ```XML
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
