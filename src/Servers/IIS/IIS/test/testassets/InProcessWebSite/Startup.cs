@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -179,14 +180,14 @@ public partial class Startup
             });
     }
 
-    [DllImport("kernel32.dll")]
-    static extern uint GetDllDirectory(uint nBufferLength, [Out] StringBuilder lpBuffer);
+    [LibraryImport("kernel32.dll")]
+    private static partial uint GetDllDirectory(uint nBufferLength, [Out, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U2)] char[] lpBuffer);
 
     private async Task DllDirectory(HttpContext context)
     {
-        var builder = new StringBuilder(1024);
-        GetDllDirectory(1024, builder);
-        await context.Response.WriteAsync(builder.ToString());
+        var buffer = new char[1024];
+        GetDllDirectory(1024, buffer);
+        await context.Response.WriteAsync(buffer.ToString());
     }
 
     private async Task GetEnvironmentVariable(HttpContext ctx)
