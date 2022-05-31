@@ -901,7 +901,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                 {
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
-                    Assert.NotNull(routeHandlerContext.Services);
+                    Assert.NotNull(routeHandlerContext.ApplicationServices);
                     Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
                     context.Arguments[0] = context.GetArgument<int>(0) + 1;
                     return await next(context);
@@ -985,8 +985,8 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var routeHandlerBuilder = builder.Map("/", PrintLogger);
         routeHandlerBuilder.AddFilter((rhc, next) =>
         {
-            Assert.NotNull(rhc.Services);
-            var myService = rhc.Services?.GetRequiredService<MyService>();
+            Assert.NotNull(rhc.ApplicationServices);
+            var myService = rhc.ApplicationServices?.GetRequiredService<MyService>();
             Assert.Equal(appService, myService);
             return next;
         });
