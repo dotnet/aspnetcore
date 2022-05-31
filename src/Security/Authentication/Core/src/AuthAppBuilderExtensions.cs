@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class AuthAppBuilderExtensions
 {
-    private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
+    internal const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
 
     /// <summary>
     /// Adds the <see cref="AuthenticationMiddleware"/> to the specified <see cref="IApplicationBuilder"/>, which enables authentication capabilities.
@@ -24,7 +24,13 @@ public static class AuthAppBuilderExtensions
             throw new ArgumentNullException(nameof(app));
         }
 
-        app.Properties[AuthenticationMiddlewareSetKey] = true;
-        return app.UseMiddleware<AuthenticationMiddleware>();
+        // Don't add more than one instance of the middleware
+        if (!app.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
+        {
+            app.Properties[AuthenticationMiddlewareSetKey] = true;
+            return app.UseMiddleware<AuthenticationMiddleware>();
+        }
+
+        return app;
     }
 }

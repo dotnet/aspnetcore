@@ -177,11 +177,8 @@ public sealed class WebApplicationBuilder
 
         if (_webAuthBuilder.IsAuthenticationConfigured)
         {
-            if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
-            {
-                app.UseAuthentication();
-                app.UseAuthorization();
-            }
+            _builtApplication.UseAuthentication();
+            _builtApplication.UseAuthorization();
         }
 
         // Wire the source pipeline to run in the destination pipeline
