@@ -10,8 +10,8 @@ import io.reactivex.rxjava3.core.Single;
  *
  * @param <T1> The type of the first parameter to the callback.
  */
-public interface Function1Single<T1, T> {
+public interface Function1Single<T1, TResult> {
     // We can't use the @FunctionalInterface annotation because it's only
     // available on Android API Level 24 and above.
-    Single<T> invoke(T1 param1);
+    Single<TResult> invoke(T1 param1);
 }

@@ -22,6 +22,7 @@ import com.google.gson.stream.JsonReader;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.*;
 import okhttp3.OkHttpClient;
 
@@ -472,56 +473,7 @@ public class HubConnection implements AutoCloseable {
                     break;
                 case INVOCATION:
                     InvocationMessage invocationMessage = (InvocationMessage) message;
-                    List<InvocationHandler> handlers = this.handlers.get(invocationMessage.getTarget());
-                    boolean expectsResult = invocationMessage.getInvocationId() != null;
-                    if (handlers == null) {
-                        if (expectsResult) {
-                            logger.warn("Failed to find a value returning handler for '{}' method. Sending error to server.", invocationMessage.getTarget());
-                            sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
-                                null, "Client did not provide a result."));
-                        } else {
-                            logger.warn("Failed to find handler for '{}' method.", invocationMessage.getTarget());
-                        }
-                        return;
-                    }
-                    //new Thread(() -> {
-                        Object result = null;
-                        Exception resultException = null;
-                        Boolean hasResult = false;
-                        for (InvocationHandler handler : handlers) {
-                            try {
-                                Object action = handler.getAction();
-                                if (handler.getHasResult()) {
-                                    FunctionBase function = (FunctionBase)action;
-                                    result = function.invoke(invocationMessage.getArguments()).blockingGet();
-                                    hasResult = true;
-                                } else {
-                                    ((ActionBase)action).invoke(invocationMessage.getArguments()).blockingAwait();
-                                }
-                            } catch (Exception e) {
-                                logger.error("Invoking client side method '{}' failed:", invocationMessage.getTarget(), e);
-                                if (handler.getHasResult()) {
-                                    resultException = e;
-                                }
-                            }
-                        }
-
-                        if (expectsResult) {
-                            if (resultException != null) {
-                                sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
-                                    null, resultException.getMessage()));
-                            } else if (hasResult) {
-                                sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
-                                    result, null));
-                            } else {
-                                logger.warn("Failed to find a value returning handler for '{}' method. Sending error to server.", invocationMessage.getTarget());
-                                sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
-                                    null, "Client did not provide a result."));
-                            }
-                        } else if (hasResult) {
-                            logger.warn("Result given for '{}' method but server is not expecting a result.", invocationMessage.getTarget());
-                        }
-                    //}).start();
+                    connectionState.dispatchInvocation(invocationMessage);
                     break;
                 case CLOSE:
                     logger.info("Close message received from server.");
@@ -909,26 +861,6 @@ public class HubConnection implements AutoCloseable {
             callback.invoke();
             return Completable.complete();
         };
-        return registerHandler(target, action);
-    }
-
-    public <T> Subscription on(String target, Function<T> callback) {
-        FunctionBase action = args -> Single.just(callback.invoke());
-        return registerHandler(target, action);
-    }
-
-    public <T> Subscription on(String target, FunctionSingle<T> callback) {
-        FunctionBase action = args -> callback.invoke().cast(Object.class);
-        return registerHandler(target, action);
-    }
-
-    public <T1, T> Subscription on(String target, Function1<T1, T> callback, Class<T1> param1) {
-        FunctionBase action = params -> Single.just(callback.invoke(Utils.<T1>cast(param1, params[0])));
-        return registerHandler(target, action);
-    }
-
-    public <T1, T> Subscription on(String target, Function1Single<T1, T> callback, Class<T1> param1) {
-        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0])).cast(Object.class);
         return registerHandler(target, action);
     }
 
@@ -1365,6 +1297,26 @@ public class HubConnection implements AutoCloseable {
         return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7, param8);
     }
 
+    public <TResult> Subscription on(String target, Function<TResult> callback) {
+        FunctionBase action = args -> Single.just(callback.invoke());
+        return registerHandler(target, action);
+    }
+
+    public <TResult> Subscription on(String target, FunctionSingle<TResult> callback) {
+        FunctionBase action = args -> callback.invoke().cast(Object.class);
+        return registerHandler(target, action);
+    }
+
+    public <T1, TResult> Subscription on(String target, Function1<T1, TResult> callback, Class<T1> param1) {
+        FunctionBase action = params -> Single.just(callback.invoke(Utils.<T1>cast(param1, params[0])));
+        return registerHandler(target, action);
+    }
+
+    public <T1, TResult> Subscription on(String target, Function1Single<T1, TResult> callback, Class<T1> param1) {
+        FunctionBase action = params -> callback.invoke(Utils.<T1>cast(param1, params[0])).cast(Object.class);
+        return registerHandler(target, action);
+    }
+
     private Subscription registerHandler(String target, Object action, Type... types) {
         InvocationHandler handler = handlers.put(target, action, types);
         logger.debug("Registering handler for client method: '{}'.", target);
@@ -1380,6 +1332,7 @@ public class HubConnection implements AutoCloseable {
         private Timer pingTimer = null;
         private Boolean handshakeReceived = false;
         private ScheduledExecutorService handshakeTimeout = null;
+        private BehaviorSubject<InvocationMessage> messages = BehaviorSubject.create();
 
         public final Lock lock = new ReentrantLock();
         public final CompletableSubject handshakeResponseSubject = CompletableSubject.create();
@@ -1511,6 +1464,7 @@ public class HubConnection implements AutoCloseable {
                 }
                 handshakeReceived = true;
                 handshakeResponseSubject.onComplete();
+                handleInvocations();
             }
         }
 
@@ -1523,6 +1477,7 @@ public class HubConnection implements AutoCloseable {
 
         public void close() {
             handshakeResponseSubject.onComplete();
+            messages.onComplete();
 
             if (pingTimer != null) {
                 pingTimer.cancel();
@@ -1531,6 +1486,65 @@ public class HubConnection implements AutoCloseable {
             if (this.handshakeTimeout != null) {
                 this.handshakeTimeout.shutdownNow();
             }
+        }
+
+        public void dispatchInvocation(InvocationMessage message) {
+            messages.onNext(message);
+        }
+
+        private void handleInvocations() {
+            messages.observeOn(Schedulers.computation()).subscribe(invocationMessage -> {
+                List<InvocationHandler> handlers = this.connection.handlers.get(invocationMessage.getTarget());
+                boolean expectsResult = invocationMessage.getInvocationId() != null;
+                if (handlers == null) {
+                    if (expectsResult) {
+                        logger.warn("Failed to find a value returning handler for '{}' method. Sending error to server.", invocationMessage.getTarget());
+                        sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                            null, "Client did not provide a result."));
+                    } else {
+                        logger.warn("Failed to find handler for '{}' method.", invocationMessage.getTarget());
+                    }
+                    return;
+                }
+                Object result = null;
+                Exception resultException = null;
+                Boolean hasResult = false;
+                for (InvocationHandler handler : handlers) {
+                    try {
+                        Object action = handler.getAction();
+                        if (handler.getHasResult()) {
+                            FunctionBase function = (FunctionBase)action;
+                            result = function.invoke(invocationMessage.getArguments()).blockingGet();
+                            hasResult = true;
+                        } else {
+                            ((ActionBase)action).invoke(invocationMessage.getArguments()).blockingAwait();
+                        }
+                    } catch (Exception e) {
+                        logger.error("Invoking client side method '{}' failed:", invocationMessage.getTarget(), e);
+                        if (handler.getHasResult()) {
+                            resultException = e;
+                        }
+                    }
+                }
+
+                if (expectsResult) {
+                    if (resultException != null) {
+                        sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                            null, resultException.getMessage()));
+                    } else if (hasResult) {
+                        sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                            result, null));
+                    } else {
+                        logger.warn("Failed to find a value returning handler for '{}' method. Sending error to server.", invocationMessage.getTarget());
+                        sendHubMessageWithLock(new CompletionMessage(null, invocationMessage.getInvocationId(),
+                            null, "Client did not provide a result."));
+                    }
+                } else if (hasResult) {
+                    logger.warn("Result given for '{}' method but server is not expecting a result.", invocationMessage.getTarget());
+                }
+            }, (e) -> {
+            }, () -> {
+            });
         }
 
         @Override
