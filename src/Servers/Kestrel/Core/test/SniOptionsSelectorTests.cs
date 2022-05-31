@@ -851,16 +851,18 @@ public class SniOptionsSelectorTests
 
         public bool IsTestMock => true;
 
-        public X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName)
+        public (X509Certificate2, X509Certificate2Collection) LoadCertificate(CertificateConfig certInfo, string endpointName)
         {
             if (certInfo is null)
             {
-                return null;
+                return (null, null);
             }
 
             var cert = TestResources.GetTestCertificate();
             CertToPathDictionary.Add(cert, certInfo.Path);
-            return cert;
+
+            // TODO: Add support for FullChain
+            return (cert, null);
         }
     }
 

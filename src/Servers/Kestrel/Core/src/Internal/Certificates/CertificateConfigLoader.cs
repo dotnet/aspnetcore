@@ -23,11 +23,11 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
 
     public bool IsTestMock => false;
 
-    public X509Certificate2? LoadCertificate(CertificateConfig? certInfo, string endpointName)
+    public (X509Certificate2?, X509Certificate2Collection?) LoadCertificate(CertificateConfig? certInfo, string endpointName)
     {
         if (certInfo is null)
         {
-            return null;
+            return (null, null);
         }
 
         if (certInfo.IsFileCert && certInfo.IsStoreCert)
@@ -37,6 +37,15 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
         else if (certInfo.IsFileCert)
         {
             var certificatePath = Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!);
+
+            X509Certificate2Collection? fullChain = null;
+            if (certInfo.Path != null)
+            {
+                var certificateChainPath = Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path);
+                fullChain = new X509Certificate2Collection();
+                fullChain.ImportFromPemFile(certificateChainPath);
+            }
+
             if (certInfo.KeyPath != null)
             {
                 var certificateKeyPath = Path.Combine(HostEnvironment.ContentRootPath, certInfo.KeyPath);
@@ -55,10 +64,10 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
                 {
                     if (OperatingSystem.IsWindows())
                     {
-                        return PersistKey(certificate);
+                        return (PersistKey(certificate), fullChain);
                     }
 
-                    return certificate;
+                    return (certificate, fullChain);
                 }
                 else
                 {
@@ -68,14 +77,14 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
                 throw new InvalidOperationException(CoreStrings.InvalidPemKey);
             }
 
-            return new X509Certificate2(Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!), certInfo.Password);
+            return (new X509Certificate2(Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!), certInfo.Password), fullChain);
         }
         else if (certInfo.IsStoreCert)
         {
-            return LoadFromStoreCert(certInfo);
+            return (LoadFromStoreCert(certInfo), null);
         }
 
-        return null;
+        return (null, null);
     }
 
     private static X509Certificate2 PersistKey(X509Certificate2 fullCertificate)

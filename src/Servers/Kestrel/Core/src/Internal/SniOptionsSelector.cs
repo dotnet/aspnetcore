@@ -43,9 +43,11 @@ internal sealed class SniOptionsSelector
 
         foreach (var (name, sniConfig) in sniDictionary)
         {
+            var (serverCert, fullChain) = certifcateConfigLoader.LoadCertificate(sniConfig.Certificate, $"{endpointName}:Sni:{name}");
             var sslOptions = new SslServerAuthenticationOptions
             {
-                ServerCertificate = certifcateConfigLoader.LoadCertificate(sniConfig.Certificate, $"{endpointName}:Sni:{name}"),
+
+                ServerCertificate = serverCert,
                 EnabledSslProtocols = sniConfig.SslProtocols ?? fallbackHttpsOptions.SslProtocols,
                 CertificateRevocationCheckMode = fallbackHttpsOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
             };
@@ -68,7 +70,7 @@ internal sealed class SniOptionsSelector
             {
                 // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
                 // made to the server
-                sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create((X509Certificate2)sslOptions.ServerCertificate, additionalCertificates: null);
+                sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create((X509Certificate2)sslOptions.ServerCertificate, additionalCertificates: fullChain, offline: fullChain != null);
             }
 
             if (!certifcateConfigLoader.IsTestMock && sslOptions.ServerCertificate is X509Certificate2 cert2)
