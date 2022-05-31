@@ -4,7 +4,8 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
 
 ## Creating a new project
 1. Create a new folder that will house your `.csproj` and other project-related files.
-2. In VS, Add a new `Solution Folder` in the same place as the new folder from the previous step.
+2. (EXTREMELY IMPORTANT) Inside our new folder make a new folder called `src`.
+2. In VS, Add a new `Solution Folder` in the new `src` folder from the previous step.
 3. Create the project via the VS `Add` menu (select the folder -> right click -> Add -> follow the wizard).
 4. To make sure that Public API is marked and handled properly, we use a PublicAPI analyzer. Add the following `ItemGroup` to your newly generated `.csproj`:
     ```XML
@@ -33,13 +34,5 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
 ## Adding to the rest of the repo
 1. VS Should have already registered your `.csproj` in the corresponding solution (`.sln`) and solution filter (`.slnf`) files. See this [Example](https://github.com/dotnet/aspnetcore/pull/41945/files#diff-cd977e0a76b37d35c04d9d819ea66ef8a35d9ef7f86a9a7c774d751e8119db4fR1713-R11118)
   - If VS has not already modified these files, make sure to add it manually as is visible in the example listed above.
-2. Add the following new line to the `eng/ProjectReferences.props` file to include your new project:
-    ```XML
-    <ProjectReferenceProvider Include="[Your project id]" ProjectPath="$(RepoRoot)src\[Rest of the path to your project]" />
-    ```
-3. Run the `eng/scripts/GenerateProjectList.ps1` file to regenerate all the reference assemblies.
-4. (OPTIONAL: only necessary if you want to add your project to the SharedFX API)Add the following new line to the `eng/SharedFramework.Local.props` file to include your new project:
-    ```XML
-    <AspNetCoreAppReference Include="[Your project id]" />
-    ```
+2. Run the `eng/scripts/GenerateProjectList.ps1` file to regenerate all the reference assemblies.
 
