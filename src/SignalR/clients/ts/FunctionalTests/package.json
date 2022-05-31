@@ -33,7 +33,7 @@
     "rxjs": "^6.3.3",
     "ts-node": "^8.6.2",
     "typescript": "^3.7.5",
-    "webpack": "^5.23.0",
+    "webpack": "^5.72.1",
     "ws": " ^6.0.0"
   },
   "scripts": {
