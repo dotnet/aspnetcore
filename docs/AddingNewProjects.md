@@ -6,7 +6,7 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
 1. Create a new folder that will house your `.csproj` and other project-related files.
 2. In VS, Add a new `Solution Folder` in the same place as the new folder from the previous step.
 3. Create the project via the VS `Add` menu (select the folder -> right click -> Add -> follow the wizard).
-4. Add the following `ItemGroup` to your newly generated `.csproj`:
+4. To make sure that Public API is marked and handled properly, we use a PublicAPI analyzer. Add the following `ItemGroup` to your newly generated `.csproj`:
     ```XML
     <ItemGroup>
         <None Remove="PublicAPI.Shipped.txt" />
