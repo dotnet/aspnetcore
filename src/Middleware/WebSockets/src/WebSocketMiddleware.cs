@@ -64,10 +64,10 @@ public partial class WebSocketMiddleware
         var requestFeature = context.Features.Get<IHttpRequestFeature>()!;
         // Detect if an opaque upgrade is available. If so, add a websocket upgrade.
         var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
-        var isH2WebSocket = string.Equals(requestFeature.ConnectProtocol, Constants.Headers.UpgradeWebSocket, StringComparison.OrdinalIgnoreCase);
-        if ((isH2WebSocket || upgradeFeature != null) && context.Features.Get<IHttpWebSocketFeature>() == null)
+        // TODO: All of our servers add IHttpUpgradeFeature on every request. Should we even check this here?
+        if (upgradeFeature != null && context.Features.Get<IHttpWebSocketFeature>() == null)
         {
-            var webSocketFeature = new WebSocketHandshake(context, isH2WebSocket, upgradeFeature, _options, _logger);
+            var webSocketFeature = new WebSocketHandshake(context, upgradeFeature, _options, _logger);
             context.Features.Set<IHttpWebSocketFeature>(webSocketFeature);
             if (!_anyOriginAllowed)
             {
@@ -93,16 +93,15 @@ public partial class WebSocketMiddleware
     private sealed class WebSocketHandshake : IHttpWebSocketFeature
     {
         private readonly HttpContext _context;
-        private readonly bool _isH2WebSocket;
         private readonly IHttpUpgradeFeature? _upgradeFeature;
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
         private bool? _isWebSocketRequest;
+        private bool _isH2WebSocket;
 
-        public WebSocketHandshake(HttpContext context, bool isH2WebSocket, IHttpUpgradeFeature? upgradeFeature, WebSocketOptions options, ILogger logger)
+        public WebSocketHandshake(HttpContext context, IHttpUpgradeFeature? upgradeFeature, WebSocketOptions options, ILogger logger)
         {
             _context = context;
-            _isH2WebSocket = isH2WebSocket;
             _upgradeFeature = upgradeFeature;
             _options = options;
             _logger = logger;
@@ -114,9 +113,11 @@ public partial class WebSocketMiddleware
             {
                 if (_isWebSocketRequest == null)
                 {
-                    if (_isH2WebSocket)
+                    var requestFeature = _context.Features.Get<IHttpRequestFeature>()!;
+                    if (string.Equals(requestFeature.ConnectProtocol, Constants.Headers.UpgradeWebSocket, StringComparison.OrdinalIgnoreCase))
                     {
-                        _isWebSocketRequest = CheckSupportedWebSocketRequestH2(_context.Request.Method, _context.Request.Headers);
+                        _isH2WebSocket = CheckSupportedWebSocketRequestH2(_context.Request.Method, _context.Request.Headers);
+                        _isWebSocketRequest = _isH2WebSocket;
                     }
                     else if (!_upgradeFeature!.IsUpgradableRequest)
                     {
