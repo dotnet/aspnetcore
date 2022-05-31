@@ -826,7 +826,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             await OnEndStreamReceived();
         }
 
-        // https://www.rfc-editor.org/rfc/rfc8441#section-4
+        // https://datatracker.ietf.org/doc/html/draft-ietf-webtrans-http3/#section-3.3
         if (HttpRequestHeaders.HeaderProtocol.Count > 0)
         {
             if (!_isMethodConnect)

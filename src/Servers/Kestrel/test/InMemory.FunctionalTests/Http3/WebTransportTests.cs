@@ -15,6 +15,8 @@ public class WebTransportTests : Http3TestBase
     [Fact]
     public async Task WebTransportHandshake_ClientToServerPasses()
     {
+        _serviceContext.ServerOptions.AllowAlternateSchemes = true;
+
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();
         var controlStream2 = await Http3Api.GetInboundControlStream();
@@ -37,7 +39,7 @@ public class WebTransportTests : Http3TestBase
         {
             new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
             new KeyValuePair<string, string>(HeaderNames.Protocol, "webtransport"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
             new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com")
@@ -56,7 +58,7 @@ public class WebTransportTests : Http3TestBase
         ((long)Http3ErrorCode.ProtocolError),
         nameof(HeaderNames.Method), "GET", // incorrect method (verifies that webtransport doesn't break regular Http/3 get)
         nameof(HeaderNames.Protocol), "webtransport",
-        nameof(HeaderNames.Scheme), "http",
+        nameof(HeaderNames.Scheme), "https",
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]
@@ -64,26 +66,35 @@ public class WebTransportTests : Http3TestBase
     //    ((long)Http3ErrorCode..ProtocolError,
     //    nameof(HeaderNames.Method), "CONNECT",
     //    nameof(HeaderNames.Protocol), "webtransport",
-    //    nameof(HeaderNames.Scheme), "http", // incorrect scheme <-- it should be https but the tests don't work with it so I commented it out (also it is given by http/3)
+    //    nameof(HeaderNames.Scheme), "http", // incorrect scheme <-- this is a given by http/3 so is there a need to test this?
     //    nameof(HeaderNames.Path), "/",
     //    nameof(HeaderNames.Authority), "server.example.com",
     //    nameof(HeaderNames.Origin), "server.example.com")]
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
         nameof(HeaderNames.Method), "CONNECT",
+        nameof(HeaderNames.Protocol), "NOT_webtransport",
+        nameof(HeaderNames.Scheme), "https",
+        nameof(HeaderNames.Authority), "server.example.com",
+        nameof(HeaderNames.Origin), "server.example.com")]  // incorrect protocol
+    [InlineData(
+        ((long)Http3ErrorCode.ProtocolError),
+        nameof(HeaderNames.Method), "CONNECT",
         nameof(HeaderNames.Protocol), "webtransport",
-        nameof(HeaderNames.Scheme), "http",
+        nameof(HeaderNames.Scheme), "https",
         nameof(HeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]  // no path
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
         nameof(HeaderNames.Method), "CONNECT",
         nameof(HeaderNames.Protocol), "webtransport",
-        nameof(HeaderNames.Scheme), "http",
+        nameof(HeaderNames.Scheme), "https",
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Origin), "server.example.com")]  // no authority
     public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, params string[] headers)
     {
+        _serviceContext.ServerOptions.AllowAlternateSchemes = true;
+
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();
         var controlStream2 = await Http3Api.GetInboundControlStream();
