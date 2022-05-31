@@ -24,13 +24,7 @@ public static class AuthAppBuilderExtensions
             throw new ArgumentNullException(nameof(app));
         }
 
-        // Don't add more than one instance of the middleware
-        if (!app.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
-        {
-            app.Properties[AuthenticationMiddlewareSetKey] = true;
-            return app.UseMiddleware<AuthenticationMiddleware>();
-        }
-
-        return app;
+        app.Properties[AuthenticationMiddlewareSetKey] = true;
+        return app.UseMiddleware<AuthenticationMiddleware>();
     }
 }
