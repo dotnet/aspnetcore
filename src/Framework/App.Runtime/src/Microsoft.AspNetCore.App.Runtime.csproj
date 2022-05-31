@@ -474,7 +474,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <NativeAssetsFullPath>$(RuntimePackageRoot)$(NativeAssetsPackagePath)</NativeAssetsFullPath>
 
       <BaseAssemblies>$(ManagedAssetsFullPath)\*.dll</BaseAssemblies>
-      <BaseAssemblies Condition="Exists($(ManagedAssetsFullPath))">$(BaseAssemblies) $(NativeAssetsFullPath)\*.dll</BaseAssemblies>
+      <BaseAssemblies Condition="'Exists($(ManagedAssetsFullPath))' == 'true' and '$(TargetOsName)' == 'win'">$(BaseAssemblies) $(NativeAssetsFullPath)\*.dll</BaseAssemblies>
 
       <CompositeArgs>--composite</CompositeArgs>
       <CompositeArgs>$(CompositeArgs) --targetarch:$(TargetArchitecture)</CompositeArgs>
