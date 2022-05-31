@@ -41,10 +41,12 @@ namespace Templates.Test
 
         [ConditionalFact]
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows: https://github.com/dotnet/aspnetcore/issues/41937")]
         public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
         [ConditionalFact]
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows: https://github.com/dotnet/aspnetcore/issues/41937")]
         public async Task MvcTemplate_ProgramMainNoAuthCSharp() => await MvcTemplateCore(languageOverride: null, new [] { ArgConstants.UseProgramMain });
 
         private async Task MvcTemplateCore(string languageOverride, string[] args = null)

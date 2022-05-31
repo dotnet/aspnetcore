@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("Hello human", content);
         }
 
-        [Fact]
+        [Fact(Skip = "Failing on Windows environments: https://github.com/dotnet/aspnetcore/issues/41937")]
         public async Task DefaultEnvironment_Is_Development()
         {
             // Arrange
