@@ -1,0 +1,3 @@
+#nullable enable
+Microsoft.AspNetCore.WebTransport.WebTransportMiddleware
+Microsoft.AspNetCore.WebTransport.WebTransportMiddleware.WebTransportMiddleware() -> void

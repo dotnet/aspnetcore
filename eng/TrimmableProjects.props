@@ -76,6 +76,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.SpaServices.Extensions" />
     <TrimmableProject Include="Microsoft.AspNetCore.StaticFiles" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebSockets" />
+    <TrimmableProject Include="Microsoft.AspNetCore.WebTransport" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Authorization" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Forms" />
