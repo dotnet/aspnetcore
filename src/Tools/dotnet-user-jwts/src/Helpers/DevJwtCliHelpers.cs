@@ -104,7 +104,7 @@ internal static class DevJwtCliHelpers
         }
         secrets.Add(DevJwtsDefaults.SigningKeyConfigurationKey, Convert.ToBase64String(newKeyMaterial));
 
-        using var secretsWriteStream = new FileStream(secretsFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+        using var secretsWriteStream = new FileStream(secretsFilePath, FileMode.Create, FileAccess.Write);
         JsonSerializer.Serialize(secretsWriteStream, secrets);
 
         return newKeyMaterial;
