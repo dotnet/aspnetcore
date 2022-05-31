@@ -16,6 +16,14 @@ if (app.Environment.IsDevelopment())
 string Plaintext() => "Hello, World!";
 app.MapGet("/plaintext", Plaintext);
 
+var message =
+    $"""
+    Operating System: {Environment.OSVersion}
+    .NET version: {Environment.Version}
+    """;
+
+app.MapGet("/", () => message);
+
 var nestedGroup = app.MapGroup("/group/{groupName}")
    .MapGroup("/nested/{nestedName}")
    .WithMetadata(new TagsAttribute("nested"));
