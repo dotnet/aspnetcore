@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -262,6 +263,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
         // Act
         services.AddAuthentication()
@@ -279,6 +281,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
         // Act
         services.AddAuthentication()
@@ -315,6 +318,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
         // Act
         services.AddAuthentication()
@@ -348,6 +352,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
         // Act
         services.AddAuthentication()

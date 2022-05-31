@@ -99,6 +99,8 @@
       "src\\Tools\\dotnet-dev-certs\\src\\dotnet-dev-certs.csproj",
       "src\\Tools\\dotnet-getdocument\\src\\dotnet-getdocument.csproj",
       "src\\Tools\\dotnet-sql-cache\\src\\dotnet-sql-cache.csproj",
+      "src\\Tools\\dotnet-user-jwts\\src\\dotnet-user-jwts.csproj",
+      "src\\Tools\\dotnet-user-jwts\\test\\dotnet-user-jwts.Tests.csproj",
       "src\\Tools\\dotnet-user-secrets\\src\\dotnet-user-secrets.csproj",
       "src\\Tools\\dotnet-user-secrets\\test\\dotnet-user-secrets.Tests.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
