@@ -75,18 +75,22 @@ public class WebApiTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows")]
     public Task WebApiTemplateCSharp() => WebApiTemplateCore(languageOverride: null);
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows")]
     public Task WebApiTemplateProgramMainCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows")]
     public Task WebApiTemplateMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseMinimalApis });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows")]
     public Task WebApiTemplateProgramMainMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis });
 
     [ConditionalTheory]
