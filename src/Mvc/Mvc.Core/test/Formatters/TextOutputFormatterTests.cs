@@ -3,6 +3,7 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -215,7 +216,7 @@ public class TextOutputFormatterTests
         formatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/json"));
 
         var context = new OutputFormatterWriteContext(
-            new DefaultHttpContext(),
+            new DefaultHttpContext() { RequestServices = new ServiceCollection().BuildServiceProvider() },
             new TestHttpResponseStreamWriterFactory().CreateWriter,
             objectType: null,
             @object: null)
