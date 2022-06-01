@@ -25,15 +25,15 @@ public static class Helpers
     public static async Task AssertStarts(this IISDeploymentResult deploymentResult, string path = "/HelloWorld")
     {
         // Sometimes the site is not ready, so retry until its actually started and ready
-        var response = await deploymentResult.HttpClient.RetryRequestAsync(path, r => r.IsSuccessStatusCode);
+        var response = await deploymentResult.HttpClient.RetryRequestAsync(path, r => r.StatusCode == HttpStatusCode.OK);
         var responseText = await response.Content.ReadAsStringAsync();
-        if (response.IsSuccessStatusCode)
+        if (response.StatusCode == HttpStatusCode.OK)
         {
             Assert.Equal("Hello World", responseText);
         }
         else
         {
-            throw new Exception($"Server not started successfully, recieved non success status code, responseText: {responseText}");
+            throw new Exception($"Server not started successfully, recieved non OK status code, responseText: {responseText}");
         }
     }
 
@@ -112,7 +112,7 @@ public static class Helpers
         var delay = RetryRequestDelay;
         for (var i = 0; i < RetryRequestCount && !await predicate(response); i++)
         {
-            // Keep retrying until app_offline is present.
+            // Keep retrying until prediate is met.
             response = await client.GetAsync(uri);
             await Task.Delay(delay);
             // This will max out at a 5 second delay
@@ -174,6 +174,8 @@ public static class Helpers
         deploymentResult.AssertWorkerProcessStop();
         if (deploymentResult.DeploymentParameters.ServerType == ServerType.IIS)
         {
+            // Wait a second before checking for restart
+            await Task.Delay(1000);
             verificationAction = verificationAction ?? (() => deploymentResult.AssertStarts());
             await verificationAction();
         }

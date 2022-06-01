@@ -380,6 +380,8 @@ public class ShutdownTests : IISFunctionalTestBase
 
         await deploymentResult.AssertStarts();
 
+        await Task.Delay(2000);
+
         // Just "touching" web.config should be enough
         deploymentResult.ModifyWebConfig(element => { });
 

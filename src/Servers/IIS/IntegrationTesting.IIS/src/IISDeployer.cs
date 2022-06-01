@@ -219,6 +219,29 @@ public class IISDeployer : IISDeployerBase
         }
     }
 
+    private static void VerifyServerManager(Action<ServerManager> action)
+    {
+        using (var serverManager = new ServerManager())
+        {
+            action(serverManager);
+        }
+    }
+
+    private static void VerifySingleSiteAppPool()
+    {
+        VerifyServerManager(serverManager =>
+        {
+            if (serverManager.Sites.Count != 1)
+            {
+                throw new InvalidOperationException($"Expected a single site, but found: {serverManager.Sites.Count} sites!");
+            }
+            if (serverManager.ApplicationPools.Count != 1)
+            {
+                throw new InvalidOperationException($"Expected a single site, but found: {serverManager.ApplicationPools.Count} appPools!");
+            }
+        });
+    }
+
     private void WaitUntilSiteStarted(string contentRoot)
     {
         ServiceController serviceController = new ServiceController("w3svc");
@@ -233,6 +256,8 @@ public class IISDeployer : IISDeployerBase
             serviceController.WaitForStatus(ServiceControllerStatus.Running, _timeout);
         }
 
+        // Make sure we only have a single Site and appPool before retrying
+        VerifySingleSiteAppPool();
         RetryServerManagerAction(serverManager =>
         {
             var site = serverManager.Sites.Single();
@@ -247,13 +272,13 @@ public class IISDeployer : IISDeployerBase
             if (appPool.State != ObjectState.Started && appPool.State != ObjectState.Starting)
             {
                 var state = appPool.Start();
-                Logger.LogInformation($"Starting pool, state: {state.ToString()}");
+                Logger.LogInformation($"Starting pool, state: {state}");
             }
 
             if (site.State != ObjectState.Started && site.State != ObjectState.Starting)
             {
                 var state = site.Start();
-                Logger.LogInformation($"Starting site, state: {state.ToString()}");
+                Logger.LogInformation($"Starting site, state: {state}");
             }
 
             if (site.State != ObjectState.Started)
@@ -359,6 +384,8 @@ public class IISDeployer : IISDeployerBase
     {
         try
         {
+            // Make sure we only have a single Site and appPool before retrying
+            VerifySingleSiteAppPool();
             RetryServerManagerAction(serverManager =>
             {
                 var site = serverManager.Sites.SingleOrDefault();
@@ -465,6 +492,7 @@ public class IISDeployer : IISDeployerBase
                     exceptions = new List<Exception>();
                 }
 
+                Debugger.Launch();
                 exceptions.Add(ex);
             }
 
@@ -473,6 +501,7 @@ public class IISDeployer : IISDeployerBase
             delay *= 1.5;
         }
 
+        Debugger.Launch();
         throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());
     }
 }
