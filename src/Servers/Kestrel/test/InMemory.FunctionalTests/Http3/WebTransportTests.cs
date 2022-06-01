@@ -16,6 +16,7 @@ public class WebTransportTests : Http3TestBase
     public async Task WebTransportHandshake_ClientToServerPasses()
     {
         _serviceContext.ServerOptions.AllowAlternateSchemes = true;
+        _serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
 
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();
@@ -82,6 +83,7 @@ public class WebTransportTests : Http3TestBase
     public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, string targetErrorMessage, params string[] headers) // todo replace the "" with CoreStrings.... then push (maybe also update the waitforstreamerror function) and resolve stephen's comment
     {
         _serviceContext.ServerOptions.AllowAlternateSchemes = true;
+        _serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
 
         await Http3Api.InitializeConnectionAsync(_noopApplication);
         var controlStream = await Http3Api.CreateControlStream();

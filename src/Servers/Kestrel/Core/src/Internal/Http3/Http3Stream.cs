@@ -827,7 +827,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         // https://datatracker.ietf.org/doc/html/draft-ietf-webtrans-http3/#section-3.3
-        if (HttpRequestHeaders.HeaderProtocol.Count > 0)
+        if (_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams && HttpRequestHeaders.HeaderProtocol.Count > 0)
         {
             if (!_isMethodConnect)
             {

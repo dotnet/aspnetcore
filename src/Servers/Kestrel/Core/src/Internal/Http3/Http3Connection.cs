@@ -56,8 +56,10 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         _serverSettings.HeaderTableSize = (uint)httpLimits.Http3.HeaderTableSize;
         _serverSettings.MaxRequestHeaderFieldSectionSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
-        _serverSettings.EnableWebTransport = 1;
-        _serverSettings.H3Datagram = 1;
+        _serverSettings.EnableWebTransport = Convert.ToUInt32(context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
+        // technically these are 2 different settings so they should have separate values but the Chromium implementation requires
+        // them to both be 1 to useWebTransport.
+        _serverSettings.H3Datagram = Convert.ToUInt32(context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
     }
 
     private void UpdateHighestOpenedRequestStreamId(long streamId)
