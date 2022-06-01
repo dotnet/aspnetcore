@@ -335,7 +335,7 @@ public class MethodHub : TestHub
 
     public async Task<int> GetClientResult(int num)
     {
-        var sum = await Clients.Single(Context.ConnectionId).InvokeAsync<int>("Sum", num);
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", num);
         return sum;
     }
 }
@@ -525,9 +525,8 @@ public class HubT : Hub<ITest>
         return Clients.Caller.Send(message);
     }
 
-    public async Task<ClientResults> GetClientResultThreeWays(int singleValue, int clientValue, int callerValue) =>
+    public async Task<ClientResults> GetClientResultTwoWays(int clientValue, int callerValue) =>
         new ClientResults(
-            await Clients.Single(Context.ConnectionId).GetClientResult(singleValue),
             await Clients.Client(Context.ConnectionId).GetClientResult(clientValue),
             await Clients.Caller.GetClientResult(callerValue));
 }
@@ -540,7 +539,7 @@ public interface ITest
     Task<int> GetClientResult(int value);
 }
 
-public record ClientResults(int SingleResult, int ClientResult, int CallerResult);
+public record ClientResults(int ClientResult, int CallerResult);
 
 public class OnConnectedThrowsHub : Hub
 {

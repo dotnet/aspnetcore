@@ -120,7 +120,7 @@ public partial class HubConnectionHandlerTests
             await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
 
             var context = serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
-            var resultTask = context.Clients.Single(client.Connection.ConnectionId).InvokeAsync<int>("GetClientResult", 1);
+            var resultTask = context.Clients.Client(client.Connection.ConnectionId).InvokeAsync<int>("GetClientResult", 1);
 
             var message = await client.ReadAsync().DefaultTimeout();
             var invocation = Assert.IsType<InvocationMessage>(message);
@@ -154,23 +154,19 @@ public partial class HubConnectionHandlerTests
 
             var context = serviceProvider.GetRequiredService<IHubContext<HubT, ITest>>();
 
-            async Task AssertClientResult(Task<int> resultTask)
-            {
-                var message = await client.ReadAsync().DefaultTimeout();
-                var invocation = Assert.IsType<InvocationMessage>(message);
+            var resultTask = context.Clients.Client(connectionId).GetClientResult(1);
 
-                Assert.Single(invocation.Arguments);
-                Assert.Equal(1L, invocation.Arguments[0]);
-                Assert.Equal("GetClientResult", invocation.Target);
+            var message = await client.ReadAsync().DefaultTimeout();
+            var invocation = Assert.IsType<InvocationMessage>(message);
 
-                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocation.InvocationId, 2)).DefaultTimeout();
+            Assert.Single(invocation.Arguments);
+            Assert.Equal(1L, invocation.Arguments[0]);
+            Assert.Equal("GetClientResult", invocation.Target);
 
-                var result = await resultTask.DefaultTimeout();
-                Assert.Equal(2, result);
-            }
+            await client.SendHubMessageAsync(CompletionMessage.WithResult(invocation.InvocationId, 2)).DefaultTimeout();
 
-            await AssertClientResult(context.Clients.Single(connectionId).GetClientResult(1));
-            await AssertClientResult(context.Clients.Client(connectionId).GetClientResult(1));
+            var result = await resultTask.DefaultTimeout();
+            Assert.Equal(2, result);
         }
     }
 
@@ -192,11 +188,11 @@ public partial class HubConnectionHandlerTests
 
             var invocationId = await client.SendHubMessageAsync(new InvocationMessage(
                 invocationId: "1",
-                nameof(HubT.GetClientResultThreeWays),
-                new object[] { 5, 6, 7 })).DefaultTimeout();
+                nameof(HubT.GetClientResultTwoWays),
+                new object[] { 7, 3 })).DefaultTimeout();
 
             // Send back "value + 4" to all three invocations.
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 2; i++)
             {
                 // Hub asks client for a result, this is an invocation message with an ID.
                 var invocationMessage = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
@@ -206,7 +202,7 @@ public partial class HubConnectionHandlerTests
             }
 
             var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
-            Assert.Equal(new ClientResults(9, 10, 11), completion.Result);
+            Assert.Equal(new ClientResults(11, 7), completion.Result);
         }
     }
 
