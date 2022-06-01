@@ -25,7 +25,7 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
   - This only lists APIs that have NOT already been shipped to customers. So, these can still change.
 
 ## Adding to the rest of the repo
-1. VS Should have already registered your `.csproj` in the corresponding solution (`.sln`) and solution filter (`.slnf`) files. See this [Example](https://github.com/dotnet/aspnetcore/pull/41945/commits/d1fddbfbac25c529e153a08ca1a694f32a69482e)
+1. VS Should have already registered your `.csproj` in the corresponding solution (`.sln`) and solution filter (`.slnf`) files. See this [Example](https://github.com/dotnet/aspnetcore/pull/41945/commits/586ccc8c895862b65645c4b0f979db1eecd29626)
   - If VS has not already modified these files, make sure to add it manually as is visible in the example listed above.
 2. Run the `eng/scripts/GenerateProjectList.ps1` file to regenerate all the reference assemblies.
 
