@@ -41,9 +41,8 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
             X509Certificate2Collection? fullChain = null;
             if (certInfo.Path != null)
             {
-                var certificateChainPath = Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path);
                 fullChain = new X509Certificate2Collection();
-                fullChain.ImportFromPemFile(certificateChainPath);
+                fullChain.ImportFromPemFile(certificatePath);
             }
 
             if (certInfo.KeyPath != null)
