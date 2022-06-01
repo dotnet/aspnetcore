@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -14,13 +15,15 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
 {
     private readonly MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program> _fixture;
 
-    public SimpleWithWebApplicationBuilderTests(MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program> fixture)
+    public SimpleWithWebApplicationBuilderTests(MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.Program> fixture, ITestOutputHelper helper)
     {
         _fixture = fixture;
+        Helper = helper;
         Client = _fixture.CreateDefaultClient();
     }
 
     public HttpClient Client { get; }
+    public ITestOutputHelper Helper { get; }
 
     [Fact]
     public async Task HelloWorld()
@@ -139,6 +142,21 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
 
         // Assert
         Assert.Equal(expected, content);
+    }
+
+    [Fact]
+    public async Task Get_ConfigDebugView()
+    {
+        // Arrange
+        using var client = new WebApplicationFactory<SimpleWebSiteWithWebApplicationBuilder.Program>().CreateClient();
+
+        // Act
+        var content = await client.GetStringAsync("http://localhost/config");
+
+        Helper.WriteLine(content);
+
+        // Assert
+        Assert.NotEmpty(content);
     }
 
     [Fact]
