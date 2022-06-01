@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -129,7 +130,16 @@ public class ApplicationBuilder : IApplicationBuilder
                 throw new InvalidOperationException(message);
             }
 
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            const int statusCode = StatusCodes.Status404NotFound;
+
+            var endpointProvider = context.RequestServices.GetService<ProblemDetailsEndpointProvider>();
+            if (endpointProvider != null &&
+                endpointProvider.CanWrite(statusCode, isRouting: true))
+            {
+                return endpointProvider.WriteResponse(context, statusCode);
+            }
+
+            context.Response.StatusCode = statusCode;
             return Task.CompletedTask;
         };
 
