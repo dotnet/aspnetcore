@@ -222,9 +222,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CrossGenDependsOn Condition=" '$(CrossgenOutput)' == 'true' ">
       $(CrossGenDependsOn);
       _BatchCrossGenAssemblies;
-    </CrossGenDependsOn>
-    <CrossGenDependsOn>
-      $(CrossGenDependsOn);
       _GenerateComposites;
     </CrossGenDependsOn>
     <!-- _GetBuildOutputFilesWithTfm executes in a separate context from Build, GenerateNuspec, and so on. -->
