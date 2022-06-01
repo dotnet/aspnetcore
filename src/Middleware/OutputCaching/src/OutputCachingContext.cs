@@ -5,21 +5,11 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
 internal class OutputCachingContext : IOutputCachingContext
 {
-    private DateTimeOffset? _responseDate;
-    private bool _parsedResponseDate;
-    private DateTimeOffset? _responseExpires;
-    private bool _parsedResponseExpires;
-    private TimeSpan? _responseSharedMaxAge;
-    private bool _parsedResponseSharedMaxAge;
-    private TimeSpan? _responseMaxAge;
-    private bool _parsedResponseMaxAge;
-
     internal OutputCachingContext(HttpContext httpContext, ILogger logger)
     {
         HttpContext = httpContext;
@@ -88,62 +78,4 @@ internal class OutputCachingContext : IOutputCachingContext
     public IHeaderDictionary CachedResponseHeaders { get; set; }
 
     public TimeSpan? ResponseExpirationTimeSpan { get; set; }
-
-    public DateTimeOffset? ResponseDate
-    {
-        get
-        {
-            if (!_parsedResponseDate)
-            {
-                _parsedResponseDate = true;
-                _responseDate = HeaderUtilities.TryParseDate(HttpContext.Response.Headers.Date.ToString(), out var date) ? date : null;
-            }
-            return _responseDate;
-        }
-        set
-        {
-            // Don't reparse the response date again if it's explicitly set
-            _parsedResponseDate = true;
-            _responseDate = value;
-        }
-    }
-
-    public DateTimeOffset? ResponseExpires
-    {
-        get
-        {
-            if (!_parsedResponseExpires)
-            {
-                _parsedResponseExpires = true;
-                _responseExpires = HeaderUtilities.TryParseDate(HttpContext.Response.Headers.Expires.ToString(), out var expires) ? expires : null;
-            }
-            return _responseExpires;
-        }
-    }
-
-    public TimeSpan? ResponseSharedMaxAge
-    {
-        get
-        {
-            if (!_parsedResponseSharedMaxAge)
-            {
-                _parsedResponseSharedMaxAge = true;
-                HeaderUtilities.TryParseSeconds(HttpContext.Response.Headers.CacheControl, CacheControlHeaderValue.SharedMaxAgeString, out _responseSharedMaxAge);
-            }
-            return _responseSharedMaxAge;
-        }
-    }
-
-    public TimeSpan? ResponseMaxAge
-    {
-        get
-        {
-            if (!_parsedResponseMaxAge)
-            {
-                _parsedResponseMaxAge = true;
-                HeaderUtilities.TryParseSeconds(HttpContext.Response.Headers.CacheControl, CacheControlHeaderValue.MaxAgeString, out _responseMaxAge);
-            }
-            return _responseMaxAge;
-        }
-    }
 }

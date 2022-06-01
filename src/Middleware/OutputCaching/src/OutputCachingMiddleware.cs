@@ -317,23 +317,15 @@ public class OutputCachingMiddleware
             var response = context.HttpContext.Response;
             var headers = response.Headers;
 
-            context.CachedResponseValidFor = context.ResponseSharedMaxAge ??
-                context.ResponseMaxAge ??
-                (context.ResponseExpires - context.ResponseTime!.Value) ??
-                context.ResponseExpirationTimeSpan ?? _options.DefaultExpirationTimeSpan;
+            context.CachedResponseValidFor = context.ResponseExpirationTimeSpan ?? _options.DefaultExpirationTimeSpan;
 
-            // Ensure date header is set
-            if (!context.ResponseDate.HasValue)
-            {
-                context.ResponseDate = context.ResponseTime!.Value;
-                // Setting the date on the raw response headers.
-                headers.Date = HeaderUtilities.FormatDate(context.ResponseDate.Value);
-            }
+            // Setting the date on the raw response headers.
+            headers.Date = HeaderUtilities.FormatDate(context.ResponseTime!.Value);
 
             // Store the response on the state
             context.CachedResponse = new OutputCacheEntry
             {
-                Created = context.ResponseDate.Value,
+                Created = context.ResponseTime!.Value,
                 StatusCode = response.StatusCode,
                 Headers = new HeaderDictionary(),
                 Tags = context.Tags.ToArray()

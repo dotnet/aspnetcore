@@ -47,12 +47,8 @@ Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.IsCacheEntryFresh.set -
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.IsResponseCacheable.get -> bool
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.IsResponseCacheable.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.Logger.get -> Microsoft.Extensions.Logging.ILogger!
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.ResponseDate.get -> System.DateTimeOffset?
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.ResponseExpirationTimeSpan.get -> System.TimeSpan?
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.ResponseExpirationTimeSpan.set -> void
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.ResponseExpires.get -> System.DateTimeOffset?
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.ResponseMaxAge.get -> System.TimeSpan?
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.ResponseSharedMaxAge.get -> System.TimeSpan?
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.ResponseTime.get -> System.DateTimeOffset?
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.Tags.get -> System.Collections.Generic.HashSet<string!>!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingFeature

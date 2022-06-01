@@ -54,14 +54,6 @@ app.MapGet("/lock", async (context) =>
     await context.Response.WriteAsync($"<pre>{requests++}</pre>");
 }).CacheOutput(p => p.Lock(false).Expire(TimeSpan.FromMilliseconds(1)));
 
-// Cached because Response Caching policy and contains "Cache-Control: public"
-app.MapGet("/headers", async context =>
-{
-    // From a browser this endpoint won't be cached because of max-age: 0
-    context.Response.Headers.CacheControl = "public";
-    await Gravatar.WriteGravatar(context);
-}).CacheOutput(new ResponseCachingPolicy());
-
 // Etag
 app.MapGet("/etag", async (context) =>
 {

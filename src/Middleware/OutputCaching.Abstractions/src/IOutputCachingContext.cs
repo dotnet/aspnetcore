@@ -27,26 +27,6 @@ public interface IOutputCachingContext
     DateTimeOffset? ResponseTime { get; }
 
     /// <summary>
-    /// Gets the response date.
-    /// </summary>
-    DateTimeOffset? ResponseDate { get; }
-
-    /// <summary>
-    /// Gets the response expiration.
-    /// </summary>
-    DateTimeOffset? ResponseExpires { get; }
-
-    /// <summary>
-    /// Gets the response shared max age.
-    /// </summary>
-    TimeSpan? ResponseSharedMaxAge { get; }
-
-    /// <summary>
-    /// Gets the response max age.
-    /// </summary>
-    TimeSpan? ResponseMaxAge { get; }
-
-    /// <summary>
     /// Gets the cached response headers.
     /// </summary>
     IHeaderDictionary CachedResponseHeaders { get; }
@@ -67,9 +47,9 @@ public interface IOutputCachingContext
     ILogger Logger { get; }
 
     /// <summary>
-    /// Gets or sets the custom expiration timespan for the response
+    /// Gets or sets the amount of time the response should be cached for.
     /// </summary>
-    public TimeSpan? ResponseExpirationTimeSpan { get; set; }
+    TimeSpan? ResponseExpirationTimeSpan { get; set; }
 
     /// <summary>
     /// Determines whether the output caching logic should be configured for the incoming HTTP request.
