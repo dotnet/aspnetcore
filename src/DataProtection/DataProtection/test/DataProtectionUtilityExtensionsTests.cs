@@ -46,8 +46,8 @@ public class DataProtectionUtilityExtensionsTests
     [ConditionalTheory]
     [InlineData("app-path", "app-path/")]
     [InlineData("app-path ", "app-path/")] // normalized trim
-    [InlineData("app-path\\", "app-path/")]
-    [InlineData("app-path \\", "app-path /")]
+    [InlineData("app-path\\", "app-path\\/")]
+    [InlineData("app-path \\", "app-path \\/")]
     [InlineData("app-path/", "app-path/")]
     [InlineData("app-path /", "app-path /")]
     [InlineData(" /", "/")]
