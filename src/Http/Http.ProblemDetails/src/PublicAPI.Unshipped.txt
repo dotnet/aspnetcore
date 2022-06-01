@@ -1,0 +1,34 @@
+#nullable enable
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
+Microsoft.AspNetCore.Http.ProblemDetailsEndpointProvider
+Microsoft.AspNetCore.Http.ProblemDetailsEndpointProvider.CanWrite(int statusCode, bool isRouting = false) -> bool
+Microsoft.AspNetCore.Http.ProblemDetailsEndpointProvider.CreateRequestDelegate(int defaultStatusCode, System.Action<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Mvc.ProblemDetails!>? configureDetails = null) -> Microsoft.AspNetCore.Http.RequestDelegate!
+Microsoft.AspNetCore.Http.ProblemDetailsEndpointProvider.CreateRouteResponse(Microsoft.AspNetCore.Http.HttpContext! context, int statusCode, string? title = null, string? type = null, string? detail = null, string? instance = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.ProblemDetailsEndpointProvider.WriteResponse(Microsoft.AspNetCore.Http.HttpContext! context, int statusCode, string? title = null, string? type = null, string? detail = null, string? instance = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.ProblemDetailsOptions
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.ProblemDetailsOptions() -> void
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.SuppressMapClientErrors.get -> bool
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.SuppressMapClientErrors.set -> void
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.SuppressMapExceptions.get -> bool
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.SuppressMapExceptions.set -> void
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.SuppressMapRoutingErrors.get -> bool
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.SuppressMapRoutingErrors.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails
+Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Status.get -> int?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Status.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Title.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
+Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.ProblemDetailsOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

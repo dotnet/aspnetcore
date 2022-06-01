@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Http.Extensions;
+namespace Microsoft.AspNetCore.Http;
 
 internal static class ProblemDetailsDefaults
 {
@@ -64,4 +66,40 @@ internal static class ProblemDetailsDefaults
             "An error occurred while processing your request."
         ),
     };
+
+    public static void Apply(
+        HttpContext httpContext,
+        ProblemDetails problemDetails,
+        int? statusCode,
+        Dictionary<int, ProblemDetailsErrorData> errorMapping)
+    {
+        // We allow StatusCode to be specified either on ProblemDetails or on the ObjectResult and use it to configure the other.
+        // This lets users write <c>return Conflict(new Problem("some description"))</c>
+        // or <c>return Problem("some-problem", 422)</c> and have the response have consistent fields.
+        if (problemDetails.Status is null)
+        {
+            if (statusCode is not null)
+            {
+                problemDetails.Status = statusCode;
+            }
+            else
+            {
+                problemDetails.Status = problemDetails is HttpValidationProblemDetails ?
+                    StatusCodes.Status400BadRequest :
+                    StatusCodes.Status500InternalServerError;
+            }
+        }
+
+        if (errorMapping.TryGetValue(problemDetails.Status.Value, out var mapData))
+        {
+            problemDetails.Title ??= mapData.Title;
+            problemDetails.Type ??= mapData.Link;
+        }
+
+        var traceId = Activity.Current?.Id ?? httpContext?.TraceIdentifier;
+        if (traceId != null)
+        {
+            problemDetails.Extensions["traceId"] = traceId;
+        }
+    }
 }
