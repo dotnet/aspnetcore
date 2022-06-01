@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
@@ -259,9 +260,18 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
     private static Endpoint CreateRejectionEndpoint()
     {
         return new Endpoint(
-            (context) =>
+            context =>
             {
-                context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                const int statusCode = StatusCodes.Status415UnsupportedMediaType;
+
+                var endpointProvider = context.RequestServices.GetService<ProblemDetailsEndpointProvider>();
+                if (endpointProvider != null &&
+                    endpointProvider.CanWrite(statusCode, isRouting: true))
+                {
+                    return endpointProvider.WriteResponse(context, statusCode);
+                }
+
+                context.Response.StatusCode = statusCode;
                 return Task.CompletedTask;
             },
             EndpointMetadataCollection.Empty,
