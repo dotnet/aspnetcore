@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -114,7 +115,15 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
             // No formatter supports this.
             Log.NoFormatter(Logger, formatterContext, result.ContentTypes);
 
-            context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+            const int statusCode = StatusCodes.Status406NotAcceptable;
+
+            var endpointProvider = context.HttpContext.RequestServices.GetService<ProblemDetailsEndpointProvider>();
+            if (endpointProvider != null && endpointProvider.CanWrite(statusCode))
+            {
+                return endpointProvider.WriteResponse(context.HttpContext, statusCode);
+            }
+
+            context.HttpContext.Response.StatusCode = statusCode;
             return Task.CompletedTask;
         }
 

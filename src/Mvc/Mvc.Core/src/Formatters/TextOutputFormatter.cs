@@ -4,6 +4,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -132,8 +133,15 @@ public abstract class TextOutputFormatter : OutputFormatter
         }
         else
         {
-            var response = context.HttpContext.Response;
-            response.StatusCode = StatusCodes.Status406NotAcceptable;
+            const int statusCode = StatusCodes.Status406NotAcceptable;
+
+            var endpointProvider = context.HttpContext.RequestServices.GetService<ProblemDetailsEndpointProvider>();
+            if (endpointProvider != null && endpointProvider.CanWrite(statusCode))
+            {
+                return endpointProvider.WriteResponse(context.HttpContext, statusCode);
+            }
+
+            context.HttpContext.Response.StatusCode = statusCode;
             return Task.CompletedTask;
         }
 
