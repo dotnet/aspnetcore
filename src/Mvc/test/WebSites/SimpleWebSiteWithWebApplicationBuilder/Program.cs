@@ -36,10 +36,6 @@ app.MapGet("/many-results", (int id) =>
 
 app.MapGet("/problem", () => Results.Problem("Some problem"));
 
-app.MapGet("/config", (IConfiguration config, HttpContext context) => {    
-    return context.Response.WriteAsync(((IConfigurationRoot)config).GetDebugView());
-});
-
 app.MapGet("/environment", (IHostEnvironment environment) => environment.EnvironmentName);
 app.MapGet("/webroot", (IWebHostEnvironment environment) => environment.WebRootPath);
 
