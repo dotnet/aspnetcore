@@ -1466,6 +1466,7 @@
             "global.json",
             ".azure",
             ".config",
+            ".github",
             "eng",
             "src/Framework/",
             "src/Installers/"
