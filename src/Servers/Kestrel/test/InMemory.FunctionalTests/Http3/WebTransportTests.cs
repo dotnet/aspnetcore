@@ -56,29 +56,16 @@ public class WebTransportTests : Http3TestBase
     [Theory]
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
+        nameof(CoreStrings.Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader),
         nameof(HeaderNames.Method), "GET", // incorrect method (verifies that webtransport doesn't break regular Http/3 get)
         nameof(HeaderNames.Protocol), "webtransport",
         nameof(HeaderNames.Scheme), "https",
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]
-    //[InlineData(
-    //    ((long)Http3ErrorCode..ProtocolError,
-    //    nameof(HeaderNames.Method), "CONNECT",
-    //    nameof(HeaderNames.Protocol), "webtransport",
-    //    nameof(HeaderNames.Scheme), "http", // incorrect scheme <-- this is a given by http/3 so is there a need to test this?
-    //    nameof(HeaderNames.Path), "/",
-    //    nameof(HeaderNames.Authority), "server.example.com",
-    //    nameof(HeaderNames.Origin), "server.example.com")]
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
-        nameof(HeaderNames.Method), "CONNECT",
-        nameof(HeaderNames.Protocol), "NOT_webtransport",
-        nameof(HeaderNames.Scheme), "https",
-        nameof(HeaderNames.Authority), "server.example.com",
-        nameof(HeaderNames.Origin), "server.example.com")]  // incorrect protocol
-    [InlineData(
-        ((long)Http3ErrorCode.ProtocolError),
+        nameof(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders),
         nameof(HeaderNames.Method), "CONNECT",
         nameof(HeaderNames.Protocol), "webtransport",
         nameof(HeaderNames.Scheme), "https",
@@ -86,12 +73,13 @@ public class WebTransportTests : Http3TestBase
         nameof(HeaderNames.Origin), "server.example.com")]  // no path
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
+        nameof(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders),
         nameof(HeaderNames.Method), "CONNECT",
         nameof(HeaderNames.Protocol), "webtransport",
         nameof(HeaderNames.Scheme), "https",
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Origin), "server.example.com")]  // no authority
-    public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, params string[] headers)
+    public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, string targetErrorMessage, params string[] headers) // todo replace the "" with CoreStrings.... then push (maybe also update the waitforstreamerror function) and resolve stephen's comment
     {
         _serviceContext.ServerOptions.AllowAlternateSchemes = true;
 
@@ -121,12 +109,22 @@ public class WebTransportTests : Http3TestBase
         }
         await requestStream.SendHeadersAsync(headersConnectFrame);
 
-        await requestStream.WaitForStreamErrorAsync((Http3ErrorCode)error);
+        await requestStream.WaitForStreamErrorAsync((Http3ErrorCode)error, AssertExpectedErrorMessages, GetCoreStringFromName(targetErrorMessage));
     }
 
-    private static string GetHeaderFromName(string headerName)
+    private static string GetCoreStringFromName(string headerName)
     {
         return headerName switch
+        {
+            nameof(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders) => CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders,
+            nameof(CoreStrings.Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader) => CoreStrings.Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader,
+            _ => throw new Exception("Core string not mapped yet")
+        };
+    }
+
+    private static string GetHeaderFromName(string coreStringName)
+    {
+        return coreStringName switch
         {
             nameof(HeaderNames.Method) => HeaderNames.Method,
             nameof(HeaderNames.Protocol) => HeaderNames.Protocol,
