@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Tests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -84,6 +85,7 @@ public abstract class SharedAuthenticationTests<TOptions> where TOptions : Authe
         if (SupportsSignIn)
         {
             var services = new ServiceCollection().AddLogging();
+            services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
             var builder = services.AddAuthentication(o =>
             {
@@ -127,6 +129,7 @@ public abstract class SharedAuthenticationTests<TOptions> where TOptions : Authe
         if (SupportsSignOut)
         {
             var services = new ServiceCollection().AddLogging();
+            services.AddSingleton<IConfiguration>(new ConfigurationManager());
             var builder = services.AddAuthentication(o =>
             {
                 o.DefaultScheme = DefaultScheme;
@@ -543,6 +546,7 @@ public abstract class SharedAuthenticationTests<TOptions> where TOptions : Authe
     public async Task VerifySchemeDefaults()
     {
         var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
         var builder = services.AddAuthentication();
         RegisterAuth(builder, o => { });
         var sp = services.BuildServiceProvider();
@@ -551,5 +555,60 @@ public abstract class SharedAuthenticationTests<TOptions> where TOptions : Authe
         Assert.NotNull(scheme);
         Assert.Equal(HandlerType, scheme.HandlerType);
         Assert.Equal(DisplayName, scheme.DisplayName);
+    }
+
+    [Fact]
+    public async Task RespectsDefaultSchemeInConfig()
+    {
+        // Arrange
+        var defaultSchemeFromConfig = "DefaultSchemeFromConfig";
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:DefaultScheme", defaultSchemeFromConfig)
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        var builder = services.AddAuthentication(o =>
+        {
+            o.AddScheme<TestHandler>(defaultSchemeFromConfig, defaultSchemeFromConfig);
+        });
+        RegisterAuth(builder, _ => { });
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+        var defaultSchemeFromServices = await schemeProvider.GetDefaultAuthenticateSchemeAsync();
+        Assert.Equal(defaultSchemeFromConfig, defaultSchemeFromServices.Name);
+    }
+
+    [Fact]
+    public async Task CanOverrideDefaultInConfigViaAddAuthentication()
+    {
+        // Arrange
+        var defaultSchemeFromConfig = "DefaultSchemeFromConfig";
+        var defaultSchemeFromAddAuth = "DefaultSchemeFromAddAuth";
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:DefaultScheme", defaultSchemeFromConfig)
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        var builder = services.AddAuthentication(o =>
+        {
+            o.DefaultScheme = defaultSchemeFromAddAuth;
+            o.AddScheme<TestHandler>(defaultSchemeFromConfig, defaultSchemeFromConfig);
+            o.AddScheme<TestHandler>(defaultSchemeFromAddAuth, defaultSchemeFromAddAuth);
+        });
+        RegisterAuth(builder, _ => { });
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+        var defaultSchemeFromServices = await schemeProvider.GetDefaultAuthenticateSchemeAsync();
+        Assert.Equal(defaultSchemeFromAddAuth, defaultSchemeFromServices.Name);
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -54,6 +55,7 @@ public class PolicyTests
     public async Task DefaultTargetSelectorWinsOverDefaultTarget()
     {
         var services = new ServiceCollection().AddOptions().AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
         services.AddAuthentication(o =>
         {
             o.AddScheme<TestHandler>("auth1", "auth1");
@@ -110,6 +112,7 @@ public class PolicyTests
     public async Task NullDefaultTargetSelectorFallsBacktoDefaultTarget()
     {
         var services = new ServiceCollection().AddOptions().AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
         services.AddAuthentication(o =>
         {
             o.AddScheme<TestHandler>("auth1", "auth1");
@@ -166,6 +169,7 @@ public class PolicyTests
     public async Task SpecificTargetAlwaysWinsOverDefaultTarget()
     {
         var services = new ServiceCollection().AddOptions().AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
         services.AddAuthentication(o =>
         {
             o.AddScheme<TestHandler>("auth1", "auth1");
@@ -227,6 +231,7 @@ public class PolicyTests
     public async Task VirtualSchemeTargetsForwardWithDefaultTarget()
     {
         var services = new ServiceCollection().AddOptions().AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
         services.AddAuthentication(o =>
         {
             o.AddScheme<TestHandler>("auth1", "auth1");
@@ -279,6 +284,7 @@ public class PolicyTests
     public async Task VirtualSchemeTargetsOverrideDefaultTarget()
     {
         var services = new ServiceCollection().AddOptions().AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
         services.AddAuthentication(o =>
         {
             o.AddScheme<TestHandler>("auth1", "auth1");

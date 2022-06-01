@@ -14,8 +14,13 @@ internal sealed class DefaultAuthenticationConfigurationProvider : IAuthenticati
         _configuration = configuration;
     }
 
+    public IConfiguration GetAuthenticationConfiguration()
+    {
+        return _configuration.GetSection(AuthenticationConfigurationConstants.Authentication);
+    }
+
     public IConfiguration GetAuthenticationSchemeConfiguration(string authenticationScheme)
     {
-        return _configuration.GetSection($"Authentication:Schemes:{authenticationScheme}");
+        return _configuration.GetSection($"{AuthenticationConfigurationConstants.Authentication}:{AuthenticationConfigurationConstants.Schemes}:{authenticationScheme}");
     }
 }

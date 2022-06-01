@@ -17,4 +17,11 @@ public interface IAuthenticationConfigurationProvider
     /// <param name="authenticationScheme">The path to the section to be returned.</param>
     /// <returns>The specified <see cref="ConfigurationSection"/> object, or null if the requested section does not exist.</returns>
     IConfiguration GetAuthenticationSchemeConfiguration(string authenticationScheme);
+
+    /// <summary>
+    /// Returns the <see cref="ConfigurationSection"/> where authentication
+    /// options are stored.
+    /// </summary>
+    /// <returns>The specified <see cref="ConfigurationSection"/> object, or null if the requested section does not exist.</returns>
+    IConfiguration GetAuthenticationConfiguration();
 }

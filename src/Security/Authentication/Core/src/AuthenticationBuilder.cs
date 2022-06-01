@@ -18,7 +18,11 @@ public class AuthenticationBuilder
     /// </summary>
     /// <param name="services">The services being configured.</param>
     public AuthenticationBuilder(IServiceCollection services)
-        => Services = services;
+    {
+        Services = services;
+        // Always try to read global authentication options from configuration
+        Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, AuthenticationConfigureOptions>());
+    }
 
     /// <summary>
     /// The services being configured.
