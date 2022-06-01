@@ -7,6 +7,8 @@ using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -22,6 +24,7 @@ public class ExceptionHandlerMiddleware
     private readonly ILogger _logger;
     private readonly Func<object, Task> _clearCacheHeadersDelegate;
     private readonly DiagnosticListener _diagnosticListener;
+    private readonly ProblemDetailsEndpointProvider? _problemDetailsEndpointProvider;
 
     /// <summary>
     /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
@@ -30,22 +33,30 @@ public class ExceptionHandlerMiddleware
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <param name="options">The options for configuring the middleware.</param>
     /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
+    /// <param name="problemDetailsEndpointProvider"></param>
     public ExceptionHandlerMiddleware(
         RequestDelegate next,
         ILoggerFactory loggerFactory,
         IOptions<ExceptionHandlerOptions> options,
-        DiagnosticListener diagnosticListener)
+        DiagnosticListener diagnosticListener,
+        ProblemDetailsEndpointProvider? problemDetailsEndpointProvider = null)
     {
         _next = next;
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         _clearCacheHeadersDelegate = ClearCacheHeaders;
         _diagnosticListener = diagnosticListener;
+        _problemDetailsEndpointProvider = problemDetailsEndpointProvider;
         if (_options.ExceptionHandler == null)
         {
             if (_options.ExceptionHandlingPath == null)
             {
-                throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
+                if (_problemDetailsEndpointProvider == null)
+                {
+                    throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
+                }
+
+                _options.ExceptionHandler = CreatProblemDetailsHandler();
             }
             else
             {
@@ -189,5 +200,30 @@ public class ExceptionHandlerMiddleware
         headers.Expires = "-1";
         headers.ETag = default;
         return Task.CompletedTask;
+    }
+
+    private RequestDelegate CreatProblemDetailsHandler()
+    {
+        return _problemDetailsEndpointProvider!.CreateRequestDelegate(
+            StatusCodes.Status500InternalServerError,
+            configureDetails: (context, problemDetails) =>
+            {
+                var exceptionFeature = context.Features.GetRequiredFeature<IExceptionHandlerFeature>();
+                var hostEnvironment = context.RequestServices.GetRequiredService<IHostEnvironment>();
+
+                if (hostEnvironment.IsDevelopment())
+                {
+                    problemDetails.Detail = exceptionFeature.Error.Message;
+                    problemDetails.Extensions.Add("exception", new
+                    {
+                        Details = exceptionFeature.Error.ToString(),
+                        exceptionFeature.Path,
+                        exceptionFeature.RouteValues,
+                        Endpoint = exceptionFeature.Endpoint?.ToString()
+                    });
+                }
+
+                _options.ConfigureDetails?.Invoke(exceptionFeature, problemDetails);
+            });
     }
 }

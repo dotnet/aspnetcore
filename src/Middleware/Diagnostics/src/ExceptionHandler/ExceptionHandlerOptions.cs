@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -31,4 +32,9 @@ public class ExceptionHandlerOptions
     /// the original exception.
     /// </summary>
     public bool AllowStatusCode404Response { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public Action<IExceptionHandlerFeature, ProblemDetails>? ConfigureDetails { get; set; }
 }
