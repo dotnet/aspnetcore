@@ -16,7 +16,6 @@
     <Compile Include="$(SharedSourceRoot)ResponseContentTypeHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ResultsHelpers\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RangeHelper\RangeHelper.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)ProblemDetailsDefaults.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ApiExplorerTypes\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
   </ItemGroup>
@@ -25,6 +24,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.ProblemDetails" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
 
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Results.Tests" />
