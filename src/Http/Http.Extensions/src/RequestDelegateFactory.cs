@@ -115,6 +115,17 @@ public static partial class RequestDelegateFactory
     private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
 
+    private static Task CreateProblemDetails(HttpContext context)
+    {
+        var endpointProvider = context.RequestServices.GetService<ProblemDetailsEndpointProvider>();
+        if (endpointProvider != null && endpointProvider.CanWrite(context.Response.StatusCode))
+        {
+            return endpointProvider.WriteResponse(context, context.Response.StatusCode);
+        }
+
+        return Task.CompletedTask;
+    }
+
     /// <summary>
     /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="handler"/>.
     /// </summary>
@@ -859,7 +870,7 @@ public static partial class RequestDelegateFactory
                 WasParamCheckFailureExpr,
                 Expression.Block(
                     Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
-                    CompletedTaskExpr),
+                    Expression.Call(CreateProblemDetailsMethod, HttpContextExpr)),
                 AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType));
             checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
         }
