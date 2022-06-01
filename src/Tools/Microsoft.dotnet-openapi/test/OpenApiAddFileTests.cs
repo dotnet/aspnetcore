@@ -159,6 +159,11 @@ public class OpenApiAddFileTests : OpenApiTestBase
         using var reader = new StreamReader(csprojStream);
         var content = await reader.ReadToEndAsync();
         Assert.Contains("<PackageReference Include=\"Microsoft.OpenApi.Kiota.ApiDescription.Client\" Version=\"", content);
+        Assert.Contains("<PackageReference Include=\"Microsoft.Kiota.Abstractions\" Version=\"", content);
+        Assert.Contains("<PackageReference Include=\"Microsoft.Kiota.Serialization.Json\" Version=\"", content);
+        Assert.Contains("<PackageReference Include=\"Microsoft.Kiota.Serialization.Text\" Version=\"", content);
+        Assert.Contains("<PackageReference Include=\"Microsoft.Kiota.Authentication.Azure\" Version=\"", content);
+        Assert.Contains("<PackageReference Include=\"Microsoft.Kiota.Http.HttpClientLibrary\" Version=\"", content);
         Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFile}\" CodeGenerator=\"KiotaCSharp\" />", content);
     }
 

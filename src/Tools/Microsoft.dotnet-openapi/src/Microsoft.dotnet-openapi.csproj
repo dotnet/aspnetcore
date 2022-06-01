@@ -36,5 +36,30 @@
       <_Parameter2>$(KiotaApiDescriptionClientVersion)</_Parameter2>
       <_Parameter3>KiotaCSharp;KiotaTypeScript</_Parameter3>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.DotNet.Openapi.Tools.Internal.OpenApiDependencyAttribute">
+      <_Parameter1>Microsoft.Kiota.Abstractions</_Parameter1>
+      <_Parameter2>$(KiotaDotnetAbstractionsVersion)</_Parameter2>
+      <_Parameter3>KiotaCSharp</_Parameter3>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.DotNet.Openapi.Tools.Internal.OpenApiDependencyAttribute">
+      <_Parameter1>Microsoft.Kiota.Serialization.Json</_Parameter1>
+      <_Parameter2>$(KiotaDotnetSerializationJsonVersion)</_Parameter2>
+      <_Parameter3>KiotaCSharp</_Parameter3>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.DotNet.Openapi.Tools.Internal.OpenApiDependencyAttribute">
+      <_Parameter1>Microsoft.Kiota.Serialization.Text</_Parameter1>
+      <_Parameter2>$(KiotaDotnetSerializationTextVersion)</_Parameter2>
+      <_Parameter3>KiotaCSharp</_Parameter3>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.DotNet.Openapi.Tools.Internal.OpenApiDependencyAttribute">
+      <_Parameter1>Microsoft.Kiota.Authentication.Azure</_Parameter1>
+      <_Parameter2>$(KiotaDotnetAuthenticationAzureVersion)</_Parameter2>
+      <_Parameter3>KiotaCSharp</_Parameter3>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.DotNet.Openapi.Tools.Internal.OpenApiDependencyAttribute">
+      <_Parameter1>Microsoft.Kiota.Http.HttpClientLibrary</_Parameter1>
+      <_Parameter2>$(KiotaDotnetHttpVersion)</_Parameter2>
+      <_Parameter3>KiotaCSharp</_Parameter3>
+    </AssemblyAttribute>
   </ItemGroup>
 </Project>

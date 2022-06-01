@@ -311,23 +311,24 @@ $@"<OpenApiReference Include=""{expectedJsonName}"" SourceUrl=""{FakeOpenApiUrl}
         var expectedJsonName = "filename.json";
 
         // csproj contents
-        using (var csprojStream = new FileInfo(project.Project.Path).OpenRead())
-        using (var reader = new StreamReader(csprojStream))
-        {
-            var content = await reader.ReadToEndAsync();
-            Assert.Contains("<PackageReference Include=\"Microsoft.OpenApi.Kiota.ApiDescription.Client\" Version=\"", content);
-            Assert.Contains(
+        using var csprojStream = new FileInfo(project.Project.Path).OpenRead();
+        using var reader = new StreamReader(csprojStream);
+        var content = await reader.ReadToEndAsync();
+        Assert.Contains("<PackageReference Include=\"Microsoft.OpenApi.Kiota.ApiDescription.Client\" Version=\"", content);
+        Assert.Contains("<PackageReference Include=\"Microsoft.Kiota.Abstractions\" Version=\"", content);
+        Assert.Contains("<PackageReference Include=\"Microsoft.Kiota.Serialization.Json\" Version=\"", content);
+        Assert.Contains("<PackageReference Include=\"Microsoft.Kiota.Serialization.Text\" Version=\"", content);
+        Assert.Contains("<PackageReference Include=\"Microsoft.Kiota.Authentication.Azure\" Version=\"", content);
+        Assert.Contains("<PackageReference Include=\"Microsoft.Kiota.Http.HttpClientLibrary\" Version=\"", content);
+        Assert.Contains(
 $@"<OpenApiReference Include=""{expectedJsonName}"" SourceUrl=""{FakeOpenApiUrl}"" CodeGenerator=""KiotaCSharp"" />", content);
-        }
 
         var resultFile = Path.Combine(_tempDir.Root, expectedJsonName);
         Assert.True(File.Exists(resultFile));
-        using (var jsonStream = new FileInfo(resultFile).OpenRead())
-        using (var reader = new StreamReader(jsonStream))
-        {
-            var content = await reader.ReadToEndAsync();
-            Assert.Equal(Content, content);
-        }
+        var jsonStream = new FileInfo(resultFile).OpenRead();
+        var jsonReader = new StreamReader(jsonStream);
+        var jsonContent = await jsonReader.ReadToEndAsync();
+        Assert.Equal(Content, jsonContent);
     }
 
     [Fact]
