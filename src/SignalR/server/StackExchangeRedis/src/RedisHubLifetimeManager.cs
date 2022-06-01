@@ -35,6 +35,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1);
     private readonly IHubProtocolResolver _hubProtocolResolver;
     private readonly ClientResultsManager _clientResultsManager = new();
+    private bool _redisConnectErrorLogged;
 
     private readonly AckHandler _ackHandler;
     private int _internalAckId;
@@ -717,7 +718,13 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
                     }
                     catch (Exception ex)
                     {
-                        RedisLog.ErrorConnecting(_logger, ex);
+                        // If the connection hasn't been established yet we shouldn't keep logging the same error over and over
+                        // for every new client connection.
+                        if (!_redisConnectErrorLogged)
+                        {
+                            RedisLog.ErrorConnecting(_logger, ex);
+                            _redisConnectErrorLogged = true;
+                        }
                         throw;
                     }
                     _bus = _redisServerConnection.GetSubscriber();

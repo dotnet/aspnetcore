@@ -120,12 +120,9 @@ public class RedisHubLifetimeManagerTests : ScaleoutHubLifetimeManagerTests<Test
         }
 
         var logs = testSink.Writes.ToArray();
-        // Two of the same error logs, one for the pre-emptive attempt to connect to Redis in the ctor, and one during the OnConnectedAsync for the connection
-        Assert.Equal(2, logs.Length);
+        Assert.Single(logs);
         Assert.Equal("Error connecting to Redis.", logs[0].Message);
         Assert.Equal("throw from connect", logs[0].Exception.Message);
-        Assert.Equal("Error connecting to Redis.", logs[1].Message);
-        Assert.Equal("throw from connect", logs[1].Exception.Message);
     }
 
     public override TestRedisServer CreateBackplane()
