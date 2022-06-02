@@ -15,7 +15,6 @@ public class WebTransportTests : Http3TestBase
     [Fact]
     public async Task WebTransportHandshake_ClientToServerPasses()
     {
-        _serviceContext.ServerOptions.AllowAlternateSchemes = true;
         _serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
 
         await Http3Api.InitializeConnectionAsync(_noopApplication);
@@ -40,7 +39,7 @@ public class WebTransportTests : Http3TestBase
         {
             new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
             new KeyValuePair<string, string>(HeaderNames.Protocol, "webtransport"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
             new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com")
@@ -60,7 +59,7 @@ public class WebTransportTests : Http3TestBase
         nameof(CoreStrings.Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader),
         nameof(HeaderNames.Method), "GET", // incorrect method (verifies that webtransport doesn't break regular Http/3 get)
         nameof(HeaderNames.Protocol), "webtransport",
-        nameof(HeaderNames.Scheme), "https",
+        nameof(HeaderNames.Scheme), "http",
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]
@@ -69,7 +68,7 @@ public class WebTransportTests : Http3TestBase
         nameof(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders),
         nameof(HeaderNames.Method), "CONNECT",
         nameof(HeaderNames.Protocol), "webtransport",
-        nameof(HeaderNames.Scheme), "https",
+        nameof(HeaderNames.Scheme), "http",
         nameof(HeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]  // no path
     [InlineData(
@@ -77,12 +76,11 @@ public class WebTransportTests : Http3TestBase
         nameof(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders),
         nameof(HeaderNames.Method), "CONNECT",
         nameof(HeaderNames.Protocol), "webtransport",
-        nameof(HeaderNames.Scheme), "https",
+        nameof(HeaderNames.Scheme), "http",
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Origin), "server.example.com")]  // no authority
     public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, string targetErrorMessage, params string[] headers) // todo replace the "" with CoreStrings.... then push (maybe also update the waitforstreamerror function) and resolve stephen's comment
     {
-        _serviceContext.ServerOptions.AllowAlternateSchemes = true;
         _serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
 
         await Http3Api.InitializeConnectionAsync(_noopApplication);
