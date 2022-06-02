@@ -1718,9 +1718,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3537
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2BEF3593-E0CA-439C-9D34-2ABA6D2DE429}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebTransport.Tests", "src\Middleware\WebTransport\test\Microsoft.AspNetCore.WebTransport.Tests\Microsoft.AspNetCore.WebTransport.Tests.csproj", "{D6A5E894-6965-41A5-B1AE-E7FE4F235A27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebTransport.Tests", "src\Middleware\WebTransport\test\Microsoft.AspNetCore.WebTransport.Tests\Microsoft.AspNetCore.WebTransport.Tests.csproj", "{D6A5E894-6965-41A5-B1AE-E7FE4F235A27}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoApp", "src\Middleware\WebTransport\samples\EchoApp\EchoApp.csproj", "{647DBA3F-B68B-43A7-ABAF-C479FDCF747A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTransport.EchoApp", "src\Middleware\WebTransport\samples\EchoApp\WebTransport.EchoApp.csproj", "{647DBA3F-B68B-43A7-ABAF-C479FDCF747A}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-jwts", "src\Tools\dotnet-user-jwts\src\dotnet-user-jwts.csproj", "{B34CB502-0286-4939-B25F-45998528A802}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-user-jwts", "dotnet-user-jwts", "{AB4B9E75-719C-4589-B852-20FBFD727730}"
