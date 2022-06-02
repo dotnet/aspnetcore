@@ -3,14 +3,11 @@
   "defaultOnFailure": "fail",
   "localRerunCount" : 3,
   "retryOnRules": [
-    {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess"}},
-    {"testName": {"contains": "AppOfflineDroppedWhileSiteIsDown_SiteReturns503_InProcess"}},
-    {"testName": {"contains": "CheckFrebDisconnect"}},
-    {"testName": {"contains": "CheckStdoutWithLargeWrites"}},
-    {"testName": {"contains": "ServerShutsDownWhenMainExitsStress" }},
     {"testName": {"contains": "AddressRegistrationTests" }},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
     {"testName": {"contains": "ReaderThrowsResetExceptionOnInvalidBody" }},
+    {"testAssembly": {"wildcard": "IIS*Tests*"}},
+    {"testAssembly": {"wildcard": "IIS.ShadowCopy.Tests*"}},
     {"failureMessage": "network disconnected" }
   ],
   "failOnRules": [

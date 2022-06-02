@@ -112,7 +112,7 @@ public static class Helpers
         var delay = RetryRequestDelay;
         for (var i = 0; i < RetryRequestCount && !await predicate(response); i++)
         {
-            // Keep retrying until prediate is met.
+            // Keep retrying until predicate is met.
             response = await client.GetAsync(uri);
             await Task.Delay(delay);
             // This will max out at a 5 second delay
