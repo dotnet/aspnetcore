@@ -1,4 +1,4 @@
-namespace BlazorServerWeb_CSharp.Data;
+namespace EmptyBlazorServerWeb_CSharp.Data;
 
 public class WeatherForecast
 {

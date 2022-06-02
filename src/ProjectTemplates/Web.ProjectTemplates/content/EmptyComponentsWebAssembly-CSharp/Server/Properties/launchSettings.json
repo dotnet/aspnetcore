@@ -12,7 +12,7 @@
       }
     },
     "profiles": {
-      "ComponentsWebAssembly-CSharp.Server": {
+      "EmptyComponentsWebAssembly-CSharp.Server": {
         "commandName": "Project",
         "dotnetRunMessages": true,
         "launchBrowser": true,

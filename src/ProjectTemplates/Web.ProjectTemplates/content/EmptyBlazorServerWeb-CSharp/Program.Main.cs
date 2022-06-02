@@ -33,11 +33,11 @@ using Graph = Microsoft.Graph;
 using Microsoft.IdentityModel.Tokens;
 #endif
 #if (IndividualLocalAuth)
-using BlazorServerWeb_CSharp.Areas.Identity;
+using EmptyBlazorServerWeb_CSharp.Areas.Identity;
 #endif
-using BlazorServerWeb_CSharp.Data;
+using EmptyBlazorServerWeb_CSharp.Data;
 
-namespace BlazorServerWeb_CSharp;
+namespace EmptyBlazorServerWeb_CSharp;
 
 public class Program
 {

@@ -15,11 +15,11 @@ using Graph = Microsoft.Graph;
 using Microsoft.Identity.Web;
 #endif
 #if (IndividualLocalAuth)
-using ComponentsWebAssembly_CSharp.Server.Data;
-using ComponentsWebAssembly_CSharp.Server.Models;
+using EmptyComponentsWebAssembly_CSharp.Server.Data;
+using EmptyComponentsWebAssembly_CSharp.Server.Models;
 #endif
 
-namespace ComponentsWebAssembly_CSharp;
+namespace EmptyComponentsWebAssembly_CSharp;
 
 public class Program
 {

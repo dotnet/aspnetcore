@@ -1,4 +1,4 @@
-namespace ComponentsWebAssembly_CSharp.Shared;
+namespace EmptyComponentsWebAssembly_CSharp.Shared;
 
 public class WeatherForecast
 {

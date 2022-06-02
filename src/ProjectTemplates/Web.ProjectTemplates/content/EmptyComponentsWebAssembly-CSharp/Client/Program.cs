@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 #endif
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #if (Hosted)
-using ComponentsWebAssembly_CSharp.Client;
+using EmptyComponentsWebAssembly_CSharp.Client;
 #else
-using ComponentsWebAssembly_CSharp;
+using EmptyComponentsWebAssembly_CSharp;
 #endif
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -16,28 +16,28 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 #if (!Hosted || NoAuth)
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 #else
-builder.Services.AddHttpClient("ComponentsWebAssembly_CSharp.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+builder.Services.AddHttpClient("EmptyComponentsWebAssembly_CSharp.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 // Supply HttpClient instances that include access tokens when making requests to the server project
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ComponentsWebAssembly_CSharp.ServerAPI"));
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("EmptyComponentsWebAssembly_CSharp.ServerAPI"));
 #endif
-#if(!NoAuth)
+#if (!NoAuth)
 
 #endif
 #if (IndividualLocalAuth)
-    #if (Hosted)
+#if (Hosted)
 builder.Services.AddApiAuthorization();
-    #else
+#else
 builder.Services.AddOidcAuthentication(options =>
 {
-    #if(MissingAuthority)
+#if (MissingAuthority)
     // Configure your authentication provider options here.
     // For more information, see https://aka.ms/blazor-standalone-auth
-    #endif
+#endif
     builder.Configuration.Bind("Local", options.ProviderOptions);
 });
-    #endif
+#endif
 #endif
 #if (IndividualB2CAuth)
 builder.Services.AddMsalAuthentication(options =>
@@ -48,7 +48,7 @@ builder.Services.AddMsalAuthentication(options =>
 #endif
 });
 #endif
-#if(OrganizationalAuth)
+#if (OrganizationalAuth)
 builder.Services.AddMsalAuthentication(options =>
 {
     builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);

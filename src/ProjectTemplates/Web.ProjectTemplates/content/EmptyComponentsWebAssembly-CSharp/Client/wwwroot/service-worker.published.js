@@ -22,7 +22,7 @@ async function onInstall(event) {
 //#if(IndividualLocalAuth && Hosted)
 
     // Also cache authentication configuration
-    assetsRequests.push(new Request('_configuration/ComponentsWebAssembly-CSharp.Client'));
+    assetsRequests.push(new Request('_configuration/EmptyComponentsWebAssembly-CSharp.Client'));
 
 //#endif
     await caches.open(cacheName).then(cache => cache.addAll(assetsRequests));

@@ -1,6 +1,6 @@
 {
-  "name": "ComponentsWebAssembly-CSharp",
-  "short_name": "ComponentsWebAssembly-CSharp",
+  "name": "EmptyComponentsWebAssembly-CSharp",
+  "short_name": "EmptyComponentsWebAssembly-CSharp",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",

@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 
-namespace ComponentsWebAssembly_CSharp.Server.Models;
+namespace EmptyComponentsWebAssembly_CSharp.Server.Models;
 
 public class ApplicationUser : IdentityUser
 {

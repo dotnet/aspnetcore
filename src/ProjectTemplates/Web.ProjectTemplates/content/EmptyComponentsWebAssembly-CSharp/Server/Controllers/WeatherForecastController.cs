@@ -12,9 +12,9 @@ using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.Identity.Web.Resource;
 #endif
-using ComponentsWebAssembly_CSharp.Shared;
+using EmptyComponentsWebAssembly_CSharp.Shared;
 
-namespace ComponentsWebAssembly_CSharp.Server.Controllers;
+namespace EmptyComponentsWebAssembly_CSharp.Server.Controllers;
 
 #if (!NoAuth)
 [Authorize]

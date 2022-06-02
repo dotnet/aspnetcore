@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace BlazorServerWeb_CSharp.Data.Migrations
+namespace EmptyBlazorServerWeb_CSharp.Data.Migrations
 {
     public partial class CreateIdentitySchema : Migration
     {

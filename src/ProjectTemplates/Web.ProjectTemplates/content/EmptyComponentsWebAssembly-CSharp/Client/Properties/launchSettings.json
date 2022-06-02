@@ -17,7 +17,7 @@
     }
   },
   "profiles": {
-    "ComponentsWebAssembly-CSharp": {
+    "EmptyComponentsWebAssembly-CSharp": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

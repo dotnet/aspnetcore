@@ -4,15 +4,15 @@ using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 #endif
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #if (Hosted)
-using ComponentsWebAssembly_CSharp.Client;
+using EmptyComponentsWebAssembly_CSharp.Client;
 #else
-using ComponentsWebAssembly_CSharp;
+using EmptyComponentsWebAssembly_CSharp;
 #endif
 
 #if (Hosted)
-namespace ComponentsWebAssembly_CSharp.Client;
+namespace EmptyComponentsWebAssembly_CSharp.Client;
 #else
-namespace ComponentsWebAssembly_CSharp;
+namespace EmptyComponentsWebAssembly_CSharp;
 #endif
 
 public class Program
@@ -25,48 +25,48 @@ public class Program
 
         #if (!Hosted || NoAuth)
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-        #else
-        builder.Services.AddHttpClient("ComponentsWebAssembly_CSharp.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+#else
+        builder.Services.AddHttpClient("EmptyComponentsWebAssembly_CSharp.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
             .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
         // Supply HttpClient instances that include access tokens when making requests to the server project
-        builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ComponentsWebAssembly_CSharp.ServerAPI"));
-        #endif
-        #if(!NoAuth)
+        builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("EmptyComponentsWebAssembly_CSharp.ServerAPI"));
+#endif
+#if (!NoAuth)
 
-        #endif
-        #if (IndividualLocalAuth)
-            #if (Hosted)
+#endif
+#if (IndividualLocalAuth)
+#if (Hosted)
         builder.Services.AddApiAuthorization();
-            #else
+#else
         builder.Services.AddOidcAuthentication(options =>
         {
-            #if(MissingAuthority)
+#if (MissingAuthority)
             // Configure your authentication provider options here.
             // For more information, see https://aka.ms/blazor-standalone-auth
-            #endif
+#endif
             builder.Configuration.Bind("Local", options.ProviderOptions);
         });
-            #endif
-        #endif
-        #if (IndividualB2CAuth)
+#endif
+#endif
+#if (IndividualB2CAuth)
         builder.Services.AddMsalAuthentication(options =>
         {
             builder.Configuration.Bind("AzureAdB2C", options.ProviderOptions.Authentication);
-        #if (Hosted)
+#if (Hosted)
             options.ProviderOptions.DefaultAccessTokenScopes.Add("https://qualified.domain.name/api.id.uri/api-scope");
-        #endif
+#endif
         });
-        #endif
-        #if(OrganizationalAuth)
+#endif
+#if (OrganizationalAuth)
         builder.Services.AddMsalAuthentication(options =>
         {
             builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
-        #if (Hosted)
+#if (Hosted)
             options.ProviderOptions.DefaultAccessTokenScopes.Add("api://api.id.uri/api-scope");
-        #endif
+#endif
         });
-        #endif
+#endif
 
         await builder.Build().RunAsync();
     }
