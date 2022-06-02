@@ -1466,6 +1466,7 @@
             "global.json",
             ".azure",
             ".config",
+            ".github",
             "eng",
             "src/Framework/",
             "src/Installers/"
@@ -2516,6 +2517,12 @@
           "parameters": {
             "label": "community-contribution"
           }
+        },
+        {
+          "name": "addReply",
+          "parameters": {
+            "comment": "Thanks for your PR, @${issueAuthor}. Someone from the team will get assigned to your PR shortly and we'll get it reviewed."
+          }
         }
       ]
     }
@@ -3279,6 +3286,52 @@
           "name": "addReply",
           "parameters": {
             "comment": "Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.\nOtherwise, please add `tell-mode` label."
+          }
+        }
+      ]
+    }
+  },
+  {
+    "taskType": "trigger",
+    "capabilityId": "IssueResponder",
+    "subCapability": "PullRequestResponder",
+    "version": "1.0",
+    "config": {
+      "conditions": {
+        "operator": "and",
+        "operands": [
+          {
+            "name": "labelAdded",
+            "parameters": {
+              "label": "area-infrastructure"
+            }
+          },
+          {
+            "name": "isAction",
+            "parameters": {
+              "action": "labeled"
+            }
+          }
+        ]
+      },
+      "eventType": "pull_request",
+      "eventNames": [
+        "pull_request",
+        "issues",
+        "project_card"
+      ],
+      "taskName": "Ping the build team on infrastructure issues",
+      "actions": [
+        {
+          "name": "addReply",
+          "parameters": {
+            "comment": "Hey @dotnet/aspnet-build, looks like this PR is something you want to take a look at."
+          }
+        },
+        {
+          "name": "assignToUser",
+          "parameters": {
+            "user": "aspnet-build"
           }
         }
       ]

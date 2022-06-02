@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -21,6 +22,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
         // Act
         services.AddAuthentication()
@@ -288,6 +290,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
         // Act
         services.AddAuthentication()
@@ -305,6 +308,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
         // Act
         services.AddAuthentication()
@@ -340,6 +344,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
         // Act
         services.AddAuthentication()
@@ -373,6 +378,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
         // Act
         services.AddAuthentication()
@@ -473,6 +479,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     {
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
 
         services.AddAuthentication()
             .AddAzureADBearer(o => { })
