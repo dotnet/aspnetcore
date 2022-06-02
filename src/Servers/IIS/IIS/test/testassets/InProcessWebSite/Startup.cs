@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -177,16 +178,6 @@ public partial class Startup
                 context.Response.ContentType = "text/html";
                 await context.Response.Body.WriteAsync(new byte[100], 0, 100);
             });
-    }
-
-    [DllImport("kernel32.dll")]
-    static extern uint GetDllDirectory(uint nBufferLength, [Out] StringBuilder lpBuffer);
-
-    private async Task DllDirectory(HttpContext context)
-    {
-        var builder = new StringBuilder(1024);
-        GetDllDirectory(1024, builder);
-        await context.Response.WriteAsync(builder.ToString());
     }
 
     private async Task GetEnvironmentVariable(HttpContext ctx)
