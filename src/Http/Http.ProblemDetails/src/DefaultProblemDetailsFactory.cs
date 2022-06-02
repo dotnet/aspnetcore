@@ -3,14 +3,21 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http;
 
 internal sealed class DefaultHttpProblemDetailsFactory : IHttpProblemDetailsFactory
 {
+    private readonly ProblemDetailsOptions _options;
+
+    public DefaultHttpProblemDetailsFactory(IOptions<ProblemDetailsOptions> options)
+    {
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+    }
+
     public ProblemDetails CreateProblemDetails(
         HttpContext httpContext,
-        ProblemDetailsOptions options,
         int? statusCode = null,
         string? title = null,
         string? type = null,
@@ -35,7 +42,7 @@ internal sealed class DefaultHttpProblemDetailsFactory : IHttpProblemDetailsFact
             }
         }
 
-        ProblemDetailsDefaults.Apply(httpContext, problemDetails, statusCode, options.ProblemDetailsErrorMapping);
+        ProblemDetailsDefaults.Apply(httpContext, problemDetails, statusCode, _options.ProblemDetailsErrorMapping);
 
         return problemDetails;
     }

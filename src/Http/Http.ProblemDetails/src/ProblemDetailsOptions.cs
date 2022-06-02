@@ -24,4 +24,12 @@ public class ProblemDetailsOptions
     public bool SuppressMapExceptions { get; set; } = true;
 
     internal Dictionary<int, ProblemDetailsErrorData> ProblemDetailsErrorMapping { get; } = new Dictionary<int, ProblemDetailsErrorData>();
+
+    internal bool IsEnabled(int statusCode, bool isRouting = false)
+        => isRouting ? !SuppressMapRoutingErrors : statusCode switch
+        {
+            (>= 400) and (<= 499) => !SuppressMapClientErrors,
+            (>= 500) => !SuppressMapExceptions,
+            _ => false,
+        };
 }

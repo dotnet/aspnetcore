@@ -29,7 +29,7 @@ public static class ProblemDetailsServiceCollectionExtensions
         {
             var options = s.GetRequiredService<IOptions<ProblemDetailsOptions>>().Value;
             var factory = s.GetRequiredService<IHttpProblemDetailsFactory>();
-            return new ProblemDetailsEndpointProvider(options, factory);
+            return new ProblemDetailsEndpointProvider(Options.Options.Create(options), factory);
         });
 
         // Adding options configurations

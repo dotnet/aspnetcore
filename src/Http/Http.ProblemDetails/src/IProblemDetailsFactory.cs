@@ -34,7 +34,6 @@ internal interface IHttpProblemDetailsFactory
     /// <returns>The <see cref="ProblemDetails"/> instance.</returns>
     ProblemDetails CreateProblemDetails(
         HttpContext httpContext,
-        ProblemDetailsOptions options,
         int? statusCode = null,
         string? title = null,
         string? type = null,

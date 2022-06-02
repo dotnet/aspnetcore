@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -14,10 +15,10 @@ public sealed class ProblemDetailsEndpointProvider
     private readonly IHttpProblemDetailsFactory _factory;
 
     internal ProblemDetailsEndpointProvider(
-        ProblemDetailsOptions options,
+        IOptions<ProblemDetailsOptions> options,
         IHttpProblemDetailsFactory factory)
     {
-        _options = options;
+        _options = options.Value;
         _factory = factory;
     }
 
@@ -37,7 +38,7 @@ public sealed class ProblemDetailsEndpointProvider
 
             if (CanWrite(defaultStatusCode))
             {
-                var details = _factory.CreateProblemDetails(context, _options, statusCode: context.Response.StatusCode);
+                var details = _factory.CreateProblemDetails(context, statusCode: context.Response.StatusCode);
                 configureDetails?.Invoke(context, details);
 
                 return _factory.WriteAsync(context, details);
@@ -70,7 +71,6 @@ public sealed class ProblemDetailsEndpointProvider
         context.Response.StatusCode = statusCode;
         var details = _factory.CreateProblemDetails(
             context,
-            _options,
             statusCode: context.Response.StatusCode,
             title,
             type,
@@ -87,10 +87,5 @@ public sealed class ProblemDetailsEndpointProvider
     /// <param name="isRouting"></param>
     /// <returns></returns>
     public bool CanWrite(int statusCode, bool isRouting = false)
-        => isRouting ? !_options.SuppressMapRoutingErrors : statusCode switch
-        {
-            (>= 400) and (<= 499) => !_options.SuppressMapClientErrors,
-            (>= 500) => !_options.SuppressMapExceptions,
-            _ => false,
-        };
+        => _options.IsEnabled(statusCode, isRouting);
 }
