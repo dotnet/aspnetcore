@@ -5,7 +5,7 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
 ## Creating a new project
 1. Create a new folder that will house your `.csproj` and other project-related files.
 2. (EXTREMELY IMPORTANT) Inside our new folder make a new folder called `src`.
-3. In VS, Add a new `Solution Folder` in the new `src` folder from the previous step.
+3. In VS, Add a new `Solution Folder` in the new folder from the first step.
 4. Create the project via the VS `Add` menu (select the folder -> right click -> Add -> follow the wizard).
 5. (OPTIONAL) Add the following line to the `.csproj`'s `PropertyGroup` to include your project in the SharedFx API:
     ```XML
