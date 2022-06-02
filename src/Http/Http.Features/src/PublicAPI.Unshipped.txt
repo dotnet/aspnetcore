@@ -1,3 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Features.IHttpRequestFeature.ConnectProtocol.get -> string?
-Microsoft.AspNetCore.Http.Features.IHttpRequestFeature.ConnectProtocol.set -> void
+Microsoft.AspNetCore.Http.Features.IHttpConnectFeature
+Microsoft.AspNetCore.Http.Features.IHttpConnectFeature.AcceptAsync() -> System.Threading.Tasks.Task<System.IO.Stream!>!
+Microsoft.AspNetCore.Http.Features.IHttpConnectFeature.IsConnectRequest.get -> bool
+Microsoft.AspNetCore.Http.Features.IHttpConnectFeature.Protocol.get -> string!

@@ -25,12 +25,6 @@ internal partial class HttpProtocol
         set => _httpProtocol = value;
     }
 
-    string? IHttpRequestFeature.ConnectProtocol
-    {
-        get => _connectProtocol ??= ConnectProtocol;
-        set => _connectProtocol = value;
-    }
-
     string IHttpRequestFeature.Scheme
     {
         get => Scheme ?? "http";
@@ -154,6 +148,10 @@ internal partial class HttpProtocol
     bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
     bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
+
+    bool IHttpConnectFeature.IsConnectRequest => IsConnectRequest;
+
+    string? IHttpConnectFeature.Protocol => ConnectProtocol;
 
     IPAddress? IHttpConnectionFeature.RemoteIpAddress
     {
@@ -284,6 +282,33 @@ internal partial class HttpProtocol
         StatusCode = StatusCodes.Status101SwitchingProtocols;
         ReasonPhrase = "Switching Protocols";
         ResponseHeaders.Connection = HeaderNames.Upgrade;
+
+        await FlushAsync();
+
+        return _bodyControl!.Upgrade();
+    }
+
+    async Task<Stream> IHttpConnectFeature.AcceptAsync()
+    {
+        if (!IsConnectRequest)
+        {
+            // TODO Replace error messages and logs
+            throw new InvalidOperationException(CoreStrings.CannotUpgradeNonUpgradableRequest);
+        }
+
+        if (IsUpgraded)
+        {
+            throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
+        }
+
+        if (StatusCode != StatusCodes.Status200OK)
+        {
+            throw new InvalidOperationException("The response status code for a CONNECT request must be 200.");
+        }
+
+        IsUpgraded = true;
+
+        KestrelEventSource.Log.RequestUpgradedStart(this);
 
         await FlushAsync();
 

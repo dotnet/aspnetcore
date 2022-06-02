@@ -26,7 +26,7 @@ public class Http2WebSocketTests : Http2TestBase
         await InitializeConnectionAsync(async context =>
         {
             Assert.Equal(HttpMethods.Connect, context.Request.Method);
-            Assert.Equal("websocket", context.Features.Get<IHttpRequestFeature>().ConnectProtocol);
+            Assert.Equal("websocket", context.Features.Get<IHttpConnectFeature>().Protocol);
             Assert.False(context.Request.Headers.TryGetValue(HeaderNames.Protocol, out var _));
             Assert.Equal("http", context.Request.Scheme);
             Assert.Equal("/chat", context.Request.Path.Value);

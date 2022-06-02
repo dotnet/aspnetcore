@@ -60,7 +60,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     // This should only be used by the application, not the server. This is settable on HttpRequest but we don't want that to affect
     // how Kestrel processes requests/responses.
     private string? _httpProtocol;
-    private string? _connectProtocol;
 
     private string? _requestId;
     private int _requestHeadersParsed;
@@ -128,6 +127,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
     public bool IsUpgradableRequest { get; private set; }
     public bool IsUpgraded { get; set; }
+    public bool IsConnectRequest { get; set; }
     public IPAddress? RemoteIpAddress { get; set; }
     public int RemotePort { get; set; }
     public IPAddress? LocalIpAddress { get; set; }

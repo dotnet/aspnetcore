@@ -63,9 +63,10 @@ public partial class WebSocketMiddleware
     {
         // Detect if an opaque upgrade is available. If so, add a websocket upgrade.
         var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
-        if (upgradeFeature != null && context.Features.Get<IHttpWebSocketFeature>() == null)
+        var connectFeature = context.Features.Get<IHttpConnectFeature>();
+        if ((upgradeFeature != null || connectFeature != null) && context.Features.Get<IHttpWebSocketFeature>() == null)
         {
-            var webSocketFeature = new WebSocketHandshake(context, upgradeFeature, _options, _logger);
+            var webSocketFeature = new WebSocketHandshake(context, upgradeFeature, connectFeature, _options, _logger);
             context.Features.Set<IHttpWebSocketFeature>(webSocketFeature);
             if (!_anyOriginAllowed)
             {
@@ -91,16 +92,18 @@ public partial class WebSocketMiddleware
     private sealed class WebSocketHandshake : IHttpWebSocketFeature
     {
         private readonly HttpContext _context;
-        private readonly IHttpUpgradeFeature _upgradeFeature;
+        private readonly IHttpUpgradeFeature? _upgradeFeature;
+        private readonly IHttpConnectFeature? _connectFeature;
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
         private bool? _isWebSocketRequest;
         private bool _isH2WebSocket;
 
-        public WebSocketHandshake(HttpContext context, IHttpUpgradeFeature upgradeFeature, WebSocketOptions options, ILogger logger)
+        public WebSocketHandshake(HttpContext context, IHttpUpgradeFeature? upgradeFeature, IHttpConnectFeature? connectFeature, WebSocketOptions options, ILogger logger)
         {
             _context = context;
             _upgradeFeature = upgradeFeature;
+            _connectFeature = connectFeature;
             _options = options;
             _logger = logger;
         }
@@ -111,19 +114,18 @@ public partial class WebSocketMiddleware
             {
                 if (_isWebSocketRequest == null)
                 {
-                    var requestFeature = _context.Features.Get<IHttpRequestFeature>()!;
-                    if (string.Equals(requestFeature.ConnectProtocol, Constants.Headers.UpgradeWebSocket, StringComparison.OrdinalIgnoreCase))
+                    if (_connectFeature?.IsConnectRequest == true)
                     {
-                        _isH2WebSocket = CheckSupportedWebSocketRequestH2(_context.Request.Method, _context.Request.Headers);
+                        _isH2WebSocket = CheckSupportedWebSocketRequestH2(_context.Request.Method, _connectFeature!.Protocol, _context.Request.Headers);
                         _isWebSocketRequest = _isH2WebSocket;
                     }
-                    else if (!_upgradeFeature.IsUpgradableRequest)
+                    else if (_upgradeFeature?.IsUpgradableRequest == true)
                     {
-                        _isWebSocketRequest = false;
+                        _isWebSocketRequest = CheckSupportedWebSocketRequest(_context.Request.Method, _context.Request.Headers);
                     }
                     else
                     {
-                        _isWebSocketRequest = CheckSupportedWebSocketRequest(_context.Request.Method, _context.Request.Headers);
+                        _isWebSocketRequest = false;
                     }
                 }
                 return _isWebSocketRequest.Value;
@@ -197,23 +199,8 @@ public partial class WebSocketMiddleware
             // HTTP/2
             if (_isH2WebSocket)
             {
-                // Disable limits
-                var sizeLimitFeature = _context.Features.Get<IHttpMaxRequestBodySizeFeature>();
-                if (sizeLimitFeature?.MaxRequestBodySize != null)
-                {
-                    sizeLimitFeature.MaxRequestBodySize = null;
-                }
-                var requestBodyRateLimitFeature = _context.Features.Get<IHttpMinRequestBodyDataRateFeature>();
-                if (requestBodyRateLimitFeature != null)
-                {
-                    requestBodyRateLimitFeature.MinDataRate = null;
-                }
-
-                // Create duplex stream
-                opaqueTransport = new DuplexStream(_context.Request.Body, _context.Response.Body);
-
                 // Send the response headers
-                await opaqueTransport.FlushAsync();
+                opaqueTransport = await _connectFeature!.AcceptAsync();
             }
             // HTTP/1.1
             else
@@ -288,7 +275,7 @@ public partial class WebSocketMiddleware
 
         // https://datatracker.ietf.org/doc/html/rfc8441
         // :method = CONNECT
-        // :protocol = websocket (checked in Invoke)
+        // :protocol = websocket
         // :scheme = https
         // :path = /chat
         // :authority = server.example.com
@@ -296,9 +283,11 @@ public partial class WebSocketMiddleware
         // sec-websocket-extensions = permessage-deflate
         // sec-websocket-version = 13
         // origin = http://www.example.com
-        public static bool CheckSupportedWebSocketRequestH2(string method, IHeaderDictionary requestHeaders)
+        public static bool CheckSupportedWebSocketRequestH2(string method, string? protocol, IHeaderDictionary requestHeaders)
         {
-            return HttpMethods.IsConnect(method) && CheckWebSocketVersion(requestHeaders);
+            return HttpMethods.IsConnect(method)
+                && string.Equals(protocol, Constants.Headers.UpgradeWebSocket, StringComparison.OrdinalIgnoreCase)
+                && CheckWebSocketVersion(requestHeaders);
         }
 
         public static bool CheckWebSocketVersion(IHeaderDictionary requestHeaders)

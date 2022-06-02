@@ -37,7 +37,11 @@ public class Http2WebSocketTests
         var result = await testServer.SendAsync(httpContext =>
         {
             httpContext.Request.Method = HttpMethods.Connect;
-            httpContext.Features.Get<IHttpRequestFeature>().ConnectProtocol = "WebSocket";
+            httpContext.Features.Set<IHttpConnectFeature>(new ConnectFeature()
+            {
+                IsConnectRequest = true,
+                Protocol = "WebSocket",
+            });
             httpContext.Request.Headers.SecWebSocketVersion = Constants.Headers.SupportedVersion;
             httpContext.Request.Headers.SecWebSocketProtocol = "p1, p2";
         });
@@ -48,5 +52,23 @@ public class Http2WebSocketTests
         Assert.False(headers.TryGetValue(HeaderNames.Connection, out var _));
         Assert.False(headers.TryGetValue(HeaderNames.Upgrade, out var _));
         Assert.False(headers.TryGetValue(HeaderNames.SecWebSocketAccept, out var _));
+    }
+
+    public sealed class ConnectFeature : IHttpConnectFeature
+    {
+        public bool IsConnectRequest { get; set; }
+        public string? Protocol { get; set; }
+        public Stream Stream { get; set; } = Stream.Null;
+
+        /// <inheritdoc/>
+        public Task<Stream> AcceptAsync()
+        {
+            if (!IsConnectRequest)
+            {
+                throw new InvalidOperationException("This is not a CONNECT request.");
+            }
+
+            return Task.FromResult(Stream);
+        }
     }
 }
