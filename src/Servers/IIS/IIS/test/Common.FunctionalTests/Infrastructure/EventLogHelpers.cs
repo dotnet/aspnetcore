@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
@@ -319,11 +315,12 @@ public class EventLogHelpers
 
     private static string EscapedContentRoot(IISDeploymentResult deploymentResult)
     {
-        var contentRoot = deploymentResult.ContentRoot;
-        if (!contentRoot.EndsWith('\\'))
-        {
-            contentRoot += '\\';
-        }
-        return Regex.Escape(contentRoot);
+        return deploymentResult.ContentRoot;
+        //var contentRoot = deploymentResult.ContentRoot;
+        //if (!contentRoot.EndsWith('\\'))
+        //{
+        //    contentRoot += '\\';
+        //}
+        //return Regex.Escape(contentRoot);
     }
 }
