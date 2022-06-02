@@ -2,8 +2,6 @@
 Microsoft.AspNetCore.Http.RouteHandlerFilterExtensions
 Microsoft.AspNetCore.Routing.RouteGroupBuilder
 Microsoft.AspNetCore.Routing.RouteGroupBuilder.GroupPrefix.get -> Microsoft.AspNetCore.Routing.Patterns.RoutePattern!
-Microsoft.AspNetCore.Routing.GroupRouteBuilder
-Microsoft.AspNetCore.Routing.GroupRouteBuilder.GroupPrefix.get -> Microsoft.AspNetCore.Routing.Patterns.RoutePattern!
 Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy(string! token, System.Type! type) -> void
 Microsoft.AspNetCore.Routing.RouteOptions.SetParameterPolicy<T>(string! token) -> void
 static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapGroup(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, Microsoft.AspNetCore.Routing.Patterns.RoutePattern! prefix) -> Microsoft.AspNetCore.Routing.RouteGroupBuilder!
