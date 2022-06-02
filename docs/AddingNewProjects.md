@@ -29,3 +29,9 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
   - If VS has not already modified these files, make sure to add it manually as is visible in the example listed above.
 2. Run the `eng/scripts/GenerateProjectList.ps1` file to regenerate all the reference assemblies.
 
+**Note:** If you are adding a new project to the root `src` directory, you will also need to add a reference in both of the `DotNetProjects` lists of the `eng/Build.props` file as shown below:
+  ```XML
+   <DotNetProjects Include="
+                          $(RepoRoot)src\[YOUR FOLDER]\src\[Your .csproj file];
+                          ...
+  ```
