@@ -35,3 +35,5 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
                           $(RepoRoot)src\[YOUR FOLDER]\src\[Your .csproj file];
                           ...
   ```
+
+**Note:** If you are adding a project to the SharedFx library, you will also need to add your project name to the list in `src\Framework\test\TestData.cs`. This is not strictly necessary for the project to work but there is a test on CI that will fail if this is not done.
