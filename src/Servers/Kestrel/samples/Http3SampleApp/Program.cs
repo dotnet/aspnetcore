@@ -107,6 +107,7 @@ public class Program
                     // Port configured for WebTransport
                     options.Listen(IPAddress.Any, 5007, listenOptions =>
                     {
+                        AppContext.SetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", true);
                         listenOptions.UseHttps(GenerateManualCertificate());
                         listenOptions.UseConnectionLogging();
                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
