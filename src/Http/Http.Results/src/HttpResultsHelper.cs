@@ -30,7 +30,7 @@ internal static partial class HttpResultsHelper
 
         Log.WritingResultAsJson(logger, typeof(T).Name);
 
-        return httpContext.Response.WriteAsJsonAsync(
+        return httpContext.Response.WriteAsJsonAsync<object>(
             value,
             options: jsonSerializerOptions,
             contentType: contentType);

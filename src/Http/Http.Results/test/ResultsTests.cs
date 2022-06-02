@@ -681,10 +681,24 @@ public class ResultsTests
     public void NotFound_WithValue_ResultHasCorrectValues()
     {
         // Arrange
-        var value = new { };
+        object value = new { };
 
         // Act
         var result = Results.NotFound(value) as NotFound<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void NotFoundOfT_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.NotFound(value) as NotFound<Todo>;
 
         // Assert
         Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
@@ -705,10 +719,24 @@ public class ResultsTests
     public void Ok_WithValue_ResultHasCorrectValues()
     {
         // Arrange
-        var value = new { };
+        object value = new { };
 
         // Act
         var result = Results.Ok(value) as Ok<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void OkOfT_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.Ok(value) as Ok<Todo>;
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
@@ -1096,4 +1124,6 @@ public class ResultsTests
     };
 
     public static IEnumerable<object[]> FactoryMethodsFromTuples() => FactoryMethodsTuples.Select(t => new object[] { t.Item1, t.Item2 });
+
+    private record Todo(int Id);
 }

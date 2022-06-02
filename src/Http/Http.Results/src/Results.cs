@@ -166,6 +166,20 @@ public static partial class Results
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
     public static IResult Json(object? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
+        => Json<object?>(data, options, contentType, statusCode);
+
+    /// <summary>
+    /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
+    /// </summary>
+    /// <param name="data">The object to write as JSON.</param>
+    /// <param name="options">The serializer options to use when serializing the value.</param>
+    /// <param name="contentType">The content-type to set on the response.</param>
+    /// <param name="statusCode">The status code to set on the response.</param>
+    /// <returns>The created <see cref="JsonHttpResult{TValue}"/> that serializes the specified <paramref name="data"/>
+    /// as JSON format for the response.</returns>
+    /// <remarks>Callers should cache an instance of serializer settings to avoid
+    /// recreating cached data with each call.</remarks>
+    public static IResult Json<TValue>(TValue? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
         => TypedResults.Json(data, options, contentType, statusCode);
 
     /// <summary>
@@ -455,6 +469,14 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult NotFound(object? value = null)
+        => NotFound<object?>(value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
+    /// </summary>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult NotFound<TValue>(TValue? value)
         => value is null ? TypedResults.NotFound() : TypedResults.NotFound(value);
 
     /// <summary>
@@ -470,6 +492,14 @@ public static partial class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult BadRequest(object? error = null)
+        => BadRequest<object?>(error);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+    /// </summary>
+    /// <param name="error">An error object to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult BadRequest<TValue>(TValue? error)
         => error is null ? TypedResults.BadRequest() : TypedResults.BadRequest(error);
 
     /// <summary>
@@ -478,6 +508,14 @@ public static partial class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Conflict(object? error = null)
+        => Conflict<object?>(error);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
+    /// </summary>
+    /// <param name="error">An error object to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Conflict<TValue>(TValue? error)
         => error is null ? TypedResults.Conflict() : TypedResults.Conflict(error);
 
     /// <summary>
@@ -493,6 +531,14 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Ok(object? value = null)
+        => Ok<object?>(value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status200OK"/> response.
+    /// </summary>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Ok<TValue>(TValue? value)
         => value is null ? TypedResults.Ok() : TypedResults.Ok(value);
 
     /// <summary>
@@ -501,6 +547,14 @@ public static partial class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult UnprocessableEntity(object? error = null)
+        => UnprocessableEntity<object?>(error);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
+    /// </summary>
+    /// <param name="error">An error object to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult UnprocessableEntity<TValue>(TValue? error)
         => error is null ? TypedResults.UnprocessableEntity() : TypedResults.UnprocessableEntity(error);
 
     /// <summary>
@@ -580,6 +634,15 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created(string uri, object? value)
+        => Created<object?>(uri, value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>
+    /// <param name="uri">The URI at which the content has been created.</param>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Created<TValue>(string uri, TValue? value)
         => value is null ? TypedResults.Created(uri) : TypedResults.Created(uri, value);
 
     /// <summary>
@@ -589,6 +652,15 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created(Uri uri, object? value)
+        => Created<object?>(uri, value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>
+    /// <param name="uri">The URI at which the content has been created.</param>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Created<TValue>(Uri uri, TValue? value)
         => value is null ? TypedResults.Created(uri) : TypedResults.Created(uri, value);
 
     /// <summary>
@@ -599,6 +671,16 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult CreatedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
+        => CreatedAtRoute<object?>(routeName, routeValues, value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult CreatedAtRoute<TValue>(string? routeName, object? routeValues = null, TValue? value = default)
         => value is null ? TypedResults.CreatedAtRoute(routeName, routeValues) : TypedResults.CreatedAtRoute(value, routeName, routeValues);
 
     /// <summary>
@@ -608,6 +690,15 @@ public static partial class Results
     /// <param name="value">The optional content value to format in the response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Accepted(string? uri = null, object? value = null)
+        => Accepted<object?>(uri, value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
+    /// </summary>
+    /// <param name="uri">The URI with the location at which the status of requested content can be monitored.</param>
+    /// <param name="value">The optional content value to format in the response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Accepted<TValue>(string? uri = null, TValue? value = default)
         => value is null ? TypedResults.Accepted(uri) : TypedResults.Accepted(uri, value);
 
     /// <summary>
@@ -618,6 +709,16 @@ public static partial class Results
     /// <param name="value">The optional content value to format in the response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult AcceptedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
+        => AcceptedAtRoute<object?>(routeName, routeValues, value);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
+    /// </summary>
+    /// <param name="routeName">The name of the route to use for generating the URL.</param>
+    /// <param name="routeValues">The route data to use for generating the URL.</param>
+    /// <param name="value">The optional content value to format in the response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult AcceptedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default)
         => value is null ? TypedResults.AcceptedAtRoute(routeName, routeValues) : TypedResults.AcceptedAtRoute(value, routeName, routeValues);
 
     /// <summary>
