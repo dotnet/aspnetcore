@@ -16,10 +16,11 @@ public sealed class EndpointParameterMetadataContext
     /// <param name="parameter">The parameter of the route handler delegate of the endpoint being created.</param>
     /// <param name="endpointMetadata">The list of objects that will be added to the metadata of the endpoint.</param>
     /// <param name="applicationServices">The <see cref="IServiceProvider"/> instance used to access application services.</param>
-    public EndpointParameterMetadataContext(ParameterInfo parameter, IList<object> endpointMetadata, IServiceProvider? applicationServices)
+    public EndpointParameterMetadataContext(ParameterInfo parameter, IList<object> endpointMetadata, IServiceProvider applicationServices)
     {
         ArgumentNullException.ThrowIfNull(parameter, nameof(parameter));
         ArgumentNullException.ThrowIfNull(endpointMetadata, nameof(endpointMetadata));
+        ArgumentNullException.ThrowIfNull(applicationServices, nameof(applicationServices));
 
         Parameter = parameter;
         EndpointMetadata = endpointMetadata;
@@ -39,5 +40,5 @@ public sealed class EndpointParameterMetadataContext
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance used to access application services.
     /// </summary>
-    public IServiceProvider? ApplicationServices { get; }
+    public IServiceProvider ApplicationServices { get; }
 }

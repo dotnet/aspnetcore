@@ -986,7 +986,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         routeHandlerBuilder.AddFilter((rhc, next) =>
         {
             Assert.NotNull(rhc.ApplicationServices);
-            var myService = rhc.ApplicationServices?.GetRequiredService<MyService>();
+            var myService = rhc.ApplicationServices.GetRequiredService<MyService>();
             Assert.Equal(appService, myService);
             return next;
         });
@@ -994,6 +994,26 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var dataSource = GetBuilderEndpointDataSource(builder);
         // Trigger Endpoint build by calling getter.
         var endpoint = Assert.Single(dataSource.Endpoints);
+    }
+
+    [Fact]
+    public void RouteHandlerContext_ThrowsArgumentNullException_ForMethodInfo()
+    {
+        Assert.Throws<ArgumentNullException>("methodInfo", () => new RouteHandlerContext(null!, new(), new ServiceCollection().BuildServiceProvider()));
+    }
+
+    [Fact]
+    public void RouteHandlerContext_ThrowsArgumentNullException_ForEndpointMetadata()
+    {
+        var handler = () => { };
+        Assert.Throws<ArgumentNullException>("endpointMetadata", () => new RouteHandlerContext(handler.Method, null!, new ServiceCollection().BuildServiceProvider()));
+    }
+
+    [Fact]
+    public void RouteHandlerContext_ThrowsArgumentNullException_ForApplicationServices()
+    {
+        var handler = () => { };
+        Assert.Throws<ArgumentNullException>("applicationServices", () => new RouteHandlerContext(handler.Method, new(), null!));
     }
 
     class MyService { }
