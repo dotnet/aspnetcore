@@ -16,6 +16,8 @@ public sealed class RateLimiterOptions
     {
         return Task.CompletedTask;
     };
+    private IDictionary<string, Func<HttpContext, RateLimitPartition<TKey>>> PartitionMap { get; }
+        = new Dictionary<string, Func<HttpContext, RateLimitPartition<TKey>>>(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets or sets the <see cref="PartitionedRateLimiter{TResource}"/>
@@ -44,4 +46,31 @@ public sealed class RateLimiterOptions
     /// <see cref="OnRejected"/> will "win" over this default.
     /// </remarks>
     public int DefaultRejectionStatusCode { get; set; } = StatusCodes.Status503ServiceUnavailable;
+
+    /// <summary>
+    /// Adds a new rate limiter with the given name.
+    /// </summary>
+    /// <param name="name">The name to be associated with the given <see cref="RateLimiter"/></param>
+    /// <param name="partitioner">Method called every time an Acquire or WaitAsync call is made to figure out what rate limiter to apply to the request.</param>
+    public RateLimiterOptions AddLimiter<TKey>(string name, Func<HttpContext, RateLimitPartition<TKey>> partitioner)
+    {
+        if (name == null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
+        if (partitioner == null)
+        {
+            throw new ArgumentNullException(nameof(partitioner));
+        }
+
+        if (PartitionMap.ContainsKey(name))
+        {
+            throw new ArgumentException("There already exists a partition with the name {name}");
+        }
+
+        PartitionMap.Add(name, partitioner);
+
+        return this;
+    }
 }
