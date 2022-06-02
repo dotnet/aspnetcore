@@ -46,7 +46,7 @@ public class PackageTests
         }
         foreach (var package in packages)
         {
-            var outputPath = _packageLayoutRoot + Path.GetFileNameWithoutExtension(package);
+            var outputPath = Path.Combine(_packageLayoutRoot, Path.GetFileNameWithoutExtension(package));
             ZipFile.ExtractToDirectory(package, outputPath);
         }
     }
