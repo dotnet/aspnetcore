@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly ObjectPoolProvider _objectPoolProvider;
         private readonly MvcOptions _options;
         private readonly MvcNewtonsoftJsonOptions _jsonOptions;
+        private readonly bool _skipHandledErrorEnabled;
 
         private ObjectPool<JsonSerializer>? _jsonSerializerPool;
 
@@ -80,6 +81,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             _objectPoolProvider = objectPoolProvider;
             _options = options;
             _jsonOptions = jsonOptions;
+
+            _skipHandledErrorEnabled = AppContext.TryGetSwitch(EnableSkipHandledError, out var enabled) && enabled;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
@@ -236,8 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 // Skipping error, if it's already marked as handled
                 // This allows user code to implement its own error handling
-                if (eventArgs.ErrorContext.Handled &&
-                    AppContext.TryGetSwitch(EnableSkipHandledError, out var enabled) && enabled)
+                if (eventArgs.ErrorContext.Handled && _skipHandledErrorEnabled)
                 {
                     return;
                 }
