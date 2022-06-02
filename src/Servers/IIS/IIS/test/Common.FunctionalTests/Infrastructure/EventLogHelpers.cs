@@ -293,11 +293,11 @@ public class EventLogHelpers
     {
         if (DeployerSelector.HasNewShim)
         {
-            return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' failed to start. Exception message:\r\n{subError}";
+            return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}' failed to start. Exception message:\r\n{subError}";
         }
         else
         {
-            return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' wasn't able to start. {subError}";
+            return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}' wasn't able to start. {subError}";
         }
     }
 
@@ -315,12 +315,6 @@ public class EventLogHelpers
 
     private static string EscapedContentRoot(IISDeploymentResult deploymentResult)
     {
-        return deploymentResult.ContentRoot;
-        //var contentRoot = deploymentResult.ContentRoot;
-        //if (!contentRoot.EndsWith('\\'))
-        //{
-        //    contentRoot += '\\';
-        //}
-        //return Regex.Escape(contentRoot);
+        return Regex.Escape(deploymentResult.ContentRoot.TrimEnd('\\'));
     }
 }
