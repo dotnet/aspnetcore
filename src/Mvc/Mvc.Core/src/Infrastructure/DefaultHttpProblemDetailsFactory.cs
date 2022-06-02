@@ -11,18 +11,20 @@ internal class DefaultHttpProblemDetailsFactory : IHttpProblemDetailsFactory
 {
     private readonly OutputFormatterSelector _formatterSelector;
     private readonly IHttpResponseStreamWriterFactory _writerFactory;
+    private readonly ProblemDetailsFactory _problemDetailsFactory;
 
     public DefaultHttpProblemDetailsFactory(
         OutputFormatterSelector formatterSelector,
-        IHttpResponseStreamWriterFactory writerFactory)
+        IHttpResponseStreamWriterFactory writerFactory,
+        ProblemDetailsFactory problemDetailsFactory)
     {
         _formatterSelector = formatterSelector;
         _writerFactory = writerFactory;
+        _problemDetailsFactory = problemDetailsFactory;
     }
 
     public ProblemDetails CreateProblemDetails(
         HttpContext httpContext,
-        ProblemDetailsOptions options,
         int? statusCode = null,
         string? title = null,
         string? type = null,
@@ -30,14 +32,7 @@ internal class DefaultHttpProblemDetailsFactory : IHttpProblemDetailsFactory
         string? instance = null,
         IDictionary<string, object?>? extensions = null)
     {
-        var problemDetails = new ProblemDetails
-        {
-            Status = statusCode,
-            Title = title,
-            Type = type,
-            Detail = detail,
-            Instance = instance,
-        };
+        var problemDetails = _problemDetailsFactory.CreateProblemDetails(httpContext, statusCode, title, type, detail);
 
         if (extensions is not null)
         {
@@ -46,8 +41,6 @@ internal class DefaultHttpProblemDetailsFactory : IHttpProblemDetailsFactory
                 problemDetails.Extensions.Add(extension);
             }
         }
-
-        ProblemDetailsDefaults.Apply(httpContext, problemDetails, statusCode, options.ProblemDetailsErrorMapping);
 
         return problemDetails;
     }
