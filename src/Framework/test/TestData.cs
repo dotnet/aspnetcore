@@ -147,6 +147,7 @@ public static class TestData
                 "System.IO.Pipelines",
                 "System.Security.Cryptography.Pkcs",
                 "System.Security.Cryptography.Xml",
+                "Microsoft.AspNetCore.WebTransport",
             };
 
         ListedTargetingPackAssemblies = new SortedDictionary<string, string>
