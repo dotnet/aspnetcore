@@ -197,6 +197,8 @@ internal sealed class Http2FrameWriter
                     }
                     else if (completed && producer.AppCompletedWithNoResponseBodyOrTrailers)
                     {
+                        Debug.Assert(flushHeaders, "The app completed successfully without flushing headers!");
+
                         if (buffer.Length != 0)
                         {
                             _log.Http2UnexpectedDataRemaining(stream.StreamId, _connectionId);
@@ -205,8 +207,7 @@ internal sealed class Http2FrameWriter
                         {
                             stream.DecrementActiveClientStreamCount();
 
-                            // Headers have already been written and there is no other content to write
-                            flushResult = await FlushAsync(stream, flushHeaders, outputAborter: null, cancellationToken: default);
+                            flushResult = await FlushEndOfStreamHeadersAsync(stream);
                         }
                     }
                     else
@@ -367,7 +368,7 @@ internal sealed class Http2FrameWriter
         }
     }
 
-    private ValueTask<FlushResult> FlushAsync(Http2Stream stream, bool writeHeaders, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
+    private ValueTask<FlushResult> FlushEndOfStreamHeadersAsync(Http2Stream stream)
     {
         lock (_writeLock)
         {
@@ -376,16 +377,12 @@ internal sealed class Http2FrameWriter
                 return default;
             }
 
-            if (writeHeaders)
-            {
-                // write headers
-                WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.END_STREAM, (HttpResponseHeaders)stream.ResponseHeaders);
-            }
+            WriteResponseHeadersUnsynchronized(stream.StreamId, stream.StatusCode, Http2HeadersFrameFlags.END_STREAM, (HttpResponseHeaders)stream.ResponseHeaders);
 
             var bytesWritten = _unflushedBytes;
             _unflushedBytes = 0;
 
-            return _flusher.FlushAsync(_minResponseDataRate, bytesWritten, outputAborter, cancellationToken);
+            return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
         }
     }
 
