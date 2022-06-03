@@ -107,7 +107,9 @@ public class W3CLoggingMiddlewareTests
     public async Task LogsAdditionalRequestHeaders()
     {
         var options = CreateOptionsAccessor();
-        options.CurrentValue.AdditionalRequestHeaders = new[] { "x-forwarded-for", "x-client-ssl-protocol", ":invalid" }.ToHashSet();
+        options.CurrentValue.AdditionalRequestHeaders.Add("x-forwarded-for");
+        options.CurrentValue.AdditionalRequestHeaders.Add("x-client-ssl-protocol");
+        options.CurrentValue.AdditionalRequestHeaders.Add(":invalid");
 
         var logger = new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance);
 

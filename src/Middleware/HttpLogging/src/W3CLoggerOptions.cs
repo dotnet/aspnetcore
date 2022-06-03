@@ -116,7 +116,7 @@ public sealed class W3CLoggerOptions
     /// access controlled and the privacy impact assessed.
     /// </p>
     /// </summary>
-    public ISet<string>? AdditionalRequestHeaders { get; set; }
+    public ISet<string> AdditionalRequestHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Fields to log. Defaults to logging request and response properties and headers,
