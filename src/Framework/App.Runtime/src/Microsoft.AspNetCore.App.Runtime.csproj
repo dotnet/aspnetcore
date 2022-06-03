@@ -471,7 +471,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <NativeAssetsFullPath>$(RuntimePackageRoot)$(NativeAssetsPackagePath)</NativeAssetsFullPath>
 
       <BaseAssemblies>$(ManagedAssetsFullPath)\*.dll</BaseAssemblies>
-      <BaseAssemblies Condition="'Exists($(ManagedAssetsFullPath))' == 'true' and '$(TargetOsName)' == 'win'">$(BaseAssemblies) $(NativeAssetsFullPath)\*.dll</BaseAssemblies>
+      <BaseAssemblies Condition="Exists('$(ManagedAssetsFullPath)') and '$(TargetOsName)' == 'win'">$(BaseAssemblies) $(NativeAssetsFullPath)\*.dll</BaseAssemblies>
 
       <CompositeArgs>--composite</CompositeArgs>
       <CompositeArgs>$(CompositeArgs) --targetarch:$(TargetArchitecture)</CompositeArgs>
@@ -484,7 +484,12 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RemoveDir Directories="$(CompositeTargetDir)" />
     <MakeDir Directories="$(CompositeTargetDir)" />
 
+    <ItemGroup>
+      <NativeSharedObjects Include="$(NativeAssetsFullPath)\*.so" Condition="Exists('$(NativeAssetsFullPath)') and '$(TargetOsName)' != 'win'" />
+    </ItemGroup>
+
     <Exec Command="&quot;$(CrossgenToolPath)&quot; $(CompositeArgs)" />
+    <Copy SourceFiles="@(NativeSharedObjects)" DestinationFolder="$(CompositeTargetDir)" Condition="'$(TargetOsName)' != 'win'" />
   </Target>
 
   <!--
