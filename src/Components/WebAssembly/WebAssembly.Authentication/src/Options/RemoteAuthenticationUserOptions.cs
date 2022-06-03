@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// <summary>
 /// Represents options to use when configuring the <see cref="System.Security.Claims.ClaimsPrincipal"/> for a user.
 /// </summary>
-[DynamicallyAccessedMembers(JsonSerialized)] // fix #41998 Can be initialized by configuration binding
+[DynamicallyAccessedMembers(JsonSerialized)] 
 public class RemoteAuthenticationUserOptions
 {
     /// <summary>
