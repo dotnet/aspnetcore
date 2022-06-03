@@ -490,8 +490,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [Fact]
         public async Task ReadAsync_AllowUserCodeToHandleDeserializationErrors()
         {
-            AppContext.SetSwitch(NewtonsoftJsonInputFormatter.EnableSkipHandledError, isEnabled: true);
-
             // Arrange
             var serializerSettings = new JsonSerializerSettings
             {
@@ -506,7 +504,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 ArrayPool<char>.Shared,
                 _objectPoolProvider,
                 new MvcOptions(),
-                new MvcNewtonsoftJsonOptions());
+                new MvcNewtonsoftJsonOptions())
+            {
+                SkipHandledErrorEnabled = true
+            };
 
             var content = $"{{'id': 'should be integer', 'name': 'test location'}}";
             var contentBytes = Encoding.UTF8.GetBytes(content);
