@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 /// This API supports infrastructure and is not intended to be used
 /// directly from your code. This API may change or be removed in future releases.
 /// </summary>
-public class ProjectIdResolver
+internal sealed class ProjectIdResolver
 {
     private const string DefaultConfig = "Debug";
     private readonly IReporter _reporter;
@@ -32,9 +32,19 @@ public class ProjectIdResolver
     public string Resolve(string project, string configuration)
     {
         var finder = new MsBuildProjectFinder(_workingDirectory);
-        var projectFile = finder.FindMsBuildProject(project);
+        string projectFile;
+        try
+        {
+            projectFile = finder.FindMsBuildProject(project);
+        }
+        catch (Exception ex)
+        {
+            _reporter.Error(ex.Message);
+            return null;
+        }
+        
 
-        _reporter.Verbose(Resources.FormatMessage_Project_File_Path(projectFile));
+        _reporter.Verbose($"Project file path {projectFile}.");
 
         configuration = !string.IsNullOrEmpty(configuration)
             ? configuration
@@ -98,18 +108,20 @@ public class ProjectIdResolver
                 _reporter.Verbose(outputBuilder.ToString());
                 _reporter.Verbose(errorBuilder.ToString());
                 _reporter.Error($"Exit code: {process.ExitCode}");
-                throw new InvalidOperationException(Resources.FormatError_ProjectFailedToLoad(projectFile));
+                _reporter.Error($"Could not load the MSBuild project '{projectFile}'.");
+                return null;
             }
 
             if (!File.Exists(outputFile))
             {
-                throw new FileNotFoundException(Resources.FormatError_ProjectMissingId(projectFile));
+                _reporter.Error($"Could not find the global property 'UserSecretsId' in MSBuild project '{projectFile}'. Ensure this property is set in the project or use the '--id' command line option.");
+                return null;
             }
 
             var id = File.ReadAllText(outputFile)?.Trim();
             if (string.IsNullOrEmpty(id))
             {
-                throw new NullReferenceException(Resources.FormatError_ProjectMissingId(projectFile));
+                _reporter.Error($"Could not find the global property 'UserSecretsId' in MSBuild project '{projectFile}'. Ensure this property is set in the project or use the '--id' command line option.");
             }
             return id;
 

@@ -16,14 +16,12 @@ internal static class DevJwtCliHelpers
     public static string GetOrSetUserSecretsId(IReporter reporter, string projectFilePath)
     {
         var resolver = new ProjectIdResolver(reporter, projectFilePath);
-        try
+        var id = resolver.Resolve(projectFilePath, configuration: null);
+        if (string.IsNullOrEmpty(id))
         {
-            return resolver.Resolve(projectFilePath, configuration: null);
+            return UserSecretsCreator.CreateUserSecretsId(reporter, projectFilePath, projectFilePath);
         }
-        catch (NullReferenceException)
-        {
-            return InitCommand.CreateUserSecretsId(reporter, projectFilePath, projectFilePath);
-        }
+        return id;
     }
 
     public static string GetProject(string projectPath = null)

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -36,12 +34,12 @@ internal sealed class MsBuildProjectFinder
 
             if (projects.Count > 1)
             {
-                throw new FileNotFoundException(Resources.FormatError_MultipleProjectsFound(projectPath));
+                throw new FileNotFoundException($"Multiple MSBuild project files found in '{projectPath}'. Specify which to use with the --project option.");
             }
 
             if (projects.Count == 0)
             {
-                throw new FileNotFoundException(Resources.FormatError_NoProjectsFound(projectPath));
+                throw new FileNotFoundException($"Could not find a MSBuild project file in '{projectPath}'. Specify which project to use with the --project option.");
             }
 
             return projects[0];
@@ -49,7 +47,7 @@ internal sealed class MsBuildProjectFinder
 
         if (!File.Exists(projectPath))
         {
-            throw new FileNotFoundException(Resources.FormatError_ProjectPath_NotFound(projectPath));
+            throw new FileNotFoundException($"The project file '{projectPath}' does not exist.");
         }
 
         return projectPath;

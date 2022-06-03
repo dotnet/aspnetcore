@@ -13,9 +13,9 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" LinkBase="Shared" />
-    <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs"
-             Exclude="$(ToolSharedSourceRoot)CommandLine\*Reporter.cs;$(ToolSharedSourceRoot)CommandLine\*Console.cs"
-             LinkBase="Shared" />
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" LinkBase="Shared" />
+    <Compile Include="$(ToolSharedSourceRoot)SecretsHelpers\*.cs" LinkBase="Shared" />
+    <None Include="$(ToolSharedSourceRoot)\SecretsHelpers\assets\SecretManager.targets" Link="assets\SecretManager.targets" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +23,5 @@
     <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
-    <Reference Include="dotnet-user-secrets" />
   </ItemGroup>
 </Project>

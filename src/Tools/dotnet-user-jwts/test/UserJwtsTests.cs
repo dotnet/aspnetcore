@@ -50,14 +50,16 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     }
 
     [Fact]
-    public void Create_WarnsOnNoSecretInproject()
+    public void Create_CreatesSecretOnNoSecretInproject()
     {
         var project = Path.Combine(_fixture.CreateProject(false), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
-        Assert.Contains("Set UserSecretsId to ", _console.GetOutput());
-        Assert.Contains("New JWT saved", _console.GetOutput());
+        var output = _console.GetOutput();
+        Assert.DoesNotContain("could not find SecretManager.targets", output);
+        Assert.Contains("Set UserSecretsId to ", output);
+        Assert.Contains("New JWT saved", output);
     }
 
     [Fact]
