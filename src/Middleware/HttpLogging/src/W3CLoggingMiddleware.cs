@@ -84,7 +84,8 @@ internal sealed class W3CLoggingMiddleware
 
         var additionalHeadersLength = _additionalRequestHeaders.Count;
 
-        var elements = new string[_fieldsLength + additionalHeadersLength];
+        var elements = new string[_fieldsLength];
+        var additionalHeaderElements = new string[additionalHeadersLength];
 
         // Whether any of the requested fields actually had content
         bool shouldLog = false;
@@ -195,7 +196,7 @@ internal sealed class W3CLoggingMiddleware
                     {
                         if (headers.TryGetValue(additionalRequestHeaders[i], out var headerValue))
                         {
-                            shouldLog |= AddToList(elements, i + _fieldsLength, headerValue.ToString());
+                            shouldLog |= AddToList(additionalHeaderElements, i, headerValue.ToString());
                         }
                     }
                 }
@@ -213,7 +214,7 @@ internal sealed class W3CLoggingMiddleware
             // Write the log
             if (shouldLog)
             {
-                _w3cLogger.Log(elements);
+                _w3cLogger.Log(elements, additionalHeaderElements);
             }
             throw;
         }
@@ -236,7 +237,7 @@ internal sealed class W3CLoggingMiddleware
         // Write the log
         if (shouldLog)
         {
-            _w3cLogger.Log(elements);
+            _w3cLogger.Log(elements, additionalHeaderElements);
         }
     }
 

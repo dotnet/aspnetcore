@@ -35,20 +35,19 @@ internal class W3CLogger : IAsyncDisposable
 
     public ValueTask DisposeAsync() => _messageQueue.DisposeAsync();
 
-    public void Log(string[] elements)
+    public void Log(string[] elements, string[] additionalHeaders)
     {
-        _messageQueue.EnqueueMessage(Format(elements));
+        _messageQueue.EnqueueMessage(Format(elements, additionalHeaders));
     }
 
-    private string Format(string[] elements)
+    private string Format(string[] elements, string[] additionalHeaders)
     {
         // 200 is around the length of an average cookie-less entry
         var sb = new ValueStringBuilder(200);
         var firstElement = true;
         for (var i = 0; i < elements.Length; i++)
         {
-            // Custom headers start at index 17
-            if (_loggingFields.HasFlag((W3CLoggingFields)(1 << i)) || i >= 17)
+            if (_loggingFields.HasFlag((W3CLoggingFields)(1 << i)))
             {
                 if (!firstElement)
                 {
@@ -67,6 +66,27 @@ internal class W3CLogger : IAsyncDisposable
                 {
                     sb.Append(elements[i]);
                 }
+            }
+        }
+
+        for (var i = 0; i < additionalHeaders.Length; i++)
+        {
+            if (!firstElement)
+            {
+                sb.Append(' ');
+            }
+            else
+            {
+                firstElement = false;
+            }
+            // If the element was not logged, or was the empty string, we log it as a dash
+            if (string.IsNullOrEmpty(additionalHeaders[i]))
+            {
+                sb.Append('-');
+            }
+            else
+            {
+                sb.Append(additionalHeaders[i]);
             }
         }
         return sb.ToString();
