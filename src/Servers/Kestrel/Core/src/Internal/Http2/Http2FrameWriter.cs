@@ -174,9 +174,12 @@ internal sealed class Http2FrameWriter
                         if (actual > 0)
                         {
                             // If we got here it means we're going to cancel the write. Restore any consumed bytes to the connection window.
-                            lock (_windowUpdateLock)
+                            if (actual > int.MaxValue || !TryUpdateConnectionWindow((int)actual))
                             {
-                                _connectionWindow += actual;
+                                // This branch can only ever be taken given both a buggy client and aborting streams mid-write. Even then, we're much more likely catch the
+                                // error in Http2Connection.ProcessFrameAsync() before catching it here. This branch is technically possible though, so we defend against it.
+                                await HandleFlowControlErrorAsync();
+                                return;
                             }
                         }
                     }
@@ -261,6 +264,18 @@ internal sealed class Http2FrameWriter
         }
 
         _log.Http2ConnectionQueueProcessingCompleted(_connectionId);
+    }
+
+    private async Task HandleFlowControlErrorAsync()
+    {
+        var connectionError = new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR);
+        _log.Http2ConnectionError(_connectionId, connectionError);
+        await WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.FLOW_CONTROL_ERROR);
+
+        // Prevent Abort() from writing an INTERNAL_ERROR GOAWAY frame after our FLOW_CONTROL_ERROR.
+        Complete();
+        // Stop processing any more requests and immediately close the connection.
+        _http2Connection.Abort(new ConnectionAbortedException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, connectionError));
     }
 
     private bool TryQueueProducerForConnectionWindowUpdate(long actual, Http2OutputProducer producer)
