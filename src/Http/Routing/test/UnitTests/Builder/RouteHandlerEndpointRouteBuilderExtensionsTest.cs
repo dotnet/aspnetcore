@@ -980,6 +980,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var appService = new MyService();
         appServiceCollection.AddSingleton(appService);
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(appServiceCollection.BuildServiceProvider()));
+        var filterFactoryRan = false;
 
         string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
         var routeHandlerBuilder = builder.Map("/", PrintLogger);
@@ -988,12 +989,14 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             Assert.NotNull(rhc.ApplicationServices);
             var myService = rhc.ApplicationServices.GetRequiredService<MyService>();
             Assert.Equal(appService, myService);
+            filterFactoryRan = true;
             return next;
         });
 
         var dataSource = GetBuilderEndpointDataSource(builder);
         // Trigger Endpoint build by calling getter.
-        var endpoint = Assert.Single(dataSource.Endpoints);
+        Assert.Single(dataSource.Endpoints);
+        Assert.True(filterFactoryRan);
     }
 
     [Fact]

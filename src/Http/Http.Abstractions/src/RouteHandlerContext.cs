@@ -19,9 +19,9 @@ public sealed class RouteHandlerContext
     /// <param name="applicationServices">The <see cref="IServiceProvider"/> instance used to access the application services.</param>
     public RouteHandlerContext(MethodInfo methodInfo, EndpointMetadataCollection endpointMetadata, IServiceProvider applicationServices)
     {
-        ArgumentNullException.ThrowIfNull(methodInfo, nameof(methodInfo));
-        ArgumentNullException.ThrowIfNull(endpointMetadata, nameof(endpointMetadata));
-        ArgumentNullException.ThrowIfNull(applicationServices, nameof(applicationServices));
+        ArgumentNullException.ThrowIfNull(methodInfo);
+        ArgumentNullException.ThrowIfNull(endpointMetadata);
+        ArgumentNullException.ThrowIfNull(applicationServices);
 
         MethodInfo = methodInfo;
         EndpointMetadata = endpointMetadata;
