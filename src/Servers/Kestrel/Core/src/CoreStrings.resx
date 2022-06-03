@@ -423,9 +423,6 @@
   <data name="ServerCertificateRequired" xml:space="preserve">
     <value>The server certificate parameter is required.</value>
   </data>
-  <data name="BindingToDefaultAddresses" xml:space="preserve">
-    <value>No listening endpoints were configured. Binding to {address0} and {address1} by default.</value>
-  </data>
   <data name="CertNotFoundInStore" xml:space="preserve">
     <value>The requested certificate {subject} could not be found in {storeLocation}/{storeName} with AllowInvalid setting: {allowInvalid}.</value>
   </data>
