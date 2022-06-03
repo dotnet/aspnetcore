@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 /// <summary>
 /// Represents the options for the paths used by the application for authentication operations. These paths are relative to the base.
 /// </summary>
+[DynamicallyAccessedMembers(JsonSerialized)] // Can be initialized by configuration binding
 public class RemoteAuthenticationApplicationPathsOptions
 {
     /// <summary>
