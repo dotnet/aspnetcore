@@ -108,11 +108,13 @@ public sealed class W3CLoggerOptions
 
     /// <summary>
     /// List of additional request header values to log.
-    /// The cookie header can contain authentication tokens,
+    /// <p>
+    /// Request headers can contain authentication tokens,
     /// or private information which may have regulatory concerns
-    /// under GDPR and other laws. Cookies should not be logged
-    /// unless logs are secure and access controlled
-    /// and the privacy impact assessed.
+    /// under GDPR and other laws. Arbitrary request headers
+    /// should not be logged unless logs are secure and
+    /// access controlled and the privacy impact assessed.
+    /// </p>
     /// </summary>
     public ISet<string>? AdditionalRequestHeaders { get; set; }
 
