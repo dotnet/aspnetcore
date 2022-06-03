@@ -61,14 +61,14 @@ public class Http2WebSocketTests
         public Stream Stream { get; set; } = Stream.Null;
 
         /// <inheritdoc/>
-        public Task<Stream> AcceptAsync()
+        public ValueTask<Stream> AcceptAsync()
         {
             if (!IsConnectRequest)
             {
                 throw new InvalidOperationException("This is not a CONNECT request.");
             }
 
-            return Task.FromResult(Stream);
+            return new ValueTask<Stream>(Stream);
         }
     }
 }

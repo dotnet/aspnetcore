@@ -23,5 +23,5 @@ public interface IHttpConnectFeature
     /// Send the response headers with a 200 status code and transition to opaque streaming.
     /// </summary>
     /// <returns>An opaque bidirectional stream.</returns>
-    Task<Stream> AcceptAsync();
+    ValueTask<Stream> AcceptAsync();
 }

@@ -288,7 +288,7 @@ internal partial class HttpProtocol
         return _bodyControl!.Upgrade();
     }
 
-    async Task<Stream> IHttpConnectFeature.AcceptAsync()
+    async ValueTask<Stream> IHttpConnectFeature.AcceptAsync()
     {
         if (!IsConnectRequest)
         {
