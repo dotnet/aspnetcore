@@ -19,7 +19,7 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
     public W3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
     {
         _loggingFields = options.CurrentValue.LoggingFields;
-        _additionalRequestHeaders = options.CurrentValue.AdditionalRequestHeaders;
+        _additionalRequestHeaders = W3CLoggerOptions.FilterRequestHeaders(options.CurrentValue);
     }
 
     public override async Task OnFirstWrite(StreamWriter streamWriter, CancellationToken cancellationToken)

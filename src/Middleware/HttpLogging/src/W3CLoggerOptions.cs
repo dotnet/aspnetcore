@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Net.Http.Headers;
+
 namespace Microsoft.AspNetCore.HttpLogging;
 
 /// <summary>
@@ -116,7 +118,7 @@ public sealed class W3CLoggerOptions
     /// access controlled and the privacy impact assessed.
     /// </p>
     /// </summary>
-    public ISet<string> AdditionalRequestHeaders { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    public ISet<string> AdditionalRequestHeaders { get; } = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Fields to log. Defaults to logging request and response properties and headers,
@@ -127,4 +129,26 @@ public sealed class W3CLoggerOptions
         W3CLoggingFields.ProtocolStatus | W3CLoggingFields.TimeTaken | W3CLoggingFields.ProtocolVersion |
         W3CLoggingFields.Host | W3CLoggingFields.UserAgent | W3CLoggingFields.Referer | W3CLoggingFields.ConnectionInfoFields;
 
+    internal static ISet<string> FilterRequestHeaders(W3CLoggerOptions options)
+    {
+        var clonedSet = new SortedSet<string>(options.AdditionalRequestHeaders, StringComparer.InvariantCultureIgnoreCase);
+
+        if (options.LoggingFields.HasFlag(W3CLoggingFields.Host))
+        {
+            clonedSet.Remove(HeaderNames.Host);
+        }
+        if (options.LoggingFields.HasFlag(W3CLoggingFields.Referer))
+        {
+            clonedSet.Remove(HeaderNames.Referer);
+        }
+        if (options.LoggingFields.HasFlag(W3CLoggingFields.UserAgent))
+        {
+            clonedSet.Remove(HeaderNames.UserAgent);
+        }
+        if (options.LoggingFields.HasFlag(W3CLoggingFields.Cookie))
+        {
+            clonedSet.Remove(HeaderNames.Cookie);
+        }
+        return clonedSet;
+    }
 }

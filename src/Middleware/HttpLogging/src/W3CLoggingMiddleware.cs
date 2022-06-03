@@ -39,6 +39,7 @@ internal sealed class W3CLoggingMiddleware
     internal static readonly int _userAgentIndex = BitOperations.Log2((int)W3CLoggingFields.UserAgent);
     internal static readonly int _cookieIndex = BitOperations.Log2((int)W3CLoggingFields.Cookie);
     internal static readonly int _refererIndex = BitOperations.Log2((int)W3CLoggingFields.Referer);
+    private readonly ISet<string> _additionalRequestHeaders;
 
     // Number of fields in W3CLoggingFields - equal to the number of _*Index variables above
     internal const int _fieldsLength = 17;
@@ -69,6 +70,7 @@ internal sealed class W3CLoggingMiddleware
         _next = next;
         _options = options;
         _w3cLogger = w3cLogger;
+        _additionalRequestHeaders = W3CLoggerOptions.FilterRequestHeaders(options.CurrentValue);
     }
 
     /// <summary>
@@ -80,7 +82,7 @@ internal sealed class W3CLoggingMiddleware
     {
         var options = _options.CurrentValue;
 
-        var additionalHeadersLength = _options.CurrentValue.AdditionalRequestHeaders?.Count ?? 0;
+        var additionalHeadersLength = _additionalRequestHeaders.Count;
 
         var elements = new string[_fieldsLength + additionalHeadersLength];
 
@@ -185,9 +187,9 @@ internal sealed class W3CLoggingMiddleware
                     }
                 }
 
-                if (_options.CurrentValue.AdditionalRequestHeaders != null)
+                if (_additionalRequestHeaders.Count != 0)
                 {
-                    var additionalRequestHeaders = _options.CurrentValue.AdditionalRequestHeaders.ToList();
+                    var additionalRequestHeaders = _additionalRequestHeaders.ToList();
 
                     for (var i = 0; i < additionalHeadersLength; i++)
                     {
