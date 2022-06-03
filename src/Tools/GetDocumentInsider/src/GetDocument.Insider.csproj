@@ -20,6 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Required to satisfy usings in Microsoft.Extensions.HostFactoryResolver.Sources -->
+    <Reference Include="Microsoft.Extensions.Hosting" />
+
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
