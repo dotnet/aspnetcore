@@ -161,10 +161,8 @@ internal sealed class Http2FrameWriter
 
                     FlushResult flushResult = default;
 
-                    // There are 2 cases where we abort:
-                    // 1. We're not complete but we got the abort.
-                    // 2. We're complete and there's no more response data to be written.
-                    if ((aborted && !completed) || (aborted && completed && actual == 0 && stream.ResponseTrailers is null or { Count: 0 }))
+                    // We're not complete but we got the abort.
+                    if (aborted && !completed)
                     {
                         // Response body is aborted, complete reader for this output producer.
                         if (flushHeaders)
