@@ -95,6 +95,7 @@ public static class TestData
                 "Microsoft.AspNetCore.SignalR.Protocols.Json",
                 "Microsoft.AspNetCore.StaticFiles",
                 "Microsoft.AspNetCore.WebSockets",
+                "Microsoft.AspNetCore.WebTransport",
                 "Microsoft.AspNetCore.WebUtilities",
                 "Microsoft.Extensions.Caching.Abstractions",
                 "Microsoft.Extensions.Caching.Memory",
@@ -147,7 +148,6 @@ public static class TestData
                 "System.IO.Pipelines",
                 "System.Security.Cryptography.Pkcs",
                 "System.Security.Cryptography.Xml",
-                "Microsoft.AspNetCore.WebTransport",
             };
 
         ListedTargetingPackAssemblies = new SortedDictionary<string, string>
@@ -231,6 +231,7 @@ public static class TestData
                 { "Microsoft.AspNetCore.SignalR.Protocols.Json", "7.0.0.0" },
                 { "Microsoft.AspNetCore.StaticFiles", "7.0.0.0" },
                 { "Microsoft.AspNetCore.WebSockets", "7.0.0.0" },
+                { "Microsoft.AspNetCore.WebTransport", "7.0.0.0" },
                 { "Microsoft.AspNetCore.WebUtilities", "7.0.0.0" },
                 { "Microsoft.Extensions.Caching.Abstractions", "7.0.0.0" },
                 { "Microsoft.Extensions.Caching.Memory", "7.0.0.0" },
