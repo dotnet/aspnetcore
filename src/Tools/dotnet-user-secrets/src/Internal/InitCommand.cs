@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
@@ -73,15 +72,20 @@ public class InitCommand : ICommand
 
     public void Execute(CommandContext context)
     {
-        var projectPath = ResolveProjectPath(ProjectPath, WorkingDirectory);
+        CreateUserSecretsId(context.Reporter, ProjectPath, WorkingDirectory, OverrideId);
+    }
+
+    public static string CreateUserSecretsId(IReporter reporter, string project, string workingDirectory, string overrideId = null)
+    {
+        var projectPath = ResolveProjectPath(project, workingDirectory);
 
         // Load the project file as XML
         var projectDocument = XDocument.Load(projectPath, LoadOptions.PreserveWhitespace);
 
         // Accept the `--id` CLI option to the main app
-        string newSecretsId = string.IsNullOrWhiteSpace(OverrideId)
+        string newSecretsId = string.IsNullOrWhiteSpace(overrideId)
             ? Guid.NewGuid().ToString()
-            : OverrideId;
+            : overrideId;
 
         // Confirm secret ID does not contain invalid characters
         if (Path.GetInvalidPathChars().Any(invalidChar => newSecretsId.Contains(invalidChar)))
@@ -95,10 +99,10 @@ public class InitCommand : ICommand
         if (existingUserSecretsId is object)
         {
             // Only set the UserSecretsId if the user specified an explicit value
-            if (string.IsNullOrWhiteSpace(OverrideId))
+            if (string.IsNullOrWhiteSpace(overrideId))
             {
-                context.Reporter.Output(Resources.FormatMessage_ProjectAlreadyInitialized(projectPath));
-                return;
+                reporter.Output(Resources.FormatMessage_ProjectAlreadyInitialized(projectPath));
+                return existingUserSecretsId.Value;
             }
 
             existingUserSecretsId.SetValue(newSecretsId);
@@ -133,7 +137,8 @@ public class InitCommand : ICommand
         using var xw = XmlWriter.Create(projectPath, settings);
         projectDocument.Save(xw);
 
-        context.Reporter.Output(Resources.FormatMessage_SetUserSecretsIdForProject(newSecretsId, projectPath));
+        reporter.Output(Resources.FormatMessage_SetUserSecretsIdForProject(newSecretsId, projectPath));
+        return newSecretsId;
     }
 
     private static string ResolveProjectPath(string name, string path)

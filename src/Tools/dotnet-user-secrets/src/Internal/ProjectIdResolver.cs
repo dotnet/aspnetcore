@@ -103,13 +103,13 @@ public class ProjectIdResolver
 
             if (!File.Exists(outputFile))
             {
-                throw new InvalidOperationException(Resources.FormatError_ProjectMissingId(projectFile));
+                throw new FileNotFoundException(Resources.FormatError_ProjectMissingId(projectFile));
             }
 
             var id = File.ReadAllText(outputFile)?.Trim();
             if (string.IsNullOrEmpty(id))
             {
-                throw new InvalidOperationException(Resources.FormatError_ProjectMissingId(projectFile));
+                throw new NullReferenceException(Resources.FormatError_ProjectMissingId(projectFile));
             }
             return id;
 
