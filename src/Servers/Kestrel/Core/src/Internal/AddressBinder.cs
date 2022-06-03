@@ -151,7 +151,6 @@ internal sealed class AddressBinder
             context.ServerOptions.ApplyEndpointDefaults(httpDefault);
             await httpDefault.BindAsync(context, cancellationToken).ConfigureAwait(false);
 
-            // No default cert is available, do not bind to the https endpoint.
             context.Logger.LogDebug(CoreStrings.BindingToDefaultAddress, Constants.DefaultServerAddress);
         }
     }
