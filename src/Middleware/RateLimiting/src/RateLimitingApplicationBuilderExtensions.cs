@@ -31,8 +31,8 @@ public static class RateLimitingApplicationBuilderExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseRateLimiter(this IApplicationBuilder app, RateLimiterOptions options)
     {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        ArgumentNullException.ThrowIfNull(options, nameof(options));
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         return app.UseMiddleware<RateLimitingMiddleware>(Options.Create(options));
     }
