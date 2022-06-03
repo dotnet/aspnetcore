@@ -453,6 +453,25 @@
     <input id="time-step-textbox-nullable-timeonly-mirror" @bind="timeStepTextboxNullableTimeOnlyValue" @bind:format="HH:mm:ss" readonly />
 </p>
 
+<h3>datetime-local with no step attribute bound to a value with seconds</h3>
+<p>
+    DateTime:
+    <input id="datetime-local-default-step-textbox-datetime" @bind="timeStepTextboxDateTimeValue" type="datetime-local" />
+    <span id="datetime-local-default-step-textbox-datetime-value">@timeStepTextboxDateTimeValue</span>
+</p>
+
+<h3>time with no step attribute bound to a value with seconds</h3>
+<p>
+    DateTime:
+    <input id="time-default-step-textbox-datetime" @bind="timeStepTextboxDateTimeValue" type="time" />
+    <span id="time-default-step-textbox-datetime-value">@timeStepTextboxDateTimeValue</span>
+</p>
+<p>
+    TimeOnly:
+    <input id="time-default-step-textbox-timeonly" @bind="timeStepTextboxTimeOnlyValue" type="time" />
+    <span id="time-default-step-textbox-timeonly-value">@timeStepTextboxTimeOnlyValue.ToLongTimeString()</span>
+</p>
+
 @code {
     string textboxInitiallyBlankValue = null;
     string textboxInitiallyPopulatedValue = "Hello";

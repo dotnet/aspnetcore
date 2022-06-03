@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.IAuthenticationConfigurationProvider
+Microsoft.AspNetCore.Authentication.IAuthenticationConfigurationProvider.GetAuthenticationSchemeConfiguration(string! authenticationScheme) -> Microsoft.Extensions.Configuration.IConfiguration!

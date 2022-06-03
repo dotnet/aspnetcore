@@ -29,7 +29,7 @@ internal sealed class MessageConverter<TMessage> : SettingsConverterBase<TMessag
 
         if (reader.TokenType != JsonTokenType.StartObject)
         {
-            throw new InvalidOperationException($"Unexpected JSON token: {reader.TokenType}");
+            throw new JsonException($"Unexpected JSON token: {reader.TokenType}");
         }
 
         while (reader.Read())

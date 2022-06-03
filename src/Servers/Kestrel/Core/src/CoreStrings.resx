@@ -668,4 +668,13 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3ControlStreamErrorInitializingOutbound" xml:space="preserve">
     <value>Error initializing outbound control stream.</value>
   </data>
+  <data name="Http3DatagramStatusMismatch" xml:space="preserve">
+    <value>HTTP/3 datagrams negotiation mismatch. Currently client has it '{clientStatus}' and server has it '{serverStatus}'</value>
+  </data>
+  <data name="Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader" xml:space="preserve">
+    <value>Method must be CONNECT when using the :protocol pseudo-header.</value>
+  </data>
+  <data name="Http3MissingAuthorityOrPathPseudoHeaders" xml:space="preserve">
+    <value>The :authority and/or :path pseudo-headers are missing.</value>
+  </data>
 </root>

@@ -225,12 +225,12 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
         return HttpContext.Response.BodyWriter.FlushAsync().GetAsTask();
     }
 
-    internal void EnsureResponseHeaders()
+    internal void EnsureResponseHeaders(string? contentType = null)
     {
         if (!HttpContext.Response.HasStarted)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            HttpContext.Response.ContentType = MediaType.ReplaceEncoding("application/json", RequestEncoding);
+            HttpContext.Response.ContentType = contentType ?? MediaType.ReplaceEncoding("application/json", RequestEncoding);
         }
     }
 }

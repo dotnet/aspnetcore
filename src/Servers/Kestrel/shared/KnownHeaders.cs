@@ -27,6 +27,7 @@ public class KnownHeaders
         HeaderNames.Connection,
         HeaderNames.Scheme,
         HeaderNames.Path,
+        HeaderNames.Protocol,
         HeaderNames.Method,
         HeaderNames.Authority,
         HeaderNames.Host,
@@ -45,7 +46,8 @@ public class KnownHeaders
         "Method", // :method
         "Path", // :path
         "Scheme", // :scheme
-        "Status" // :status
+        "Status", // :status
+        "Protocol" // :protocol
     };
 
     public static readonly string[] NonApiHeaders =
@@ -132,6 +134,7 @@ public class KnownHeaders
             HeaderNames.IfRange,
             HeaderNames.IfUnmodifiedSince,
             HeaderNames.MaxForwards,
+            HeaderNames.Protocol,
             HeaderNames.ProxyAuthorization,
             HeaderNames.Referer,
             HeaderNames.Range,

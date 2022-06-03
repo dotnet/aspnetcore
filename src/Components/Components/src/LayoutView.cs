@@ -46,6 +46,7 @@ public class LayoutView : IComponent
         return Task.CompletedTask;
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     private void Render()
     {
         // In the middle goes the supplied content

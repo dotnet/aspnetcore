@@ -24,8 +24,11 @@ using System.Reflection;
 using Google.Api;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
+using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Primitives;
+using Type = System.Type;
 
 namespace Grpc.Shared;
 
@@ -165,6 +168,11 @@ internal static class ServiceDescriptorHelpers
             case FieldType.Message:
                 if (IsWrapperType(descriptor.MessageType))
                 {
+                    if (value == null)
+                    {
+                        return null;
+                    }
+
                     return ConvertValue(value, descriptor.MessageType.FindFieldByName("value"));
                 }
                 break;
@@ -219,7 +227,17 @@ internal static class ServiceDescriptorHelpers
                     }
                     else if (values is IMessage message)
                     {
-                        field.Accessor.SetValue(currentValue, message);
+                        if (IsWrapperType(message.Descriptor))
+                        {
+                            const int WrapperValueFieldNumber = Int32Value.ValueFieldNumber;
+
+                            var wrappedValue = message.Descriptor.Fields[WrapperValueFieldNumber].Accessor.GetValue(message);
+                            field.Accessor.SetValue(currentValue, wrappedValue);
+                        }
+                        else
+                        {
+                            field.Accessor.SetValue(currentValue, message);
+                        }
                     }
                     else
                     {
