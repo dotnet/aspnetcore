@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// <summary>
 /// Represents the options for the paths used by the application for authentication operations. These paths are relative to the base.
 /// </summary>
-[DynamicallyAccessedMembers(JsonSerialized)] // fix #41998 Can be initialized by configuration binding
+[DynamicallyAccessedMembers(JsonSerialized)]
 public class RemoteAuthenticationApplicationPathsOptions
 {
     /// <summary>
