@@ -339,6 +339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HeaderNames.Origin,
             HeaderNames.Path,
             HeaderNames.Pragma,
+            HeaderNames.Protocol,
             HeaderNames.ProxyAuthenticate,
             HeaderNames.ProxyAuthorization,
             HeaderNames.ProxyConnection,
@@ -376,7 +377,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HeaderNames.XRequestedWith,
             HeaderNames.XUACompatible,
             HeaderNames.XXSSProtection,
-            HeaderNames.Protocol,
         };
     }
 
