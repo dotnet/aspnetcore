@@ -107,7 +107,7 @@ public class W3CLoggingMiddlewareTests
     public async Task LogsAdditionalRequestHeaders()
     {
         var options = CreateOptionsAccessor();
-        options.CurrentValue.AdditionalRequestHeaders = new[] { "x-forwarded-for", "x-client-ssl-protocol" }.ToHashSet();
+        options.CurrentValue.AdditionalRequestHeaders = new[] { "x-forwarded-for", "x-client-ssl-protocol", ":invalid" }.ToHashSet();
 
         var logger = new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance);
 
@@ -140,9 +140,9 @@ public class W3CLoggingMiddlewareTests
         var delta = startDate.Subtract(now).TotalSeconds;
         Assert.InRange(delta, -1, 10);
 
-        Assert.Equal("#Fields: date time c-ip s-computername s-ip s-port cs-method cs-uri-stem cs-uri-query sc-status time-taken cs-version cs-host cs(User-Agent) cs(Referer) cs(x-forwarded-for) cs(x-client-ssl-protocol)", lines[2]);
+        Assert.Equal("#Fields: date time c-ip s-computername s-ip s-port cs-method cs-uri-stem cs-uri-query sc-status time-taken cs-version cs-host cs(User-Agent) cs(Referer) cs(x-forwarded-for) cs(x-client-ssl-protocol) cs(:invalid)", lines[2]);
         Assert.DoesNotContain("Snickerdoodle", lines[3]);
-        Assert.Contains("1.3.3.7,+2001:db8:85a3:8d3:1319:8a2e:370:7348 -", lines[3]);
+        Assert.Contains("1.3.3.7,+2001:db8:85a3:8d3:1319:8a2e:370:7348 - -", lines[3]);
     }
 
     [Fact]
