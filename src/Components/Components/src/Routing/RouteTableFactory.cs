@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
 
@@ -30,6 +31,7 @@ internal static class RouteTableFactory
 
     public static void ClearCaches() => Cache.Clear();
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Application code does not get trimmed, and the framework does not define routable components.")]
     private static List<Type> GetRouteableComponents(RouteKey routeKey)
     {
         var routeableComponents = new List<Type>();
