@@ -12,14 +12,14 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
     - `PublicAPI.Shipped.txt`
       - Lists publically visible APIs that are exported from your final compiled `.dll`.
       - This only lists APIs that have already been shipped to customers and cannot be changed.
-      - There is an empty template at `eng/PublicAPI.empty.txt` for your reference.
+      - There is an empty template at `eng/PublicAPI.empty.txt` for your reference. You can copy and rename the file to add it to your project. Make sure the name is exactly as shown above.
     - `PublicAPI.UnShipped.txt`
       - Lists publicly visible APIs that are exported from your final compiled `.dll`. If this is not configured properly, you will get build errors. VS will warn you though with green squiggly lines. If you see these squiggly lines, open the VS Quick Actions (CTRL + '.') and select the option to and it to the public API.
       - This only lists APIs that have NOT already been shipped to customers. So, these can still change.
-      - There is an empty template at `eng/PublicAPI.empty.txt` for your reference.
+      - There is an empty template at `eng/PublicAPI.empty.txt` for your reference. You can copy and rename the file to add it to your project. Make sure the name is exactly as shown above.
     - `AssemblyInfo.cs`
       - Lists various properties of your compiled assembly, such as to which other packages your `internal` properties and methods are available to.
-      - You can also expose internals via the `@(InternalsVisibleTo)` item in your project file instead of using this `AssemblyInfo.cs` file.
+      - You can also expose internals via `@(InternalsVisibleTo)` items in your project file instead of using this `AssemblyInfo.cs` file.
 
 ## Adding to the rest of the repo
 1. VS Should have already registered your `.csproj` in the corresponding solution ([`.sln`](https://github.com/dotnet/aspnetcore/blob/586ccc8c895862b65645c4b0f979db1eecd29626/AspNetCore.sln)) and solution filter ([`.slnf`](https://github.com/dotnet/aspnetcore/blob/586ccc8c895862b65645c4b0f979db1eecd29626/src/Middleware/Middleware.slnf#L107-L109)) files.
@@ -46,3 +46,6 @@ while the second (the one with condition `'$(BuildMainlyReferenceProviders)' == 
     ```
 2. Re-run the `eng/scripts/GenerateProjectList.ps1` to add your project to the `eng/SharedFramework.Local.props` file and, if applicable, the `eng/TrimmableProjects.props` file.
 3. Add your project name to the lists in `src\Framework\test\TestData.cs`. This is not strictly necessary for the project to work but there is a test on CI that will fail if this is not done. Make sure to include your project in a way that maintains alphabetical ordering.
+
+## Manually saving solution and solution filter files
+VS is pretty good at keeping the files up to date and organized correctly. It will also prompt you if it finds an error and, in most cases, offer a solution to fix the issue. Sometimes just saving the file will trigger VS to reoslve any issues automatically. However, if you would like to add a new solution filter file or update one manually you can find a tutorial link [here](https://docs.microsoft.com/en-us/visualstudio/ide/filtered-solutions?view=vs-2022).
