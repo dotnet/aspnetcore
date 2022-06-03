@@ -14,7 +14,7 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
 #pragma warning restore CA1852 // Seal internal types
 {
     private readonly W3CLoggingFields _loggingFields;
-    private readonly IReadOnlyList<string>? _additionalRequestHeaders;
+    private readonly ISet<string>? _additionalRequestHeaders;
 
     public W3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
     {

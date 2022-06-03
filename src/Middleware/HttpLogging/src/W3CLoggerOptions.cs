@@ -114,7 +114,7 @@ public sealed class W3CLoggerOptions
     /// unless logs are secure and access controlled
     /// and the privacy impact assessed.
     /// </summary>
-    public IReadOnlyList<string>? AdditionalRequestHeaders { get; set; }
+    public ISet<string>? AdditionalRequestHeaders { get; set; }
 
     /// <summary>
     /// Fields to log. Defaults to logging request and response properties and headers,

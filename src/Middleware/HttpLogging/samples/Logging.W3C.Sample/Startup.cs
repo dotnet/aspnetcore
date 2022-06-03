@@ -18,7 +18,7 @@ public class Startup
             logging.AdditionalRequestHeaders = new[] {
                 "x-forwarded-for",
                 "x-client-ssl-protocol",
-            };
+            }.ToHashSet();
         });
     }
 

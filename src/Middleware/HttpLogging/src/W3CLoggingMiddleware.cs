@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Linq;
 using System.Numerics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Internal;
@@ -186,9 +187,11 @@ internal sealed class W3CLoggingMiddleware
 
                 if (_options.CurrentValue.AdditionalRequestHeaders != null)
                 {
+                    var additionalRequestHeaders = _options.CurrentValue.AdditionalRequestHeaders.ToList();
+
                     for (var i = 0; i < additionalHeadersLength; i++)
                     {
-                        if (headers.TryGetValue(_options.CurrentValue.AdditionalRequestHeaders[i], out var headerValue))
+                        if (headers.TryGetValue(additionalRequestHeaders[i], out var headerValue))
                         {
                             shouldLog |= AddToList(elements, i + _fieldsLength, headerValue.ToString());
                         }
