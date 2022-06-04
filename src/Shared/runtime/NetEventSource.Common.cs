@@ -530,7 +530,6 @@ namespace System.Net
         }
 
         [NonEvent]
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Can safely serialize primitive arguments.")]
         private unsafe void WriteEvent(int eventId, string? arg1, int arg2, int arg3, int arg4)
         {
             if (IsEnabled())
@@ -569,7 +568,6 @@ namespace System.Net
         }
 
         [NonEvent]
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Can safely serialize primitive arguments.")]
         private unsafe void WriteEvent(int eventId, string? arg1, int arg2, string? arg3)
         {
             if (IsEnabled())
@@ -605,7 +603,6 @@ namespace System.Net
         }
 
         [NonEvent]
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Can safely serialize primitive arguments.")]
         private unsafe void WriteEvent(int eventId, string? arg1, string? arg2, int arg3)
         {
             if (IsEnabled())
@@ -641,7 +638,6 @@ namespace System.Net
         }
 
         [NonEvent]
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Can safely serialize primitive arguments.")]
         private unsafe void WriteEvent(int eventId, string? arg1, string? arg2, string? arg3, int arg4)
         {
             if (IsEnabled())
