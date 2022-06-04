@@ -384,7 +384,7 @@ Microsoft.AspNetCore.Http.IRequestCookieCollection.ContainsKey(string! key) -> b
 Microsoft.AspNetCore.Http.IRequestCookieCollection.Count.get -> int
 Microsoft.AspNetCore.Http.IRequestCookieCollection.Keys.get -> System.Collections.Generic.ICollection<string!>!
 Microsoft.AspNetCore.Http.IRequestCookieCollection.this[string! key].get -> string?
-Microsoft.AspNetCore.Http.IRequestCookieCollection.TryGetValue(string! key, out string? value) -> bool
+Microsoft.AspNetCore.Http.IRequestCookieCollection.TryGetValue(string! key, out string value) -> bool
 Microsoft.AspNetCore.Http.IResponseCookies
 Microsoft.AspNetCore.Http.IResponseCookies.Append(string! key, string! value) -> void
 Microsoft.AspNetCore.Http.IResponseCookies.Append(string! key, string! value, Microsoft.AspNetCore.Http.CookieOptions! options) -> void
