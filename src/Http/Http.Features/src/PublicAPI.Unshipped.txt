@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Http.IRequestCookieCollection.TryGetValue(string! key, out string? value) -> bool
+Microsoft.AspNetCore.Http.IRequestCookieCollection.TryGetValue(string! key, out string! value) -> bool
