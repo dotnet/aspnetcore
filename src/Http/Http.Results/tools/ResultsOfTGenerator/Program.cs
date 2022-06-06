@@ -814,7 +814,7 @@ public class Program
         //    // Arrange
         //    Results<ProvidesMetadataResult1, ProvidesMetadataResult2> MyApi() { throw new NotImplementedException(); }
         //    var metadata = new List<object>();
-        //    var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        //    var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         //    // Act
         //    PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(context);
@@ -850,7 +850,7 @@ public class Program
         }
         writer.WriteLine("> MyApi() { throw new NotImplementedException(); }");
         writer.WriteIndentedLine(2, "var metadata = new List<object>();");
-        writer.WriteIndentedLine(2, "var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);");
+        writer.WriteIndentedLine(2, "var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);");
         writer.WriteLine();
 
         // Act
