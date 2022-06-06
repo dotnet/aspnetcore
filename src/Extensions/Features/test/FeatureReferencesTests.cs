@@ -20,15 +20,14 @@ public class FeatureReferencesTests
         features.Set<IThing>(currentThing);
         var references = new FeatureReferences<FeatureHolder>(features);
 
-        var thing0 = references.Fetch(ref references.Cache.Thing, (f) => null);
-        var thing1 = references.Fetch(ref references.Cache.Thing, (f) => null);
-        var thing2 = references.Fetch(ref references.Cache.Thing, (f) => null);
+        var thing0 = references.Fetch(ref references.Cache.Thing, _ => null);
+        var thing1 = references.Fetch(ref references.Cache.Thing, _ => null);
+        var thing2 = references.Fetch(ref references.Cache.Thing, _ => null);
 
         Assert.Same(currentThing, thing0);
         Assert.Same(thing0, thing1);
         Assert.Same(thing1, thing2);
     }
-
 
     [Fact]
     public void CreatingFeatureLazilyWillSetOnFeatureCollection()
@@ -38,7 +37,7 @@ public class FeatureReferencesTests
 
         Assert.Null(features.Get<IThing>());
 
-        var thing0 = references.Fetch(ref references.Cache.Thing, (f) => new Thing());
+        var thing0 = references.Fetch(ref references.Cache.Thing, _ => new Thing());
         var currentThing = features.Get<IThing>();
 
         Assert.Same(thing0, currentThing);
@@ -52,15 +51,41 @@ public class FeatureReferencesTests
         features.Set<IThing>(currentThing);
         var references = new FeatureReferences<FeatureHolder>(features);
 
-        var thing0 = references.Fetch(ref references.Cache.Thing, (f) => null);
+        var thing0 = references.Fetch(ref references.Cache.Thing, _ => null);
 
         Assert.Same(thing0, currentThing);
 
         var newThing = new Thing();
         features.Set<IThing>(newThing);
 
-        var thing1 = references.Fetch(ref references.Cache.Thing, (f) => null);
+        var thing1 = references.Fetch(ref references.Cache.Thing, _ => null);
 
+        Assert.Equal(references.Revision, features.Revision);
+        Assert.Same(thing1, newThing);
+    }
+
+    [Fact]
+    public void ChangingFeatureCollectionWillClearFeatureCacheUntilAccessed()
+    {
+        var features = new FeatureCollection();
+        var currentThing = new Thing();
+        var anotherOne = new AnotherFeature();
+        features.Set<IThing>(currentThing);
+        features.Set(anotherOne);
+        var references = new FeatureReferences<FeatureHolder>(features);
+
+        var thing0 = references.Fetch(ref references.Cache.Thing, _ => null);
+        var anotherOne0 = references.Fetch(ref references.Cache.AnotherOne, _ => null);
+
+        Assert.Same(thing0, currentThing);
+        Assert.Same(anotherOne0, anotherOne);
+
+        var newThing = new Thing();
+        features.Set<IThing>(newThing);
+
+        var thing1 = references.Fetch(ref references.Cache.Thing, _ => null);
+
+        Assert.Same(anotherOne0, references.Cache.AnotherOne);
         Assert.Equal(references.Revision, features.Revision);
         Assert.Same(thing1, newThing);
     }
@@ -68,5 +93,12 @@ public class FeatureReferencesTests
     public struct FeatureHolder
     {
         public IThing? Thing;
+
+        public AnotherFeature? AnotherOne;
+    }
+
+    public class AnotherFeature
+    {
+
     }
 }
