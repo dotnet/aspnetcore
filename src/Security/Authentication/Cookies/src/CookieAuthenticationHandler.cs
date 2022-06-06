@@ -158,7 +158,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
                 return AuthenticateResult.Fail("SessionId missing");
             }
             // Only store _sessionKey if it matches an existing session. Otherwise we'll create a new one.
-            ticket = await Options.SessionStore.RetrieveAsync(claim.Value, Context.RequestAborted);
+            ticket = await Options.SessionStore.RetrieveAsync(claim.Value, Context, Context.RequestAborted);
             if (ticket == null)
             {
                 return AuthenticateResult.Fail("Identity missing in session store");
@@ -173,7 +173,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         {
             if (Options.SessionStore != null)
             {
-                await Options.SessionStore.RemoveAsync(_sessionKey!, Context.RequestAborted);
+                await Options.SessionStore.RemoveAsync(_sessionKey!, Context, Context.RequestAborted);
             }
             return AuthenticateResult.Fail("Ticket expired");
         }
@@ -247,7 +247,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
             if (Options.SessionStore != null && _sessionKey != null)
             {
-                await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context.RequestAborted);
+                await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context, Context.RequestAborted);
                 var principal = new ClaimsPrincipal(
                     new ClaimsIdentity(
                         new[] { new Claim(SessionIdClaim, _sessionKey, ClaimValueTypes.String, Options.ClaimsIssuer) },
@@ -328,11 +328,11 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             if (_sessionKey != null)
             {
                 // Renew the ticket in cases of multiple requests see: https://github.com/dotnet/aspnetcore/issues/22135
-                await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context.RequestAborted);
+                await Options.SessionStore.RenewAsync(_sessionKey, ticket, Context, Context.RequestAborted);
             }
             else
             {
-                _sessionKey = await Options.SessionStore.StoreAsync(ticket, Context.RequestAborted);
+                _sessionKey = await Options.SessionStore.StoreAsync(ticket, Context, Context.RequestAborted);
             }
 
             var principal = new ClaimsPrincipal(
@@ -378,7 +378,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         var cookieOptions = BuildCookieOptions();
         if (Options.SessionStore != null && _sessionKey != null)
         {
-            await Options.SessionStore.RemoveAsync(_sessionKey, Context.RequestAborted);
+            await Options.SessionStore.RemoveAsync(_sessionKey, Context, Context.RequestAborted);
         }
 
         var context = new CookieSigningOutContext(
