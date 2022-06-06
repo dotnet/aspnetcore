@@ -37,7 +37,6 @@ Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowLocking.set -> voi
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AttemptOutputCaching.get -> bool
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AttemptOutputCaching.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.CachedEntryAge.get -> System.TimeSpan?
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.CachedResponseHeaders.get -> Microsoft.AspNetCore.Http.IHeaderDictionary!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.CachedVaryByRules.get -> Microsoft.AspNetCore.OutputCaching.CachedVaryByRules!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.EnableOutputCaching.get -> bool
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.EnableOutputCaching.set -> void
