@@ -458,14 +458,14 @@ public class OutputCachingPolicyProviderTests
         var context = TestUtils.CreateTestContext(sink);
         context.CachedEntryAge = TimeSpan.FromSeconds(11);
         context.ResponseTime = utcNow + context.CachedEntryAge;
-        context.CachedResponseHeaders = new HeaderDictionary();
-        context.CachedResponseHeaders[HeaderNames.CacheControl] = new CacheControlHeaderValue()
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
+        context.CachedResponse.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
         {
             Public = true,
             MaxAge = TimeSpan.FromSeconds(10),
             SharedMaxAge = TimeSpan.FromSeconds(15)
         }.ToString();
-        context.CachedResponseHeaders[HeaderNames.Expires] = HeaderUtilities.FormatDate(utcNow);
+        context.CachedResponse.Headers[HeaderNames.Expires] = HeaderUtilities.FormatDate(utcNow);
 
         var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeFromCacheAsync(context);

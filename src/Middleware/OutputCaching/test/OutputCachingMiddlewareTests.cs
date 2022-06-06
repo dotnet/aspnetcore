@@ -130,7 +130,7 @@ public class OutputCachingMiddlewareTests
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.CachedResponseHeaders = new HeaderDictionary();
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
 
         Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
         Assert.Empty(sink.Writes);
@@ -142,22 +142,22 @@ public class OutputCachingMiddlewareTests
         var utcNow = DateTimeOffset.UtcNow;
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.CachedResponseHeaders = new HeaderDictionary();
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
 
         context.HttpContext.Request.Headers.IfModifiedSince = HeaderUtilities.FormatDate(utcNow);
 
         // Verify modifications in the past succeeds
-        context.CachedResponseHeaders[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
+        context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
         Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
         Assert.Single(sink.Writes);
 
         // Verify modifications at present succeeds
-        context.CachedResponseHeaders[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow);
+        context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow);
         Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
         Assert.Equal(2, sink.Writes.Count);
 
         // Verify modifications in the future fails
-        context.CachedResponseHeaders[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
+        context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
         Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
 
         // Verify logging
@@ -173,25 +173,25 @@ public class OutputCachingMiddlewareTests
         var utcNow = DateTimeOffset.UtcNow;
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.CachedResponseHeaders = new HeaderDictionary();
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
 
         context.HttpContext.Request.Headers.IfModifiedSince = HeaderUtilities.FormatDate(utcNow);
 
         // Verify modifications in the past succeeds
-        context.CachedResponseHeaders[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
-        context.CachedResponseHeaders[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
+        context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
+        context.CachedResponse.Headers[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
         Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
         Assert.Single(sink.Writes);
 
         // Verify modifications at present
-        context.CachedResponseHeaders[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
-        context.CachedResponseHeaders[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow);
+        context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
+        context.CachedResponse.Headers[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow);
         Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
         Assert.Equal(2, sink.Writes.Count);
 
         // Verify modifications in the future fails
-        context.CachedResponseHeaders[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
-        context.CachedResponseHeaders[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
+        context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
+        context.CachedResponse.Headers[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
         Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
 
         // Verify logging
@@ -207,11 +207,11 @@ public class OutputCachingMiddlewareTests
         var utcNow = DateTimeOffset.UtcNow;
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.CachedResponseHeaders = new HeaderDictionary();
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
 
         // This would fail the IfModifiedSince checks
         context.HttpContext.Request.Headers.IfModifiedSince = HeaderUtilities.FormatDate(utcNow);
-        context.CachedResponseHeaders[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
+        context.CachedResponse.Headers[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
 
         context.HttpContext.Request.Headers.IfNoneMatch = EntityTagHeaderValue.Any.ToString();
         Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
@@ -226,11 +226,11 @@ public class OutputCachingMiddlewareTests
         var utcNow = DateTimeOffset.UtcNow;
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.CachedResponseHeaders = new HeaderDictionary();
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
 
         // This would pass the IfModifiedSince checks
         context.HttpContext.Request.Headers.IfModifiedSince = HeaderUtilities.FormatDate(utcNow);
-        context.CachedResponseHeaders[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
+        context.CachedResponse.Headers[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
 
         context.HttpContext.Request.Headers.IfNoneMatch = "\"E1\"";
         Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
@@ -242,7 +242,7 @@ public class OutputCachingMiddlewareTests
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.CachedResponseHeaders = new HeaderDictionary();
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
         context.HttpContext.Request.Headers.IfNoneMatch = "\"E1\"";
 
         Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
@@ -269,8 +269,8 @@ public class OutputCachingMiddlewareTests
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.CachedResponseHeaders = new HeaderDictionary();
-        context.CachedResponseHeaders[HeaderNames.ETag] = responseETag.ToString();
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
+        context.CachedResponse.Headers[HeaderNames.ETag] = responseETag.ToString();
         context.HttpContext.Request.Headers.IfNoneMatch = requestETag.ToString();
 
         Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
@@ -284,8 +284,8 @@ public class OutputCachingMiddlewareTests
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.CachedResponseHeaders = new HeaderDictionary();
-        context.CachedResponseHeaders[HeaderNames.ETag] = "\"E2\"";
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
+        context.CachedResponse.Headers[HeaderNames.ETag] = "\"E2\"";
         context.HttpContext.Request.Headers.IfNoneMatch = "\"E1\"";
 
         Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
@@ -297,8 +297,8 @@ public class OutputCachingMiddlewareTests
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.CachedResponseHeaders = new HeaderDictionary();
-        context.CachedResponseHeaders[HeaderNames.ETag] = "\"E2\"";
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
+        context.CachedResponse.Headers[HeaderNames.ETag] = "\"E2\"";
         context.HttpContext.Request.Headers.IfNoneMatch = new string[] { "\"E0\", \"E1\"", "\"E1\", \"E2\"" };
 
         Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
@@ -677,10 +677,7 @@ public class OutputCachingMiddlewareTests
 
         await context.HttpContext.Response.WriteAsync(new string('0', 10));
 
-        context.CachedResponse = new OutputCacheEntry()
-        {
-            Headers = new HeaderDictionary()
-        };
+        context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
         context.CacheKey = "BaseKey";
         context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
 

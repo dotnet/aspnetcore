@@ -183,7 +183,6 @@ public class OutputCachingMiddleware
         }
 
         context.CachedResponse = cacheEntry;
-        context.CachedResponseHeaders = context.CachedResponse.Headers;
         context.ResponseTime = _options.SystemClock.UtcNow;
         var cachedEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
@@ -192,17 +191,19 @@ public class OutputCachingMiddleware
 
         if (context.IsCacheEntryFresh)
         {
+            var cachedResponseHeaders = context.CachedResponse.Headers;
+
             // Check conditional request rules
             if (ContentIsNotModified(context))
             {
                 _logger.NotModifiedServed();
                 context.HttpContext.Response.StatusCode = StatusCodes.Status304NotModified;
 
-                if (context.CachedResponseHeaders != null)
+                if (cachedResponseHeaders != null)
                 {
                     foreach (var key in HeadersToIncludeIn304)
                     {
-                        if (context.CachedResponseHeaders.TryGetValue(key, out var values))
+                        if (cachedResponseHeaders.TryGetValue(key, out var values))
                         {
                             context.HttpContext.Response.Headers[key] = values;
                         }
@@ -447,7 +448,7 @@ public class OutputCachingMiddleware
 
     internal static bool ContentIsNotModified(OutputCachingContext context)
     {
-        var cachedResponseHeaders = context.CachedResponseHeaders;
+        var cachedResponseHeaders = context.CachedResponse.Headers;
         var ifNoneMatchHeader = context.HttpContext.Request.Headers.IfNoneMatch;
 
         if (!StringValues.IsNullOrEmpty(ifNoneMatchHeader))

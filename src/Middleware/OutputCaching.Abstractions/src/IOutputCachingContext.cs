@@ -27,11 +27,6 @@ public interface IOutputCachingContext
     DateTimeOffset? ResponseTime { get; }
 
     /// <summary>
-    /// Gets the cached response headers.
-    /// </summary>
-    IHeaderDictionary CachedResponseHeaders { get; }
-
-    /// <summary>
     /// Gets the <see cref="CachedVaryByRules"/> instance.
     /// </summary>
     CachedVaryByRules CachedVaryByRules { get; }

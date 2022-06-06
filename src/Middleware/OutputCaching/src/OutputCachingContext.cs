@@ -56,26 +56,23 @@ internal class OutputCachingContext : IOutputCachingContext
     public ILogger Logger { get; }
 
     /// <inheritdoc />
+    public TimeSpan? ResponseExpirationTimeSpan { get; set; }
+
     internal string CacheKey { get; set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets or sets the amount of time the response is cached for.
+    /// </summary>
+    /// <remarks>
+    /// It is computed from either <see cref="ResponseExpirationTimeSpan" /> or <see cref="OutputCachingOptions.DefaultExpirationTimeSpan"/>.
+    /// </remarks>
     internal TimeSpan CachedResponseValidFor { get; set; }
 
-    /// <inheritdoc />
     internal IOutputCacheEntry CachedResponse { get; set; }
 
-    /// <inheritdoc />
     internal bool ResponseStarted { get; set; }
 
-    /// <inheritdoc />
     internal Stream OriginalResponseStream { get; set; }
 
-    /// <inheritdoc />
     internal OutputCachingStream OutputCachingStream { get; set; }
-
-    /// <inheritdoc />
-    public IHeaderDictionary CachedResponseHeaders { get; set; }
-
-    /// <inheritdoc />
-    public TimeSpan? ResponseExpirationTimeSpan { get; set; }
 }
