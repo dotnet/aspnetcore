@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Linq;
 using System.Numerics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Internal;
@@ -38,6 +39,7 @@ internal sealed class W3CLoggingMiddleware
     internal static readonly int _userAgentIndex = BitOperations.Log2((int)W3CLoggingFields.UserAgent);
     internal static readonly int _cookieIndex = BitOperations.Log2((int)W3CLoggingFields.Cookie);
     internal static readonly int _refererIndex = BitOperations.Log2((int)W3CLoggingFields.Referer);
+    private readonly ISet<string> _additionalRequestHeaders;
 
     // Number of fields in W3CLoggingFields - equal to the number of _*Index variables above
     internal const int _fieldsLength = 17;
@@ -68,6 +70,7 @@ internal sealed class W3CLoggingMiddleware
         _next = next;
         _options = options;
         _w3cLogger = w3cLogger;
+        _additionalRequestHeaders = W3CLoggerOptions.FilterRequestHeaders(options.CurrentValue);
     }
 
     /// <summary>
@@ -79,7 +82,10 @@ internal sealed class W3CLoggingMiddleware
     {
         var options = _options.CurrentValue;
 
+        var additionalHeadersLength = _additionalRequestHeaders.Count;
+
         var elements = new string[_fieldsLength];
+        var additionalHeaderElements = new string[additionalHeadersLength];
 
         // Whether any of the requested fields actually had content
         bool shouldLog = false;
@@ -181,6 +187,19 @@ internal sealed class W3CLoggingMiddleware
                         shouldLog |= AddToList(elements, _cookieIndex, cookie.ToString());
                     }
                 }
+
+                if (_additionalRequestHeaders.Count != 0)
+                {
+                    var additionalRequestHeaders = _additionalRequestHeaders.ToList();
+
+                    for (var i = 0; i < additionalHeadersLength; i++)
+                    {
+                        if (headers.TryGetValue(additionalRequestHeaders[i], out var headerValue))
+                        {
+                            shouldLog |= AddToList(additionalHeaderElements, i, headerValue.ToString());
+                        }
+                    }
+                }
             }
         }
 
@@ -195,7 +214,7 @@ internal sealed class W3CLoggingMiddleware
             // Write the log
             if (shouldLog)
             {
-                _w3cLogger.Log(elements);
+                _w3cLogger.Log(elements, additionalHeaderElements);
             }
             throw;
         }
@@ -218,7 +237,7 @@ internal sealed class W3CLoggingMiddleware
         // Write the log
         if (shouldLog)
         {
-            _w3cLogger.Log(elements);
+            _w3cLogger.Log(elements, additionalHeaderElements);
         }
     }
 

@@ -94,4 +94,11 @@ public partial class ResultsOfTTests
     {
         public string SourceTypeName { get; init; }
     }
+
+    private class EmptyServiceProvider : IServiceProvider
+    {
+        public static IServiceProvider Instance { get; } = new EmptyServiceProvider();
+
+        public object GetService(Type serviceType) => null;
+    }
 }
