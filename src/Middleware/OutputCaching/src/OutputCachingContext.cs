@@ -16,66 +16,66 @@ internal class OutputCachingContext : IOutputCachingContext
         Logger = logger;
     }
 
-    /// <summary>
-    /// Determine whether the output caching logic should is configured for the incoming HTTP request.
-    /// </summary>
+    /// <inheritdoc />
     public bool EnableOutputCaching { get; set; }
 
-    /// <summary>
-    /// Determine whether the response caching logic should be attempted for the incoming HTTP request.
-    /// </summary>
+    /// <inheritdoc />
     public bool AttemptOutputCaching { get; set; }
 
-    /// <summary>
-    /// Determine whether a cache lookup is allowed for the incoming HTTP request.
-    /// </summary>
+    /// <inheritdoc />
     public bool AllowCacheLookup { get; set; }
 
-    /// <summary>
-    /// Determine whether storage of the response is allowed for the incoming HTTP request.
-    /// </summary>
+    /// <inheritdoc />
     public bool AllowCacheStorage { get; set; }
 
-    /// <summary>
-    /// Determine whether request should be locked.
-    /// </summary>
+    /// <inheritdoc />
     public bool AllowLocking { get; set; }
 
-    /// <summary>
-    /// Determine whether the response received by the middleware can be cached for future requests.
-    /// </summary>
+    /// <inheritdoc />
     public bool IsResponseCacheable { get; set; }
 
-    /// <summary>
-    /// Determine whether the response retrieved from the cache store is fresh and can be served.
-    /// </summary>
+    /// <inheritdoc />
     public bool IsCacheEntryFresh { get; set; }
 
+    /// <inheritdoc />
     public HttpContext HttpContext { get; }
 
+    /// <inheritdoc />
     public DateTimeOffset? ResponseTime { get; internal set; }
 
+    /// <inheritdoc />
     public TimeSpan? CachedEntryAge { get; internal set; }
 
+    /// <inheritdoc />
     public CachedVaryByRules CachedVaryByRules { get; set; } = new();
 
+    /// <inheritdoc />
     public HashSet<string> Tags { get; } = new();
 
+    /// <inheritdoc />
     public ILogger Logger { get; }
 
+    /// <inheritdoc />
     internal string CacheKey { get; set; }
 
+    /// <inheritdoc />
     internal TimeSpan CachedResponseValidFor { get; set; }
 
+    /// <inheritdoc />
     internal IOutputCacheEntry CachedResponse { get; set; }
 
+    /// <inheritdoc />
     internal bool ResponseStarted { get; set; }
 
+    /// <inheritdoc />
     internal Stream OriginalResponseStream { get; set; }
 
+    /// <inheritdoc />
     internal OutputCachingStream OutputCachingStream { get; set; }
 
+    /// <inheritdoc />
     public IHeaderDictionary CachedResponseHeaders { get; set; }
 
+    /// <inheritdoc />
     public TimeSpan? ResponseExpirationTimeSpan { get; set; }
 }

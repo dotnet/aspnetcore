@@ -388,17 +388,20 @@ public class OutputCachingMiddlewareTests
     }
 
     [Fact]
-    public void FinalizeCacheHeadersAsync_ResponseValidity_UseExpiryIfAvailable()
+    public void FinalizeCacheHeadersAsync_ResponseValidity_IgnoresExpiryIfAvailable()
     {
+        // The Expires header should not be used when set in the response
+
         var clock = new TestClock
         {
             UtcNow = DateTimeOffset.MinValue
         };
-        var sink = new TestSink();
-        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new OutputCachingOptions
+        var options = new OutputCachingOptions
         {
             SystemClock = clock
-        });
+        };
+        var sink = new TestSink();
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: options);
         var context = TestUtils.CreateTestContext();
 
         context.ResponseTime = clock.UtcNow;
@@ -406,22 +409,25 @@ public class OutputCachingMiddlewareTests
 
         middleware.FinalizeCacheHeaders(context);
 
-        Assert.Equal(TimeSpan.FromSeconds(11), context.CachedResponseValidFor);
+        Assert.Equal(options.DefaultExpirationTimeSpan, context.CachedResponseValidFor);
         Assert.Empty(sink.Writes);
     }
 
     [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseMaxAgeIfAvailable()
     {
+        // The MaxAge header should not be used if set in the response
+
         var clock = new TestClock
         {
             UtcNow = DateTimeOffset.UtcNow
         };
         var sink = new TestSink();
-        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new OutputCachingOptions
+        var options = new OutputCachingOptions
         {
             SystemClock = clock
-        });
+        };
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: options);
         var context = TestUtils.CreateTestContext();
 
         context.ResponseTime = clock.UtcNow;
@@ -434,7 +440,7 @@ public class OutputCachingMiddlewareTests
 
         middleware.FinalizeCacheHeaders(context);
 
-        Assert.Equal(TimeSpan.FromSeconds(12), context.CachedResponseValidFor);
+        Assert.Equal(options.DefaultExpirationTimeSpan, context.CachedResponseValidFor);
         Assert.Empty(sink.Writes);
     }
 
@@ -446,10 +452,11 @@ public class OutputCachingMiddlewareTests
             UtcNow = DateTimeOffset.UtcNow
         };
         var sink = new TestSink();
-        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new OutputCachingOptions
+        var options = new OutputCachingOptions
         {
             SystemClock = clock
-        });
+        };
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: options);
         var context = TestUtils.CreateTestContext();
 
         context.ResponseTime = clock.UtcNow;
@@ -462,7 +469,7 @@ public class OutputCachingMiddlewareTests
 
         middleware.FinalizeCacheHeaders(context);
 
-        Assert.Equal(TimeSpan.FromSeconds(13), context.CachedResponseValidFor);
+        Assert.Equal(options.DefaultExpirationTimeSpan, context.CachedResponseValidFor);
         Assert.Empty(sink.Writes);
     }
 
@@ -523,21 +530,24 @@ public class OutputCachingMiddlewareTests
     }
 
     [Fact]
-    public void FinalizeCacheHeadersAsync_DoNotAddDate_IfSpecified()
+    public void FinalizeCacheHeadersAsync_IgnoresDate_IfSpecified()
     {
-        var utcNow = DateTimeOffset.MinValue;
+        // The Date header should not be used when set in the response
+
+        var utcNow = DateTimeOffset.UtcNow;
+        var responseTime = utcNow + TimeSpan.FromSeconds(10);
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink);
         var context = TestUtils.CreateTestContext();
 
         context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(utcNow);
-        context.ResponseTime = utcNow + TimeSpan.FromSeconds(10);
+        context.ResponseTime = responseTime;
 
         Assert.Equal(HeaderUtilities.FormatDate(utcNow), context.HttpContext.Response.Headers.Date);
 
         middleware.FinalizeCacheHeaders(context);
 
-        Assert.Equal(HeaderUtilities.FormatDate(utcNow), context.HttpContext.Response.Headers.Date);
+        Assert.Equal(HeaderUtilities.FormatDate(responseTime), context.HttpContext.Response.Headers.Date);
         Assert.Empty(sink.Writes);
     }
 
