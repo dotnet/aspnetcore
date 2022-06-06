@@ -22,7 +22,7 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
       - You can also expose internals via `@(InternalsVisibleTo)` items in your project file instead of using this `AssemblyInfo.cs` file.
 
 ## Adding to the rest of the repo
-1. VS Should have already registered your `.csproj` in the corresponding solution ([`.sln`](https://github.com/dotnet/aspnetcore/blob/586ccc8c895862b65645c4b0f979db1eecd29626/AspNetCore.sln)) and solution filter ([`.slnf`](https://github.com/dotnet/aspnetcore/blob/586ccc8c895862b65645c4b0f979db1eecd29626/src/Middleware/Middleware.slnf#L107-L109)) files.
+1. VS should have already registered your `.csproj` in the corresponding solution ([`.sln`](https://github.com/dotnet/aspnetcore/blob/586ccc8c895862b65645c4b0f979db1eecd29626/AspNetCore.sln)) and solution filter ([`.slnf`](https://github.com/dotnet/aspnetcore/blob/586ccc8c895862b65645c4b0f979db1eecd29626/src/Middleware/Middleware.slnf#L107-L109)) files.
   - If VS has not already modified these files, make sure to add it manually as is visible in the example listed above.
 2. Run the `eng/scripts/GenerateProjectList.ps1` file to regenerate a number of `eng/*.props` files e.g. ProjectReferences.props.
 
