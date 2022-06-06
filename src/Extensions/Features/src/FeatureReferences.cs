@@ -111,12 +111,6 @@ public struct FeatureReferences<TCache>
     // Update and cache clearing logic, when the fast-path in Fetch isn't applicable
     private TFeature? UpdateCached<TFeature, TState>(ref TFeature? cached, TState state, Func<TState, TFeature?> factory, int revision, bool flush) where TFeature : class?
     {
-        if (flush)
-        {
-            // Collection detected as changed, clear cache
-            Cache = default;
-        }
-
         cached = Collection.Get<TFeature>();
         if (cached == null)
         {
