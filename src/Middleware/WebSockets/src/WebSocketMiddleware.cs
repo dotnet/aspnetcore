@@ -115,7 +115,7 @@ public partial class WebSocketMiddleware
                 {
                     if (_connectFeature?.IsExtendedConnect == true)
                     {
-                        _isH2WebSocket = CheckSupportedWebSocketRequestH2(_context.Request.Method, _connectFeature!.Protocol, _context.Request.Headers);
+                        _isH2WebSocket = CheckSupportedWebSocketRequestH2(_context.Request.Method, _connectFeature.Protocol, _context.Request.Headers);
                         _isWebSocketRequest = _isH2WebSocket;
                     }
                     else if (_upgradeFeature?.IsUpgradableRequest == true)
