@@ -26,7 +26,7 @@ app.MapGet("/", () => message);
 
 var nestedGroup = app.MapGroup("/group/{groupName}")
    .MapGroup("/nested/{nestedName}")
-   .WithMetadata(new TagsAttribute("nested"));
+   .WithTags("nested");
 
 nestedGroup
    .MapGet("/", (string groupName, string nestedName) =>
