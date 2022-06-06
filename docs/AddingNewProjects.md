@@ -4,11 +4,11 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
 
 ## Creating a new project
 1. Create a new folder that will house your `.csproj` and other project-related files.
-2. (EXTREMELY IMPORTANT) Inside our new folder make a new folder called `src`.
+2. (EXTREMELY IMPORTANT) Inside this new folder, make a new folder for the source files of your project. For regular functionality-adding project this will be called `src`. However, if you are adding a different kind of project, it will be called something more applicable (ex. `test/` for a test project).
 3. In VS, Add a new `Solution Folder` in the new folder from the first step.
 4. Create the project via the VS `Add` menu (select the folder -> right click -> Add -> follow the wizard).
 
-    **Note:** Depending on what kind of project you are creating, VS will create different files in your project. You might also want to add the following files:
+    **Note:** (Only applicable to `src/` projects) Depending on what kind of project you are creating, VS will create different files in your project. You might also want to add the following files:
     - `PublicAPI.Shipped.txt`
       - Lists publically visible APIs that are exported from your final compiled `.dll`.
       - This only lists APIs that have already been shipped to customers and cannot be changed.
@@ -39,8 +39,8 @@ while the second (the one with condition `'$(BuildMainlyReferenceProviders)' == 
                         ...
   ```
 
-## Including your project in SharedFx
-1. (OPTIONAL) Add the following line to the `.csproj`'s `PropertyGroup` to include your project in the SharedFx API:
+## (OPTIONAL) Including your project in SharedFx
+1. Add the following line to the `.csproj`'s `PropertyGroup` to include your project in the SharedFx API:
     ```XML
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     ```
