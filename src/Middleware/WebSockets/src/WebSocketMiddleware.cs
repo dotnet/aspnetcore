@@ -62,7 +62,7 @@ public partial class WebSocketMiddleware
     {
         // Detect if an opaque upgrade is available. If so, add a websocket upgrade.
         var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
-        var connectFeature = context.Features.Get<IHttpConnectFeature>();
+        var connectFeature = context.Features.Get<IHttpExtendedConnectFeature>();
         if ((upgradeFeature != null || connectFeature != null) && context.Features.Get<IHttpWebSocketFeature>() == null)
         {
             var webSocketFeature = new WebSocketHandshake(context, upgradeFeature, connectFeature, _options, _logger);
@@ -92,13 +92,13 @@ public partial class WebSocketMiddleware
     {
         private readonly HttpContext _context;
         private readonly IHttpUpgradeFeature? _upgradeFeature;
-        private readonly IHttpConnectFeature? _connectFeature;
+        private readonly IHttpExtendedConnectFeature? _connectFeature;
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
         private bool? _isWebSocketRequest;
         private bool _isH2WebSocket;
 
-        public WebSocketHandshake(HttpContext context, IHttpUpgradeFeature? upgradeFeature, IHttpConnectFeature? connectFeature, WebSocketOptions options, ILogger logger)
+        public WebSocketHandshake(HttpContext context, IHttpUpgradeFeature? upgradeFeature, IHttpExtendedConnectFeature? connectFeature, WebSocketOptions options, ILogger logger)
         {
             _context = context;
             _upgradeFeature = upgradeFeature;
@@ -113,7 +113,7 @@ public partial class WebSocketMiddleware
             {
                 if (_isWebSocketRequest == null)
                 {
-                    if (_connectFeature?.IsConnectRequest == true)
+                    if (_connectFeature?.IsExtendedConnect == true)
                     {
                         _isH2WebSocket = CheckSupportedWebSocketRequestH2(_context.Request.Method, _connectFeature!.Protocol, _context.Request.Headers);
                         _isWebSocketRequest = _isH2WebSocket;

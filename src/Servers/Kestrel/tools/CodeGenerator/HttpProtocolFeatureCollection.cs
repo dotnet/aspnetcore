@@ -36,7 +36,7 @@ public class HttpProtocolFeatureCollection
                 "IHttpRequestTrailersFeature",
                 "IHttpResponseTrailersFeature",
                 "ITlsConnectionFeature",
-                "IHttpConnectFeature",
+                "IHttpExtendedConnectFeature",
                 "IHttpUpgradeFeature",
                 "IHttpWebSocketFeature",
                 "IBadRequestExceptionFeature"
@@ -71,7 +71,7 @@ public class HttpProtocolFeatureCollection
                 "IEndpointFeature",
                 "IHttpRequestIdentifierFeature",
                 "IHttpRequestTrailersFeature",
-                "IHttpConnectFeature",
+                "IHttpExtendedConnectFeature",
                 "IHttpUpgradeFeature",
                 "IRequestBodyPipeFeature",
                 "IHttpConnectionFeature",

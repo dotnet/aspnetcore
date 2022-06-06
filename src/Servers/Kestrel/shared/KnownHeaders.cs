@@ -27,10 +27,10 @@ public class KnownHeaders
         HeaderNames.Connection,
         HeaderNames.Scheme,
         HeaderNames.Path,
+        HeaderNames.Protocol,
         HeaderNames.Method,
         HeaderNames.Authority,
         HeaderNames.Host,
-        HeaderNames.Protocol,
     };
 
     public static readonly string[] DefinedHeaderNames = typeof(HeaderNames).GetFields(BindingFlags.Static | BindingFlags.Public).Select(h => h.Name).ToArray();
@@ -47,7 +47,7 @@ public class KnownHeaders
         "Path", // :path
         "Scheme", // :scheme
         "Status", // :status
-        "Protocol", // :protocol
+        "Protocol" // :protocol
     };
 
     public static readonly string[] NonApiHeaders =
@@ -134,6 +134,7 @@ public class KnownHeaders
             HeaderNames.IfRange,
             HeaderNames.IfUnmodifiedSince,
             HeaderNames.MaxForwards,
+            HeaderNames.Protocol,
             HeaderNames.ProxyAuthorization,
             HeaderNames.Referer,
             HeaderNames.Range,
@@ -146,7 +147,6 @@ public class KnownHeaders
             HeaderNames.TraceParent,
             HeaderNames.TraceState,
             HeaderNames.Baggage,
-            HeaderNames.Protocol,
         })
         .Concat(corsRequestHeaders)
         .OrderBy(header => !requestPrimaryHeaders.Contains(header))

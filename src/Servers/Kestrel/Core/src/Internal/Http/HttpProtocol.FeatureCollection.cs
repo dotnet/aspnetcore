@@ -149,9 +149,9 @@ internal partial class HttpProtocol
 
     bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
 
-    bool IHttpConnectFeature.IsConnectRequest => IsConnectRequest;
+    bool IHttpExtendedConnectFeature.IsExtendedConnect => IsConnectRequest;
 
-    string? IHttpConnectFeature.Protocol => ConnectProtocol;
+    string? IHttpExtendedConnectFeature.Protocol => ConnectProtocol;
 
     IPAddress? IHttpConnectionFeature.RemoteIpAddress
     {
@@ -288,27 +288,24 @@ internal partial class HttpProtocol
         return _bodyControl!.Upgrade();
     }
 
-    async ValueTask<Stream> IHttpConnectFeature.AcceptAsync()
+    async ValueTask<Stream> IHttpExtendedConnectFeature.AcceptAsync()
     {
         if (!IsConnectRequest)
         {
-            // TODO Replace error messages and logs
-            throw new InvalidOperationException(CoreStrings.CannotUpgradeNonUpgradableRequest);
+            throw new InvalidOperationException(CoreStrings.CannotAcceptNonConnectRequest);
         }
 
         if (IsUpgraded)
         {
-            throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
+            throw new InvalidOperationException(CoreStrings.AcceptCannotBeCalledMultipleTimes);
         }
 
         if (StatusCode != StatusCodes.Status200OK)
         {
-            throw new InvalidOperationException("The response status code for a CONNECT request must be 200.");
+            throw new InvalidOperationException(CoreStrings.ConnectStatusMustBe200);
         }
 
         IsUpgraded = true;
-
-        KestrelEventSource.Log.RequestUpgradedStart(this);
 
         await FlushAsync();
 

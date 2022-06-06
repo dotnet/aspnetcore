@@ -28,9 +28,6 @@ public class HttpRequestFeature : IHttpRequestFeature
     public string Protocol { get; set; }
 
     /// <inheritdoc />
-    public string? ConnectProtocol { get; set; }
-
-    /// <inheritdoc />
     public string Scheme { get; set; }
 
     /// <inheritdoc />

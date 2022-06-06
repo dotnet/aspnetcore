@@ -683,4 +683,13 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="ProtocolRequiresConnect" xml:space="preserve">
     <value>':protocol' is only allowed with the 'CONNECT' method.</value>
   </data>
+  <data name="CannotAcceptNonConnectRequest" xml:space="preserve">
+    <value>Cannot accept a non-CONNECT request. Check IHttpExtendedConnectFeature.IsExtendedConnect to determine if the request can be accepted.</value>
+  </data>
+  <data name="AcceptCannotBeCalledMultipleTimes" xml:space="preserve">
+    <value>IHttpExtendedConnectFeature.AcceptAsync was already called and can only be called once per request.</value>
+  </data>
+  <data name="ConnectStatusMustBe200" xml:space="preserve">
+    <value>The response status code for a Extended CONNECT request must be 200.</value>
+  </data>
 </root>

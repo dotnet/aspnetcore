@@ -37,9 +37,9 @@ public class Http2WebSocketTests
         var result = await testServer.SendAsync(httpContext =>
         {
             httpContext.Request.Method = HttpMethods.Connect;
-            httpContext.Features.Set<IHttpConnectFeature>(new ConnectFeature()
+            httpContext.Features.Set<IHttpExtendedConnectFeature>(new ConnectFeature()
             {
-                IsConnectRequest = true,
+                IsExtendedConnect = true,
                 Protocol = "WebSocket",
             });
             httpContext.Request.Headers.SecWebSocketVersion = Constants.Headers.SupportedVersion;
@@ -54,18 +54,18 @@ public class Http2WebSocketTests
         Assert.False(headers.TryGetValue(HeaderNames.SecWebSocketAccept, out var _));
     }
 
-    public sealed class ConnectFeature : IHttpConnectFeature
+    public sealed class ConnectFeature : IHttpExtendedConnectFeature
     {
-        public bool IsConnectRequest { get; set; }
+        public bool IsExtendedConnect { get; set; }
         public string? Protocol { get; set; }
         public Stream Stream { get; set; } = Stream.Null;
 
         /// <inheritdoc/>
         public ValueTask<Stream> AcceptAsync()
         {
-            if (!IsConnectRequest)
+            if (!IsExtendedConnect)
             {
-                throw new InvalidOperationException("This is not a CONNECT request.");
+                throw new InvalidOperationException("This is not an Extended CONNECT request.");
             }
 
             return new ValueTask<Stream>(Stream);
