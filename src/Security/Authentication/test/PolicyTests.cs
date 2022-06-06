@@ -54,8 +54,7 @@ public class PolicyTests
     [Fact]
     public async Task DefaultTargetSelectorWinsOverDefaultTarget()
     {
-        var services = new ServiceCollection().AddOptions().AddLogging();
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.AddScheme<TestHandler>("auth1", "auth1");
@@ -111,8 +110,7 @@ public class PolicyTests
     [Fact]
     public async Task NullDefaultTargetSelectorFallsBacktoDefaultTarget()
     {
-        var services = new ServiceCollection().AddOptions().AddLogging();
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.AddScheme<TestHandler>("auth1", "auth1");
@@ -168,8 +166,7 @@ public class PolicyTests
     [Fact]
     public async Task SpecificTargetAlwaysWinsOverDefaultTarget()
     {
-        var services = new ServiceCollection().AddOptions().AddLogging();
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.AddScheme<TestHandler>("auth1", "auth1");
@@ -230,8 +227,7 @@ public class PolicyTests
     [Fact]
     public async Task VirtualSchemeTargetsForwardWithDefaultTarget()
     {
-        var services = new ServiceCollection().AddOptions().AddLogging();
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.AddScheme<TestHandler>("auth1", "auth1");
@@ -283,8 +279,7 @@ public class PolicyTests
     [Fact]
     public async Task VirtualSchemeTargetsOverrideDefaultTarget()
     {
-        var services = new ServiceCollection().AddOptions().AddLogging();
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication(o =>
         {
             o.AddScheme<TestHandler>("auth1", "auth1");

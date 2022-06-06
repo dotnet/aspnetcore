@@ -8,6 +8,8 @@ namespace Microsoft.AspNetCore.Authentication;
 internal sealed class DefaultAuthenticationConfigurationProvider : IAuthenticationConfigurationProvider
 {
     private readonly IConfiguration _configuration;
+    private const string AuthenticationKey = "Authentication";
+    private const string AuthenticationSchemesKey = "Authentication:Schemes";
 
     public DefaultAuthenticationConfigurationProvider(IConfiguration configuration)
     {
@@ -16,11 +18,11 @@ internal sealed class DefaultAuthenticationConfigurationProvider : IAuthenticati
 
     public IConfiguration GetAuthenticationConfiguration()
     {
-        return _configuration.GetSection(AuthenticationConfigurationConstants.Authentication);
+        return _configuration.GetSection(AuthenticationKey);
     }
 
     public IConfiguration GetAuthenticationSchemeConfiguration(string authenticationScheme)
     {
-        return _configuration.GetSection($"{AuthenticationConfigurationConstants.Authentication}:{AuthenticationConfigurationConstants.Schemes}:{authenticationScheme}");
+        return _configuration.GetSection($"{AuthenticationSchemesKey}:{authenticationScheme}");
     }
 }

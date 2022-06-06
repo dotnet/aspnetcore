@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Authentication;
 internal sealed class AuthenticationConfigureOptions : IConfigureOptions<AuthenticationOptions>
 {
     private readonly IAuthenticationConfigurationProvider _authenticationConfigurationProvider;
+    private const string DefaultSchemeKey = "DefaultScheme";
 
     public AuthenticationConfigureOptions(IAuthenticationConfigurationProvider configurationProvider)
     {
@@ -17,8 +18,8 @@ internal sealed class AuthenticationConfigureOptions : IConfigureOptions<Authent
     public void Configure(AuthenticationOptions options)
     {
         var authenticationConfig = _authenticationConfigurationProvider.GetAuthenticationConfiguration();
-        var defaultScheme = authenticationConfig[AuthenticationConfigurationConstants.DefaultScheme];
-        if (defaultScheme is not null)
+        var defaultScheme = authenticationConfig[DefaultSchemeKey];
+        if (!string.IsNullOrEmpty(defaultScheme))
         {
             options.DefaultScheme = defaultScheme;
         }

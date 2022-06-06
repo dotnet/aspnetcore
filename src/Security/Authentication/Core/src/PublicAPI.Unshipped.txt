@@ -1,5 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.AuthenticationConfigurationConstants
-const Microsoft.AspNetCore.Authentication.AuthenticationConfigurationConstants.Authentication = "Authentication" -> string!
-const Microsoft.AspNetCore.Authentication.AuthenticationConfigurationConstants.DefaultScheme = "DefaultScheme" -> string!
-const Microsoft.AspNetCore.Authentication.AuthenticationConfigurationConstants.Schemes = "Schemes" -> string!

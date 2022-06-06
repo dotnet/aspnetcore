@@ -25,8 +25,7 @@ public class ClientCertificateAuthenticationTests
     [Fact]
     public async Task VerifySchemeDefaults()
     {
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication().AddCertificate();
         var sp = services.BuildServiceProvider();
         var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
