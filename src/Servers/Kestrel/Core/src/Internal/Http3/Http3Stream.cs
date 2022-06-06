@@ -29,6 +29,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private static ReadOnlySpan<byte> AuthorityBytes => ":authority"u8;
     private static ReadOnlySpan<byte> MethodBytes => ":method"u8;
     private static ReadOnlySpan<byte> PathBytes => ":path"u8;
+    private static ReadOnlySpan<byte> ProtocolBytes => ":protocol"u8;
     private static ReadOnlySpan<byte> SchemeBytes => ":scheme"u8;
     private static ReadOnlySpan<byte> StatusBytes => ":status"u8;
     private static ReadOnlySpan<byte> ConnectionBytes => "connection"u8;
@@ -507,6 +508,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         {
             return PseudoHeaderFields.Authority;
         }
+        else if (name.SequenceEqual(ProtocolBytes))
+        {
+            return PseudoHeaderFields.Protocol;
+        }
         else
         {
             return PseudoHeaderFields.Unknown;
@@ -821,7 +826,25 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             await OnEndStreamReceived();
         }
 
-        if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
+        // https://datatracker.ietf.org/doc/html/draft-ietf-webtrans-http3/#section-3.3
+        if (_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams && HttpRequestHeaders.HeaderProtocol.Count > 0)
+        {
+            if (!_isMethodConnect)
+            {
+                throw new Http3StreamErrorException(CoreStrings.Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader, Http3ErrorCode.ProtocolError);
+            }
+
+            if (!_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Authority) || !_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Path))
+            {
+                throw new Http3StreamErrorException(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders, Http3ErrorCode.ProtocolError);
+            }
+
+            if (_context.ClientPeerSettings.H3Datagram != _context.ServerPeerSettings.H3Datagram)
+            {
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);
+            }
+        }
+        else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
         {
             // All HTTP/3 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header
             // fields, unless it is a CONNECT request. An HTTP request that omits mandatory pseudo-header
@@ -928,8 +951,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             return false;
         }
 
-        // CONNECT - :scheme and :path must be excluded
-        if (Method == Http.HttpMethod.Connect)
+        // CONNECT - :scheme and :path must be excluded=
+        if (Method == Http.HttpMethod.Connect && HttpRequestHeaders.HeaderProtocol.Count == 0)
         {
             if (!string.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
             {
@@ -1157,6 +1180,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         Path = 0x4,
         Scheme = 0x8,
         Status = 0x10,
+        Protocol = 0x20,
         Unknown = 0x40000000
     }
 

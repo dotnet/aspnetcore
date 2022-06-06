@@ -2,6 +2,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
+    <!-- Suppress warnings about lowercase variable names in generated code -->
+    <NoWarn>$(NoWarn);CS8981</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

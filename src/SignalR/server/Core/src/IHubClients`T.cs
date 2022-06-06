@@ -14,7 +14,7 @@ public interface IHubClients<T>
     /// </summary>
     /// <param name="connectionId">The connection ID.</param>
     /// <returns>A client caller.</returns>
-    T Single(string connectionId) => throw new NotImplementedException();
+    T Single(string connectionId) => Client(connectionId);
 
     /// <summary>
     /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all clients connected to the hub.

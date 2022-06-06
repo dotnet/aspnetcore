@@ -39,6 +39,7 @@ public class GrpcTemplateTest : LoggedTest
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41716")]
     public async Task GrpcTemplate(bool useProgramMain)
     {
         var project = await ProjectFactory.CreateProject(Output);

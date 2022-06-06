@@ -61,7 +61,9 @@ internal sealed class IdentityServerJwtBearerOptionsConfiguration : IConfigureNa
         {
             var store = messageReceivedContext.HttpContext.RequestServices.GetRequiredService<ISigningCredentialStore>();
             var credential = await store.GetSigningCredentialsAsync();
+#pragma warning disable 0618
             options.Authority = options.Authority ?? messageReceivedContext.HttpContext.GetIdentityServerIssuerUri();
+#pragma warning restore 0618
             options.TokenValidationParameters.IssuerSigningKey = credential.Key;
             options.TokenValidationParameters.ValidIssuer = options.Authority;
         }

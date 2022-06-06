@@ -310,17 +310,8 @@ internal sealed class HostingApplicationDiagnostics
     [MethodImpl(MethodImplOptions.NoInlining)]
     private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
     {
-        var activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server);
-        if (activity is null && (loggingEnabled || diagnosticListenerActivityCreationEnabled))
-        {
-            activity = new Activity(ActivityName);
-        }
         hasDiagnosticListener = false;
 
-        if (activity is null)
-        {
-            return null;
-        }
         var headers = httpContext.Request.Headers;
         _propagator.ExtractTraceIdAndState(headers,
             static (object? carrier, string fieldName, out string? fieldValue, out IEnumerable<string>? fieldValues) =>
@@ -332,9 +323,44 @@ internal sealed class HostingApplicationDiagnostics
             out var requestId,
             out var traceState);
 
+        Activity? activity = null;
+        if (_activitySource.HasListeners())
+        {
+            if (ActivityContext.TryParse(requestId, traceState, isRemote: true, out ActivityContext context))
+            {
+                // The requestId used the W3C ID format. Unfortunately, the ActivitySource.CreateActivity overload that
+                // takes a string parentId never sets HasRemoteParent to true. We work around that by calling the
+                // ActivityContext overload instead which sets HasRemoteParent to parentContext.IsRemote.
+                // https://github.com/dotnet/aspnetcore/pull/41568#discussion_r868733305
+                activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, context);
+            }
+            else
+            {
+                // Pass in the ID we got from the headers if there was one.
+                activity = _activitySource.CreateActivity(ActivityName, ActivityKind.Server, string.IsNullOrEmpty(requestId) ? null! : requestId);
+            }
+        }
+
+        if (activity is null)
+        {
+            // CreateActivity didn't create an Activity (this is an optimization for the
+            // case when there are no listeners). Let's create it here if needed.
+            if (loggingEnabled || diagnosticListenerActivityCreationEnabled)
+            {
+                activity = new Activity(ActivityName);
+                if (!string.IsNullOrEmpty(requestId))
+                {
+                    activity.SetParentId(requestId);
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         if (!string.IsNullOrEmpty(requestId))
         {
-            activity.SetParentId(requestId);
             if (!string.IsNullOrEmpty(traceState))
             {
                 activity.TraceStateString = traceState;

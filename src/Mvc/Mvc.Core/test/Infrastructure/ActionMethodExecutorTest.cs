@@ -1,8 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
 using Microsoft.Extensions.Internal;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -21,6 +22,7 @@ public class ActionMethodExecutorTest
         var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
         // Assert
+        Assert.Equal("VoidResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.True(controller.Executed);
         Assert.IsType<EmptyResult>(valueTask.Result);
     }
@@ -38,6 +40,7 @@ public class ActionMethodExecutorTest
         var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
         // Assert
+        Assert.Equal("SyncActionResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.True(valueTask.IsCompleted);
         Assert.IsType<ContentResult>(valueTask.Result);
     }
@@ -55,6 +58,7 @@ public class ActionMethodExecutorTest
         var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
         // Assert
+        Assert.Equal("SyncActionResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.IsType<ContentResult>(valueTask.Result);
     }
 
@@ -72,6 +76,8 @@ public class ActionMethodExecutorTest
 
         // Assert
         var result = Assert.IsType<ObjectResult>(valueTask.Result);
+
+        Assert.Equal("SyncObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
         Assert.IsType<TestModel>(result.Value);
         Assert.Equal(typeof(TestModel), result.DeclaredType);
@@ -91,6 +97,8 @@ public class ActionMethodExecutorTest
 
         // Assert
         var result = Assert.IsType<ObjectResult>(valueTask.Result);
+
+        Assert.Equal("SyncObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
         Assert.IsType<TestModel>(result.Value);
         Assert.Equal(typeof(TestModel), result.DeclaredType);
@@ -110,6 +118,8 @@ public class ActionMethodExecutorTest
 
         // Assert
         var result = Assert.IsType<ObjectResult>(valueTask.Result);
+
+        Assert.Equal("SyncObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
         Assert.IsType<TestModel>(result.Value);
         Assert.Equal(typeof(object), result.DeclaredType);
@@ -128,6 +138,7 @@ public class ActionMethodExecutorTest
         var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
         // Assert
+        Assert.Equal("SyncActionResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.IsType<ContentResult>(valueTask.Result);
     }
 
@@ -144,8 +155,27 @@ public class ActionMethodExecutorTest
         var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
         // Assert
+        Assert.Equal("TaskResultExecutor", actionMethodExecutor.GetType().Name);  
         Assert.True(controller.Executed);
         Assert.IsType<EmptyResult>(valueTask.Result);
+    }
+
+    [Fact]
+    public void ActionMethodExecutor_ExecutesActionsReturnAwaitable()
+    {
+        // Arrange
+        var mapper = new ActionResultTypeMapper();
+        var controller = new TestController();
+        var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnsAwaitable));
+        var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
+
+        // Act
+        var awaitableResult = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
+
+        // Assert
+        Assert.Equal("AwaitableResultExecutor", actionMethodExecutor.GetType().Name);
+        Assert.True(controller.Executed);
+        Assert.IsType<EmptyResult>(awaitableResult.Result);
     }
 
     [Fact]
@@ -161,6 +191,7 @@ public class ActionMethodExecutorTest
         var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
         // Assert
+        Assert.Equal("TaskOfIActionResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.IsType<StatusCodeResult>(valueTask.Result);
     }
 
@@ -170,7 +201,7 @@ public class ActionMethodExecutorTest
         // Arrange
         var mapper = new ActionResultTypeMapper();
         var controller = new TestController();
-        var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnIActionResultAsync));
+        var objectMethodExecutor = GetExecutor(nameof(TestController.ReturnActionResultAsync));
         var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
 
         // Act
@@ -178,7 +209,8 @@ public class ActionMethodExecutorTest
 
         // Assert
         await valueTask;
-        Assert.IsType<StatusCodeResult>(valueTask.Result);
+        Assert.Equal("TaskOfActionResultExecutor", actionMethodExecutor.GetType().Name);
+        Assert.IsType<ViewResult>(valueTask.Result);
     }
 
     [Fact]
@@ -195,6 +227,8 @@ public class ActionMethodExecutorTest
 
         // Assert
         var result = Assert.IsType<ObjectResult>(valueTask.Result);
+
+        Assert.Equal("AwaitableObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
         Assert.IsType<TestModel>(result.Value);
         Assert.Equal(typeof(TestModel), result.DeclaredType);
@@ -214,6 +248,8 @@ public class ActionMethodExecutorTest
 
         // Assert
         var result = Assert.IsType<ObjectResult>(valueTask.Result);
+
+        Assert.Equal("AwaitableObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
         Assert.IsType<TestModel>(result.Value);
         Assert.Equal(typeof(object), result.DeclaredType);
@@ -232,6 +268,7 @@ public class ActionMethodExecutorTest
         var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
         // Assert
+        Assert.Equal("AwaitableObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.IsType<OkResult>(valueTask.Result);
     }
 
@@ -249,6 +286,8 @@ public class ActionMethodExecutorTest
 
         // Assert
         var result = Assert.IsType<ObjectResult>(valueTask.Result);
+
+        Assert.Equal("AwaitableObjectResultExecutor", actionMethodExecutor.GetType().Name);
         Assert.NotNull(result.Value);
         Assert.IsType<TestModel>(result.Value);
         Assert.Equal(typeof(TestModel), result.DeclaredType);
@@ -304,7 +343,15 @@ public class ActionMethodExecutorTest
             return Task.CompletedTask;
         }
 
+        public YieldAwaitable ReturnsAwaitable()
+        {
+            Executed = true;
+            return Task.Yield();
+        }
+
         public Task<IActionResult> ReturnIActionResultAsync() => Task.FromResult((IActionResult)new StatusCodeResult(201));
+
+        public Task<ViewResult> ReturnActionResultAsync() => Task.FromResult(new ViewResult { StatusCode = 200});
 
         public Task<StatusCodeResult> ReturnsIActionResultSubTypeAsync() => Task.FromResult(new StatusCodeResult(200));
 

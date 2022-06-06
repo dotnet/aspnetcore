@@ -636,7 +636,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _requestTimedOut = false;
         _requestTargetForm = HttpRequestTarget.Unknown;
         _absoluteRequestTarget = null;
-        _remainingRequestHeadersBytesAllowed = ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
+        _remainingRequestHeadersBytesAllowed = (long)ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
 
         MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 

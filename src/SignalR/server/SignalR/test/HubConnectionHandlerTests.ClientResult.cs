@@ -103,4 +103,117 @@ public partial class HubConnectionHandlerTests
             }
         }
     }
+
+    [Fact]
+    public async Task CanUseClientResultsWithIHubContext()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using var client = new TestClient();
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            // Wait for a connection, or for the endpoint to fail.
+            await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
+
+            var context = serviceProvider.GetRequiredService<IHubContext<MethodHub>>();
+            var resultTask = context.Clients.Single(client.Connection.ConnectionId).InvokeAsync<int>("GetClientResult", 1);
+
+            var message = await client.ReadAsync().DefaultTimeout();
+            var invocation = Assert.IsType<InvocationMessage>(message);
+
+            Assert.Single(invocation.Arguments);
+            Assert.Equal(1L, invocation.Arguments[0]);
+            Assert.Equal("GetClientResult", invocation.Target);
+
+            await client.SendHubMessageAsync(CompletionMessage.WithResult(invocation.InvocationId, 2)).DefaultTimeout();
+
+            var result = await resultTask.DefaultTimeout();
+            Assert.Equal(2, result);
+        }
+    }
+
+    [Fact]
+    public async Task CanUseClientResultsWithIHubContextT()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubT>>();
+
+            using var client = new TestClient();
+            var connectionId = client.Connection.ConnectionId;
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            // Wait for a connection, or for the endpoint to fail.
+            await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).DefaultTimeout();
+
+            var context = serviceProvider.GetRequiredService<IHubContext<HubT, ITest>>();
+
+            async Task AssertClientResult(Task<int> resultTask)
+            {
+                var message = await client.ReadAsync().DefaultTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(message);
+
+                Assert.Single(invocation.Arguments);
+                Assert.Equal(1L, invocation.Arguments[0]);
+                Assert.Equal("GetClientResult", invocation.Target);
+
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocation.InvocationId, 2)).DefaultTimeout();
+
+                var result = await resultTask.DefaultTimeout();
+                Assert.Equal(2, result);
+            }
+
+            await AssertClientResult(context.Clients.Single(connectionId).GetClientResult(1));
+            await AssertClientResult(context.Clients.Client(connectionId).GetClientResult(1));
+        }
+    }
+
+    [Fact]
+    public async Task CanReturnClientResultToTypedHubThreeWays()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                // Waiting for a client result blocks the hub dispatcher pipeline, need to allow multiple invocations
+                builder.AddSignalR(o => o.MaximumParallelInvocationsPerClient = 2);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubT>>();
+
+            using var client = new TestClient(invocationBinder: new GetClientResultThreeWaysInvocationBinder());
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+            var invocationId = await client.SendHubMessageAsync(new InvocationMessage(
+                invocationId: "1",
+                nameof(HubT.GetClientResultThreeWays),
+                new object[] { 5, 6, 7 })).DefaultTimeout();
+
+            // Send back "value + 4" to all three invocations.
+            for (int i = 0; i < 3; i++)
+            {
+                // Hub asks client for a result, this is an invocation message with an ID.
+                var invocationMessage = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.NotNull(invocationMessage.InvocationId);
+                var res = 4 + (int)invocationMessage.Arguments[0];
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage.InvocationId, res)).DefaultTimeout();
+            }
+
+            var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal(new ClientResults(9, 10, 11), completion.Result);
+        }
+    }
+
+    private class GetClientResultThreeWaysInvocationBinder : IInvocationBinder
+    {
+        public IReadOnlyList<Type> GetParameterTypes(string methodName) => new[] { typeof(int) };
+        public Type GetReturnType(string invocationId) => typeof(ClientResults);
+        public Type GetStreamItemType(string streamId) => throw new NotImplementedException();
+    }
 }

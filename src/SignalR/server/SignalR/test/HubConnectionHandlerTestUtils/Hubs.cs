@@ -440,7 +440,7 @@ public class DynamicTestHub : DynamicHub
     }
 }
 
-public class HubT : Hub<Test>
+public class HubT : Hub<ITest>
 {
     public override Task OnConnectedAsync()
     {
@@ -524,13 +524,23 @@ public class HubT : Hub<Test>
     {
         return Clients.Caller.Send(message);
     }
+
+    public async Task<ClientResults> GetClientResultThreeWays(int singleValue, int clientValue, int callerValue) =>
+        new ClientResults(
+            await Clients.Single(Context.ConnectionId).GetClientResult(singleValue),
+            await Clients.Client(Context.ConnectionId).GetClientResult(clientValue),
+            await Clients.Caller.GetClientResult(callerValue));
 }
 
-public interface Test
+public interface ITest
 {
     Task Send(string message);
     Task Broadcast(string message);
+
+    Task<int> GetClientResult(int value);
 }
+
+public record ClientResults(int SingleResult, int ClientResult, int CallerResult);
 
 public class OnConnectedThrowsHub : Hub
 {
