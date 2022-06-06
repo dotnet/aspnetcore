@@ -37,8 +37,8 @@ public class Program
         CreateCommand.Register(userJwts);
         // dotnet user-jwts print ecd045
         PrintCommand.Register(userJwts);
-        // dotnet user-jwts delete ecd045
-        DeleteCommand.Register(userJwts);
+        // dotnet user-jwts remove ecd045
+        RemoveCommand.Register(userJwts);
         // dotnet user-jwts clear
         ClearCommand.Register(userJwts);
         // dotnet user-jwts key
