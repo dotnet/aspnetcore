@@ -1728,6 +1728,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalJwtBearerSample", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-jwts.Tests", "src\Tools\dotnet-user-jwts\test\dotnet-user-jwts.Tests.csproj", "{89896261-C5DD-4901-BCA7-7A5F718BC008}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestInfrastructure", "TestInfrastructure", "{F0FBA346-D8BC-4FAE-A4B2-85B33FA23055}"
+	ProjectSection(SolutionItems) = preProject
+		src\ProjectTemplates\TestInfrastructure\Directory.Build.props.in = src\ProjectTemplates\TestInfrastructure\Directory.Build.props.in
+		src\ProjectTemplates\TestInfrastructure\Directory.Build.targets.in = src\ProjectTemplates\TestInfrastructure\Directory.Build.targets.in
+		src\ProjectTemplates\TestInfrastructure\PrepareForTest.targets = src\ProjectTemplates\TestInfrastructure\PrepareForTest.targets
+		src\ProjectTemplates\TestInfrastructure\runtimeconfig.norollforward.json = src\ProjectTemplates\TestInfrastructure\runtimeconfig.norollforward.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -11233,6 +11241,7 @@ Global
 		{AB4B9E75-719C-4589-B852-20FBFD727730} = {0B200A66-B809-4ED3-A790-CB1C2E80975E}
 		{7F079E92-32D5-4257-B95B-CFFB0D49C160} = {7FD32066-C831-4E29-978C-9A2215E85C67}
 		{89896261-C5DD-4901-BCA7-7A5F718BC008} = {AB4B9E75-719C-4589-B852-20FBFD727730}
+		{F0FBA346-D8BC-4FAE-A4B2-85B33FA23055} = {08D53E58-4AAE-40C4-8497-63EC8664F304}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
