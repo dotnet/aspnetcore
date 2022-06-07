@@ -32,7 +32,7 @@ type WeatherForecastController (logger : ILogger<WeatherForecastController>) =
         let rng = System.Random()
         [|
             for index in 0..4 ->
-                { Date = DateOnly.Now.AddDays(float index)
+                { Date = DateTime.Now.AddDays(float index)
                   TemperatureC = rng.Next(-20,55)
                   Summary = summaries.[rng.Next(summaries.Length)] }
         |]
