@@ -18,9 +18,15 @@ public class Startup
         {
             var memory = new Memory<byte>(new byte[4096]);
             var length = await context.Request.Body.ReadAsync(memory);
-            context.Response.Headers["test"] = "foo";
-            // for testing
-            await context.Response.WriteAsync($"Hello World! {context.Request.Protocol} {context.Connection.ClientCertificate?.Subject}");
+
+            AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var isWebTransport);
+            if (isWebTransport)
+            {
+                context.Response.Headers.Append("sec-webtransport-http3-draft", "draft02");
+                await context.Response.Body.FlushAsync();
+
+                await Task.Delay(TimeSpan.FromMinutes(5));
+            }
         });
     }
 }
