@@ -19,10 +19,20 @@ public class Startup
             var memory = new Memory<byte>(new byte[4096]);
             var length = await context.Request.Body.ReadAsync(memory);
 
+            // todo read the message that the client says and validate the version of webtransport rather than blindly accepting it
+
             AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var isWebTransport);
             if (isWebTransport)
             {
                 context.Response.Headers.Append("sec-webtransport-http3-draft", "draft02");
+                await context.Response.Body.FlushAsync();
+
+                // WAIT FOR THE NEXT MESSAGE FROM THE CLIENT
+                var memory2 = new Memory<byte>(new byte[4096]);
+                var length2 = await context.Request.Body.ReadAsync(memory2);
+
+                // WRITE TO THE CLIENT (DOESN'T WORK. I PROBABLY JUST NEED TO UPDATE THE JS)
+                await context.Response.WriteAsync("testing writing");
                 await context.Response.Body.FlushAsync();
 
                 await Task.Delay(TimeSpan.FromMinutes(5));
