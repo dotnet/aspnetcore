@@ -181,7 +181,7 @@
     <value>A scope claim to add to the JWT. Specify once for each scope.</value>
   </data>
   <data name="CreateCommand_ValidForOption_Description" xml:space="preserve">
-    <value>The period the JWT should expire after. Specify using a number followed by a period type like 'd' for days, 'h' for hours, 'm' for minutes, and 's' for seconds, e.g. '365d'. Do not use this option in conjunction with the --expires-on option.</value>
+    <value>The period the JWT should expire after. Specify using a number followed by a duration type like 'd' for days, 'h' for hours, 'm' for minutes, and 's' for seconds, e.g. '365d'. Do not use this option in conjunction with the --expires-on option.</value>
   </data>
   <data name="KeyCommand_Canceled" xml:space="preserve">
     <value>Key reset canceled.</value>
@@ -236,6 +236,9 @@
   </data>
   <data name="PrintCommand_ShowFullOption_Description" xml:space="preserve">
     <value>Whether to show the full JWT contents in addition to the compact serialized format.</value>
+  </data>
+  <data name="ProjectOption_Description" xml:space="preserve">
+    <value>The path of the project to operate on. Defaults to the project in the current directory.</value>
   </data>
   <data name="RemoveCommand_Confirmed" xml:space="preserve">
     <value>Deleted JWT with ID '{0}'.</value>
