@@ -57,7 +57,7 @@ public class Http2WebSocketTests
     public sealed class ConnectFeature : IHttpExtendedConnectFeature
     {
         public bool IsExtendedConnect { get; set; }
-        public string? Protocol { get; set; }
+        public string Protocol { get; set; }
         public Stream Stream { get; set; } = Stream.Null;
 
         /// <inheritdoc/>
