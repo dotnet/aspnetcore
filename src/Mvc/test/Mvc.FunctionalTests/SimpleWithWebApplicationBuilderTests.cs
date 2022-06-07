@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
@@ -18,13 +19,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     {
         private readonly MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.FakeStartup> _fixture;
 
-        public SimpleWithWebApplicationBuilderTests(MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.FakeStartup> fixture)
+        public SimpleWithWebApplicationBuilderTests(MvcTestFixture<SimpleWebSiteWithWebApplicationBuilder.FakeStartup> fixture,
+            ITestOutputHelper helper)
         {
             _fixture = fixture;
             Client = _fixture.CreateDefaultClient();
+            Helper = helper;
         }
 
         public HttpClient Client { get; }
+        public ITestOutputHelper Helper { get; }
 
         [Fact]
         public async Task HelloWorld()
@@ -131,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("Hello human", content);
         }
 
-        [Fact(Skip = "Failing on Windows environments: https://github.com/dotnet/aspnetcore/issues/41937")]
+        [Fact]
         public async Task DefaultEnvironment_Is_Development()
         {
             // Arrange
@@ -142,6 +146,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var content = await client.GetStringAsync("http://localhost/environment");
 
             // Assert
+            if (!string.Equals(expected, content))
+            {
+                // Get more information when this test is going to fail.
+                var configContent = await client.GetStringAsync("http://localhost/config");
+
+                Helper.WriteLine($"Configuration debug view: '{configContent}'");
+            }
+
             Assert.Equal(expected, content);
         }
 
