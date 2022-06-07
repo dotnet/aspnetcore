@@ -305,7 +305,8 @@ public static partial class RequestDelegateFactory
             FilterContextExpr).Compile();
         var routeHandlerContext = new RouteHandlerContext(
             methodInfo,
-            new EndpointMetadataCollection(factoryContext.Metadata));
+            new EndpointMetadataCollection(factoryContext.Metadata),
+            factoryContext.ServiceProvider ?? EmptyServiceProvider.Instance);
 
         for (var i = factoryContext.Filters.Count - 1; i >= 0; i--)
         {
@@ -442,7 +443,7 @@ public static partial class RequestDelegateFactory
             if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IEndpointParameterMetadataProvider
-                var parameterContext = new EndpointParameterMetadataContext(parameter, metadata, services);
+                var parameterContext = new EndpointParameterMetadataContext(parameter, metadata, services ?? EmptyServiceProvider.Instance);
                 invokeArgs ??= new object[1];
                 invokeArgs[0] = parameterContext;
                 PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
@@ -451,7 +452,7 @@ public static partial class RequestDelegateFactory
             if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IEndpointMetadataProvider
-                var context = new EndpointMetadataContext(methodInfo, metadata, services);
+                var context = new EndpointMetadataContext(methodInfo, metadata, services ?? EmptyServiceProvider.Instance);
                 invokeArgs ??= new object[1];
                 invokeArgs[0] = context;
                 PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
@@ -468,7 +469,7 @@ public static partial class RequestDelegateFactory
         if (returnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(returnType))
         {
             // Return type implements IEndpointMetadataProvider
-            var context = new EndpointMetadataContext(methodInfo, metadata, services);
+            var context = new EndpointMetadataContext(methodInfo, metadata, services ?? EmptyServiceProvider.Instance);
             invokeArgs ??= new object[1];
             invokeArgs[0] = context;
             PopulateMetadataForEndpointMethod.MakeGenericMethod(returnType).Invoke(null, invokeArgs);
@@ -2349,5 +2350,12 @@ public static partial class RequestDelegateFactory
         {
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class EmptyServiceProvider : IServiceProvider
+    {
+        public static IServiceProvider Instance { get; } = new EmptyServiceProvider();
+
+        public object? GetService(Type serviceType) => null;
     }
 }

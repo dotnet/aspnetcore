@@ -901,6 +901,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
                 {
                     Assert.NotNull(routeHandlerContext.MethodInfo);
                     Assert.NotNull(routeHandlerContext.MethodInfo.DeclaringType);
+                    Assert.NotNull(routeHandlerContext.ApplicationServices);
                     Assert.Equal("RouteHandlerEndpointRouteBuilderExtensionsTest", routeHandlerContext.MethodInfo.DeclaringType?.Name);
                     context.Arguments[0] = context.GetArgument<int>(0) + 1;
                     return await next(context);
@@ -971,6 +972,54 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var body = streamReader.ReadToEndAsync().Result;
         Assert.Equal("loggerErrorIsEnabled: True, parentName: RouteHandlerEndpointRouteBuilderExtensionsTest", body);
     }
+
+    [Fact]
+    public void RequestDelegateFactory_ProvidesAppServiceProvider_ToFilterFactory()
+    {
+        var appServiceCollection = new ServiceCollection();
+        var appService = new MyService();
+        appServiceCollection.AddSingleton(appService);
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(appServiceCollection.BuildServiceProvider()));
+        var filterFactoryRan = false;
+
+        string? PrintLogger(HttpContext context) => $"loggerErrorIsEnabled: {context.Items["loggerErrorIsEnabled"]}, parentName: {context.Items["parentName"]}";
+        var routeHandlerBuilder = builder.Map("/", PrintLogger);
+        routeHandlerBuilder.AddFilter((rhc, next) =>
+        {
+            Assert.NotNull(rhc.ApplicationServices);
+            var myService = rhc.ApplicationServices.GetRequiredService<MyService>();
+            Assert.Equal(appService, myService);
+            filterFactoryRan = true;
+            return next;
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        Assert.Single(dataSource.Endpoints);
+        Assert.True(filterFactoryRan);
+    }
+
+    [Fact]
+    public void RouteHandlerContext_ThrowsArgumentNullException_ForMethodInfo()
+    {
+        Assert.Throws<ArgumentNullException>("methodInfo", () => new RouteHandlerContext(null!, new(), new ServiceCollection().BuildServiceProvider()));
+    }
+
+    [Fact]
+    public void RouteHandlerContext_ThrowsArgumentNullException_ForEndpointMetadata()
+    {
+        var handler = () => { };
+        Assert.Throws<ArgumentNullException>("endpointMetadata", () => new RouteHandlerContext(handler.Method, null!, new ServiceCollection().BuildServiceProvider()));
+    }
+
+    [Fact]
+    public void RouteHandlerContext_ThrowsArgumentNullException_ForApplicationServices()
+    {
+        var handler = () => { };
+        Assert.Throws<ArgumentNullException>("applicationServices", () => new RouteHandlerContext(handler.Method, new(), null!));
+    }
+
+    class MyService { }
 
     class ServiceAccessingRouteHandlerFilter : IRouteHandlerFilter
     {

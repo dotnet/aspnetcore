@@ -39,6 +39,13 @@
         >$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin'))</ArtifactsBinDir>
     <OutputPath Condition=" '$(OutputPath)' == '' "
         >$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', '$(MSBuildProjectName)'))</OutputPath>
+
+    <!--
+      Define $(HelixTestConfigurationFilePath) so the Helix SDK automatically includes our test config file in the
+      correlation payload. The Helix SDK has a fallback value that doesn't work w/o including the Arcade SDK and
+      we intentionally do not do that in this project.
+    -->
+    <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
   </PropertyGroup>
 
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
