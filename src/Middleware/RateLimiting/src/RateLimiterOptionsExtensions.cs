@@ -13,14 +13,15 @@ public static class RateLimiterOptionsExtensions
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="name">The name that will be associated with the limiter.</param>
     /// <param name="tokenBucketRateLimiterOptions">The <see cref="TokenBucketRateLimiterOptions"/> to be used for the limiter.</param>
+    /// <param name="global">Determines if this policy should be shared across endpoints. Defaults to false.</param>
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
-    public static RateLimiterOptions AddTokenBucketRateLimiter(this RateLimiterOptions options, string name, TokenBucketRateLimiterOptions tokenBucketRateLimiterOptions)
+    public static RateLimiterOptions AddTokenBucketRateLimiter(this RateLimiterOptions options, string name, TokenBucketRateLimiterOptions tokenBucketRateLimiterOptions, bool global = false)
     {
-        return options.AddLimiter<NoKey>(name, context =>
+        return options.AddPolicy<NoKey>(name, context =>
         {
             return RateLimitPartition.CreateTokenBucketLimiter(NoKey.Instance,
                 _ => tokenBucketRateLimiterOptions);
-        });
+        }, global);
     }
 
     /// <summary>
@@ -29,14 +30,15 @@ public static class RateLimiterOptionsExtensions
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="name">The name that will be associated with the limiter.</param>
     /// <param name="fixedWindowRateLimiterOptions">The <see cref="FixedWindowRateLimiterOptions"/> to be used for the limiter.</param>
+    /// <param name="global">Determines if this policy should be shared across endpoints. Defaults to false.</param>
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
-    public static RateLimiterOptions AddFixedWindowRateLimiter(this RateLimiterOptions options, string name, FixedWindowRateLimiterOptions fixedWindowRateLimiterOptions)
+    public static RateLimiterOptions AddFixedWindowRateLimiter(this RateLimiterOptions options, string name, FixedWindowRateLimiterOptions fixedWindowRateLimiterOptions, bool global = false)
     {
-        return options.AddLimiter<NoKey>(name, context =>
+        return options.AddPolicy<NoKey>(name, context =>
         {
             return RateLimitPartition.CreateFixedWindowLimiter(NoKey.Instance,
                 _ => fixedWindowRateLimiterOptions);
-        });
+        }, global);
     }
 
     /// <summary>
@@ -45,14 +47,15 @@ public static class RateLimiterOptionsExtensions
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="name">The name that will be associated with the limiter.</param>
     /// <param name="slidingWindowRateLimiterOptions">The <see cref="SlidingWindowRateLimiterOptions"/> to be used for the limiter.</param>
+    /// <param name="global">Determines if this policy should be shared across endpoints. Defaults to false.</param>
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
-    public static RateLimiterOptions AddSlidingWindowRateLimiter(this RateLimiterOptions options, string name, SlidingWindowRateLimiterOptions slidingWindowRateLimiterOptions)
+    public static RateLimiterOptions AddSlidingWindowRateLimiter(this RateLimiterOptions options, string name, SlidingWindowRateLimiterOptions slidingWindowRateLimiterOptions, bool global = false)
     {
-        return options.AddLimiter<NoKey>(name, context =>
+        return options.AddPolicy<NoKey>(name, context =>
         {
             return RateLimitPartition.CreateSlidingWindowLimiter(NoKey.Instance,
                 _ => slidingWindowRateLimiterOptions);
-        });
+        }, global);
     }
 
     /// <summary>
@@ -61,13 +64,14 @@ public static class RateLimiterOptionsExtensions
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="name">The name that will be associated with the limiter.</param>
     /// <param name="concurrencyLimiterOptions">The <see cref="ConcurrencyLimiterOptions"/> to be used for the limiter.</param>
+    /// <param name="global">Determines if this policy should be shared across endpoints. Defaults to false.</param>
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
-    public static RateLimiterOptions AddConcurrencyLimiter(this RateLimiterOptions options, string name, ConcurrencyLimiterOptions concurrencyLimiterOptions)
+    public static RateLimiterOptions AddConcurrencyLimiter(this RateLimiterOptions options, string name, ConcurrencyLimiterOptions concurrencyLimiterOptions, bool global = false)
     {
-        return options.AddLimiter<NoKey>(name, context =>
+        return options.AddPolicy<NoKey>(name, context =>
         {
             return RateLimitPartition.CreateConcurrencyLimiter(NoKey.Instance,
                 _ => concurrencyLimiterOptions);
-        });
+        }, global);
     }
 }
