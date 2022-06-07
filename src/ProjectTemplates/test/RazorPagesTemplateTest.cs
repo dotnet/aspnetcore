@@ -36,6 +36,7 @@ namespace Templates.Test
 
         [ConditionalTheory]
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows: https://github.com/dotnet/aspnetcore/issues/41937")]
         [InlineData(true)]
         [InlineData(false)]
         public async Task RazorPagesTemplate_NoAuth(bool useProgramMain)
@@ -111,12 +112,14 @@ namespace Templates.Test
         [InlineData(true)]
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows: https://github.com/dotnet/aspnetcore/issues/41937")]
         public Task RazorPagesTemplate_IndividualAuth_LocalDb(bool useProgramMain) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: true, useProgramMain);
 
         [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
         [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows: https://github.com/dotnet/aspnetcore/issues/41937")]
         public Task RazorPagesTemplate_IndividualAuth(bool useProgramMain) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: false, useProgramMain);
 
         private async Task RazorPagesTemplate_IndividualAuth_Core(bool useLocalDB, bool useProgramMain)
