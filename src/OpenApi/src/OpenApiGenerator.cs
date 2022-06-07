@@ -328,7 +328,23 @@ internal sealed class OpenApiGenerator
 
     private List<OpenApiTag> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
     {
-        var tags = metadata.GetMetadata<ITagsMetadata>();
+        var metadataList = metadata.GetOrderedMetadata<ITagsMetadata>();
+
+        if (metadataList.Count > 0)
+        {
+            var tags = new List<OpenApiTag>();
+
+            foreach (var metadataItem in metadataList)
+            {
+                foreach (var tag in metadataItem.Tags)
+                {
+                    tags.Add(new OpenApiTag() { Name = tag });
+                }
+            }
+
+            return tags;
+        }
+
         string controllerName;
 
         if (methodInfo.DeclaringType is not null && !TypeHelper.IsCompilerGeneratedType(methodInfo.DeclaringType))
@@ -342,9 +358,7 @@ internal sealed class OpenApiGenerator
             controllerName = _environment?.ApplicationName ?? string.Empty;
         }
 
-        return tags is not null
-            ? tags.Tags.Select(tag => new OpenApiTag() { Name = tag }).ToList()
-            : new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
+        return new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
     }
 
     private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)

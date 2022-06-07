@@ -11,7 +11,8 @@
     {"testName": {"contains": "AddressRegistrationTests" }},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
     {"testName": {"contains": "ReaderThrowsResetExceptionOnInvalidBody" }},
-    {"failureMessage": "network disconnected" }
+    {"failureMessage": {"contains":"System.AggregateException : One or more errors occurred. (Operation did not succeed after 15 retries (Site is started but no worker process found) (Site is started but no worker process found)"}},
+    {"failureMessage": {"contains": "network disconnected"}}
   ],
   "failOnRules": [
   ],

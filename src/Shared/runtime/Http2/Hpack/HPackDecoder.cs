@@ -183,7 +183,7 @@ namespace System.Net.Http.HPack
             while (currentIndex < data.Length);
 
             // If a header range was set, but the value was not in the data, then copy the range
-            // to the name buffer. Must copy because because the data will be replaced and the range
+            // to the name buffer. Must copy because the data will be replaced and the range
             // will no longer be valid.
             if (_headerNameRange != null)
             {

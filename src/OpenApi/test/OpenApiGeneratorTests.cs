@@ -4,6 +4,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -48,6 +49,23 @@ public class OpenApiOperationGeneratorTests
         var tag = Assert.Single(operation.Tags);
 
         Assert.Equal(declaringTypeName, tag.Name);
+    }
+
+    [Fact]
+    public void UsesTagsFromMultipleCallsToWithTags()
+    {
+        var testBuilder = new TestEndpointConventionBuilder();
+        var routeHandlerBuilder = new RouteHandlerBuilder(new[] { testBuilder });
+
+        routeHandlerBuilder
+            .WithTags("A")
+            .WithTags("B");
+
+        var operation = GetOpenApiOperation(() => { }, additionalMetadata: testBuilder.Metadata.ToArray());
+
+        Assert.Collection(operation.Tags,
+            tag => Assert.Equal("A", tag.Name),
+            tag => Assert.Equal("B", tag.Name));
     }
 
     [Fact]
@@ -922,5 +940,18 @@ public class OpenApiOperationGeneratorTests
         public int Bar { get; set; }
         public InferredJsonClass FromBody { get; set; }
         public HttpContext Context { get; set; }
+    }
+
+    private class TestEndpointConventionBuilder : EndpointBuilder, IEndpointConventionBuilder
+    {
+        public void Add(Action<EndpointBuilder> convention)
+        {
+            convention(this);
+        }
+
+        public override Endpoint Build()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

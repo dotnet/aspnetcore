@@ -56,8 +56,7 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo ValueTaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ValueTaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo CreateProblemDetailsMethod = typeof(RequestDelegateFactory).GetMethod(nameof(CreateProblemDetails), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo ArrayEmptyMethod = typeof(Array).GetMethod(nameof(Array.Empty), BindingFlags.Public | BindingFlags.Static)!;
+    private static readonly MethodInfo ArrayEmptyOfObjectMethod = typeof(Array).GetMethod(nameof(Array.Empty), BindingFlags.Public | BindingFlags.Static)!.MakeGenericMethod(new Type[] { typeof(object) });
 
     // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
     // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
@@ -107,11 +106,6 @@ public static partial class RequestDelegateFactory
 
     private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
-
-    private static Task CreateProblemDetails(HttpContext context)
-    {
-        return Task.CompletedTask;
-    }
 
     /// <summary>
     /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="handler"/>.
@@ -311,7 +305,8 @@ public static partial class RequestDelegateFactory
             FilterContextExpr).Compile();
         var routeHandlerContext = new RouteHandlerContext(
             methodInfo,
-            new EndpointMetadataCollection(factoryContext.Metadata));
+            new EndpointMetadataCollection(factoryContext.Metadata),
+            factoryContext.ServiceProvider ?? EmptyServiceProvider.Instance);
 
         for (var i = factoryContext.Filters.Count - 1; i >= 0; i--)
         {
@@ -397,7 +392,7 @@ public static partial class RequestDelegateFactory
         // non-generic implementation of RouteHandlerInvocationContext.
         Expression paramArray = factoryContext.BoxedArgs.Length > 0
             ? Expression.NewArrayInit(typeof(object), factoryContext.BoxedArgs)
-            : Expression.Call(ArrayEmptyMethod.MakeGenericMethod(new Type[] { typeof(object) }));
+            : Expression.Call(ArrayEmptyOfObjectMethod);
         var fallbackConstruction = Expression.New(
             DefaultRouteHandlerInvocationContextConstructor,
             new Expression[] { HttpContextExpr, paramArray });
@@ -448,7 +443,7 @@ public static partial class RequestDelegateFactory
             if (typeof(IEndpointParameterMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IEndpointParameterMetadataProvider
-                var parameterContext = new EndpointParameterMetadataContext(parameter, metadata, services);
+                var parameterContext = new EndpointParameterMetadataContext(parameter, metadata, services ?? EmptyServiceProvider.Instance);
                 invokeArgs ??= new object[1];
                 invokeArgs[0] = parameterContext;
                 PopulateMetadataForParameterMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
@@ -457,7 +452,7 @@ public static partial class RequestDelegateFactory
             if (typeof(IEndpointMetadataProvider).IsAssignableFrom(parameter.ParameterType))
             {
                 // Parameter type implements IEndpointMetadataProvider
-                var context = new EndpointMetadataContext(methodInfo, metadata, services);
+                var context = new EndpointMetadataContext(methodInfo, metadata, services ?? EmptyServiceProvider.Instance);
                 invokeArgs ??= new object[1];
                 invokeArgs[0] = context;
                 PopulateMetadataForEndpointMethod.MakeGenericMethod(parameter.ParameterType).Invoke(null, invokeArgs);
@@ -474,7 +469,7 @@ public static partial class RequestDelegateFactory
         if (returnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(returnType))
         {
             // Return type implements IEndpointMetadataProvider
-            var context = new EndpointMetadataContext(methodInfo, metadata, services);
+            var context = new EndpointMetadataContext(methodInfo, metadata, services ?? EmptyServiceProvider.Instance);
             invokeArgs ??= new object[1];
             invokeArgs[0] = context;
             PopulateMetadataForEndpointMethod.MakeGenericMethod(returnType).Invoke(null, invokeArgs);
@@ -808,7 +803,7 @@ public static partial class RequestDelegateFactory
                 WasParamCheckFailureExpr,
                 Expression.Block(
                     Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
-                    Expression.Call(CreateProblemDetailsMethod, HttpContextExpr)),
+                    CompletedTaskExpr),
                 AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType));
             checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
         }
@@ -2355,5 +2350,12 @@ public static partial class RequestDelegateFactory
         {
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class EmptyServiceProvider : IServiceProvider
+    {
+        public static IServiceProvider Instance { get; } = new EmptyServiceProvider();
+
+        public object? GetService(Type serviceType) => null;
     }
 }
