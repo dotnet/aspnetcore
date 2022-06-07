@@ -95,7 +95,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     }
 
     [Fact]
-    public void Delete_RemovesGeneratedToken()
+    public void Remove_RemovesGeneratedToken()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
         var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
@@ -106,7 +106,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var id = matches.SingleOrDefault().Groups[1].Value;
         app.Run(new[] { "create", "--project", project, "--scheme", "Scheme2" });
 
-        app.Run(new[] { "delete", id, "--project", project });
+        app.Run(new[] { "remove", id, "--project", project });
         var appsettingsContent = File.ReadAllText(appsettings);
         Assert.DoesNotContain("Bearer", appsettingsContent);
         Assert.Contains("Scheme2", appsettingsContent);

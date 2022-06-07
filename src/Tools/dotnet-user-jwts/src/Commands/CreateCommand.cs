@@ -23,59 +23,57 @@ internal sealed class CreateCommand
     {
         app.Command("create", cmd =>
         {
-            cmd.Description = "Issue a new JSON Web Token";
+            cmd.Description = Resources.CreateCommand_Description;
 
             var schemeNameOption = cmd.Option(
                 "--scheme",
-                "The scheme name to use for the generated token. Defaults to 'Bearer'",
+                Resources.CreateCommand_SchemeOption_Description,
                 CommandOptionType.SingleValue
                 );
 
             var nameOption = cmd.Option(
                 "--name",
-                "The name of the user to create the JWT for. Defaults to the current environment user.",
+                Resources.CreateCommand_NameOption_Description,
                 CommandOptionType.SingleValue);
 
             var audienceOption = cmd.Option(
                 "--audience",
-                "The audiences to create the JWT for. Defaults to the URLs configured in the project's launchSettings.json",
+                Resources.CreateCommand_AudienceOption_Description,
                 CommandOptionType.MultipleValue);
 
             var issuerOption = cmd.Option(
                 "--issuer",
-                "The issuer of the JWT. Defaults to the dotnet-user-jwts",
+                Resources.CreateCommand_IssuerOption_Description,
                 CommandOptionType.SingleValue);
 
             var scopesOption = cmd.Option(
                 "--scope",
-                "A scope claim to add to the JWT. Specify once for each scope.",
+                Resources.CreateCommand_ScopeOption_Description,
                 CommandOptionType.MultipleValue);
 
             var rolesOption = cmd.Option(
                 "--role",
-                "A role claim to add to the JWT. Specify once for each role",
+                Resources.CreateCommand_RoleOption_Description,
                 CommandOptionType.MultipleValue);
 
             var claimsOption = cmd.Option(
                 "--claim",
-                "Claims to add to the JWT. Specify once for each claim in the format \"name=value\"",
+                Resources.CreateCommand_ClaimOption_Description,
                 CommandOptionType.MultipleValue);
 
             var notBeforeOption = cmd.Option(
                 "--not-before",
-                @"The UTC date & time the JWT should not be valid before in the format 'yyyy-MM-dd [[HH:mm[[:ss]]]]'. Defaults to the date & time the JWT is created",
+                Resources.CreateCommand_NotBeforeOption_Description,
                 CommandOptionType.SingleValue);
 
             var expiresOnOption = cmd.Option(
                 "--expires-on",
-                @"The UTC date & time the JWT should expire in the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'. Defaults to 6 months after the --not-before date. " +
-                         "Do not use this option in conjunction with the --valid-for option.",
+                Resources.CreateCommand_ExpiresOnOption_Description,
                 CommandOptionType.SingleValue);
 
             var validForOption = cmd.Option(
                 "--valid-for",
-                "The period the JWT should expire after. Specify using a number followed by a period type like 'd' for days, 'h' for hours, " +
-                         "'m' for minutes, and 's' for seconds, e.g. '365d'. Do not use this option in conjunction with the --expires-on option.",
+                Resources.CreateCommand_ValidForOption_Description,
                 CommandOptionType.SingleValue);
 
             cmd.HelpOption("-h|--help");
@@ -117,7 +115,7 @@ internal sealed class CreateCommand
         var audience = audienceOption.HasValue() ? audienceOption.Values : DevJwtCliHelpers.GetAudienceCandidatesFromLaunchSettings(project).ToList();
         if (audience is null)
         {
-            reporter.Error("Could not determine the project's HTTPS URL. Please specify an audience for the JWT using the --audience option.");
+            reporter.Error(Resources.CreateCommand_NoAudience_Error);
             isValid = false;
         }
         var issuer = issuerOption.HasValue() ? issuerOption.Value() : DevJwtsDefaults.Issuer;
@@ -127,7 +125,7 @@ internal sealed class CreateCommand
         {
             if (!ParseDate(notBeforeOption.Value(), out notBefore))
             {
-                reporter.Error(@"The date provided for --not-before could not be parsed. Dates must consist of a date and can include an optional timestamp.");
+                reporter.Error(Resources.FormatCreateCommand_InvalidDate_Error("--not-before"));
                 isValid = false;
             }
         }
@@ -137,7 +135,7 @@ internal sealed class CreateCommand
         {
             if (!ParseDate(expiresOnOption.Value(), out expiresOn))
             {
-                reporter.Error(@"The date provided for --expires-on could not be parsed. Dates must consist of a date and can include an optional timestamp.");
+                reporter.Error(Resources.FormatCreateCommand_InvalidDate_Error("--expires-on"));
                 isValid = false;
             }
         }
@@ -146,7 +144,7 @@ internal sealed class CreateCommand
         {
             if (!TimeSpan.TryParseExact(validForOption.Value(), _timeSpanFormats, CultureInfo.InvariantCulture, out var validForValue))
             {
-                reporter.Error("The period provided for --valid-for could not be parsed. Ensure you use a format like '10d', '22h', '45s' etc.");
+                reporter.Error(Resources.FormatCreateCommand_InvalidPeriod_Error("--valid-for"));
             }
             expiresOn = notBefore.Add(validForValue);
         }
@@ -159,7 +157,7 @@ internal sealed class CreateCommand
         {
             if (!DevJwtCliHelpers.TryParseClaims(claimsOption.Values, out claims))
             {
-                reporter.Error("Malformed claims supplied. Ensure each claim is in the format \"name=value\".");
+                reporter.Error(Resources.CreateCommand_InvalidClaims_Error);
                 isValid = false;
             }
         }
@@ -197,7 +195,7 @@ internal sealed class CreateCommand
         var settingsToWrite = new JwtAuthenticationSchemeSettings(options.Scheme, options.Audiences, options.Issuer);
         settingsToWrite.Save(appsettingsFilePath);
 
-        reporter.Output($"New JWT saved with ID '{jwtToken.Id}'.");
+        reporter.Output(Resources.FormatCreateCommand_Confirmed(jwtToken.Id));
 
         return 0;
     }

@@ -135,7 +135,7 @@ internal static class DevJwtCliHelpers
                                     var value = applicationUrl.GetString();
                                     if (value is { } applicationUrls)
                                     {
-                                        return applicationUrls.Split(";");
+                                        return applicationUrls.Split(';');
                                     }
                                 }
                             }
