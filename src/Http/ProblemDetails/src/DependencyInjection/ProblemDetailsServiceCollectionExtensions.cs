@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -23,18 +22,9 @@ public static class ProblemDetailsServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(nameof(services));
 
-        // Adding default services
-        services.TryAddSingleton<IHttpProblemDetailsFactory, DefaultHttpProblemDetailsFactory>();
-        services.TryAddSingleton(s =>
-        {
-            var options = s.GetRequiredService<IOptions<ProblemDetailsOptions>>().Value;
-            var factory = s.GetRequiredService<IHttpProblemDetailsFactory>();
-            return new ProblemDetailsEndpointProvider(Options.Options.Create(options), factory);
-        });
-
-        // Adding options configurations
-        services.TryAddEnumerable(
-            ServiceDescriptor.Transient<IConfigureOptions<ProblemDetailsOptions>, ProblemDetailsOptionsSetup>());
+        // Adding default services;
+        services.TryAddSingleton<IProblemDetailsEndpointWriter, DefaultProblemDetailsEndpointWriter>();
+        services.TryAddSingleton<ProblemDetailsMapper>();
 
         return services;
     }

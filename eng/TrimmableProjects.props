@@ -25,9 +25,10 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Extensions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Features" />
-    <TrimmableProject Include="Microsoft.AspNetCore.Http.ProblemDetails" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http" />
     <TrimmableProject Include="Microsoft.AspNetCore.Metadata" />
+    <TrimmableProject Include="Microsoft.AspnetCore.Http.ProblemDetails.Abstractions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.ProblemDetails" />
     <TrimmableProject Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Routing" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />

@@ -1,27 +1,27 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure;
-
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
+
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 internal sealed class ProblemDetailsClientErrorFactory : IClientErrorFactory
 {
     private readonly ProblemDetailsFactory _problemDetailsFactory;
-    private readonly ProblemDetailsOptions _options;
+    private readonly ProblemDetailsMapper? _matcher;
 
     public ProblemDetailsClientErrorFactory(
         ProblemDetailsFactory problemDetailsFactory,
-        IOptions<ProblemDetailsOptions> options)
+        ProblemDetailsMapper? matcher = null)
     {
         _problemDetailsFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
-        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _matcher = matcher;
     }
 
     public IActionResult? GetClientError(ActionContext actionContext, IClientErrorActionResult clientError)
     {
-        if (!_options.IsEnabled(clientError.StatusCode!.Value))
+        if (_matcher != null &&
+           !_matcher.CanMap(actionContext.HttpContext, statusCode: clientError.StatusCode))
         {
             return null;
         }

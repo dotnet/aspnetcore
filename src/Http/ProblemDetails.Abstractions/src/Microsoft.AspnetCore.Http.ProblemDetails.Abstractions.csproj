@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core.</Description>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore</PackageTags>
+    <IsPackable>false</IsPackable>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="Converters" />
+    <Compile Include="$(SharedSourceRoot)HttpValidationProblemDetailsJsonConverter.cs" LinkBase="Converters" />
+    <Compile Include="$(SharedSourceRoot)ProblemDetailsDefaults.cs" Link="ProblemDetailsDefaults.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.ProblemDetails" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Results" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Core" />
+  </ItemGroup>
+  
+</Project>

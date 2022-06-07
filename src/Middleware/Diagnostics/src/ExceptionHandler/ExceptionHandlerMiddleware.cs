@@ -7,6 +7,7 @@ using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,6 @@ public class ExceptionHandlerMiddleware
     private readonly ILogger _logger;
     private readonly Func<object, Task> _clearCacheHeadersDelegate;
     private readonly DiagnosticListener _diagnosticListener;
-    private readonly ProblemDetailsEndpointProvider? _problemDetailsEndpointProvider;
 
     /// <summary>
     /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
@@ -33,30 +33,22 @@ public class ExceptionHandlerMiddleware
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <param name="options">The options for configuring the middleware.</param>
     /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
-    /// <param name="problemDetailsEndpointProvider"></param>
     public ExceptionHandlerMiddleware(
         RequestDelegate next,
         ILoggerFactory loggerFactory,
         IOptions<ExceptionHandlerOptions> options,
-        DiagnosticListener diagnosticListener,
-        ProblemDetailsEndpointProvider? problemDetailsEndpointProvider = null)
+        DiagnosticListener diagnosticListener)
     {
         _next = next;
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         _clearCacheHeadersDelegate = ClearCacheHeaders;
         _diagnosticListener = diagnosticListener;
-        _problemDetailsEndpointProvider = problemDetailsEndpointProvider;
         if (_options.ExceptionHandler == null)
         {
             if (_options.ExceptionHandlingPath == null)
             {
-                if (_problemDetailsEndpointProvider == null)
-                {
-                    throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
-                }
-
-                _options.ExceptionHandler = CreatProblemDetailsHandler();
+                throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
             }
             else
             {
@@ -142,7 +134,10 @@ public class ExceptionHandlerMiddleware
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
-            await _options.ExceptionHandler!(context);
+            if (!await TryWriteProblemDetails(context, exceptionHandlerFeature))
+            {
+                await _options.ExceptionHandler!(context);
+            }
 
             // If the response has already started, assume exception handler was successful.
             if (context.Response.HasStarted || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
@@ -202,28 +197,32 @@ public class ExceptionHandlerMiddleware
         return Task.CompletedTask;
     }
 
-    private RequestDelegate CreatProblemDetailsHandler()
+    private Task<bool> TryWriteProblemDetails(HttpContext context, ExceptionHandlerFeature exceptionFeature)
     {
-        return _problemDetailsEndpointProvider!.CreateRequestDelegate(
-            StatusCodes.Status500InternalServerError,
-            configureDetails: (context, problemDetails) =>
+        void ConfigureDetails(HttpContext context, ProblemDetails problemDetails)
+        {
+            var hostEnvironment = context.RequestServices.GetRequiredService<IHostEnvironment>();
+
+            if (hostEnvironment.IsDevelopment())
             {
-                var exceptionFeature = context.Features.GetRequiredFeature<IExceptionHandlerFeature>();
-                var hostEnvironment = context.RequestServices.GetRequiredService<IHostEnvironment>();
-
-                if (hostEnvironment.IsDevelopment())
+                // TODO: Fix
+                problemDetails.Detail = exceptionFeature!.Error.Message;
+                problemDetails.Extensions.Add("exception", new
                 {
-                    problemDetails.Detail = exceptionFeature.Error.Message;
-                    problemDetails.Extensions.Add("exception", new
-                    {
-                        Details = exceptionFeature.Error.ToString(),
-                        exceptionFeature.Path,
-                        exceptionFeature.RouteValues,
-                        Endpoint = exceptionFeature.Endpoint?.ToString()
-                    });
-                }
+                    Details = exceptionFeature.Error.ToString(),
+                    exceptionFeature.Path,
+                    exceptionFeature.RouteValues,
+                    Endpoint = exceptionFeature.Endpoint?.ToString()
+                });
+            }
+        }
 
-                _options.ConfigureDetails?.Invoke(exceptionFeature, problemDetails);
-            });
+        var endpointWriter = context.RequestServices.GetService<IProblemDetailsEndpointWriter>();
+        if (endpointWriter != null)
+        {
+            return endpointWriter.WriteAsync(context, exceptionFeature.Endpoint?.Metadata, configureDetails: ConfigureDetails);
+        }
+
+        return Task.FromResult(false);
     }
 }

@@ -67,11 +67,7 @@ internal static class ProblemDetailsDefaults
         ),
     };
 
-    public static void Apply(
-        HttpContext httpContext,
-        ProblemDetails problemDetails,
-        int? statusCode,
-        Dictionary<int, ProblemDetailsErrorData> errorMapping)
+    public static void Apply(ProblemDetails problemDetails, int? statusCode)
     {
         // We allow StatusCode to be specified either on ProblemDetails or on the ObjectResult and use it to configure the other.
         // This lets users write <c>return Conflict(new Problem("some description"))</c>
@@ -90,16 +86,10 @@ internal static class ProblemDetailsDefaults
             }
         }
 
-        if (errorMapping.TryGetValue(problemDetails.Status.Value, out var mapData))
+        if (Defaults.TryGetValue(problemDetails.Status.Value, out var defaults))
         {
-            problemDetails.Title ??= mapData.Title;
-            problemDetails.Type ??= mapData.Link;
-        }
-
-        var traceId = Activity.Current?.Id ?? httpContext?.TraceIdentifier;
-        if (traceId != null)
-        {
-            problemDetails.Extensions["traceId"] = traceId;
+            problemDetails.Title ??= defaults.Title;
+            problemDetails.Type ??= defaults.Type;
         }
     }
 }

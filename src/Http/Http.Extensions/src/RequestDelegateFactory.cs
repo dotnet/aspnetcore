@@ -117,12 +117,6 @@ public static partial class RequestDelegateFactory
 
     private static Task CreateProblemDetails(HttpContext context)
     {
-        var endpointProvider = context.RequestServices.GetService<ProblemDetailsEndpointProvider>();
-        if (endpointProvider != null && endpointProvider.CanWrite(context.Response.StatusCode))
-        {
-            return endpointProvider.WriteResponse(context, context.Response.StatusCode);
-        }
-
         return Task.CompletedTask;
     }
 

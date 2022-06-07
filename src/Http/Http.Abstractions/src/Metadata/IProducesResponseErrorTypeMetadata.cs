@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Mvc;
+namespace Microsoft.AspNetCore.Http.Metadata;
 
-using Microsoft.AspNetCore.Http.Metadata;
 
 /// <summary>
 /// Specifies the type returned by default by controllers annotated with <see cref="ApiControllerAttribute"/>.
@@ -17,20 +16,10 @@ using Microsoft.AspNetCore.Http.Metadata;
 /// Use this <see cref="Attribute"/> to configure the default error type if your application uses a custom error type to respond.
 /// </para>
 /// </summary>
-[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public sealed class ProducesErrorResponseTypeAttribute : Attribute, IProducesErrorResponseMetadata
+public interface IProducesErrorResponseMetadata
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="ProducesErrorResponseTypeAttribute"/>.
+    /// Gets the optimistic return type of the action.
     /// </summary>
-    /// <param name="type">The error type. Use <see cref="void"/> to indicate the absence of a default error type.</param>
-    public ProducesErrorResponseTypeAttribute(Type type)
-    {
-        Type = type ?? throw new ArgumentNullException(nameof(type));
-    }
-
-    /// <summary>
-    /// Gets the default error type.
-    /// </summary>
-    public Type Type { get; }
+    Type? Type { get; }
 }

@@ -1,7 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ConfigureDetails.get -> System.Action<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature!, Microsoft.AspNetCore.Mvc.ProblemDetails!>?
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ConfigureDetails.set -> void
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware.ExceptionHandlerMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.ExceptionHandlerOptions!>! options, System.Diagnostics.DiagnosticListener! diagnosticListener, Microsoft.AspNetCore.Http.ProblemDetailsEndpointProvider? problemDetailsEndpointProvider = null) -> void
 Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
 Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.Endpoint.set -> void
 Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
