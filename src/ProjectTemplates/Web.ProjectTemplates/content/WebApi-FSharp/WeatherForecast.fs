@@ -3,7 +3,7 @@ namespace Company.WebApplication1
 open System
 
 type WeatherForecast =
-    { Date: DateTime
+    { Date: DateOnly
       TemperatureC: int
       Summary: string }
 

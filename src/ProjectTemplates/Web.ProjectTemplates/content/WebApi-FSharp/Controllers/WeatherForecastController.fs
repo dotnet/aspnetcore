@@ -1,4 +1,4 @@
-﻿namespace Company.WebApplication1.Controllers
+namespace Company.WebApplication1.Controllers
 
 open System
 open System.Collections.Generic
@@ -32,7 +32,7 @@ type WeatherForecastController (logger : ILogger<WeatherForecastController>) =
         let rng = System.Random()
         [|
             for index in 0..4 ->
-                { Date = DateTime.Now.AddDays(float index)
+                { Date = DateOnly.Now.AddDays(float index)
                   TemperatureC = rng.Next(-20,55)
                   Summary = summaries.[rng.Next(summaries.Length)] }
         |]

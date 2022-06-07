@@ -97,16 +97,16 @@ public class Program
         #endif
         app.UseAuthorization();
 
-        #if (UseMinimalAPIs)
-        #if (OrganizationalAuth || IndividualB2CAuth)
+#if (UseMinimalAPIs)
+#if (OrganizationalAuth || IndividualB2CAuth)
         var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"] ?? "";
-        #endif
+#endif
         var summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        #if (GenerateApi)
+#if (GenerateApi)
         app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
         {
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
@@ -122,71 +122,75 @@ public class Program
                 var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 throw new HttpRequestException($"Invalid status code in the HttpResponseMessage: {response.StatusCode}: {error}");
             }
+            var today = DateOnly.FromDateTime(DateTime.Now);
 
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
-                    Date = DateTime.Now.AddDays(index),
+                    Date = today.AddDays(index),
                     TemperatureC = Random.Shared.Next(-20, 55),
                     Summary = summaries[Random.Shared.Next(summaries.Length)]
                 })
                 .ToArray();
 
             return forecast;
-        #elif (GenerateGraph)
+#elif (GenerateGraph)
         app.MapGet("/weatherforecast", async (HttpContext httpContext, Graph.GraphServiceClient graphServiceClient) =>
         {
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
             var user = await graphServiceClient.Me.Request().GetAsync();
 
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
-                    Date = DateTime.Now.AddDays(index),
+                    Date = today.AddDays(index),
                     TemperatureC = Random.Shared.Next(-20, 55),
                     Summary = summaries[Random.Shared.Next(summaries.Length)]
                 })
                 .ToArray();
 
             return forecast;
-        #else
+#else
         app.MapGet("/weatherforecast", (HttpContext httpContext) =>
         {
-            #if (OrganizationalAuth || IndividualB2CAuth)
+#if (OrganizationalAuth || IndividualB2CAuth)
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-            #endif
+#endif
+            var today = DateOnly.FromDateTime(DateTime.Now);
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
-                    Date = DateTime.Now.AddDays(index),
+                    Date = today.AddDays(index),
                     TemperatureC = Random.Shared.Next(-20, 55),
                     Summary = summaries[Random.Shared.Next(summaries.Length)]
                 })
                 .ToArray();
             return forecast;
-        #endif
-        #if (EnableOpenAPI && !NoAuth)
+#endif
+#if (EnableOpenAPI && !NoAuth)
         })
         .WithName("GetWeatherForecast")
         .WithOpenApi()
         .RequireAuthorization();
-        #elif (EnableOpenAPI && NoAuth)
+#elif (EnableOpenAPI && NoAuth)
         })
         .WithName("GetWeatherForecast")
         .WithOpenApi();
-        #elif (!EnableOpenAPI && !NoAuth)
+#elif (!EnableOpenAPI && !NoAuth)
         })
         .RequireAuthorization();
-        #else
+#else
         });
-        #endif
-        #endif
-        #if (UseControllers)
+#endif
+#endif
+#if (UseControllers)
 
         app.MapControllers();
-        #endif
+#endif
 
         app.Run();
     }
