@@ -72,6 +72,7 @@ public class PackageTests
             {
                 continue;
             }
+            // Test lib assemblies
             var packageAssembliesDir = Path.Combine(packageDir, "lib");
             if (Directory.Exists(packageAssembliesDir))
             {
@@ -99,6 +100,30 @@ public class PackageTests
                         }
                         Assert.Equal(0, assemblyVersion.Revision);
                     }
+                }
+            }
+
+            // Test tool assemblies
+            var packageToolsDir = Path.Combine(packageDir, "tools");
+            if (Directory.Exists(packageToolsDir))
+            {
+                var assemblies = Directory.GetFiles(packageToolsDir, "*.dll", SearchOption.AllDirectories)
+                    .Where(f => !Path.GetFileNameWithoutExtension(f).Contains("System.", StringComparison.OrdinalIgnoreCase) &&
+                        !Path.GetFileNameWithoutExtension(f).Contains("Microsoft.", StringComparison.OrdinalIgnoreCase) &&
+                        !Path.GetFileNameWithoutExtension(f).Contains("Azure.", StringComparison.OrdinalIgnoreCase) &&
+                        !Path.GetFileNameWithoutExtension(f).Contains("aspnetcorev2", StringComparison.OrdinalIgnoreCase) &&
+                        !Path.GetFileNameWithoutExtension(f).Contains("Newtonsoft.", StringComparison.OrdinalIgnoreCase));
+                foreach (var assembly in assemblies)
+                {
+                    using var fileStream = File.OpenRead(assembly);
+                    using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+                    var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                    var assemblyVersion = reader.GetAssemblyDefinition().Version;
+
+                    Assert.Equal(expectedVersion.Major, assemblyVersion.Major);
+                    Assert.Equal(expectedVersion.Minor, assemblyVersion.Minor);
+                    Assert.Equal(0, assemblyVersion.Build);
+                    Assert.Equal(0, assemblyVersion.Revision);
                 }
             }
         }
