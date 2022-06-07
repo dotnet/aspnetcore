@@ -24,7 +24,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Http.ProblemDetails" />
+    <Reference Include="Microsoft.AspNetCore.Http.ProblemDetails.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
 
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Results.Tests" />

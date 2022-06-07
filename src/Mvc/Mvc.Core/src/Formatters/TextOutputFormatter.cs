@@ -134,15 +134,12 @@ public abstract class TextOutputFormatter : OutputFormatter
         else
         {
             const int statusCode = StatusCodes.Status406NotAcceptable;
-
-            var endpointProvider = context.HttpContext.RequestServices.GetService<ProblemDetailsEndpointProvider>();
-            if (endpointProvider != null && endpointProvider.CanWrite(statusCode))
-            {
-                return endpointProvider.WriteResponse(context.HttpContext, statusCode);
-            }
-
             context.HttpContext.Response.StatusCode = statusCode;
-            return Task.CompletedTask;
+
+            var endpointWriter = context.HttpContext.RequestServices.GetService<IProblemDetailsEndpointWriter>();
+            return endpointWriter == null ?
+                Task.CompletedTask :
+                endpointWriter.WriteAsync(context.HttpContext);
         }
 
         context.ContentType = selectedMediaType;

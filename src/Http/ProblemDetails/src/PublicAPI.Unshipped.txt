@@ -1,0 +1,6 @@
+#nullable enable
+Microsoft.AspNetCore.Http.ProblemDetailsOptions
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.ProblemDetailsOptions() -> void
+Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.ProblemDetailsOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

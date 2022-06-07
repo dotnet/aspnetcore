@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
@@ -11,9 +12,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
 {
-    private readonly ProblemDetailsOptions _options;
+    private readonly ApiBehaviorOptions _options;
 
-    public DefaultProblemDetailsFactory(IOptions<ProblemDetailsOptions> options)
+    public DefaultProblemDetailsFactory(IOptions<ApiBehaviorOptions> options)
     {
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
@@ -37,7 +38,7 @@ internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
             Instance = instance,
         };
 
-        ProblemDetailsDefaults.Apply(httpContext, problemDetails, statusCode, _options.ProblemDetailsErrorMapping);
+        ApplyProblemDetailsDefaults(httpContext, problemDetails, statusCode.Value);
 
         return problemDetails;
     }
@@ -72,8 +73,25 @@ internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
             problemDetails.Title = title;
         }
 
-        ProblemDetailsDefaults.Apply(httpContext, problemDetails, statusCode, _options.ProblemDetailsErrorMapping);
+        ApplyProblemDetailsDefaults(httpContext, problemDetails, statusCode.Value);
 
         return problemDetails;
+    }
+
+    private void ApplyProblemDetailsDefaults(HttpContext httpContext, ProblemDetails problemDetails, int statusCode)
+    {
+        problemDetails.Status ??= statusCode;
+
+        if (_options.ClientErrorMapping.TryGetValue(statusCode, out var clientErrorData))
+        {
+            problemDetails.Title ??= clientErrorData.Title;
+            problemDetails.Type ??= clientErrorData.Link;
+        }
+
+        var traceId = Activity.Current?.Id ?? httpContext?.TraceIdentifier;
+        if (traceId != null)
+        {
+            problemDetails.Extensions["traceId"] = traceId;
+        }
     }
 }

@@ -48,9 +48,10 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Extensions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Features" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.ProblemDetails" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Results" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http" />
+    <AspNetCoreAppReference Include="Microsoft.AspnetCore.Http.ProblemDetails.Abstractions" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.ProblemDetails" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.WebUtilities" />

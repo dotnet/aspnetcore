@@ -149,8 +149,6 @@ public static class MvcCoreServiceCollectionExtensions
             ServiceDescriptor.Transient<IConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>());
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, MvcCoreRouteOptionsSetup>());
-        services.TryAddEnumerable(
-            ServiceDescriptor.Transient<IConfigureOptions<ProblemDetailsOptions>, MvcCoreProblemDetailsOptionsSetup>());
 
         //
         // Action Discovery
@@ -286,7 +284,8 @@ public static class MvcCoreServiceCollectionExtensions
 
         // ProblemDetails
         services.TryAddSingleton<ProblemDetailsFactory, DefaultProblemDetailsFactory>();
-        services.TryAddSingleton<IHttpProblemDetailsFactory, AspNetCore.Mvc.Core.Infrastructure.DefaultHttpProblemDetailsFactory>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsMapPolicy, ProblemDetailsApiMapPolicy>());
+        services.TryAddSingleton<IProblemDetailsEndpointWriter, AspNetCore.Mvc.Core.Infrastructure.DefaultProblemDetailsWriter>();
     }
 
     private static void ConfigureDefaultServices(IServiceCollection services)

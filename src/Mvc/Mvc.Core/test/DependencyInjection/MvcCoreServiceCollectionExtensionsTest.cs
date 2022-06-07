@@ -253,13 +253,6 @@ public class MvcCoreServiceCollectionExtensionsTest
                         }
                     },
                     {
-                        typeof(IConfigureOptions<ProblemDetailsOptions>),
-                        new Type[]
-                        {
-                            typeof(MvcCoreProblemDetailsOptionsSetup),
-                        }
-                    },
-                    {
                         typeof(IConfigureOptions<ApiBehaviorOptions>),
                         new Type[]
                         {
@@ -329,6 +322,13 @@ public class MvcCoreServiceCollectionExtensionsTest
                         {
                             typeof(ActionConstraintMatcherPolicy),
                             typeof(DynamicControllerEndpointMatcherPolicy),
+                        }
+                    },
+                    {
+                        typeof(IProblemDetailsMapPolicy),
+                        new Type[]
+                        {
+                            typeof(ProblemDetailsApiMapPolicy)
                         }
                     },
                 };
