@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Net.Http.Headers;
+
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
@@ -14,6 +16,25 @@ public class CookieOptions
     public CookieOptions()
     {
         Path = "/";
+        Extensions = new List<string>();
+    }
+
+    /// <summary>
+    /// Creates a copy of the given <see cref="CookieOptions"/>.
+    /// </summary>
+    public CookieOptions(CookieOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        Domain = options.Domain;
+        Path = options.Path;
+        Expires = options.Expires;
+        Secure = options.Secure;
+        SameSite = options.SameSite;
+        HttpOnly = options.HttpOnly;
+        MaxAge = options.MaxAge;
+        IsEssential = options.IsEssential;
+        Extensions = new List<string>(options.Extensions);
     }
 
     /// <summary>
@@ -63,4 +84,33 @@ public class CookieOptions
     /// consent policy checks may be bypassed. The default value is false.
     /// </summary>
     public bool IsEssential { get; set; }
+
+    /// <summary>
+    /// Gets a collection of additional values to append to the cookie.
+    /// </summary>
+    public IList<string> Extensions { get; }
+
+    /// <summary>
+    /// Creates a <see cref="SetCookieHeaderValue"/> using the current options.
+    /// </summary>
+    public SetCookieHeaderValue CreateCookie(string name, string value)
+    {
+        var cookie = new SetCookieHeaderValue(name, value)
+        {
+            Domain = Domain,
+            Path = Path,
+            Expires = Expires,
+            Secure = Secure,
+            HttpOnly = HttpOnly,
+            MaxAge = MaxAge,
+            SameSite = (Net.Http.Headers.SameSiteMode)SameSite,
+        };
+
+        foreach (var extension in Extensions)
+        {
+            cookie.Extensions.Add(extension);
+        }
+
+        return cookie;
+    }
 }
