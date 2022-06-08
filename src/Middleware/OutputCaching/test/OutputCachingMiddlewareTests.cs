@@ -20,7 +20,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
         context.HttpContext.Request.Headers.CacheControl = new CacheControlHeaderValue()
         {
             OnlyIfCached = true
@@ -39,7 +39,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
 
         Assert.False(await middleware.TryServeFromCacheAsync(context));
         Assert.Equal(1, cache.GetCount);
@@ -54,7 +54,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
 
         await cache.SetAsync(
             "BaseKey",
@@ -79,11 +79,12 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
+        context.CacheKey = "BaseKey";
 
         context.HttpContext.Response.Headers["MyHeader"] = "OldValue";
         await cache.SetAsync(
-            "BaseKey",
+            context.CacheKey,
             new OutputCacheEntry()
             {
                 Headers = new HeaderDictionary()
@@ -109,7 +110,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
         context.HttpContext.Request.Headers.IfNoneMatch = "*";
 
         await cache.SetAsync(
@@ -478,7 +479,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
 
         context.HttpContext.Response.Headers.Vary = vary;
         context.HttpContext.Features.Set<IOutputCachingFeature>(new OutputCachingFeature(context));
@@ -566,7 +567,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
 
         middleware.ShimResponseStream(context);
         context.HttpContext.Response.ContentLength = 20;
@@ -593,7 +594,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
 
         middleware.ShimResponseStream(context);
         context.HttpContext.Response.ContentLength = 9;
@@ -621,7 +622,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
 
         middleware.ShimResponseStream(context);
         context.HttpContext.Response.ContentLength = 10;
@@ -651,7 +652,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
 
         middleware.ShimResponseStream(context);
 
@@ -675,7 +676,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
 
         middleware.ShimResponseStream(context);
         await context.HttpContext.Response.WriteAsync(new string('0', 10));
@@ -696,7 +697,7 @@ public class OutputCachingMiddlewareTests
         var cache = new TestOutputCache();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
-        var context = TestUtils.CreateTestContext();
+        var context = TestUtils.CreateTestContext(cache);
 
         middleware.ShimResponseStream(context);
         await context.HttpContext.Response.WriteAsync(new string('0', 10));

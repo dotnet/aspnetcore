@@ -290,6 +290,11 @@ public class OutputCachingMiddleware
 
     internal void CreateCacheKey(OutputCachingContext context)
     {
+        if (!string.IsNullOrEmpty(context.CacheKey))
+        {
+            return;
+        }
+
         var varyHeaders = context.CachedVaryByRules.Headers;
         var varyQueryKeys = context.CachedVaryByRules.QueryKeys;
         var varyByCustomKeys = context.CachedVaryByRules.VaryByCustom;
@@ -370,10 +375,7 @@ public class OutputCachingMiddleware
         if (context.AllowCacheStorage && context.OutputCachingStream.BufferingEnabled)
         {
             // If AllowCacheLookup is false, the cache key was not created
-            if (context.CacheKey == null)
-            {
-                CreateCacheKey(context);
-            }
+            CreateCacheKey(context);
 
             var contentLength = context.HttpContext.Response.ContentLength;
             var cachedResponseBody = context.OutputCachingStream.GetCachedResponseBody();

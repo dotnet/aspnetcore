@@ -202,9 +202,9 @@ internal class TestUtils
             keyProvider);
     }
 
-    internal static OutputCachingContext CreateTestContext()
+    internal static OutputCachingContext CreateTestContext(IOutputCacheStore cache = null)
     {
-        return new OutputCachingContext(new DefaultHttpContext(), new TestOutputCache(), NullLogger.Instance)
+        return new OutputCachingContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), NullLogger.Instance)
         {
             EnableOutputCaching = true,
             AllowCacheStorage = true,
@@ -213,9 +213,9 @@ internal class TestUtils
         };
     }
 
-    internal static OutputCachingContext CreateTestContext(HttpContext httpContext)
+    internal static OutputCachingContext CreateTestContext(HttpContext httpContext, IOutputCacheStore cache = null)
     {
-        return new OutputCachingContext(httpContext, new TestOutputCache(), NullLogger.Instance)
+        return new OutputCachingContext(httpContext, cache ?? new TestOutputCache(), NullLogger.Instance)
         {
             EnableOutputCaching = true,
             AllowCacheStorage = true,
@@ -224,9 +224,9 @@ internal class TestUtils
         };
     }
 
-    internal static OutputCachingContext CreateTestContext(ITestSink testSink)
+    internal static OutputCachingContext CreateTestContext(ITestSink testSink, IOutputCacheStore cache = null)
     {
-        return new OutputCachingContext(new DefaultHttpContext(), new TestOutputCache(), new TestLogger("OutputCachingTests", testSink, true))
+        return new OutputCachingContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), new TestLogger("OutputCachingTests", testSink, true))
         {
             EnableOutputCaching = true,
             AllowCacheStorage = true,
