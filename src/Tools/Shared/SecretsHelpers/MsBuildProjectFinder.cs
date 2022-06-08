@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using Microsoft.AspNetCore.Tools;
 using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
 internal sealed class MsBuildProjectFinder
 {
@@ -34,12 +33,12 @@ internal sealed class MsBuildProjectFinder
 
             if (projects.Count > 1)
             {
-                throw new FileNotFoundException($"Multiple MSBuild project files found in '{projectPath}'. Specify which to use with the --project option.");
+                throw new FileNotFoundException(SecretsHelpersResources.FormatError_MultipleProjectsFound(projectPath));
             }
 
             if (projects.Count == 0)
             {
-                throw new FileNotFoundException($"Could not find a MSBuild project file in '{projectPath}'. Specify which project to use with the --project option.");
+                throw new FileNotFoundException(SecretsHelpersResources.FormatError_NoProjectsFound(projectPath));
             }
 
             return projects[0];
@@ -47,7 +46,7 @@ internal sealed class MsBuildProjectFinder
 
         if (!File.Exists(projectPath))
         {
-            throw new FileNotFoundException($"The project file '{projectPath}' does not exist.");
+            throw new FileNotFoundException(SecretsHelpersResources.FormatError_NoProjectsFound(projectPath));
         }
 
         return projectPath;

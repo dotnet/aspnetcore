@@ -47,6 +47,13 @@ public class Program
         // Show help information if no subcommand/option was specified.
         userJwts.OnExecute(() => userJwts.ShowHelp());
 
-        userJwts.Execute(args);
+        try
+        {
+            userJwts.Execute(args);
+        }
+        catch (Exception ex)
+        {
+            _reporter.Error(ex.Message);
+        }
     }
 }

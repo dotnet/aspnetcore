@@ -6,10 +6,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
 /// <summary>
 /// This API supports infrastructure and is not intended to be used
@@ -42,9 +41,8 @@ internal sealed class ProjectIdResolver
             _reporter.Error(ex.Message);
             return null;
         }
-        
 
-        _reporter.Verbose($"Project file path {projectFile}.");
+        _reporter.Verbose(SecretsHelpersResources.FormatMessage_Project_File_Path(projectFile));
 
         configuration = !string.IsNullOrEmpty(configuration)
             ? configuration
@@ -108,20 +106,20 @@ internal sealed class ProjectIdResolver
                 _reporter.Verbose(outputBuilder.ToString());
                 _reporter.Verbose(errorBuilder.ToString());
                 _reporter.Error($"Exit code: {process.ExitCode}");
-                _reporter.Error($"Could not load the MSBuild project '{projectFile}'.");
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectFailedToLoad(projectFile));
                 return null;
             }
 
             if (!File.Exists(outputFile))
             {
-                _reporter.Error($"Could not find the global property 'UserSecretsId' in MSBuild project '{projectFile}'. Ensure this property is set in the project or use the '--id' command line option.");
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
                 return null;
             }
 
             var id = File.ReadAllText(outputFile)?.Trim();
             if (string.IsNullOrEmpty(id))
             {
-                _reporter.Error($"Could not find the global property 'UserSecretsId' in MSBuild project '{projectFile}'. Ensure this property is set in the project or use the '--id' command line option.");
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
             }
             return id;
 

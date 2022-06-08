@@ -5,9 +5,8 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Microsoft.AspNetCore.Tools;
 using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
 internal static class UserSecretsCreator
 {
@@ -24,9 +23,9 @@ internal static class UserSecretsCreator
             : overrideId;
 
         // Confirm secret ID does not contain invalid characters
-        if (Path.GetInvalidPathChars().Any(invalidChar => newSecretsId.Contains(invalidChar)))
+        if (Path.GetInvalidPathChars().Any(newSecretsId.Contains))
         {
-            throw new ArgumentException($"The UserSecretsId '{newSecretsId}' cannot contain any characters that cannot be used in a file path.");
+            throw new ArgumentException(SecretsHelpersResources.FormatError_InvalidSecretsId(newSecretsId));
         }
 
         var existingUserSecretsId = projectDocument.XPathSelectElements("//UserSecretsId").FirstOrDefault();
@@ -37,7 +36,7 @@ internal static class UserSecretsCreator
             // Only set the UserSecretsId if the user specified an explicit value
             if (string.IsNullOrWhiteSpace(overrideId))
             {
-                reporter.Output($"The MSBuild project '{projectPath}' has already been initialized with a UserSecretsId.");
+                reporter.Output(SecretsHelpersResources.FormatMessage_ProjectAlreadyInitialized(projectPath));
                 return existingUserSecretsId.Value;
             }
 
@@ -73,7 +72,7 @@ internal static class UserSecretsCreator
         using var xw = XmlWriter.Create(projectPath, settings);
         projectDocument.Save(xw);
 
-        reporter.Output($"Set UserSecretsId to '{newSecretsId}' for MSBuild project '{projectPath}'.");
+        reporter.Output(SecretsHelpersResources.FormatMessage_SetUserSecretsIdForProject(newSecretsId, projectPath));
         return newSecretsId;
     }
 
