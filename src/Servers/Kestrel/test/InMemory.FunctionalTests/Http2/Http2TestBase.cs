@@ -1211,9 +1211,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         var frame = await ReceiveFrameAsync((uint)withLength);
 
         Assert.Equal(type, frame.Type);
-        Assert.Equal(withLength, frame.PayloadLength);
-        Assert.Equal(withFlags, frame.Flags);
         Assert.Equal(withStreamId, frame.StreamId);
+        Assert.Equal(withFlags, frame.Flags);
+        Assert.Equal(withLength, frame.PayloadLength);
 
         return frame;
     }

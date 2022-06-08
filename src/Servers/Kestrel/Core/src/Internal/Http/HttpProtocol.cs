@@ -358,6 +358,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         _httpProtocol = null;
         _statusCode = StatusCodes.Status200OK;
         _reasonPhrase = null;
+        IsUpgraded = false;
 
         var remoteEndPoint = RemoteEndPoint;
         RemoteIpAddress = remoteEndPoint?.Address;
