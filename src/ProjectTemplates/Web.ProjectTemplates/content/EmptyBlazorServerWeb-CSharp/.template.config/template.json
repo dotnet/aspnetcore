@@ -8,7 +8,7 @@
   ],
   "name": "Blazor Server App Empty",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating a Blazor server app that runs server-side inside an ASP.NET Core app and handles user interactions over a SignalR connection. This template does not have any content in it.",
+  "description": "An empty project template for creating a Blazor server app that runs server-side inside an ASP.NET Core app and handles user interactions over a SignalR connection. This template does not have any content in it.",
   "groupIdentity": "Microsoft.Web.Blazor.Server.Empty",
   "precedence": "9000",
   "identity": "Microsoft.Web.Blazor.Server.Empty.CSharp.7.0",
@@ -20,10 +20,6 @@
   },
   "sourceName": "EmptyBlazorServerWeb-CSharp",
   "preferNameDirectory": true,
-  "guids": [
-    "09732173-2cef-46b7-83db-1334bcb079d3", // Tenant ID
-    "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
-  ],
   "sources": [
     {
       "source": "./",
@@ -35,21 +31,6 @@
         "wwwroot/**"
       ],
       "modifiers": [
-        {
-          "condition": "(!UseProgramMain)",
-          "exclude": [
-            "Program.Main.cs"
-          ]
-        },
-        {
-          "condition": "(UseProgramMain)",
-          "exclude": [
-            "Program.cs"
-          ],
-          "rename": {
-            "Program.Main.cs": "Program.cs"
-          }
-        },
         {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
