@@ -3,13 +3,10 @@
   "defaultOnFailure": "fail",
   "localRerunCount" : 3,
   "retryOnRules": [
-    {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess"}},
-    {"testName": {"contains": "AppOfflineDroppedWhileSiteIsDown_SiteReturns503_InProcess"}},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
     {"testName": {"contains": "ReaderThrowsResetExceptionOnInvalidBody" }},
-    {"testName": {"contains": "ShadowCopyTests" }},
-    {"testAssembly": {"wildcard": "IIS*Tests*"}},
-    {"testAssembly": {"wildcard": "IIS.ShadowCopy.Tests*"}},
+    {"testAssembly": {"contains": "IIS*"}},
+    {"testAssembly": {"contains": "ShadowCopy"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found) (Site is started but no worker process found)"}},
     {"failureMessage": {"contains": "network disconnected"}}
   ],
