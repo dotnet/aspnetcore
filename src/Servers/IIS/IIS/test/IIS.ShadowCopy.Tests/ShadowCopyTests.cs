@@ -41,9 +41,6 @@ public class ShadowCopyTests : IISFunctionalTestBase
         {
             dirInfo.Delete(recursive: true);
         }
-        
-        // Force a failure REMOVE
-        Assert.False(response.IsSuccessStatusCode);
     }
 
     [ConditionalFact]
