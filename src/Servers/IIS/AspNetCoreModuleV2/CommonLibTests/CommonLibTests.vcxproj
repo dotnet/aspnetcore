@@ -41,7 +41,7 @@
     <ProjectGuid>{1eac8125-1765-4e2d-8cbe-56dc98a1c8c1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
-    <PlatformToolsetVersion Condition=" '$(PlatformToolsetVersion)' == '' ">v142</PlatformToolsetVersion>
+    <PlatformToolsetVersion Condition=" '$(PlatformToolsetVersion)' == '' ">v143</PlatformToolsetVersion>
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -49,9 +49,6 @@
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Label="Configuration">
-    <VCToolsVersion>14.29.30133</VCToolsVersion>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared" />
