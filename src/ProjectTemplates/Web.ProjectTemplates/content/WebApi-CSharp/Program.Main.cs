@@ -122,12 +122,11 @@ public class Program
                 var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 throw new HttpRequestException($"Invalid status code in the HttpResponseMessage: {response.StatusCode}: {error}");
             }
-            var today = DateOnly.FromDateTime(DateTime.Now);
 
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
-                    Date = today.AddDays(index),
+                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                     TemperatureC = Random.Shared.Next(-20, 55),
                     Summary = summaries[Random.Shared.Next(summaries.Length)]
                 })
@@ -141,12 +140,10 @@ public class Program
 
             var user = await graphServiceClient.Me.Request().GetAsync();
 
-            var today = DateOnly.FromDateTime(DateTime.Now);
-
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
-                    Date = today.AddDays(index),
+                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                     TemperatureC = Random.Shared.Next(-20, 55),
                     Summary = summaries[Random.Shared.Next(summaries.Length)]
                 })
@@ -160,11 +157,10 @@ public class Program
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
 #endif
-            var today = DateOnly.FromDateTime(DateTime.Now);
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
-                    Date = today.AddDays(index),
+                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                     TemperatureC = Random.Shared.Next(-20, 55),
                     Summary = summaries[Random.Shared.Next(summaries.Length)]
                 })

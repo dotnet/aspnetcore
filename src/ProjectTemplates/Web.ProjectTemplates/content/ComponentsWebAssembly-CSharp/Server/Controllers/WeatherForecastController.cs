@@ -48,8 +48,6 @@ public class WeatherForecastController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<WeatherForecast>> Get()
     {
-        var today = DateOnly.FromDateTime(DateTime.Now);
-
         using var response = await _downstreamWebApi.CallWebApiForUserAsync("DownstreamApi").ConfigureAwait(false);
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
@@ -64,7 +62,7 @@ public class WeatherForecastController : ControllerBase
 
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
-            Date = today.AddDays(index),
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             TemperatureC = Random.Shared.Next(-20, 55),
             Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         })
@@ -85,11 +83,10 @@ public class WeatherForecastController : ControllerBase
     public async Task<IEnumerable<WeatherForecast>> Get()
     {
         var user = await _graphServiceClient.Me.Request().GetAsync();
-        var today = DateOnly.FromDateTime(DateTime.Now);
 
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
-            Date = today.AddDays(index),
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             TemperatureC = Random.Shared.Next(-20, 55),
             Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         })
@@ -104,10 +101,9 @@ public class WeatherForecastController : ControllerBase
     [HttpGet]
     public IEnumerable<WeatherForecast> Get()
     {
-        var today = DateOnly.FromDateTime(DateTime.Now);
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
-            Date = today.AddDays(index),
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             TemperatureC = Random.Shared.Next(-20, 55),
             Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         })
