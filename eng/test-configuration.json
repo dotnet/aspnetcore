@@ -3,6 +3,7 @@
   "defaultOnFailure": "fail",
   "localRerunCount" : 3,
   "retryOnRules": [
+    {"testName": {"contains": "FlakyTestToEnsureRetryWorks" }},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
     {"testName": {"contains": "ReaderThrowsResetExceptionOnInvalidBody" }},
     {"testAssembly": {"contains": "IIS*"}},
