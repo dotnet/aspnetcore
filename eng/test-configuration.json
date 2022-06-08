@@ -6,7 +6,7 @@
     {"testName": {"contains": "FlakyTestToEnsureRetryWorks" }},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
     {"testName": {"contains": "ReaderThrowsResetExceptionOnInvalidBody" }},
-    {"testAssembly": {"contains": "IIS*"}},
+    {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "ShadowCopy"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found) (Site is started but no worker process found)"}},
     {"failureMessage": {"contains": "network disconnected"}}
