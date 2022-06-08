@@ -27,11 +27,11 @@ public class Startup
                 context.Response.Headers.Append("sec-webtransport-http3-draft", "draft02");
                 await context.Response.Body.FlushAsync();
 
-                // WAIT FOR THE NEXT MESSAGE FROM THE CLIENT
+                //// WAIT FOR THE NEXT MESSAGE FROM THE CLIENT
                 var memory2 = new Memory<byte>(new byte[4096]);
                 var length2 = await context.Request.Body.ReadAsync(memory2);
 
-                Console.WriteLine(System.Text.Encoding.ASCII.GetString(memory2.Span));
+                //Console.WriteLine(System.Text.Encoding.ASCII.GetString(memory2.Span));
 
                 // WRITE TO THE CLIENT (DOESN'T WORK. I PROBABLY JUST NEED TO UPDATE THE JS)
                 await context.Response.WriteAsync("testing writing");
