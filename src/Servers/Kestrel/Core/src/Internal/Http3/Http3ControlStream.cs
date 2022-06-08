@@ -15,10 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
 internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 {
-    private const int ControlStreamTypeId = 0;
-    private const int EncoderStreamTypeId = 2;
-    private const int DecoderStreamTypeId = 3;
-
     private readonly Http3FrameWriter _frameWriter;
     private readonly Http3StreamContext _context;
     private readonly Http3PeerSettings _serverPeerSettings;
@@ -157,7 +153,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
             switch (_headerType)
             {
-                case ControlStreamTypeId:
+                case (long)Http3StreamType.Control:
                     if (!_context.StreamLifetimeHandler.OnInboundControlStream(this))
                     {
                         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1
@@ -166,7 +162,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
                     await HandleControlStream();
                     break;
-                case EncoderStreamTypeId:
+                case (long)Http3StreamType.Encoder:
                     if (!_context.StreamLifetimeHandler.OnInboundEncoderStream(this))
                     {
                         // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
@@ -175,7 +171,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
                     await HandleEncodingDecodingTask();
                     break;
-                case DecoderStreamTypeId:
+                case (long)Http3StreamType.Decoder:
                     if (!_context.StreamLifetimeHandler.OnInboundDecoderStream(this))
                     {
                         // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2

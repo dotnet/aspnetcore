@@ -305,12 +305,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 {
                                     // unidirectional webtransport streams
                                     Log.LogError("unidirectional webtransport");
-                                    throw new NotImplementedException("Webtransport unidirectional streams not implemented yet");
+                                    //throw new NotImplementedException("Webtransport unidirectional streams not implemented yet");
                                 }
-                                else // control, push, Qpack encoder, or Qpack decoder streams
-                                {
+                                //else // control, push, Qpack encoder, or Qpack decoder streams
+                                //{
                                     stream = new Http3ControlStream<TContext>(application, CreateHttpStreamContext(streamContext));
-                                }
+                                //}
 
                                 _streamLifetimeHandler.OnStreamCreated(stream);
                                 ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
@@ -348,12 +348,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
                                         Log.LogError("bidirectional webtransport");
-                                        throw new NotImplementedException("Webtransport bidirectional streams not implemented yet");
+                                        //throw new NotImplementedException("Webtransport bidirectional streams not implemented yet");
                                     }
-                                    else
-                                    {
+                                    //else
+                                    //{
                                         stream = new Http3Stream<TContext>(application, CreateHttpStreamContext(streamContext));
-                                    }
+                                    //}
 
                                     persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
                                 }
