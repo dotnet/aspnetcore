@@ -487,6 +487,47 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
         }
 
+        [Fact]
+        public async Task ReadAsync_AllowUserCodeToHandleDeserializationErrors()
+        {
+            // Arrange
+            var serializerSettings = new JsonSerializerSettings
+            {
+                Error = (sender, eventArgs) =>
+                {
+                    eventArgs.ErrorContext.Handled = true;
+                }
+            };
+            var formatter = new NewtonsoftJsonInputFormatter(
+                GetLogger(),
+                serializerSettings,
+                ArrayPool<char>.Shared,
+                _objectPoolProvider,
+                new MvcOptions(),
+                new MvcNewtonsoftJsonOptions())
+            {
+                SkipHandledErrorEnabled = true
+            };
+
+            var content = $"{{'id': 'should be integer', 'name': 'test location'}}";
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
+            httpContext.Request.ContentType = "application/json";
+
+            var formatterContext = CreateInputFormatterContext(typeof(Location), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.False(result.HasError);
+            var location = (Location)result.Model;
+            Assert.Equal(0, location?.Id);
+            Assert.Equal("test location", location?.Name);
+        }
+
         private class TestableJsonInputFormatter : NewtonsoftJsonInputFormatter
         {
             public TestableJsonInputFormatter(JsonSerializerSettings settings, ObjectPoolProvider objectPoolProvider)

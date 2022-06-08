@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
+        internal const string EnableSkipHandledError = "Microsoft.AspNetCore.Mvc.NewtonsoftJson.EnableSkipHandledError";
+
         private readonly IArrayPool<char> _charPool;
         private readonly ILogger _logger;
         private readonly ObjectPoolProvider _objectPoolProvider;
@@ -79,6 +81,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             _options = options;
             _jsonOptions = jsonOptions;
 
+            SkipHandledErrorEnabled = AppContext.TryGetSwitch(EnableSkipHandledError, out var enabled) && enabled;
+
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
 
@@ -108,6 +112,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <see cref="NewtonsoftJsonInputFormatter"/> has been used will have no effect.
         /// </remarks>
         protected JsonSerializerSettings SerializerSettings { get; }
+
+        // internal for testing
+        internal bool SkipHandledErrorEnabled { get; set; }
 
         /// <inheritdoc />
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(
@@ -232,6 +239,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             void ErrorHandler(object? sender, Newtonsoft.Json.Serialization.ErrorEventArgs eventArgs)
             {
+                // Skipping error, if it's already marked as handled
+                // This allows user code to implement its own error handling
+                if (eventArgs.ErrorContext.Handled && SkipHandledErrorEnabled)
+                {
+                    return;
+                }
+
                 successful = false;
 
                 // When ErrorContext.Path does not include ErrorContext.Member, add Member to form full path.
