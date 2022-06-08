@@ -336,6 +336,7 @@ Microsoft.AspNetCore.Routing.RouteValueDictionary.Comparer.get -> System.Collect
 Microsoft.AspNetCore.Routing.RouteValueDictionary.ContainsKey(string! key) -> bool
 Microsoft.AspNetCore.Routing.RouteValueDictionary.Count.get -> int
 Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, object?>
 Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Dispose() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Enumerator(Microsoft.AspNetCore.Routing.RouteValueDictionary! dictionary) -> void

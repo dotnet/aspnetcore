@@ -22,7 +22,6 @@ Microsoft.AspNetCore.Http.RouteHandlerContext.RouteHandlerContext(System.Reflect
 Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate
 Microsoft.AspNetCore.Http.RouteHandlerInvocationContext
 Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.RouteHandlerInvocationContext() -> void
-Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(Microsoft.AspNetCore.Routing.RouteValueDictionary? dictionary) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? values) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string?>>? values) -> void
