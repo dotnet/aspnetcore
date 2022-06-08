@@ -15,10 +15,9 @@
     <SolutionDir Condition="'$(SolutionDir)' == '' Or '$(SolutionDir)' == '*Undefined*'">$(MSBuildThisFileDirectory)..\</SolutionDir>
     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
     <VCProjectVersion>15.0</VCProjectVersion>
-    <VCToolsVersion>14.29.30133</VCToolsVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
-    <PlatformToolsetVersion>v142</PlatformToolsetVersion>
+    <PlatformToolsetVersion>v143</PlatformToolsetVersion>
     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
     <CharacterSet>Unicode</CharacterSet>
