@@ -127,10 +127,13 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
     public bool IsUpgradableRequest { get; private set; }
     public bool IsUpgraded { get; set; }
+    public bool IsConnectRequest { get; set; }
     public IPAddress? RemoteIpAddress { get; set; }
     public int RemotePort { get; set; }
     public IPAddress? LocalIpAddress { get; set; }
     public int LocalPort { get; set; }
+    // https://datatracker.ietf.org/doc/html/rfc8441 ":protocol"
+    public string? ConnectProtocol { get; set; }
     public string? Scheme { get; set; }
     public HttpMethod Method { get; set; }
     public string MethodText => ((IHttpRequestFeature)this).Method;

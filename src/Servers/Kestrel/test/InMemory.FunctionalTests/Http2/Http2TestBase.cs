@@ -525,7 +525,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _connectionTask = CompletePipeOnTaskCompletion();
     }
 
-    protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 3, bool expectedWindowUpdate = true)
+    protected async Task InitializeConnectionAsync(RequestDelegate application, int expectedSettingsCount = 4, bool expectedWindowUpdate = true)
     {
         InitializeConnectionWithoutPreface(application);
 

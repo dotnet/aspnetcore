@@ -202,7 +202,11 @@ public class Startup
         // This is for testing purposes only (karma hosts the client on its own server), never do this in production
         app.UseCors(policy =>
         {
-            policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:", StringComparison.Ordinal) || host.StartsWith("http://127.0.0.1:", StringComparison.Ordinal))
+            policy.SetIsOriginAllowed(host =>
+                host.StartsWith("http://localhost:", StringComparison.Ordinal)
+                || host.StartsWith("http://127.0.0.1:", StringComparison.Ordinal)
+                || host.StartsWith("https://localhost:", StringComparison.Ordinal)
+                || host.StartsWith("https://127.0.0.1:", StringComparison.Ordinal))
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
