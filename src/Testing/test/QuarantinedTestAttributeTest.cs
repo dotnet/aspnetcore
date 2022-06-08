@@ -26,5 +26,4 @@ public class QuarantinedTestAttributeTest
         // Fail 20% of the time
         Assert.True(new Random().Next(100) <= 80);
     }
-
 }
