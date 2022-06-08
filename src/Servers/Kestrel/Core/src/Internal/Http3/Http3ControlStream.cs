@@ -183,18 +183,6 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
                     }
                     await HandleEncodingDecodingTask();
                     break;
-                case 0x54: // unidirectional WebTransport stream
-                    //Log.LogError("Client tried to create a unidirectional webtransport stream but the feature is not implemented yet");
-                    if (!_context.StreamLifetimeHandler.OnInboundDecoderStream(this))
-                    {
-                        // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
-                        throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams("decoder"), Http3ErrorCode.StreamCreationError);
-                    }
-                    await HandleEncodingDecodingTask();
-                    break;
-                case 0x41: // bidirectional WebTransport stream
-                    //Log.LogError("Client tried to create a bidirectional webtransport stream but the feature is not implemented yet"); // TODO THIS IS NEVER HIT. IT DOES OPEN THE CONNECTION THOUGH AND READING FROM THE STREAM SEEMS TO WORK. WRITING DOES NOT THOUGH
-                    break;
                 default:
                     // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2-6
                     throw new Http3StreamErrorException(CoreStrings.FormatHttp3ControlStreamErrorUnsupportedType(_headerType), Http3ErrorCode.StreamCreationError);

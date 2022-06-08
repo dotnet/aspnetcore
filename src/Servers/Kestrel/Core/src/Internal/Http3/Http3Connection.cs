@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
@@ -288,10 +289,53 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     Debug.Assert(streamDirectionFeature != null);
                     Debug.Assert(streamIdFeature != null);
 
-                    if (!streamDirectionFeature.CanWrite)
+
+
+
+
+
+                    // crappy adaptation of the TryReadStreamHeaderAsync method of the ControlStream class to extract the stream type
+                    var context = CreateHttpStreamContext(streamContext);
+                    var Input = context.Transport.Input;
+                    var result = await Input.ReadAsync();
+                    var readableBuffer = result.Buffer;
+                    var consumed = readableBuffer.Start;
+                    var examined = readableBuffer.End;
+                    var streamType = 0L;
+                    try
+                    {
+                        if (!readableBuffer.IsEmpty)
+                        {
+                            streamType = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
+                        }
+
+                        if (result.IsCompleted && streamType == 1)
+                        {
+                            streamType = -1;
+                        }
+                    }
+                    catch { }
+
+
+
+                    Log.LogInformation(streamType.ToString());
+
+
+
+                    if (streamType == 0x54)
+                    {
+                        // unidirectional webtransport streams
+                        Log.LogError("unidirectional webtransport");
+                    }
+                    else if (streamType == 0x41)
+                    {
+                        // bidirectional webtransport streams
+                        Log.LogError("bidirectional webtransport");
+                    }
+                    else if (!streamDirectionFeature.CanWrite)
                     {
                         // Unidirectional stream
-                        var stream = new Http3ControlStream<TContext>(application, CreateHttpStreamContext(streamContext));
+                        var stream = new Http3ControlStream<TContext>(application, context);
                         _streamLifetimeHandler.OnStreamCreated(stream);
 
                         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
