@@ -22,8 +22,8 @@ Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Order.get -> int
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Order.set -> void
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.OutputCacheAttribute() -> void
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Policy.get -> Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Profile.get -> string?
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Profile.set -> void
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.PolicyName.get -> string?
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.PolicyName.set -> void
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.VaryByQueryKeys.get -> string![]?
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.VaryByQueryKeys.set -> void
 virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.PostConfigure(string? name, TOptions! options) -> void

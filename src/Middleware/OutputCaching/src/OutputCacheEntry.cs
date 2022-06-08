@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <inheritdoc />
-internal class OutputCacheEntry : IOutputCacheEntry
+internal sealed class OutputCacheEntry : IOutputCacheEntry
 {
     /// <inheritdoc />
     public DateTimeOffset Created { get; set; }

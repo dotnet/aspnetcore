@@ -24,7 +24,7 @@ public class OutputCachingMiddleware
     private readonly OutputCachingOptions _options;
     private readonly ILogger _logger;
     private readonly IOutputCachingPolicyProvider _policyProvider;
-    private readonly IOutputCacheStore _cache;
+    private readonly IOutputCacheStore _store;
     private readonly IOutputCachingKeyProvider _keyProvider;
     private readonly WorkDispatcher<string, IOutputCacheEntry?> _outputCacheEntryDispatcher;
     private readonly WorkDispatcher<string, IOutputCacheEntry?> _requestDispatcher;
@@ -73,7 +73,7 @@ public class OutputCachingMiddleware
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<OutputCachingMiddleware>();
         _policyProvider = policyProvider;
-        _cache = cache;
+        _store = cache;
         _keyProvider = keyProvider;
         _outputCacheEntryDispatcher = new();
         _requestDispatcher = new();
@@ -86,7 +86,14 @@ public class OutputCachingMiddleware
     /// <returns>A <see cref="Task"/> that completes when the middleware has completed processing.</returns>
     public async Task Invoke(HttpContext httpContext)
     {
-        var context = new OutputCachingContext(httpContext, _logger);
+        // Skip the middleware if there is no policy for the current request
+        if (!_policyProvider.HasPolicies(httpContext))
+        {
+            await _next(httpContext);
+            return;
+        }
+
+        var context = new OutputCachingContext(httpContext, _store, _logger);
 
         // Add IOutputCachingFeature
         AddOutputCachingFeature(context);
@@ -96,7 +103,7 @@ public class OutputCachingMiddleware
             await _policyProvider.OnRequestAsync(context);
 
             // Should we attempt any caching logic?
-            if (context.EnableOutputCaching && context.AttemptOutputCaching)
+            if (context.EnableOutputCaching)
             {
                 // Can this request be served from cache?
                 if (context.AllowCacheLookup)
@@ -184,10 +191,19 @@ public class OutputCachingMiddleware
 
         context.CachedResponse = cacheEntry;
         context.ResponseTime = _options.SystemClock.UtcNow;
-        var cachedEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
-        context.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
+        var cacheEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
+        context.CachedEntryAge = cacheEntryAge > TimeSpan.Zero ? cacheEntryAge : TimeSpan.Zero;
 
         await _policyProvider.OnServeFromCacheAsync(context);
+
+        context.IsCacheEntryFresh = true;
+
+        // Validate expiration
+        if (context.CachedEntryAge <= TimeSpan.Zero)
+        {
+            context.Logger.ExpirationExpiresExceeded(context.ResponseTime!.Value);
+            context.IsCacheEntryFresh = false;
+        }
 
         if (context.IsCacheEntryFresh)
         {
@@ -223,7 +239,7 @@ public class OutputCachingMiddleware
                 // Note: int64 division truncates result and errors may be up to 1 second. This reduction in
                 // accuracy of age calculation is considered appropriate since it is small compared to clock
                 // skews and the "Age" header is an estimate of the real age of cached content.
-                response.Headers.Age = HeaderUtilities.FormatNonNegativeInt64(context.CachedEntryAge.Value.Ticks / TimeSpan.TicksPerSecond);
+                response.Headers.Age = HeaderUtilities.FormatNonNegativeInt64(context.CachedEntryAge.Ticks / TimeSpan.TicksPerSecond);
 
                 // Copy the cached response body
                 var body = context.CachedResponse.Body;
@@ -246,25 +262,25 @@ public class OutputCachingMiddleware
         return false;
     }
 
-    internal async Task<bool> TryServeFromCacheAsync(OutputCachingContext context)
+    internal async Task<bool> TryServeFromCacheAsync(OutputCachingContext cacheContext)
     {
-        CreateCacheKey(context);
+        CreateCacheKey(cacheContext);
 
         // Locking cache lookups by default
         // TODO: should it be part of the cache implementations or can we assume all caches would benefit from it?
         // It makes sense for caches that use IO (disk, network) or need to deserialize the state but could also be a global option
 
-        var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(context.CacheKey, _cache, static async (key, cache) => await cache.GetAsync(key));
+        var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, cacheContext, static async (key, cacheContext) => await cacheContext.Store.GetAsync(key, cacheContext.HttpContext.RequestAborted));
 
-        if (await TryServeCachedResponseAsync(context, cacheEntry))
+        if (await TryServeCachedResponseAsync(cacheContext, cacheEntry))
         {
             return true;
         }
 
-        if (HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers.CacheControl, CacheControlHeaderValue.OnlyIfCachedString))
+        if (HeaderUtilities.ContainsCacheDirective(cacheContext.HttpContext.Request.Headers.CacheControl, CacheControlHeaderValue.OnlyIfCachedString))
         {
             _logger.GatewayTimeoutServed();
-            context.HttpContext.Response.StatusCode = StatusCodes.Status504GatewayTimeout;
+            cacheContext.HttpContext.Response.StatusCode = StatusCodes.Status504GatewayTimeout;
             return true;
         }
 
@@ -312,7 +328,7 @@ public class OutputCachingMiddleware
     /// <param name="context"></param>
     internal void FinalizeCacheHeaders(OutputCachingContext context)
     {
-        if (context.IsResponseCacheable)
+        if (context.AllowCacheStorage)
         {
             // Create the cache entry now
             var response = context.HttpContext.Response;
@@ -351,8 +367,14 @@ public class OutputCachingMiddleware
     /// </summary>
     internal async ValueTask FinalizeCacheBodyAsync(OutputCachingContext context)
     {
-        if (context.IsResponseCacheable && context.OutputCachingStream.BufferingEnabled)
+        if (context.AllowCacheStorage && context.OutputCachingStream.BufferingEnabled)
         {
+            // If AllowCacheLookup is false, the cache key was not created
+            if (context.CacheKey == null)
+            {
+                CreateCacheKey(context);
+            }
+
             var contentLength = context.HttpContext.Response.ContentLength;
             var cachedResponseBody = context.OutputCachingStream.GetCachedResponseBody();
             if (!contentLength.HasValue || contentLength == cachedResponseBody.Length
@@ -374,7 +396,7 @@ public class OutputCachingMiddleware
                     throw new InvalidOperationException("Cache key must be defined");
                 }
 
-                await _cache.SetAsync(context.CacheKey, context.CachedResponse, context.CachedResponseValidFor);
+                await _store.SetAsync(context.CacheKey, context.CachedResponse, context.CachedResponseValidFor, context.HttpContext.RequestAborted);
             }
             else
             {

@@ -10,18 +10,22 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Provides helper methods to create custom policies.
 /// </summary>
-public class OutputCachePolicyBuilder
+public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
 {
+    private IOutputCachingPolicy? _builtPolicy;
     private List<IOutputCachingPolicy> Policies { get; } = new();
     private List<Func<IOutputCachingContext, Task<bool>>> Requirements { get; } = new();
 
     /// <summary>
-    /// Gets an <see cref="OutputCachePolicyBuilder"/> initialized with a <see cref="DefaultOutputCachePolicy"/> instance.
+    /// Creates a new instance of <see cref="OutputCachePolicyBuilder"/> with a <see cref="DefaultOutputCachePolicy"/> policy which allows unauthenticated GET, HEAD, 200 responses without cookies to be cached.
     /// </summary>
-    public OutputCachePolicyBuilder Default()
+    /// <remarks>
+    /// The default policy doesn't cache any request by default. To enable caching use <see cref="Enable"/> or invoke <c>CacheOutput()</c> on an endpoint.
+    /// </remarks>
+    public OutputCachePolicyBuilder()
     {
-        Policies.Add(new DefaultOutputCachePolicy());
-        return this;
+        _builtPolicy = null;
+        Policies.Add(DefaultOutputCachePolicy.Instance);
     }
 
     /// <summary>
@@ -29,6 +33,7 @@ public class OutputCachePolicyBuilder
     /// </summary>
     public OutputCachePolicyBuilder Add(IOutputCachingPolicy policy)
     {
+        _builtPolicy = null;
         Policies.Add(policy);
         return this;
     }
@@ -38,7 +43,21 @@ public class OutputCachePolicyBuilder
     /// </summary>
     public OutputCachePolicyBuilder Enable()
     {
-        Policies.Add(new EnableCachingPolicy());
+        _builtPolicy = null;
+        Policies.Add(EnableCachingPolicy.Enabled);
+        return this;
+    }
+
+    /// <summary>
+    /// Disables caching.
+    /// </summary>
+    /// <remarks>
+    /// This is the default.
+    /// </remarks>
+    public OutputCachePolicyBuilder Disable()
+    {
+        _builtPolicy = null;
+        Policies.Add(EnableCachingPolicy.Disabled);
         return this;
     }
 
@@ -48,6 +67,9 @@ public class OutputCachePolicyBuilder
     /// <param name="predicate">The predicate applied to the policy.</param>
     public OutputCachePolicyBuilder WithCondition(Func<IOutputCachingContext, Task<bool>> predicate)
     {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        _builtPolicy = null;
         Requirements.Add(predicate);
         return this;
     }
@@ -60,6 +82,7 @@ public class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(pathBase);
 
+        _builtPolicy = null;
         Requirements.Add(context =>
         {
             var match = context.HttpContext.Request.Path.StartsWithSegments(pathBase);
@@ -76,6 +99,7 @@ public class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(pathBases);
 
+        _builtPolicy = null;
         Requirements.Add(context =>
         {
             var match = pathBases.Any(x => context.HttpContext.Request.Path.StartsWithSegments(x));
@@ -92,6 +116,7 @@ public class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(method);
 
+        _builtPolicy = null;
         Requirements.Add(context =>
         {
             var upperMethod = method.ToUpperInvariant();
@@ -109,6 +134,7 @@ public class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(methods);
 
+        _builtPolicy = null;
         Requirements.Add(context =>
         {
             var upperMethods = methods.Select(m => m.ToUpperInvariant()).ToArray();
@@ -122,10 +148,14 @@ public class OutputCachePolicyBuilder
     /// Adds a policy to vary the cached responses by query strings.
     /// </summary>
     /// <param name="queryKeys">The query keys to vary the cached responses by.</param>
+    /// <remarks>
+    /// By default all query keys vary the cache entries. However when specific query keys are specified only these are then taken into account.
+    /// </remarks>
     public OutputCachePolicyBuilder VaryByQuery(params string[] queryKeys)
     {
         ArgumentNullException.ThrowIfNull(queryKeys);
 
+        _builtPolicy = null;
         Policies.Add(new VaryByQueryPolicy(queryKeys));
         return this;
     }
@@ -138,6 +168,7 @@ public class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(headers);
 
+        _builtPolicy = null;
         Policies.Add(new VaryByHeaderPolicy(headers));
         return this;
     }
@@ -150,6 +181,7 @@ public class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
+        _builtPolicy = null;
         Policies.Add(new VaryByValuePolicy(varyBy));
         return this;
     }
@@ -162,6 +194,7 @@ public class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
+        _builtPolicy = null;
         Policies.Add(new VaryByValuePolicy(varyBy));
         return this;
     }
@@ -174,6 +207,7 @@ public class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
+        _builtPolicy = null;
         Policies.Add(new VaryByValuePolicy(varyBy));
         return this;
     }
@@ -186,6 +220,7 @@ public class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
+        _builtPolicy = null;
         Policies.Add(new VaryByValuePolicy(varyBy));
         return this;
     }
@@ -194,12 +229,12 @@ public class OutputCachePolicyBuilder
     /// Adds a named policy.
     /// </summary>
     /// <param name="profileName">The name of the policy to add.</param>
-    public OutputCachePolicyBuilder Profile(string profileName)
+    public OutputCachePolicyBuilder Policy(string profileName)
     {
         ArgumentNullException.ThrowIfNull(profileName);
 
+        _builtPolicy = null;
         Policies.Add(new ProfilePolicy(profileName));
-
         return this;
     }
 
@@ -211,6 +246,7 @@ public class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(tags);
 
+        _builtPolicy = null;
         Policies.Add(new TagsPolicy(tags));
         return this;
     }
@@ -221,6 +257,7 @@ public class OutputCachePolicyBuilder
     /// <param name="expiration">The expiration of the cached reponse.</param>
     public OutputCachePolicyBuilder Expire(TimeSpan expiration)
     {
+        _builtPolicy = null;
         Policies.Add(new ExpirationPolicy(expiration));
         return this;
     }
@@ -231,6 +268,7 @@ public class OutputCachePolicyBuilder
     /// <param name="lockResponse">Whether the request should be locked.</param>
     public OutputCachePolicyBuilder Lock(bool lockResponse = true)
     {
+        _builtPolicy = null;
         Policies.Add(lockResponse ? LockingPolicy.Enabled : LockingPolicy.Disabled);
         return this;
     }
@@ -240,6 +278,7 @@ public class OutputCachePolicyBuilder
     /// </summary>
     public OutputCachePolicyBuilder Clear()
     {
+        _builtPolicy = null;
         Requirements.Clear();
         Policies.Clear();
         return this;
@@ -250,7 +289,8 @@ public class OutputCachePolicyBuilder
     /// </summary>
     public OutputCachePolicyBuilder NoStore()
     {
-        Policies.Add(new NoStorePolicy());
+        _builtPolicy = null;
+        Policies.Add(NoStorePolicy.Instance);
         return this;
     }
 
@@ -263,6 +303,11 @@ public class OutputCachePolicyBuilder
     /// </returns>
     public IOutputCachingPolicy Build()
     {
+        if (_builtPolicy != null)
+        {
+            return _builtPolicy;
+        }
+
         var policies = new CompositePolicy(Policies.ToArray());
 
         if (Requirements.Any())
@@ -281,6 +326,21 @@ public class OutputCachePolicyBuilder
             }, policies);
         }
 
-        return policies;
+        return _builtPolicy = policies;
+    }
+
+    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
+    {
+        return Build().OnRequestAsync(context);
+    }
+
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
+    {
+        return Build().OnServeFromCacheAsync(context);
+    }
+
+    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
+    {
+        return Build().OnServeResponseAsync(context);
     }
 }

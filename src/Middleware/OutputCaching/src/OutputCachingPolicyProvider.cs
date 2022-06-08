@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
@@ -15,11 +16,31 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
         _options = options.Value;
     }
 
+    public bool HasPolicies(HttpContext httpContext)
+    {
+        if (_options.BasePolicy != null)
+        {
+            return true;
+        }
+
+        if (httpContext.Features.Get<IOutputCachingFeature>()?.Policies.Any() ?? false)
+        {
+            return true;
+        }
+
+        if (httpContext.GetEndpoint()?.Metadata.GetMetadata<IPoliciesMetadata>()?.Policy != null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public async Task OnRequestAsync(IOutputCachingContext context)
     {
-        if (_options.DefaultPolicy != null)
+        if (_options.BasePolicy != null)
         {
-            await _options.DefaultPolicy.OnRequestAsync(context);
+            await _options.BasePolicy.OnRequestAsync(context);
         }
 
         var policiesMetadata = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPoliciesMetadata>();
@@ -39,9 +60,9 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 
     public async Task OnServeFromCacheAsync(IOutputCachingContext context)
     {
-        if (_options.DefaultPolicy != null)
+        if (_options.BasePolicy != null)
         {
-            await _options.DefaultPolicy.OnServeFromCacheAsync(context);
+            await _options.BasePolicy.OnServeFromCacheAsync(context);
         }
 
         // Apply response policies defined on the feature, e.g. from action attributes
@@ -66,9 +87,9 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
 
     public async Task OnServeResponseAsync(IOutputCachingContext context)
     {
-        if (_options.DefaultPolicy != null)
+        if (_options.BasePolicy != null)
         {
-            await _options.DefaultPolicy.OnServeResponseAsync(context);
+            await _options.BasePolicy.OnServeResponseAsync(context);
         }
 
         // Apply response policies defined on the feature, e.g. from action attributes

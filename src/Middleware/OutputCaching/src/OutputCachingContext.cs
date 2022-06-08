@@ -8,19 +8,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
-internal class OutputCachingContext : IOutputCachingContext
+internal sealed class OutputCachingContext : IOutputCachingContext
 {
-    internal OutputCachingContext(HttpContext httpContext, ILogger logger)
+    internal OutputCachingContext(HttpContext httpContext, IOutputCacheStore store, ILogger logger)
     {
         HttpContext = httpContext;
         Logger = logger;
+        Store = store;
     }
 
     /// <inheritdoc />
     public bool EnableOutputCaching { get; set; }
-
-    /// <inheritdoc />
-    public bool AttemptOutputCaching { get; set; }
 
     /// <inheritdoc />
     public bool AllowCacheLookup { get; set; }
@@ -32,19 +30,10 @@ internal class OutputCachingContext : IOutputCachingContext
     public bool AllowLocking { get; set; }
 
     /// <inheritdoc />
-    public bool IsResponseCacheable { get; set; }
-
-    /// <inheritdoc />
-    public bool IsCacheEntryFresh { get; set; }
-
-    /// <inheritdoc />
     public HttpContext HttpContext { get; }
 
     /// <inheritdoc />
     public DateTimeOffset? ResponseTime { get; internal set; }
-
-    /// <inheritdoc />
-    public TimeSpan? CachedEntryAge { get; internal set; }
 
     /// <inheritdoc />
     public CachedVaryByRules CachedVaryByRules { get; set; } = new();
@@ -56,17 +45,18 @@ internal class OutputCachingContext : IOutputCachingContext
     public ILogger Logger { get; }
 
     /// <inheritdoc />
+    public IOutputCacheStore Store { get; }
+
+    /// <inheritdoc />
     public TimeSpan? ResponseExpirationTimeSpan { get; set; }
 
     internal string CacheKey { get; set; }
 
-    /// <summary>
-    /// Gets or sets the amount of time the response is cached for.
-    /// </summary>
-    /// <remarks>
-    /// It is computed from either <see cref="ResponseExpirationTimeSpan" /> or <see cref="OutputCachingOptions.DefaultExpirationTimeSpan"/>.
-    /// </remarks>
     internal TimeSpan CachedResponseValidFor { get; set; }
+
+    internal bool IsCacheEntryFresh { get; set; }
+
+    internal TimeSpan CachedEntryAge { get; set; }
 
     internal IOutputCacheEntry CachedResponse { get; set; }
 

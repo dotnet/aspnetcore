@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
@@ -16,8 +15,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -147,13 +144,13 @@ internal class TestUtils
                                 outputCachingOptions.MaximumBodySize = options.MaximumBodySize;
                                 outputCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
                                 outputCachingOptions.SystemClock = options.SystemClock;
-                                outputCachingOptions.DefaultPolicy = options.DefaultPolicy;
+                                outputCachingOptions.BasePolicy = options.BasePolicy;
                                 outputCachingOptions.DefaultExpirationTimeSpan = options.DefaultExpirationTimeSpan;
                                 outputCachingOptions.SizeLimit = options.SizeLimit;
                             }
                             else
                             {
-                                outputCachingOptions.DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build();
+                                outputCachingOptions.BasePolicy = new OutputCachePolicyBuilder().Enable().Build();
                             }
                         });
                     })
@@ -207,30 +204,33 @@ internal class TestUtils
 
     internal static OutputCachingContext CreateTestContext()
     {
-        return new OutputCachingContext(new DefaultHttpContext(), NullLogger.Instance)
+        return new OutputCachingContext(new DefaultHttpContext(), new TestOutputCache(), NullLogger.Instance)
         {
+            EnableOutputCaching = true,
             AllowCacheStorage = true,
-            IsResponseCacheable = true,
+            AllowCacheLookup = true,
             ResponseTime = DateTimeOffset.UtcNow
         };
     }
 
     internal static OutputCachingContext CreateTestContext(HttpContext httpContext)
     {
-        return new OutputCachingContext(httpContext, NullLogger.Instance)
+        return new OutputCachingContext(httpContext, new TestOutputCache(), NullLogger.Instance)
         {
+            EnableOutputCaching = true,
             AllowCacheStorage = true,
-            IsResponseCacheable = true,
+            AllowCacheLookup = true,
             ResponseTime = DateTimeOffset.UtcNow
         };
     }
 
     internal static OutputCachingContext CreateTestContext(ITestSink testSink)
     {
-        return new OutputCachingContext(new DefaultHttpContext(), new TestLogger("OutputCachingTests", testSink, true))
+        return new OutputCachingContext(new DefaultHttpContext(), new TestOutputCache(), new TestLogger("OutputCachingTests", testSink, true))
         {
+            EnableOutputCaching = true,
             AllowCacheStorage = true,
-            IsResponseCacheable = true,
+            AllowCacheLookup = true,
             ResponseTime = DateTimeOffset.UtcNow
         };
     }
@@ -317,17 +317,20 @@ internal class LoggedMessage
 
 internal class TestOutputCachingPolicyProvider : IOutputCachingPolicyProvider
 {
-    public bool AllowCacheLookupValue { get; set; } = false;
-    public bool AllowCacheStorageValue { get; set; } = false;
-    public bool AttemptOutputCachingValue { get; set; } = false;
+    public bool AllowCacheLookupValue { get; set; }
+    public bool AllowCacheStorageValue { get; set; }
     public bool EnableOutputCaching { get; set; } = true;
-    public bool IsCachedEntryFreshValue { get; set; } = true;
-    public bool IsResponseCacheableValue { get; set; } = true;
+
+    public bool HasPolicies(HttpContext httpContext)
+    {
+        return true;
+    }
 
     public Task OnRequestAsync(IOutputCachingContext context)
     {
         context.EnableOutputCaching = EnableOutputCaching;
-        context.AttemptOutputCaching = AttemptOutputCachingValue;
+        context.AllowCacheLookup = AllowCacheLookupValue;
+        context.AllowCacheStorage = AllowCacheStorageValue;
 
         return Task.CompletedTask;
     }
@@ -335,14 +338,13 @@ internal class TestOutputCachingPolicyProvider : IOutputCachingPolicyProvider
     public Task OnServeFromCacheAsync(IOutputCachingContext context)
     {
         context.AllowCacheLookup = AllowCacheLookupValue;
-        context.IsCacheEntryFresh = IsCachedEntryFreshValue;
+        context.AllowCacheStorage = AllowCacheStorageValue;
 
         return Task.CompletedTask;
     }
 
     public Task OnServeResponseAsync(IOutputCachingContext context)
     {
-        context.IsResponseCacheable = IsResponseCacheableValue;
         context.AllowCacheStorage = AllowCacheStorageValue;
 
         return Task.CompletedTask;
@@ -370,12 +372,12 @@ internal class TestOutputCache : IOutputCacheStore
     public int GetCount { get; private set; }
     public int SetCount { get; private set; }
 
-    public ValueTask EvictByTagAsync(string tag)
+    public ValueTask EvictByTagAsync(string tag, CancellationToken token)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask<IOutputCacheEntry> GetAsync(string key)
+    public ValueTask<IOutputCacheEntry> GetAsync(string key, CancellationToken token)
     {
         GetCount++;
         try
@@ -388,7 +390,7 @@ internal class TestOutputCache : IOutputCacheStore
         }
     }
 
-    public ValueTask SetAsync(string key, IOutputCacheEntry entry, TimeSpan validFor)
+    public ValueTask SetAsync(string key, IOutputCacheEntry entry, TimeSpan validFor, CancellationToken token)
     {
         SetCount++;
         _storage[key] = entry;

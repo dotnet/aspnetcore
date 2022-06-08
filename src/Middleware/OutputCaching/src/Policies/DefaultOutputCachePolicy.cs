@@ -7,18 +7,23 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// The default policy.
+/// A policy which caches un-authenticated, GET and HEAD, 200 responses.
 /// </summary>
 internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
 {
+    public static readonly DefaultOutputCachePolicy Instance = new();
+
+    private DefaultOutputCachePolicy()
+    {
+    }
+
     /// <inheritdoc />
     Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
     {
-        context.AttemptOutputCaching = AttemptOutputCaching(context);
-        context.AllowCacheLookup = true;
-        context.AllowCacheStorage = true;
+        var attemptOutputCaching = AttemptOutputCaching(context);
+        context.AllowCacheLookup = attemptOutputCaching;
+        context.AllowCacheStorage = attemptOutputCaching;
         context.AllowLocking = true;
-        context.IsResponseCacheable = true;
 
         // Vary by any query by default
         context.CachedVaryByRules.QueryKeys = "*";
@@ -29,15 +34,6 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
     /// <inheritdoc />
     Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
     {
-        context.IsCacheEntryFresh = true;
-
-        // Validate expiration
-        if (context.CachedEntryAge <= TimeSpan.Zero)
-        {
-            context.Logger.ExpirationExpiresExceeded(context.ResponseTime!.Value);
-            context.IsCacheEntryFresh = false;
-        }
-
         return Task.CompletedTask;
     }
 
@@ -50,7 +46,7 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
         if (!StringValues.IsNullOrEmpty(response.Headers.SetCookie))
         {
             context.Logger.ResponseWithSetCookieNotCacheable();
-            context.IsResponseCacheable = false;
+            context.AllowCacheStorage = false;
             return Task.CompletedTask;
         }
 
@@ -58,17 +54,16 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
         if (response.StatusCode != StatusCodes.Status200OK)
         {
             context.Logger.ResponseWithUnsuccessfulStatusCodeNotCacheable(response.StatusCode);
-            context.IsResponseCacheable = false;
+            context.AllowCacheStorage = false;
             return Task.CompletedTask;
         }
 
-        context.IsResponseCacheable = true;
         return Task.CompletedTask;
     }
 
     private static bool AttemptOutputCaching(IOutputCachingContext context)
     {
-        // TODO: Should it come from options such that it can be changed without a custom default policy?
+        // Check if the current request fulfisls the requirements to be cached
 
         var request = context.HttpContext.Request;
 

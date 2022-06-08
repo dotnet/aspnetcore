@@ -10,15 +10,17 @@ namespace Microsoft.AspNetCore.OutputCaching.Policies;
 /// </summary>
 public static class PolicyExtensions
 {
+    private static readonly IOutputCachingPolicy _defaultEnabledPolicy = new OutputCachePolicyBuilder().Enable();
+
     /// <summary>
-    /// Marks an endpoint to be cached.
+    /// Marks an endpoint to be cached with the default policy.
     /// </summary>
     public static TBuilder CacheOutput<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        var policiesMetadata = new PoliciesMetadata(EnableCachingPolicy.Instance);
+        var policiesMetadata = new PoliciesMetadata(_defaultEnabledPolicy);
 
         builder.Add(endpointBuilder =>
         {
@@ -51,11 +53,9 @@ public static class PolicyExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var outputCachePolicyBuilder = new OutputCachePolicyBuilder();
-        policy?.Invoke(outputCachePolicyBuilder);
+        var outputCachePolicyBuilder = new OutputCachePolicyBuilder().Enable();
 
-        // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        outputCachePolicyBuilder.Enable();
+        policy?.Invoke(outputCachePolicyBuilder);
 
         var policiesMetadata = new PoliciesMetadata(outputCachePolicyBuilder.Build());
 

@@ -18,7 +18,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         _cache = cache;
     }
 
-    public ValueTask EvictByTagAsync(string tag)
+    public ValueTask EvictByTagAsync(string tag, CancellationToken token)
     {
         if (_taggedEntries.TryGetValue(tag, out var keys))
         {
@@ -31,7 +31,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask<IOutputCacheEntry?> GetAsync(string key)
+    public ValueTask<IOutputCacheEntry?> GetAsync(string key, CancellationToken token)
     {
         var entry = _cache.Get(key);
 
@@ -52,7 +52,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         return ValueTask.FromResult(default(IOutputCacheEntry));
     }
 
-    public ValueTask SetAsync(string key, IOutputCacheEntry cachedResponse, TimeSpan validFor)
+    public ValueTask SetAsync(string key, IOutputCacheEntry cachedResponse, TimeSpan validFor, CancellationToken token)
     {
         if (cachedResponse.Tags != null)
         {

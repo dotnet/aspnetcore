@@ -8,15 +8,17 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 internal sealed class EnableCachingPolicy : IOutputCachingPolicy
 {
-    /// <summary>
-    /// Default instance of <see cref="EnableCachingPolicy"/>.
-    /// </summary>
-    public static readonly EnableCachingPolicy Instance = new();
+    public static readonly EnableCachingPolicy Enabled = new();
+    public static readonly EnableCachingPolicy Disabled = new();
+
+    private EnableCachingPolicy()
+    {
+    }
 
     /// <inheritdoc />
     Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
     {
-        context.EnableOutputCaching = true;
+        context.EnableOutputCaching = this == Enabled;
 
         return Task.CompletedTask;
     }

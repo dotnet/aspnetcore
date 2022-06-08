@@ -10,9 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOutputCaching(options =>
 {
     // Enable caching on all requests
-    // options.DefaultPolicy = OutputCachePolicyBuilder.Default.Enable().Build();
+    // options.BasePolicy = new OutputCachePolicyBuilder().Enable();
 
-    options.Policies["NoCache"] = new OutputCachePolicyBuilder().NoStore().Build();
+    options.Policies["NoCache"] = new OutputCachePolicyBuilder().WithPath("/wwwroot").Expire(TimeSpan.FromDays(1));
 });
 
 var app = builder.Build();
@@ -25,19 +25,22 @@ app.MapGet("/cached", Gravatar.WriteGravatar).CacheOutput();
 
 app.MapGet("/nocache", Gravatar.WriteGravatar).CacheOutput(x => x.NoStore());
 
-app.MapGet("/profile", Gravatar.WriteGravatar).CacheOutput(x => x.Profile("NoCache"));
+app.MapGet("/profile", Gravatar.WriteGravatar).CacheOutput(x => x.Policy("NoCache"));
 
-app.MapGet("/attribute", [OutputCache(Profile = "NoCache")] (c) => Gravatar.WriteGravatar(c));
+var myPolicy = new OutputCachePolicyBuilder().Expire(TimeSpan.FromDays(1)).Build();
+app.MapGet("/custom", Gravatar.WriteGravatar).CacheOutput(myPolicy);
+
+app.MapGet("/attribute", (RequestDelegate)([OutputCache(PolicyName = "NoCache")] (c) => Gravatar.WriteGravatar(c)));
 
 var blog = app.MapGroup("blog").CacheOutput(x => x.Tag("blog"));
 blog.MapGet("/", Gravatar.WriteGravatar);
-blog.MapGet("/post/{id}", Gravatar.WriteGravatar);
+blog.MapGet("/post/{id}", Gravatar.WriteGravatar).CacheOutput(x => x.Tag("byid")); // check we get the two tags. Or if we need to get the last one
 
 app.MapPost("/purge/{tag}", async (IOutputCacheStore cache, string tag) =>
 {
     // POST such that the endpoint is not cached itself
 
-    await cache.EvictByTagAsync(tag);
+    await cache.EvictByTagAsync(tag, default);
 });
 
 // Cached entries will vary by culture, but any other additional query is ignored and returns the same cached content
@@ -64,6 +67,9 @@ app.MapGet("/etag", async (context) =>
     context.Response.Headers.ETag = etag;
 
     await Gravatar.WriteGravatar(context);
+
+    var cacheContext = context.Features.Get<IOutputCachingFeature>()?.Context;
+
 }).CacheOutput();
 
 // When the request header If-Modified-Since is provided, return 304 if the cached entry is older

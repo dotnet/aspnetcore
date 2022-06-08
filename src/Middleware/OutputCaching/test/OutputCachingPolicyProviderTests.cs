@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
@@ -47,12 +46,13 @@ public class OutputCachingPolicyProviderTests
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         context.HttpContext.Request.Method = method;
 
         await new OutputCachingPolicyProvider(Options.Create(options)).OnRequestAsync(context);
 
-        Assert.True(context.AttemptOutputCaching);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -62,12 +62,13 @@ public class OutputCachingPolicyProviderTests
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         context.HttpContext.Request.Method = method;
 
         await new OutputCachingPolicyProvider(Options.Create(options)).OnRequestAsync(context);
 
-        Assert.False(context.AttemptOutputCaching);
+        Assert.False(context.AllowCacheLookup);
+        Assert.False(context.AllowCacheStorage);
         TestUtils.AssertLoggedMessages(
             sink.Writes,
             LoggedMessage.RequestMethodNotCacheable);
@@ -81,11 +82,12 @@ public class OutputCachingPolicyProviderTests
         context.HttpContext.Request.Method = HttpMethods.Get;
         context.HttpContext.Request.Headers.Authorization = "Placeholder";
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
 
         await new OutputCachingPolicyProvider(Options.Create(options)).OnRequestAsync(context);
 
-        Assert.False(context.AttemptOutputCaching);
+        Assert.False(context.AllowCacheStorage);
+        Assert.False(context.AllowCacheLookup);
 
         TestUtils.AssertLoggedMessages(
             sink.Writes,
@@ -103,7 +105,7 @@ public class OutputCachingPolicyProviderTests
             NoStore = true
         }.ToString();
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnRequestAsync(context);
 
         Assert.True(context.AllowCacheStorage);
@@ -119,7 +121,7 @@ public class OutputCachingPolicyProviderTests
         context.HttpContext.Request.Headers.Pragma = "no-cache";
         context.HttpContext.Request.Headers.CacheControl = "max-age=10";
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnRequestAsync(context);
 
         Assert.True(context.AllowCacheLookup);
@@ -132,10 +134,11 @@ public class OutputCachingPolicyProviderTests
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.True(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -149,10 +152,11 @@ public class OutputCachingPolicyProviderTests
             Public = true
         }.ToString();
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.True(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -163,14 +167,14 @@ public class OutputCachingPolicyProviderTests
         var context = TestUtils.CreateTestContext(sink);
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
-            Public = true,
             NoCache = true
         }.ToString();
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.True(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -181,14 +185,14 @@ public class OutputCachingPolicyProviderTests
         var context = TestUtils.CreateTestContext(sink);
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
-            Public = true,
             NoStore = true
         }.ToString();
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.True(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -197,16 +201,13 @@ public class OutputCachingPolicyProviderTests
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
-        {
-            Public = true
-        }.ToString();
         context.HttpContext.Response.Headers.SetCookie = "cookieName=cookieValue";
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.False(context.IsResponseCacheable);
+        Assert.False(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         TestUtils.AssertLoggedMessages(
             sink.Writes,
             LoggedMessage.ResponseWithSetCookieNotCacheable);
@@ -217,16 +218,13 @@ public class OutputCachingPolicyProviderTests
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
-        context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
-        {
-            Public = true
-        }.ToString();
         context.HttpContext.Response.Headers.Vary = "*";
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.True(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -237,14 +235,14 @@ public class OutputCachingPolicyProviderTests
         var context = TestUtils.CreateTestContext(sink);
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
-            Public = true,
             Private = true
         }.ToString();
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.True(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -255,15 +253,12 @@ public class OutputCachingPolicyProviderTests
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
         context.HttpContext.Response.StatusCode = statusCode;
-        context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
-        {
-            Public = true
-        }.ToString();
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.True(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -334,15 +329,12 @@ public class OutputCachingPolicyProviderTests
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
         context.HttpContext.Response.StatusCode = statusCode;
-        context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
-        {
-            Public = true
-        }.ToString();
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.False(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheLookup);
+        Assert.False(context.AllowCacheStorage);
         TestUtils.AssertLoggedMessages(
             sink.Writes,
             LoggedMessage.ResponseWithUnsuccessfulStatusCodeNotCacheable);
@@ -354,19 +346,16 @@ public class OutputCachingPolicyProviderTests
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
         context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-        context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
-        {
-            Public = true
-        }.ToString();
 
         var utcNow = DateTimeOffset.UtcNow;
         context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(utcNow);
         context.ResponseTime = DateTimeOffset.MaxValue;
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.True(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -379,17 +368,17 @@ public class OutputCachingPolicyProviderTests
         context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
-            Public = true,
             MaxAge = TimeSpan.FromSeconds(10)
         }.ToString();
         context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(utcNow);
         context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(utcNow);
         context.ResponseTime = utcNow + TimeSpan.FromSeconds(9);
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.True(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -402,17 +391,17 @@ public class OutputCachingPolicyProviderTests
         context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
-            Public = true,
             MaxAge = TimeSpan.FromSeconds(10),
             SharedMaxAge = TimeSpan.FromSeconds(15)
         }.ToString();
         context.HttpContext.Response.Headers.Date = HeaderUtilities.FormatDate(utcNow);
         context.ResponseTime = utcNow + TimeSpan.FromSeconds(11);
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeResponseAsync(context);
 
-        Assert.True(context.IsResponseCacheable);
+        Assert.True(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }
 
@@ -425,7 +414,7 @@ public class OutputCachingPolicyProviderTests
         context.ResponseTime = DateTimeOffset.MaxValue;
         context.CachedEntryAge = TimeSpan.MaxValue;
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeFromCacheAsync(context);
 
         Assert.True(context.IsCacheEntryFresh);
@@ -441,7 +430,7 @@ public class OutputCachingPolicyProviderTests
         context.ResponseTime = utcNow;
         context.CachedEntryAge = TimeSpan.Zero;
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeFromCacheAsync(context);
 
         Assert.False(context.IsCacheEntryFresh);
@@ -461,13 +450,12 @@ public class OutputCachingPolicyProviderTests
         context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
         context.CachedResponse.Headers[HeaderNames.CacheControl] = new CacheControlHeaderValue()
         {
-            Public = true,
             MaxAge = TimeSpan.FromSeconds(10),
             SharedMaxAge = TimeSpan.FromSeconds(15)
         }.ToString();
         context.CachedResponse.Headers[HeaderNames.Expires] = HeaderUtilities.FormatDate(utcNow);
 
-        var options = new OutputCachingOptions { DefaultPolicy = new OutputCachePolicyBuilder().Default().Enable().Build() };
+        var options = new OutputCachingOptions { BasePolicy = new OutputCachePolicyBuilder().Enable().Build() };
         await new OutputCachingPolicyProvider(Options.Create(options)).OnServeFromCacheAsync(context);
 
         Assert.True(context.IsCacheEntryFresh);

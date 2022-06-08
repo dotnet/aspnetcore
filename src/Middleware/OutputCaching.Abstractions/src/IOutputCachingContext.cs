@@ -12,11 +12,6 @@ namespace Microsoft.AspNetCore.OutputCaching;
 public interface IOutputCachingContext
 {
     /// <summary>
-    /// Gets the cached entry age.
-    /// </summary>
-    TimeSpan? CachedEntryAge { get; }
-
-    /// <summary>
     /// Gets the <see cref="HttpContext"/>.
     /// </summary>
     HttpContext HttpContext { get; }
@@ -42,6 +37,11 @@ public interface IOutputCachingContext
     ILogger Logger { get; }
 
     /// <summary>
+    /// Gets the <see cref="IOutputCacheStore"/> instance.
+    /// </summary>
+    IOutputCacheStore Store { get; }
+
+    /// <summary>
     /// Gets or sets the amount of time the response should be cached for.
     /// </summary>
     TimeSpan? ResponseExpirationTimeSpan { get; set; }
@@ -50,11 +50,6 @@ public interface IOutputCachingContext
     /// Determines whether the output caching logic should be configured for the incoming HTTP request.
     /// </summary>
     bool EnableOutputCaching { get; set; }
-
-    /// <summary>
-    /// Determines whether the output caching logic should be attempted for the incoming HTTP request.
-    /// </summary>
-    bool AttemptOutputCaching { get; set; }
 
     /// <summary>
     /// Determines whether a cache lookup is allowed for the incoming HTTP request.
@@ -70,14 +65,4 @@ public interface IOutputCachingContext
     /// Determines whether the request should be locked.
     /// </summary>
     bool AllowLocking { get; set; }
-
-    /// <summary>
-    /// Determines whether the response received by the middleware can be cached for future requests.
-    /// </summary>
-    bool IsResponseCacheable { get; set; }
-
-    /// <summary>
-    /// Determines whether the response retrieved from the cache store is fresh and can be served.
-    /// </summary>
-    bool IsCacheEntryFresh { get; set; }
 }

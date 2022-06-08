@@ -8,10 +8,16 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 internal class NoStorePolicy : IOutputCachingPolicy
 {
+    public static NoStorePolicy Instance = new();
+
+    private NoStorePolicy()
+    {
+    }
+
     /// <inheritdoc />
     Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
     {
-        context.IsResponseCacheable = false;
+        context.AllowCacheStorage = false;
 
         return Task.CompletedTask;
     }

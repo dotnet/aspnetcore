@@ -63,7 +63,8 @@ public class OutputCachingMiddlewareTests
                 Headers = new HeaderDictionary(),
                 Body = new CachedResponseBody(new List<byte[]>(0), 0)
             },
-            TimeSpan.Zero);
+            TimeSpan.Zero,
+            default);
 
         Assert.True(await middleware.TryServeFromCacheAsync(context));
         Assert.Equal(1, cache.GetCount);
@@ -91,7 +92,8 @@ public class OutputCachingMiddlewareTests
                 },
                 Body = new CachedResponseBody(new List<byte[]>(0), 0)
             },
-            TimeSpan.Zero);
+            TimeSpan.Zero,
+            default);
 
         Assert.True(await middleware.TryServeFromCacheAsync(context));
         Assert.Equal("NewValue", context.HttpContext.Response.Headers["MyHeader"]);
@@ -116,7 +118,8 @@ public class OutputCachingMiddlewareTests
             {
                 Body = new CachedResponseBody(new List<byte[]>(0), 0)
             },
-            TimeSpan.Zero);
+            TimeSpan.Zero,
+            default);
 
         Assert.True(await middleware.TryServeFromCacheAsync(context));
         Assert.Equal(1, cache.GetCount);
@@ -349,29 +352,6 @@ public class OutputCachingMiddlewareTests
         middleware.StartResponse(context);
         Assert.NotEqual(clock.UtcNow, context.ResponseTime);
         Assert.Equal(initialTime, context.ResponseTime);
-    }
-
-    [Fact]
-    public void FinalizeCacheHeadersAsync_DoesntUpdateAllowCacheStorage_IfResponseCacheable()
-    {
-        // Contrary to ResponseCaching which reacts to server headers.
-
-        var sink = new TestSink();
-        var middleware = TestUtils.CreateTestMiddleware(testSink: sink);
-        var context = TestUtils.CreateTestContext();
-        context.AllowCacheStorage = false;
-
-        context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
-        {
-            Public = true
-        }.ToString();
-
-        Assert.False(context.AllowCacheStorage);
-
-        middleware.FinalizeCacheHeaders(context);
-
-        Assert.False(context.AllowCacheStorage);
-        Assert.Empty(sink.Writes);
     }
 
     [Fact]
@@ -699,7 +679,7 @@ public class OutputCachingMiddlewareTests
 
         middleware.ShimResponseStream(context);
         await context.HttpContext.Response.WriteAsync(new string('0', 10));
-        context.IsResponseCacheable = false;
+        context.AllowCacheStorage = false;
         context.CacheKey = "BaseKey";
 
         await middleware.FinalizeCacheBodyAsync(context);
@@ -791,7 +771,7 @@ public class OutputCachingMiddlewareTests
     [InlineData(true, false, true)]
     [InlineData(true, true, false)]
     [InlineData(true, true, true)]
-    public async Task Invoke_AddsOutputCachingFeature_Always(bool allowResponseCaching, bool allowCacheLookup, bool allowCacheStorage)
+    public async Task Invoke_AddsOutputCachingFeature_Always(bool enableOutputCaching, bool allowCacheLookup, bool allowCacheStorage)
     {
         var responseCachingFeatureAdded = false;
         var middleware = TestUtils.CreateTestMiddleware(next: httpContext =>
@@ -801,7 +781,7 @@ public class OutputCachingMiddlewareTests
         },
         policyProvider: new TestOutputCachingPolicyProvider
         {
-            AttemptOutputCachingValue = allowResponseCaching,
+            EnableOutputCaching = enableOutputCaching,
             AllowCacheLookupValue = allowCacheLookup,
             AllowCacheStorageValue = allowCacheStorage
         });

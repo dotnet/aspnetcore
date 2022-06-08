@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.OutputCaching.Memory;
 
-internal class MemoryCachedResponse
+internal sealed class MemoryCachedResponse
 {
     public DateTimeOffset Created { get; set; }
 

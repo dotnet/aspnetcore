@@ -24,9 +24,9 @@ Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.StatusCode.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.Tags.get -> string![]?
 Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry.Tags.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCacheStore
-Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.EvictByTagAsync(string! tag) -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.GetAsync(string! key) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry?>
-Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.SetAsync(string! key, Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry! entry, System.TimeSpan validFor) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.EvictByTagAsync(string! tag, System.Threading.CancellationToken token) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.GetAsync(string! key, System.Threading.CancellationToken token) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry?>
+Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.SetAsync(string! key, Microsoft.AspNetCore.OutputCaching.IOutputCacheEntry! entry, System.TimeSpan validFor, System.Threading.CancellationToken token) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowCacheLookup.get -> bool
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowCacheLookup.set -> void
@@ -34,21 +34,15 @@ Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowCacheStorage.get -
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowCacheStorage.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowLocking.get -> bool
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AllowLocking.set -> void
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AttemptOutputCaching.get -> bool
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.AttemptOutputCaching.set -> void
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.CachedEntryAge.get -> System.TimeSpan?
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.CachedVaryByRules.get -> Microsoft.AspNetCore.OutputCaching.CachedVaryByRules!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.EnableOutputCaching.get -> bool
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.EnableOutputCaching.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.IsCacheEntryFresh.get -> bool
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.IsCacheEntryFresh.set -> void
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.IsResponseCacheable.get -> bool
-Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.IsResponseCacheable.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.Logger.get -> Microsoft.Extensions.Logging.ILogger!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.ResponseExpirationTimeSpan.get -> System.TimeSpan?
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.ResponseExpirationTimeSpan.set -> void
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.ResponseTime.get -> System.DateTimeOffset?
+Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.Store.get -> Microsoft.AspNetCore.OutputCaching.IOutputCacheStore!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingContext.Tags.get -> System.Collections.Generic.HashSet<string!>!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingFeature
 Microsoft.AspNetCore.OutputCaching.IOutputCachingFeature.Context.get -> Microsoft.AspNetCore.OutputCaching.IOutputCachingContext!
@@ -58,6 +52,7 @@ Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy.OnRequestAsync(Microsoft
 Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicyProvider
+Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicyProvider.HasPolicies(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> bool
 Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicyProvider.OnRequestAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicyProvider.OnServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicyProvider.OnServeResponseAsync(Microsoft.AspNetCore.OutputCaching.IOutputCachingContext! context) -> System.Threading.Tasks.Task!

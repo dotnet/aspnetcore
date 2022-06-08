@@ -48,9 +48,9 @@ public class OutputCacheAttribute : Attribute, IOrderedFilter, IPoliciesMetadata
     public string[]? VaryByQueryKeys { get; set; }
 
     /// <summary>
-    /// Gets or sets the value of the cache profile name.
+    /// Gets or sets the value of the cache policy name.
     /// </summary>
-    public string? Profile { get; set; }
+    public string? PolicyName { get; set; }
 
     /// <inheritdoc />
     public int Order { get; set; }
@@ -67,9 +67,9 @@ public class OutputCacheAttribute : Attribute, IOrderedFilter, IPoliciesMetadata
             builder.NoStore();
         }
 
-        if (Profile != null)
+        if (PolicyName != null)
         {
-            builder.Profile(Profile);
+            builder.Policy(PolicyName);
         }
 
         if (VaryByQueryKeys != null)

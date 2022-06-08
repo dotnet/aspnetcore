@@ -36,7 +36,7 @@ public class OutputCachingOptions
     /// <summary>
     /// Gets the policy applied to all requests.
     /// </summary>
-    public IOutputCachingPolicy? DefaultPolicy { get; set; } = new DefaultOutputCachePolicy();
+    public IOutputCachingPolicy? BasePolicy { get; set; }
 
     /// <summary>
     /// Gets a Dictionary of policy names, <see cref="IOutputCachingPolicy"/> which are pre-defined settings for

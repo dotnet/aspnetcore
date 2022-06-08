@@ -53,9 +53,9 @@ public class OutputCacheAttribute : Attribute, IPoliciesMetadata
     public string[]? VaryByHeaders { get; set; }
 
     /// <summary>
-    /// Gets or sets the value of the cache profile name.
+    /// Gets or sets the value of the cache policy name.
     /// </summary>
-    public string? Profile { get; set; }
+    public string? PolicyName { get; set; }
 
     /// <inheritdoc />
     public IOutputCachingPolicy Policy => _policy ??= GetPolicy();
@@ -69,9 +69,9 @@ public class OutputCacheAttribute : Attribute, IPoliciesMetadata
             builder.NoStore();
         }
 
-        if (Profile != null)
+        if (PolicyName != null)
         {
-            builder.Profile(Profile);
+            builder.Policy(PolicyName);
         }
 
         if (VaryByQueryKeys != null)
