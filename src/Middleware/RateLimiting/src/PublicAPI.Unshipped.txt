@@ -1,6 +1,7 @@
 Microsoft.AspNetCore.Builder.RateLimiterEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.RateLimiting.IRateLimiterMetadata
 Microsoft.AspNetCore.RateLimiting.IRateLimiterMetadata.Name.get -> string!
+Microsoft.AspNetCore.RateLimiting.RateLimiterApplicationBuilderExtensions
 Microsoft.AspNetCore.RateLimiting.RateLimiterMetadata
 Microsoft.AspNetCore.RateLimiting.RateLimiterMetadata.Name.get -> string!
 Microsoft.AspNetCore.RateLimiting.RateLimiterMetadata.RateLimiterMetadata(string! name) -> void
@@ -14,11 +15,10 @@ Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.OnRejected.get -> System.Fu
 Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.OnRejected.set -> void
 Microsoft.AspNetCore.RateLimiting.RateLimiterOptions.RateLimiterOptions() -> void
 Microsoft.AspNetCore.RateLimiting.RateLimiterOptionsExtensions
-Microsoft.AspNetCore.RateLimiting.RateLimitingApplicationBuilderExtensions
 static Microsoft.AspNetCore.Builder.RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting<TBuilder>(this TBuilder builder, string! name) -> TBuilder
+static Microsoft.AspNetCore.RateLimiting.RateLimiterApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.RateLimiting.RateLimiterApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.RateLimiting.RateLimiterOptionsExtensions.AddConcurrencyLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options, string! name, System.Threading.RateLimiting.ConcurrencyLimiterOptions! concurrencyLimiterOptions, bool global = false) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!
 static Microsoft.AspNetCore.RateLimiting.RateLimiterOptionsExtensions.AddFixedWindowRateLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options, string! name, System.Threading.RateLimiting.FixedWindowRateLimiterOptions! fixedWindowRateLimiterOptions, bool global = false) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!
 static Microsoft.AspNetCore.RateLimiting.RateLimiterOptionsExtensions.AddSlidingWindowRateLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options, string! name, System.Threading.RateLimiting.SlidingWindowRateLimiterOptions! slidingWindowRateLimiterOptions, bool global = false) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!
 static Microsoft.AspNetCore.RateLimiting.RateLimiterOptionsExtensions.AddTokenBucketRateLimiter(this Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options, string! name, System.Threading.RateLimiting.TokenBucketRateLimiterOptions! tokenBucketRateLimiterOptions, bool global = false) -> Microsoft.AspNetCore.RateLimiting.RateLimiterOptions!
-static Microsoft.AspNetCore.RateLimiting.RateLimitingApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.RateLimiting.RateLimitingApplicationBuilderExtensions.UseRateLimiter(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.RateLimiting.RateLimiterOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
