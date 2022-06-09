@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -247,9 +248,9 @@ public class Http2TimeoutTests : Http2TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
             };
         await InitializeConnectionAsync(_appAbort);
 

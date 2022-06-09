@@ -58,10 +58,10 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
 
     protected static readonly IEnumerable<KeyValuePair<string, string>> _browserRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
             new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
             new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
@@ -71,10 +71,10 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
 
     protected static IEnumerable<KeyValuePair<string, string>> ReadRateRequestHeaders(int expectedBytes) => new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/" + expectedBytes),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/" + expectedBytes),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
         };
 
     public Http3TestBase()

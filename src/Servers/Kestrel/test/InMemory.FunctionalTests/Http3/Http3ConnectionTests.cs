@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Testing;
@@ -28,10 +29,10 @@ public class Http3ConnectionTests : Http3TestBase
 {
     private static readonly KeyValuePair<string, string>[] Headers = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
         };
 
     [Fact]
@@ -58,10 +59,10 @@ public class Http3ConnectionTests : Http3TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             };
 
         await requestStream.SendHeadersAsync(headers);
@@ -99,10 +100,10 @@ public class Http3ConnectionTests : Http3TestBase
 
         var expectContinueRequestHeaders = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "127.0.0.1"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
             };
 
@@ -116,7 +117,7 @@ public class Http3ConnectionTests : Http3TestBase
 
         await requestStream.SendDataAsync(Encoding.ASCII.GetBytes("Hello world"), endStream: false);
         var headers = await requestStream.ExpectHeadersAsync();
-        Assert.Equal("200", headers[HeaderNames.Status]);
+        Assert.Equal("200", headers[PseudoHeaderNames.Status]);
 
         var responseData = await requestStream.ExpectDataAsync();
         Assert.Equal("Hello world", Encoding.ASCII.GetString(responseData.ToArray()));
@@ -135,9 +136,9 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var requestHeaders = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(HeaderNames.Cookie, "a=0"),
                 new KeyValuePair<string, string>(HeaderNames.Cookie, "b=1"),
                 new KeyValuePair<string, string>(HeaderNames.Cookie, "c=2"),
@@ -365,10 +366,10 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             };
 
         await Http3Api.InitializeConnectionAsync(_echoApplication);
@@ -384,10 +385,10 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var headers = new[]
         {
-            new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json"),
         };
 
@@ -422,20 +423,20 @@ public class Http3ConnectionTests : Http3TestBase
 
         KeyValuePair<string, string>[] requestHeaders1 = new[]
         {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
         };
 
         // Note: No content-type
         KeyValuePair<string, string>[] requestHeaders2 = new[]
         {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80")
+            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80")
         };
 
         await Http3Api.InitializeConnectionAsync(_echoApplication);
@@ -466,10 +467,10 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             };
 
         await Http3Api.InitializeConnectionAsync(_echoApplication);
@@ -500,10 +501,10 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             };
 
         var requestDelegate = sendData ? _echoApplication : _noopApplication;
@@ -523,10 +524,10 @@ public class Http3ConnectionTests : Http3TestBase
     {
         var requestHeaders = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/hello"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
                 new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
             };
 

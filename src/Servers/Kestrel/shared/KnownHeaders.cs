@@ -9,6 +9,7 @@ using System.Net.Http.HPack;
 using System.Net.Http.QPack;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace CodeGenerator;
@@ -25,10 +26,10 @@ public class KnownHeaders
         HeaderNames.TransferEncoding,
         HeaderNames.ContentLength,
         HeaderNames.Connection,
-        HeaderNames.Scheme,
-        HeaderNames.Path,
-        HeaderNames.Method,
-        HeaderNames.Authority,
+        PseudoHeaderNames.Scheme,
+        PseudoHeaderNames.Path,
+        PseudoHeaderNames.Method,
+        PseudoHeaderNames.Authority,
         HeaderNames.Host,
     };
 
@@ -111,10 +112,10 @@ public class KnownHeaders
         };
         RequestHeaders = commonHeaders.Concat(new[]
         {
-            HeaderNames.Authority,
-            HeaderNames.Method,
-            HeaderNames.Path,
-            HeaderNames.Scheme,
+            PseudoHeaderNames.Authority,
+            PseudoHeaderNames.Method,
+            PseudoHeaderNames.Path,
+            PseudoHeaderNames.Scheme,
             HeaderNames.Accept,
             HeaderNames.AcceptCharset,
             HeaderNames.AcceptEncoding,

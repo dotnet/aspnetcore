@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -31,12 +32,18 @@ internal sealed class Http2Utilities : IHttpStreamHeadersHandler
     public static readonly string FourKHeaderValue = new string('a', 4096);
     private static readonly Encoding HeaderValueEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
+    // redefining pseudoheaders here to avoid extra dependencies just for a couple tests
+    private const string MethodPseudoHeader = ":method";
+    private const string PathPseudoHeader = ":path";
+    private const string SchemePseudoHeader = ":scheme";
+    private const string AuthorityPseudoHeader = ":authority";
+
     public static readonly IEnumerable<KeyValuePair<string, string>> BrowserRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:443"),
+            new KeyValuePair<string, string>(MethodPseudoHeader, "GET"),
+            new KeyValuePair<string, string>(PathPseudoHeader, "/"),
+            new KeyValuePair<string, string>(SchemePseudoHeader, "https"),
+            new KeyValuePair<string, string>(AuthorityPseudoHeader, "localhost:443"),
             new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
             new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
             new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
@@ -46,10 +53,10 @@ internal sealed class Http2Utilities : IHttpStreamHeadersHandler
 
     public static readonly IEnumerable<KeyValuePair<string, string>> BrowserRequestHeadersHttp = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(MethodPseudoHeader, "GET"),
+            new KeyValuePair<string, string>(PathPseudoHeader, "/"),
+            new KeyValuePair<string, string>(SchemePseudoHeader, "http"),
+            new KeyValuePair<string, string>(AuthorityPseudoHeader, "localhost:80"),
             new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
             new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
             new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
@@ -59,18 +66,18 @@ internal sealed class Http2Utilities : IHttpStreamHeadersHandler
 
     public static readonly IEnumerable<KeyValuePair<string, string>> PostRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(MethodPseudoHeader, "POST"),
+            new KeyValuePair<string, string>(PathPseudoHeader, "/"),
+            new KeyValuePair<string, string>(SchemePseudoHeader, "https"),
+            new KeyValuePair<string, string>(AuthorityPseudoHeader, "localhost:80"),
         };
 
     public static readonly IEnumerable<KeyValuePair<string, string>> ExpectContinueRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "127.0.0.1"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
+            new KeyValuePair<string, string>(MethodPseudoHeader, "POST"),
+            new KeyValuePair<string, string>(PathPseudoHeader, "/"),
+            new KeyValuePair<string, string>(AuthorityPseudoHeader, "127.0.0.1"),
+            new KeyValuePair<string, string>(SchemePseudoHeader, "https"),
             new KeyValuePair<string, string>("expect", "100-continue"),
         };
 
@@ -82,10 +89,10 @@ internal sealed class Http2Utilities : IHttpStreamHeadersHandler
 
     public static readonly IEnumerable<KeyValuePair<string, string>> OneContinuationRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(MethodPseudoHeader, "GET"),
+            new KeyValuePair<string, string>(PathPseudoHeader, "/"),
+            new KeyValuePair<string, string>(SchemePseudoHeader, "https"),
+            new KeyValuePair<string, string>(AuthorityPseudoHeader, "localhost:80"),
             new KeyValuePair<string, string>("a", FourKHeaderValue),
             new KeyValuePair<string, string>("b", FourKHeaderValue),
             new KeyValuePair<string, string>("c", FourKHeaderValue),
@@ -94,10 +101,10 @@ internal sealed class Http2Utilities : IHttpStreamHeadersHandler
 
     public static readonly IEnumerable<KeyValuePair<string, string>> TwoContinuationsRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(MethodPseudoHeader, "GET"),
+            new KeyValuePair<string, string>(PathPseudoHeader, "/"),
+            new KeyValuePair<string, string>(SchemePseudoHeader, "https"),
+            new KeyValuePair<string, string>(AuthorityPseudoHeader, "localhost:80"),
             new KeyValuePair<string, string>("a", FourKHeaderValue),
             new KeyValuePair<string, string>("b", FourKHeaderValue),
             new KeyValuePair<string, string>("c", FourKHeaderValue),
@@ -109,10 +116,10 @@ internal sealed class Http2Utilities : IHttpStreamHeadersHandler
 
     public static IEnumerable<KeyValuePair<string, string>> ReadRateRequestHeaders(int expectedBytes) => new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/" + expectedBytes),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(MethodPseudoHeader, "POST"),
+            new KeyValuePair<string, string>(PathPseudoHeader, "/" + expectedBytes),
+            new KeyValuePair<string, string>(SchemePseudoHeader, "https"),
+            new KeyValuePair<string, string>(AuthorityPseudoHeader, "localhost:80"),
         };
 
     public static readonly byte[] _helloBytes = Encoding.ASCII.GetBytes("hello");
