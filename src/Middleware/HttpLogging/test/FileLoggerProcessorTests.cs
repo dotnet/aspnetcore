@@ -219,6 +219,10 @@ namespace Microsoft.AspNetCore.HttpLogging
         {
             var path = Path.Combine(TempPath, Path.GetRandomFileName());
             Directory.CreateDirectory(path);
+            var mockSystemDateTime = new MockSystemDateTime
+            {
+                Now = _today
+            };
 
             try
             {
@@ -233,6 +237,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 var testLogger = new TestLoggerFactory(testSink, enabled:true);
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), testLogger))
                 {
+                    logger.SystemDateTime = mockSystemDateTime;
                     for (int i = 0; i < 10000; i++)
                     {
                         logger.EnqueueMessage(_messageOne);
@@ -258,6 +263,7 @@ namespace Microsoft.AspNetCore.HttpLogging
                 {
                     Assert.Equal(0, testSink2.Writes.Count);
 
+                    logger.SystemDateTime = mockSystemDateTime;
                     logger.EnqueueMessage(_messageOne);
                     await WaitForCondition(() => testSink2.Writes.FirstOrDefault()?.EventId.Name == "MaxFilesReached").DefaultTimeout();
                 }
@@ -422,6 +428,11 @@ namespace Microsoft.AspNetCore.HttpLogging
         [Fact]
         public async Task RollsTextFilesWhenFirstLogOfDayIsMissing()
         {
+            var mockSystemDateTime = new MockSystemDateTime
+            {
+                Now = _today
+            };
+
             var path = Path.Combine(TempPath, Path.GetRandomFileName());
             Directory.CreateDirectory(path);
 
@@ -440,6 +451,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
+                    logger.SystemDateTime = mockSystemDateTime;
                     logger.EnqueueMessage(_messageOne);
                     logger.EnqueueMessage(_messageTwo);
                     logger.EnqueueMessage(_messageThree);
@@ -452,6 +464,7 @@ namespace Microsoft.AspNetCore.HttpLogging
 
                 await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
                 {
+                    logger.SystemDateTime = mockSystemDateTime;
                     logger.EnqueueMessage(_messageFour);
                     // Pause for a bit before disposing so logger can finish logging
                     await WaitForFile(fileName4, _messageFour.Length).DefaultTimeout();
