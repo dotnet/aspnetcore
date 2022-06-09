@@ -19,7 +19,7 @@
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <PlatformToolsetVersion>v143</PlatformToolsetVersion>
     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
-    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.19041.0</WindowsTargetPlatformVersion>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
 
