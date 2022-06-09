@@ -16,13 +16,12 @@ if (app.Environment.IsDevelopment())
 string Plaintext() => "Hello, World!";
 app.MapGet("/plaintext", Plaintext);
 
-var message =
-    $"""
+app.MapGet("/", () => $"""
     Operating System: {Environment.OSVersion}
     .NET version: {Environment.Version}
-    """;
-
-app.MapGet("/", () => message);
+    Username: {Environment.UserName}
+    Date and Time: {DateTime.Now}
+    """);
 
 var nestedGroup = app.MapGroup("/group/{groupName}")
    .MapGroup("/nested/{nestedName}")
