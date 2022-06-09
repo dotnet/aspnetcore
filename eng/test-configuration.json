@@ -3,15 +3,11 @@
   "defaultOnFailure": "fail",
   "localRerunCount" : 3,
   "retryOnRules": [
-    {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess"}},
-    {"testName": {"contains": "AppOfflineDroppedWhileSiteIsDown_SiteReturns503_InProcess"}},
-    {"testName": {"contains": "CheckFrebDisconnect"}},
-    {"testName": {"contains": "CheckStdoutWithLargeWrites"}},
-    {"testName": {"contains": "ServerShutsDownWhenMainExitsStress" }},
-    {"testName": {"contains": "AddressRegistrationTests" }},
+    {"testName": {"contains": "FlakyTestToEnsureRetryWorks" }},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
     {"testName": {"contains": "ReaderThrowsResetExceptionOnInvalidBody" }},
-    {"failureMessage": {"contains":"System.AggregateException : One or more errors occurred. (Operation did not succeed after 15 retries (Site is started but no worker process found) (Site is started but no worker process found)"}},
+    {"testAssembly": {"contains": "IIS"}},
+    {"failureMessage": {"contains":"(Site is started but no worker process found) (Site is started but no worker process found)"}},
     {"failureMessage": {"contains": "network disconnected"}}
   ],
   "failOnRules": [
