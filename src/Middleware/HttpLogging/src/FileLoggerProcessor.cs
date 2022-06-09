@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private bool _maxFilesReached;
         private TimeSpan _flushInterval;
         private W3CLoggingFields _fields;
-        private DateTime _today = DateTime.Now;
+        private DateTime _today;
         private bool _firstFile = true;
 
         private readonly IOptionsMonitor<W3CLoggerOptions> _options;
@@ -39,6 +39,9 @@ namespace Microsoft.AspNetCore.HttpLogging
         private readonly List<string> _currentBatch = new List<string>();
         private readonly Task _outputTask;
         private readonly CancellationTokenSource _cancellationTokenSource;
+
+        // Internal to allow for testing
+        internal ISystemDateTime SystemDateTime {get; set;} = new SystemDateTime();
 
         private readonly object _pathLock = new object();
 
@@ -98,6 +101,8 @@ namespace Microsoft.AspNetCore.HttpLogging
                 }
             });
 
+            _today = SystemDateTime.Now;
+
             // Start message queue processor
             _cancellationTokenSource = new CancellationTokenSource();
             _outputTask = Task.Run(ProcessLogQueue);
@@ -155,7 +160,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private async Task WriteMessagesAsync(List<string> messages, CancellationToken cancellationToken)
         {
             // Files are written up to _maxFileSize before rolling to a new file
-            DateTime today = DateTime.Now;
+            DateTime today = SystemDateTime.Now;
 
             if (!TryCreateDirectory())
             {
