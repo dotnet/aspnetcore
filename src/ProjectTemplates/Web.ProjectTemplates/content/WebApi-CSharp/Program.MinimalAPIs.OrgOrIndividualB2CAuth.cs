@@ -108,7 +108,6 @@ app.MapGet("/weatherforecast", async (HttpContext httpContext, Graph.GraphServic
     var user = await graphServiceClient.Me.Request().GetAsync();
 
     var today = DateOnly.FromDateTime(DateTime.Now);
-
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
@@ -125,7 +124,6 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
     var today = DateOnly.FromDateTime(DateTime.Now);
-
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
