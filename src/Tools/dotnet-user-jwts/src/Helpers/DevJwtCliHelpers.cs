@@ -4,8 +4,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json;
-using System.Xml.Linq;
-using System.Xml.XPath;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
@@ -14,17 +12,15 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
 internal static class DevJwtCliHelpers
 {
-    public static string GetUserSecretsId(string projectFilePath)
+    public static string GetOrSetUserSecretsId(IReporter reporter, string projectFilePath)
     {
-        var projectDocument = XDocument.Load(projectFilePath, LoadOptions.PreserveWhitespace);
-        var existingUserSecretsId = projectDocument.XPathSelectElements("//UserSecretsId").FirstOrDefault();
-
-        if (existingUserSecretsId == null)
+        var resolver = new ProjectIdResolver(reporter, projectFilePath);
+        var id = resolver.Resolve(projectFilePath, configuration: null);
+        if (string.IsNullOrEmpty(id))
         {
-            return null;
+            return UserSecretsCreator.CreateUserSecretsId(reporter, projectFilePath, projectFilePath);
         }
-
-        return existingUserSecretsId.Value;
+        return id;
     }
 
     public static string GetProject(string projectPath = null)
@@ -54,7 +50,7 @@ internal static class DevJwtCliHelpers
             return false;
         }
 
-        userSecretsId = GetUserSecretsId(project);
+        userSecretsId = GetOrSetUserSecretsId(reporter, project);
         if (userSecretsId == null)
         {
             reporter.Error($"Project does not contain a user secrets ID.");
@@ -85,6 +81,7 @@ internal static class DevJwtCliHelpers
         // Create signing material and save to user secrets
         var newKeyMaterial = System.Security.Cryptography.RandomNumberGenerator.GetBytes(DevJwtsDefaults.SigningKeyLength);
         var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
+        Directory.CreateDirectory(Path.GetDirectoryName(secretsFilePath));
 
         IDictionary<string, string> secrets = null;
         if (File.Exists(secretsFilePath))
