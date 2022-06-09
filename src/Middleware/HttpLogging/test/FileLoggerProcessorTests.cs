@@ -25,9 +25,7 @@ namespace Microsoft.AspNetCore.HttpLogging
         private string _messageTwo = "Message two";
         private string _messageThree = "Message three";
         private string _messageFour = "Message four";
-        private readonly DateTime _today = DateTime.UtcNow;
-
-        private DateTime _today = new DateTime(2021, 01, 01, 12, 00, 00);
+        private readonly DateTime _today = new DateTime(2021, 01, 01, 12, 00, 00);
 
         public FileLoggerProcessorTests()
         {
