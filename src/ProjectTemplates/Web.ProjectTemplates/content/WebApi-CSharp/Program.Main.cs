@@ -97,16 +97,16 @@ public class Program
         #endif
         app.UseAuthorization();
 
-#if (UseMinimalAPIs)
-#if (OrganizationalAuth || IndividualB2CAuth)
+        #if (UseMinimalAPIs)
+        #if (OrganizationalAuth || IndividualB2CAuth)
         var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"] ?? "";
-#endif
+        #endif
         var summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-#if (GenerateApi)
+        #if (GenerateApi)
         app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
         {
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
