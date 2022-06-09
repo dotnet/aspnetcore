@@ -183,6 +183,51 @@
   <data name="CreateCommand_ValidForOption_Description" xml:space="preserve">
     <value>The period the JWT should expire after. Specify using a number followed by a duration type like 'd' for days, 'h' for hours, 'm' for minutes, and 's' for seconds, e.g. '365d'. Do not use this option in conjunction with the --expires-on option.</value>
   </data>
+  <data name="JwtPrint_Audiences" xml:space="preserve">
+    <value>Audience(s)</value>
+  </data>
+  <data name="JwtPrint_CompactToken" xml:space="preserve">
+    <value>Compact Token</value>
+  </data>
+  <data name="JwtPrint_CustomClaims" xml:space="preserve">
+    <value>Custom Claims</value>
+  </data>
+  <data name="JwtPrint_ExpiresOn" xml:space="preserve">
+    <value>Expires On</value>
+  </data>
+  <data name="JwtPrint_Id" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="JwtPrint_IssuedOn" xml:space="preserve">
+    <value>Issued On</value>
+  </data>
+  <data name="JwtPrint_Issuer" xml:space="preserve">
+    <value>Issuer</value>
+  </data>
+  <data name="JwtPrint_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="JwtPrint_NotBefore" xml:space="preserve">
+    <value>Not Before</value>
+  </data>
+  <data name="JwtPrint_Roles" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+  <data name="JwtPrint_Scheme" xml:space="preserve">
+    <value>Scheme</value>
+  </data>
+  <data name="JwtPrint_Scopes" xml:space="preserve">
+    <value>Scopes</value>
+  </data>
+  <data name="JwtPrint_Token" xml:space="preserve">
+    <value>Token</value>
+  </data>
+  <data name="JwtPrint_TokenHeader" xml:space="preserve">
+    <value>Token Header</value>
+  </data>
+  <data name="JwtPrint_TokenPayload" xml:space="preserve">
+    <value>Token Payload</value>
+  </data>
   <data name="KeyCommand_Canceled" xml:space="preserve">
     <value>Key reset canceled.</value>
   </data>
@@ -234,8 +279,8 @@
   <data name="PrintCommand_NoJwtFound" xml:space="preserve">
     <value>No token with ID '{0}' found.</value>
   </data>
-  <data name="PrintCommand_ShowFullOption_Description" xml:space="preserve">
-    <value>Whether to show the full JWT contents in addition to the compact serialized format.</value>
+  <data name="PrintCommand_ShowAllOption_Description" xml:space="preserve">
+    <value>Whether to show all details associated with the JWT.</value>
   </data>
   <data name="ProjectOption_Description" xml:space="preserve">
     <value>The path of the project to operate on. Defaults to the project in the current directory.</value>
