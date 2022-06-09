@@ -54,4 +54,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Internal\Http3\Streams\" />
+  </ItemGroup>
+
 </Project>

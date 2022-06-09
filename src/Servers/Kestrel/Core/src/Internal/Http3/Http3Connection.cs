@@ -59,7 +59,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         _serverSettings.MaxRequestHeaderFieldSectionSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
         _serverSettings.EnableWebTransport = Convert.ToUInt32(context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
         // technically these are 2 different settings so they should have separate values but the Chromium implementation requires
-        // them to both be 1 to useWebTransport.
+        // them to both be 1 to use WebTransport.
         _serverSettings.H3Datagram = Convert.ToUInt32(context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
     }
 
@@ -297,20 +297,18 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                             if (!streamDirectionFeature.CanWrite)
                             {
                                 // Unidirectional stream
-                                Http3ControlStream stream;
+                                Http3UnidirectionalStream stream;
 
                                 var streamType = await ReadStreamType(streamContext);
 
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
-                                    // unidirectional webtransport streams
-                                    Log.LogError("unidirectional webtransport");
-                                    //throw new NotImplementedException("Webtransport unidirectional streams not implemented yet");
+                                    stream = new Http3UnidirectionalStream(CreateHttpStreamContext(streamContext));
                                 }
-                                //else // control, push, Qpack encoder, or Qpack decoder streams
-                                //{
+                                else // control, push, Qpack encoder, or Qpack decoder streams
+                                {
                                     stream = new Http3ControlStream<TContext>(application, CreateHttpStreamContext(streamContext));
-                                //}
+                                }
 
                                 _streamLifetimeHandler.OnStreamCreated(stream);
                                 ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);

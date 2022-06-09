@@ -279,7 +279,7 @@ internal class Http3InMemory
             _http3TestBase = http3TestBase;
         }
 
-        public bool OnInboundControlStream(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3ControlStream stream)
+        public bool OnInboundControlStream(Server.Kestrel.Core.Internal.Http3.Http3ControlStream stream)
         {
             return _inner.OnInboundControlStream(stream);
         }
@@ -293,12 +293,12 @@ internal class Http3InMemory
             Debug.Assert(success);
         }
 
-        public bool OnInboundDecoderStream(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3ControlStream stream)
+        public bool OnInboundDecoderStream(Server.Kestrel.Core.Internal.Http3.Http3ControlStream stream)
         {
             return _inner.OnInboundDecoderStream(stream);
         }
 
-        public bool OnInboundEncoderStream(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3ControlStream stream)
+        public bool OnInboundEncoderStream(Server.Kestrel.Core.Internal.Http3.Http3ControlStream stream)
         {
             return _inner.OnInboundEncoderStream(stream);
         }
