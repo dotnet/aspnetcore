@@ -31,7 +31,7 @@ internal static class UserSecretsCreator
         var existingUserSecretsId = projectDocument.XPathSelectElements("//UserSecretsId").FirstOrDefault();
 
         // Check if a UserSecretsId is already set
-        if (existingUserSecretsId is object)
+        if (existingUserSecretsId is not null)
         {
             // Only set the UserSecretsId if the user specified an explicit value
             if (string.IsNullOrWhiteSpace(overrideId))
