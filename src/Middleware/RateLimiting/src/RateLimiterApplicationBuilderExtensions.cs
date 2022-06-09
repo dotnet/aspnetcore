@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// <summary>
 /// Extension methods for the RateLimiting middleware.
 /// </summary>
-public static class RateLimitingApplicationBuilderExtensions
+public static class RateLimiterApplicationBuilderExtensions
 {
     /// <summary>
     /// Enables rate limiting for the application.
