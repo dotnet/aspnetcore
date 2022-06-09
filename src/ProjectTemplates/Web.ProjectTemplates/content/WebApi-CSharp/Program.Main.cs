@@ -133,7 +133,7 @@ public class Program
                 .ToArray();
 
             return forecast;
-#elif (GenerateGraph)
+        #elif (GenerateGraph)
         app.MapGet("/weatherforecast", async (HttpContext httpContext, Graph.GraphServiceClient graphServiceClient) =>
         {
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
@@ -150,13 +150,13 @@ public class Program
                 .ToArray();
 
             return forecast;
-#else
+        #else
         app.MapGet("/weatherforecast", (HttpContext httpContext) =>
         {
-#if (OrganizationalAuth || IndividualB2CAuth)
+            #if (OrganizationalAuth || IndividualB2CAuth)
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-#endif
+            #endif
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
@@ -166,27 +166,27 @@ public class Program
                 })
                 .ToArray();
             return forecast;
-#endif
-#if (EnableOpenAPI && !NoAuth)
+        #endif
+        #if (EnableOpenAPI && !NoAuth)
         })
         .WithName("GetWeatherForecast")
         .WithOpenApi()
         .RequireAuthorization();
-#elif (EnableOpenAPI && NoAuth)
+        #elif (EnableOpenAPI && NoAuth)
         })
         .WithName("GetWeatherForecast")
         .WithOpenApi();
-#elif (!EnableOpenAPI && !NoAuth)
+        #elif (!EnableOpenAPI && !NoAuth)
         })
         .RequireAuthorization();
-#else
+        #else
         });
-#endif
-#endif
-#if (UseControllers)
+        #endif
+        #endif
+        #if (UseControllers)
 
         app.MapControllers();
-#endif
+        #endif
 
         app.Run();
     }
