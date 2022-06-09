@@ -168,7 +168,6 @@ namespace Microsoft.AspNetCore.HttpLogging
                 return;
             }
 
-            DateTime today = SystemDateTime.Now;
             var fullName = GetFullName(today);
             // Don't write to an incomplete file left around by a previous FileLoggerProcessor
             if (_firstFile)
