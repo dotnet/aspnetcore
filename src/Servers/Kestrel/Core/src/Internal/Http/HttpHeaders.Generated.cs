@@ -2854,7 +2854,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(Baggage, key))
+                    if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
                         if ((_bits & 0x4000L) != 0)
                         {
@@ -2909,7 +2909,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x4000L) != 0)
                         {
@@ -3058,7 +3058,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(TraceState, key))
+                    if (ReferenceEquals(HeaderNames.TraceState, key))
                     {
                         if ((_bits & 0x10000000000L) != 0)
                         {
@@ -3113,7 +3113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x10000000000L) != 0)
                         {
@@ -3126,7 +3126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 case 11:
                 {
-                    if (ReferenceEquals(TraceParent, key))
+                    if (ReferenceEquals(HeaderNames.TraceParent, key))
                     {
                         if ((_bits & 0x8000000000L) != 0)
                         {
@@ -3136,7 +3136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return false;
                     }
 
-                    if (TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x8000000000L) != 0)
                         {
@@ -3749,7 +3749,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _headers._Scheme = value;
                         return;
                     }
-                    if (ReferenceEquals(Baggage, key))
+                    if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
                         _bits |= 0x4000L;
                         _headers._Baggage = value;
@@ -3786,7 +3786,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _headers._Scheme = value;
                         return;
                     }
-                    if (Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         _bits |= 0x4000L;
                         _headers._Baggage = value;
@@ -3890,7 +3890,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _headers._RequestId = value;
                         return;
                     }
-                    if (ReferenceEquals(TraceState, key))
+                    if (ReferenceEquals(HeaderNames.TraceState, key))
                     {
                         _bits |= 0x10000000000L;
                         _headers._TraceState = value;
@@ -3927,7 +3927,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _headers._RequestId = value;
                         return;
                     }
-                    if (TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         _bits |= 0x10000000000L;
                         _headers._TraceState = value;
@@ -3937,14 +3937,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 case 11:
                 {
-                    if (ReferenceEquals(TraceParent, key))
+                    if (ReferenceEquals(HeaderNames.TraceParent, key))
                     {
                         _bits |= 0x8000000000L;
                         _headers._TraceParent = value;
                         return;
                     }
 
-                    if (TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         _bits |= 0x8000000000L;
                         _headers._TraceParent = value;
@@ -4536,7 +4536,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(Baggage, key))
+                    if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
                         if ((_bits & 0x4000L) == 0)
                         {
@@ -4597,7 +4597,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x4000L) == 0)
                         {
@@ -4761,7 +4761,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(TraceState, key))
+                    if (ReferenceEquals(HeaderNames.TraceState, key))
                     {
                         if ((_bits & 0x10000000000L) == 0)
                         {
@@ -4822,7 +4822,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x10000000000L) == 0)
                         {
@@ -4836,7 +4836,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 case 11:
                 {
-                    if (ReferenceEquals(TraceParent, key))
+                    if (ReferenceEquals(HeaderNames.TraceParent, key))
                     {
                         if ((_bits & 0x8000000000L) == 0)
                         {
@@ -4847,7 +4847,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return false;
                     }
     
-                    if (TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x8000000000L) == 0)
                         {
@@ -5603,7 +5603,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(Baggage, key))
+                    if (ReferenceEquals(HeaderNames.Baggage, key))
                     {
                         if ((_bits & 0x4000L) != 0)
                         {
@@ -5664,7 +5664,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.Baggage.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x4000L) != 0)
                         {
@@ -5828,7 +5828,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (ReferenceEquals(TraceState, key))
+                    if (ReferenceEquals(HeaderNames.TraceState, key))
                     {
                         if ((_bits & 0x10000000000L) != 0)
                         {
@@ -5889,7 +5889,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         return false;
                     }
-                    if (TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x10000000000L) != 0)
                         {
@@ -5903,7 +5903,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 case 11:
                 {
-                    if (ReferenceEquals(TraceParent, key))
+                    if (ReferenceEquals(HeaderNames.TraceParent, key))
                     {
                         if ((_bits & 0x8000000000L) != 0)
                         {
@@ -5914,7 +5914,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return false;
                     }
     
-                    if (TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         if ((_bits & 0x8000000000L) != 0)
                         {
@@ -6993,7 +6993,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(Baggage, _headers._Baggage);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Baggage, _headers._Baggage);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x8000L) != 0)
@@ -7218,7 +7218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(TraceParent, _headers._TraceParent);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TraceParent, _headers._TraceParent);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x10000000000L) != 0)
@@ -7227,7 +7227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(TraceState, _headers._TraceState);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TraceState, _headers._TraceState);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x20000000000L) != 0)
@@ -7446,7 +7446,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x4000L;
                         values = ref _headers._Baggage;
-                        nameStr = Baggage;
+                        nameStr = HeaderNames.Baggage;
                     }
                     else if (((ReadUnalignedLittleEndian_uint(ref nameStart) & 0xdfdfdfdfu) == 0x45464552u) && ((ReadUnalignedLittleEndian_ushort(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4552u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x52u))
                     {
@@ -7525,7 +7525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x10000000000L;
                         values = ref _headers._TraceState;
-                        nameStr = TraceState;
+                        nameStr = HeaderNames.TraceState;
                     }
                     break;
                 case 11:
@@ -7533,7 +7533,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x8000000000L;
                         values = ref _headers._TraceParent;
-                        nameStr = TraceParent;
+                        nameStr = HeaderNames.TraceParent;
                     }
                     break;
                 case 12:
@@ -8282,7 +8282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         break;
                     case 14: // Header: "baggage"
                         Debug.Assert((_currentBits & 0x4000L) != 0);
-                        _current = new KeyValuePair<string, StringValues>(Baggage, _collection._headers._Baggage);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Baggage, _collection._headers._Baggage);
                         _currentBits ^= 0x4000L;
                         break;
                     case 15: // Header: "Cache-Control"
@@ -8407,12 +8407,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         break;
                     case 39: // Header: "traceparent"
                         Debug.Assert((_currentBits & 0x8000000000L) != 0);
-                        _current = new KeyValuePair<string, StringValues>(TraceParent, _collection._headers._TraceParent);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.TraceParent, _collection._headers._TraceParent);
                         _currentBits ^= 0x8000000000L;
                         break;
                     case 40: // Header: "tracestate"
                         Debug.Assert((_currentBits & 0x10000000000L) != 0);
-                        _current = new KeyValuePair<string, StringValues>(TraceState, _collection._headers._TraceState);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.TraceState, _collection._headers._TraceState);
                         _currentBits ^= 0x10000000000L;
                         break;
                     case 41: // Header: "Transfer-Encoding"

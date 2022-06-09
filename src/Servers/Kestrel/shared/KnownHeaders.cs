@@ -460,15 +460,13 @@ public class KnownHeaders
 
         private static string ResolveIdentifier(string name, string prefix = "")
         {
-            // Check the 3 lowercase headers
-            switch (name)
+            var identifier = name switch
             {
-                case "baggage": return "Baggage";
-                case "traceparent": return "TraceParent";
-                case "tracestate": return "TraceState";
-            }
-
-            var identifier = name.Replace("-", "");
+                "baggage" => "Baggage",
+                "traceparent" => "TraceParent",
+                "tracestate" => "TraceState",
+                _ => name.Replace("-", "")
+            };
 
             // Pseudo headers start with a colon. A colon isn't valid in C# names so
             // remove it and pascal case the header name. e.g. :path -> Path, :scheme -> Scheme.
