@@ -160,7 +160,7 @@ internal sealed class CreateCommand
         }
 
         var roles = rolesOption.HasValue() ? rolesOption.Values : new List<string>();
-        optionsString += rolesOption.HasValue() ? $"{Resources.JwtPrint_Roles}: {string.Join(',', roles)} {Environment.NewLine}" : string.Empty;
+        optionsString += rolesOption.HasValue() ? $"{Resources.JwtPrint_Roles}: [{string.Join(',', roles)}] {Environment.NewLine}" : string.Empty;
 
         var scopes = scopesOption.HasValue() ? scopesOption.Values : new List<string>();
         optionsString += scopesOption.HasValue() ? $"{Resources.JwtPrint_Scopes}: {string.Join(',', scopes)} {Environment.NewLine}" : string.Empty;
@@ -173,7 +173,7 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.CreateCommand_InvalidClaims_Error);
                 isValid = false;
             }
-            optionsString += $"{Resources.JwtPrint_CustomClaims}: {string.Join(',', claims.Select(kvp => $"{kvp.Key}={kvp.Value}"))} {Environment.NewLine}";
+            optionsString += $"{Resources.JwtPrint_CustomClaims}: [{string.Join(',', claims.Select(kvp => $"{kvp.Key}={kvp.Value}"))}] {Environment.NewLine}";
         }
 
         return (
