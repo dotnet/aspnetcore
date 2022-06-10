@@ -20,6 +20,13 @@ public static class AuthenticationConfigurationProviderExtensions
     /// <returns>The specified <see cref="IConfiguration"/> object, or null if the requested section does not exist.</returns>
     public static IConfiguration GetSchemeConfiguration(this IAuthenticationConfigurationProvider provider, string authenticationScheme)
     {
+        ArgumentNullException.ThrowIfNull(provider, nameof(provider));
+
+        if (provider.AuthenticationConfiguration is null)
+        {
+            throw new InvalidOperationException("There was no top-level authentication property found in configuration.");
+        }
+
         return provider.AuthenticationConfiguration.GetSection($"{AuthenticationSchemesKey}:{authenticationScheme}");
     }
 }
