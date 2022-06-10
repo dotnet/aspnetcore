@@ -155,6 +155,22 @@
         "wwwroot/css/open-iconic/font/fonts/open-iconic.woff"
       ]
     },
+    "Empty": {
+      "Template": "blazorserver-empty",
+      "Arguments": "new blazorserver-empty",
+      "Files": [
+        "App.razor",
+        "appsettings.Development.json",
+        "appsettings.json",
+        "MainLayout.razor",
+        "Program.cs",
+        "_Imports.razor",
+        "Pages/Index.razor",
+        "Pages/_Host.cshtml",
+        "Properties/launchSettings.json",
+        "wwwroot/css/site.css",
+      ]
+    },
     "SingleOrg": {
       "Template": "blazorserver",
       "Arguments": "new blazorserver -au SingleOrg",
