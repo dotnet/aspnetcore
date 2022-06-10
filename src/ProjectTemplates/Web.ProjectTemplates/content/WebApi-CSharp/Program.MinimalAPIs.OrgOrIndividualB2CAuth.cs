@@ -89,6 +89,7 @@ app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi
         var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         throw new HttpRequestException($"Invalid status code in the HttpResponseMessage: {response.StatusCode}: {error}");
     }
+
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
