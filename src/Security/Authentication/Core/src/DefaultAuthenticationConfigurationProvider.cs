@@ -9,20 +9,11 @@ internal sealed class DefaultAuthenticationConfigurationProvider : IAuthenticati
 {
     private readonly IConfiguration _configuration;
     private const string AuthenticationKey = "Authentication";
-    private const string AuthenticationSchemesKey = "Authentication:Schemes";
 
     public DefaultAuthenticationConfigurationProvider(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public IConfiguration GetAuthenticationConfiguration()
-    {
-        return _configuration.GetSection(AuthenticationKey);
-    }
-
-    public IConfiguration GetAuthenticationSchemeConfiguration(string authenticationScheme)
-    {
-        return _configuration.GetSection($"{AuthenticationSchemesKey}:{authenticationScheme}");
-    }
+    public IConfiguration AuthenticationConfiguration => _configuration.GetSection(AuthenticationKey);
 }

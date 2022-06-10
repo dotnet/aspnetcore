@@ -17,7 +17,7 @@ internal sealed class AuthenticationConfigureOptions : IConfigureOptions<Authent
 
     public void Configure(AuthenticationOptions options)
     {
-        var authenticationConfig = _authenticationConfigurationProvider.GetAuthenticationConfiguration();
+        var authenticationConfig = _authenticationConfigurationProvider.AuthenticationConfiguration;
         var defaultScheme = authenticationConfig[DefaultSchemeKey];
         if (!string.IsNullOrEmpty(defaultScheme))
         {

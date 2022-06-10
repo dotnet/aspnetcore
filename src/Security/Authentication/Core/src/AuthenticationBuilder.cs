@@ -20,8 +20,6 @@ public class AuthenticationBuilder
     public AuthenticationBuilder(IServiceCollection services)
     {
         Services = services;
-        // Always try to read global authentication options from configuration
-        Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, AuthenticationConfigureOptions>());
     }
 
     /// <summary>
@@ -34,6 +32,10 @@ public class AuthenticationBuilder
         where THandler : class, IAuthenticationHandler
     {
         var state = new AddSchemeHelperState(typeof(THandler));
+        // Don't read global authentication options until an
+        // authentication scheme has been configured to avoid
+        // prematurely registering options
+        Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, AuthenticationConfigureOptions>());
         Services.Configure<AuthenticationOptions>(o =>
         {
             o.AddScheme(authenticationScheme, scheme =>
