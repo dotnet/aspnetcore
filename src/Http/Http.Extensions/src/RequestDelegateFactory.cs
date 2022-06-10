@@ -57,8 +57,6 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(RequestDelegateFactory).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ArrayEmptyOfObjectMethod = typeof(Array).GetMethod(nameof(Array.Empty), BindingFlags.Public | BindingFlags.Static)!.MakeGenericMethod(new Type[] { typeof(object) });
-    private static readonly MethodInfo ProblemDetailsResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WriteProblemResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
-
 
     // Call WriteAsJsonAsync<object?>() to serialize the runtime return type rather than the declared return type.
     // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
@@ -196,8 +194,6 @@ public static partial class RequestDelegateFactory
             context.Metadata.AddRange(options.InitialEndpointMetadata);
         }
 
-        context.CanGenerateProblemDetails = context.ServiceProviderIsService?.IsService(typeof(IProblemDetailsProvider)) == true;
-
         return context;
     }
 
@@ -256,7 +252,7 @@ public static partial class RequestDelegateFactory
 
         var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
             CreateParamCheckingResponseWritingMethodCall(returnType, factoryContext) :
-            AddResponseWritingToMethodCall(factoryContext.MethodCall, returnType, factoryContext.CanGenerateProblemDetails);
+            AddResponseWritingToMethodCall(factoryContext.MethodCall, returnType);
 
         if (factoryContext.UsingTempSourceString)
         {
@@ -789,10 +785,8 @@ public static partial class RequestDelegateFactory
             var checkWasParamCheckFailureWithFilters = Expression.Block(
                 Expression.IfThen(
                     WasParamCheckFailureExpr,
-                    Expression.Block(
-                        Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
-                        Expression.Call(ProblemDetailsResponseAsyncMethod, HttpContextExpr))),
-                AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType, factoryContext.CanGenerateProblemDetails)
+                    Expression.Assign(StatusCodeExpr, Expression.Constant(400))),
+                AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType)
             );
 
             checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailureWithFilters;
@@ -809,157 +803,133 @@ public static partial class RequestDelegateFactory
                 WasParamCheckFailureExpr,
                 Expression.Block(
                     Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
-                    Expression.Call(ProblemDetailsResponseAsyncMethod, HttpContextExpr)),
-                AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType, factoryContext.CanGenerateProblemDetails));
+                    CompletedTaskExpr),
+                AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType));
             checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
         }
 
         return Expression.Block(localVariables, checkParamAndCallMethod);
     }
 
-    private static Expression AddResponseWritingToMethodCall(Expression methodCall, Type returnType, bool canGenerateProblemDetails)
+    private static Expression AddResponseWritingToMethodCall(Expression methodCall, Type returnType)
     {
-        static Expression ResponseWriteMethod(Expression methodCall, Type returnType)
+        // Exact request delegate match
+        if (returnType == typeof(void))
         {
-            // Exact request delegate match
-            if (returnType == typeof(void))
+            return Expression.Block(methodCall, CompletedTaskExpr);
+        }
+        else if (returnType == typeof(object))
+        {
+            return Expression.Call(ExecuteObjectReturnMethod, methodCall, HttpContextExpr);
+        }
+        else if (returnType == typeof(ValueTask<object>))
+        {
+            return Expression.Call(ExecuteValueTaskOfObjectMethod,
+                methodCall,
+                HttpContextExpr);
+        }
+        else if (returnType == typeof(Task<object>))
+        {
+            return Expression.Call(ExecuteTaskOfObjectMethod,
+                methodCall,
+                HttpContextExpr);
+        }
+        else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
+        {
+            if (returnType == typeof(Task))
             {
-                return Expression.Block(methodCall, CompletedTaskExpr);
+                return methodCall;
             }
-            else if (returnType == typeof(object))
+            else if (returnType == typeof(ValueTask))
             {
-                return Expression.Call(ExecuteObjectReturnMethod, methodCall, HttpContextExpr);
+                return Expression.Call(
+                    ExecuteValueTaskMethod,
+                    methodCall);
             }
-            else if (returnType == typeof(ValueTask<object>))
+            else if (returnType.IsGenericType &&
+                     returnType.GetGenericTypeDefinition() == typeof(Task<>))
             {
-                return Expression.Call(ExecuteValueTaskOfObjectMethod,
-                    methodCall,
-                    HttpContextExpr);
-            }
-            else if (returnType == typeof(Task<object>))
-            {
-                return Expression.Call(ExecuteTaskOfObjectMethod,
-                    methodCall,
-                    HttpContextExpr);
-            }
-            else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
-            {
-                if (returnType == typeof(Task))
-                {
-                    return methodCall;
-                }
-                else if (returnType == typeof(ValueTask))
+                var typeArg = returnType.GetGenericArguments()[0];
+
+                if (typeof(IResult).IsAssignableFrom(typeArg))
                 {
                     return Expression.Call(
-                        ExecuteValueTaskMethod,
-                        methodCall);
+                        ExecuteTaskResultOfTMethod.MakeGenericMethod(typeArg),
+                        methodCall,
+                        HttpContextExpr);
                 }
-                else if (returnType.IsGenericType &&
-                         returnType.GetGenericTypeDefinition() == typeof(Task<>))
+                // ExecuteTask<T>(handler(..), httpContext);
+                else if (typeArg == typeof(string))
                 {
-                    var typeArg = returnType.GetGenericArguments()[0];
-
-                    if (typeof(IResult).IsAssignableFrom(typeArg))
-                    {
-                        return Expression.Call(
-                            ExecuteTaskResultOfTMethod.MakeGenericMethod(typeArg),
-                            methodCall,
-                            HttpContextExpr);
-                    }
-                    // ExecuteTask<T>(handler(..), httpContext);
-                    else if (typeArg == typeof(string))
-                    {
-                        return Expression.Call(
-                            ExecuteTaskOfStringMethod,
-                            methodCall,
-                            HttpContextExpr);
-                    }
-                    else
-                    {
-                        return Expression.Call(
-                            ExecuteTaskOfTMethod.MakeGenericMethod(typeArg),
-                            methodCall,
-                            HttpContextExpr);
-                    }
-                }
-                else if (returnType.IsGenericType &&
-                         returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
-                {
-                    var typeArg = returnType.GetGenericArguments()[0];
-
-                    if (typeof(IResult).IsAssignableFrom(typeArg))
-                    {
-                        return Expression.Call(
-                            ExecuteValueResultTaskOfTMethod.MakeGenericMethod(typeArg),
-                            methodCall,
-                            HttpContextExpr);
-                    }
-                    // ExecuteTask<T>(handler(..), httpContext);
-                    else if (typeArg == typeof(string))
-                    {
-                        return Expression.Call(
-                            ExecuteValueTaskOfStringMethod,
-                            methodCall,
-                            HttpContextExpr);
-                    }
-                    else
-                    {
-                        return Expression.Call(
-                            ExecuteValueTaskOfTMethod.MakeGenericMethod(typeArg),
-                            methodCall,
-                            HttpContextExpr);
-                    }
+                    return Expression.Call(
+                        ExecuteTaskOfStringMethod,
+                        methodCall,
+                        HttpContextExpr);
                 }
                 else
                 {
-                    // TODO: Handle custom awaitables
-                    throw new NotSupportedException($"Unsupported return type: {returnType}");
+                    return Expression.Call(
+                        ExecuteTaskOfTMethod.MakeGenericMethod(typeArg),
+                        methodCall,
+                        HttpContextExpr);
                 }
             }
-            else if (typeof(IResult).IsAssignableFrom(returnType))
+            else if (returnType.IsGenericType &&
+                     returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
             {
-                if (returnType.IsValueType)
+                var typeArg = returnType.GetGenericArguments()[0];
+
+                if (typeof(IResult).IsAssignableFrom(typeArg))
                 {
-                    var box = Expression.TypeAs(methodCall, typeof(IResult));
-                    return Expression.Call(ResultWriteResponseAsyncMethod, box, HttpContextExpr);
+                    return Expression.Call(
+                        ExecuteValueResultTaskOfTMethod.MakeGenericMethod(typeArg),
+                        methodCall,
+                        HttpContextExpr);
                 }
-                return Expression.Call(ResultWriteResponseAsyncMethod, methodCall, HttpContextExpr);
-            }
-            else if (returnType == typeof(string))
-            {
-                return Expression.Call(StringResultWriteResponseAsyncMethod, HttpContextExpr, methodCall);
-            }
-            else if (returnType.IsValueType)
-            {
-                var box = Expression.TypeAs(methodCall, typeof(object));
-                return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
+                // ExecuteTask<T>(handler(..), httpContext);
+                else if (typeArg == typeof(string))
+                {
+                    return Expression.Call(
+                        ExecuteValueTaskOfStringMethod,
+                        methodCall,
+                        HttpContextExpr);
+                }
+                else
+                {
+                    return Expression.Call(
+                        ExecuteValueTaskOfTMethod.MakeGenericMethod(typeArg),
+                        methodCall,
+                        HttpContextExpr);
+                }
             }
             else
             {
-                return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+                // TODO: Handle custom awaitables
+                throw new NotSupportedException($"Unsupported return type: {returnType}");
             }
         }
-
-        var responseWriteCall = ResponseWriteMethod(methodCall, returnType);
-
-        return canGenerateProblemDetails ?
-            Expression.Block(responseWriteCall, Expression.Call(ProblemDetailsResponseAsyncMethod, HttpContextExpr)) :
-            responseWriteCall;
-    }
-
-    private static Task WriteProblemResponseAsync(HttpContext context)
-    {
-        if (!context.Response.HasStarted &&
-            context.Response.StatusCode >= 400)
+        else if (typeof(IResult).IsAssignableFrom(returnType))
         {
-            return Task.CompletedTask;
-            //var endpointWriter = context.RequestServices.GetService<ProblemDetailsEndpointWriter>();
-            //return endpointWriter == null ?
-            //    Task.CompletedTask :
-            //    endpointWriter.WriteAsync(context);
+            if (returnType.IsValueType)
+            {
+                var box = Expression.TypeAs(methodCall, typeof(IResult));
+                return Expression.Call(ResultWriteResponseAsyncMethod, box, HttpContextExpr);
+            }
+            return Expression.Call(ResultWriteResponseAsyncMethod, methodCall, HttpContextExpr);
         }
-
-        return Task.CompletedTask;
+        else if (returnType == typeof(string))
+        {
+            return Expression.Call(StringResultWriteResponseAsyncMethod, HttpContextExpr, methodCall);
+        }
+        else if (returnType.IsValueType)
+        {
+            var box = Expression.TypeAs(methodCall, typeof(object));
+            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, box, Expression.Constant(CancellationToken.None));
+        }
+        else
+        {
+            return Expression.Call(JsonResultWriteResponseAsyncMethod, HttpResponseExpr, methodCall, Expression.Constant(CancellationToken.None));
+        }
     }
 
     private static Func<object?, HttpContext, Task> HandleRequestBodyAndCompileRequestDelegate(Expression responseWritingMethodCall, FactoryContext factoryContext)
@@ -2093,7 +2063,6 @@ public static partial class RequestDelegateFactory
         public List<string>? RouteParameters { get; init; }
         public bool ThrowOnBadRequest { get; init; }
         public bool DisableInferredFromBody { get; init; }
-        public bool CanGenerateProblemDetails { get; set; }
 
         // Temporary State
         public ParameterInfo? JsonRequestBodyParameter { get; set; }
@@ -2119,7 +2088,7 @@ public static partial class RequestDelegateFactory
         public Expression? MethodCall { get; set; }
         public Type[] ArgumentTypes { get; set; } = Array.Empty<Type>();
         public Expression[] ArgumentExpressions { get; set; } = Array.Empty<Expression>();
-        public Expression[] BoxedArgs { get; set;  } = Array.Empty<Expression>();
+        public Expression[] BoxedArgs { get; set; } = Array.Empty<Expression>();
         public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? Filters { get; init; }
 
         public List<ParameterInfo> Parameters { get; set; } = new();
