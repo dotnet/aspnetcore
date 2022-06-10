@@ -1,6 +1,16 @@
 #nullable enable
+Microsoft.AspNetCore.Http.MappingOptions
+Microsoft.AspNetCore.Http.MappingOptions.All = Microsoft.AspNetCore.Http.MappingOptions.Exceptions | Microsoft.AspNetCore.Http.MappingOptions.RoutingFailures | Microsoft.AspNetCore.Http.MappingOptions.ClientErrors -> Microsoft.AspNetCore.Http.MappingOptions
+Microsoft.AspNetCore.Http.MappingOptions.ClientErrors = 4 -> Microsoft.AspNetCore.Http.MappingOptions
+Microsoft.AspNetCore.Http.MappingOptions.Exceptions = 1 -> Microsoft.AspNetCore.Http.MappingOptions
+Microsoft.AspNetCore.Http.MappingOptions.RoutingFailures = 2 -> Microsoft.AspNetCore.Http.MappingOptions
+Microsoft.AspNetCore.Http.MappingOptions.Unspecified = 0 -> Microsoft.AspNetCore.Http.MappingOptions
 Microsoft.AspNetCore.Http.ProblemDetailsOptions
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedMapping.get -> Microsoft.AspNetCore.Http.MappingOptions
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedMapping.set -> void
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.ConfigureDetails.get -> System.Action<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Mvc.ProblemDetails!>?
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.ConfigureDetails.set -> void
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.ProblemDetailsOptions() -> void
 Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions
-static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Http.MappingOptions allowedMapping = Microsoft.AspNetCore.Http.MappingOptions.All) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.ProblemDetailsOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

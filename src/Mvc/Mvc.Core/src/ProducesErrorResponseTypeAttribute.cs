@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 /// </para>
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public sealed class ProducesErrorResponseTypeAttribute : Attribute, IProducesErrorResponseMetadata
+public sealed class ProducesErrorResponseTypeAttribute : Attribute
 {
     /// <summary>
     /// Initializes a new instance of <see cref="ProducesErrorResponseTypeAttribute"/>.

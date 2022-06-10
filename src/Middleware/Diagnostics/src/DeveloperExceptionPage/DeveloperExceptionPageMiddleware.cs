@@ -9,8 +9,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.RazorViews;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.StackTrace.Sources;
@@ -31,6 +35,7 @@ public class DeveloperExceptionPageMiddleware
     private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
     private readonly Func<ErrorContext, Task> _exceptionHandler;
     private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
+    private readonly IProblemDetailsProvider? _problemDetailsProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -41,13 +46,15 @@ public class DeveloperExceptionPageMiddleware
     /// <param name="hostingEnvironment"></param>
     /// <param name="diagnosticSource"></param>
     /// <param name="filters"></param>
+    /// <param name="problemDetailsProvider"></param>
     public DeveloperExceptionPageMiddleware(
         RequestDelegate next,
         IOptions<DeveloperExceptionPageOptions> options,
         ILoggerFactory loggerFactory,
         IWebHostEnvironment hostingEnvironment,
         DiagnosticSource diagnosticSource,
-        IEnumerable<IDeveloperPageExceptionFilter> filters)
+        IEnumerable<IDeveloperPageExceptionFilter> filters,
+        IProblemDetailsProvider? problemDetailsProvider = null)
     {
         if (next == null)
         {
@@ -71,6 +78,7 @@ public class DeveloperExceptionPageMiddleware
         _diagnosticSource = diagnosticSource;
         _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _logger, _options.SourceCodeLineCount);
         _exceptionHandler = DisplayException;
+        _problemDetailsProvider = problemDetailsProvider;
 
         foreach (var filter in filters.Reverse())
         {
@@ -148,19 +156,7 @@ public class DeveloperExceptionPageMiddleware
         // If the client does not ask for HTML just format the exception as plain text
         if (acceptHeader == null || !acceptHeader.Any(h => h.IsSubsetOf(_textHtmlMediaType)))
         {
-            httpContext.Response.ContentType = "text/plain; charset=utf-8";
-
-            var sb = new StringBuilder();
-            sb.AppendLine(errorContext.Exception.ToString());
-            sb.AppendLine();
-            sb.AppendLine("HEADERS");
-            sb.AppendLine("=======");
-            foreach (var pair in httpContext.Request.Headers)
-            {
-                sb.AppendLine(FormattableString.Invariant($"{pair.Key}: {pair.Value}"));
-            }
-
-            return httpContext.Response.WriteAsync(sb.ToString());
+            return DisplayExceptionContent(errorContext);
         }
 
         if (errorContext.Exception is ICompilationException compilationException)
@@ -169,6 +165,42 @@ public class DeveloperExceptionPageMiddleware
         }
 
         return DisplayRuntimeException(httpContext, errorContext.Exception);
+    }
+
+    private Task DisplayExceptionContent(ErrorContext errorContext)
+    {
+        var httpContext = errorContext.HttpContext;
+
+        if (_problemDetailsProvider?.GetWriter(httpContext) is { } writer)
+        {
+            void ConfigureDetails(HttpContext context, ProblemDetails problemDetails)
+            {
+                problemDetails.Extensions.Add("exception", new
+                {
+                    Headers = httpContext.Request.Headers,
+                    Error = errorContext.Exception.ToString(),
+                    Path = context.Request.Path,
+                    Endpoint = context.GetEndpoint()?.ToString(),
+                    RouteValues = context.Features.Get<IRouteValuesFeature>()?.RouteValues,
+                });
+            }
+
+            return writer.WriteAsync(httpContext, configureDetails: ConfigureDetails);
+        }
+
+        httpContext.Response.ContentType = "text/plain; charset=utf-8";
+
+        var sb = new StringBuilder();
+        sb.AppendLine(errorContext.Exception.ToString());
+        sb.AppendLine();
+        sb.AppendLine("HEADERS");
+        sb.AppendLine("=======");
+        foreach (var pair in httpContext.Request.Headers)
+        {
+            sb.AppendLine(FormattableString.Invariant($"{pair.Key}: {pair.Value}"));
+        }
+
+        return httpContext.Response.WriteAsync(sb.ToString());
     }
 
     private Task DisplayCompilationException(

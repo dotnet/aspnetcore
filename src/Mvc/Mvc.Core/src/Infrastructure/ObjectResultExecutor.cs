@@ -118,10 +118,12 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
             const int statusCode = StatusCodes.Status406NotAcceptable;
             context.HttpContext.Response.StatusCode = statusCode;
 
-            var endpointWriter = context.HttpContext.RequestServices.GetService<IProblemDetailsEndpointWriter>();
-            return endpointWriter == null ?
-                Task.CompletedTask :
-                endpointWriter.WriteAsync(context.HttpContext);
+            var provider = context.HttpContext.RequestServices.GetService<IProblemDetailsProvider>();
+            if (provider != null &&
+                provider.GetWriter(context.HttpContext) is { } problemDetailsWriter)
+            {
+                return problemDetailsWriter.WriteAsync(context.HttpContext);
+            }
         }
 
         Log.ObjectResultExecuting(Logger, result, value);

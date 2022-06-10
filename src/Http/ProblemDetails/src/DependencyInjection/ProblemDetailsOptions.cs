@@ -13,16 +13,12 @@ public class ProblemDetailsOptions
     /// <summary>
     /// 
     /// </summary>
-    public MappingOptions Mapping { get; set; } = MappingOptions.ClientErrors | MappingOptions.Exceptions;
-    public Action<HttpContext, ProblemDetails>? ConfigureDetails { get; set; }
+    public MappingOptions AllowedMapping { get; set; } = MappingOptions.Unspecified;
 
-    public bool IsEnabled(int statusCode, bool isRouting = false)
-        => isRouting ? Mapping.HasFlag(MappingOptions.Routing) : statusCode switch
-        {
-            >= 400 and <= 499 => Mapping.HasFlag(MappingOptions.ClientErrors),
-            >= 500 => Mapping.HasFlag(MappingOptions.Exceptions),
-            _ => false,
-        };
+    /// <summary>
+    /// 
+    /// </summary>
+    public Action<HttpContext, ProblemDetails>? ConfigureDetails { get; set; }
 }
 
 /// <summary>
@@ -34,25 +30,25 @@ public enum MappingOptions : uint
     /// <summary>
     /// 
     /// </summary>
-    None = 0,
+    Unspecified = 0,
 
     /// <summary>
     /// 
     /// </summary>
-    ClientErrors = 1,
+    Exceptions = 1,
+
+    /// <summary>
+    /// 404 / 405 / 415
+    /// </summary>
+    RoutingFailures = 2,
 
     /// <summary>
     /// 
     /// </summary>
-    Routing = 2,
+    ClientErrors = 4,
 
     /// <summary>
     /// 
     /// </summary>
-    Exceptions = 4,
-
-    /// <summary>
-    /// 
-    /// </summary>
-    All = ClientErrors | Routing | Exceptions
+    All = RoutingFailures | Exceptions | ClientErrors,
 }

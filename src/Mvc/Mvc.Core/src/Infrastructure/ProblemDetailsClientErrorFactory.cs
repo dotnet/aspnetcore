@@ -8,20 +8,20 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 internal sealed class ProblemDetailsClientErrorFactory : IClientErrorFactory
 {
     private readonly ProblemDetailsFactory _problemDetailsFactory;
-    private readonly ProblemDetailsMapper? _matcher;
+    private readonly IProblemDetailsProvider? _problemDetailsProvider;
 
     public ProblemDetailsClientErrorFactory(
         ProblemDetailsFactory problemDetailsFactory,
-        ProblemDetailsMapper? matcher = null)
+        IProblemDetailsProvider? problemDetailsProvider = null)
     {
         _problemDetailsFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
-        _matcher = matcher;
+        _problemDetailsProvider = problemDetailsProvider;
     }
 
     public IActionResult? GetClientError(ActionContext actionContext, IClientErrorActionResult clientError)
     {
-        if (_matcher != null &&
-           !_matcher.CanMap(actionContext.HttpContext, statusCode: clientError.StatusCode))
+        if (_problemDetailsProvider != null &&
+           !_problemDetailsProvider.IsEnabled(clientError.StatusCode ?? 500))
         {
             return null;
         }

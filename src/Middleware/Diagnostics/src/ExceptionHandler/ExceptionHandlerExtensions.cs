@@ -131,7 +131,8 @@ public static class ExceptionHandlerExtensions
                     options.Value.ExceptionHandler = builder.Build();
                 }
 
-                return new ExceptionHandlerMiddleware(next, loggerFactory, options, diagnosticListener).Invoke;
+                var problemDetailsProvider = app.ApplicationServices.GetService<IProblemDetailsProvider>();
+                return new ExceptionHandlerMiddleware(next, loggerFactory, options, diagnosticListener, problemDetailsProvider).Invoke;
             });
         }
 

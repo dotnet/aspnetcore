@@ -412,10 +412,14 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
                 const int statusCode = StatusCodes.Status405MethodNotAllowed;
                 context.Response.StatusCode = statusCode;
 
-                var endpointWriter = context.RequestServices.GetService<IProblemDetailsEndpointWriter>();
-                return endpointWriter == null ?
-                    Task.CompletedTask :
-                    endpointWriter.WriteAsync(context);
+                var endpointProvider = context.RequestServices.GetService<IProblemDetailsProvider>();
+                if (endpointProvider != null &&
+                    endpointProvider.GetWriter(context, isRouting: true) is { } problemDetailsEndpoint)
+                {
+                    return problemDetailsEndpoint.WriteAsync(context);
+                }
+
+                return Task.CompletedTask;
             },
             EndpointMetadataCollection.Empty,
             Http405EndpointDisplayName);

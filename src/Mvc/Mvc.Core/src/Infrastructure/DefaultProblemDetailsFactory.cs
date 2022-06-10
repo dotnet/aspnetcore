@@ -13,10 +13,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
 {
     private readonly ApiBehaviorOptions _options;
+    private readonly Action<HttpContext, ProblemDetails>? _configure;
 
-    public DefaultProblemDetailsFactory(IOptions<ApiBehaviorOptions> options)
+    public DefaultProblemDetailsFactory(
+        IOptions<ApiBehaviorOptions> options,
+        IOptions<ProblemDetailsOptions>? problemDetailsOptions = null)
     {
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _configure = problemDetailsOptions?.Value?.ConfigureDetails;
+    }
+
+    public bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting)
+    {
+        throw new NotImplementedException();
     }
 
     public override ProblemDetails CreateProblemDetails(
@@ -93,5 +102,7 @@ internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
         {
             problemDetails.Extensions["traceId"] = traceId;
         }
+
+        _configure?.Invoke(httpContext!, problemDetails);
     }
 }

@@ -1,28 +1,42 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class DefaultProblemDetailsEndpointWriter : IProblemDetailsEndpointWriter
+internal sealed class DefaultProblemDetailsWriter : IProblemDetailsWriter
 {
-    private readonly ProblemDetailsMapper? _mapper;
     private readonly ProblemDetailsOptions _options;
 
-    public DefaultProblemDetailsEndpointWriter(
-        IOptions<ProblemDetailsOptions> options,
-        ProblemDetailsMapper? mapper = null)
+    public DefaultProblemDetailsWriter(IOptions<ProblemDetailsOptions> options)
     {
-        _mapper = mapper;
         _options = options.Value;
     }
 
-    public async Task<bool> WriteAsync(
+    public bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting)
+    {
+        if (isRouting || context.Response.StatusCode >= 500)
+        {
+            return true;
+        }
+
+        var problemDetailsMetadata = metadata?.GetMetadata<ProblemDetailsResponseMetadata>();
+        return problemDetailsMetadata != null;
+
+        //var headers = context.Request.GetTypedHeaders();
+        //var acceptHeader = headers.Accept;
+        //if (acceptHeader != null &&
+        //    !acceptHeader.Any(h => _problemMediaType.IsSubsetOf(h)))
+        //{
+        //    return false;
+        //}
+    }
+
+    public Task WriteAsync(
         HttpContext context,
-        EndpointMetadataCollection? metadata = null,
-        bool isRouting = false,
         int? statusCode = null,
         string? title = null,
         string? type = null,
@@ -31,12 +45,6 @@ internal sealed class DefaultProblemDetailsEndpointWriter : IProblemDetailsEndpo
         IDictionary<string, object?>? extensions = null,
         Action<HttpContext, ProblemDetails>? configureDetails = null)
     {
-        if (_mapper == null ||
-            !_mapper.CanMap(context, metadata: metadata, isRouting: isRouting))
-        {
-            return false;
-        }
-
         var problemDetails = new ProblemDetails
         {
             Status = statusCode,
@@ -59,7 +67,7 @@ internal sealed class DefaultProblemDetailsEndpointWriter : IProblemDetailsEndpo
         _options.ConfigureDetails?.Invoke(context, problemDetails);
         configureDetails?.Invoke(context, problemDetails);
 
-        await context.Response.WriteAsJsonAsync<object>(problemDetails, options: null, "application/problem+json");
-        return true;
+        return context.Response.WriteAsJsonAsync(problemDetails, typeof(ProblemDetails), ProblemDetailsJsonContext.Default, contentType: "application/problem+json");
     }
 }
+

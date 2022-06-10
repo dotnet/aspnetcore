@@ -133,10 +133,14 @@ public class ApplicationBuilder : IApplicationBuilder
             const int statusCode = StatusCodes.Status404NotFound;
             context.Response.StatusCode = statusCode;
 
-            var endpointWriter = context.RequestServices.GetService<IProblemDetailsEndpointWriter>();
-            return endpointWriter == null ?
-                Task.CompletedTask :
-                endpointWriter.WriteAsync(context);
+            var endpointProvider = context.RequestServices.GetService<IProblemDetailsProvider>();
+            if (endpointProvider != null &&
+                endpointProvider.GetWriter(context, isRouting: true) is { } problemDetailsEndpoint)
+            {
+                return problemDetailsEndpoint.WriteAsync(context);
+            }
+
+            return Task.CompletedTask;
         };
 
         for (var c = _components.Count - 1; c >= 0; c--)

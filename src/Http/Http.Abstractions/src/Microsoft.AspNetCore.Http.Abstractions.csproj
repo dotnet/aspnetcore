@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 
@@ -26,6 +26,8 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)\UrlDecoder\UrlDecoder.cs" Link="UrlDecoder.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="ProblemDetails\Converters" />
+    <Compile Include="$(SharedSourceRoot)HttpValidationProblemDetailsJsonConverter.cs" LinkBase="ProblemDetails\Converters" />
   </ItemGroup>
 
   <ItemGroup>

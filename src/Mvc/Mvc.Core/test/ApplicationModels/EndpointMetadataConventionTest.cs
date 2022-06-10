@@ -188,7 +188,7 @@ public class EndpointMetadataConventionTest
     private static EndpointMetadataConvention GetConvention(IServiceProvider services = null)
     {
         services ??= Mock.Of<IServiceProvider>();
-        return new EndpointMetadataConvention(services);
+        return new EndpointMetadataConvention(services, typeof(void));
     }
 
     private static ApplicationModelProviderContext GetContext(Type type)
