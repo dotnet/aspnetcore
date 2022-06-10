@@ -890,6 +890,15 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
 
         foreach (var segment in payload)
         {
+            // todo we probably need some way to implement http3 datgrams here so we can do stuff like this
+            //if (segment.Span.Contains(new byte[] { 0xff, 0x37, 0xa2 }))
+            //{
+            //    // REGISTER_DATAGRAM capsule type
+            //}
+            //if (segment.Span.Contains(new byte[] { 0xff, 0x7c, 0x00 }))
+            //{
+            //    // WEB_TRANSPORT Datagram format type
+            //}
             RequestBodyPipe.Writer.Write(segment.Span);
         }
 

@@ -4,6 +4,9 @@
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal class WebTransportSession
 {
+    private readonly Dictionary<long, IHttp3Stream> _openStreams = new();
+    private static readonly int maxSimultaneousStreams = 25; // arbitrary number 
+
     public static readonly string supportedVersionHeader = "sec-webtransport-http3-draft";
 
     // TODO use instead of the hardcoded values in Startup.cs in the sample app
@@ -11,9 +14,6 @@ internal class WebTransportSession
     {
         "draft02"
     };
-
-    private readonly Dictionary<long, IHttp3Stream> _openStreams = new();
-    private static readonly int maxSimultaneousStreams = 25;
 
     public readonly int sessionId;
     public long numOpenStreams => _openStreams.Count;
