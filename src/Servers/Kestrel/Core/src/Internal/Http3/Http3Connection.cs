@@ -303,7 +303,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
-                                    Log.LogError("unidirectional webtransport");
                                     stream = new Http3UnidirectionalStream(CreateHttpStreamContext(streamContext));
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
@@ -346,7 +345,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
-                                        Log.LogError("bidirectional webtransport");
                                         //throw new NotImplementedException("Webtransport bidirectional streams not implemented yet");
                                     }
                                     //else
