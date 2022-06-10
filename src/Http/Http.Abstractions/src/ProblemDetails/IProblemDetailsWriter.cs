@@ -15,7 +15,6 @@ public interface IProblemDetailsWriter
     /// </summary>
     /// <param name="context"></param>
     /// <param name="metadata"></param>
-    /// <param name="statusCode"></param>
     /// <param name="isRouting"></param>
     /// <returns></returns>
     bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting);
@@ -24,8 +23,6 @@ public interface IProblemDetailsWriter
     /// 
     /// </summary>
     /// <param name="context"></param>
-    /// <param name="metadata"></param>
-    /// <param name="isRouting"></param>
     /// <param name="statusCode"></param>
     /// <param name="title"></param>
     /// <param name="type"></param>
