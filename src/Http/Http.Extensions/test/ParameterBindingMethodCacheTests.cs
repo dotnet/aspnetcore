@@ -424,7 +424,7 @@ public class ParameterBindingMethodCacheTests
     [Fact]
     public async Task FindBindAsyncMethod_FindsMethodFromStaticAbstractInterfaceWhenValidNonInterfaceMethodAlsoExists()
     {
-        var parameterInfo = GetFirstParameter((BindAsyncFromStaticAbstractInterfaceAndBindAsync? arg) => BindAsyncFromImplicitStaticAbstractInterfaceMethodInsteadOfReflectionMatchedMethod(arg));
+        var parameterInfo = GetFirstParameter((BindAsyncFromStaticAbstractInterfaceAndBindAsync arg) => BindAsyncFromImplicitStaticAbstractInterfaceMethodInsteadOfReflectionMatchedMethod(arg));
         var cache = new ParameterBindingMethodCache();
         Assert.True(cache.HasBindAsyncMethod(parameterInfo));
         var methodFound = cache.FindBindAsyncMethod(parameterInfo);
