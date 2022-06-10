@@ -6,9 +6,9 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-internal abstract class Http3StreamBase : IHttp3Stream, IThreadPoolWorkItem
+internal abstract class Http3StreamBase : IHttp3Stream, IThreadPoolWorkItem // TODO unite the common elements of uni and bi directional streams
 {
-    long IHttp3Stream.StreamId => _streamIdFeature.StreamId;
+    long IHttp3Stream.StreamId => throw new NotImplementedException(); //_streamIdFeature.StreamId;
 
     long IHttp3Stream.StreamTimeoutTicks { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 

@@ -441,14 +441,14 @@ public class Http3ConnectionTests : Http3TestBase
         await Http3Api.InitializeConnectionAsync(_echoApplication);
 
         var streamContext1 = await MakeRequestAsync(0, requestHeaders1, sendData: true, waitForServerDispose: true);
-        var http3Stream1 = (Http3Stream)streamContext1.Features.Get<IPersistentStateFeature>().State[Http3Connection.StreamPersistentStateKey];
+        var http3Stream1 = (Http3BidirectionalStream)streamContext1.Features.Get<IPersistentStateFeature>().State[Http3Connection.StreamPersistentStateKey];
 
         // Hacky but required because header references is private.
         var headerReferences1 = typeof(HttpRequestHeaders).GetField("_headers", privateFlags).GetValue(http3Stream1.RequestHeaders);
         var contentTypeValue1 = (StringValues)headerReferences1.GetType().GetField("_ContentType").GetValue(headerReferences1);
 
         var streamContext2 = await MakeRequestAsync(1, requestHeaders2, sendData: true, waitForServerDispose: true);
-        var http3Stream2 = (Http3Stream)streamContext2.Features.Get<IPersistentStateFeature>().State[Http3Connection.StreamPersistentStateKey];
+        var http3Stream2 = (Http3BidirectionalStream)streamContext2.Features.Get<IPersistentStateFeature>().State[Http3Connection.StreamPersistentStateKey];
 
         // Hacky but required because header references is private.
         var headerReferences2 = typeof(HttpRequestHeaders).GetField("_headers", privateFlags).GetValue(http3Stream2.RequestHeaders);

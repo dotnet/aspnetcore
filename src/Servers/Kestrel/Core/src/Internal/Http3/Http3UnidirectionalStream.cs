@@ -8,21 +8,24 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal abstract class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWorkItem
+internal class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWorkItem
 {
     protected readonly Http3FrameWriter _frameWriter;
     protected readonly Http3StreamContext _context;
     protected readonly IStreamIdFeature _streamIdFeature;
     protected readonly IProtocolErrorCodeFeature _errorCodeFeature;
-    protected readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
+    protected readonly Http3RawFrame _incomingFrame = new();
     protected volatile int _isClosed;
     protected int _gracefulCloseInitiator;
     protected long _headerType;
+
+    public Pipe RequestBodyPipe { get; private set; } = default!;
 
     public long StreamId => _streamIdFeature.StreamId;
 
@@ -43,8 +46,25 @@ internal abstract class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWor
             _streamIdFeature,
             context.ClientPeerSettings,
             this);
+
+        RequestBodyPipe = CreateRequestBodyPipe(64 * 1024);
+
         _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
     }
+
+    private Pipe CreateRequestBodyPipe(uint windowSize)
+    => new Pipe(new PipeOptions
+    (
+        pool: _context.MemoryPool,
+        readerScheduler: _context.ServiceContext.Scheduler,
+        writerScheduler: PipeScheduler.Inline,
+        // Never pause within the window range. Flow control will prevent more data from being added.
+        // See the assert in OnDataAsync.
+        pauseWriterThreshold: windowSize + 1,
+        resumeWriterThreshold: windowSize + 1,
+        useSynchronizationContext: false,
+        minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
+    ));
 
     protected void OnStreamClosed()
     {
@@ -135,7 +155,7 @@ internal abstract class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWor
 
             switch (_headerType)
             {
-                case (long)Http3StreamType.WebTransportUnidirectional: // todo is this switch even necessary?
+                case (long)Http3StreamType.WebTransportUnidirectional: // todo is this switch even necessary? Nope. I will abstract into classes so this will be automatic
                     await HandleStream();
                     break;
                 default:
@@ -177,7 +197,7 @@ internal abstract class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWor
                         Log.Http3FrameReceived(_context.ConnectionId, _streamIdFeature.StreamId, _incomingFrame);
 
                         consumed = examined = framePayload.End;
-                        await ProcessStream(framePayload);
+                        await ProcessDataFrameAsync(framePayload);
                     }
                 }
 
@@ -199,10 +219,40 @@ internal abstract class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWor
         }
     }
 
-    private async ValueTask ProcessStream(ReadOnlySequence<byte> payload)
+    private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)
     {
-        Log.LogInformation(System.Text.Encoding.ASCII.GetString(payload.ToArray()));
-        await Task.CompletedTask;
+        // DATA frame before headers is invalid.
+        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
+        //if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
+        //{
+        //    throw new Http3ConnectionErrorException(CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders, Http3ErrorCode.UnexpectedFrame);
+        //}
+
+        //// DATA frame after trailing headers is invalid.
+        //// https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
+        //if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+        //{
+        //    var message = CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data));
+        //    throw new Http3ConnectionErrorException(message, Http3ErrorCode.UnexpectedFrame);
+        //}
+
+        //if (InputRemaining.HasValue)
+        //{
+        //    // https://tools.ietf.org/html/rfc7540#section-8.1.2.6
+        //    if (payload.Length > InputRemaining.Value)
+        //    {
+        //        throw new Http3StreamErrorException(CoreStrings.Http3StreamErrorMoreDataThanLength, Http3ErrorCode.ProtocolError);
+        //    }
+
+        //    InputRemaining -= payload.Length;
+        //}
+
+        foreach (var segment in payload)
+        {
+            RequestBodyPipe.Writer.Write(segment.Span);
+        }
+
+        return RequestBodyPipe.Writer.FlushAsync().GetAsTask();
     }
 
     public void StopProcessingNextRequest()
@@ -221,7 +271,7 @@ internal abstract class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWor
     /// <summary>
     /// Used to kick off the request processing loop by derived classes.
     /// </summary>
-    public abstract void Execute();
+    public virtual void Execute() { }
 
     private static class GracefulCloseInitiator
     {
