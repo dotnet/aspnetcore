@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal sealed class Http3Stream<TContext> : Http3BidirectionalStream, IHostContextContainer<TContext> where TContext : notnull
+internal sealed class Http3BidirectionalStream<TContext> : Http3BidirectionalStream, IHostContextContainer<TContext> where TContext : notnull
 {
     private readonly IHttpApplication<TContext> _application;
 
-    public Http3Stream(IHttpApplication<TContext> application, Http3StreamContext context)
+    public Http3BidirectionalStream(IHttpApplication<TContext> application, Http3StreamContext context)
     {
         Initialize(context);
         _application = application;

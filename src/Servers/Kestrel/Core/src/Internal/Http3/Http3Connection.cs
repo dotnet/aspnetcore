@@ -335,7 +335,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 var persistentStateFeature = streamContext.Features.Get<IPersistentStateFeature>();
                                 Debug.Assert(persistentStateFeature != null, $"Required {nameof(IPersistentStateFeature)} not on stream context.");
 
-                                Http3Stream<TContext> stream;
+                                Http3BidirectionalStream<TContext> stream;
 
                                 var streamType = await ReadStreamType(streamContext);
 
@@ -351,14 +351,14 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                     }
                                     //else
                                     //{
-                                        stream = new Http3Stream<TContext>(application, CreateHttpStreamContext(streamContext));
+                                        stream = new Http3BidirectionalStream<TContext>(application, CreateHttpStreamContext(streamContext));
                                     //}
 
                                     persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
                                 }
                                 else
                                 {
-                                    stream = (Http3Stream<TContext>)s!;
+                                    stream = (Http3BidirectionalStream<TContext>)s!;
                                     stream.InitializeWithExistingContext(streamContext.Transport);
                                 }
 
