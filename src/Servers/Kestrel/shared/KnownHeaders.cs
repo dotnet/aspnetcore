@@ -9,7 +9,7 @@ using System.Net.Http.HPack;
 using System.Net.Http.QPack;
 using System.Reflection;
 using System.Text;
-//using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Net.Http.Headers;
 
 namespace CodeGenerator;
@@ -26,10 +26,10 @@ public class KnownHeaders
         HeaderNames.TransferEncoding,
         HeaderNames.ContentLength,
         HeaderNames.Connection,
-        ":scheme",//PseudoHeaderNames.Scheme,
-        ":path",//PseudoHeaderNames.Path,
-        ":method",//PseudoHeaderNames.Method,
-        ":authority",//PseudoHeaderNames.Authority,
+        PseudoHeaderNames.Scheme,
+        PseudoHeaderNames.Path,
+        PseudoHeaderNames.Method,
+        PseudoHeaderNames.Authority,
         HeaderNames.Host,
     };
 
@@ -40,7 +40,7 @@ public class KnownHeaders
         HeaderNames.DNT,
     };
 
-    public static readonly string[] PseudoHeaderNames = new[]
+    public static readonly string[] PseudoHeaderIdentifierNames = new[]
     {
         "Authority", // :authority
         "Method", // :method
@@ -52,7 +52,7 @@ public class KnownHeaders
 
     public static readonly string[] NonApiHeaders =
         ObsoleteHeaderNames
-        .Concat(PseudoHeaderNames)
+        .Concat(PseudoHeaderIdentifierNames)
         .ToArray();
 
     public static readonly string[] ApiHeaderNames =
@@ -113,10 +113,10 @@ public class KnownHeaders
         };
         RequestHeaders = commonHeaders.Concat(new[]
         {
-            ":scheme",//PseudoHeaderNames.Scheme,
-            ":path",//PseudoHeaderNames.Path,
-            ":method",//PseudoHeaderNames.Method,
-            ":authority",//PseudoHeaderNames.Authority,
+            PseudoHeaderNames.Scheme,
+            PseudoHeaderNames.Path,
+            PseudoHeaderNames.Method,
+            PseudoHeaderNames.Authority,
             HeaderNames.Accept,
             HeaderNames.AcceptCharset,
             HeaderNames.AcceptEncoding,
@@ -152,7 +152,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
-            ClassName = PseudoHeaderNames.Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
+            ClassName = PseudoHeaderIdentifierNames.Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             PrimaryHeader = requestPrimaryHeaders.Contains(header),
@@ -223,7 +223,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
-            ClassName = PseudoHeaderNames.Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
+            ClassName = PseudoHeaderIdentifierNames.Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             EnhancedSetter = enhancedHeaders.Contains(header),
@@ -250,7 +250,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
-            ClassName = PseudoHeaderNames.Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
+            ClassName = PseudoHeaderIdentifierNames.Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             EnhancedSetter = enhancedHeaders.Contains(header),
@@ -274,7 +274,7 @@ public class KnownHeaders
             .Aggregate((a, b) => a | b);
 
         PseudoRequestHeadersBits = RequestHeaders
-            .Where(header => PseudoHeaderNames.Contains(header.Identifier))
+            .Where(header => PseudoHeaderIdentifierNames.Contains(header.Identifier))
             .Select(header => 1L << header.Index)
             .Aggregate((a, b) => a | b);
     }
@@ -830,7 +830,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
     internal static class PseudoHeaderNames
     {{
-        {Each(PseudoHeaderNames, pseudoHeader =>
+        {Each(PseudoHeaderIdentifierNames, pseudoHeader =>
         {
             var value = $":{char.ToLowerInvariant(pseudoHeader[0]) + pseudoHeader[1..]}";
             return $@"/// <summary>Gets the <c>{value}</c> HTTP header name.</summary>
