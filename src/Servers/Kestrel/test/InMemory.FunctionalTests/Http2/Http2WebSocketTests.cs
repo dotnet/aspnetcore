@@ -157,6 +157,7 @@ public class Http2WebSocketTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42133")]
     public async Task HEADERS_Received_SecondRequest_Accepted()
     {
         // Add stream to Http2Connection._completedStreams inline with SetResult().
