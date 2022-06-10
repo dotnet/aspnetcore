@@ -354,10 +354,11 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     {
         var groupChannel = _channels.Group(groupName);
 
-        await _groups.RemoveSubscriptionAsync(groupChannel, connection, channelName =>
+        await _groups.RemoveSubscriptionAsync(groupChannel, connection, this, static (state, channelName) =>
         {
-            RedisLog.Unsubscribe(_logger, channelName);
-            return _bus!.UnsubscribeAsync(channelName);
+            var lifetimeManager = (RedisHubLifetimeManager<THub>)state;
+            RedisLog.Unsubscribe(lifetimeManager._logger, channelName);
+            return lifetimeManager._bus!.UnsubscribeAsync(channelName);
         });
 
         var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
@@ -386,10 +387,11 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     {
         var userChannel = _channels.User(connection.UserIdentifier!);
 
-        return _users.RemoveSubscriptionAsync(userChannel, connection, channelName =>
+        return _users.RemoveSubscriptionAsync(userChannel, connection, this, static (state, channelName) =>
         {
-            RedisLog.Unsubscribe(_logger, channelName);
-            return _bus!.UnsubscribeAsync(channelName);
+            var lifetimeManager = (RedisHubLifetimeManager<THub>)state;
+            RedisLog.Unsubscribe(lifetimeManager._logger, channelName);
+            return lifetimeManager._bus!.UnsubscribeAsync(channelName);
         });
     }
 
