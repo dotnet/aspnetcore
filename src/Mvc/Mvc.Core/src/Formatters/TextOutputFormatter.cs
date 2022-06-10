@@ -4,6 +4,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -136,10 +137,14 @@ public abstract class TextOutputFormatter : OutputFormatter
             const int statusCode = StatusCodes.Status406NotAcceptable;
             context.HttpContext.Response.StatusCode = statusCode;
 
-            var endpointWriter = context.HttpContext.RequestServices.GetService<IProblemDetailsEndpointWriter>();
-            return endpointWriter == null ?
-                Task.CompletedTask :
-                endpointWriter.WriteAsync(context.HttpContext);
+            var provider = context.HttpContext.RequestServices.GetService<IProblemDetailsProvider>();
+            if (provider != null &&
+                provider.GetWriter(context.HttpContext) is { } problemDetailsWriter)
+            {
+                return problemDetailsWriter.WriteAsync(context.HttpContext);
+            }
+
+            return Task.CompletedTask;
         }
 
         context.ContentType = selectedMediaType;

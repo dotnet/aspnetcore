@@ -12,14 +12,24 @@ internal sealed class EndpointMetadataConvention : IActionModelConvention
     private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(EndpointMetadataConvention).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(EndpointMetadataConvention).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
     private readonly IServiceProvider _serviceProvider;
+    private readonly Type _defaultErrorType;
 
-    public EndpointMetadataConvention(IServiceProvider serviceProvider)
+    public EndpointMetadataConvention(IServiceProvider serviceProvider, Type defaultErrorType)
     {
         _serviceProvider = serviceProvider;
+        _defaultErrorType = defaultErrorType;
     }
 
     public void Apply(ActionModel action)
     {
+        if (_defaultErrorType != typeof(void))
+        {
+            for (var i = 0; i < action.Selectors.Count; i++)
+            {
+                action.Selectors[i].EndpointMetadata.Add(new ProducesErrorResponseTypeAttribute(_defaultErrorType));
+            }
+        }
+
         // Get metadata from parameter types
         ApplyParametersMetadata(action);
 

@@ -3,18 +3,16 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.Core.Infrastructure;
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class DefaultProblemDetailsWriter : IProblemDetailsEndpointWriter
+internal class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
 {
     private readonly OutputFormatterSelector _formatterSelector;
     private readonly IHttpResponseStreamWriterFactory _writerFactory;
     private readonly ProblemDetailsFactory _problemDetailsFactory;
     private readonly ProblemDetailsOptions _options;
-    private readonly ProblemDetailsMapper? _mapper;
 
     private static readonly MediaTypeCollection _problemContentTypes = new()
     {
@@ -22,24 +20,49 @@ internal class DefaultProblemDetailsWriter : IProblemDetailsEndpointWriter
         "application/problem+xml"
     };
 
-    public DefaultProblemDetailsWriter(
+    public DefaultApiProblemDetailsWriter(
         OutputFormatterSelector formatterSelector,
         IHttpResponseStreamWriterFactory writerFactory,
         ProblemDetailsFactory problemDetailsFactory,
-        IOptions<ProblemDetailsOptions> options,
-        ProblemDetailsMapper? mapper = null)
+        IOptions<ProblemDetailsOptions> options)
     {
         _formatterSelector = formatterSelector;
         _writerFactory = writerFactory;
         _problemDetailsFactory = problemDetailsFactory;
         _options = options.Value;
-        _mapper = mapper;
     }
 
-    public async Task<bool> WriteAsync(
+    public bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting)
+    {
+        if (isRouting || context.Response.StatusCode >= 500)
+        {
+            return true;
+        }
+
+        if (metadata != null)
+        {
+            var responseType = metadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
+            var apiControllerAttribute = metadata.GetMetadata<IApiBehaviorMetadata>();
+
+            if (apiControllerAttribute != null && responseType?.Type == typeof(ProblemDetails))
+            {
+                return true;
+            }
+        }
+
+        return false;
+
+        //var headers = context.Request.GetTypedHeaders();
+        //var acceptHeader = headers.Accept;
+        //if (acceptHeader != null &&
+        //    !acceptHeader.Any(h => _problemMediaType.IsSubsetOf(h)))
+        //{
+        //    return false;
+        //}
+    }
+
+    public Task WriteAsync(
         HttpContext context,
-        EndpointMetadataCollection? metadata = null,
-        bool isRouting = false,
         int? statusCode = null,
         string? title = null,
         string? type = null,
@@ -48,12 +71,6 @@ internal class DefaultProblemDetailsWriter : IProblemDetailsEndpointWriter
         IDictionary<string, object?>? extensions = null,
         Action<HttpContext, ProblemDetails>? configureDetails = null)
     {
-        if (_mapper == null ||
-            !_mapper.CanMap(context, metadata: metadata, isRouting: isRouting))
-        {
-            return false;
-        }
-
         var problemDetails = _problemDetailsFactory.CreateProblemDetails(context, statusCode ?? context.Response.StatusCode, title, type, detail, instance);
 
         if (extensions is not null)
@@ -80,10 +97,9 @@ internal class DefaultProblemDetailsWriter : IProblemDetailsEndpointWriter
 
         if (selectedFormatter == null)
         {
-            return false;
+            return Task.CompletedTask;
         }
 
-        await selectedFormatter.WriteAsync(formatterContext);
-        return true;
+        return selectedFormatter.WriteAsync(formatterContext);
     }
 }

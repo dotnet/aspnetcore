@@ -284,8 +284,7 @@ public static class MvcCoreServiceCollectionExtensions
 
         // ProblemDetails
         services.TryAddSingleton<ProblemDetailsFactory, DefaultProblemDetailsFactory>();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsMapPolicy, ProblemDetailsApiMapPolicy>());
-        services.TryAddSingleton<IProblemDetailsEndpointWriter, AspNetCore.Mvc.Core.Infrastructure.DefaultProblemDetailsWriter>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultApiProblemDetailsWriter>());
     }
 
     private static void ConfigureDefaultServices(IServiceCollection services)

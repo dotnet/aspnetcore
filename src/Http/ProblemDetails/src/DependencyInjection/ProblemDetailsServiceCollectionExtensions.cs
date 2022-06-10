@@ -16,15 +16,19 @@ public static class ProblemDetailsServiceCollectionExtensions
     /// Adds services required for creation of <see cref="ProblemDetails"/> for failed requests.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <param name="allowedMapping"></param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddProblemDetails(
-        this IServiceCollection services)
+        this IServiceCollection services,
+        MappingOptions allowedMapping = MappingOptions.All)
     {
         ArgumentNullException.ThrowIfNull(nameof(services));
 
         // Adding default services;
-        services.TryAddSingleton<IProblemDetailsEndpointWriter, DefaultProblemDetailsEndpointWriter>();
-        services.TryAddSingleton<ProblemDetailsMapper>();
+        services.TryAddSingleton<IProblemDetailsProvider, DefaultProblemDetailsEndpointProvider>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultProblemDetailsWriter>());
+
+        services.Configure<ProblemDetailsOptions>(options => options.AllowedMapping = allowedMapping);
 
         return services;
     }

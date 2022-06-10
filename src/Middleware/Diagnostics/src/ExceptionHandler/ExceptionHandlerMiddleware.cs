@@ -20,11 +20,14 @@ namespace Microsoft.AspNetCore.Diagnostics;
 /// </summary>
 public class ExceptionHandlerMiddleware
 {
+    private const int DefaultStatusCode = StatusCodes.Status500InternalServerError;
+
     private readonly RequestDelegate _next;
     private readonly ExceptionHandlerOptions _options;
     private readonly ILogger _logger;
     private readonly Func<object, Task> _clearCacheHeadersDelegate;
     private readonly DiagnosticListener _diagnosticListener;
+    private readonly IProblemDetailsProvider? _problemDetailsProvider;
 
     /// <summary>
     /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
@@ -38,17 +41,39 @@ public class ExceptionHandlerMiddleware
         ILoggerFactory loggerFactory,
         IOptions<ExceptionHandlerOptions> options,
         DiagnosticListener diagnosticListener)
+        : this(next, loggerFactory, options, diagnosticListener, null)
+    { }
+
+    /// <summary>
+    /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
+    /// </summary>
+    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+    /// <param name="options">The options for configuring the middleware.</param>
+    /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
+    /// <param name="problemDetailsProvider">The <see cref="IProblemDetailsProvider"/> used for writing <see cref="ProblemDetails"/> messages.</param>
+    public ExceptionHandlerMiddleware(
+        RequestDelegate next,
+        ILoggerFactory loggerFactory,
+        IOptions<ExceptionHandlerOptions> options,
+        DiagnosticListener diagnosticListener,
+        IProblemDetailsProvider? problemDetailsProvider = null)
     {
         _next = next;
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         _clearCacheHeadersDelegate = ClearCacheHeaders;
         _diagnosticListener = diagnosticListener;
+        _problemDetailsProvider = problemDetailsProvider;
+
         if (_options.ExceptionHandler == null)
         {
             if (_options.ExceptionHandlingPath == null)
             {
-                throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
+                if (_problemDetailsProvider == null || _problemDetailsProvider.IsEnabled(statusCode: DefaultStatusCode) == false)
+                {
+                    throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
+                }
             }
             else
             {
@@ -131,12 +156,20 @@ public class ExceptionHandlerMiddleware
 
             context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
             context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.StatusCode = DefaultStatusCode;
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
-            if (!await TryWriteProblemDetails(context, exceptionHandlerFeature))
+            if (_options.ExceptionHandler != null)
             {
                 await _options.ExceptionHandler!(context);
+            }
+            else
+            {
+                var writer = _problemDetailsProvider!.GetWriter(context, exceptionHandlerFeature.Endpoint?.Metadata);
+                if (writer != null)
+                {
+                    await writer.WriteAsync(context);
+                }
             }
 
             // If the response has already started, assume exception handler was successful.
@@ -195,34 +228,5 @@ public class ExceptionHandlerMiddleware
         headers.Expires = "-1";
         headers.ETag = default;
         return Task.CompletedTask;
-    }
-
-    private Task<bool> TryWriteProblemDetails(HttpContext context, ExceptionHandlerFeature exceptionFeature)
-    {
-        void ConfigureDetails(HttpContext context, ProblemDetails problemDetails)
-        {
-            var hostEnvironment = context.RequestServices.GetRequiredService<IHostEnvironment>();
-
-            if (hostEnvironment.IsDevelopment())
-            {
-                // TODO: Fix
-                problemDetails.Detail = exceptionFeature!.Error.Message;
-                problemDetails.Extensions.Add("exception", new
-                {
-                    Details = exceptionFeature.Error.ToString(),
-                    exceptionFeature.Path,
-                    exceptionFeature.RouteValues,
-                    Endpoint = exceptionFeature.Endpoint?.ToString()
-                });
-            }
-        }
-
-        var endpointWriter = context.RequestServices.GetService<IProblemDetailsEndpointWriter>();
-        if (endpointWriter != null)
-        {
-            return endpointWriter.WriteAsync(context, exceptionFeature.Endpoint?.Metadata, configureDetails: ConfigureDetails);
-        }
-
-        return Task.FromResult(false);
     }
 }

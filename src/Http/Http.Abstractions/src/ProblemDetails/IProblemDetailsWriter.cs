@@ -1,15 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Mvc;
-
 namespace Microsoft.AspNetCore.Http;
+
+using Microsoft.AspNetCore.Mvc;
 
 /// <summary>
 /// 
 /// </summary>
-public interface IProblemDetailsEndpointWriter
+public interface IProblemDetailsWriter
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="metadata"></param>
+    /// <param name="statusCode"></param>
+    /// <param name="isRouting"></param>
+    /// <returns></returns>
+    bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting);
+
     /// <summary>
     /// 
     /// </summary>
@@ -24,10 +34,8 @@ public interface IProblemDetailsEndpointWriter
     /// <param name="extensions"></param>
     /// <param name="configureDetails"></param>
     /// <returns></returns>
-    Task<bool> WriteAsync(
+    Task WriteAsync(
         HttpContext context,
-        EndpointMetadataCollection? metadata = null,
-        bool isRouting = false,
         int? statusCode = null,
         string? title = null,
         string? type = null,
