@@ -42,7 +42,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var today = DateOnly.FromDateTime(DateTime.Now);
-        forecasts = await ForecastService.GetForecastAsync(today);
+        forecasts = await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now));
     }
 }

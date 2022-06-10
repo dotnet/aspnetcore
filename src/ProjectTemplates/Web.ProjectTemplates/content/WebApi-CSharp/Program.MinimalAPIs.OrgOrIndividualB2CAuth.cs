@@ -89,11 +89,10 @@ app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi
         var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         throw new HttpRequestException($"Invalid status code in the HttpResponseMessage: {response.StatusCode}: {error}");
     }
-    var today = DateOnly.FromDateTime(DateTime.Now);
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
-            today.AddDays(index),
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
@@ -107,11 +106,10 @@ app.MapGet("/weatherforecast", async (HttpContext httpContext, Graph.GraphServic
 
     var user = await graphServiceClient.Me.Request().GetAsync();
 
-    var today = DateOnly.FromDateTime(DateTime.Now);
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
-            today.AddDays(index),
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
@@ -123,11 +121,10 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-    var today = DateOnly.FromDateTime(DateTime.Now);
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
-            today.AddDays(index),
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
