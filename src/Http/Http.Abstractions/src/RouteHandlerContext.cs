@@ -16,15 +16,18 @@ public sealed class RouteHandlerContext
     /// </summary>
     /// <param name="methodInfo">The <see cref="MethodInfo"/> associated with the route handler of the current request.</param>
     /// <param name="endpointMetadata">The <see cref="EndpointMetadataCollection"/> associated with the endpoint the filter is targeting.</param>
+    /// <param name="inferredMetadata">The mutable <see cref="Endpoint"/> metadata inferred about current endpoint. This will come before <see cref="EndpointMetadata"/> in <see cref="Endpoint.Metadata"/>.</param>
     /// <param name="applicationServices">The <see cref="IServiceProvider"/> instance used to access the application services.</param>
-    public RouteHandlerContext(MethodInfo methodInfo, EndpointMetadataCollection endpointMetadata, IServiceProvider applicationServices)
+    public RouteHandlerContext(MethodInfo methodInfo, IReadOnlyList<object> endpointMetadata, IList<object> inferredMetadata, IServiceProvider applicationServices)
     {
         ArgumentNullException.ThrowIfNull(methodInfo);
         ArgumentNullException.ThrowIfNull(endpointMetadata);
+        ArgumentNullException.ThrowIfNull(inferredMetadata);
         ArgumentNullException.ThrowIfNull(applicationServices);
 
         MethodInfo = methodInfo;
         EndpointMetadata = endpointMetadata;
+        InferredMetadata = inferredMetadata;
         ApplicationServices = applicationServices;
     }
 
@@ -34,9 +37,14 @@ public sealed class RouteHandlerContext
     public MethodInfo MethodInfo { get; }
 
     /// <summary>
-    /// The <see cref="EndpointMetadataCollection"/> associated with the current endpoint.
+    /// The read-only metadata already applied to the current endpoint.
     /// </summary>
-    public EndpointMetadataCollection EndpointMetadata { get; }
+    public IReadOnlyList<object> EndpointMetadata { get; }
+
+    /// <summary>
+    /// The mutable <see cref="Endpoint"/> metadata inferred about current endpoint. This will come before <see cref="EndpointMetadata"/> in <see cref="Endpoint.Metadata"/>.
+    /// </summary>
+    public IList<object> InferredMetadata { get; }
 
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance used to access application services.

@@ -286,7 +286,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
     {
         public static void PopulateMetadata(EndpointMetadataContext context)
         {
-            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
+            context.InferredMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.ReturnType });
         }
 
         public Task ExecuteAsync(HttpContext httpContext) => throw new NotImplementedException();
@@ -303,7 +303,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
         public static void PopulateMetadata(EndpointMetadataContext context)
         {
-            context.EndpointMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
+            context.InferredMetadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Parameter });
         }
     }
 

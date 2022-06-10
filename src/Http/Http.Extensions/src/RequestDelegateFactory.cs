@@ -179,7 +179,7 @@ public static partial class RequestDelegateFactory
 
     private static FactoryContext CreateFactoryContext(RequestDelegateFactoryOptions? options)
     {
-        var context = new FactoryContext
+        return new FactoryContext
         {
             ServiceProvider = options?.ServiceProvider,
             ServiceProviderIsService = options?.ServiceProvider?.GetService<IServiceProviderIsService>(),
@@ -188,13 +188,6 @@ public static partial class RequestDelegateFactory
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
             Filters = options?.RouteHandlerFilterFactories?.ToList()
         };
-
-        if (options?.InitialEndpointMetadata is not null)
-        {
-            context.Metadata.AddRange(options.InitialEndpointMetadata);
-        }
-
-        return context;
     }
 
     private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext, Expression<Func<HttpContext, object?>>? targetFactory = null)
@@ -215,9 +208,6 @@ public static partial class RequestDelegateFactory
         //     return default;
         // }
 
-        // Add MethodInfo as first metadata item
-        factoryContext.Metadata.Insert(0, methodInfo);
-
         // CreateArguments will add metadata inferred from parameter details
         var arguments = CreateArguments(methodInfo.GetParameters(), factoryContext);
         var returnType = methodInfo.ReturnType;
@@ -228,9 +218,6 @@ public static partial class RequestDelegateFactory
             factoryContext.Metadata,
             factoryContext.ServiceProvider,
             CollectionsMarshal.AsSpan(factoryContext.Parameters));
-
-        // Add method attributes as metadata *after* any inferred metadata so that the attributes hava a higher specificity
-        AddMethodAttributesAsMetadata(methodInfo, factoryContext.Metadata);
 
         // If there are filters registered on the route handler, then we update the method call and
         // return type associated with the request to allow for the filter invocation pipeline.
@@ -486,17 +473,6 @@ public static partial class RequestDelegateFactory
         where T : IEndpointMetadataProvider
     {
         T.PopulateMetadata(context);
-    }
-
-    private static void AddMethodAttributesAsMetadata(MethodInfo methodInfo, List<object> metadata)
-    {
-        var attributes = methodInfo.GetCustomAttributes();
-
-        // This can be null if the delegate is a dynamic method or compiled from an expression tree
-        if (attributes is not null)
-        {
-            metadata.AddRange(attributes);
-        }
     }
 
     private static Expression[] CreateArguments(ParameterInfo[]? parameters, FactoryContext factoryContext)

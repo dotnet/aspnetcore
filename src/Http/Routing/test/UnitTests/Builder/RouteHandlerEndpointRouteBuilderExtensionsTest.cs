@@ -1002,21 +1002,28 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     [Fact]
     public void RouteHandlerContext_ThrowsArgumentNullException_ForMethodInfo()
     {
-        Assert.Throws<ArgumentNullException>("methodInfo", () => new RouteHandlerContext(null!, new(), new ServiceCollection().BuildServiceProvider()));
+        Assert.Throws<ArgumentNullException>("methodInfo", () => new RouteHandlerContext(null!, new List<object>(), new List<object>(), new ServiceCollection().BuildServiceProvider()));
     }
 
     [Fact]
     public void RouteHandlerContext_ThrowsArgumentNullException_ForEndpointMetadata()
     {
         var handler = () => { };
-        Assert.Throws<ArgumentNullException>("endpointMetadata", () => new RouteHandlerContext(handler.Method, null!, new ServiceCollection().BuildServiceProvider()));
+        Assert.Throws<ArgumentNullException>("endpointMetadata", () => new RouteHandlerContext(handler.Method, null!, new List<object>(), new ServiceCollection().BuildServiceProvider()));
+    }
+
+    [Fact]
+    public void RouteHandlerContext_ThrowsArgumentNullException_ForInferredMetadata()
+    {
+        var handler = () => { };
+        Assert.Throws<ArgumentNullException>("inferedMetadata", () => new RouteHandlerContext(handler.Method, new List<object>(), null!, new ServiceCollection().BuildServiceProvider()));
     }
 
     [Fact]
     public void RouteHandlerContext_ThrowsArgumentNullException_ForApplicationServices()
     {
         var handler = () => { };
-        Assert.Throws<ArgumentNullException>("applicationServices", () => new RouteHandlerContext(handler.Method, new(), null!));
+        Assert.Throws<ArgumentNullException>("applicationServices", () => new RouteHandlerContext(handler.Method,  new List<object>(), new List<object>(), null!));
     }
 
     class MyService { }

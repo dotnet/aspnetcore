@@ -15,15 +15,18 @@ public sealed class EndpointParameterMetadataContext
     /// </summary>
     /// <param name="parameter">The parameter of the route handler delegate of the endpoint being created.</param>
     /// <param name="endpointMetadata">The list of objects that will be added to the metadata of the endpoint.</param>
+    /// <param name="inferredMetadata">The mutable <see cref="Endpoint"/> metadata inferred about current endpoint. This will come before <see cref="EndpointMetadata"/> in <see cref="Endpoint.Metadata"/>.</param>
     /// <param name="applicationServices">The <see cref="IServiceProvider"/> instance used to access application services.</param>
-    public EndpointParameterMetadataContext(ParameterInfo parameter, IList<object> endpointMetadata, IServiceProvider applicationServices)
+    public EndpointParameterMetadataContext(ParameterInfo parameter, IList<object> endpointMetadata, IList<object> inferredMetadata, IServiceProvider applicationServices)
     {
         ArgumentNullException.ThrowIfNull(parameter);
         ArgumentNullException.ThrowIfNull(endpointMetadata);
+        ArgumentNullException.ThrowIfNull(inferredMetadata);
         ArgumentNullException.ThrowIfNull(applicationServices);
 
         Parameter = parameter;
         EndpointMetadata = endpointMetadata;
+        InferredMetadata = inferredMetadata;
         ApplicationServices = applicationServices;
     }
 
@@ -36,6 +39,11 @@ public sealed class EndpointParameterMetadataContext
     /// Gets the list of objects that will be added to the metadata of the endpoint.
     /// </summary>
     public IList<object> EndpointMetadata { get; }
+
+    /// <summary>
+    /// The mutable <see cref="Endpoint"/> metadata inferred about current endpoint. This will come before <see cref="EndpointMetadata"/> in <see cref="Endpoint.Metadata"/>.
+    /// </summary>
+    public IList<object> InferredMetadata { get; }
 
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance used to access application services.
