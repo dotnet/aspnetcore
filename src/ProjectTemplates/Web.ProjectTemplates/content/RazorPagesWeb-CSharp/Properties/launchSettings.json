@@ -9,7 +9,7 @@
     //#endif
     "iisExpress": {
       "applicationUrl": "http://localhost:8080",
-      //#if (RequiresHttps)
+      //#if (HasHttpsProfile)
       "sslPort": 44300
       //#else
       "sslPort": 0
@@ -17,7 +17,7 @@
     }
   },
   "profiles": {
-    //#if (SupportsHttp)
+    //#if (HasHttpProfile)
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
@@ -28,7 +28,7 @@
       }
     },
     //#endif
-    //#if (SupportsHttps)
+    //#if (HasHttpsProfile)
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,

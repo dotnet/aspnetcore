@@ -152,6 +152,10 @@
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
     },
+    "HasHttpsProfile": {
+      "type": "computed",
+      "value": "(!NoHttps)"
+    },
     "NoHttps": {
       "type": "parameter",
       "datatype": "bool",

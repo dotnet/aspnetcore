@@ -358,11 +358,11 @@
       "type": "computed",
       "value": "(OrganizationalAuth || IndividualB2CAuth)"
     },
-    "SupportsHttp": {
+    "HasHttpProfile": {
       "type": "computed",
       "value": "(!RequiresHttps)"
     },
-    "SupportsHttps": {
+    "HasHttpsProfile": {
       "type": "computed",
       "value": "(RequiresHttps || !NoHttps)"
     },
