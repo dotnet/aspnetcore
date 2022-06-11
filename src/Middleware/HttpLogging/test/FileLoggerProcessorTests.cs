@@ -44,7 +44,7 @@ public class FileLoggerProcessorTests
             {
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);
-                filePath = Helpers.GetLogFilePath(path, options.FileName, _today, 0);
+                filePath = GetLogFilePath(path, options.FileName, _today, 0);
                 // Pause for a bit before disposing so logger can finish logging
                 await WaitForFile(filePath, _messageOne.Length).DefaultTimeout();
             }
@@ -83,14 +83,14 @@ public class FileLoggerProcessorTests
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);
 
-                filePathToday = Helpers.GetLogFilePath(path, options.FileName, _today, 0);
+                filePathToday = GetLogFilePath(path, options.FileName, _today, 0);
 
                 await WaitForFile(filePathToday, _messageOne.Length).DefaultTimeout();
 
                 mockSystemDateTime.Now = tomorrow;
                 logger.EnqueueMessage(_messageTwo);
 
-                filePathTomorrow = Helpers.GetLogFilePath(path, options.FileName, tomorrow, 0);
+                filePathTomorrow = GetLogFilePath(path, options.FileName, tomorrow, 0);
 
                 await WaitForFile(filePathTomorrow, _messageTwo.Length).DefaultTimeout();
             }
@@ -129,8 +129,8 @@ public class FileLoggerProcessorTests
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);
                 logger.EnqueueMessage(_messageTwo);
-                filePath1 = Helpers.GetLogFilePath(path, options.FileName, _today, 0);
-                filePath2 = Helpers.GetLogFilePath(path, options.FileName, _today, 1);
+                filePath1 = GetLogFilePath(path, options.FileName, _today, 0);
+                filePath2 = GetLogFilePath(path, options.FileName, _today, 1);
                 // Pause for a bit before disposing so logger can finish logging
                 await WaitForFile(filePath2, _messageTwo.Length).DefaultTimeout();
             }
@@ -173,12 +173,12 @@ public class FileLoggerProcessorTests
                 {
                     logger.EnqueueMessage(_messageOne);
                 }
-                lastFilePath = Helpers.GetLogFilePath(path, options.FileName, _today, 9);
+                lastFilePath = GetLogFilePath(path, options.FileName, _today, 9);
                 // Pause for a bit before disposing so logger can finish logging
                 await WaitForFile(lastFilePath, _messageOne.Length).DefaultTimeout();
                 for (int i = 0; i < 6; i++)
                 {
-                    await WaitForRoll(Helpers.GetLogFilePath(path, options.FileName, _today, i)).DefaultTimeout();
+                    await WaitForRoll(GetLogFilePath(path, options.FileName, _today, i)).DefaultTimeout();
                 }
             }
 
@@ -192,7 +192,7 @@ public class FileLoggerProcessorTests
             Assert.Equal("randomFile.txt", actualFiles[0]);
             for (int i = 1; i < 4; i++)
             {
-                Assert.StartsWith(Helpers.GetLogFileBaseName(options.FileName, _today), actualFiles[i], StringComparison.InvariantCulture);
+                Assert.StartsWith(GetLogFileBaseName(options.FileName, _today), actualFiles[i], StringComparison.InvariantCulture);
             }
         }
         finally
@@ -229,7 +229,7 @@ public class FileLoggerProcessorTests
                 {
                     logger.EnqueueMessage(_messageOne);
                 }
-                lastFilePath = Helpers.GetLogFilePath(path, options.FileName, _today, 9999);
+                lastFilePath = GetLogFilePath(path, options.FileName, _today, 9999);
                 await WaitForFile(lastFilePath, _messageOne.Length).DefaultTimeout();
 
                 // directory is full, no warnings yet
@@ -287,7 +287,7 @@ public class FileLoggerProcessorTests
                 {
                     logger.EnqueueMessage(_messageOne);
                 }
-                var filePath = Helpers.GetLogFilePath(path, options.FileName, _today, 2);
+                var filePath = GetLogFilePath(path, options.FileName, _today, 2);
                 // Pause for a bit before disposing so logger can finish logging
                 await WaitForFile(filePath, _messageOne.Length).DefaultTimeout();
             }
@@ -300,7 +300,7 @@ public class FileLoggerProcessorTests
                 {
                     logger.EnqueueMessage(_messageOne);
                 }
-                var filePath = Helpers.GetLogFilePath(path, options.FileName, _today, 5);
+                var filePath = GetLogFilePath(path, options.FileName, _today, 5);
                 // Pause for a bit before disposing so logger can finish logging
                 await WaitForFile(filePath, _messageOne.Length).DefaultTimeout();
             }
@@ -314,7 +314,7 @@ public class FileLoggerProcessorTests
             Assert.Equal(6, actualFiles1.Length);
             for (int i = 0; i < 6; i++)
             {
-                Assert.Contains(Helpers.GetLogFileName(options.FileName, _today, i), actualFiles1[i]);
+                Assert.Contains(GetLogFileName(options.FileName, _today, i), actualFiles1[i]);
             }
 
             // Third instance should roll to 5 most recent files
@@ -324,9 +324,9 @@ public class FileLoggerProcessorTests
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);
                 // Pause for a bit before disposing so logger can finish logging
-                await WaitForFile(Helpers.GetLogFilePath(path, options.FileName, _today, 6), _messageOne.Length).DefaultTimeout();
-                await WaitForRoll(Helpers.GetLogFilePath(path, options.FileName, _today, 0)).DefaultTimeout();
-                await WaitForRoll(Helpers.GetLogFilePath(path, options.FileName, _today, 1)).DefaultTimeout();
+                await WaitForFile(GetLogFilePath(path, options.FileName, _today, 6), _messageOne.Length).DefaultTimeout();
+                await WaitForRoll(GetLogFilePath(path, options.FileName, _today, 0)).DefaultTimeout();
+                await WaitForRoll(GetLogFilePath(path, options.FileName, _today, 1)).DefaultTimeout();
             }
 
             var actualFiles2 = new DirectoryInfo(path)
@@ -338,7 +338,7 @@ public class FileLoggerProcessorTests
             Assert.Equal(5, actualFiles2.Length);
             for (int i = 0; i < 5; i++)
             {
-                Assert.Equal(Helpers.GetLogFileName(options.FileName, _today, i + 2), actualFiles2[i]);
+                Assert.Equal(GetLogFileName(options.FileName, _today, i + 2), actualFiles2[i]);
             }
         }
         finally
@@ -365,9 +365,9 @@ public class FileLoggerProcessorTests
                 LogDirectory = path,
                 FileSizeLimit = 5
             };
-            var filePath1 = Helpers.GetLogFilePath(path, options.FileName, _today, 0);
-            var filePath2 = Helpers.GetLogFilePath(path, options.FileName, _today, 1);
-            var filePath3 = Helpers.GetLogFilePath(path, options.FileName, _today, 2);
+            var filePath1 = GetLogFilePath(path, options.FileName, _today, 0);
+            var filePath2 = GetLogFilePath(path, options.FileName, _today, 1);
+            var filePath3 = GetLogFilePath(path, options.FileName, _today, 2);
 
             await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
             {
@@ -429,10 +429,10 @@ public class FileLoggerProcessorTests
                 FileSizeLimit = 5,
                 RetainedFileCountLimit = 2,
             };
-            var filePath1 = Helpers.GetLogFilePath(path, options.FileName, _today, 0);
-            var filePath2 = Helpers.GetLogFilePath(path, options.FileName, _today, 1);
-            var filePath3 = Helpers.GetLogFilePath(path, options.FileName, _today, 2);
-            var filePath4 = Helpers.GetLogFilePath(path, options.FileName, _today, 3);
+            var filePath1 = GetLogFilePath(path, options.FileName, _today, 0);
+            var filePath2 = GetLogFilePath(path, options.FileName, _today, 1);
+            var filePath3 = GetLogFilePath(path, options.FileName, _today, 2);
+            var filePath4 = GetLogFilePath(path, options.FileName, _today, 3);
 
             await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
             {
@@ -499,8 +499,8 @@ public class FileLoggerProcessorTests
                 FileSizeLimit = 10000,
             };
             options.AdditionalRequestHeaders.Add("one");
-            var filePath1 = Helpers.GetLogFilePath(path, options.FileName, _today, 0);
-            var filePath2 = Helpers.GetLogFilePath(path, options.FileName, _today, 1);
+            var filePath1 = GetLogFilePath(path, options.FileName, _today, 0);
+            var filePath2 = GetLogFilePath(path, options.FileName, _today, 1);
             var monitor = new OptionsWrapperMonitor<W3CLoggerOptions>(options);
 
             await using (var logger = new FileLoggerProcessor(monitor, new HostingEnvironment(), NullLoggerFactory.Instance))
@@ -582,5 +582,20 @@ public class FileLoggerProcessorTests
         {
             await Task.Delay(100);
         }
+    }
+
+    private static string GetLogFilePath(string path, string prefix, DateTime dateTime, int fileNumber)
+    {
+        return Path.Combine(path, GetLogFileName(prefix, dateTime, fileNumber));
+    }
+
+    private static string GetLogFileName(string prefix, DateTime dateTime, int fileNumber)
+    {
+        return FormattableString.Invariant($"{GetLogFileBaseName(prefix, dateTime)}.{fileNumber:0000}.txt");
+    }
+
+    private static string GetLogFileBaseName(string prefix, DateTime dateTime)
+    {
+        return FormattableString.Invariant($"{prefix}{dateTime.Year:0000}{dateTime.Month:00}{dateTime.Day:00}");
     }
 }
