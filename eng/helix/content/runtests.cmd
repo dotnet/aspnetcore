@@ -18,6 +18,9 @@ set InstallPlaywright=%$installPlaywright%
 set PLAYWRIGHT_BROWSERS_PATH=%CD%\ms-playwright
 set PLAYWRIGHT_DRIVER_PATH=%CD%\.playwright\win-x64\native\playwright.cmd
 
+REM Avoid https://github.com/dotnet/aspnetcore/issues/41937 in current session.
+set ASPNETCORE_ENVIRONMENT=
+
 set "PATH=%HELIX_WORKITEM_ROOT%;%PATH%;%HELIX_WORKITEM_ROOT%\node\bin"
 echo Set path to: "%PATH%"
 echo.
