@@ -356,7 +356,15 @@
     },
     "RequiresHttps": {
       "type": "computed",
-      "value": "(OrganizationalAuth || IndividualB2C || !NoHttps)"
+      "value": "(OrganizationalAuth || IndividualB2CAuth)"
+    },
+    "SupportsHttp": {
+      "type": "computed",
+      "value": "(!RequiresHttps)"
+    },
+    "SupportsHttps": {
+      "type": "computed",
+      "value": "(RequiresHttps || !NoHttps)"
     },
     "NoHttps": {
       "type": "parameter",
