@@ -48,6 +48,15 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         Clear(headersToClear);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void MergeCookies()
+    {
+        if (HasCookie && _headers._Cookie.Count > 1)
+        {
+            _headers._Cookie = string.Join("; ", _headers._Cookie.ToArray());
+        }
+    }
+
     protected override void ClearFast()
     {
         if (!ReuseHeaderValues)
@@ -176,7 +185,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         return enumerator;
     }
 
-    private class EnumeratorCache
+    private sealed class EnumeratorCache
     {
         /// <summary>
         /// Enumerator created from previous request
@@ -207,7 +216,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
     /// IEnumerator allocations across requests if the header collection is commonly
     /// enumerated for forwarding in a reverse-proxy type situation.
     /// </summary>
-    private class EnumeratorBox : IEnumerator<KeyValuePair<string, StringValues>>
+    private sealed class EnumeratorBox : IEnumerator<KeyValuePair<string, StringValues>>
     {
         public Enumerator Enumerator;
 

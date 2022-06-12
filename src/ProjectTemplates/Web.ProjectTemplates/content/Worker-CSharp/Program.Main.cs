@@ -1,6 +1,4 @@
-using Company.Application1;
-
-namespace Company.WebApplication1;
+namespace Company.Application1;
 
 public class Program
 {

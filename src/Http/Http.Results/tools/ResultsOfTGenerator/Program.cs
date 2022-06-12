@@ -137,7 +137,7 @@ public class Program
             writer.WriteIndentedLine("/// <inheritdoc/>");
             writer.WriteIndentedLine("public Task ExecuteAsync(HttpContext httpContext)");
             writer.WriteIndentedLine("{");
-            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));");
+            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(httpContext);");
             writer.WriteLine();
             writer.WriteIndentedLine(2, "if (Result is null)");
             writer.WriteIndentedLine(2, "{");
@@ -814,7 +814,7 @@ public class Program
         //    // Arrange
         //    Results<ProvidesMetadataResult1, ProvidesMetadataResult2> MyApi() { throw new NotImplementedException(); }
         //    var metadata = new List<object>();
-        //    var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        //    var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         //    // Act
         //    PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(context);
@@ -850,7 +850,7 @@ public class Program
         }
         writer.WriteLine("> MyApi() { throw new NotImplementedException(); }");
         writer.WriteIndentedLine(2, "var metadata = new List<object>();");
-        writer.WriteIndentedLine(2, "var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);");
+        writer.WriteIndentedLine(2, "var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);");
         writer.WriteLine();
 
         // Act
@@ -956,7 +956,7 @@ public class Program
 
     static void Generate_ProvidesMetadataResultClass(StreamWriter writer, int typeArgNumber)
     {
-        //private class ProvidesMetadataResult1 : IResult, IEndpointMetadataProvider
+        //private sealed class ProvidesMetadataResult1 : IResult, IEndpointMetadataProvider
         //{
         //    public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
 

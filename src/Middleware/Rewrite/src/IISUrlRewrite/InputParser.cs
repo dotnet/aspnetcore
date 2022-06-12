@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Rewrite.PatternSegments;
 
 namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-internal class InputParser
+internal sealed class InputParser
 {
     private const char Colon = ':';
     private const char OpenBrace = '{';

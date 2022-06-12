@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 /// Provides mechanisms for rendering <see cref="IComponent"/> instances in a
 /// web browser, dispatching events to them, and refreshing the UI as required.
 /// </summary>
-internal partial class WebAssemblyRenderer : WebRenderer
+internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
 

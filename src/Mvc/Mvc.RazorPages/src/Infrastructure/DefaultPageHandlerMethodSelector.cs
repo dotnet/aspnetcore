@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
+internal sealed class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
 {
     private const string Handler = "handler";
 

@@ -16,6 +16,5 @@ public interface IActivator
     /// Creates an instance of <paramref name="implementationTypeName"/> and ensures
     /// that it is assignable to <paramref name="expectedBaseType"/>.
     /// </summary>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
-    object CreateInstance(Type expectedBaseType, string implementationTypeName);
+    object CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type expectedBaseType, string implementationTypeName);
 }

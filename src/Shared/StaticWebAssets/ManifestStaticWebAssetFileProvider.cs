@@ -331,7 +331,7 @@ internal sealed partial class ManifestStaticWebAssetFileProvider : IFileProvider
     [JsonSourceGenerationOptions]
     [JsonSerializable(typeof(StaticWebAssetManifest))]
     [JsonSerializable(typeof(IDictionary<string, StaticWebAssetNode>))]
-    internal partial class SourceGenerationContext : JsonSerializerContext
+    internal sealed partial class SourceGenerationContext : JsonSerializerContext
     {
         public static readonly SourceGenerationContext DefaultWithConverter = new SourceGenerationContext(new JsonSerializerOptions
         {

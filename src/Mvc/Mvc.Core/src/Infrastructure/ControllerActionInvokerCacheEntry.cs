@@ -7,7 +7,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ControllerActionInvokerCacheEntry
+internal sealed class ControllerActionInvokerCacheEntry
 {
     internal ControllerActionInvokerCacheEntry(
         FilterItem[] cachedFilters,

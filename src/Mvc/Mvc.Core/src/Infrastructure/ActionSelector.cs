@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// A default <see cref="IActionSelector"/> implementation.
 /// </summary>
-internal partial class ActionSelector : IActionSelector
+internal sealed partial class ActionSelector : IActionSelector
 {
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
     private readonly ActionConstraintCache _actionConstraintCache;

@@ -36,7 +36,7 @@ public abstract class Http3ConnectionBenchmarkBase
 
     protected abstract Task ProcessRequest(HttpContext httpContext);
 
-    private class DefaultTimeoutHandler : ITimeoutHandler
+    private sealed class DefaultTimeoutHandler : ITimeoutHandler
     {
         public void OnTimeout(TimeoutReason reason) { }
     }

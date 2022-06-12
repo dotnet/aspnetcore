@@ -633,7 +633,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         [LoggerMessage(5, LogLevel.Trace, "{TransportType} transport complete.", EventName = "TransportComplete")]
         public static partial void TransportComplete(ILogger logger, HttpTransportType transportType);
-        
+
         [LoggerMessage(6, LogLevel.Trace, "Shutting down both the application and the {TransportType} transport.", EventName = "ShuttingDownTransportAndApplication")]
         public static partial void ShuttingDownTransportAndApplication(ILogger logger, HttpTransportType transportType);
 

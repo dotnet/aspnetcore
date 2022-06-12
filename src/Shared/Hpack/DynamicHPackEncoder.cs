@@ -7,7 +7,7 @@ using System.Text;
 
 namespace System.Net.Http.HPack;
 
-internal class DynamicHPackEncoder
+internal sealed class DynamicHPackEncoder
 {
     public const int DefaultHeaderTableSize = 4096;
 

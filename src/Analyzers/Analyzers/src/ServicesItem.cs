@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class ServicesItem
+internal sealed class ServicesItem
 {
     public ServicesItem(IInvocationOperation operation)
     {

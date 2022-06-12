@@ -18,7 +18,6 @@ public sealed class CngCbcAuthenticatedEncryptorDescriptorDeserializer : IAuthen
     /// <summary>
     /// Imports the <see cref="CngCbcAuthenticatedEncryptorDescriptor"/> from serialized XML.
     /// </summary>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
         if (element == null)

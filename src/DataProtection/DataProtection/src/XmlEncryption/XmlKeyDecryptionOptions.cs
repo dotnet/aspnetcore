@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 /// <summary>
 /// Specifies settings for how to decrypt XML keys.
 /// </summary>
-internal class XmlKeyDecryptionOptions
+internal sealed class XmlKeyDecryptionOptions
 {
     private readonly Dictionary<string, List<X509Certificate2>> _certs = new Dictionary<string, List<X509Certificate2>>(StringComparer.Ordinal);
 

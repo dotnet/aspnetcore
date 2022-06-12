@@ -119,7 +119,7 @@ public class RedisProtocolBenchmark
         return ids;
     }
 
-    private class DummyProtocol : IHubProtocol
+    private sealed class DummyProtocol : IHubProtocol
     {
         private static readonly byte[] _fixedOutput = new byte[] { 0x68, 0x68, 0x6C, 0x6C, 0x6F };
 

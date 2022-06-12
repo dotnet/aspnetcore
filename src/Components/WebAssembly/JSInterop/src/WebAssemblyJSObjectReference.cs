@@ -5,7 +5,7 @@ using Microsoft.JSInterop.Implementation;
 
 namespace Microsoft.JSInterop.WebAssembly;
 
-internal class WebAssemblyJSObjectReference : JSInProcessObjectReference, IJSUnmarshalledObjectReference
+internal sealed class WebAssemblyJSObjectReference : JSInProcessObjectReference, IJSUnmarshalledObjectReference
 {
     private readonly WebAssemblyJSRuntime _jsRuntime;
 

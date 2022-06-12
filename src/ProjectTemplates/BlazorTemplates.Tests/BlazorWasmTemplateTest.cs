@@ -27,7 +27,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
     {
-        var project = await CreateBuildPublishAsync("blazorstandalone" + browserKind);
+        var project = await CreateBuildPublishAsync();
 
         // The service worker assets manifest isn't generated for non-PWA projects
         var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
@@ -63,7 +63,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
     {
-        var project = await CreateBuildPublishAsync("blazorhosted" + BrowserKind.Chromium, args: new[] { "--hosted" }, serverProject: true);
+        var project = await CreateBuildPublishAsync(args: new[] { "--hosted" }, serverProject: true);
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -111,7 +111,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
     {
-        var project = await CreateBuildPublishAsync("blazorstandalonepwa", args: new[] { "--pwa" });
+        var project = await CreateBuildPublishAsync(args: new[] { "--pwa" });
 
         await BuildAndRunTest(project.ProjectName, project, browserKind);
 
@@ -146,7 +146,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
     {
-        var project = await CreateBuildPublishAsync("blazorhostedpwa", args: new[] { "--hosted", "--pwa" }, serverProject: true);
+        var project = await CreateBuildPublishAsync(args: new[] { "--hosted", "--pwa" }, serverProject: true);
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -226,13 +226,12 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
         => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
 
-    private async Task<Project> CreateBuildPublishIndividualAuthProject(BrowserKind browserKind, bool useLocalDb)
+    private async Task<Project> CreateBuildPublishIndividualAuthProject(bool useLocalDb)
     {
         // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
         Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
 
-        var project = await CreateBuildPublishAsync("blazorhostedindividual" + browserKind + (useLocalDb ? "uld" : ""),
-            args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
+        var project = await CreateBuildPublishAsync(args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -274,7 +273,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
     private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(BrowserKind browserKind, bool useLocalDb)
     {
-        var project = await CreateBuildPublishIndividualAuthProject(browserKind, useLocalDb: useLocalDb);
+        var project = await CreateBuildPublishIndividualAuthProject(useLocalDb: useLocalDb);
 
         var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
 
@@ -376,7 +375,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/37782")]
     [MemberData(nameof(TemplateData))]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
-        => CreateBuildPublishAsync(instance.Name, args: instance.Arguments, targetFramework: "netstandard2.1");
+        => CreateBuildPublishAsync(args: instance.Arguments, targetFramework: "netstandard2.1");
 
     protected async Task BuildAndRunTest(string appName, Project project, BrowserKind browserKind, bool usesAuth = false)
     {

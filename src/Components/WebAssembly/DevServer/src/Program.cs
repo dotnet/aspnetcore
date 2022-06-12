@@ -7,7 +7,7 @@ using DevServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.S
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.DevServer;
 
-internal class Program
+internal sealed class Program
 {
     static int Main(string[] args)
     {

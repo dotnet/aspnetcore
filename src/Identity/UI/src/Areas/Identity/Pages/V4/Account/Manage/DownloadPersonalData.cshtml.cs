@@ -29,7 +29,7 @@ public abstract class DownloadPersonalDataModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class DownloadPersonalDataModel<TUser> : DownloadPersonalDataModel where TUser : class
+internal sealed class DownloadPersonalDataModel<TUser> : DownloadPersonalDataModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly ILogger<DownloadPersonalDataModel> _logger;

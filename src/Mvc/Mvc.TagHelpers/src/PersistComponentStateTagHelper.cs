@@ -92,7 +92,7 @@ public class PersistComponentStateTagHelper : TagHelper
         }
     }
 
-    private class ComponentStateHtmlContent : IHtmlContent
+    private sealed class ComponentStateHtmlContent : IHtmlContent
     {
         private PrerenderComponentApplicationStore _store;
 

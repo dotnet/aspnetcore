@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class IISHttpServer : IServer
+internal sealed class IISHttpServer : IServer
 {
     private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
@@ -259,7 +259,7 @@ internal class IISHttpServer : IServer
         }
     }
 
-    private class IISContextFactory<T> : IISContextFactory where T : notnull
+    private sealed class IISContextFactory<T> : IISContextFactory where T : notnull
     {
         private const string Latin1Suppport = "Microsoft.AspNetCore.Server.IIS.Latin1RequestHeaders";
 

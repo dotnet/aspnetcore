@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.SpaServices;
 
-internal class SpaDefaultPageMiddleware
+internal sealed class SpaDefaultPageMiddleware
 {
     public static void Attach(ISpaBuilder spaBuilder)
     {

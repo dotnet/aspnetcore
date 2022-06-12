@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 // Optimized implementation for cases where we know that we're
 // comparing to ASCII.
-internal class SingleEntryAsciiJumpTable : JumpTable
+internal sealed class SingleEntryAsciiJumpTable : JumpTable
 {
     private readonly int _defaultDestination;
     private readonly int _exitDestination;

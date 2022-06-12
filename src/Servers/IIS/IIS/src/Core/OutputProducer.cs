@@ -7,7 +7,7 @@ using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class OutputProducer
+internal sealed class OutputProducer
 {
     // This locks access to _completed and _aborted.
     private readonly object _contextLock = new object();

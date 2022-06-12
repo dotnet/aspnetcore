@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class HubCallerClients : IHubCallerClients
+internal sealed class HubCallerClients : IHubCallerClients
 {
     private readonly string _connectionId;
     private readonly IHubClients _hubClients;
@@ -18,7 +18,7 @@ internal class HubCallerClients : IHubCallerClients
         _parallelEnabled = parallelEnabled;
     }
 
-    private class NotParallelSingleClientProxy : ISingleClientProxy
+    private sealed class NotParallelSingleClientProxy : ISingleClientProxy
     {
         private readonly ISingleClientProxy _proxy;
 

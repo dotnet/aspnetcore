@@ -104,7 +104,7 @@ public class TwitterOptions : RemoteAuthenticationOptions
         }
     }
 
-    private class TwitterCookieBuilder : CookieBuilder
+    private sealed class TwitterCookieBuilder : CookieBuilder
     {
         private readonly TwitterOptions _twitterOptions;
 

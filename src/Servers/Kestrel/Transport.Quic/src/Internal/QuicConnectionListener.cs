@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 /// <summary>
 /// Listens for new Quic Connections.
 /// </summary>
-internal class QuicConnectionListener : IMultiplexedConnectionListener, IAsyncDisposable
+internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, IAsyncDisposable
 {
     private readonly ILogger _log;
     private bool _disposed;

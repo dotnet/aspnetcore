@@ -88,7 +88,7 @@ internal static partial class SendUtils
         Log.SendStopped(logger);
     }
 
-    private class ReadOnlySequenceContent : HttpContent
+    private sealed class ReadOnlySequenceContent : HttpContent
     {
         private readonly ReadOnlySequence<byte> _buffer;
 

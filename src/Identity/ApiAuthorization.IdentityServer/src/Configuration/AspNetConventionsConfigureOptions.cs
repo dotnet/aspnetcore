@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
-internal class AspNetConventionsConfigureOptions : IConfigureOptions<IdentityServerOptions>
+internal sealed class AspNetConventionsConfigureOptions : IConfigureOptions<IdentityServerOptions>
 {
     public void Configure(IdentityServerOptions options)
     {

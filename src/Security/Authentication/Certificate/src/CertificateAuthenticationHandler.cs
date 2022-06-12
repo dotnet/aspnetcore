@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate;
 
-internal class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
+internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
 {
     private static readonly Oid ClientCertificateOid = new Oid("1.3.6.1.5.5.7.3.2");
     private ICertificateValidationCache? _cache;
@@ -28,7 +28,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
     /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
     /// If it is not provided a default instance is supplied which does nothing when the methods are called.
     /// </summary>
-    protected new CertificateAuthenticationEvents Events
+    private new CertificateAuthenticationEvents Events
     {
         get { return (CertificateAuthenticationEvents)base.Events!; }
         set { base.Events = value; }

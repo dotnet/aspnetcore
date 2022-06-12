@@ -3,15 +3,34 @@
 
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests;
 
 public class DelegateTests
 {
     private static readonly string _expectedResponseString = "Hello from delegatee";
+
+    [ConditionalFact]
+    [DelegateSupportedCondition(true)]
+    public void IServerDelegationFeature_IsAvailableFromServices()
+    {
+        var builder = new HostBuilder();
+        builder.ConfigureWebHost(webHost =>
+        {
+            webHost.UseHttpSys();
+        });
+        using var host = builder.Build();
+        var server = host.Services.GetRequiredService<IServer>();
+        var delegationFeature = host.Services.GetRequiredService<IServerDelegationFeature>();
+        Assert.Same(server, delegationFeature);
+    }
 
     [ConditionalFact]
     [DelegateSupportedCondition(true)]

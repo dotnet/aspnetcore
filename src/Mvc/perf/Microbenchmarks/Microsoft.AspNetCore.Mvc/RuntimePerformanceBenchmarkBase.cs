@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Microbenchmarks;
 
 public class RuntimePerformanceBenchmarkBase
 {
-    private class NullLoggerFactory : ILoggerFactory, ILogger
+    private sealed class NullLoggerFactory : ILoggerFactory, ILogger
     {
         void ILoggerFactory.AddProvider(ILoggerProvider provider) { }
         ILogger ILoggerFactory.CreateLogger(string categoryName) => this;
@@ -36,7 +36,7 @@ public class RuntimePerformanceBenchmarkBase
         void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) { }
     }
 
-    private class BenchmarkViewExecutor : ViewExecutor
+    private sealed class BenchmarkViewExecutor : ViewExecutor
     {
         public BenchmarkViewExecutor(IOptions<MvcViewOptions> viewOptions, IHttpResponseStreamWriterFactory writerFactory, ICompositeViewEngine viewEngine, ITempDataDictionaryFactory tempDataFactory, DiagnosticListener diagnosticListener, IModelMetadataProvider modelMetadataProvider)
             : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticListener, modelMetadataProvider)
@@ -68,7 +68,7 @@ public class RuntimePerformanceBenchmarkBase
         }
     }
 
-    private class BenchmarkHostingEnvironment : IWebHostEnvironment
+    private sealed class BenchmarkHostingEnvironment : IWebHostEnvironment
     {
         public BenchmarkHostingEnvironment()
         {

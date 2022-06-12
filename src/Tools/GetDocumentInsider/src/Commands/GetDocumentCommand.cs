@@ -13,7 +13,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Commands;
 
-internal class GetDocumentCommand : ProjectCommandBase
+internal sealed class GetDocumentCommand : ProjectCommandBase
 {
     private CommandOption _fileListPath;
     private CommandOption _output;
@@ -141,7 +141,7 @@ internal class GetDocumentCommand : ProjectCommandBase
         }
     }
 
-    private class AssemblyInfo
+    private sealed class AssemblyInfo
     {
         public AssemblyInfo(string path)
         {

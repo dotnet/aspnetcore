@@ -450,7 +450,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
             !StringValues.IsNullOrEmpty(accessControlRequestMethod);
     }
 
-    private class HttpMethodMetadataEndpointComparer : EndpointMetadataComparer<IHttpMethodMetadata>
+    private sealed class HttpMethodMetadataEndpointComparer : EndpointMetadataComparer<IHttpMethodMetadata>
     {
         protected override int CompareMetadata(IHttpMethodMetadata? x, IHttpMethodMetadata? y)
         {

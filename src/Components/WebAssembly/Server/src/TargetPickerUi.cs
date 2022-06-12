@@ -206,7 +206,7 @@ public class TargetPickerUi
         return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions)!;
     }
 
-    record BrowserTab
+    private sealed record BrowserTab
     (
         string Id,
         string Type,

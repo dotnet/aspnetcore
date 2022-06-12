@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Extensions.StackTrace.Sources;
 
-internal class StackFrameInfo
+internal sealed class StackFrameInfo
 {
     public StackFrameInfo(int lineNumber, string? filePath, StackFrame? stackFrame, MethodDisplayInfo? methodDisplayInfo)
     {

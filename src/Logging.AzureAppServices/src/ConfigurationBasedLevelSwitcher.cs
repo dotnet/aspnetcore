@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
-internal class ConfigurationBasedLevelSwitcher : IConfigureOptions<LoggerFilterOptions>
+internal sealed class ConfigurationBasedLevelSwitcher : IConfigureOptions<LoggerFilterOptions>
 {
     private readonly IConfiguration _configuration;
     private readonly Type _provider;

@@ -15,295 +15,446 @@ using Microsoft.AspNetCore.Cryptography.SafeHandles;
 namespace Microsoft.AspNetCore.Cryptography;
 
 [SuppressUnmanagedCodeSecurity]
-internal static unsafe class UnsafeNativeMethods
+internal static unsafe partial class UnsafeNativeMethods
 {
-    private const string BCRYPT_LIB = "bcrypt.dll";
-    private static readonly Lazy<SafeLibraryHandle> _lazyBCryptLibHandle = GetLazyLibraryHandle(BCRYPT_LIB);
+    internal const string BCRYPT_LIB = "bcrypt.dll";
+    private static SafeLibraryHandle? _lazyBCryptLibHandle;
 
     private const string CRYPT32_LIB = "crypt32.dll";
-    private static readonly Lazy<SafeLibraryHandle> _lazyCrypt32LibHandle = GetLazyLibraryHandle(CRYPT32_LIB);
+    private static SafeLibraryHandle? _lazyCrypt32LibHandle;
 
     private const string NCRYPT_LIB = "ncrypt.dll";
-    private static readonly Lazy<SafeLibraryHandle> _lazyNCryptLibHandle = GetLazyLibraryHandle(NCRYPT_LIB);
-
-    private static Lazy<SafeLibraryHandle> GetLazyLibraryHandle(string libraryName)
-    {
-        // We don't need to worry about race conditions: SafeLibraryHandle will clean up after itself
-        return new Lazy<SafeLibraryHandle>(() => SafeLibraryHandle.Open(libraryName), LazyThreadSafetyMode.PublicationOnly);
-    }
+    private static SafeLibraryHandle? _lazyNCryptLibHandle;
 
     /*
      * BCRYPT.DLL
      */
-
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375377(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptCloseAlgorithmProvider(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptCloseAlgorithmProvider(
-        [In] IntPtr hAlgorithm,
-        [In] uint dwFlags);
+#endif
+        IntPtr hAlgorithm,
+        uint dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375383(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptCreateHash(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptCreateHash(
-        [In] BCryptAlgorithmHandle hAlgorithm,
-        [Out] out BCryptHashHandle phHash,
-        [In] IntPtr pbHashObject,
-        [In] uint cbHashObject,
-        [In] byte* pbSecret,
-        [In] uint cbSecret,
-        [In] uint dwFlags);
+#endif
+        BCryptAlgorithmHandle hAlgorithm,
+        out BCryptHashHandle phHash,
+        IntPtr pbHashObject,
+        uint cbHashObject,
+        byte* pbSecret,
+        uint cbSecret,
+        uint dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375391(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptDecrypt(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptDecrypt(
-        [In] BCryptKeyHandle hKey,
-        [In] byte* pbInput,
-        [In] uint cbInput,
-        [In] void* pPaddingInfo,
-        [In] byte* pbIV,
-        [In] uint cbIV,
-        [In] byte* pbOutput,
-        [In] uint cbOutput,
-        [Out] out uint pcbResult,
-        [In] BCryptEncryptFlags dwFlags);
+#endif
+        BCryptKeyHandle hKey,
+        byte* pbInput,
+        uint cbInput,
+        void* pPaddingInfo,
+        byte* pbIV,
+        uint cbIV,
+        byte* pbOutput,
+        uint cbOutput,
+        out uint pcbResult,
+        BCryptEncryptFlags dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/dd433795(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptDeriveKeyPBKDF2(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptDeriveKeyPBKDF2(
-        [In] BCryptAlgorithmHandle hPrf,
-        [In] byte* pbPassword,
-        [In] uint cbPassword,
-        [In] byte* pbSalt,
-        [In] uint cbSalt,
-        [In] ulong cIterations,
-        [In] byte* pbDerivedKey,
-        [In] uint cbDerivedKey,
-        [In] uint dwFlags);
-
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-#if NETSTANDARD2_0
-    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
+        BCryptAlgorithmHandle hPrf,
+        byte* pbPassword,
+        uint cbPassword,
+        byte* pbSalt,
+        uint cbSalt,
+        ulong cIterations,
+        byte* pbDerivedKey,
+        uint cbDerivedKey,
+        uint dwFlags);
+
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375399(v=vs.85).aspx
-    internal static extern int BCryptDestroyHash(
-        [In] IntPtr hHash);
-
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
 #if NETSTANDARD2_0
     [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptDestroyHash(
+#else
+    [DllImport(BCRYPT_LIB)]
+    internal static extern int BCryptDestroyHash(
+#endif
+        IntPtr hHash);
+
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375404(v=vs.85).aspx
+#if NETSTANDARD2_0
+    [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#endif
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptDestroyKey(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptDestroyKey(
-        [In] IntPtr hKey);
+#endif
+        IntPtr hKey);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375413(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptDuplicateHash(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptDuplicateHash(
-        [In] BCryptHashHandle hHash,
-        [Out] out BCryptHashHandle phNewHash,
-        [In] IntPtr pbHashObject,
-        [In] uint cbHashObject,
-        [In] uint dwFlags);
+#endif
+        BCryptHashHandle hHash,
+        out BCryptHashHandle phNewHash,
+        IntPtr pbHashObject,
+        uint cbHashObject,
+        uint dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375421(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptEncrypt(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptEncrypt(
-        [In] BCryptKeyHandle hKey,
-        [In] byte* pbInput,
-        [In] uint cbInput,
-        [In] void* pPaddingInfo,
-        [In] byte* pbIV,
-        [In] uint cbIV,
-        [In] byte* pbOutput,
-        [In] uint cbOutput,
-        [Out] out uint pcbResult,
-        [In] BCryptEncryptFlags dwFlags);
+#endif
+        BCryptKeyHandle hKey,
+        byte* pbInput,
+        uint cbInput,
+        void* pPaddingInfo,
+        byte* pbIV,
+        uint cbIV,
+        byte* pbOutput,
+        uint cbOutput,
+        out uint pcbResult,
+        BCryptEncryptFlags dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375443(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptFinishHash(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptFinishHash(
-        [In] BCryptHashHandle hHash,
-        [In] byte* pbOutput,
-        [In] uint cbOutput,
-        [In] uint dwFlags);
+#endif
+        BCryptHashHandle hHash,
+        byte* pbOutput,
+        uint cbOutput,
+        uint dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375453(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptGenerateSymmetricKey(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptGenerateSymmetricKey(
-        [In] BCryptAlgorithmHandle hAlgorithm,
-        [Out] out BCryptKeyHandle phKey,
-        [In] IntPtr pbKeyObject,
-        [In] uint cbKeyObject,
-        [In] byte* pbSecret,
-        [In] uint cbSecret,
-        [In] uint dwFlags);
+#endif
+        BCryptAlgorithmHandle hAlgorithm,
+        out BCryptKeyHandle phKey,
+        IntPtr pbKeyObject,
+        uint cbKeyObject,
+        byte* pbSecret,
+        uint cbSecret,
+        uint dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375458(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptGenRandom(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptGenRandom(
-        [In] IntPtr hAlgorithm,
-        [In] byte* pbBuffer,
-        [In] uint cbBuffer,
-        [In] BCryptGenRandomFlags dwFlags);
+#endif
+        IntPtr hAlgorithm,
+        byte* pbBuffer,
+        uint cbBuffer,
+        BCryptGenRandomFlags dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375464(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptGetProperty(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptGetProperty(
-        [In] BCryptHandle hObject,
-        [In, MarshalAs(UnmanagedType.LPWStr)] string pszProperty,
-        [In] void* pbOutput,
-        [In] uint cbOutput,
-        [Out] out uint pcbResult,
-        [In] uint dwFlags);
+#endif
+        BCryptHandle hObject,
+        [MarshalAs(UnmanagedType.LPWStr)] string pszProperty,
+        void* pbOutput,
+        uint cbOutput,
+        out uint pcbResult,
+        uint dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375468(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptHashData(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptHashData(
-        [In] BCryptHashHandle hHash,
-        [In] byte* pbInput,
-        [In] uint cbInput,
-        [In] uint dwFlags);
+#endif
+        BCryptHashHandle hHash,
+        byte* pbInput,
+        uint cbInput,
+        uint dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/hh448506(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptKeyDerivation(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptKeyDerivation(
-        [In] BCryptKeyHandle hKey,
-        [In] BCryptBufferDesc* pParameterList,
-        [In] byte* pbDerivedKey,
-        [In] uint cbDerivedKey,
-        [Out] out uint pcbResult,
-        [In] uint dwFlags);
+#endif
+        BCryptKeyHandle hKey,
+        BCryptBufferDesc* pParameterList,
+        byte* pbDerivedKey,
+        uint cbDerivedKey,
+        out uint pcbResult,
+        uint dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375479(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptOpenAlgorithmProvider(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptOpenAlgorithmProvider(
-        [Out] out BCryptAlgorithmHandle phAlgorithm,
-        [In, MarshalAs(UnmanagedType.LPWStr)] string pszAlgId,
-        [In, MarshalAs(UnmanagedType.LPWStr)] string? pszImplementation,
-        [In] uint dwFlags);
+#endif
+        out BCryptAlgorithmHandle phAlgorithm,
+        [MarshalAs(UnmanagedType.LPWStr)] string pszAlgId,
+        [MarshalAs(UnmanagedType.LPWStr)] string? pszImplementation,
+        uint dwFlags);
 
-    [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375504(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(BCRYPT_LIB)]
+    internal static partial int BCryptSetProperty(
+#else
+    [DllImport(BCRYPT_LIB)]
     internal static extern int BCryptSetProperty(
-        [In] BCryptHandle hObject,
-        [In, MarshalAs(UnmanagedType.LPWStr)] string pszProperty,
-        [In] void* pbInput,
-        [In] uint cbInput,
-        [In] uint dwFlags);
+#endif
+        BCryptHandle hObject,
+        [MarshalAs(UnmanagedType.LPWStr)] string pszProperty,
+        void* pbInput,
+        uint cbInput,
+        uint dwFlags);
 
     /*
      * CRYPT32.DLL
      */
 
-    [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380261(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(CRYPT32_LIB, SetLastError = true)]
+    internal static partial bool CryptProtectData(
+#else
+    [DllImport(CRYPT32_LIB, SetLastError = true)]
     internal static extern bool CryptProtectData(
-        [In] DATA_BLOB* pDataIn,
-        [In] IntPtr szDataDescr,
-        [In] DATA_BLOB* pOptionalEntropy,
-        [In] IntPtr pvReserved,
-        [In] IntPtr pPromptStruct,
-        [In] uint dwFlags,
-        [Out] out DATA_BLOB pDataOut);
+#endif
+        DATA_BLOB* pDataIn,
+        IntPtr szDataDescr,
+        DATA_BLOB* pOptionalEntropy,
+        IntPtr pvReserved,
+        IntPtr pPromptStruct,
+        uint dwFlags,
+        DATA_BLOB* pDataOut);
 
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380262(v=vs.85).aspx
-    [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+#if NET7_0_OR_GREATER
+    [LibraryImport(CRYPT32_LIB, SetLastError = true)]
+    public static partial bool CryptProtectMemory(
+#else
+    [DllImport(CRYPT32_LIB, SetLastError = true)]
     public static extern bool CryptProtectMemory(
-        [In] SafeHandle pData,
-        [In] uint cbData,
-        [In] uint dwFlags);
+#endif
+        SafeHandle pData,
+        uint cbData,
+        uint dwFlags);
 
-    [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380882(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(CRYPT32_LIB, SetLastError = true)]
+    internal static partial bool CryptUnprotectData(
+#else
+    [DllImport(CRYPT32_LIB, SetLastError = true)]
     internal static extern bool CryptUnprotectData(
-        [In] DATA_BLOB* pDataIn,
-        [In] IntPtr ppszDataDescr,
-        [In] DATA_BLOB* pOptionalEntropy,
-        [In] IntPtr pvReserved,
-        [In] IntPtr pPromptStruct,
-        [In] uint dwFlags,
-        [Out] out DATA_BLOB pDataOut);
+#endif
+        DATA_BLOB* pDataIn,
+        IntPtr ppszDataDescr,
+        DATA_BLOB* pOptionalEntropy,
+        IntPtr pvReserved,
+        IntPtr pPromptStruct,
+        uint dwFlags,
+        DATA_BLOB* pDataOut);
 
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380890(v=vs.85).aspx
-    [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+#if NET7_0_OR_GREATER
+    [LibraryImport(CRYPT32_LIB, SetLastError = true)]
+    public static partial bool CryptUnprotectMemory(
+#else
+    [DllImport(CRYPT32_LIB, SetLastError = true)]
     public static extern bool CryptUnprotectMemory(
-        [In] byte* pData,
-        [In] uint cbData,
-        [In] uint dwFlags);
+#endif
+        byte* pData,
+        uint cbData,
+        uint dwFlags);
 
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa380890(v=vs.85).aspx
-    [DllImport(CRYPT32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+#if NET7_0_OR_GREATER
+    [LibraryImport(CRYPT32_LIB, SetLastError = true)]
+    public static partial bool CryptUnprotectMemory(
+#else
+    [DllImport(CRYPT32_LIB, SetLastError = true)]
     public static extern bool CryptUnprotectMemory(
-        [In] SafeHandle pData,
-        [In] uint cbData,
-        [In] uint dwFlags);
+#endif
+        SafeHandle pData,
+        uint cbData,
+        uint dwFlags);
 
     /*
      * NCRYPT.DLL
      */
 
-    [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706799(v=vs.85).aspx
 #if NETSTANDARD2_0
     [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
-    // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706799(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(NCRYPT_LIB)]
+    internal static partial int NCryptCloseProtectionDescriptor(
+#else
+    [DllImport(NCRYPT_LIB)]
     internal static extern int NCryptCloseProtectionDescriptor(
-        [In] IntPtr hDescriptor);
+#endif
+        IntPtr hDescriptor);
 
-    [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706800(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(NCRYPT_LIB)]
+    internal static partial int NCryptCreateProtectionDescriptor(
+#else
+    [DllImport(NCRYPT_LIB)]
     internal static extern int NCryptCreateProtectionDescriptor(
-        [In, MarshalAs(UnmanagedType.LPWStr)] string pwszDescriptorString,
-        [In] uint dwFlags,
-        [Out] out NCryptDescriptorHandle phDescriptor);
+#endif
+        [MarshalAs(UnmanagedType.LPWStr)] string pwszDescriptorString,
+        uint dwFlags,
+        out NCryptDescriptorHandle phDescriptor);
 
-    [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // https://msdn.microsoft.com/en-us/library/windows/desktop/hh706801(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(NCRYPT_LIB)]
+    internal static partial int NCryptGetProtectionDescriptorInfo(
+#else
+    [DllImport(NCRYPT_LIB)]
     internal static extern int NCryptGetProtectionDescriptorInfo(
-        [In] NCryptDescriptorHandle hDescriptor,
-        [In] IntPtr pMemPara,
-        [In] uint dwInfoType,
-        [Out] out LocalAllocHandle ppvInfo);
+#endif
+        NCryptDescriptorHandle hDescriptor,
+        IntPtr pMemPara,
+        uint dwInfoType,
+        out LocalAllocHandle ppvInfo);
 
-    [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706802(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(NCRYPT_LIB)]
+    internal static partial int NCryptProtectSecret(
+#else
+    [DllImport(NCRYPT_LIB)]
     internal static extern int NCryptProtectSecret(
-        [In] NCryptDescriptorHandle hDescriptor,
-        [In] uint dwFlags,
-        [In] byte* pbData,
-        [In] uint cbData,
-        [In] IntPtr pMemPara,
-        [In] IntPtr hWnd,
-        [Out] out LocalAllocHandle ppbProtectedBlob,
-        [Out] out uint pcbProtectedBlob);
+#endif
+        NCryptDescriptorHandle hDescriptor,
+        uint dwFlags,
+        byte* pbData,
+        uint cbData,
+        IntPtr pMemPara,
+        IntPtr hWnd,
+        out LocalAllocHandle ppbProtectedBlob,
+        out uint pcbProtectedBlob);
 
-    [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706811(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(NCRYPT_LIB)]
+    internal static partial int NCryptUnprotectSecret(
+#else
+    [DllImport(NCRYPT_LIB)]
     internal static extern int NCryptUnprotectSecret(
-        [In] IntPtr phDescriptor,
-        [In] uint dwFlags,
-        [In] byte* pbProtectedBlob,
-        [In] uint cbProtectedBlob,
-        [In] IntPtr pMemPara,
-        [In] IntPtr hWnd,
-        [Out] out LocalAllocHandle ppbData,
-        [Out] out uint pcbData);
+#endif
+        IntPtr phDescriptor,
+        uint dwFlags,
+        byte* pbProtectedBlob,
+        uint cbProtectedBlob,
+        IntPtr pMemPara,
+        IntPtr hWnd,
+        out LocalAllocHandle ppbData,
+        out uint pcbData);
 
-    [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
     // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706811(v=vs.85).aspx
+#if NET7_0_OR_GREATER
+    [LibraryImport(NCRYPT_LIB)]
+    internal static partial int NCryptUnprotectSecret(
+#else
+    [DllImport(NCRYPT_LIB)]
     internal static extern int NCryptUnprotectSecret(
-       [Out] out NCryptDescriptorHandle phDescriptor,
-       [In] uint dwFlags,
-       [In] byte* pbProtectedBlob,
-       [In] uint cbProtectedBlob,
-       [In] IntPtr pMemPara,
-       [In] IntPtr hWnd,
-       [Out] out LocalAllocHandle ppbData,
-       [Out] out uint pcbData);
+#endif
+       out NCryptDescriptorHandle phDescriptor,
+       uint dwFlags,
+       byte* pbProtectedBlob,
+       uint cbProtectedBlob,
+       IntPtr pMemPara,
+       IntPtr hWnd,
+       out LocalAllocHandle ppbData,
+       out uint pcbData);
 
     /*
      * HELPER FUNCTIONS
      */
+    private static SafeLibraryHandle GetLibHandle(string libraryName, ref SafeLibraryHandle? safeLibraryHandle)
+    {
+        if (safeLibraryHandle is null)
+        {
+            var newHandle = SafeLibraryHandle.Open(libraryName);
+            if (Interlocked.CompareExchange(ref safeLibraryHandle, newHandle, null) is not null)
+            {
+                newHandle.Dispose();
+            }
+        }
+
+        return safeLibraryHandle;
+    }
+
+    // We use methods instead of properties to access lazy handles in order to prevent debuggers from automatically attempting to load libraries on unsupported platforms.
+    private static SafeLibraryHandle GetBCryptLibHandle() => GetLibHandle(BCRYPT_LIB, ref _lazyBCryptLibHandle);
+    private static SafeLibraryHandle GetCrypt32LibHandle() => GetLibHandle(CRYPT32_LIB, ref _lazyCrypt32LibHandle);
+    private static SafeLibraryHandle GetNCryptLibHandle() => GetLibHandle(NCRYPT_LIB, ref _lazyNCryptLibHandle);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void ThrowExceptionForBCryptStatus(int ntstatus)
@@ -318,7 +469,7 @@ internal static unsafe class UnsafeNativeMethods
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowExceptionForBCryptStatusImpl(int ntstatus)
     {
-        var message = _lazyBCryptLibHandle.Value.FormatMessage(ntstatus);
+        var message = GetBCryptLibHandle().FormatMessage(ntstatus);
         throw new CryptographicException(message);
     }
 
@@ -327,7 +478,7 @@ internal static unsafe class UnsafeNativeMethods
         var lastError = Marshal.GetLastWin32Error();
         Debug.Assert(lastError != 0, "This method should only be called if there was an error.");
 
-        var message = _lazyCrypt32LibHandle.Value.FormatMessage(lastError);
+        var message = GetCrypt32LibHandle().FormatMessage(lastError);
         throw new CryptographicException(message);
     }
 
@@ -344,7 +495,7 @@ internal static unsafe class UnsafeNativeMethods
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowExceptionForNCryptStatusImpl(int ntstatus)
     {
-        var message = _lazyNCryptLibHandle.Value.FormatMessage(ntstatus);
+        var message = GetNCryptLibHandle().FormatMessage(ntstatus);
         throw new CryptographicException(message);
     }
 }

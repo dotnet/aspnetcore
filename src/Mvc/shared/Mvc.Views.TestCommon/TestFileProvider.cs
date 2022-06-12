@@ -121,7 +121,7 @@ public class TestFileProvider : IFileProvider
         return filePath;
     }
 
-    private class NotFoundFileInfo : IFileInfo
+    private sealed class NotFoundFileInfo : IFileInfo
     {
         public bool Exists
         {

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView;
 
 // This class is a "Proxy" or "front-controller" for the incoming messages from the Browser via the transport channel.
 // It receives messages on OnMessageReceived, interprets the payload and dispatches them to the appropriate method
-internal class IpcReceiver
+internal sealed class IpcReceiver
 {
     private readonly Func<string, string, Task> _onAttachMessage;
 

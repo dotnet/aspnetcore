@@ -17,7 +17,6 @@ public sealed class ManagedAuthenticatedEncryptorDescriptorDeserializer : IAuthe
     /// <summary>
     /// Imports the <see cref="ManagedAuthenticatedEncryptorDescriptor"/> from serialized XML.
     /// </summary>
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     public IAuthenticatedEncryptorDescriptor ImportFromXml(XElement element)
     {
         if (element == null)
@@ -48,7 +47,6 @@ public sealed class ManagedAuthenticatedEncryptorDescriptorDeserializer : IAuthe
 
     // Any changes to this method should also be be reflected
     // in ManagedAuthenticatedEncryptorDescriptor.TypeToFriendlyName.
-    [RequiresUnreferencedCode(TrimmerWarning.Message)]
     private static Type FriendlyNameToType(string typeName)
     {
         if (typeName == nameof(Aes))
@@ -73,7 +71,7 @@ public sealed class ManagedAuthenticatedEncryptorDescriptorDeserializer : IAuthe
         }
         else
         {
-            return Type.GetType(typeName, throwOnError: true)!;
+            return TypeExtensions.GetTypeWithTrimFriendlyErrorMessage(typeName);
         }
     }
 }

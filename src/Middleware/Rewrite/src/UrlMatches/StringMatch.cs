@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
 
-internal class StringMatch : UrlMatch
+internal sealed class StringMatch : UrlMatch
 {
     private readonly string _value;
     private readonly StringOperationType _operation;

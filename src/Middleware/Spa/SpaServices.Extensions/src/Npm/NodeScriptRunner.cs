@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm;
 /// Executes the <c>script</c> entries defined in a <c>package.json</c> file,
 /// capturing any output written to stdio.
 /// </summary>
-internal class NodeScriptRunner : IDisposable
+internal sealed class NodeScriptRunner : IDisposable
 {
     private Process? _npmProcess;
     public EventedStreamReader StdOut { get; }

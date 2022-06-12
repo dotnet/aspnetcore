@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy;
 // the project templates without waiting for 2.1 to ship. When 2.1 is ready to ship,
 // merge the additional proxying features (e.g., proxying websocket connections) back
 // into the SpaServices proxying code. It's all internal.
-internal class ConditionalProxyMiddleware
+internal sealed class ConditionalProxyMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly Task<Uri> _baseUriTask;

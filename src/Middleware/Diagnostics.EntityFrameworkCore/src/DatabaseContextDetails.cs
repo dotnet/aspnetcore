@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 
-internal class DatabaseContextDetails
+internal sealed class DatabaseContextDetails
 {
     public Type Type { get; }
     public bool DatabaseExists { get; }

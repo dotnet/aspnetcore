@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal class AccessTokenHttpMessageHandler : DelegatingHandler
+internal sealed class AccessTokenHttpMessageHandler : DelegatingHandler
 {
     private readonly HttpConnection _httpConnection;
 

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Internal;
 /// This handles cookies that are limited by per cookie length. It breaks down long cookies for responses, and reassembles them
 /// from requests.
 /// </summary>
-internal class ChunkingCookieManager
+internal sealed class ChunkingCookieManager
 {
 #endif
     /// <summary>
@@ -103,7 +103,7 @@ internal class ChunkingCookieManager
         var chunksCount = ParseChunksCount(value);
         if (chunksCount > 0)
         {
-            var chunks = new string[chunksCount];
+            var chunks = new List<string>(10); // The client may not have sent all of the chunks, don't allocate based on chunksCount.
             for (var chunkId = 1; chunkId <= chunksCount; chunkId++)
             {
                 var chunk = requestCookies[key + ChunkKeySuffix + chunkId.ToString(CultureInfo.InvariantCulture)];
@@ -128,7 +128,7 @@ internal class ChunkingCookieManager
                     return value;
                 }
 
-                chunks[chunkId - 1] = chunk;
+                chunks.Add(chunk);
             }
 
             return string.Join(string.Empty, chunks);
@@ -252,17 +252,26 @@ internal class ChunkingCookieManager
         }
 
         var keys = new List<string>
-            {
-                key + "="
-            };
+        {
+            key + "="
+        };
 
-        var requestCookie = context.Request.Cookies[key];
-        var chunks = ParseChunksCount(requestCookie);
+        var requestCookies = context.Request.Cookies;
+        var requestCookie = requestCookies[key];
+        long chunks = ParseChunksCount(requestCookie);
         if (chunks > 0)
         {
             for (var i = 1; i <= chunks + 1; i++)
             {
                 var subkey = key + ChunkKeySuffix + i.ToString(CultureInfo.InvariantCulture);
+
+                // Only delete cookies we received. We received the chunk count cookie so we should have received the others too.
+                if (string.IsNullOrEmpty(requestCookies[subkey]))
+                {
+                    chunks = i - 1;
+                    break;
+                }
+
                 keys.Add(subkey + "=");
             }
         }

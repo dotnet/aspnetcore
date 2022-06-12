@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class DefaultPageApplicationModelPartsProvider : IPageApplicationModelPartsProvider
+internal sealed class DefaultPageApplicationModelPartsProvider : IPageApplicationModelPartsProvider
 {
     private readonly IModelMetadataProvider _modelMetadataProvider;
 

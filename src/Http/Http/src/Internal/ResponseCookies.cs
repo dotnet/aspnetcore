@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// A wrapper for the response Set-Cookie header.
 /// </summary>
-internal partial class ResponseCookies : IResponseCookies
+internal sealed partial class ResponseCookies : IResponseCookies
 {
     internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
     internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;

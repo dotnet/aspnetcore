@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter;
 
-internal class StackPolicy : BasePolicy
+internal sealed class StackPolicy : BasePolicy
 {
     public StackPolicy(IOptions<QueuePolicyOptions> options)
         : base(options, QueueProcessingOrder.NewestFirst)

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
-internal class UrlEncodeSegment : PatternSegment
+internal sealed class UrlEncodeSegment : PatternSegment
 {
     private readonly Pattern _pattern;
 

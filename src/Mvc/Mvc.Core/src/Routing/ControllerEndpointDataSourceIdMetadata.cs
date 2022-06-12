@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class ControllerEndpointDataSourceIdMetadata
+internal sealed class ControllerEndpointDataSourceIdMetadata
 {
     public ControllerEndpointDataSourceIdMetadata(int id)
     {

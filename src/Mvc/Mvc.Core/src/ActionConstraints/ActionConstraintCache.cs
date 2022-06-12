@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.ActionConstraints;
 
-internal class ActionConstraintCache
+internal sealed class ActionConstraintCache
 {
     private readonly IActionDescriptorCollectionProvider _collectionProvider;
     private readonly IActionConstraintProvider[] _actionConstraintProviders;
@@ -163,7 +163,7 @@ internal class ActionConstraintCache
         return actionConstraints;
     }
 
-    internal class InnerCache
+    internal sealed class InnerCache
     {
         private readonly ActionDescriptorCollection _actions;
 

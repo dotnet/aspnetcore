@@ -10,7 +10,7 @@ using static Microsoft.AspNetCore.SignalR.Crankier.Commands.CommandLineUtilities
 
 namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
 {
-    internal class LocalCommand
+    internal sealed class LocalCommand
     {
         public static void Register(CommandLineApplication app)
         {

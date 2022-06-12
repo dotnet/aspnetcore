@@ -6,7 +6,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class DefaultPageModelFactoryProvider : IPageModelFactoryProvider
+internal sealed class DefaultPageModelFactoryProvider : IPageModelFactoryProvider
 {
     private static readonly Func<PropertyInfo, PropertyActivator<PageContext>> _createActivateInfo =
         CreateActivateInfo;

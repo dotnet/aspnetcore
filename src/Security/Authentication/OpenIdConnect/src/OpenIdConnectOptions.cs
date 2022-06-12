@@ -304,7 +304,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// </summary>
     public bool UsePkce { get; set; } = true;
 
-    private class OpenIdConnectNonceCookieBuilder : RequestPathBaseCookieBuilder
+    private sealed class OpenIdConnectNonceCookieBuilder : RequestPathBaseCookieBuilder
     {
         private readonly OpenIdConnectOptions _options;
 

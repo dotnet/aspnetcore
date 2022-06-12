@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// An <see cref="IHttpResponseStreamWriterFactory"/> that uses pooled buffers.
 /// </summary>
-internal class MemoryPoolHttpResponseStreamWriterFactory : IHttpResponseStreamWriterFactory
+internal sealed class MemoryPoolHttpResponseStreamWriterFactory : IHttpResponseStreamWriterFactory
 {
     /// <summary>
     /// The default size of buffers <see cref="HttpResponseStreamWriter"/>s will allocate.

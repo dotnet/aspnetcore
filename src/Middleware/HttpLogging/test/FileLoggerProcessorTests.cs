@@ -479,8 +479,10 @@ public class FileLoggerProcessorTests
         }
     }
 
-    [Fact]
-    public async Task WritesToNewFileOnOptionsChange()
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task WritesToNewFileOnOptionsChange(bool fieldsChanged, bool headersChanged)
     {
         var mockSystemDateTime = new MockSystemDateTime
         {
@@ -496,8 +498,9 @@ public class FileLoggerProcessorTests
             {
                 LogDirectory = path,
                 LoggingFields = W3CLoggingFields.Time,
-                FileSizeLimit = 10000
+                FileSizeLimit = 10000,
             };
+            options.AdditionalRequestHeaders.Add("one");
             var fileName1 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0000.txt"));
             var fileName2 = Path.Combine(path, FormattableString.Invariant($"{options.FileName}{_today.Year:0000}{_today.Month:00}{_today.Day:00}.0001.txt"));
             var monitor = new OptionsWrapperMonitor<W3CLoggerOptions>(options);
@@ -507,7 +510,17 @@ public class FileLoggerProcessorTests
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);
                 await WaitForFile(fileName1, _messageOne.Length).DefaultTimeout();
-                options.LoggingFields = W3CLoggingFields.Date;
+
+                if (fieldsChanged)
+                {
+                    options.LoggingFields = W3CLoggingFields.Date;
+                }
+
+                if (headersChanged)
+                {
+                    options.AdditionalRequestHeaders.Remove("one");
+                    options.AdditionalRequestHeaders.Add("two");
+                }
                 monitor.InvokeChanged();
                 logger.EnqueueMessage(_messageTwo);
                 // Pause for a bit before disposing so logger can finish logging

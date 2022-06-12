@@ -10,8 +10,8 @@ using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
@@ -414,7 +414,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
     }
 
     // Internal for testing.
-    internal record CollectionResult(IEnumerable<TElement?> Model)
+    internal sealed record CollectionResult(IEnumerable<TElement?> Model)
     {
         public IValidationStrategy? ValidationStrategy { get; init; }
     }

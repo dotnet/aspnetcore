@@ -26,3 +26,4 @@ The table below outlines the different docs in this folder and what they are hel
 | [Triage process](TriageProcess.md)| Overview of the issue triage process used in the repo     | Anyone looking to understand the triage process on the repo  |
 | [Updating Major Version & TFM](UpdatingMajorVersionAndTFM.md)| Instructions for updating the repo branding & TFM in preparation for a new major release     | Repo developers who want to know more about our branding & release process  |
 | [Assembly trimming guide](Trimming.md)| Guidance on adding trimming support to an ASP.NET Core assembly     | Repo developers who want to help add support for trimming to ASP.NET Core  |
+| [Adding new Projects to the Repo](AddingNewProjects.md) | Outlines the process of adding new projects (i.e. `.csproj` files) to the repo | Anyone who finds themselves trying to add a new project and including it in the build.

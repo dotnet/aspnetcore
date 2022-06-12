@@ -19,7 +19,7 @@ using ComponentsWebAssembly_CSharp.Server.Data;
 using ComponentsWebAssembly_CSharp.Server.Models;
 #endif
 
-namespace Company.WebApplication1;
+namespace ComponentsWebAssembly_CSharp;
 
 public class Program
 {

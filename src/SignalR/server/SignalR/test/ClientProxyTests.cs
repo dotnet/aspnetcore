@@ -212,7 +212,7 @@ public class ClientHubProxyTests
     {
         var hubLifetimeManager = new EmptyHubLifetimeManager<FakeHub>();
 
-        var proxy = new SingleClientProxyWithInvoke<FakeHub>(hubLifetimeManager, "");
+        var proxy = new SingleClientProxy<FakeHub>(hubLifetimeManager, "");
         var ex = await Assert.ThrowsAsync<NotImplementedException>(async () => await proxy.InvokeAsync<int>("method")).DefaultTimeout();
         Assert.Equal("EmptyHubLifetimeManager`1 does not support client return values.", ex.Message);
     }

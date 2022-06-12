@@ -211,7 +211,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
         requestMessage.Content = requestContent;
         requestMessage.Version = Backchannel.DefaultRequestVersion;
         var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
-        var body = await response.Content.ReadAsStringAsync();
+        var body = await response.Content.ReadAsStringAsync(Context.RequestAborted);
 
         return response.IsSuccessStatusCode switch
         {

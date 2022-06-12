@@ -37,7 +37,7 @@ using BlazorServerWeb_CSharp.Areas.Identity;
 #endif
 using BlazorServerWeb_CSharp.Data;
 
-namespace Company.WebApplication1;
+namespace BlazorServerWeb_CSharp;
 
 public class Program
 {

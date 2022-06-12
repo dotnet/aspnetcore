@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal partial class MessagePump : IServer
+internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 {
     private readonly ILogger _logger;
     private readonly HttpSysOptions _options;
@@ -53,8 +53,7 @@ internal partial class MessagePump : IServer
 
         if (HttpApi.SupportsDelegation)
         {
-            var delegationProperty = new ServerDelegationPropertyFeature(Listener.UrlGroup, _logger);
-            Features.Set<IServerDelegationFeature>(delegationProperty);
+            Features.Set<IServerDelegationFeature>(this);
         }
 
         _maxAccepts = _options.MaxAccepts;
@@ -269,6 +268,13 @@ internal partial class MessagePump : IServer
         }
 
         return _shutdownSignal.Task;
+    }
+
+    public DelegationRule CreateDelegationRule(string queueName, string uri)
+    {
+        var rule = new DelegationRule(Listener.UrlGroup, queueName, uri, _logger);
+        Listener.UrlGroup.SetDelegationProperty(rule.Queue);
+        return rule;
     }
 
     public void Dispose()

@@ -5,7 +5,7 @@ using System.Net.WebSockets;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class TestWebSocket : WebSocket
+internal sealed class TestWebSocket : WebSocket
 {
     private readonly ReceiverSenderBuffer _receiveBuffer;
     private readonly ReceiverSenderBuffer _sendBuffer;
@@ -72,7 +72,7 @@ internal class TestWebSocket : WebSocket
         ThrowIfOutputClosed();
 
         var message = new Message(closeStatus, statusDescription);
-        await _sendBuffer.SendAsync(message, cancellationToken);
+        await _sendBuffer.SendAsync(message);
 
         if (State == WebSocketState.Open)
         {
@@ -161,7 +161,7 @@ internal class TestWebSocket : WebSocket
         }
 
         var message = new Message(buffer, messageType, endOfMessage);
-        return _sendBuffer.SendAsync(message, cancellationToken);
+        return _sendBuffer.SendAsync(message);
     }
 
     private void Close()
@@ -218,7 +218,7 @@ internal class TestWebSocket : WebSocket
         _sendBuffer = writeBuffer;
     }
 
-    private class Message
+    private sealed class Message
     {
         public Message(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage)
         {
@@ -245,7 +245,7 @@ internal class TestWebSocket : WebSocket
         public WebSocketMessageType MessageType { get; set; }
     }
 
-    private class ReceiverSenderBuffer
+    private sealed class ReceiverSenderBuffer
     {
         private bool _receiverClosed;
         private bool _senderClosed;
@@ -259,7 +259,7 @@ internal class TestWebSocket : WebSocket
             _messageQueue = new Queue<Message>();
         }
 
-        public virtual async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             if (_disposed)
             {
@@ -278,7 +278,7 @@ internal class TestWebSocket : WebSocket
             }
         }
 
-        public virtual Task SendAsync(Message message, CancellationToken cancellationToken)
+        public Task SendAsync(Message message)
         {
             lock (_messageQueue)
             {

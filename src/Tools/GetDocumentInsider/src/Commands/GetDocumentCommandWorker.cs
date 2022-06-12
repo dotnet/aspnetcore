@@ -12,7 +12,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Commands;
 
-internal class GetDocumentCommandWorker
+internal sealed class GetDocumentCommandWorker
 {
     private const string DefaultDocumentName = "v1";
     private const string DocumentService = "Microsoft.Extensions.ApiDescriptions.IDocumentProvider";

@@ -123,7 +123,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
         }
     }
 
-    private class QueueSettings
+    private sealed class QueueSettings
     {
         public PipeScheduler Scheduler { get; init; } = default!;
         public PipeOptions InputOptions { get; init; } = default!;

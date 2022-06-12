@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing;
 
-internal class DefaultParameterPolicyFactory : ParameterPolicyFactory
+internal sealed class DefaultParameterPolicyFactory : ParameterPolicyFactory
 {
     private readonly RouteOptions _options;
     private readonly IServiceProvider _serviceProvider;

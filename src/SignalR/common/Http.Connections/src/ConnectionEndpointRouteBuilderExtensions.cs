@@ -127,7 +127,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
         return new ConnectionEndpointRouteBuilder(compositeConventionBuilder);
     }
 
-    private class CompositeEndpointConventionBuilder : IEndpointConventionBuilder
+    private sealed class CompositeEndpointConventionBuilder : IEndpointConventionBuilder
     {
         private readonly List<IEndpointConventionBuilder> _endpointConventionBuilders;
 
