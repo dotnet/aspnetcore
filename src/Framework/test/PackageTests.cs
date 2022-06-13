@@ -124,7 +124,7 @@ public class PackageTests
                     var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
                     var assemblyVersion = reader.GetAssemblyDefinition().Version;
 
-                    Assert.Equal(expectedVersion.Major, assemblyVersion.Major);
+                    Assert.True(expectedVersion.Major == assemblyVersion.Major, "Mismatch on " + assembly);
                     Assert.Equal(expectedVersion.Minor, assemblyVersion.Minor);
                     Assert.Equal(0, assemblyVersion.Build);
                     Assert.Equal(0, assemblyVersion.Revision);
