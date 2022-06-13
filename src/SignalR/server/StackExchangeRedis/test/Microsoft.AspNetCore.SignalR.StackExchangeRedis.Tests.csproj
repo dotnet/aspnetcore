@@ -17,6 +17,8 @@
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
+    <!-- Pull in requested STEW version consistently. -->
+    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
 </Project>

@@ -20,6 +20,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.Extensions.Logging" />
+    <!-- Pull in requested STEW version consistently. -->
+    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
 </Project>

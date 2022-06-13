@@ -39,5 +39,7 @@
     <Reference Include="System.Reactive.Linq" />
     <Reference Include="System.Threading.Channels" />
     <Reference Include="System.Threading.Tasks.Extensions" />
+    <!-- Pull in requested STEW version consistently. -->
+    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 </Project>

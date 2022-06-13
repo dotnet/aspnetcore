@@ -11,6 +11,8 @@
     <Reference Include="Ignitor" />
     <!-- Avoid MSB3277 warnings due to dependencies brought in through Ignitor targeting netstandard2.0. -->
     <Reference Include="System.Text.Json" />
+    <!-- Pull in requested STEW version consistently. -->
+    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
   <ItemGroup>
