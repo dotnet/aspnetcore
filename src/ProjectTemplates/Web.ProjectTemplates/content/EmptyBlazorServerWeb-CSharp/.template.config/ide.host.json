@@ -19,12 +19,6 @@
       "useHttps": true
     }
   ],
-  "symbolInfo": [
-    {
-      "id": "UseProgramMain",
-      "isVisible": true
-    }
-  ],
   "disableHttpsSymbol": "NoHttps",
   "supportsDocker": true
 }
