@@ -45,7 +45,8 @@
   ],
   "dependencies": {
     "@microsoft/signalr": "link:../signalr",
-    "@msgpack/msgpack": "^2.7.0"
+    "@msgpack/msgpack": "^2.7.0",
+    "eventsource": "^2.0.2"
   },
   "devDependencies": {},
   "resolutions": {
