@@ -149,6 +149,10 @@ internal partial class HttpProtocol
 
     bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
 
+    bool IHttpExtendedConnectFeature.IsExtendedConnect => IsConnectRequest;
+
+    string? IHttpExtendedConnectFeature.Protocol => ConnectProtocol;
+
     IPAddress? IHttpConnectionFeature.RemoteIpAddress
     {
         get => RemoteIpAddress;
@@ -278,6 +282,30 @@ internal partial class HttpProtocol
         StatusCode = StatusCodes.Status101SwitchingProtocols;
         ReasonPhrase = "Switching Protocols";
         ResponseHeaders.Connection = HeaderNames.Upgrade;
+
+        await FlushAsync();
+
+        return _bodyControl!.Upgrade();
+    }
+
+    async ValueTask<Stream> IHttpExtendedConnectFeature.AcceptAsync()
+    {
+        if (!IsConnectRequest)
+        {
+            throw new InvalidOperationException(CoreStrings.CannotAcceptNonConnectRequest);
+        }
+
+        if (IsUpgraded)
+        {
+            throw new InvalidOperationException(CoreStrings.AcceptCannotBeCalledMultipleTimes);
+        }
+
+        if (StatusCode != StatusCodes.Status200OK)
+        {
+            throw new InvalidOperationException(CoreStrings.ConnectStatusMustBe200);
+        }
+
+        IsUpgraded = true;
 
         await FlushAsync();
 

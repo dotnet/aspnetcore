@@ -34,12 +34,10 @@ public class MvcTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
-    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows: https://github.com/dotnet/aspnetcore/issues/41937")]
     public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
-    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows: https://github.com/dotnet/aspnetcore/issues/41937")]
     public async Task MvcTemplate_ProgramMainNoAuthCSharp() => await MvcTemplateCore(languageOverride: null, new[] { ArgConstants.UseProgramMain });
 
     private async Task MvcTemplateCore(string languageOverride, string[] args = null)
@@ -119,14 +117,12 @@ public class MvcTemplateTest : LoggedTest
     [InlineData(true)]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
-    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows: https://github.com/dotnet/aspnetcore/issues/41937")]
     public Task MvcTemplate_IndividualAuth_LocalDb(bool useProgramMain) => MvcTemplate_IndividualAuth_Core(useLocalDB: true, useProgramMain);
 
     [ConditionalTheory]
     [InlineData(false)]
     [InlineData(true)]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
-    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows: https://github.com/dotnet/aspnetcore/issues/41937")]
     public Task MvcTemplate_IndividualAuth(bool useProgramMain) => MvcTemplate_IndividualAuth_Core(useLocalDB: false, useProgramMain);
 
     private async Task MvcTemplate_IndividualAuth_Core(bool useLocalDB, bool useProgramMain)

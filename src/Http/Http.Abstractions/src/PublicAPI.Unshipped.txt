@@ -15,6 +15,8 @@ Microsoft.AspNetCore.Http.IProblemDetailsProvider.IsEnabled(int statusCode, bool
 Microsoft.AspNetCore.Http.IProblemDetailsWriter
 Microsoft.AspNetCore.Http.IProblemDetailsWriter.CanWrite(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, bool isRouting) -> bool
 Microsoft.AspNetCore.Http.IProblemDetailsWriter.WriteAsync(Microsoft.AspNetCore.Http.HttpContext! context, int? statusCode = null, string? title = null, string? type = null, string? detail = null, string? instance = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null, System.Action<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Mvc.ProblemDetails!>? configureDetails = null) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>
+Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>.BindAsync(Microsoft.AspNetCore.Http.HttpContext! context, System.Reflection.ParameterInfo! parameter) -> System.Threading.Tasks.ValueTask<TSelf?>
 Microsoft.AspNetCore.Http.IRouteHandlerFilter.InvokeAsync(Microsoft.AspNetCore.Http.RouteHandlerInvocationContext! context, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate! next) -> System.Threading.Tasks.ValueTask<object?>
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?

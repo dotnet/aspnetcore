@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                           IEndpointFeature,
                                           IHttpRequestIdentifierFeature,
                                           IHttpRequestTrailersFeature,
+                                          IHttpExtendedConnectFeature,
                                           IHttpUpgradeFeature,
                                           IRequestBodyPipeFeature,
                                           IHttpConnectionFeature,
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IEndpointFeature? _currentIEndpointFeature;
         internal protected IHttpRequestIdentifierFeature? _currentIHttpRequestIdentifierFeature;
         internal protected IHttpRequestTrailersFeature? _currentIHttpRequestTrailersFeature;
+        internal protected IHttpExtendedConnectFeature? _currentIHttpExtendedConnectFeature;
         internal protected IHttpUpgradeFeature? _currentIHttpUpgradeFeature;
         internal protected IRequestBodyPipeFeature? _currentIRequestBodyPipeFeature;
         internal protected IHttpConnectionFeature? _currentIHttpConnectionFeature;
@@ -80,6 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIEndpointFeature = this;
             _currentIHttpRequestIdentifierFeature = this;
             _currentIHttpRequestTrailersFeature = this;
+            _currentIHttpExtendedConnectFeature = this;
             _currentIHttpUpgradeFeature = this;
             _currentIRequestBodyPipeFeature = this;
             _currentIHttpConnectionFeature = this;
@@ -252,6 +255,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentITlsConnectionFeature;
                 }
+                else if (key == typeof(IHttpExtendedConnectFeature))
+                {
+                    feature = _currentIHttpExtendedConnectFeature;
+                }
                 else if (key == typeof(IHttpUpgradeFeature))
                 {
                     feature = _currentIHttpUpgradeFeature;
@@ -387,6 +394,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(ITlsConnectionFeature))
                 {
                     _currentITlsConnectionFeature = (ITlsConnectionFeature?)value;
+                }
+                else if (key == typeof(IHttpExtendedConnectFeature))
+                {
+                    _currentIHttpExtendedConnectFeature = (IHttpExtendedConnectFeature?)value;
                 }
                 else if (key == typeof(IHttpUpgradeFeature))
                 {
@@ -525,6 +536,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
             {
                 feature = Unsafe.As<ITlsConnectionFeature?, TFeature?>(ref _currentITlsConnectionFeature);
+            }
+            else if (typeof(TFeature) == typeof(IHttpExtendedConnectFeature))
+            {
+                feature = Unsafe.As<IHttpExtendedConnectFeature?, TFeature?>(ref _currentIHttpExtendedConnectFeature);
             }
             else if (typeof(TFeature) == typeof(IHttpUpgradeFeature))
             {
@@ -670,6 +685,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentITlsConnectionFeature = Unsafe.As<TFeature?, ITlsConnectionFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IHttpExtendedConnectFeature))
+            {
+                _currentIHttpExtendedConnectFeature = Unsafe.As<TFeature?, IHttpExtendedConnectFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IHttpUpgradeFeature))
             {
                 _currentIHttpUpgradeFeature = Unsafe.As<TFeature?, IHttpUpgradeFeature?>(ref feature);
@@ -801,6 +820,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentITlsConnectionFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(ITlsConnectionFeature), _currentITlsConnectionFeature);
+            }
+            if (_currentIHttpExtendedConnectFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IHttpExtendedConnectFeature), _currentIHttpExtendedConnectFeature);
             }
             if (_currentIHttpUpgradeFeature != null)
             {

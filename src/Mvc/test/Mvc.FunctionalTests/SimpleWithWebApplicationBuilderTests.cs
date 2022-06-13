@@ -127,7 +127,7 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         Assert.Equal("Hello human", content);
     }
 
-    [Fact(Skip = "Failing on Windows environments: https://github.com/dotnet/aspnetcore/issues/41937")]
+    [Fact]
     public async Task DefaultEnvironment_Is_Development()
     {
         // Arrange

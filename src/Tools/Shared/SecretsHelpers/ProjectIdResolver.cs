@@ -6,16 +6,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
 /// <summary>
 /// This API supports infrastructure and is not intended to be used
 /// directly from your code. This API may change or be removed in future releases.
 /// </summary>
-public class ProjectIdResolver
+internal sealed class ProjectIdResolver
 {
     private const string DefaultConfig = "Debug";
     private readonly IReporter _reporter;
@@ -32,9 +31,18 @@ public class ProjectIdResolver
     public string Resolve(string project, string configuration)
     {
         var finder = new MsBuildProjectFinder(_workingDirectory);
-        var projectFile = finder.FindMsBuildProject(project);
+        string projectFile;
+        try
+        {
+            projectFile = finder.FindMsBuildProject(project);
+        }
+        catch (Exception ex)
+        {
+            _reporter.Error(ex.Message);
+            return null;
+        }
 
-        _reporter.Verbose(Resources.FormatMessage_Project_File_Path(projectFile));
+        _reporter.Verbose(SecretsHelpersResources.FormatMessage_Project_File_Path(projectFile));
 
         configuration = !string.IsNullOrEmpty(configuration)
             ? configuration
@@ -98,18 +106,20 @@ public class ProjectIdResolver
                 _reporter.Verbose(outputBuilder.ToString());
                 _reporter.Verbose(errorBuilder.ToString());
                 _reporter.Error($"Exit code: {process.ExitCode}");
-                throw new InvalidOperationException(Resources.FormatError_ProjectFailedToLoad(projectFile));
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectFailedToLoad(projectFile));
+                return null;
             }
 
             if (!File.Exists(outputFile))
             {
-                throw new InvalidOperationException(Resources.FormatError_ProjectMissingId(projectFile));
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
+                return null;
             }
 
             var id = File.ReadAllText(outputFile)?.Trim();
             if (string.IsNullOrEmpty(id))
             {
-                throw new InvalidOperationException(Resources.FormatError_ProjectMissingId(projectFile));
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
             }
             return id;
 
