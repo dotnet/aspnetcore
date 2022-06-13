@@ -19,7 +19,9 @@ internal sealed class AuthenticationConfigureOptions : IConfigureOptions<Authent
     {
         var authenticationConfig = _authenticationConfigurationProvider.AuthenticationConfiguration;
         var defaultScheme = authenticationConfig[DefaultSchemeKey];
-        if (!string.IsNullOrEmpty(defaultScheme))
+        // Only set the default scheme from config if it has not
+        // already been set and is provided in options
+        if (!string.IsNullOrEmpty(defaultScheme) && string.IsNullOrEmpty(options.DefaultScheme))
         {
             options.DefaultScheme = defaultScheme;
         }

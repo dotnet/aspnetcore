@@ -600,4 +600,37 @@ public abstract class SharedAuthenticationTests<TOptions> where TOptions : Authe
         var defaultSchemeFromServices = await schemeProvider.GetDefaultAuthenticateSchemeAsync();
         Assert.Equal(defaultSchemeFromAddAuth, defaultSchemeFromServices.Name);
     }
+
+    [Fact]
+    public async Task DoesNotOverrideDefaultSchemeSetViaOptions()
+    {
+        // Arrange
+        var defaultSchemeFromConfig = "DefaultSchemeFromConfig";
+        var defaultSchemeFromOptions = "DefaultSchemeFromOptions";
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:DefaultScheme", defaultSchemeFromConfig)
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        services.Configure<AuthenticationOptions>(options =>
+        {
+            options.DefaultScheme = defaultSchemeFromOptions;
+        });
+        var builder = services.AddAuthentication(o =>
+        {
+            o.AddScheme<TestHandler>(defaultSchemeFromConfig, defaultSchemeFromConfig);
+            o.AddScheme<TestHandler>(defaultSchemeFromOptions, defaultSchemeFromOptions);
+        });
+        RegisterAuth(builder, _ => { });
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+        var defaultSchemeFromServices = await schemeProvider.GetDefaultAuthenticateSchemeAsync();
+        Assert.Equal(defaultSchemeFromOptions, defaultSchemeFromServices.Name);
+
+    }
 }
