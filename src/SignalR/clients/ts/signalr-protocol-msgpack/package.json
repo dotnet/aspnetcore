@@ -45,12 +45,10 @@
   ],
   "dependencies": {
     "@microsoft/signalr": "link:../signalr",
-    "@msgpack/msgpack": "^2.7.0",
-    "eventsource": "^2.0.2"
+    "@msgpack/msgpack": "^2.7.0"
   },
   "devDependencies": {},
   "resolutions": {
-    "url-parse": ">=1.5.6",
     "ws": ">=7.4.6"
   }
 }
