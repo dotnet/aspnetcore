@@ -166,7 +166,7 @@ public static partial class Results
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
     public static IResult Json(object? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
-        => Json<object?>(data, options, contentType, statusCode);
+        => Json<object>(data, options, contentType, statusCode);
 
     /// <summary>
     /// Creates a <see cref="IResult"/> that serializes the specified <paramref name="data"/> object to JSON.
@@ -179,7 +179,9 @@ public static partial class Results
     /// as JSON format for the response.</returns>
     /// <remarks>Callers should cache an instance of serializer settings to avoid
     /// recreating cached data with each call.</remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult Json<TValue>(TValue? data, JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => TypedResults.Json(data, options, contentType, statusCode);
 
     /// <summary>
@@ -468,8 +470,10 @@ public static partial class Results
     /// </summary>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
     public static IResult NotFound(object? value = null)
-        => NotFound<object?>(value);
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+        => NotFound<object>(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
@@ -491,8 +495,10 @@ public static partial class Results
     /// </summary>
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
     public static IResult BadRequest(object? error = null)
-        => BadRequest<object?>(error);
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+        => BadRequest<object>(error);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
@@ -507,8 +513,10 @@ public static partial class Results
     /// </summary>
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
     public static IResult Conflict(object? error = null)
-        => Conflict<object?>(error);
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+        => Conflict<object>(error);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
@@ -530,8 +538,10 @@ public static partial class Results
     /// </summary>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
     public static IResult Ok(object? value = null)
-        => Ok<object?>(value);
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+        => Ok<object>(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status200OK"/> response.
@@ -546,8 +556,10 @@ public static partial class Results
     /// </summary>
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
     public static IResult UnprocessableEntity(object? error = null)
-        => UnprocessableEntity<object?>(error);
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+        => UnprocessableEntity<object>(error);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
@@ -634,7 +646,7 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created(string uri, object? value)
-        => Created<object?>(uri, value);
+        => Created<object>(uri, value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
@@ -652,7 +664,7 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created(Uri uri, object? value)
-        => Created<object?>(uri, value);
+        => Created<object>(uri, value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
@@ -671,7 +683,7 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult CreatedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
-        => CreatedAtRoute<object?>(routeName, routeValues, value);
+        => CreatedAtRoute<object>(routeName, routeValues, value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
@@ -680,7 +692,9 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult CreatedAtRoute<TValue>(string? routeName, object? routeValues = null, TValue? value = default)
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult CreatedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => value is null ? TypedResults.CreatedAtRoute(routeName, routeValues) : TypedResults.CreatedAtRoute(value, routeName, routeValues);
 
     /// <summary>
@@ -690,7 +704,7 @@ public static partial class Results
     /// <param name="value">The optional content value to format in the response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Accepted(string? uri = null, object? value = null)
-        => Accepted<object?>(uri, value);
+        => Accepted<object>(uri, value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
@@ -698,7 +712,9 @@ public static partial class Results
     /// <param name="uri">The URI with the location at which the status of requested content can be monitored.</param>
     /// <param name="value">The optional content value to format in the response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult Accepted<TValue>(string? uri = null, TValue? value = default)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => value is null ? TypedResults.Accepted(uri) : TypedResults.Accepted(uri, value);
 
     /// <summary>
@@ -708,8 +724,10 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The optional content value to format in the response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
     public static IResult AcceptedAtRoute(string? routeName = null, object? routeValues = null, object? value = null)
-        => AcceptedAtRoute<object?>(routeName, routeValues, value);
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+        => AcceptedAtRoute<object>(routeName, routeValues, value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status202Accepted"/> response.
@@ -718,7 +736,9 @@ public static partial class Results
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The optional content value to format in the response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult AcceptedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => value is null ? TypedResults.AcceptedAtRoute(routeName, routeValues) : TypedResults.AcceptedAtRoute(value, routeName, routeValues);
 
     /// <summary>

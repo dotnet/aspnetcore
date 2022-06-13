@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.ObjectModel;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
@@ -22,10 +23,26 @@ public class ResultsTests
     {
         // Arrange
         var uri = "https://example.org";
-        var value = new { };
+        object value = new { };
 
         // Act
         var result = Results.Accepted(uri, value) as Accepted<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(uri, result.Location);
+        Assert.Equal(value, result.Value);
+    }
+    [Fact]
+    public void AcceptedOfT_WithUrlAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var uri = "https://example.org";
+        var value = new Todo(1);
+
+        // Act
+        Results.AcceptedAtRoute(uri, value:value);
+        var result = Results.Accepted(uri, value) as Accepted<Todo>;
 
         // Assert
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
@@ -64,10 +81,28 @@ public class ResultsTests
         // Arrange
         var routeName = "routeName";
         var routeValues = new { foo = 123 };
-        var value = new { };
+        object value = new { };
 
         // Act
         var result = Results.AcceptedAtRoute(routeName, routeValues, value) as AcceptedAtRoute<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void AcceptedAtRouteOfT_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new { foo = 123 };
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.AcceptedAtRoute(routeName, routeValues, value) as AcceptedAtRoute<Todo>;
 
         // Assert
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
@@ -108,10 +143,24 @@ public class ResultsTests
     public void BadRequest_WithValue_ResultHasCorrectValues()
     {
         // Arrange
-        var value = new { };
+        object value = new { };
 
         // Act
         var result = Results.BadRequest(value) as BadRequest<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void BadRequestOfT_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.BadRequest(value) as BadRequest<Todo>;
 
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
@@ -315,10 +364,24 @@ public class ResultsTests
     public void Conflict_WithValue_ResultHasCorrectValues()
     {
         // Arrange
-        var value = new { };
+        object value = new { };
 
         // Act
         var result = Results.Conflict(value) as Conflict<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void ConflictOfT_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.Conflict(value) as Conflict<Todo>;
 
         // Assert
         Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
@@ -391,10 +454,26 @@ public class ResultsTests
     {
         // Arrange
         var uri = "https://example.com/entity";
-        var value = new { };
+        object value = new { };
 
         // Act
         var result = Results.Created(uri, value) as Created<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(uri, result.Location);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedOfT_WithStringUriAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var uri = "https://example.com/entity";
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.Created(uri, value) as Created<Todo>;
 
         // Assert
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
@@ -421,10 +500,26 @@ public class ResultsTests
     {
         // Arrange
         var uri = new Uri("https://example.com/entity");
-        var value = new { };
+        object value = new { };
 
         // Act
         var result = Results.Created(uri, value) as Created<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(uri.ToString(), result.Location);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedOfT_WithUriAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var uri = new Uri("https://example.com/entity");
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.Created(uri, value) as Created<Todo>;
 
         // Assert
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
@@ -488,10 +583,28 @@ public class ResultsTests
         // Arrange
         var routeName = "routeName";
         var routeValues = new { foo = 123 };
-        var value = new { };
+        object value = new { };
 
         // Act
         var result = Results.CreatedAtRoute(routeName, routeValues, value) as CreatedAtRoute<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRouteOfT_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new { foo = 123 };
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.CreatedAtRoute(routeName, routeValues, value) as CreatedAtRoute<Todo>;
 
         // Assert
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
@@ -505,10 +618,27 @@ public class ResultsTests
     {
         // Arrange
         var routeName = "routeName";
-        var value = new { };
+        object value = new { };
 
         // Act
         var result = Results.CreatedAtRoute(routeName, null, value) as CreatedAtRoute<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRouteOfT_WithRouteNameAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.CreatedAtRoute(routeName, null, value) as CreatedAtRoute<Todo>;
 
         // Assert
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
@@ -558,13 +688,32 @@ public class ResultsTests
     public void Json_WithAllArgs_ResultHasCorrectValues()
     {
         // Arrange
-        var data = new { };
+        object data = new { };
         var options = new JsonSerializerOptions();
         var contentType = "application/custom+json";
         var statusCode = StatusCodes.Status208AlreadyReported;
             
         // Act
         var result = Results.Json(data, options, contentType, statusCode) as JsonHttpResult<object>;
+
+        // Assert
+        Assert.Equal(data, result.Value);
+        Assert.Equal(options, result.JsonSerializerOptions);
+        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+    }
+
+    [Fact]
+    public void JsonOfT_WithAllArgs_ResultHasCorrectValues()
+    {
+        // Arrange
+        var data = new Todo(1);
+        var options = new JsonSerializerOptions();
+        var contentType = "application/custom+json";
+        var statusCode = StatusCodes.Status208AlreadyReported;
+
+        // Act
+        var result = Results.Json(data, options, contentType, statusCode) as JsonHttpResult<Todo>;
 
         // Assert
         Assert.Equal(data, result.Value);
