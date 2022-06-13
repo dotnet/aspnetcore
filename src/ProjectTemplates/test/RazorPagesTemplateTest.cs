@@ -36,15 +36,28 @@ public class RazorPagesTemplateTest : LoggedTest
 
     [ConditionalTheory]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task RazorPagesTemplate_NoAuth(bool useProgramMain)
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public async Task RazorPagesTemplate_NoAuth(bool useProgramMain, bool noHttps)
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        var args = useProgramMain ? new[] { ArgConstants.UseProgramMain } : null;
+        var args = useProgramMain
+            ? noHttps
+                ? new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps }
+                : new[] { ArgConstants.UseProgramMain }
+            : noHttps
+                ? new[] { ArgConstants.NoHttps }
+                : null;
         var createResult = await project.RunDotNetNewAsync("razor", args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("razor", project, createResult));
+
+        var expectedLaunchProfileNames = noHttps
+            ? new[] { "http", "IIS Express" }
+            : new[] { "http", "https", "IIS Express" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
         Assert.DoesNotContain(".db", projectFileContents);
@@ -107,25 +120,41 @@ public class RazorPagesTemplateTest : LoggedTest
     }
 
     [ConditionalTheory]
-    [InlineData(false)]
-    [InlineData(true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
-    public Task RazorPagesTemplate_IndividualAuth_LocalDb(bool useProgramMain) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: true, useProgramMain);
+    public Task RazorPagesTemplate_IndividualAuth_LocalDb(bool useProgramMain, bool noHttps) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: true, useProgramMain, noHttps);
 
     [ConditionalTheory]
-    [InlineData(false)]
-    [InlineData(true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
-    public Task RazorPagesTemplate_IndividualAuth(bool useProgramMain) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: false, useProgramMain);
+    public Task RazorPagesTemplate_IndividualAuth(bool useProgramMain, bool noHttps) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: false, useProgramMain, noHttps);
 
-    private async Task RazorPagesTemplate_IndividualAuth_Core(bool useLocalDB, bool useProgramMain)
+    private async Task RazorPagesTemplate_IndividualAuth_Core(bool useLocalDB, bool useProgramMain, bool noHttps)
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        var args = useProgramMain ? new[] { ArgConstants.UseProgramMain } : null;
+        var args = useProgramMain
+            ? noHttps
+                ? new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps }
+                : new[] { ArgConstants.UseProgramMain }
+            : noHttps
+                ? new[] { ArgConstants.NoHttps }
+                : null;
         var createResult = await project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+        // Individual auth supports no https OK
+        var expectedLaunchProfileNames = noHttps
+            ? new[] { "http", "IIS Express" }
+            : new[] { "http", "https", "IIS Express" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
         if (!useLocalDB)
@@ -241,7 +270,7 @@ public class RazorPagesTemplateTest : LoggedTest
     [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
     [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    public Task RazorPagesTemplate_IdentityWeb_IndividualB2C_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
+    public Task RazorPagesTemplate_IdentityWeb_IndividualB2C_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplateIdentityWeb(auth: auth, args: args);
 
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
@@ -249,19 +278,25 @@ public class RazorPagesTemplateTest : LoggedTest
     [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
     [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    public Task RazorPagesTemplate_IdentityWeb_SingleOrg_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
+    public Task RazorPagesTemplate_IdentityWeb_SingleOrg_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplateIdentityWeb(auth: auth, args: args);
 
     [ConditionalTheory]
     [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph })]
     [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
-    public Task RazorPagesTemplate_IdentityWeb_SingleOrg_CallsGraph_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
+    [InlineData("SingleOrg", new[] { ArgConstants.CallsGraph, ArgConstants.NoHttps })]
+    [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph, ArgConstants.NoHttps })]
+    public Task RazorPagesTemplate_IdentityWeb_SingleOrg_CallsGraph_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplateIdentityWeb(auth: auth, args: args);
 
-    private async Task<Project> BuildAndPublishRazorPagesTemplate(string auth, string[] args)
+    private async Task<Project> BuildAndPublishRazorPagesTemplateIdentityWeb(string auth, string[] args)
     {
         var project = await ProjectFactory.CreateProject(Output);
 
         var createResult = await project.RunDotNetNewAsync("razor", auth: auth, args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+        // Identity Web auth requires https
+        var expectedLaunchProfileNames = new[] { "https", "IIS Express" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         // Verify building in debug works
         var buildResult = await project.RunDotNetBuildAsync();
