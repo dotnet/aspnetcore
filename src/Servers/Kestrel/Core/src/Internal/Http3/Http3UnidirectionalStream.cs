@@ -52,7 +52,7 @@ internal class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWorkItem
     }
 
     private Pipe CreateRequestBodyPipe(uint windowSize)
-    => new Pipe(new PipeOptions
+    => new(new PipeOptions
     (
         pool: _context.MemoryPool,
         readerScheduler: _context.ServiceContext.Scheduler,
@@ -152,15 +152,7 @@ internal class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWorkItem
             _headerType = await TryReadStreamHeaderAsync();
             _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
-            switch (_headerType)
-            {
-                case (long)Http3StreamType.WebTransportUnidirectional: // todo is this switch even necessary? Nope. I will abstract into classes so this will be automatic
-                    await HandleStream();
-                    break;
-                default:
-                    // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2-6
-                    throw new Http3StreamErrorException(CoreStrings.FormatHttp3ControlStreamErrorUnsupportedType(_headerType), Http3ErrorCode.StreamCreationError);
-            }
+            await HandleStream();
         }
         catch (Http3StreamErrorException ex)
         {
@@ -218,7 +210,7 @@ internal class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWorkItem
         }
     }
 
-    private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)
+    protected virtual Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)
     {
         // DATA frame before headers is invalid.
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1

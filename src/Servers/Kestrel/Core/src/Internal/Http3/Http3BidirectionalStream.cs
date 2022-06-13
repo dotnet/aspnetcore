@@ -46,17 +46,17 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
     private IProtocolErrorCodeFeature _errorCodeFeature = default!;
     private IStreamIdFeature _streamIdFeature = default!;
     private IStreamAbortFeature _streamAbortFeature = default!;
-    private int _isClosed;
-    private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
-    protected RequestHeaderParsingState _requestHeaderParsingState;
     private PseudoHeaderFields _parsedPseudoHeaderFields;
+    private StreamCompletionFlags _completionState;
+    private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
-
-    private StreamCompletionFlags _completionState;
     private readonly object _completionLock = new object();
+
+    protected RequestHeaderParsingState _requestHeaderParsingState;
+    protected readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
 
     public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
     private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
@@ -745,7 +745,7 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
         return RequestBodyPipe.Writer.CompleteAsync();
     }
 
-    private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
+    protected virtual Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
     {
         switch (_incomingFrame.Type)
         {
@@ -890,15 +890,6 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
 
         foreach (var segment in payload)
         {
-            // todo we probably need some way to implement http3 datgrams here so we can do stuff like this
-            //if (segment.Span.Contains(new byte[] { 0xff, 0x37, 0xa2 }))
-            //{
-            //    // REGISTER_DATAGRAM capsule type
-            //}
-            //if (segment.Span.Contains(new byte[] { 0xff, 0x7c, 0x00 }))
-            //{
-            //    // WEB_TRANSPORT Datagram format type
-            //}
             RequestBodyPipe.Writer.Write(segment.Span);
         }
 
