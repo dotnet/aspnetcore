@@ -40,9 +40,23 @@ public class EmptyWebTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task EmptyWebTemplateNoHttpsCSharp()
+    {
+        await EmtpyTemplateCore(languageOverride: null, args: new[] { ArgConstants.NoHttps });
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     public async Task EmptyWebTemplateProgramMainCSharp()
     {
         await EmtpyTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task EmptyWebTemplateProgramMainNoHttpsCSharp()
+    {
+        await EmtpyTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps });
     }
 
     [Fact]
@@ -51,12 +65,24 @@ public class EmptyWebTemplateTest : LoggedTest
         await EmtpyTemplateCore("F#");
     }
 
+    [Fact]
+    public async Task EmptyWebTemplateNoHttpsFSharp()
+    {
+        await EmtpyTemplateCore("F#", args: new[] { ArgConstants.NoHttps });
+    }
+
     private async Task EmtpyTemplateCore(string languageOverride, string[] args = null)
     {
         var project = await ProjectFactory.CreateProject(Output);
 
         var createResult = await project.RunDotNetNewAsync("web", args: args, language: languageOverride);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+        var noHttps = args?.Contains(ArgConstants.NoHttps) ?? false;
+        var expectedLaunchProfileNames = noHttps
+            ? new[] { "http", "IIS Express" }
+            : new[] { "http", "https", "IIS Express" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
         if (languageOverride != null)

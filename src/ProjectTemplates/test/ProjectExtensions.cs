@@ -15,24 +15,32 @@ public static class ProjectExtensions
 {
     public static async Task<Project> VerifyLaunchSettings(this Project project, string[] expectedLaunchProfileNames)
     {
-        using var launchSettingsFile = File.OpenRead(Path.Combine(project.TemplateOutputDir, "Properties", "launchSettings.json"));
-        using var launchSettings = await JsonDocument.ParseAsync(launchSettingsFile);
-        var iisExpressSettings = launchSettings.RootElement.GetProperty("iisSettings").GetProperty("iisExpress");
-        var iisSslPort = iisExpressSettings.GetProperty("sslPort").GetInt32();
+        var launchSettingsFiles = Directory.EnumerateFiles(project.TemplateOutputDir, "launchSettings.json", SearchOption.AllDirectories);
 
-        var profiles = launchSettings.RootElement.GetProperty("profiles");
-        foreach (var profileName in expectedLaunchProfileNames)
+        foreach (var filePath in launchSettingsFiles)
         {
-            Assert.True(profiles.TryGetProperty(profileName, out var _));
-        }
+            using var launchSettingsFile = File.OpenRead(filePath);
+            using var launchSettings = await JsonDocument.ParseAsync(launchSettingsFile);
 
-        if (expectedLaunchProfileNames.Contains("https"))
-        {
-            Assert.True(iisSslPort > 44300);
-        }
-        else
-        {
-            Assert.Equal(0, iisSslPort);
+            var profiles = launchSettings.RootElement.GetProperty("profiles");
+            foreach (var profileName in expectedLaunchProfileNames)
+            {
+                Assert.True(profiles.TryGetProperty(profileName, out var _));
+            }
+
+            if (launchSettings.RootElement.TryGetProperty("iisSettings", out var iisSettings)
+                && iisSettings.TryGetProperty("iisExpress", out var iisExpressSettings))
+            {
+                var iisSslPort = iisExpressSettings.GetProperty("sslPort").GetInt32();
+                if (expectedLaunchProfileNames.Contains("https"))
+                {
+                    Assert.True(iisSslPort > 44300);
+                }
+                else
+                {
+                    Assert.Equal(0, iisSslPort);
+                }
+            }
         }
 
         return project;

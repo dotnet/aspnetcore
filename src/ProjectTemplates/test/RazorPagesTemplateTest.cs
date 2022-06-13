@@ -268,16 +268,22 @@ public class RazorPagesTemplateTest : LoggedTest
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("IndividualB2C", null)]
     [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
+    [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps })]
     [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
     [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
     public Task RazorPagesTemplate_IdentityWeb_IndividualB2C_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplateIdentityWeb(auth: auth, args: args);
 
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("SingleOrg", null)]
     [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
+    [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps })]
     [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
     [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
     public Task RazorPagesTemplate_IdentityWeb_SingleOrg_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplateIdentityWeb(auth: auth, args: args);
 
     [ConditionalTheory]
@@ -294,7 +300,7 @@ public class RazorPagesTemplateTest : LoggedTest
         var createResult = await project.RunDotNetNewAsync("razor", auth: auth, args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
-        // Identity Web auth requires https
+        // Identity Web auth requires https and thus ignores the --no-https option if passed so there should never be an 'http' profile
         var expectedLaunchProfileNames = new[] { "https", "IIS Express" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
