@@ -19,8 +19,8 @@ public class Startup
             var memory = new Memory<byte>(new byte[4096]);
             var length = await context.Request.Body.ReadAsync(memory);
 
-            // todo read the message that the client says and validate the version of webtransport rather than blindly accepting it
-            // also move all this stuff into the http3 internal folder
+            //// todo read the message that the client says and validate the version of webtransport rather than blindly accepting it
+            //// also move all this stuff into the http3 internal folder
             AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var isWebTransport);
             if (isWebTransport)
             {
@@ -38,7 +38,7 @@ public class Startup
                 //await context.Response.WriteAsync("testing writing");
                 //await context.Response.Body.FlushAsync();
 
-                await Task.Delay(TimeSpan.FromMinutes(15));
+                await Task.Delay(TimeSpan.FromMinutes(150));
             }
         });
     }

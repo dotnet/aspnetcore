@@ -9,20 +9,19 @@ using Microsoft.AspNetCore.Internal;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal class WebTransportBidirectionalStream<TContext> : Http3BidirectionalStream<TContext> where TContext : notnull
 {
-    public static int WebTransportBiDirectionalStreamType = 0x41;
-
     public WebTransportBidirectionalStream(IHttpApplication<TContext> application, Http3StreamContext context)
         : base(application, context) { }
 
     protected override Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted)
     {
-        if (((long)_incomingFrame.Type) != WebTransportBiDirectionalStreamType)
+        if (((long)_incomingFrame.Type) != ((long)Http3StreamType.WebTransportBidirectional))
         {
-            throw new Http3ConnectionErrorException($"Stream type must be {WebTransportBiDirectionalStreamType:X} on bidirectional webtransport streams", Http3ErrorCode.ConnectError);
+            throw new Http3ConnectionErrorException($"Stream type must be {((long)Http3StreamType.WebTransportBidirectional):X} on bidirectional webtransport streams", Http3ErrorCode.ConnectError);
         }
 
         return ProcessDataAsync(payload);
     }
+
     private Task ProcessDataAsync(in ReadOnlySequence<byte> payload)
     {
         //// DATA frame before headers is invalid.

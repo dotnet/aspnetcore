@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
 internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
 {
-    internal static readonly object StreamPersistentStateKey = new object();
+    internal static readonly object StreamPersistentStateKey = new();
 
     // Internal for unit testing
-    internal readonly Dictionary<long, IHttp3Stream> _streams = new Dictionary<long, IHttp3Stream>();
+    internal readonly Dictionary<long, IHttp3Stream> _streams = new();
     internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
 
     // The highest opened request stream ID is sent with GOAWAY. The GOAWAY
@@ -30,7 +30,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private const long DefaultHighestOpenedRequestStreamId = -4;
     private long _highestOpenedRequestStreamId = DefaultHighestOpenedRequestStreamId;
 
-    private readonly object _sync = new object();
+    private readonly object _sync = new();
     private readonly MultiplexedConnectionContext _multiplexedContext;
     private readonly HttpMultiplexedConnectionContext _context;
     private bool _aborted;
@@ -39,11 +39,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private int _stoppedAcceptingStreams;
     private bool _gracefulCloseStarted;
     private int _activeRequestCount;
-    private CancellationTokenSource _acceptStreamsCts = new CancellationTokenSource();
-    private readonly Http3PeerSettings _serverSettings = new Http3PeerSettings();
-    private readonly Http3PeerSettings _clientSettings = new Http3PeerSettings();
-    private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
+    private CancellationTokenSource _acceptStreamsCts = new();
+    private readonly Http3PeerSettings _serverSettings = new();
+    private readonly Http3PeerSettings _clientSettings = new();
+    private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
+    private readonly WebTransportSession _webtransportSession = new();
 
     public Http3Connection(HttpMultiplexedConnectionContext context)
     {
@@ -304,6 +305,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
                                     stream = new WebTransportUnidirectionalStream<TContext>(application, CreateHttpStreamContext(streamContext));
+
+                                    //_webtransportSession.TryAddStream(ref stream); TODO
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
                                 {
@@ -346,10 +349,15 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
                                         stream = new WebTransportBidirectionalStream<TContext>(application, CreateHttpStreamContext(streamContext));
+
+                                        //_webtransportSession.TryAddStream(ref stream); TODO
                                     }
                                     else
                                     {
                                         stream = new Http3BidirectionalStream<TContext>(application, CreateHttpStreamContext(streamContext));
+
+                                        // todo only do this if this is the stream that was created from the connect request
+                                        stream.SetAsWebTransportControlStream(_webtransportSession);
                                     }
 
                                     persistentStateFeature.State.Add(StreamPersistentStateKey, stream);

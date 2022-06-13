@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Runtime.CompilerServices;
@@ -37,6 +38,8 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
     private static ReadOnlySpan<byte> TrailersBytes => "trailers"u8;
     private static ReadOnlySpan<byte> ConnectBytes => "CONNECT"u8;
 
+    private static ReadOnlySpan<byte> OneBytes => "1"u8;
+
     private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
         PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
@@ -51,6 +54,7 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
     private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
+    private WebTransportSession? _webtransportSession;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
     private readonly object _completionLock = new object();
@@ -130,6 +134,11 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
         }
 
         _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
+    }
+
+    public void SetAsWebTransportControlStream(WebTransportSession session)
+    {
+        _webtransportSession = session;
     }
 
     public void InitializeWithExistingContext(IDuplexPipe transport)
@@ -214,7 +223,7 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
         OnHeaderCore(HeaderType.Dynamic, index, name, value);
     }
 
-    public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    public virtual void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
         OnHeaderCore(HeaderType.NameAndValue, staticTableIndex: null, name, value);
     }
@@ -327,6 +336,30 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
                         break;
                     case HeaderType.NameAndValue:
                         UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
+
+                        // todo find a better place to put this//////////////////////////////////////////////////////////////////////////////////////////////////
+                        // it is the webtransport version negotiation
+                        //if (_webtransportSession != null && name.StartsWith(WebTransportSession.versionHeaderPrefix))
+                        //{
+                        //    var index = -1;
+                        //    foreach (var version in WebTransportSession.suppportedWebTransportVersionsBytes)
+                        //    {
+                        //        if (name.SequenceEqual(version) && value.SequenceEqual(OneBytes))
+                        //        {
+                        //            break;
+                        //        }
+                        //        index++;
+                        //    }
+
+                        //    if (index != -1)
+                        //    {
+                        //        _webtransportSession.Initialize((int)_streamIdFeature.StreamId, index);
+                        //        HttpResponseHeaders.Append(new KeyValuePair<string, StringValues>(WebTransportSession.suppportedWebTransportVersions[index], "1"));
+
+                        //        //Output.WriteResponseHeaders(200, "", HttpResponseHeaders, true, true);
+                        //        //Output.FlushAsync(CancellationToken.None);
+                        //    }
+                        //}
 
                         // Header and value are new and will get validated (i.e. check name is lower-case, check value doesn't contain newlines)
                         ValidateHeaderContent(name, value);

@@ -5,22 +5,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal class WebTransportSession
 {
     private readonly Dictionary<long, IHttp3Stream> _openStreams = new();
-    private static readonly int maxSimultaneousStreams = 25; // arbitrary number 
+    private const int maxSimultaneousStreams = 25; // arbitrary number 
 
-    public static readonly string supportedVersionHeader = "sec-webtransport-http3-draft";
+    public static readonly byte[] versionHeaderPrefix = "sec-webtransport"u8;
 
-    // TODO use instead of the hardcoded values in Startup.cs in the sample app
-    public static readonly string[] suppportedWebTransportVersions =
+    // Order is important for both of these arrays as we choose the first
+    // supported version (index 0 is the most prefered option)
+    public static readonly byte[][] suppportedWebTransportVersionsBytes =
     {
-        "draft02"
+        "sec-webtransport-http3-draft02"u8
     };
 
-    public readonly int sessionId;
+    public static readonly string[] suppportedWebTransportVersions =
+{
+        "sec-webtransport-http3-draft02"
+    };
+
+    private int _sessionId = -1; // -1 = not initialized
     public long numOpenStreams => _openStreams.Count;
 
-    public WebTransportSession(int id)
+    public WebTransportSession()
     {
-        sessionId = id;
+    }
+
+    public void Initialize(int id, int index)
+    {
+        CheckIfValidSession();
+
+        _sessionId = id;
+        // todo once we support multiple versions, actually use the index
+        // parameter. It indicates the version according to the index in
+        // the 2 arrays above
     }
 
     /// <summary>
@@ -30,6 +45,8 @@ internal class WebTransportSession
     /// <returns>True is the process succeeded. False otherwise</returns>
     public bool TryAddStream(ref IHttp3Stream stream)
     {
+        CheckIfValidSession();
+
         if (numOpenStreams >= maxSimultaneousStreams)
         {
             return false;
@@ -46,11 +63,23 @@ internal class WebTransportSession
     /// <returns>True is the process succeeded. False otherwise</returns>
     public bool TryRemoveStream(long streamId)
     {
+        CheckIfValidSession();
+
         return _openStreams.Remove(streamId);
     }
 
     public void TerminateSession()
     {
+        CheckIfValidSession();
+        
         // todo implement: https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-session-termination
+    }
+
+    private void CheckIfValidSession()
+    {
+        if (_sessionId != -1)
+        {
+            throw new Exception("Session already started.");
+        }
     }
 }
