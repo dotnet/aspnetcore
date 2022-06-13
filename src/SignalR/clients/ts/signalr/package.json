@@ -55,8 +55,5 @@
     "eventsource": "^1.0.7",
     "request": "^2.88.0",
     "ws": "^6.0.0"
-  },
-  "resolutions": {
-    "url-parse": ">=1.5.8"
   }
 }
