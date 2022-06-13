@@ -54,7 +54,6 @@
   },
   "resolutions": {
     "lodash": ">=4.17.21",
-    "url-parse": ">=1.5.8",
     "node-fetch": ">=2.6.7"
   },
   "author": "",
