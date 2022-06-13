@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal class WebTransportSession
 {
     private readonly Dictionary<long, IHttp3Stream> _openStreams = new();
-    private const int maxSimultaneousStreams = 25; // arbitrary number 
-
+    private const int _maxSimultaneousStreams = 25; // arbitrary number 
+    private static bool _webtransportEnabled;
     public static readonly byte[] versionHeaderPrefix = "sec-webtransport"u8;
 
     // Order is important for both of these arrays as we choose the first
@@ -16,7 +16,7 @@ internal class WebTransportSession
         "sec-webtransport-http3-draft02"u8
     };
 
-    public static readonly string[] suppportedWebTransportVersions =
+    public static readonly string[] _suppportedWebTransportVersions =
 {
         "sec-webtransport-http3-draft02"
     };
@@ -26,6 +26,7 @@ internal class WebTransportSession
 
     public WebTransportSession()
     {
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out _webtransportEnabled);
     }
 
     public void Initialize(int id, int index)
@@ -43,11 +44,11 @@ internal class WebTransportSession
     /// </summary>
     /// <param name="stream">A reference to the new stream that is being added</param>
     /// <returns>True is the process succeeded. False otherwise</returns>
-    public bool TryAddStream(ref IHttp3Stream stream)
+    public bool TryAddStream(IHttp3Stream stream)
     {
         CheckIfValidSession();
 
-        if (numOpenStreams >= maxSimultaneousStreams)
+        if (numOpenStreams >= _maxSimultaneousStreams)
         {
             return false;
         }
@@ -77,6 +78,10 @@ internal class WebTransportSession
 
     private void CheckIfValidSession()
     {
+        if (!_webtransportEnabled)
+        {
+            throw new Exception("WebTransport is currently disabled.");
+        }
         if (_sessionId != -1)
         {
             throw new Exception("Session already started.");

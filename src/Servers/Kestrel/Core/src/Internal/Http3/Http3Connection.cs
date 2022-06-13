@@ -306,7 +306,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 {
                                     stream = new WebTransportUnidirectionalStream<TContext>(application, CreateHttpStreamContext(streamContext));
 
-                                    //_webtransportSession.TryAddStream(ref stream); TODO
+                                    _webtransportSession.TryAddStream(stream);
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
                                 {
@@ -350,7 +350,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                     {
                                         stream = new WebTransportBidirectionalStream<TContext>(application, CreateHttpStreamContext(streamContext));
 
-                                        //_webtransportSession.TryAddStream(ref stream); TODO
+                                        _webtransportSession.TryAddStream(stream);
                                     }
                                     else
                                     {
