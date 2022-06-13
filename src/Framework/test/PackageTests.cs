@@ -70,6 +70,12 @@ public class PackageTests
             {
                 continue;
             }
+            // Don't test helix test runner tool packages
+            string[] helixTestRunnerToolPackages = { "dotnet-serve", "dotnet-ef", "dotnet-dump" };
+            if (helixTestRunnerToolPackages.Any(s => packageDir.StartsWith(s, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
             // Test lib assemblies
             var packageAssembliesDir = Path.Combine(packageDir, "lib");
             if (Directory.Exists(packageAssembliesDir))
@@ -118,7 +124,7 @@ public class PackageTests
                     var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
                     var assemblyVersion = reader.GetAssemblyDefinition().Version;
 
-                    Assert.True(expectedVersion.Major == assemblyVersion.Major, "Mismatch on " + assembly);
+                    Assert.Equal(expectedVersion.Major, assemblyVersion.Major);
                     Assert.Equal(expectedVersion.Minor, assemblyVersion.Minor);
                     Assert.Equal(0, assemblyVersion.Build);
                     Assert.Equal(0, assemblyVersion.Revision);
