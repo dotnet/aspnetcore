@@ -9,7 +9,6 @@ using System.Net.Http.HPack;
 using System.Net.Http.QPack;
 using System.Reflection;
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Net.Http.Headers;
 
 namespace CodeGenerator;
@@ -116,6 +115,7 @@ public class KnownHeaders
         {
             PseudoHeaderNames.Scheme,
             PseudoHeaderNames.Path,
+            PseudoHeaderNames.Protocol,
             PseudoHeaderNames.Method,
             PseudoHeaderNames.Authority,
             HeaderNames.Accept,
@@ -135,7 +135,6 @@ public class KnownHeaders
             HeaderNames.IfRange,
             HeaderNames.IfUnmodifiedSince,
             HeaderNames.MaxForwards,
-            HeaderNames.Protocol,
             HeaderNames.ProxyAuthorization,
             HeaderNames.Referer,
             HeaderNames.Range,
