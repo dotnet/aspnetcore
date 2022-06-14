@@ -7,18 +7,19 @@ internal class WebTransportSession
     private readonly Dictionary<long, IHttp3Stream> _openStreams = new();
     private const int _maxSimultaneousStreams = 25; // arbitrary number 
     private static bool _webtransportEnabled;
-    public static readonly byte[] versionHeaderPrefix = "sec-webtransport"u8;
+    public static ReadOnlySpan<byte> VersionHeaderPrefixBytes => "sec-webtransport-http3-draft"u8;
+    public static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
 
     // Order is important for both of these arrays as we choose the first
     // supported version (index 0 is the most prefered option)
     public static readonly byte[][] suppportedWebTransportVersionsBytes =
     {
-        "sec-webtransport-http3-draft02"u8
+         new byte[] { 0x64, 0x72, 0x61, 0x66, 0x74, 0x30, 0x32 } // "draft02" 
     };
 
     public static readonly string[] suppportedWebTransportVersions =
-{
-        "sec-webtransport-http3-draft02"
+    {
+        "draft02"
     };
 
     private int _sessionId = -1; // -1 = not initialized

@@ -16,17 +16,17 @@ public class Startup
     {
         app.Run(async context =>
         {
-            var memory = new Memory<byte>(new byte[4096]);
-            var length = await context.Request.Body.ReadAsync(memory);
+            //var memory = new Memory<byte>(new byte[4096]);
+            //var length = await context.Request.Body.ReadAsync(memory);
 
             //// todo read the message that the client says and validate the version of webtransport rather than blindly accepting it
             //// also move all this stuff into the http3 internal folder
-            AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var isWebTransport);
-            if (isWebTransport)
-            {
-                // for loop over the suppportedWebTransportVersions in WebTransportSession
-                context.Response.Headers.Append("sec-webtransport-http3-draft", "draft02");
-                await context.Response.Body.FlushAsync();
+            //AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var isWebTransport);
+            //if (isWebTransport)
+            //{
+            //    // for loop over the suppportedWebTransportVersions in WebTransportSession
+            //context.Response.Headers.Append("sec-webtransport-http3-draft", "draft02");
+            //await context.Response.Body.FlushAsync();
 
                 //// WAIT FOR THE NEXT MESSAGE FROM THE CLIENT
                 //var memory2 = new Memory<byte>(new byte[4096]);
@@ -39,7 +39,7 @@ public class Startup
                 //await context.Response.Body.FlushAsync();
 
                 await Task.Delay(TimeSpan.FromMinutes(150));
-            }
+            //}
         });
     }
 }

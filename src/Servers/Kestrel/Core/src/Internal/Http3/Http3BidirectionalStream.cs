@@ -55,11 +55,11 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
 
-    private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
-    private readonly object _completionLock = new object();
+    private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
+    private readonly object _completionLock = new();
 
     protected RequestHeaderParsingState _requestHeaderParsingState;
-    protected readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
+    protected readonly Http3RawFrame _incomingFrame = new();
 
     public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
     private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
@@ -334,25 +334,20 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
                         // todo find a better place to put this//////////////////////////////////////////////////////////////////////////////////////////////////
                         // it is the webtransport version negotiation
                         // todo also perf optimize it. So remove the loop and hardcode as a switch
-                        if (_context.WebTransportSession != null && name.StartsWith(WebTransportSession.versionHeaderPrefix))
+                        // OVERALL TODO: MOVE THIS TO SOMEWHERE WHERE ALL HEADERS ARE PROCESSED
+                        // AND READY TO GO. THAT WAY I CAN SWITCH STATMENT IT AND ORDER DOESN'T MATTER
+                        if (name.StartsWith(WebTransportSession.VersionHeaderPrefixBytes))
                         {
                             var index = -1;
                             foreach (var version in WebTransportSession.suppportedWebTransportVersionsBytes)
                             {
-                                if (name.SequenceEqual(version) && value.SequenceEqual(OneBytes))
+                                if (name.EndsWith(version) && value.SequenceEqual(OneBytes))
                                 {
+                                    //_context.WebTransportSession = new WebTransportSession();
+                                    //webtransportVersion = index;
                                     break;
                                 }
                                 index++;
-                            }
-
-                            if (index != -1)
-                            {
-                                _context.WebTransportSession.Initialize((int)_streamIdFeature.StreamId, index);
-                                HttpResponseHeaders.Append(new KeyValuePair<string, StringValues>(WebTransportSession.suppportedWebTransportVersions[index], "1"));
-
-                                //Output.WriteResponseHeaders(200, "", HttpResponseHeaders, true, true);
-                                //Output.FlushAsync(CancellationToken.None);
                             }
                         }
 
@@ -375,6 +370,8 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
             throw new Http3StreamErrorException(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, Http3ErrorCode.MessageError);
         }
     }
+
+    private int webtransportVersion = -1;
 
     private void ValidateHeaderContent(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
@@ -872,9 +869,16 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
                 throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);
             }
 
-            if (HttpRequestHeaders.HeaderProtocol == "webtransport")
+            webtransportVersion = 0; // todo remove this line
+            if (HttpRequestHeaders.HeaderProtocol == "webtransport" && webtransportVersion != -1)
             {
                 _context.WebTransportSession = new WebTransportSession();
+
+                _context.WebTransportSession.Initialize((int)_streamIdFeature.StreamId, webtransportVersion);
+                HttpResponseHeaders.TryAdd(WebTransportSession.VersionHeaderPrefix, WebTransportSession.suppportedWebTransportVersions[webtransportVersion]);
+
+                Output.WriteResponseHeaders(200, null, HttpResponseHeaders, false, false);
+                Output.FlushAsync(CancellationToken.None);
             }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
