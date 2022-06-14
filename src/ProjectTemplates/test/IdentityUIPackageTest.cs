@@ -34,7 +34,7 @@ public class IdentityUIPackageTest : LoggedTest
         }
     }
 
-    public static string[] Bootstrap5ContentFiles { get; } = new string[]
+    public static string[] Bootstrap5ContentFiles { get; } = new []
     {
             "Identity/favicon.ico",
             "Identity/css/site.css",

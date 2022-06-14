@@ -190,7 +190,7 @@ public class MvcTemplateTest : LoggedTest
                 new Page
                 {
                     Url = PageUrls.ForgotPassword,
-                    Links = new string [] {
+                    Links = new [] {
                         PageUrls.HomeUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
@@ -202,7 +202,7 @@ public class MvcTemplateTest : LoggedTest
                 new Page
                 {
                     Url = PageUrls.HomeUrl,
-                    Links = new string[] {
+                    Links = new [] {
                         PageUrls.HomeUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
@@ -215,7 +215,7 @@ public class MvcTemplateTest : LoggedTest
                 new Page
                 {
                     Url = PageUrls.PrivacyFullUrl,
-                    Links = new string[] {
+                    Links = new [] {
                         PageUrls.HomeUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
@@ -227,7 +227,7 @@ public class MvcTemplateTest : LoggedTest
                 new Page
                 {
                     Url = PageUrls.LoginUrl,
-                    Links = new string[] {
+                    Links = new [] {
                         PageUrls.HomeUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
@@ -242,7 +242,7 @@ public class MvcTemplateTest : LoggedTest
                 new Page
                 {
                     Url = PageUrls.RegisterUrl,
-                    Links = new string [] {
+                    Links = new [] {
                         PageUrls.HomeUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
