@@ -63,15 +63,17 @@ public class PackageTests
         var versionStringWithoutPrereleaseTag = TestData.GetSharedFxVersion().Split('-', 2)[0];
         var expectedVersion = Version.Parse(versionStringWithoutPrereleaseTag);
 
+        string[] helixTestRunnerToolPackages = { "dotnet-serve", "dotnet-ef", "dotnet-dump" };
+        string[] toolAssembliesToSkip = { "System.", "Microsoft.", "Azure.", "Newtonsoft.", "aspnetcorev2" };
+
         foreach (var packageDir in Directory.GetDirectories(_packageLayoutRoot))
         {
             // Don't test the Shared Framework or Ref pack
-            if (packageDir.StartsWith("Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase))
+            if (packageDir.Contains("Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
             // Don't test helix test runner tool packages
-            string[] helixTestRunnerToolPackages = { "dotnet-serve", "dotnet-ef", "dotnet-dump" };
             if (helixTestRunnerToolPackages.Any(s => packageDir.Contains(s, StringComparison.OrdinalIgnoreCase)))
             {
                 continue;
@@ -112,11 +114,7 @@ public class PackageTests
             if (Directory.Exists(packageToolsDir))
             {
                 var assemblies = Directory.GetFiles(packageToolsDir, "*.dll", SearchOption.AllDirectories)
-                    .Where(f => !Path.GetFileNameWithoutExtension(f).Contains("System.", StringComparison.OrdinalIgnoreCase) &&
-                        !Path.GetFileNameWithoutExtension(f).Contains("Microsoft.", StringComparison.OrdinalIgnoreCase) &&
-                        !Path.GetFileNameWithoutExtension(f).Contains("Azure.", StringComparison.OrdinalIgnoreCase) &&
-                        !Path.GetFileNameWithoutExtension(f).Contains("aspnetcorev2", StringComparison.OrdinalIgnoreCase) &&
-                        !Path.GetFileNameWithoutExtension(f).Contains("Newtonsoft.", StringComparison.OrdinalIgnoreCase));
+                    .Where(f => !toolAssembliesToSkip.Any(s => Path.GetFileNameWithoutExtension(f).Contains(s, StringComparison.OrdinalIgnoreCase)));
                 foreach (var assembly in assemblies)
                 {
                     using var fileStream = File.OpenRead(assembly);
@@ -124,7 +122,7 @@ public class PackageTests
                     var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
                     var assemblyVersion = reader.GetAssemblyDefinition().Version;
 
-                    Assert.True(expectedVersion.Major == assemblyVersion.Major, "Mismatch on " + assembly);
+                    Assert.Equal(expectedVersion.Major, assemblyVersion.Major);
                     Assert.Equal(expectedVersion.Minor, assemblyVersion.Minor);
                     Assert.Equal(0, assemblyVersion.Build);
                     Assert.Equal(0, assemblyVersion.Revision);
