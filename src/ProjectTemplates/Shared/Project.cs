@@ -146,6 +146,7 @@ public class Project : IDisposable
         if (execution.Output.Contains(": warning") || execution.Error.Contains(": warning"))
         {
             result.ExitCode = -1;
+            throw new Exception(execution.Output + " ~ " + execution.Error + " ~ " + execution.ToString());
         }
 
         CaptureBinLogOnFailure(execution);
