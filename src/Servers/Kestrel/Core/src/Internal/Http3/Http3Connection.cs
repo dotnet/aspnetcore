@@ -470,7 +470,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         }
     }
 
-    private async Task<long> ReadStreamType(Http3StreamContext context)
+    private static async Task<long> ReadStreamType(Http3StreamContext context)
     {
         var Input = context.Transport.Input;
         var result = await Input.ReadAsync();
