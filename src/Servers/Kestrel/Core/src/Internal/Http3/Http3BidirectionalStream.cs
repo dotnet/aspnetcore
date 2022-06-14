@@ -331,26 +331,6 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
                     case HeaderType.NameAndValue:
                         UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
 
-                        // todo find a better place to put this//////////////////////////////////////////////////////////////////////////////////////////////////
-                        // it is the webtransport version negotiation
-                        // todo also perf optimize it. So remove the loop and hardcode as a switch
-                        // OVERALL TODO: MOVE THIS TO SOMEWHERE WHERE ALL HEADERS ARE PROCESSED
-                        // AND READY TO GO. THAT WAY I CAN SWITCH STATMENT IT AND ORDER DOESN'T MATTER
-                        if (name.StartsWith(WebTransportSession.VersionHeaderPrefixBytes))
-                        {
-                            var index = -1;
-                            foreach (var version in WebTransportSession.suppportedWebTransportVersionsBytes)
-                            {
-                                if (name.EndsWith(version) && value.SequenceEqual(OneBytes))
-                                {
-                                    //_context.WebTransportSession = new WebTransportSession();
-                                    //webtransportVersion = index;
-                                    break;
-                                }
-                                index++;
-                            }
-                        }
-
                         // Header and value are new and will get validated (i.e. check name is lower-case, check value doesn't contain newlines)
                         ValidateHeaderContent(name, value);
                         OnHeader(name, value, checkForNewlineChars: true);
@@ -370,8 +350,6 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
             throw new Http3StreamErrorException(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, Http3ErrorCode.MessageError);
         }
     }
-
-    private int webtransportVersion = -1;
 
     private void ValidateHeaderContent(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
@@ -869,16 +847,26 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
                 throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);
             }
 
-            webtransportVersion = 0; // todo remove this line
-            if (HttpRequestHeaders.HeaderProtocol == "webtransport" && webtransportVersion != -1)
+            if (HttpRequestHeaders.HeaderProtocol == "webtransport")
             {
-                _context.WebTransportSession = new WebTransportSession();
+                var supportedVersions = HttpRequestHeaders.Where((header) => // TODO do as we go along and store as list in WebTransportSession or is that a memory issue?
+                {
+                    return header.Key.StartsWith(WebTransportSession.VersionHeaderPrefix, StringComparison.InvariantCulture)
+                            && header.Value == "1";
+                });
 
-                _context.WebTransportSession.Initialize((int)_streamIdFeature.StreamId, webtransportVersion);
-                HttpResponseHeaders.TryAdd(WebTransportSession.VersionHeaderPrefix, WebTransportSession.suppportedWebTransportVersions[webtransportVersion]);
+                foreach (var version in WebTransportSession.suppportedWebTransportVersions)
+                {
+                    if (supportedVersions.Any((v) => v.Key.EndsWith(version, StringComparison.InvariantCulture)) &&
+                        (_context?.WebTransportSession.Initialize((int)_streamIdFeature.StreamId, version) ?? false))
+                    {
+                        HttpResponseHeaders.TryAdd(WebTransportSession.VersionHeaderPrefix, version);
 
-                Output.WriteResponseHeaders(200, null, HttpResponseHeaders, false, false);
-                Output.FlushAsync(CancellationToken.None);
+                        Output.WriteResponseHeaders(200, null, HttpResponseHeaders, false, false);
+                        Output.FlushAsync(CancellationToken.None);
+                        break;
+                    }
+                }
             }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)

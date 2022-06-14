@@ -7,7 +7,7 @@ internal class WebTransportSession
     private readonly Dictionary<long, IHttp3Stream> _openStreams = new();
     private const int _maxSimultaneousStreams = 25; // arbitrary number 
     private static bool _webtransportEnabled;
-    public static ReadOnlySpan<byte> VersionHeaderPrefixBytes => "sec-webtransport-http3-draft"u8;
+
     public static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
 
     // Order is important for both of these arrays as we choose the first
@@ -22,22 +22,21 @@ internal class WebTransportSession
         "draft02"
     };
 
-    private int _sessionId = -1; // -1 = not initialized
-    public long numOpenStreams => _openStreams.Count;
+    public int SessionId { get; private set; }
+    public long NumOpenStreams => _openStreams.Count;
 
-    public WebTransportSession()
+    public bool Initialize(int id, string version)
     {
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out _webtransportEnabled);
-    }
 
-    public void Initialize(int id, int index)
-    {
-        CheckIfValidSession();
+        if (_webtransportEnabled)
+        {
+            SessionId = id;
+        }
 
-        _sessionId = id;
-        // todo once we support multiple versions, actually use the index
-        // parameter. It indicates the version according to the index in
-        // the 2 arrays above
+        // todo once we support multiple versions, actually use the version
+
+        return _webtransportEnabled;
     }
 
     /// <summary>
@@ -49,7 +48,7 @@ internal class WebTransportSession
     {
         CheckIfValidSession();
 
-        if (numOpenStreams >= _maxSimultaneousStreams)
+        if (NumOpenStreams >= _maxSimultaneousStreams)
         {
             return false;
         }
@@ -65,15 +64,13 @@ internal class WebTransportSession
     /// <returns>True is the process succeeded. False otherwise</returns>
     public bool TryRemoveStream(long streamId)
     {
-        CheckIfValidSession();
-
         return _openStreams.Remove(streamId);
     }
 
     public void TerminateSession()
     {
         CheckIfValidSession();
-        
+
         // todo implement: https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-session-termination
     }
 
@@ -82,10 +79,6 @@ internal class WebTransportSession
         if (!_webtransportEnabled)
         {
             throw new Exception("WebTransport is currently disabled.");
-        }
-        if (_sessionId != -1)
-        {
-            throw new Exception("Session already started.");
         }
     }
 }
