@@ -31,15 +31,15 @@
   <ItemGroup>
     <EmbeddedResource Include="template-baselines.json" />
     <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
-    <Compile Include="..\Shared\**" LinkBase="Helpers" />
+    <Compile Include="..\..\Shared\**" LinkBase="Helpers" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- We need the actual templates in the output directory for tests to verify file encodings. -->
-    <Content Include="..\Web.ProjectTemplates\**" LinkBase="Assets\Web.ProjectTemplates" />
+    <Content Include="..\..\Web.ProjectTemplates\**" LinkBase="Assets\Web.ProjectTemplates" />
     <Content Include="$(RepoRoot)src\submodules\spa-templates\src\**" LinkBase="Assets\Web.Spa.ProjectTemplates" />
-    <Content Include="..\Web.ItemTemplates\**" LinkBase="Assets\Web.ItemTemplates" />
-    <Content Include="..\Web.Client.ItemTemplates\**" LinkBase="Assets\Web.Client.ItemTemplates" />
+    <Content Include="..\..\Web.ItemTemplates\**" LinkBase="Assets\Web.ItemTemplates" />
+    <Content Include="..\..\Web.Client.ItemTemplates\**" LinkBase="Assets\Web.Client.ItemTemplates" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,15 +56,15 @@
 
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Shared\BrowserTesting\src\Microsoft.AspNetCore.BrowserTesting.csproj" />
-    <ProjectReference Include="../Web.Client.ItemTemplates/Microsoft.DotNet.Web.Client.ItemTemplates.csproj"
+    <ProjectReference Include="../../Web.Client.ItemTemplates/Microsoft.DotNet.Web.Client.ItemTemplates.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
-    <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj"
+    <ProjectReference Include="../../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
-    <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj"
+    <ProjectReference Include="../../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
@@ -80,5 +80,5 @@
   </PropertyGroup>
 
   <!-- Shared testing infrastructure for running E2E tests -->
-  <Import Condition="'$(SkipTestBuild)' != 'true'" Project="..\TestInfrastructure\PrepareForTest.targets" />
+  <Import Condition="'$(SkipTestBuild)' != 'true'" Project="..\..\TestInfrastructure\PrepareForTest.targets" />
 </Project>
