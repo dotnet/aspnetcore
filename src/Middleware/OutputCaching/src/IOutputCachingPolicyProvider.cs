@@ -20,18 +20,18 @@ public interface IOutputCachingPolicyProvider
     /// <summary>
     /// Determines whether the response caching logic should be attempted for the incoming HTTP request.
     /// </summary>
-    /// <param name="context">The <see cref="IOutputCachingContext"/>.</param>
-    Task OnRequestAsync(IOutputCachingContext context);
+    /// <param name="context">The <see cref="OutputCachingContext"/>.</param>
+    Task OnRequestAsync(OutputCachingContext context);
 
     /// <summary>
     /// Determines whether the response retrieved from the response cache is fresh and can be served.
     /// </summary>
-    /// <param name="context">The <see cref="IOutputCachingContext"/>.</param>
-    Task OnServeFromCacheAsync(IOutputCachingContext context);
+    /// <param name="context">The <see cref="OutputCachingContext"/>.</param>
+    Task OnServeFromCacheAsync(OutputCachingContext context);
 
     /// <summary>
     /// Determines whether the response can be cached for future requests.
     /// </summary>
-    /// <param name="context">The <see cref="IOutputCachingContext"/>.</param>
-    Task OnServeResponseAsync(IOutputCachingContext context);
+    /// <param name="context">The <see cref="OutputCachingContext"/>.</param>
+    Task OnServeResponseAsync(OutputCachingContext context);
 }

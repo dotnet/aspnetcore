@@ -2,6 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using Microsoft.AspNetCore.OutputCaching.Policies;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
@@ -10,6 +14,14 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 public class OutputCachingOptions
 {
+    /// <summary>
+    /// Creates a new <see cref="OutputCachingOptions"/> instance.
+    /// </summary>
+    public OutputCachingOptions()
+    {
+        BasePolicies = new(this);
+    }
+
     /// <summary>
     /// The size limit for the output cache middleware in bytes. The default is set to 100 MB.
     /// When this limit is exceeded, no new responses will be cached until older entries are
@@ -36,17 +48,42 @@ public class OutputCachingOptions
     /// <summary>
     /// Gets the policy applied to all requests.
     /// </summary>
-    public IOutputCachingPolicy? BasePolicy { get; set; }
+    public PoliciesCollection BasePolicies { get; internal set; }
 
     /// <summary>
-    /// Gets a Dictionary of policy names, <see cref="IOutputCachingPolicy"/> which are pre-defined settings for
-    /// output caching.
+    /// Gets the application <see cref="IServiceProvider"/>.
     /// </summary>
-    public IDictionary<string, IOutputCachingPolicy> Policies { get; } = new Dictionary<string, IOutputCachingPolicy>(StringComparer.OrdinalIgnoreCase);
+    public IServiceProvider ApplicationServices { get; set; } = default!;
+
+    internal IDictionary<string, IOutputCachingPolicy>? NamedPolicies { get; set; }
 
     /// <summary>
     /// For testing purposes only.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal ISystemClock SystemClock { get; set; } = new SystemClock();
+
+    /// <summary>
+    /// Defines a <see cref="IOutputCachingPolicy"/> which can be referenced by name.
+    /// </summary>
+    /// <param name="name">The name of the policy.</param>
+    /// <param name="policy">The policy to add</param>
+    public void AddPolicy(string name, IOutputCachingPolicy policy)
+    {
+        NamedPolicies ??= new Dictionary<string, IOutputCachingPolicy>(StringComparer.OrdinalIgnoreCase);
+        NamedPolicies[name] = policy;
+    }
+
+    /// <summary>
+    /// Defines a <see cref="IOutputCachingPolicy"/> which can be referenced by name.
+    /// </summary>
+    /// <param name="name">The name of the policy.</param>
+    /// <param name="build">an action on <see cref="OutputCachePolicyBuilder"/>.</param>
+    public void AddPolicy(string name, Action<OutputCachePolicyBuilder> build)
+    {
+        var builder = new OutputCachePolicyBuilder(this);
+        build(builder);
+        NamedPolicies ??= new Dictionary<string, IOutputCachingPolicy>(StringComparer.OrdinalIgnoreCase);
+        NamedPolicies[name] = builder.Build();
+    }
 }

@@ -9,10 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOutputCaching(options =>
 {
-    // Enable caching on all requests
-    // options.BasePolicy = new OutputCachePolicyBuilder().Enable();
+    // Define policies for all requests which are not configured per endpoint or per request
+    options.BasePolicies.AddPolicy(b => b.WithPathBase("/js").Expire(TimeSpan.FromDays(1)));
+    options.BasePolicies.AddPolicy(b => b.WithPathBase("/admin").NoStore());
 
-    options.Policies["NoCache"] = new OutputCachePolicyBuilder().WithPath("/wwwroot").Expire(TimeSpan.FromDays(1));
+    options.AddPolicy("NoCache", b => b.WithPathBase("/wwwroot").Expire(TimeSpan.FromDays(1)));
+
+    options.AddPolicy("Disable", b => b.Add<EnableCachingPolicy>());
+
 });
 
 var app = builder.Build();
@@ -26,9 +30,6 @@ app.MapGet("/cached", Gravatar.WriteGravatar).CacheOutput();
 app.MapGet("/nocache", Gravatar.WriteGravatar).CacheOutput(x => x.NoStore());
 
 app.MapGet("/profile", Gravatar.WriteGravatar).CacheOutput(x => x.Policy("NoCache"));
-
-var myPolicy = new OutputCachePolicyBuilder().Expire(TimeSpan.FromDays(1)).Build();
-app.MapGet("/custom", Gravatar.WriteGravatar).CacheOutput(myPolicy);
 
 app.MapGet("/attribute", (RequestDelegate)([OutputCache(PolicyName = "NoCache")] (c) => Gravatar.WriteGravatar(c)));
 

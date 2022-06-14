@@ -24,6 +24,8 @@ public static class OutputCachingServicesExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddTransient<IConfigureOptions<OutputCachingOptions>, OutputCachingOptionsSetup>();
+
         services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
         services.TryAddSingleton<IOutputCacheStore>(sp =>

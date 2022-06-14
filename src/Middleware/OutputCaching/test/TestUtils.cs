@@ -144,13 +144,13 @@ internal class TestUtils
                                 outputCachingOptions.MaximumBodySize = options.MaximumBodySize;
                                 outputCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
                                 outputCachingOptions.SystemClock = options.SystemClock;
-                                outputCachingOptions.BasePolicy = options.BasePolicy;
+                                outputCachingOptions.BasePolicies = options.BasePolicies;
                                 outputCachingOptions.DefaultExpirationTimeSpan = options.DefaultExpirationTimeSpan;
                                 outputCachingOptions.SizeLimit = options.SizeLimit;
                             }
                             else
                             {
-                                outputCachingOptions.BasePolicy = new OutputCachePolicyBuilder().Enable().Build();
+                                outputCachingOptions.BasePolicies.AddPolicy(new OutputCachePolicyBuilder().Build());
                             }
                         });
                     })
@@ -202,9 +202,9 @@ internal class TestUtils
             keyProvider);
     }
 
-    internal static OutputCachingContext CreateTestContext(IOutputCacheStore cache = null)
+    internal static OutputCachingContext CreateTestContext(IOutputCacheStore cache = null, OutputCachingOptions options = null)
     {
-        return new OutputCachingContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), NullLogger.Instance)
+        return new OutputCachingContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCachingOptions()).Value, NullLogger.Instance)
         {
             EnableOutputCaching = true,
             AllowCacheStorage = true,
@@ -213,9 +213,9 @@ internal class TestUtils
         };
     }
 
-    internal static OutputCachingContext CreateTestContext(HttpContext httpContext, IOutputCacheStore cache = null)
+    internal static OutputCachingContext CreateTestContext(HttpContext httpContext, IOutputCacheStore cache = null, OutputCachingOptions options = null)
     {
-        return new OutputCachingContext(httpContext, cache ?? new TestOutputCache(), NullLogger.Instance)
+        return new OutputCachingContext(httpContext, cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCachingOptions()).Value, NullLogger.Instance)
         {
             EnableOutputCaching = true,
             AllowCacheStorage = true,
@@ -224,9 +224,9 @@ internal class TestUtils
         };
     }
 
-    internal static OutputCachingContext CreateTestContext(ITestSink testSink, IOutputCacheStore cache = null)
+    internal static OutputCachingContext CreateTestContext(ITestSink testSink, IOutputCacheStore cache = null, OutputCachingOptions options = null)
     {
-        return new OutputCachingContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), new TestLogger("OutputCachingTests", testSink, true))
+        return new OutputCachingContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCachingOptions()).Value, new TestLogger("OutputCachingTests", testSink, true))
         {
             EnableOutputCaching = true,
             AllowCacheStorage = true,
@@ -326,7 +326,7 @@ internal class TestOutputCachingPolicyProvider : IOutputCachingPolicyProvider
         return true;
     }
 
-    public Task OnRequestAsync(IOutputCachingContext context)
+    public Task OnRequestAsync(OutputCachingContext context)
     {
         context.EnableOutputCaching = EnableOutputCaching;
         context.AllowCacheLookup = AllowCacheLookupValue;
@@ -335,7 +335,7 @@ internal class TestOutputCachingPolicyProvider : IOutputCachingPolicyProvider
         return Task.CompletedTask;
     }
 
-    public Task OnServeFromCacheAsync(IOutputCachingContext context)
+    public Task OnServeFromCacheAsync(OutputCachingContext context)
     {
         context.AllowCacheLookup = AllowCacheLookupValue;
         context.AllowCacheStorage = AllowCacheStorageValue;
@@ -343,7 +343,7 @@ internal class TestOutputCachingPolicyProvider : IOutputCachingPolicyProvider
         return Task.CompletedTask;
     }
 
-    public Task OnServeResponseAsync(IOutputCachingContext context)
+    public Task OnServeResponseAsync(OutputCachingContext context)
     {
         context.AllowCacheStorage = AllowCacheStorageValue;
 
@@ -368,7 +368,7 @@ internal class TestResponseCachingKeyProvider : IOutputCachingKeyProvider
 
 internal class TestOutputCache : IOutputCacheStore
 {
-    private readonly IDictionary<string, IOutputCacheEntry> _storage = new Dictionary<string, IOutputCacheEntry>();
+    private readonly IDictionary<string, OutputCacheEntry> _storage = new Dictionary<string, OutputCacheEntry>();
     public int GetCount { get; private set; }
     public int SetCount { get; private set; }
 
@@ -377,20 +377,20 @@ internal class TestOutputCache : IOutputCacheStore
         throw new NotImplementedException();
     }
 
-    public ValueTask<IOutputCacheEntry> GetAsync(string key, CancellationToken token)
+    public ValueTask<OutputCacheEntry> GetAsync(string key, CancellationToken token)
     {
         GetCount++;
         try
         {
-            return new ValueTask<IOutputCacheEntry>(_storage[key]);
+            return new ValueTask<OutputCacheEntry>(_storage[key]);
         }
         catch
         {
-            return new ValueTask<IOutputCacheEntry>(default(IOutputCacheEntry));
+            return new ValueTask<OutputCacheEntry>(default(OutputCacheEntry));
         }
     }
 
-    public ValueTask SetAsync(string key, IOutputCacheEntry entry, TimeSpan validFor, CancellationToken token)
+    public ValueTask SetAsync(string key, OutputCacheEntry entry, TimeSpan validFor, CancellationToken token)
     {
         SetCount++;
         _storage[key] = entry;

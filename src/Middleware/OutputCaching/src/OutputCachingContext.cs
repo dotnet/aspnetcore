@@ -8,46 +8,77 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
-internal sealed class OutputCachingContext : IOutputCachingContext
+/// <summary>
+/// Represent the current caching context for the request.
+/// </summary>
+public sealed class OutputCachingContext
 {
-    internal OutputCachingContext(HttpContext httpContext, IOutputCacheStore store, ILogger logger)
+    internal OutputCachingContext(HttpContext httpContext, IOutputCacheStore store, OutputCachingOptions options, ILogger logger)
     {
         HttpContext = httpContext;
         Logger = logger;
         Store = store;
+        Options = options;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Determines whether the output caching logic should be configured for the incoming HTTP request.
+    /// </summary>
     public bool EnableOutputCaching { get; set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Determines whether a cache lookup is allowed for the incoming HTTP request.
+    /// </summary>
     public bool AllowCacheLookup { get; set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Determines whether storage of the response is allowed for the incoming HTTP request.
+    /// </summary>
     public bool AllowCacheStorage { get; set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Determines whether the request should be locked.
+    /// </summary>
     public bool AllowLocking { get; set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the <see cref="HttpContext"/>.
+    /// </summary>
     public HttpContext HttpContext { get; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the response time.
+    /// </summary>
     public DateTimeOffset? ResponseTime { get; internal set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the <see cref="CachedVaryByRules"/> instance.
+    /// </summary>
     public CachedVaryByRules CachedVaryByRules { get; set; } = new();
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the tags of the cached response.
+    /// </summary>
     public HashSet<string> Tags { get; } = new();
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the logger.
+    /// </summary>
     public ILogger Logger { get; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the options.
+    /// </summary>
+    public OutputCachingOptions Options { get; }
+
+    /// <summary>
+    /// Gets the <see cref="IOutputCacheStore"/> instance.
+    /// </summary>
     public IOutputCacheStore Store { get; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets or sets the amount of time the response should be cached for.
+    /// </summary>
     public TimeSpan? ResponseExpirationTimeSpan { get; set; }
 
     internal string CacheKey { get; set; }
@@ -58,7 +89,7 @@ internal sealed class OutputCachingContext : IOutputCachingContext
 
     internal TimeSpan CachedEntryAge { get; set; }
 
-    internal IOutputCacheEntry CachedResponse { get; set; }
+    internal OutputCacheEntry CachedResponse { get; set; }
 
     internal bool ResponseStarted { get; set; }
 

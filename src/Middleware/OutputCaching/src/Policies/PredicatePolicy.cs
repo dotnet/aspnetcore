@@ -10,7 +10,7 @@ internal sealed class PredicatePolicy : IOutputCachingPolicy
 {
     // TODO: Accept a non async predicate too?
 
-    private readonly Func<IOutputCachingContext, Task<bool>> _predicate;
+    private readonly Func<OutputCachingContext, Task<bool>> _predicate;
     private readonly IOutputCachingPolicy _policy;
 
     /// <summary>
@@ -18,18 +18,37 @@ internal sealed class PredicatePolicy : IOutputCachingPolicy
     /// </summary>
     /// <param name="predicate">The predicate.</param>
     /// <param name="policy">The policy.</param>
-    public PredicatePolicy(Func<IOutputCachingContext, Task<bool>> predicate, IOutputCachingPolicy policy)
+    public PredicatePolicy(Func<OutputCachingContext, Task<bool>> predicate, IOutputCachingPolicy policy)
     {
         _predicate = predicate;
         _policy = policy;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
     {
+        return ExecuteAwaited(static (policy, context) => policy.OnRequestAsync(context), _policy, context);
+    }
+
+    /// <inheritdoc />
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    {
+        return ExecuteAwaited(static (policy, context) => policy.OnServeFromCacheAsync(context), _policy, context);
+    }
+
+    /// <inheritdoc />
+    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    {
+        return ExecuteAwaited(static (policy, context) => policy.OnServeResponseAsync(context), _policy, context);
+    }
+
+    private Task ExecuteAwaited(Func<IOutputCachingPolicy, OutputCachingContext, Task> action, IOutputCachingPolicy policy, OutputCachingContext context)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
         if (_predicate == null)
         {
-            return _policy.OnRequestAsync(context);
+            return action(policy, context);
         }
 
         var task = _predicate(context);
@@ -38,32 +57,20 @@ internal sealed class PredicatePolicy : IOutputCachingPolicy
         {
             if (task.Result)
             {
-                return _policy.OnRequestAsync(context);
+                return action(policy, context);
             }
 
             return Task.CompletedTask;
         }
 
-        return Awaited(task, _policy, context);
+        return Awaited(task);
 
-        async static Task Awaited(Task<bool> task, IOutputCachingPolicy policy, IOutputCachingContext context)
+        async Task Awaited(Task<bool> task)
         {
             if (await task)
             {
-                await policy.OnRequestAsync(context);
+                await action(policy, context);
             }
         }
-    }
-
-    /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
-    {
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
-    {
-        return Task.CompletedTask;
     }
 }

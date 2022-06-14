@@ -11,8 +11,9 @@ public interface IOutputCachingFeature
     /// <summary>
     /// Gets the caching context.
     /// </summary>
-    IOutputCachingContext Context { get; }
+    OutputCachingContext Context { get; }
 
+    // Remove
     /// <summary>
     /// Gets the policies.
     /// </summary>

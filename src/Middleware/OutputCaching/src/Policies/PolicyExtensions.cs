@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Policies;
 /// </summary>
 public static class PolicyExtensions
 {
-    private static readonly IOutputCachingPolicy _defaultEnabledPolicy = new OutputCachePolicyBuilder().Enable();
+    private static readonly IOutputCachingPolicy _defaultEnabledPolicy = new OutputCachePolicyBuilder();
 
     /// <summary>
     /// Marks an endpoint to be cached with the default policy.
@@ -37,7 +37,7 @@ public static class PolicyExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        var policiesMetadata = new PoliciesMetadata(new OutputCachePolicyBuilder().Enable().Add(policy).Build());
+        var policiesMetadata = new PoliciesMetadata(new OutputCachePolicyBuilder().Add(policy).Build());
 
         builder.Add(endpointBuilder =>
         {
@@ -53,7 +53,7 @@ public static class PolicyExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var outputCachePolicyBuilder = new OutputCachePolicyBuilder().Enable();
+        var outputCachePolicyBuilder = new OutputCachePolicyBuilder();
 
         policy?.Invoke(outputCachePolicyBuilder);
 

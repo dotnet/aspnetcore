@@ -22,7 +22,7 @@ public interface IOutputCacheStore
     /// <param name="key">The cache key to look up.</param>
     /// <param name="token">Indicates that the operation should be cancelled.</param>
     /// <returns>The response cache entry if it exists; otherwise <c>null</c>.</returns>
-    ValueTask<IOutputCacheEntry?> GetAsync(string key, CancellationToken token);
+    ValueTask<OutputCacheEntry?> GetAsync(string key, CancellationToken token);
 
     /// <summary>
     /// Stores the given response in the response cache.
@@ -31,5 +31,5 @@ public interface IOutputCacheStore
     /// <param name="entry">The response cache entry to store.</param>
     /// <param name="validFor">The amount of time the entry will be kept in the cache before expiring, relative to now.</param>
     /// <param name="token">Indicates that the operation should be cancelled.</param>
-    ValueTask SetAsync(string key, IOutputCacheEntry entry, TimeSpan validFor, CancellationToken token);
+    ValueTask SetAsync(string key, OutputCacheEntry entry, TimeSpan validFor, CancellationToken token);
 }

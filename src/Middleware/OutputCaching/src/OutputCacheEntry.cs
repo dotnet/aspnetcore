@@ -6,20 +6,30 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <inheritdoc />
-internal sealed class OutputCacheEntry : IOutputCacheEntry
+public sealed class OutputCacheEntry
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the created date and time of the cache entry.
+    /// </summary>
     public DateTimeOffset Created { get; set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the status code of the cache entry.
+    /// </summary>
     public int StatusCode { get; set; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the headers of the cache entry.
+    /// </summary>
     public IHeaderDictionary Headers { get; set; } = default!;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the body of the cache entry.
+    /// </summary>
     public CachedResponseBody Body { get; set; } = default!;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the tags of the cache entry.
+    /// </summary>
     public string[]? Tags { get; set; }
 }

@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
@@ -23,7 +20,7 @@ internal sealed class ProfilePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -36,7 +33,7 @@ internal sealed class ProfilePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -49,7 +46,7 @@ internal sealed class ProfilePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -61,11 +58,11 @@ internal sealed class ProfilePolicy : IOutputCachingPolicy
         return policy.OnRequestAsync(context); ;
     }
 
-    internal IOutputCachingPolicy? GetProfilePolicy(IOutputCachingContext context)
+    internal IOutputCachingPolicy? GetProfilePolicy(OutputCachingContext context)
     {
-        var options = context.HttpContext.RequestServices.GetRequiredService<IOptions<OutputCachingOptions>>();
+        var policies = context.Options.NamedPolicies;
 
-        return options.Value.Policies.TryGetValue(_profileName, out var cacheProfile)
+        return policies != null && policies.TryGetValue(_profileName, out var cacheProfile)
             ? cacheProfile
             : null;
     }

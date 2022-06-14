@@ -42,7 +42,7 @@ internal sealed class VaryByValuePolicy : IOutputCachingPolicy
         _varyBy = (c) =>
         {
             var result = varyBy();
-            c.VaryByCustom.TryAdd(result.Item1, result.Item2);
+            c.VaryByCustom?.TryAdd(result.Item1, result.Item2);
         };
     }
 
@@ -54,12 +54,12 @@ internal sealed class VaryByValuePolicy : IOutputCachingPolicy
         _varyBy = async (c) =>
         {
             var result = await varyBy();
-            c.VaryByCustom.TryAdd(result.Item1, result.Item2);
+            c.VaryByCustom?.TryAdd(result.Item1, result.Item2);
         };
     }
 
     /// <inheritdoc/>
-    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
     {
         _varyBy?.Invoke(context.CachedVaryByRules);
 
@@ -67,13 +67,13 @@ internal sealed class VaryByValuePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc/>
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
     {
         return Task.CompletedTask;
     }

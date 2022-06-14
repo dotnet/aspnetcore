@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.OutputCaching;
@@ -11,10 +10,18 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 public class CachedVaryByRules
 {
+    internal Dictionary<string, string>? VaryByCustom;
+
     /// <summary>
-    /// Gets the custom values to vary by.
+    /// Defines a custom key-pair value to vary the cache by.
     /// </summary>
-    public IDictionary<string, string> VaryByCustom { get; } = ImmutableDictionary<string, string>.Empty;
+    /// <param name="key">The key.</param>
+    /// <param name="value">The value.</param>
+    public void SetVaryByCustom(string key, string value)
+    {
+        VaryByCustom ??= new();
+        VaryByCustom[key] = value;
+    }
 
     /// <summary>
     /// Gets or sets the list of headers to vary by.

@@ -36,7 +36,7 @@ internal sealed class VaryByHeaderPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
     {
         // No vary by header?
         if (_headers.Count == 0)
@@ -51,13 +51,13 @@ internal sealed class VaryByHeaderPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
     {
         return Task.CompletedTask;
     }

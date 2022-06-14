@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 
 internal static class CacheEntryHelpers
 {
-    internal static long EstimateCachedResponseSize(IOutputCacheEntry cachedResponse)
+    internal static long EstimateCachedResponseSize(OutputCacheEntry cachedResponse)
     {
         if (cachedResponse == null)
         {

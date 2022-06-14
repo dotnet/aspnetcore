@@ -26,8 +26,8 @@ public class OutputCachingMiddleware
     private readonly IOutputCachingPolicyProvider _policyProvider;
     private readonly IOutputCacheStore _store;
     private readonly IOutputCachingKeyProvider _keyProvider;
-    private readonly WorkDispatcher<string, IOutputCacheEntry?> _outputCacheEntryDispatcher;
-    private readonly WorkDispatcher<string, IOutputCacheEntry?> _requestDispatcher;
+    private readonly WorkDispatcher<string, OutputCacheEntry?> _outputCacheEntryDispatcher;
+    private readonly WorkDispatcher<string, OutputCacheEntry?> _requestDispatcher;
 
     /// <summary>
     /// Creates a new <see cref="OutputCachingMiddleware"/>.
@@ -93,7 +93,7 @@ public class OutputCachingMiddleware
             return;
         }
 
-        var context = new OutputCachingContext(httpContext, _store, _logger);
+        var context = new OutputCachingContext(httpContext, _store, _options, _logger);
 
         // Add IOutputCachingFeature
         AddOutputCachingFeature(context);
@@ -141,7 +141,7 @@ public class OutputCachingMiddleware
                             await ExecuteResponseAsync();
                         }
 
-                        async Task<IOutputCacheEntry?> ExecuteResponseAsync()
+                        async Task<OutputCacheEntry?> ExecuteResponseAsync()
                         {
                             // Hook up to listen to the response stream
                             ShimResponseStream(context);
@@ -182,7 +182,7 @@ public class OutputCachingMiddleware
         }
     }
 
-    internal async Task<bool> TryServeCachedResponseAsync(OutputCachingContext context, IOutputCacheEntry? cacheEntry)
+    internal async Task<bool> TryServeCachedResponseAsync(OutputCachingContext context, OutputCacheEntry? cacheEntry)
     {
         if (cacheEntry == null)
         {
@@ -301,7 +301,7 @@ public class OutputCachingMiddleware
         var varyByPrefix = context.CachedVaryByRules.VaryByPrefix;
 
         // Check if any vary rules exist
-        if (!StringValues.IsNullOrEmpty(varyHeaders) || !StringValues.IsNullOrEmpty(varyQueryKeys) || !StringValues.IsNullOrEmpty(varyByPrefix) || varyByCustomKeys.Count > 0)
+        if (!StringValues.IsNullOrEmpty(varyHeaders) || !StringValues.IsNullOrEmpty(varyQueryKeys) || !StringValues.IsNullOrEmpty(varyByPrefix) || varyByCustomKeys?.Count > 0)
         {
             // Normalize order and casing of vary by rules
             var normalizedVaryHeaders = GetOrderCasingNormalizedStringValues(varyHeaders);
@@ -549,11 +549,11 @@ public class OutputCachingMiddleware
         }
     }
 
-    internal static StringValues GetOrderCasingNormalizedDictionary(IDictionary<string, string> dictionary)
+    internal static StringValues GetOrderCasingNormalizedDictionary(IDictionary<string, string>? dictionary)
     {
         const char KeySubDelimiter = '\x1f';
 
-        if (dictionary.Count == 0)
+        if (dictionary == null || dictionary.Count == 0)
         {
             return StringValues.Empty;
         }

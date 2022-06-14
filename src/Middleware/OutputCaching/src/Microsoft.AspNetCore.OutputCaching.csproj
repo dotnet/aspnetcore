@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.OutputCaching.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
@@ -21,6 +20,21 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Streams\TaskToApm.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

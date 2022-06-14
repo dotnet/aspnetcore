@@ -4,20 +4,20 @@
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// A policy that prevents the response from being cached.
+/// A policy that prevents the response from being served from cached.
 /// </summary>
-internal class NoStorePolicy : IOutputCachingPolicy
+internal class NoLookupPolicy : IOutputCachingPolicy
 {
-    public static NoStorePolicy Instance = new();
+    public static NoLookupPolicy Instance = new();
 
-    private NoStorePolicy()
+    private NoLookupPolicy()
     {
     }
 
     /// <inheritdoc />
     Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
     {
-        context.AllowCacheStorage = false;
+        context.AllowCacheLookup = false;
 
         return Task.CompletedTask;
     }

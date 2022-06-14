@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OutputCaching.Policies;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
@@ -12,20 +15,18 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
 {
-    private IOutputCachingPolicy? _builtPolicy;
-    private List<IOutputCachingPolicy> Policies { get; } = new();
-    private List<Func<IOutputCachingContext, Task<bool>>> Requirements { get; } = new();
+    private const DynamicallyAccessedMemberTypes ActivatorAccessibility = DynamicallyAccessedMemberTypes.PublicConstructors;
 
-    /// <summary>
-    /// Creates a new instance of <see cref="OutputCachePolicyBuilder"/> with a <see cref="DefaultOutputCachePolicy"/> policy which allows unauthenticated GET, HEAD, 200 responses without cookies to be cached.
-    /// </summary>
-    /// <remarks>
-    /// The default policy doesn't cache any request by default. To enable caching use <see cref="Enable"/> or invoke <c>CacheOutput()</c> on an endpoint.
-    /// </remarks>
-    public OutputCachePolicyBuilder()
+    private IOutputCachingPolicy? _builtPolicy;
+    private readonly List<IOutputCachingPolicy> _policies = new();
+    private readonly OutputCachingOptions _options;
+    private List<Func<OutputCachingContext, Task<bool>>>? _requirements;
+
+    internal OutputCachePolicyBuilder(OutputCachingOptions options)
     {
         _builtPolicy = null;
-        Policies.Add(DefaultOutputCachePolicy.Instance);
+        _policies.Add(DefaultOutputCachePolicy.Instance);
+        _options = options;
     }
 
     /// <summary>
@@ -34,30 +35,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     public OutputCachePolicyBuilder Add(IOutputCachingPolicy policy)
     {
         _builtPolicy = null;
-        Policies.Add(policy);
-        return this;
-    }
-
-    /// <summary>
-    /// Enables caching.
-    /// </summary>
-    public OutputCachePolicyBuilder Enable()
-    {
-        _builtPolicy = null;
-        Policies.Add(EnableCachingPolicy.Enabled);
-        return this;
-    }
-
-    /// <summary>
-    /// Disables caching.
-    /// </summary>
-    /// <remarks>
-    /// This is the default.
-    /// </remarks>
-    public OutputCachePolicyBuilder Disable()
-    {
-        _builtPolicy = null;
-        Policies.Add(EnableCachingPolicy.Disabled);
+        _policies.Add(policy);
         return this;
     }
 
@@ -65,12 +43,13 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     /// Adds a requirement to the current policy.
     /// </summary>
     /// <param name="predicate">The predicate applied to the policy.</param>
-    public OutputCachePolicyBuilder WithCondition(Func<IOutputCachingContext, Task<bool>> predicate)
+    public OutputCachePolicyBuilder WithCondition(Func<OutputCachingContext, Task<bool>> predicate)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
         _builtPolicy = null;
-        Requirements.Add(predicate);
+        _requirements ??= new();
+        _requirements.Add(predicate);
         return this;
     }
 
@@ -78,12 +57,13 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     /// Adds a requirement to the current policy based on the request path.
     /// </summary>
     /// <param name="pathBase">The base path to limit the policy to.</param>
-    public OutputCachePolicyBuilder WithPath(PathString pathBase)
+    public OutputCachePolicyBuilder WithPathBase(PathString pathBase)
     {
         ArgumentNullException.ThrowIfNull(pathBase);
 
         _builtPolicy = null;
-        Requirements.Add(context =>
+        _requirements ??= new();
+        _requirements.Add(context =>
         {
             var match = context.HttpContext.Request.Path.StartsWithSegments(pathBase);
             return Task.FromResult(match);
@@ -95,12 +75,13 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     /// Adds a requirement to the current policy based on the request path.
     /// </summary>
     /// <param name="pathBases">The base paths to limit the policy to.</param>
-    public OutputCachePolicyBuilder WithPath(params PathString[] pathBases)
+    public OutputCachePolicyBuilder WithPathBase(params PathString[] pathBases)
     {
         ArgumentNullException.ThrowIfNull(pathBases);
 
         _builtPolicy = null;
-        Requirements.Add(context =>
+        _requirements ??= new();
+        _requirements.Add(context =>
         {
             var match = pathBases.Any(x => context.HttpContext.Request.Path.StartsWithSegments(x));
             return Task.FromResult(match);
@@ -117,7 +98,8 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         ArgumentNullException.ThrowIfNull(method);
 
         _builtPolicy = null;
-        Requirements.Add(context =>
+        _requirements ??= new();
+        _requirements.Add(context =>
         {
             var upperMethod = method.ToUpperInvariant();
             var match = context.HttpContext.Request.Method.ToUpperInvariant() == upperMethod;
@@ -135,7 +117,8 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         ArgumentNullException.ThrowIfNull(methods);
 
         _builtPolicy = null;
-        Requirements.Add(context =>
+        _requirements ??= new();
+        _requirements.Add(context =>
         {
             var upperMethods = methods.Select(m => m.ToUpperInvariant()).ToArray();
             var match = methods.Any(m => context.HttpContext.Request.Method.ToUpperInvariant() == m);
@@ -156,7 +139,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         ArgumentNullException.ThrowIfNull(queryKeys);
 
         _builtPolicy = null;
-        Policies.Add(new VaryByQueryPolicy(queryKeys));
+        _policies.Add(new VaryByQueryPolicy(queryKeys));
         return this;
     }
 
@@ -169,7 +152,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         ArgumentNullException.ThrowIfNull(headers);
 
         _builtPolicy = null;
-        Policies.Add(new VaryByHeaderPolicy(headers));
+        _policies.Add(new VaryByHeaderPolicy(headers));
         return this;
     }
 
@@ -182,7 +165,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         ArgumentNullException.ThrowIfNull(varyBy);
 
         _builtPolicy = null;
-        Policies.Add(new VaryByValuePolicy(varyBy));
+        _policies.Add(new VaryByValuePolicy(varyBy));
         return this;
     }
 
@@ -195,7 +178,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         ArgumentNullException.ThrowIfNull(varyBy);
 
         _builtPolicy = null;
-        Policies.Add(new VaryByValuePolicy(varyBy));
+        _policies.Add(new VaryByValuePolicy(varyBy));
         return this;
     }
 
@@ -208,7 +191,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         ArgumentNullException.ThrowIfNull(varyBy);
 
         _builtPolicy = null;
-        Policies.Add(new VaryByValuePolicy(varyBy));
+        _policies.Add(new VaryByValuePolicy(varyBy));
         return this;
     }
 
@@ -221,7 +204,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         ArgumentNullException.ThrowIfNull(varyBy);
 
         _builtPolicy = null;
-        Policies.Add(new VaryByValuePolicy(varyBy));
+        _policies.Add(new VaryByValuePolicy(varyBy));
         return this;
     }
 
@@ -234,7 +217,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         ArgumentNullException.ThrowIfNull(profileName);
 
         _builtPolicy = null;
-        Policies.Add(new ProfilePolicy(profileName));
+        _policies.Add(new ProfilePolicy(profileName));
         return this;
     }
 
@@ -247,7 +230,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         ArgumentNullException.ThrowIfNull(tags);
 
         _builtPolicy = null;
-        Policies.Add(new TagsPolicy(tags));
+        _policies.Add(new TagsPolicy(tags));
         return this;
     }
 
@@ -258,7 +241,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     public OutputCachePolicyBuilder Expire(TimeSpan expiration)
     {
         _builtPolicy = null;
-        Policies.Add(new ExpirationPolicy(expiration));
+        _policies.Add(new ExpirationPolicy(expiration));
         return this;
     }
 
@@ -269,7 +252,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     public OutputCachePolicyBuilder Lock(bool lockResponse = true)
     {
         _builtPolicy = null;
-        Policies.Add(lockResponse ? LockingPolicy.Enabled : LockingPolicy.Disabled);
+        _policies.Add(lockResponse ? LockingPolicy.Enabled : LockingPolicy.Disabled);
         return this;
     }
 
@@ -279,18 +262,51 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     public OutputCachePolicyBuilder Clear()
     {
         _builtPolicy = null;
-        Requirements.Clear();
-        Policies.Clear();
+        if (_requirements != null)
+        {
+            _requirements.Clear();
+        }
+        _policies.Clear();
         return this;
     }
 
     /// <summary>
-    /// Adds a policy to prevent the response from being cached.
+    /// Adds a policy to prevent the response from being cached automatically.
     /// </summary>
+    /// <remarks>
+    /// The cache key will still be computed for lookups.
+    /// </remarks>
     public OutputCachePolicyBuilder NoStore()
     {
         _builtPolicy = null;
-        Policies.Add(NoStorePolicy.Instance);
+        _policies.Add(NoStorePolicy.Instance);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a policy to prevent the response from being served from cached automatically.
+    /// </summary>
+    /// <remarks>
+    /// The cache key will still be computed for storage.
+    /// </remarks>
+    public OutputCachePolicyBuilder NoLookup()
+    {
+        _builtPolicy = null;
+        _policies.Add(NoLookupPolicy.Instance);
+        return this;
+    }
+
+    /// <summary>
+    /// Clears the policies and adds one preventing any caching logic to happen.
+    /// </summary>
+    /// <remarks>
+    /// The cache key will never be computed.
+    /// </remarks>
+    public OutputCachePolicyBuilder NoCache()
+    {
+        _builtPolicy = null;
+        _policies.Clear();
+        _policies.Add(EnableCachingPolicy.Disabled);
         return this;
     }
 
@@ -308,13 +324,14 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
             return _builtPolicy;
         }
 
-        var policies = new CompositePolicy(Policies.ToArray());
+        var policies = new CompositePolicy(_policies.ToArray());
 
-        if (Requirements.Any())
+        // If the policy was built with requirements, wrap it
+        if (_requirements != null && _requirements.Any())
         {
             return new PredicatePolicy(async c =>
             {
-                foreach (var r in Requirements)
+                foreach (var r in _requirements)
                 {
                     if (!await r(c))
                     {
@@ -329,17 +346,42 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         return _builtPolicy = policies;
     }
 
-    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
+
+    /// <summary>
+    /// Defines a <see cref="IOutputCachingPolicy"/> which can be referenced by name.
+    /// </summary>
+    /// <param name="name">The name of the policy.</param>
+    /// <param name="policyType">The type of policy to add</param>
+    public void Add([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type policyType)
+    {
+        if (ActivatorUtilities.GetServiceOrCreateInstance(_options.ApplicationServices, policyType) is not IOutputCachingPolicy policy)
+        {
+            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Policy_InvalidType));
+        }
+
+        Add(policy);
+    }
+
+    /// <summary>
+    /// Defines a <see cref="IOutputCachingPolicy"/> which can be referenced by name.
+    /// </summary>
+    /// <typeparam name="T">The policy type.</typeparam>
+    public void Add<[DynamicallyAccessedMembers(ActivatorAccessibility)] T>() where T : IOutputCachingPolicy
+    {
+        Add(typeof(T));
+    }
+
+    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
     {
         return Build().OnRequestAsync(context);
     }
 
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
     {
         return Build().OnServeFromCacheAsync(context);
     }
 
-    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
     {
         return Build().OnServeResponseAsync(context);
     }

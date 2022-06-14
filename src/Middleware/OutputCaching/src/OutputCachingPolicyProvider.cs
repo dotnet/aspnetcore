@@ -16,13 +16,15 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
         _options = options.Value;
     }
 
+    // Not in interface
     public bool HasPolicies(HttpContext httpContext)
     {
-        if (_options.BasePolicy != null)
+        if (_options.BasePolicies != null)
         {
             return true;
         }
 
+        // Remove check
         if (httpContext.Features.Get<IOutputCachingFeature>()?.Policies.Any() ?? false)
         {
             return true;
@@ -36,11 +38,14 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
         return false;
     }
 
-    public async Task OnRequestAsync(IOutputCachingContext context)
+    public async Task OnRequestAsync(OutputCachingContext context)
     {
-        if (_options.BasePolicy != null)
+        if (_options.BasePolicies != null)
         {
-            await _options.BasePolicy.OnRequestAsync(context);
+            foreach (var policy in _options.BasePolicies)
+            {
+                await policy.OnRequestAsync(context);
+            }
         }
 
         var policiesMetadata = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPoliciesMetadata>();
@@ -58,11 +63,14 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
         }
     }
 
-    public async Task OnServeFromCacheAsync(IOutputCachingContext context)
+    public async Task OnServeFromCacheAsync(OutputCachingContext context)
     {
-        if (_options.BasePolicy != null)
+        if (_options.BasePolicies != null)
         {
-            await _options.BasePolicy.OnServeFromCacheAsync(context);
+            foreach (var policy in _options.BasePolicies)
+            {
+                await policy.OnServeFromCacheAsync(context);
+            }
         }
 
         // Apply response policies defined on the feature, e.g. from action attributes
@@ -85,11 +93,14 @@ internal sealed class OutputCachingPolicyProvider : IOutputCachingPolicyProvider
         }
     }
 
-    public async Task OnServeResponseAsync(IOutputCachingContext context)
+    public async Task OnServeResponseAsync(OutputCachingContext context)
     {
-        if (_options.BasePolicy != null)
+        if (_options.BasePolicies != null)
         {
-            await _options.BasePolicy.OnServeResponseAsync(context);
+            foreach (var policy in _options.BasePolicies)
+            {
+                await policy.OnServeResponseAsync(context);
+            }
         }
 
         // Apply response policies defined on the feature, e.g. from action attributes

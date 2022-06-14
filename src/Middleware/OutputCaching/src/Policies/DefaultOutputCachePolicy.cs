@@ -18,9 +18,10 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
     {
         var attemptOutputCaching = AttemptOutputCaching(context);
+        context.EnableOutputCaching = true;
         context.AllowCacheLookup = attemptOutputCaching;
         context.AllowCacheStorage = attemptOutputCaching;
         context.AllowLocking = true;
@@ -32,13 +33,13 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(IOutputCachingContext context)
+    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
     {
         var response = context.HttpContext.Response;
 
@@ -61,7 +62,7 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
         return Task.CompletedTask;
     }
 
-    private static bool AttemptOutputCaching(IOutputCachingContext context)
+    private static bool AttemptOutputCaching(OutputCachingContext context)
     {
         // Check if the current request fulfisls the requirements to be cached
 
