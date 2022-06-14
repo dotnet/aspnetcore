@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// A <see cref="IResult" /> that on execution writes the file specified
 /// using a virtual path to the response using mechanisms provided by the host.
 /// </summary>
-public sealed class VirtualFileHttpResult : IResult
+public sealed class VirtualFileHttpResult : IResult, IFileHttpResult
 {
     private string _fileName;
 

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// with Bad Request (400) status code.
 /// </summary>
 /// <typeparam name="TValue">The type of error object that will be JSON serialized to the response body.</typeparam>
-public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider
+public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="BadRequest"/> class with the values
@@ -29,6 +29,8 @@ public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider
     /// Gets the object result.
     /// </summary>
     public TValue? Value { get; }
+
+    object? IValueHttpResult.RawValue => Value;
 
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status400BadRequest"/>

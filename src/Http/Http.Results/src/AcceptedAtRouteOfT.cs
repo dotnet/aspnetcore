@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// Targets a registered route.
 /// </summary>
 /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
-public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
+public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AcceptedAtRoute"/> class with the values
@@ -50,6 +50,8 @@ public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// </summary>
     public TValue? Value { get; }
 
+    object? IValueHttpResult.RawValue => Value;
+
     /// <summary>
     /// Gets the name of the route to use for generating the URL.
     /// </summary>
@@ -64,6 +66,7 @@ public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// Gets the HTTP status code: <see cref="StatusCodes.Status202Accepted"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status202Accepted;
+
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)

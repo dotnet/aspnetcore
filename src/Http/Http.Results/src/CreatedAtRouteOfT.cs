@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// Targets a registered route.
 /// </summary>
 /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
-public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
+public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CreatedAtRoute"/> class with the values
@@ -49,6 +49,8 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// Gets the object result.
     /// </summary>
     public TValue? Value { get; }
+
+    object? IValueHttpResult.RawValue => Value;
 
     /// <summary>
     /// Gets the name of the route to use for generating the URL.

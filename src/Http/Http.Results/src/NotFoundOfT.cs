@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// with Not Found (404) status code.
 /// </summary>
 /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
-public sealed class NotFound<TValue> : IResult, IEndpointMetadataProvider
+public sealed class NotFound<TValue> : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="NotFound"/> class with the values.
@@ -28,6 +28,8 @@ public sealed class NotFound<TValue> : IResult, IEndpointMetadataProvider
     /// Gets the object result.
     /// </summary>
     public TValue? Value { get; internal init; }
+
+    object? IValueHttpResult.RawValue => Value;
 
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status404NotFound"/>

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// with Ok (200) status code.
 /// </summary>
 /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
-public sealed class Ok<TValue> : IResult, IEndpointMetadataProvider
+public sealed class Ok<TValue> : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Ok"/> class with the values.
@@ -28,6 +28,8 @@ public sealed class Ok<TValue> : IResult, IEndpointMetadataProvider
     /// Gets the object result.
     /// </summary>
     public TValue? Value { get; }
+
+    object? IValueHttpResult.RawValue => Value;
 
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status200OK"/>
