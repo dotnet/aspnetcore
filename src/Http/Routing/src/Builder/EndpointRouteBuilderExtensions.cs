@@ -37,7 +37,7 @@ public static class EndpointRouteBuilderExtensions
     /// A <see cref="RouteGroupBuilder"/> that is both an <see cref="IEndpointRouteBuilder"/> and an <see cref="IEndpointConventionBuilder"/>.
     /// The same builder can be used to add endpoints with the given <paramref name="prefix"/>, and to customize those endpoints using conventions.
     /// </returns>
-    public static RouteGroupBuilder MapGroup(this IEndpointRouteBuilder endpoints, string prefix) =>
+    public static RouteGroupBuilder MapGroup(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string prefix) =>
         endpoints.MapGroup(RoutePatternFactory.Parse(prefix ?? throw new ArgumentNullException(nameof(prefix))));
 
     /// <summary>
@@ -68,7 +68,7 @@ public static class EndpointRouteBuilderExtensions
     [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapGet(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         RequestDelegate requestDelegate)
     {
         var returnType = requestDelegate.Method.ReturnType;
@@ -89,7 +89,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static IEndpointConventionBuilder MapPost(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         RequestDelegate requestDelegate)
     {
         return MapMethods(endpoints, pattern, PostVerb, requestDelegate);
@@ -105,7 +105,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static IEndpointConventionBuilder MapPut(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         RequestDelegate requestDelegate)
     {
         return MapMethods(endpoints, pattern, PutVerb, requestDelegate);
@@ -121,7 +121,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static IEndpointConventionBuilder MapDelete(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         RequestDelegate requestDelegate)
     {
         return MapMethods(endpoints, pattern, DeleteVerb, requestDelegate);
@@ -137,7 +137,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static IEndpointConventionBuilder MapPatch(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         RequestDelegate requestDelegate)
     {
         return MapMethods(endpoints, pattern, PatchVerb, requestDelegate);
@@ -154,7 +154,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static IEndpointConventionBuilder MapMethods(
        this IEndpointRouteBuilder endpoints,
-       string pattern,
+       [StringSyntax("Route")] string pattern,
        IEnumerable<string> httpMethods,
        RequestDelegate requestDelegate)
     {
@@ -176,7 +176,7 @@ public static class EndpointRouteBuilderExtensions
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static IEndpointConventionBuilder Map(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         RequestDelegate requestDelegate)
     {
         return Map(endpoints, RoutePatternFactory.Parse(pattern), requestDelegate);
@@ -242,7 +242,7 @@ public static class EndpointRouteBuilderExtensions
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapGet(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         Delegate handler)
     {
         return MapMethods(endpoints, pattern, GetVerb, handler);
@@ -259,7 +259,7 @@ public static class EndpointRouteBuilderExtensions
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapPost(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         Delegate handler)
     {
         return MapMethods(endpoints, pattern, PostVerb, handler);
@@ -276,7 +276,7 @@ public static class EndpointRouteBuilderExtensions
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapPut(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         Delegate handler)
     {
         return MapMethods(endpoints, pattern, PutVerb, handler);
@@ -293,7 +293,7 @@ public static class EndpointRouteBuilderExtensions
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapDelete(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         Delegate handler)
     {
         return MapMethods(endpoints, pattern, DeleteVerb, handler);
@@ -310,7 +310,7 @@ public static class EndpointRouteBuilderExtensions
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapPatch(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         Delegate handler)
     {
         return MapMethods(endpoints, pattern, PatchVerb, handler);
@@ -328,7 +328,7 @@ public static class EndpointRouteBuilderExtensions
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapMethods(
        this IEndpointRouteBuilder endpoints,
-       string pattern,
+       [StringSyntax("Route")] string pattern,
        IEnumerable<string> httpMethods,
        Delegate handler)
     {
@@ -375,7 +375,7 @@ public static class EndpointRouteBuilderExtensions
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder Map(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         Delegate handler)
     {
         return Map(endpoints, RoutePatternFactory.Parse(pattern), handler);
@@ -450,7 +450,7 @@ public static class EndpointRouteBuilderExtensions
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapFallback(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         Delegate handler)
     {
         ArgumentNullException.ThrowIfNull(endpoints);

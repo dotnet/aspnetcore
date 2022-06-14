@@ -208,7 +208,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ProvidesMetadataResult1, ProvidesMetadataResult2> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2>>(context);
@@ -487,7 +487,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3>>(context);
@@ -843,7 +843,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4>>(context);
@@ -1284,7 +1284,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5>>(context);
@@ -1818,7 +1818,7 @@ public partial class ResultsOfTTests
         // Arrange
         Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<Results<ProvidesMetadataResult1, ProvidesMetadataResult2, ProvidesMetadataResult3, ProvidesMetadataResult4, ProvidesMetadataResult5, ProvidesMetadataResult6>>(context);

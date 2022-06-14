@@ -24,6 +24,7 @@ internal sealed class ParameterBindingMethodCache
 {
     private static readonly MethodInfo ConvertValueTaskMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ConvertValueTaskOfNullableResultMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(ConvertValueTaskOfNullableResult), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo BindAsyncMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(BindAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     internal static readonly ParameterExpression TempSourceStringExpr = Expression.Variable(typeof(string), "tempSourceString");
     internal static readonly ParameterExpression HttpContextExpr = Expression.Parameter(typeof(HttpContext), "httpContext");
@@ -51,15 +52,18 @@ internal sealed class ParameterBindingMethodCache
         _throwOnInvalidMethod = throwOnInvalidMethod;
     }
 
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public bool HasTryParseMethod(Type type)
     {
         var nonNullableParameterType = Nullable.GetUnderlyingType(type) ?? type;
         return FindTryParseMethod(nonNullableParameterType) is not null;
     }
 
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public bool HasBindAsyncMethod(ParameterInfo parameter) =>
         FindBindAsyncMethod(parameter).Expression is not null;
 
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public Func<ParameterExpression, Expression, Expression>? FindTryParseMethod(Type type)
     {
         Func<ParameterExpression, Expression, Expression>? Finder(Type type)
@@ -176,17 +180,24 @@ internal sealed class ParameterBindingMethodCache
         return _stringMethodCallCache.GetOrAdd(type, Finder);
     }
 
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     public (Expression? Expression, int ParamCount) FindBindAsyncMethod(ParameterInfo parameter)
     {
         (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
         {
             var hasParameterInfo = true;
-            // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
-            var methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) }, ValidateReturnType);
+            var methodInfo = GetIBindableFromHttpContextMethod(nonNullableParameterType);
+
             if (methodInfo is null)
             {
-                hasParameterInfo = false;
-                methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) }, ValidateReturnType);
+                // There should only be one BindAsync method with these parameters since C# does not allow overloading on return type.
+                methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext), typeof(ParameterInfo) }, ValidateReturnType);
+
+                if (methodInfo is null)
+                {
+                    hasParameterInfo = false;
+                    methodInfo = GetStaticMethodFromHierarchy(nonNullableParameterType, "BindAsync", new[] { typeof(HttpContext) }, ValidateReturnType);
+                }
             }
 
             // We're looking for a method with the following signatures:
@@ -369,6 +380,26 @@ internal sealed class ParameterBindingMethodCache
         throw new InvalidOperationException($"No public parameterless constructor found for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'.");
     }
 
+    private static MethodInfo? GetIBindableFromHttpContextMethod(Type type)
+    {
+        // Check if parameter is bindable via static abstract method on IBindableFromHttpContext<TSelf>
+        foreach (var i in type.GetInterfaces())
+        {
+            if (i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IBindableFromHttpContext<>) && i.GetGenericArguments()[0] == type)
+            {
+                return BindAsyncMethod.MakeGenericMethod(type);
+            }
+        }
+
+        return null;
+    }
+
+    private static ValueTask<TValue?> BindAsync<TValue>(HttpContext httpContext, ParameterInfo parameter)
+        where TValue : class?, IBindableFromHttpContext<TValue>
+    {
+        return TValue.BindAsync(httpContext, parameter);
+    }
+        
     private MethodInfo? GetStaticMethodFromHierarchy(Type type, string name, Type[] parameterTypes, Func<MethodInfo, bool> validateReturnType)
     {
         bool IsMatch(MethodInfo? method) => method is not null && !method.IsAbstract && validateReturnType(method);
@@ -406,6 +437,7 @@ internal sealed class ParameterBindingMethodCache
         return candidateInterfaceMethodInfo;
     }
 
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
     private static MethodInfo? GetAnyMethodFromHierarchy(Type type, string name)
     {
         // Find first incorrectly formatted method

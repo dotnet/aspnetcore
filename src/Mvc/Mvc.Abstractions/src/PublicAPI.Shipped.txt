@@ -121,6 +121,7 @@ Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.ParameterDescriptor() 
 Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.ParameterType.get -> System.Type!
 Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor.ParameterType.set -> void
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext
+Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate.ActionSelectorCandidate() -> void
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext.ActionConstraintContext() -> void
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext.Candidates.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ActionConstraints.ActionSelectorCandidate>!
 Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext.Candidates.set -> void
@@ -401,6 +402,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow = 1 -> Microsoft.A
 Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Default = 0 -> Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior
 Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Disallow = 2 -> Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior
 Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName
+Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName.EnumGroupAndName() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName.EnumGroupAndName(string! group, string! name) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName.EnumGroupAndName(string! group, System.Func<string!>! name) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.EnumGroupAndName.Group.get -> string!
@@ -430,6 +432,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.IValueProviderFactory.CreateValueProviderA
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelBindingMessageProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelBindingMessageProvider.ModelBindingMessageProvider() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ModelMetadataIdentity() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ConstructorInfo.get -> System.Reflection.ConstructorInfo?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ContainerType.get -> System.Type?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.Equals(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity other) -> bool
@@ -448,11 +451,13 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.ModelBinderProv
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelBindingContext() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope.NestedScope() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope.Dispose() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope.NestedScope(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext! context) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.OriginalModelName.get -> string!
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.OriginalModelName.set -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.ModelBindingResult() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.Equals(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult other) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.IsModelSet.get -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.Model.get -> object?
@@ -497,6 +502,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ClearValidationState(
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ContainsKey(string! key) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Count.get -> int
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Enumerator
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry!>
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Enumerator.Dispose() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Enumerator.Enumerator(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary, string! prefix) -> void
@@ -510,9 +516,11 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.GetValidationState(st
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.HasReachedMaxErrors.get -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.IsValid.get -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.KeyEnumerable
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.KeyEnumerable.KeyEnumerable() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.KeyEnumerable.GetEnumerator() -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.KeyEnumerator
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.KeyEnumerable.KeyEnumerable(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.KeyEnumerator
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.KeyEnumerator.KeyEnumerator() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.KeyEnumerator.Current.get -> string!
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.KeyEnumerator.Dispose() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.KeyEnumerator.KeyEnumerator(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary, string! prefix) -> void
@@ -528,6 +536,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ModelStateDictionary(
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ModelStateDictionary(int maxAllowedErrors) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ModelStateDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.PrefixEnumerable
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.PrefixEnumerable.PrefixEnumerable() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.PrefixEnumerable.GetEnumerator() -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Enumerator
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.PrefixEnumerable.PrefixEnumerable(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary, string! prefix) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.Remove(string! key) -> bool
@@ -541,9 +550,11 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.TryAddModelException(
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.TryGetValue(string! key, out Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry? value) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValidationState.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerable
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerable.ValueEnumerable() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerable.GetEnumerator() -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerator
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerable.ValueEnumerable(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! dictionary) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerator
+Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerator.ValueEnumerator() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerator.Current.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry!
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerator.Dispose() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.ValueEnumerator.MoveNext() -> bool
@@ -614,6 +625,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidatorProviderContext.M
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidatorProviderContext.Results.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorItem!>!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidatorProviderContext.ValidatorMetadata.get -> System.Collections.Generic.IReadOnlyList<object!>!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry
+Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.ValidationEntry() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.Key.get -> string!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.Metadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
 Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationEntry.Model.get -> object?
@@ -663,6 +675,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderFactoryContext.ActionContext.
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderFactoryContext.ValueProviderFactoryContext(Microsoft.AspNetCore.Mvc.ActionContext! context) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderFactoryContext.ValueProviders.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider!>!
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult
+Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.ValueProviderResult() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.Culture.get -> System.Globalization.CultureInfo!
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.Equals(Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult other) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult.FirstValue.get -> string?

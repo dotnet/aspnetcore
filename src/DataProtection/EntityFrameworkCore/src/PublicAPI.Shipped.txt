@@ -1,5 +1,5 @@
 #nullable enable
-~Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>
 Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey
 Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey.DataProtectionKey() -> void
 Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey.FriendlyName.get -> string?
