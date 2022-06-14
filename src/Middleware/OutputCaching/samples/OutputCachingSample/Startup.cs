@@ -14,9 +14,6 @@ builder.Services.AddOutputCaching(options =>
     options.BasePolicies.AddPolicy(b => b.WithPathBase("/admin").NoStore());
 
     options.AddPolicy("NoCache", b => b.WithPathBase("/wwwroot").Expire(TimeSpan.FromDays(1)));
-
-    options.AddPolicy("Disable", b => b.Add<EnableCachingPolicy>());
-
 });
 
 var app = builder.Build();
@@ -31,7 +28,7 @@ app.MapGet("/nocache", Gravatar.WriteGravatar).CacheOutput(x => x.NoStore());
 
 app.MapGet("/profile", Gravatar.WriteGravatar).CacheOutput(x => x.Policy("NoCache"));
 
-app.MapGet("/attribute", (RequestDelegate)([OutputCache(PolicyName = "NoCache")] (c) => Gravatar.WriteGravatar(c)));
+app.MapGet("/attribute", [OutputCache(PolicyName = "NoCache")] () => Gravatar.WriteGravatar);
 
 var blog = app.MapGroup("blog").CacheOutput(x => x.Tag("blog"));
 blog.MapGet("/", Gravatar.WriteGravatar);
