@@ -996,7 +996,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Client
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ItemTemplates", "src\ProjectTemplates\Web.ItemTemplates\Microsoft.DotNet.Web.ItemTemplates.csproj", "{D0E73F40-0DA9-42A9-8A88-EED8D5EFBEFB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectTemplates.Tests", "src\ProjectTemplates\test\ProjectTemplates.Tests\ProjectTemplates.Tests.csproj", "{6DE03095-7EAC-41DF-8AE4-3018ED29BC61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Tests", "src\ProjectTemplates\test\Templates.Tests\Templates.Tests.csproj", "{6DE03095-7EAC-41DF-8AE4-3018ED29BC61}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorTemplates.Tests", "src\ProjectTemplates\BlazorTemplates.Tests\BlazorTemplates.Tests.csproj", "{18CE63FC-3BFE-47DF-A8D7-9D716FEB04C9}"
 EndProject
@@ -1736,9 +1736,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestInfrastructure", "TestI
 		src\ProjectTemplates\TestInfrastructure\runtimeconfig.norollforward.json = src\ProjectTemplates\TestInfrastructure\runtimeconfig.norollforward.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectTemplates.Mvc.Tests", "src\ProjectTemplates\test\ProjectTemplates.Mvc.Tests\ProjectTemplates.Mvc.Tests.csproj", "{AA7445F5-BD28-400C-8507-E2E0D3CF7D7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Mvc.Tests", "src\ProjectTemplates\test\Templates.Mvc.Tests\Templates.Mvc.Tests.csproj", "{AA7445F5-BD28-400C-8507-E2E0D3CF7D7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectTemplates.Blazor.Tests", "src\ProjectTemplates\test\ProjectTemplates.Blazor.Tests\ProjectTemplates.Blazor.Tests.csproj", "{281BF9DB-7B8A-446B-9611-10A60903F125}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.Tests", "src\ProjectTemplates\test\Templates.Blazor.Tests\Templates.Blazor.Tests.csproj", "{281BF9DB-7B8A-446B-9611-10A60903F125}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
