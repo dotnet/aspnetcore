@@ -42,7 +42,6 @@
   },
   "resolutions": {
     "**/set-value": "^4.0.1",
-    "url-parse": ">=1.5.8",
     "node-fetch": ">=2.6.7"
   }
 }
