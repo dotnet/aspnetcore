@@ -82,6 +82,6 @@ public class OutputCacheAttribute : Attribute, IOrderedFilter, IPoliciesMetadata
             builder.Expire(TimeSpan.FromSeconds(_duration.Value));
         }
 
-        return builder.Build();
+        return builder;
     }
 }

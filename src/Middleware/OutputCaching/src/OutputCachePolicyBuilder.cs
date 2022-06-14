@@ -159,7 +159,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     /// Adds a policy to vary the cached responses by custom values.
     /// </summary>
     /// <param name="varyBy">The value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<Task<string>> varyBy)
+    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, Task<string>> varyBy)
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
@@ -172,7 +172,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     /// Adds a policy to vary the cached responses by custom key/value.
     /// </summary>
     /// <param name="varyBy">The key/value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<Task<(string, string)>> varyBy)
+    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, Task<(string, string)>> varyBy)
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
@@ -185,7 +185,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     /// Adds a policy to vary the cached responses by custom values.
     /// </summary>
     /// <param name="varyBy">The value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<string> varyBy)
+    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, string> varyBy)
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
@@ -198,7 +198,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
     /// Adds a policy to vary the cached responses by custom key/value.
     /// </summary>
     /// <param name="varyBy">The key/value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<(string, string)> varyBy)
+    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, (string, string)> varyBy)
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
@@ -309,14 +309,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         return this;
     }
 
-    /// <summary>
-    /// Builds a new <see cref="IOutputCachingPolicy"/> from the definitions
-    /// in this instance.
-    /// </summary>
-    /// <returns>
-    /// A new <see cref="IOutputCachingPolicy"/> built from the definitions in this instance.
-    /// </returns>
-    public IOutputCachingPolicy Build()
+    internal IOutputCachingPolicy Build()
     {
         if (_builtPolicy != null)
         {

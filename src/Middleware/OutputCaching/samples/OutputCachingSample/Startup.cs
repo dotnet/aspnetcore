@@ -44,7 +44,7 @@ app.MapPost("/purge/{tag}", async (IOutputCacheStore cache, string tag) =>
 // Cached entries will vary by culture, but any other additional query is ignored and returns the same cached content
 app.MapGet("/query", Gravatar.WriteGravatar).CacheOutput(p => p.VaryByQuery("culture"));
 
-app.MapGet("/vary", Gravatar.WriteGravatar).CacheOutput(c => c.VaryByValue(() => ("time", (DateTime.Now.Second % 2).ToString(CultureInfo.InvariantCulture))));
+app.MapGet("/vary", Gravatar.WriteGravatar).CacheOutput(c => c.VaryByValue((context) => ("time", (DateTime.Now.Second % 2).ToString(CultureInfo.InvariantCulture))));
 
 long requests = 0;
 

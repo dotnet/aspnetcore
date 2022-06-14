@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
@@ -8,8 +10,8 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 internal sealed class VaryByValuePolicy : IOutputCachingPolicy
 {
-    private readonly Action<CachedVaryByRules>? _varyBy;
-    private readonly Func<CachedVaryByRules, Task>? _varyByAsync;
+    private readonly Action<HttpContext, CachedVaryByRules>? _varyBy;
+    private readonly Func<HttpContext, CachedVaryByRules, Task>? _varyByAsync;
 
     /// <summary>
     /// Creates a policy that doesn't vary the cached content based on values.
@@ -21,49 +23,49 @@ internal sealed class VaryByValuePolicy : IOutputCachingPolicy
     /// <summary>
     /// Creates a policy that vary the cached content based on the specified value.
     /// </summary>
-    public VaryByValuePolicy(Func<string> varyBy)
+    public VaryByValuePolicy(Func<HttpContext, string> varyBy)
     {
-        _varyBy = (c) => c.VaryByPrefix += varyBy();
+        _varyBy = (context, rules) => rules.VaryByPrefix += varyBy(context);
     }
 
     /// <summary>
     /// Creates a policy that vary the cached content based on the specified value.
     /// </summary>
-    public VaryByValuePolicy(Func<Task<string>> varyBy)
+    public VaryByValuePolicy(Func<HttpContext, Task<string>> varyBy)
     {
-        _varyByAsync = async (c) => c.VaryByPrefix += await varyBy();
+        _varyByAsync = async (context, rules) => rules.VaryByPrefix += await varyBy(context);
     }
 
     /// <summary>
     /// Creates a policy that vary the cached content based on the specified value.
     /// </summary>
-    public VaryByValuePolicy(Func<(string, string)> varyBy)
+    public VaryByValuePolicy(Func<HttpContext, (string, string)> varyBy)
     {
-        _varyBy = (c) =>
+        _varyBy = (context, rules) =>
         {
-            var result = varyBy();
-            c.VaryByCustom?.TryAdd(result.Item1, result.Item2);
+            var result = varyBy(context);
+            rules.VaryByCustom?.TryAdd(result.Item1, result.Item2);
         };
     }
 
     /// <summary>
     /// Creates a policy that vary the cached content based on the specified value.
     /// </summary>
-    public VaryByValuePolicy(Func<Task<(string, string)>> varyBy)
+    public VaryByValuePolicy(Func<HttpContext, Task<(string, string)>> varyBy)
     {
-        _varyBy = async (c) =>
+        _varyBy = async (context, rules) =>
         {
-            var result = await varyBy();
-            c.VaryByCustom?.TryAdd(result.Item1, result.Item2);
+            var result = await varyBy(context);
+            rules.VaryByCustom?.TryAdd(result.Item1, result.Item2);
         };
     }
 
     /// <inheritdoc/>
     Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
     {
-        _varyBy?.Invoke(context.CachedVaryByRules);
+        _varyBy?.Invoke(context.HttpContext, context.CachedVaryByRules);
 
-        return _varyByAsync?.Invoke(context.CachedVaryByRules) ?? Task.CompletedTask;
+        return _varyByAsync?.Invoke(context.HttpContext, context.CachedVaryByRules) ?? Task.CompletedTask;
     }
 
     /// <inheritdoc/>

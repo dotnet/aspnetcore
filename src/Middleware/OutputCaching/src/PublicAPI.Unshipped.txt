@@ -61,7 +61,6 @@ Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Add(Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy! policy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Add(System.Type! policyType) -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Add<T>() -> void
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Build() -> Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Clear() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Expire(System.TimeSpan expiration) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Lock(bool lockResponse = true) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
@@ -73,10 +72,10 @@ Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Policy(string! profi
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Tag(params string![]! tags) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByHeader(params string![]! headers) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByQuery(params string![]! queryKeys) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<(string!, string!)>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<System.Threading.Tasks.Task<(string!, string!)>!>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<System.Threading.Tasks.Task<string!>!>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<string!>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<Microsoft.AspNetCore.Http.HttpContext!, (string!, string!)>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.Tasks.Task<(string!, string!)>!>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<Microsoft.AspNetCore.Http.HttpContext!, System.Threading.Tasks.Task<string!>!>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByValue(System.Func<Microsoft.AspNetCore.Http.HttpContext!, string!>! varyBy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.WithCondition(System.Func<Microsoft.AspNetCore.OutputCaching.OutputCachingContext!, System.Threading.Tasks.Task<bool>!>! predicate) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.WithMethod(params string![]! methods) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.WithMethod(string! method) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
