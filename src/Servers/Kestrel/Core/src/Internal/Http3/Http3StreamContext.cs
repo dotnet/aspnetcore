@@ -36,4 +36,5 @@ internal sealed class Http3StreamContext : HttpConnectionContext
     public ConnectionContext StreamContext { get; }
     public Http3PeerSettings ClientPeerSettings { get; }
     public Http3PeerSettings ServerPeerSettings { get; }
+    public WebTransportSession? WebTransportSession { get; set; }
 }

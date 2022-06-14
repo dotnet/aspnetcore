@@ -16,7 +16,7 @@ internal class WebTransportSession
         "sec-webtransport-http3-draft02"u8
     };
 
-    public static readonly string[] _suppportedWebTransportVersions =
+    public static readonly string[] suppportedWebTransportVersions =
 {
         "sec-webtransport-http3-draft02"
     };

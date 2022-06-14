@@ -12,7 +12,7 @@ internal class WebTransportBidirectionalStream<TContext> : Http3BidirectionalStr
     public WebTransportBidirectionalStream(IHttpApplication<TContext> application, Http3StreamContext context)
         : base(application, context) { }
 
-    protected override Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted)
+    protected override Task ProcessHttp3Stream<TContext2>(IHttpApplication<TContext2> application, in ReadOnlySequence<byte> payload, bool isCompleted)
     {
         if (((long)_incomingFrame.Type) != ((long)Http3StreamType.WebTransportBidirectional))
         {

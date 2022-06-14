@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
@@ -355,9 +354,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                     else
                                     {
                                         stream = new Http3BidirectionalStream<TContext>(application, CreateHttpStreamContext(streamContext));
-
-                                        // todo only do this if this is the stream that was created from the connect request
-                                        stream.SetAsWebTransportControlStream(_webtransportSession);
                                     }
 
                                     persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
