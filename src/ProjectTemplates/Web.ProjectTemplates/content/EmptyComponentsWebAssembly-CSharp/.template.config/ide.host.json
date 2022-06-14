@@ -7,19 +7,6 @@
       "auth": "None",
       "authenticationType": "NoAuth",
       "allowUnsecured": true
-    },
-    {
-      "auth": "Individual",
-      "authenticationType": "IndividualAuth",
-      "b2cAuthenticationOptions": "Local"
-    },
-    {
-      "auth": "SingleOrg",
-      "authenticationType": "OrgAuth",
-      "orgAuthenticationOptions": "SSO",
-      "provisionServerSymbol": "Hosted",
-      "callbackPath": "/authentication/login-callback",
-      "additionalReplyUriPorts": [ 5001 ]
     }
   ],
   "ports": [
@@ -41,10 +28,6 @@
     {
       "id": "PWA",
       "isVisible": "true"
-    },
-    {
-      "id": "UseProgramMain",
-      "isVisible": true
     }
   ]
 }

@@ -1,7 +1,5 @@
 {
     "iisSettings": {
-      "windowsAuthentication": false,
-      "anonymousAuthentication": true,
       "iisExpress": {
         "applicationUrl": "http://localhost:8080",
         //#if(RequiresHttps)
@@ -12,7 +10,7 @@
       }
     },
     "profiles": {
-      "ComponentsWebAssembly-CSharp.Server": {
+      "EmptyComponentsWebAssembly-CSharp.Server": {
         "commandName": "Project",
         "dotnetRunMessages": true,
         "launchBrowser": true,
