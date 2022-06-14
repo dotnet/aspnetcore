@@ -72,7 +72,7 @@ public class PackageTests
             }
             // Don't test helix test runner tool packages
             string[] helixTestRunnerToolPackages = { "dotnet-serve", "dotnet-ef", "dotnet-dump" };
-            if (helixTestRunnerToolPackages.Any(s => packageDir.StartsWith(s, StringComparison.OrdinalIgnoreCase)))
+            if (helixTestRunnerToolPackages.Any(s => packageDir.Contains(s, StringComparison.OrdinalIgnoreCase)))
             {
                 continue;
             }
