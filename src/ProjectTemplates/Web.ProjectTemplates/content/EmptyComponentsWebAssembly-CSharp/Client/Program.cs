@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #if (Hosted)
-using ComponentsWebAssembly_CSharp.Client;
+using EmptyComponentsWebAssembly_CSharp.Client;
 #else
-using ComponentsWebAssembly_CSharp;
+using EmptyComponentsWebAssembly_CSharp;
 #endif
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
