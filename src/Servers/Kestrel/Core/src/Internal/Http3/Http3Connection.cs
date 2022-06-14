@@ -143,6 +143,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
     {
+        _webtransportSession.Abort();
+
         bool previousState;
 
         lock (_protocolSelectionLock)
@@ -291,7 +293,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                     // The Task.Run makes sure that we don't block the QUIC IO stream and can actually read the stream type from it
                     // and then it makes the stream run on its own thread as well in the pool
-                    // TODO THIS IS UGLY, MAYBE WE SHOULD MAKE A NEW FACTORY CLASS THAT DOES THIS FOR US?
                     _ = Task.Run(async () =>
                         {
                             if (!streamDirectionFeature.CanWrite)
@@ -698,6 +699,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 _activeRequestCount--;
             }
             _streams.Remove(stream.StreamId);
+
+            _webtransportSession.TryRemoveStream(stream.StreamId);
         }
 
         if (stream.IsRequestStream)

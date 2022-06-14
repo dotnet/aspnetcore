@@ -16,7 +16,7 @@ internal class WebTransportBidirectionalStream<TContext> : Http3BidirectionalStr
     {
         if (((long)_incomingFrame.Type) != ((long)Http3StreamType.WebTransportBidirectional))
         {
-            throw new Http3ConnectionErrorException($"Stream type must be {((long)Http3StreamType.WebTransportBidirectional):X} on bidirectional webtransport streams", Http3ErrorCode.ConnectError);
+            throw new Http3ConnectionErrorException($"Stream type must be {(long)Http3StreamType.WebTransportBidirectional:X} on bidirectional webtransport streams", Http3ErrorCode.ConnectError);
         }
 
         return ProcessDataAsync(payload);

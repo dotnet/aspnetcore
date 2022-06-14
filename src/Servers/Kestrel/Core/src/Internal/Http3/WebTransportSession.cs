@@ -4,8 +4,10 @@
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal class WebTransportSession
 {
-    private readonly Dictionary<long, IHttp3Stream> _openStreams = new();
+    private bool _aborted;
+    private readonly Dictionary<long, IHttp3Stream> _openStreams = new(); // todo should this maybe just be a list as I am not actually indexing based on id?
     private static bool _webtransportEnabled;
+    private Http3BidirectionalStream _controlStream = default!;
 
     public static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
 
@@ -21,16 +23,16 @@ internal class WebTransportSession
         "draft02"
     };
 
-    public int SessionId { get; private set; }
-    public long NumOpenStreams => _openStreams.Count;
+    public long SessionId => _controlStream.StreamId;
 
-    public bool Initialize(int id, string version)
+    public bool Initialize(Http3BidirectionalStream controlStream, string version)
     {
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out _webtransportEnabled);
 
         if (_webtransportEnabled)
         {
-            SessionId = id;
+            _controlStream = controlStream;
+            _aborted = false;
         }
 
         // todo once we support multiple versions, actually use the version
@@ -61,11 +63,24 @@ internal class WebTransportSession
         return _openStreams.Remove(streamId);
     }
 
-    public void TerminateSession()
+    // TODO add a graceful close
+    // TODO handle the client closing (abort and graceful)
+    // TODO handle a stream ending/completing (I think I did this but I need to make sure)
+    public void Abort()
     {
         ThrowIfInvalidSession();
 
-        // todo implement: https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-session-termination
+        _aborted = true;
+
+        _controlStream.Abort(new Connections.ConnectionAbortedException(), System.Net.Http.Http3ErrorCode.NoError);
+        foreach (var stream in _openStreams)
+        {
+            stream.Value.Abort(new Connections.ConnectionAbortedException(), System.Net.Http.Http3ErrorCode.NoError);
+        }
+
+        _openStreams.Clear();
+
+        // Eventual todo: implement http datagrams and send the close webtransport session capsule
     }
 
     private void ThrowIfInvalidSession()
@@ -73,6 +88,11 @@ internal class WebTransportSession
         if (!_webtransportEnabled)
         {
             throw new Exception("WebTransport is currently disabled.");
+        }
+
+        if (_aborted)
+        {
+            throw new Exception("Session has been aborted.");
         }
     }
 }

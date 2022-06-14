@@ -856,12 +856,12 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
                 foreach (var version in WebTransportSession.suppportedWebTransportVersions)
                 {
                     if (supportedVersions.Any((v) => v.Key.EndsWith(version, StringComparison.InvariantCulture)) &&
-                        (_context?.WebTransportSession.Initialize((int)_streamIdFeature.StreamId, version) ?? false))
+                        (_context?.WebTransportSession.Initialize(this, version) ?? false))
                     {
                         HttpResponseHeaders.TryAdd(WebTransportSession.VersionHeaderPrefix, version);
 
                         Output.WriteResponseHeaders(200, null, HttpResponseHeaders, false, false);
-                        Output.FlushAsync(CancellationToken.None);
+                        await Output.FlushAsync(CancellationToken.None);
                         break;
                     }
                 }
