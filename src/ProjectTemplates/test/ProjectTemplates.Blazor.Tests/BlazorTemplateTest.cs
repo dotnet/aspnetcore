@@ -15,7 +15,7 @@ using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Templates.Test;
+namespace Templates.Blazor.Test;
 
 public abstract class BlazorTemplateTest : LoggedTest
 {

@@ -8,6 +8,7 @@
       "src\\ProjectTemplates\\Web.ProjectTemplates\\Microsoft.DotNet.Web.ProjectTemplates.csproj",
       "src\\submodules\\spa-templates\\src\\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj",
       "src\\ProjectTemplates\\test\\ProjectTemplates.Tests\\ProjectTemplates.Tests.csproj",
+      "src\\ProjectTemplates\\test\\ProjectTemplates.Mvc.Tests\\ProjectTemplates.Mvc.Tests.csproj",
       "src\\Shared\\BrowserTesting\\src\\Microsoft.AspNetCore.BrowserTesting.csproj"
     ]
   }
