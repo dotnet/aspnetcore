@@ -25,7 +25,7 @@ public static class ProjectExtensions
             var profiles = launchSettings.RootElement.GetProperty("profiles");
             foreach (var profileName in expectedLaunchProfileNames)
             {
-                Assert.True(profiles.TryGetProperty(profileName, out var _), $"Expected launch profile '{profileName}' was not found.");
+                Assert.True(profiles.TryGetProperty(profileName, out var _), $"Expected launch profile '{profileName}' was not found in file {filePath}");
             }
 
             if (launchSettings.RootElement.TryGetProperty("iisSettings", out var iisSettings)
@@ -34,7 +34,7 @@ public static class ProjectExtensions
                 var iisSslPort = iisExpressSettings.GetProperty("sslPort").GetInt32();
                 if (expectedLaunchProfileNames.Contains("https"))
                 {
-                    Assert.True(iisSslPort > 44300, $"IIS Express port was expected to be greater than 44300 but was {iisSslPort}.");
+                    Assert.True(iisSslPort > 44300, $"IIS Express port was expected to be greater than 44300 but was {iisSslPort} in file {filePath}");
                 }
                 else
                 {
