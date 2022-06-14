@@ -305,7 +305,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
-                                    stream = new WebTransportUnidirectionalStream<TContext>(application, context);
+                                    stream = new Http3UnidirectionalStream<TContext>(application, context);
 
                                     _webtransportSession.AddStream(stream);
                                 }
@@ -347,16 +347,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 // A stream will only be cached if the transport stream itself is reused.
                                 if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s))
                                 {
+                                    stream = new Http3BidirectionalStream<TContext>(application, context);
 
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
-                                        stream = new WebTransportBidirectionalStream<TContext>(application, context);
-
                                         _webtransportSession.AddStream(stream);
-                                    }
-                                    else
-                                    {
-                                        stream = new Http3BidirectionalStream<TContext>(application, context);
                                     }
 
                                     persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
