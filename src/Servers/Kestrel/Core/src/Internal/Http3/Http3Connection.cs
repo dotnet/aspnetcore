@@ -299,17 +299,18 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 // Unidirectional stream
                                 Http3UnidirectionalStream stream;
 
-                                var streamType = await ReadStreamType(streamContext);
+                                var context = CreateHttpStreamContext(streamContext);
+                                var streamType = await ReadStreamType(context);
 
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
-                                    stream = new WebTransportUnidirectionalStream<TContext>(application, CreateHttpStreamContext(streamContext));
+                                    stream = new WebTransportUnidirectionalStream<TContext>(application, context);
 
-                                    _webtransportSession.TryAddStream(stream);
+                                    _webtransportSession.AddStream(stream);
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
                                 {
-                                    stream = new Http3ControlStream<TContext>(application, CreateHttpStreamContext(streamContext));
+                                    stream = new Http3ControlStream<TContext>(application, context);
                                 }
 
                                 _streamLifetimeHandler.OnStreamCreated(stream);
@@ -338,7 +339,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                                 Http3BidirectionalStream stream;
 
-                                var streamType = await ReadStreamType(streamContext);
+                                var context = CreateHttpStreamContext(streamContext);
+                                var streamType = await ReadStreamType(context);
 
                                 // Check whether there is an existing HTTP/3 stream on the transport stream.
                                 // A stream will only be cached if the transport stream itself is reused.
@@ -347,13 +349,13 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
-                                        stream = new WebTransportBidirectionalStream<TContext>(application, CreateHttpStreamContext(streamContext));
+                                        stream = new WebTransportBidirectionalStream<TContext>(application, context);
 
-                                        _webtransportSession.TryAddStream(stream);
+                                        _webtransportSession.AddStream(stream);
                                     }
                                     else
                                     {
-                                        stream = new Http3BidirectionalStream<TContext>(application, CreateHttpStreamContext(streamContext));
+                                        stream = new Http3BidirectionalStream<TContext>(application, context);
                                     }
 
                                     persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
@@ -467,10 +469,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         }
     }
 
-    private async Task<long> ReadStreamType(ConnectionContext streamContext)
+    private async Task<long> ReadStreamType(Http3StreamContext context)
     {
-        // crappy adaptation of the TryReadStreamHeaderAsync method of the ControlStream class to extract the stream type
-        var context = CreateHttpStreamContext(streamContext);
         var Input = context.Transport.Input;
         var result = await Input.ReadAsync();
         var readableBuffer = result.Buffer;

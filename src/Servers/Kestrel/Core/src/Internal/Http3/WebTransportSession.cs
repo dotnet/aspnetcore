@@ -5,7 +5,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal class WebTransportSession
 {
     private readonly Dictionary<long, IHttp3Stream> _openStreams = new();
-    private const int _maxSimultaneousStreams = 25; // arbitrary number 
     private static bool _webtransportEnabled;
 
     public static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
@@ -40,21 +39,14 @@ internal class WebTransportSession
     }
 
     /// <summary>
-    /// Tries to add a new stream to the internal list of open streams.
+    /// Adds a new stream to the internal list of open streams.
     /// </summary>
     /// <param name="stream">A reference to the new stream that is being added</param>
-    /// <returns>True is the process succeeded. False otherwise</returns>
-    public bool TryAddStream(IHttp3Stream stream)
+    public void AddStream(IHttp3Stream stream)
     {
-        CheckIfValidSession();
-
-        if (NumOpenStreams >= _maxSimultaneousStreams)
-        {
-            return false;
-        }
+        ThrowIfInvalidSession();
 
         _openStreams.Add(stream.StreamId, stream);
-        return true;
     }
 
     /// <summary>
@@ -64,17 +56,19 @@ internal class WebTransportSession
     /// <returns>True is the process succeeded. False otherwise</returns>
     public bool TryRemoveStream(long streamId)
     {
+        ThrowIfInvalidSession();
+
         return _openStreams.Remove(streamId);
     }
 
     public void TerminateSession()
     {
-        CheckIfValidSession();
+        ThrowIfInvalidSession();
 
         // todo implement: https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-session-termination
     }
 
-    private void CheckIfValidSession()
+    private void ThrowIfInvalidSession()
     {
         if (!_webtransportEnabled)
         {

@@ -38,8 +38,6 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
     private static ReadOnlySpan<byte> TrailersBytes => "trailers"u8;
     private static ReadOnlySpan<byte> ConnectBytes => "CONNECT"u8;
 
-    private static ReadOnlySpan<byte> OneBytes => "1"u8;
-
     private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
         PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
