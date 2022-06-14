@@ -146,7 +146,6 @@ public class Project : IDisposable
         if (execution.Output.Contains(": warning") || execution.Error.Contains(": warning"))
         {
             result.ExitCode = -1;
-            throw new Exception(execution.Output + " ~ " + execution.Error + " ~ " + execution.ToString());
         }
 
         CaptureBinLogOnFailure(execution);
@@ -409,7 +408,7 @@ public class Project : IDisposable
         if (result.ExitCode != 0 && !string.IsNullOrEmpty(ArtifactsLogDir))
         {
             var sourceFile = Path.Combine(TemplateOutputDir, "msbuild.binlog");
-            Assert.True(File.Exists(sourceFile), $"Log for '{ProjectName}' not found in '{sourceFile}'.");
+            Assert.True(File.Exists(sourceFile), $"Log for '{ProjectName}' not found in '{sourceFile}'. Execution output:{Environment.NewLine}{execution.Output}{Environment.NewLine}Error:{Environment.NewLine}{execution.Error}{Environment.NewLine}{execution}");
             var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
             File.Move(sourceFile, destination, overwrite: true); // binlog will exist on retries
         }
