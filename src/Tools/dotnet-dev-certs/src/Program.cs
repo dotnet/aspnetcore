@@ -74,8 +74,8 @@ internal sealed class Program
 
                 // We want to force generating a key without a password to not be an accident.
                 var noPassword = c.Option("-np|--no-password",
-                "Explicitly request that you don't use a password for the key when exporting a certificate to a PEM format",
-                CommandOptionType.NoValue);
+                    "Explicitly request that you don't use a password for the key when exporting a certificate to a PEM format",
+                    CommandOptionType.NoValue);
 
                 var check = c.Option(
                     "-c|--check",
@@ -170,10 +170,10 @@ internal sealed class Program
 
                     if (clean.HasValue())
                     {
-                        var clean = CleanHttpsCertificates(reporter);
-                        if (clean != Success || !import.HasValue())
+                        var cleanResult = CleanHttpsCertificates(reporter);
+                        if (cleanResult != Success || !import.HasValue())
                         {
-                            return clean;
+                            return cleanResult;
                         }
 
                         return ImportCertificate(import, password, reporter);
@@ -365,9 +365,9 @@ internal sealed class Program
             {
                 reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
                     "already trusted we will run the following command:" + Environment.NewLine +
-                    "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
+                    "'security add-trusted-cert -p basic -p ssl -k <<login-keychain>> <<certificate>>'" +
                     Environment.NewLine + "This command might prompt you for your password to install the certificate " +
-                    "on the system keychain. To undo these changes: 'sudo security remove-trusted-cert -d <<certificate>>'");
+                    "on the keychain. To undo these changes: 'security remove-trusted-cert <<certificate>>'");
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
