@@ -59,8 +59,8 @@ Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.Tags.get -> string![]?
 Microsoft.AspNetCore.OutputCaching.OutputCacheEntry.Tags.set -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Add(Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy! policy) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Add(string! name, System.Type! policyType) -> void
-Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Add<T>(string! name) -> void
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Add(System.Type! policyType) -> void
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Add<T>() -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Build() -> Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Clear() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Expire(System.TimeSpan expiration) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
@@ -68,6 +68,7 @@ Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Lock(bool lockRespon
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.NoCache() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.NoLookup() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.NoStore() -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
+Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.OutputCachePolicyBuilder() -> void
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Policy(string! profileName) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.Tag(params string![]! tags) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!
 Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder.VaryByHeader(params string![]! headers) -> Microsoft.AspNetCore.OutputCaching.OutputCachePolicyBuilder!

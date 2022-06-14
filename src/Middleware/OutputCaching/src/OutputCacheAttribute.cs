@@ -62,7 +62,7 @@ public class OutputCacheAttribute : Attribute, IPoliciesMetadata
 
     private IOutputCachingPolicy GetPolicy()
     {
-        var builder = new OutputCachePolicyBuilder().Enable();
+        var builder = new OutputCachePolicyBuilder();
 
         if (_noStore != null && _noStore.Value)
         {

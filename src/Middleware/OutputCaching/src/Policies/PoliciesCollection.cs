@@ -67,7 +67,7 @@ public sealed class PoliciesCollection : IReadOnlyCollection<IOutputCachingPolic
     /// </summary>
     public void AddPolicy(Action<OutputCachePolicyBuilder> build)
     {
-        var builder = new OutputCachePolicyBuilder(_options);
+        var builder = new OutputCachePolicyBuilder();
         build(builder);
         AddPolicy(builder.Build());
     }

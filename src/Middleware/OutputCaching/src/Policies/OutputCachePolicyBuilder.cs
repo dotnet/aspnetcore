@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OutputCaching.Policies;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
@@ -19,14 +17,15 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
 
     private IOutputCachingPolicy? _builtPolicy;
     private readonly List<IOutputCachingPolicy> _policies = new();
-    private readonly OutputCachingOptions _options;
     private List<Func<OutputCachingContext, Task<bool>>>? _requirements;
 
-    internal OutputCachePolicyBuilder(OutputCachingOptions options)
+    /// <summary>
+    /// Creates a new <see cref="OutputCachePolicyBuilder"/> instance.
+    /// </summary>
+    public OutputCachePolicyBuilder()
     {
         _builtPolicy = null;
         _policies.Add(DefaultOutputCachePolicy.Instance);
-        _options = options;
     }
 
     /// <summary>
@@ -346,24 +345,17 @@ public sealed class OutputCachePolicyBuilder : IOutputCachingPolicy
         return _builtPolicy = policies;
     }
 
-
     /// <summary>
-    /// Defines a <see cref="IOutputCachingPolicy"/> which can be referenced by name.
+    /// Adds a dynamically resolved policy.
     /// </summary>
-    /// <param name="name">The name of the policy.</param>
     /// <param name="policyType">The type of policy to add</param>
     public void Add([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type policyType)
     {
-        if (ActivatorUtilities.GetServiceOrCreateInstance(_options.ApplicationServices, policyType) is not IOutputCachingPolicy policy)
-        {
-            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Policy_InvalidType));
-        }
-
-        Add(policy);
+        Add(new TypedPolicy(policyType));
     }
 
     /// <summary>
-    /// Defines a <see cref="IOutputCachingPolicy"/> which can be referenced by name.
+    /// Adds a dynamically resolved policy.
     /// </summary>
     /// <typeparam name="T">The policy type.</typeparam>
     public void Add<[DynamicallyAccessedMembers(ActivatorAccessibility)] T>() where T : IOutputCachingPolicy

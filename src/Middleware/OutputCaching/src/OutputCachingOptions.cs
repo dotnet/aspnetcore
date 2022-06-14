@@ -2,10 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Microsoft.AspNetCore.OutputCaching.Policies;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
@@ -81,7 +78,7 @@ public class OutputCachingOptions
     /// <param name="build">an action on <see cref="OutputCachePolicyBuilder"/>.</param>
     public void AddPolicy(string name, Action<OutputCachePolicyBuilder> build)
     {
-        var builder = new OutputCachePolicyBuilder(this);
+        var builder = new OutputCachePolicyBuilder();
         build(builder);
         NamedPolicies ??= new Dictionary<string, IOutputCachingPolicy>(StringComparer.OrdinalIgnoreCase);
         NamedPolicies[name] = builder.Build();
