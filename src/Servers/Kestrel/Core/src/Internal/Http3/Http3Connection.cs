@@ -143,8 +143,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
     {
-        _webtransportSession.Abort();
-
         bool previousState;
 
         lock (_protocolSelectionLock)
@@ -697,8 +695,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 _activeRequestCount--;
             }
             _streams.Remove(stream.StreamId);
-
-            _webtransportSession.TryRemoveStream(stream.StreamId);
         }
 
         if (stream.IsRequestStream)

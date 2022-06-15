@@ -144,7 +144,7 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
         AbortCore(abortReason, errorCode);
     }
 
-    private void AbortCore(Exception exception, Http3ErrorCode errorCode)
+    protected virtual void AbortCore(Exception exception, Http3ErrorCode errorCode)
     {
         lock (_completionLock)
         {

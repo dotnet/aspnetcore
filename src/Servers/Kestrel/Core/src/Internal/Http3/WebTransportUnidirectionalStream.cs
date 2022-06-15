@@ -7,7 +7,7 @@ internal class WebTransportUnidirectionalStream<TContext> : Http3UnidirectionalS
 {
     public WebTransportUnidirectionalStream(IHttpApplication<TContext> application, Http3StreamContext context) : base(application, context)
     {
-        context.StreamContext.ConnectionClosed.Register(state =>
+        context.StreamContext.ConnectionClosed.Register(state => // todo would it be better to use the lifetimehandler callbacks?
         {
             var stream = (WebTransportUnidirectionalStream<TContext>)state!;
             stream._context.WebTransportSession.TryRemoveStream(stream.StreamId);

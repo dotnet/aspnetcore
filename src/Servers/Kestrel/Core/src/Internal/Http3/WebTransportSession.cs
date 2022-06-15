@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http;
+using System.IO;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal class WebTransportSession
 {
@@ -48,7 +51,10 @@ internal class WebTransportSession
     {
         ThrowIfInvalidSession();
 
-        _openStreams.Add(stream.StreamId, stream);
+        lock (_openStreams)
+        {
+            _openStreams.Add(stream.StreamId, stream);
+        }
     }
 
     /// <summary>
@@ -62,11 +68,17 @@ internal class WebTransportSession
         // removing streams is part of the process
         ThrowIfInvalidSessionCore();
 
-        var t = _openStreams.Remove(streamId);
-        var f = t ? "Sucessfully" : "Failed to";
+        bool result;
+        lock (_openStreams)
+        {
+            result = _openStreams.Remove(streamId);
+        }
+
+        // for debugging todo remove
+        var f = result ? "Sucessfully" : "Failed to";
         Console.WriteLine($"{f} Removed stream with id: {streamId}. {_openStreams.Count} stream left.");
 
-        return t;
+        return result;
     }
 
     // TODO add a graceful close
@@ -74,17 +86,25 @@ internal class WebTransportSession
     // TODO handle a stream ending/completing (I think I did this but I need to make sure)
     public void Abort()
     {
-        ThrowIfInvalidSession();
+        Console.WriteLine("Aborting WebTransport session");
+
+        ThrowIfInvalidSessionCore();
+
+        if (_aborted)
+        {
+            return;
+        }
 
         _aborted = true;
-
-        Console.WriteLine("Aborting the WebTransport session");
 
         _controlStream.Abort(new Connections.ConnectionAbortedException(), System.Net.Http.Http3ErrorCode.NoError);
         foreach (var stream in _openStreams)
         {
+            if (stream.Value is null) // TODO why does this happen sometimes?
+            {
+                continue;
+            }
             stream.Value.Abort(new Connections.ConnectionAbortedException(), System.Net.Http.Http3ErrorCode.NoError);
-            Console.WriteLine($"Aborted stream with id: {stream.Value.StreamId}. {_openStreams.Count} stream left.");
         }
 
         _openStreams.Clear();
