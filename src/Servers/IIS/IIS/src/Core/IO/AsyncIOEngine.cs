@@ -36,57 +36,95 @@ internal sealed partial class AsyncIOEngine : IAsyncIOEngine
         return new ValueTask<int>(read, 0);
     }
 
-    public async ValueTask<int> WriteAsync(ReadOnlySequence<byte> data)
+    public ValueTask<int> WriteAsync(ReadOnlySequence<byte> data)
     {
-        if (data.IsSingleSegment)
+        if (SegmentsOverChunksLimit(data))
         {
-            return await WriteImplAsync(data);
+            return WriteDataOverChunksLimit(data);
         }
-        else
-        {
-            /*
-             * In case the number of chunks is bigger than responseMaxChunks we need to make multiple calls 
-             * to the native api https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/ihttpresponse-writeentitychunks-method  
-             * Despite the documentation states that feeding the function with more than 65535 chunks will cause the function to throw an exception, 
-             * it actually seems that 65534 is the maximum number of chunks allowed.
-             * Also, there seems to be a problem when slicing a ReadOnlySequence on segment borders tracked here https://github.com/dotnet/runtime/issues/67607
-             * That's why responseMaxChunks is set to be 65533. 
-             */
-            ushort chunksCount = 0;
-            var start = 0;
-            var length = 0;
-            var result = 0;
 
-            foreach (var chunk in data)
-            {
-                chunksCount++;
-                length += chunk.Length;
-
-                if (chunksCount == responseMaxChunks)
-                {
-                    result += await WriteImplAsync(data.Slice(start, length));
-
-                    chunksCount = 0;
-                    start = length;
-                    length = 0;
-                }
-            }
-
-            if (chunksCount > 0)
-            {
-                result += await WriteImplAsync(data.Slice(start, length));
-            }
-
-            return result;
-        }
+        return WriteDataAsync(data);
     }
 
-    private ValueTask<int> WriteImplAsync(ReadOnlySequence<byte> data)
+    private ValueTask<int> WriteDataAsync(in ReadOnlySequence<byte> data)
     {
         var write = GetWriteOperation();
         write.Initialize(_handler, data);
         Run(write);
         return new ValueTask<int>(write, 0);
+    }
+
+    /*
+    * In case the number of chunks is bigger than responseMaxChunks we need to make multiple calls 
+    * to the native api https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/ihttpresponse-writeentitychunks-method  
+    * Despite the documentation states that feeding the function with more than 65535 chunks will cause the function to throw an exception, 
+    * it actually seems that 65534 is the maximum number of chunks allowed.
+    * Also, there seems to be a problem when slicing a ReadOnlySequence on segment borders tracked here https://github.com/dotnet/runtime/issues/67607
+    * That's why we only allow 65533 chunks.  
+    */
+    private async ValueTask<int> WriteDataOverChunksLimit(ReadOnlySequence<byte> data)
+    {
+        var hr = 0;
+        ushort segmentsCount = 0;
+        var start = 0;
+        var length = 0;
+        int result;
+
+        foreach (var segment in data)
+        {
+            segmentsCount++;
+            length += segment.Length;
+
+            if (segmentsCount == responseMaxChunks)
+            {
+                result = await WriteDataAsync(data.Slice(start, length));
+
+                SaveResultIfError(result, ref hr);
+
+                segmentsCount = 0;
+                start = length;
+                length = 0;
+            }
+        }
+
+        if (segmentsCount > 0)
+        {
+            result = await WriteDataAsync(data.Slice(start, length));
+
+            SaveResultIfError(result, ref hr);
+        }
+
+        return hr;
+
+        static void SaveResultIfError(int result, ref int hr)
+        {
+            if (result > 0)
+            {
+                hr = result;
+            }
+        }
+    }
+
+    private static bool SegmentsOverChunksLimit(in ReadOnlySequence<byte> data)
+    {
+        if (data.IsSingleSegment)
+        {
+            return false;
+        }
+
+        var count = 0;
+
+        foreach (var _ in data)
+        {
+            count++;
+
+            if (count > responseMaxChunks)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void Run(AsyncIOOperation ioOperation)
