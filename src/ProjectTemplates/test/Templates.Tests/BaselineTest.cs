@@ -17,7 +17,7 @@ namespace Templates.Test;
 
 public class BaselineTest : LoggedTest
 {
-    private static readonly string BaselineDefinitionFileResourceName = "ProjectTemplates.Tests.template-baselines.json";
+    private static readonly string BaselineDefinitionFileResourceName = "Templates.Tests.template-baselines.json";
 
     public BaselineTest(ProjectFactoryFixture projectFactory)
     {
