@@ -118,7 +118,7 @@ public sealed class WebApplicationBuilder
     public ConfigureHostBuilder Host { get; }
 
     /// <summary>
-    /// An <see cref="AuthenticationBuilder"/> for configuration authentication-related properties.
+    /// An <see cref="AuthenticationBuilder"/> for configuring authentication-related properties.
     /// </summary>
     public AuthenticationBuilder Authentication => _webAuthBuilder;
 
