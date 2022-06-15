@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that defines custom tags on the cache entry.
 /// </summary>
-internal sealed class TagsPolicy : IOutputCachingPolicy
+internal sealed class TagsPolicy : IOutputCachePolicy
 {
     private readonly string[] _tags;
 
@@ -20,7 +20,7 @@ internal sealed class TagsPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         foreach (var tag in _tags)
         {
@@ -31,13 +31,13 @@ internal sealed class TagsPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }

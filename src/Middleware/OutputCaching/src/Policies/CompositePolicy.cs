@@ -6,21 +6,21 @@ namespace Microsoft.AspNetCore.OutputCaching.Policies;
 /// <summary>
 /// A composite policy.
 /// </summary>
-internal sealed class CompositePolicy : IOutputCachingPolicy
+internal sealed class CompositePolicy : IOutputCachePolicy
 {
-    private readonly IOutputCachingPolicy[] _policies;
+    private readonly IOutputCachePolicy[] _policies;
 
     /// <summary>
     /// Creates a new instance of <see cref="CompositePolicy"/>
     /// </summary>
     /// <param name="policies">The policies to include.</param>
-    public CompositePolicy(params IOutputCachingPolicy[] policies!!)
+    public CompositePolicy(params IOutputCachePolicy[] policies!!)
     {
         _policies = policies;
     }
 
     /// <inheritdoc/>
-    async Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    async Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         foreach (var policy in _policies)
         {
@@ -29,7 +29,7 @@ internal sealed class CompositePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc/>
-    async Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    async Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         foreach (var policy in _policies)
         {
@@ -38,7 +38,7 @@ internal sealed class CompositePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc/>
-    async Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    async Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         foreach (var policy in _policies)
         {

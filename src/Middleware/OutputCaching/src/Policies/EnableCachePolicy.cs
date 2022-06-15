@@ -6,17 +6,17 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that enables caching
 /// </summary>
-internal sealed class EnableCachingPolicy : IOutputCachingPolicy
+internal sealed class EnableCachePolicy : IOutputCachePolicy
 {
-    public static readonly EnableCachingPolicy Enabled = new();
-    public static readonly EnableCachingPolicy Disabled = new();
+    public static readonly EnableCachePolicy Enabled = new();
+    public static readonly EnableCachePolicy Disabled = new();
 
-    private EnableCachingPolicy()
+    private EnableCachePolicy()
     {
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         context.EnableOutputCaching = this == Enabled;
 
@@ -24,13 +24,13 @@ internal sealed class EnableCachingPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }

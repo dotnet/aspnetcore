@@ -3,28 +3,27 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.AspNetCore.OutputCaching.Policies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOutputCaching(options =>
 {
     // Define policies for all requests which are not configured per endpoint or per request
-    options.BasePolicies.AddPolicy(b => b.WithPathBase("/js").Expire(TimeSpan.FromDays(1)));
-    options.BasePolicies.AddPolicy(b => b.WithPathBase("/admin").NoStore());
+    options.BasePolicies.AddPolicy(b => b.With(c => c.HttpContext.Request.Path.StartsWithSegments("/js")).Expire(TimeSpan.FromDays(1)).AddPolicy<EnableCachePolicy>());
+    options.BasePolicies.AddPolicy(b => b.With(c => c.HttpContext.Request.Path.StartsWithSegments("/js")).NoCache());
 
-    options.AddPolicy("NoCache", b => b.WithPathBase("/wwwroot").Expire(TimeSpan.FromDays(1)));
+    options.AddPolicy("NoCache", b => b.NoCache());
 });
 
 var app = builder.Build();
 
-app.UseOutputCaching();
+app.UseOutputCache();
 
 app.MapGet("/", Gravatar.WriteGravatar);
 
 app.MapGet("/cached", Gravatar.WriteGravatar).CacheOutput();
 
-app.MapGet("/nocache", Gravatar.WriteGravatar).CacheOutput(x => x.NoStore());
+app.MapGet("/nocache", Gravatar.WriteGravatar).CacheOutput(x => x.NoCache());
 
 app.MapGet("/profile", Gravatar.WriteGravatar).CacheOutput(x => x.Policy("NoCache"));
 
@@ -53,7 +52,7 @@ app.MapGet("/lock", async (context) =>
 {
     await Task.Delay(1000);
     await context.Response.WriteAsync($"<pre>{requests++}</pre>");
-}).CacheOutput(p => p.Lock(false).Expire(TimeSpan.FromMilliseconds(1)));
+}).CacheOutput(p => p.AllowLocking(false).Expire(TimeSpan.FromMilliseconds(1)));
 
 // Etag
 app.MapGet("/etag", async (context) =>
@@ -66,7 +65,7 @@ app.MapGet("/etag", async (context) =>
 
     await Gravatar.WriteGravatar(context);
 
-    var cacheContext = context.Features.Get<IOutputCachingFeature>()?.Context;
+    var cacheContext = context.Features.Get<IOutputCacheFeature>()?.Context;
 
 }).CacheOutput();
 

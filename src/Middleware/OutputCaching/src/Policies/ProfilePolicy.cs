@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy represented by a named profile.
 /// </summary>
-internal sealed class ProfilePolicy : IOutputCachingPolicy
+internal sealed class ProfilePolicy : IOutputCachePolicy
 {
     private readonly string _profileName;
 
@@ -20,7 +20,7 @@ internal sealed class ProfilePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -33,7 +33,7 @@ internal sealed class ProfilePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -46,7 +46,7 @@ internal sealed class ProfilePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -58,7 +58,7 @@ internal sealed class ProfilePolicy : IOutputCachingPolicy
         return policy.OnRequestAsync(context); ;
     }
 
-    internal IOutputCachingPolicy? GetProfilePolicy(OutputCachingContext context)
+    internal IOutputCachePolicy? GetProfilePolicy(OutputCacheContext context)
     {
         var policies = context.Options.NamedPolicies;
 

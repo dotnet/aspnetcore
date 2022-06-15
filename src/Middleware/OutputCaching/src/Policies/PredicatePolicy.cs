@@ -6,43 +6,43 @@ namespace Microsoft.AspNetCore.OutputCaching.Policies;
 /// <summary>
 /// A policy that adds a requirement to another policy.
 /// </summary>
-internal sealed class PredicatePolicy : IOutputCachingPolicy
+internal sealed class PredicatePolicy : IOutputCachePolicy
 {
     // TODO: Accept a non async predicate too?
 
-    private readonly Func<OutputCachingContext, Task<bool>> _predicate;
-    private readonly IOutputCachingPolicy _policy;
+    private readonly Func<OutputCacheContext, Task<bool>> _predicate;
+    private readonly IOutputCachePolicy _policy;
 
     /// <summary>
     /// Creates a new <see cref="PredicatePolicy"/> instance.
     /// </summary>
     /// <param name="predicate">The predicate.</param>
     /// <param name="policy">The policy.</param>
-    public PredicatePolicy(Func<OutputCachingContext, Task<bool>> predicate, IOutputCachingPolicy policy)
+    public PredicatePolicy(Func<OutputCacheContext, Task<bool>> predicate, IOutputCachePolicy policy)
     {
         _predicate = predicate;
         _policy = policy;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         return ExecuteAwaited(static (policy, context) => policy.OnRequestAsync(context), _policy, context);
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return ExecuteAwaited(static (policy, context) => policy.OnServeFromCacheAsync(context), _policy, context);
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         return ExecuteAwaited(static (policy, context) => policy.OnServeResponseAsync(context), _policy, context);
     }
 
-    private Task ExecuteAwaited(Func<IOutputCachingPolicy, OutputCachingContext, Task> action, IOutputCachingPolicy policy, OutputCachingContext context)
+    private Task ExecuteAwaited(Func<IOutputCachePolicy, OutputCacheContext, Task> action, IOutputCachePolicy policy, OutputCacheContext context)
     {
         ArgumentNullException.ThrowIfNull(action);
 

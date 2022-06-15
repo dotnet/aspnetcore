@@ -14,32 +14,32 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Enable HTTP response caching.
 /// </summary>
-public class OutputCachingMiddleware
+internal class OutputCacheMiddleware
 {
     // see https://tools.ietf.org/html/rfc7232#section-4.1
     private static readonly string[] HeadersToIncludeIn304 =
         new[] { "Cache-Control", "Content-Location", "Date", "ETag", "Expires", "Vary" };
 
     private readonly RequestDelegate _next;
-    private readonly OutputCachingOptions _options;
+    private readonly OutputCacheOptions _options;
     private readonly ILogger _logger;
-    private readonly IOutputCachingPolicyProvider _policyProvider;
+    private readonly OutputCachePolicyProvider _policyProvider;
     private readonly IOutputCacheStore _store;
     private readonly IOutputCachingKeyProvider _keyProvider;
     private readonly WorkDispatcher<string, OutputCacheEntry?> _outputCacheEntryDispatcher;
     private readonly WorkDispatcher<string, OutputCacheEntry?> _requestDispatcher;
 
     /// <summary>
-    /// Creates a new <see cref="OutputCachingMiddleware"/>.
+    /// Creates a new <see cref="OutputCacheMiddleware"/>.
     /// </summary>
     /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
     /// <param name="options">The options for this middleware.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <param name="outputCache">The <see cref="IOutputCacheStore"/> store.</param>
     /// <param name="poolProvider">The <see cref="ObjectPoolProvider"/> used for creating <see cref="ObjectPool"/> instances.</param>
-    public OutputCachingMiddleware(
+    public OutputCacheMiddleware(
         RequestDelegate next,
-        IOptions<OutputCachingOptions> options,
+        IOptions<OutputCacheOptions> options,
         ILoggerFactory loggerFactory,
         IOutputCacheStore outputCache,
         ObjectPoolProvider poolProvider
@@ -48,35 +48,32 @@ public class OutputCachingMiddleware
             next,
             options,
             loggerFactory,
-            new OutputCachingPolicyProvider(options),
             outputCache,
-            new OutputCachingKeyProvider(poolProvider, options))
+            new OutputCacheKeyProvider(poolProvider, options))
     { }
 
     // for testing
-    internal OutputCachingMiddleware(
+    internal OutputCacheMiddleware(
         RequestDelegate next,
-        IOptions<OutputCachingOptions> options,
+        IOptions<OutputCacheOptions> options,
         ILoggerFactory loggerFactory,
-        IOutputCachingPolicyProvider policyProvider,
         IOutputCacheStore cache,
         IOutputCachingKeyProvider keyProvider)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
-        ArgumentNullException.ThrowIfNull(policyProvider);
         ArgumentNullException.ThrowIfNull(cache);
         ArgumentNullException.ThrowIfNull(keyProvider);
 
         _next = next;
         _options = options.Value;
-        _logger = loggerFactory.CreateLogger<OutputCachingMiddleware>();
-        _policyProvider = policyProvider;
+        _logger = loggerFactory.CreateLogger<OutputCacheMiddleware>();
         _store = cache;
         _keyProvider = keyProvider;
         _outputCacheEntryDispatcher = new();
         _requestDispatcher = new();
+        _policyProvider = new(_options);
     }
 
     /// <summary>
@@ -93,10 +90,10 @@ public class OutputCachingMiddleware
             return;
         }
 
-        var context = new OutputCachingContext(httpContext, _store, _options, _logger);
+        var context = new OutputCacheContext(httpContext, _store, _options, _logger);
 
-        // Add IOutputCachingFeature
-        AddOutputCachingFeature(context);
+        // Add IOutputCacheFeature
+        AddOutputCacheFeature(context);
 
         try
         {
@@ -182,7 +179,7 @@ public class OutputCachingMiddleware
         }
     }
 
-    internal async Task<bool> TryServeCachedResponseAsync(OutputCachingContext context, OutputCacheEntry? cacheEntry)
+    internal async Task<bool> TryServeCachedResponseAsync(OutputCacheContext context, OutputCacheEntry? cacheEntry)
     {
         if (cacheEntry == null)
         {
@@ -262,7 +259,7 @@ public class OutputCachingMiddleware
         return false;
     }
 
-    internal async Task<bool> TryServeFromCacheAsync(OutputCachingContext cacheContext)
+    internal async Task<bool> TryServeFromCacheAsync(OutputCacheContext cacheContext)
     {
         CreateCacheKey(cacheContext);
 
@@ -288,7 +285,7 @@ public class OutputCachingMiddleware
         return false;
     }
 
-    internal void CreateCacheKey(OutputCachingContext context)
+    internal void CreateCacheKey(OutputCacheContext context)
     {
         if (!string.IsNullOrEmpty(context.CacheKey))
         {
@@ -331,7 +328,7 @@ public class OutputCachingMiddleware
     /// Finalize cache headers.
     /// </summary>
     /// <param name="context"></param>
-    internal void FinalizeCacheHeaders(OutputCachingContext context)
+    internal void FinalizeCacheHeaders(OutputCacheContext context)
     {
         if (context.AllowCacheStorage)
         {
@@ -370,7 +367,7 @@ public class OutputCachingMiddleware
     /// <summary>
     /// Stores the response body
     /// </summary>
-    internal async ValueTask FinalizeCacheBodyAsync(OutputCachingContext context)
+    internal async ValueTask FinalizeCacheBodyAsync(OutputCacheContext context)
     {
         if (context.AllowCacheStorage && context.OutputCachingStream.BufferingEnabled)
         {
@@ -416,7 +413,7 @@ public class OutputCachingMiddleware
     /// </summary>
     /// <param name="context"></param>
     /// <returns><c>true</c> if the response was not started before this call; otherwise <c>false</c>.</returns>
-    private bool OnStartResponse(OutputCachingContext context)
+    private bool OnStartResponse(OutputCacheContext context)
     {
         if (!context.ResponseStarted)
         {
@@ -428,7 +425,7 @@ public class OutputCachingMiddleware
         return false;
     }
 
-    internal void StartResponse(OutputCachingContext context)
+    internal void StartResponse(OutputCacheContext context)
     {
         if (OnStartResponse(context))
         {
@@ -436,21 +433,21 @@ public class OutputCachingMiddleware
         }
     }
 
-    internal static void AddOutputCachingFeature(OutputCachingContext context)
+    internal static void AddOutputCacheFeature(OutputCacheContext context)
     {
-        if (context.HttpContext.Features.Get<IOutputCachingFeature>() != null)
+        if (context.HttpContext.Features.Get<IOutputCacheFeature>() != null)
         {
-            throw new InvalidOperationException($"Another instance of {nameof(OutputCachingFeature)} already exists. Only one instance of {nameof(OutputCachingMiddleware)} can be configured for an application.");
+            throw new InvalidOperationException($"Another instance of {nameof(OutputCacheFeature)} already exists. Only one instance of {nameof(OutputCacheMiddleware)} can be configured for an application.");
         }
 
-        context.HttpContext.Features.Set<IOutputCachingFeature>(new OutputCachingFeature(context));
+        context.HttpContext.Features.Set<IOutputCacheFeature>(new OutputCacheFeature(context));
     }
 
-    internal void ShimResponseStream(OutputCachingContext context)
+    internal void ShimResponseStream(OutputCacheContext context)
     {
         // Shim response stream
         context.OriginalResponseStream = context.HttpContext.Response.Body;
-        context.OutputCachingStream = new OutputCachingStream(
+        context.OutputCachingStream = new OutputCacheStream(
             context.OriginalResponseStream,
             _options.MaximumBodySize,
             StreamUtilities.BodySegmentSize,
@@ -459,9 +456,9 @@ public class OutputCachingMiddleware
     }
 
     internal static void RemoveOutputCachingFeature(HttpContext context) =>
-        context.Features.Set<IOutputCachingFeature?>(null);
+        context.Features.Set<IOutputCacheFeature?>(null);
 
-    internal static void UnshimResponseStream(OutputCachingContext context)
+    internal static void UnshimResponseStream(OutputCacheContext context)
     {
         // Unshim response stream
         context.HttpContext.Response.Body = context.OriginalResponseStream;
@@ -470,7 +467,7 @@ public class OutputCachingMiddleware
         RemoveOutputCachingFeature(context.HttpContext);
     }
 
-    internal static bool ContentIsNotModified(OutputCachingContext context)
+    internal static bool ContentIsNotModified(OutputCacheContext context)
     {
         var cachedResponseHeaders = context.CachedResponse.Headers;
         var ifNoneMatchHeader = context.HttpContext.Request.Headers.IfNoneMatch;

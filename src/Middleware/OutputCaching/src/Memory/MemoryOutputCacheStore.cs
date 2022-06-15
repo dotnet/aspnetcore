@@ -35,7 +35,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
     {
         var entry = _cache.Get(key);
 
-        if (entry is MemoryCachedResponse memoryCachedResponse)
+        if (entry is MemoryOutputCacheResponse memoryCachedResponse)
         {
             var outputCacheEntry = new OutputCacheEntry
             {
@@ -73,7 +73,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
         _cache.Set(
             key,
-            new MemoryCachedResponse
+            new MemoryOutputCacheResponse
             {
                 Created = cachedResponse.Created,
                 StatusCode = cachedResponse.StatusCode,

@@ -3,15 +3,13 @@
 
 using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.AspNetCore.OutputCaching.Policies;
+namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
 /// A set of endpoint extension methods.
 /// </summary>
 public static class PolicyExtensions
 {
-    private static readonly IOutputCachingPolicy _defaultEnabledPolicy = new OutputCachePolicyBuilder();
-
     /// <summary>
     /// Marks an endpoint to be cached with the default policy.
     /// </summary>
@@ -20,11 +18,10 @@ public static class PolicyExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        var policiesMetadata = new PoliciesMetadata(_defaultEnabledPolicy);
 
         builder.Add(endpointBuilder =>
         {
-            endpointBuilder.Metadata.Add(policiesMetadata);
+            endpointBuilder.Metadata.Add(DefaultOutputCachePolicy.Instance);
         });
         return builder;
     }
@@ -32,16 +29,15 @@ public static class PolicyExtensions
     /// <summary>
     /// Marks an endpoint to be cached with the specified policy.
     /// </summary>
-    public static TBuilder CacheOutput<TBuilder>(this TBuilder builder, IOutputCachingPolicy policy) where TBuilder : IEndpointConventionBuilder
+    public static TBuilder CacheOutput<TBuilder>(this TBuilder builder, IOutputCachePolicy policy) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         // Enable caching if this method is invoked on an endpoint, extra policies can disable it
-        var policiesMetadata = new PoliciesMetadata(new OutputCachePolicyBuilder().Add(policy).Build());
 
         builder.Add(endpointBuilder =>
         {
-            endpointBuilder.Metadata.Add(policiesMetadata);
+            endpointBuilder.Metadata.Add(policy);
         });
         return builder;
     }
@@ -57,11 +53,9 @@ public static class PolicyExtensions
 
         policy?.Invoke(outputCachePolicyBuilder);
 
-        var policiesMetadata = new PoliciesMetadata(outputCachePolicyBuilder.Build());
-
         builder.Add(endpointBuilder =>
         {
-            endpointBuilder.Metadata.Add(policiesMetadata);
+            endpointBuilder.Metadata.Add(outputCachePolicyBuilder.Build());
         });
 
         return builder;

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that prevents the response from being served from cached.
 /// </summary>
-internal class NoLookupPolicy : IOutputCachingPolicy
+internal class NoLookupPolicy : IOutputCachePolicy
 {
     public static NoLookupPolicy Instance = new();
 
@@ -15,7 +15,7 @@ internal class NoLookupPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         context.AllowCacheLookup = false;
 
@@ -23,13 +23,13 @@ internal class NoLookupPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }

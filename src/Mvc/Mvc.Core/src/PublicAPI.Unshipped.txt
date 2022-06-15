@@ -16,12 +16,11 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationMode
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Duration.get -> int
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Duration.set -> void
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.NoStore.get -> bool
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.NoStore.set -> void
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.NoCache.get -> bool
+Microsoft.AspNetCore.Mvc.OutputCacheAttribute.NoCache.set -> void
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Order.get -> int
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Order.set -> void
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.OutputCacheAttribute() -> void
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Policy.get -> Microsoft.AspNetCore.OutputCaching.IOutputCachingPolicy!
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.PolicyName.get -> string?
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.PolicyName.set -> void
 Microsoft.AspNetCore.Mvc.OutputCacheAttribute.VaryByQueryKeys.get -> string![]?

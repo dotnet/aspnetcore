@@ -136,7 +136,7 @@ public class OutputCachingMiddlewareTests
         var context = TestUtils.CreateTestContext(sink);
         context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
 
-        Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.False(OutputCacheMiddleware.ContentIsNotModified(context));
         Assert.Empty(sink.Writes);
     }
 
@@ -152,17 +152,17 @@ public class OutputCachingMiddlewareTests
 
         // Verify modifications in the past succeeds
         context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
-        Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.True(OutputCacheMiddleware.ContentIsNotModified(context));
         Assert.Single(sink.Writes);
 
         // Verify modifications at present succeeds
         context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow);
-        Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.True(OutputCacheMiddleware.ContentIsNotModified(context));
         Assert.Equal(2, sink.Writes.Count);
 
         // Verify modifications in the future fails
         context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
-        Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.False(OutputCacheMiddleware.ContentIsNotModified(context));
 
         // Verify logging
         TestUtils.AssertLoggedMessages(
@@ -184,19 +184,19 @@ public class OutputCachingMiddlewareTests
         // Verify modifications in the past succeeds
         context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
         context.CachedResponse.Headers[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
-        Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.True(OutputCacheMiddleware.ContentIsNotModified(context));
         Assert.Single(sink.Writes);
 
         // Verify modifications at present
         context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
         context.CachedResponse.Headers[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow);
-        Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.True(OutputCacheMiddleware.ContentIsNotModified(context));
         Assert.Equal(2, sink.Writes.Count);
 
         // Verify modifications in the future fails
         context.CachedResponse.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
         context.CachedResponse.Headers[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
-        Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.False(OutputCacheMiddleware.ContentIsNotModified(context));
 
         // Verify logging
         TestUtils.AssertLoggedMessages(
@@ -218,7 +218,7 @@ public class OutputCachingMiddlewareTests
         context.CachedResponse.Headers[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
 
         context.HttpContext.Request.Headers.IfNoneMatch = EntityTagHeaderValue.Any.ToString();
-        Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.True(OutputCacheMiddleware.ContentIsNotModified(context));
         TestUtils.AssertLoggedMessages(
             sink.Writes,
             LoggedMessage.NotModifiedIfNoneMatchStar);
@@ -237,7 +237,7 @@ public class OutputCachingMiddlewareTests
         context.CachedResponse.Headers[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
 
         context.HttpContext.Request.Headers.IfNoneMatch = "\"E1\"";
-        Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.False(OutputCacheMiddleware.ContentIsNotModified(context));
         Assert.Empty(sink.Writes);
     }
 
@@ -249,7 +249,7 @@ public class OutputCachingMiddlewareTests
         context.CachedResponse = new OutputCacheEntry { Headers = new HeaderDictionary() };
         context.HttpContext.Request.Headers.IfNoneMatch = "\"E1\"";
 
-        Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.False(OutputCacheMiddleware.ContentIsNotModified(context));
         Assert.Empty(sink.Writes);
     }
 
@@ -277,7 +277,7 @@ public class OutputCachingMiddlewareTests
         context.CachedResponse.Headers[HeaderNames.ETag] = responseETag.ToString();
         context.HttpContext.Request.Headers.IfNoneMatch = requestETag.ToString();
 
-        Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.True(OutputCacheMiddleware.ContentIsNotModified(context));
         TestUtils.AssertLoggedMessages(
             sink.Writes,
             LoggedMessage.NotModifiedIfNoneMatchMatched);
@@ -292,7 +292,7 @@ public class OutputCachingMiddlewareTests
         context.CachedResponse.Headers[HeaderNames.ETag] = "\"E2\"";
         context.HttpContext.Request.Headers.IfNoneMatch = "\"E1\"";
 
-        Assert.False(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.False(OutputCacheMiddleware.ContentIsNotModified(context));
         Assert.Empty(sink.Writes);
     }
 
@@ -305,7 +305,7 @@ public class OutputCachingMiddlewareTests
         context.CachedResponse.Headers[HeaderNames.ETag] = "\"E2\"";
         context.HttpContext.Request.Headers.IfNoneMatch = new string[] { "\"E0\", \"E1\"", "\"E1\", \"E2\"" };
 
-        Assert.True(OutputCachingMiddleware.ContentIsNotModified(context));
+        Assert.True(OutputCacheMiddleware.ContentIsNotModified(context));
         TestUtils.AssertLoggedMessages(
             sink.Writes,
             LoggedMessage.NotModifiedIfNoneMatchMatched);
@@ -318,7 +318,7 @@ public class OutputCachingMiddlewareTests
         {
             UtcNow = DateTimeOffset.UtcNow
         };
-        var middleware = TestUtils.CreateTestMiddleware(options: new OutputCachingOptions
+        var middleware = TestUtils.CreateTestMiddleware(options: new OutputCacheOptions
         {
             SystemClock = clock
         });
@@ -337,7 +337,7 @@ public class OutputCachingMiddlewareTests
         {
             UtcNow = DateTimeOffset.UtcNow
         };
-        var middleware = TestUtils.CreateTestMiddleware(options: new OutputCachingOptions
+        var middleware = TestUtils.CreateTestMiddleware(options: new OutputCacheOptions
         {
             SystemClock = clock
         });
@@ -377,7 +377,7 @@ public class OutputCachingMiddlewareTests
         {
             UtcNow = DateTimeOffset.MinValue
         };
-        var options = new OutputCachingOptions
+        var options = new OutputCacheOptions
         {
             SystemClock = clock
         };
@@ -404,7 +404,7 @@ public class OutputCachingMiddlewareTests
             UtcNow = DateTimeOffset.UtcNow
         };
         var sink = new TestSink();
-        var options = new OutputCachingOptions
+        var options = new OutputCacheOptions
         {
             SystemClock = clock
         };
@@ -433,7 +433,7 @@ public class OutputCachingMiddlewareTests
             UtcNow = DateTimeOffset.UtcNow
         };
         var sink = new TestSink();
-        var options = new OutputCachingOptions
+        var options = new OutputCacheOptions
         {
             SystemClock = clock
         };
@@ -482,7 +482,7 @@ public class OutputCachingMiddlewareTests
         var context = TestUtils.CreateTestContext(cache);
 
         context.HttpContext.Response.Headers.Vary = vary;
-        context.HttpContext.Features.Set<IOutputCachingFeature>(new OutputCachingFeature(context));
+        context.HttpContext.Features.Set<IOutputCacheFeature>(new OutputCacheFeature(context));
         context.CachedVaryByRules.QueryKeys = vary;
 
         middleware.FinalizeCacheHeaders(context);
@@ -751,47 +751,15 @@ public class OutputCachingMiddlewareTests
         var context = TestUtils.CreateTestContext(httpContext);
 
         // Should not throw
-        OutputCachingMiddleware.AddOutputCachingFeature(context);
+        OutputCacheMiddleware.AddOutputCacheFeature(context);
 
         // Should throw
-        Assert.ThrowsAny<InvalidOperationException>(() => OutputCachingMiddleware.AddOutputCachingFeature(context));
+        Assert.ThrowsAny<InvalidOperationException>(() => OutputCacheMiddleware.AddOutputCacheFeature(context));
     }
 
     private class FakeResponseFeature : HttpResponseFeature
     {
         public override void OnStarting(Func<object, Task> callback, object state) { }
-    }
-
-    [Theory]
-    // If allowResponseCaching is false, other settings will not matter but are included for completeness
-    [InlineData(false, false, false)]
-    [InlineData(false, false, true)]
-    [InlineData(false, true, false)]
-    [InlineData(false, true, true)]
-    [InlineData(true, false, false)]
-    [InlineData(true, false, true)]
-    [InlineData(true, true, false)]
-    [InlineData(true, true, true)]
-    public async Task Invoke_AddsOutputCachingFeature_Always(bool enableOutputCaching, bool allowCacheLookup, bool allowCacheStorage)
-    {
-        var responseCachingFeatureAdded = false;
-        var middleware = TestUtils.CreateTestMiddleware(next: httpContext =>
-        {
-            responseCachingFeatureAdded = httpContext.Features.Get<IOutputCachingFeature>() != null;
-            return Task.CompletedTask;
-        },
-        policyProvider: new TestOutputCachingPolicyProvider
-        {
-            EnableOutputCaching = enableOutputCaching,
-            AllowCacheLookupValue = allowCacheLookup,
-            AllowCacheStorageValue = allowCacheStorage
-        });
-
-        var context = new DefaultHttpContext();
-        context.Features.Set<IHttpResponseFeature>(new FakeResponseFeature());
-        await middleware.Invoke(context);
-
-        Assert.True(responseCachingFeatureAdded);
     }
 
     [Fact]
@@ -800,7 +768,7 @@ public class OutputCachingMiddlewareTests
         var uppercaseStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
         var lowercaseStrings = new StringValues(new[] { "stringA", "stringB" });
 
-        var normalizedStrings = OutputCachingMiddleware.GetOrderCasingNormalizedStringValues(lowercaseStrings);
+        var normalizedStrings = OutputCacheMiddleware.GetOrderCasingNormalizedStringValues(lowercaseStrings);
 
         Assert.Equal(uppercaseStrings, normalizedStrings);
     }
@@ -811,7 +779,7 @@ public class OutputCachingMiddlewareTests
         var orderedStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
         var reverseOrderStrings = new StringValues(new[] { "STRINGB", "STRINGA" });
 
-        var normalizedStrings = OutputCachingMiddleware.GetOrderCasingNormalizedStringValues(reverseOrderStrings);
+        var normalizedStrings = OutputCacheMiddleware.GetOrderCasingNormalizedStringValues(reverseOrderStrings);
 
         Assert.Equal(orderedStrings, normalizedStrings);
     }
@@ -821,7 +789,7 @@ public class OutputCachingMiddlewareTests
     {
         var originalStrings = new StringValues(new[] { "STRINGA, STRINGB" });
 
-        var normalizedStrings = OutputCachingMiddleware.GetOrderCasingNormalizedStringValues(originalStrings);
+        var normalizedStrings = OutputCacheMiddleware.GetOrderCasingNormalizedStringValues(originalStrings);
 
         Assert.Equal(originalStrings, normalizedStrings);
     }

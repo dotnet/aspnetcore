@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that changes the locking behavior.
 /// </summary>
-internal sealed class LockingPolicy : IOutputCachingPolicy
+internal sealed class LockingPolicy : IOutputCachePolicy
 {
     private readonly bool _lockResponse;
 
@@ -26,7 +26,7 @@ internal sealed class LockingPolicy : IOutputCachingPolicy
     public static readonly LockingPolicy Disabled = new(false);
 
     /// <inheritdoc /> 
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         context.AllowLocking = _lockResponse;
 
@@ -34,13 +34,13 @@ internal sealed class LockingPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc /> 
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc /> 
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }

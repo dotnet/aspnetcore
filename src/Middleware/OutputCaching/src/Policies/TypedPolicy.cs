@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.OutputCaching.Policies;
 /// <summary>
 /// A type base policy.
 /// </summary>
-internal sealed class TypedPolicy : IOutputCachingPolicy
+internal sealed class TypedPolicy : IOutputCachePolicy
 {
-    private IOutputCachingPolicy? _instance;
+    private IOutputCachePolicy? _instance;
 
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     private readonly Type _policyType;
@@ -27,25 +27,25 @@ internal sealed class TypedPolicy : IOutputCachingPolicy
         _policyType = policyType;
     }
 
-    private IOutputCachingPolicy? CreatePolicy(OutputCachingContext context)
+    private IOutputCachePolicy? CreatePolicy(OutputCacheContext context)
     {
-        return _instance ??= ActivatorUtilities.CreateInstance(context.Options.ApplicationServices, _policyType) as IOutputCachingPolicy;
+        return _instance ??= ActivatorUtilities.CreateInstance(context.Options.ApplicationServices, _policyType) as IOutputCachePolicy;
     }
 
     /// <inheritdoc/>
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         return CreatePolicy(context)?.OnRequestAsync(context) ?? Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return CreatePolicy(context)?.OnServeFromCacheAsync(context) ?? Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         return CreatePolicy(context)?.OnServeResponseAsync(context) ?? Task.CompletedTask;
     }

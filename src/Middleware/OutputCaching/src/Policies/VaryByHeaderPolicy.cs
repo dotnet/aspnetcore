@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// When applied, the cached content will be different for every value of the provided headers.
 /// </summary>
-internal sealed class VaryByHeaderPolicy : IOutputCachingPolicy
+internal sealed class VaryByHeaderPolicy : IOutputCachePolicy
 {
     private StringValues _headers { get; set; }
 
@@ -36,7 +36,7 @@ internal sealed class VaryByHeaderPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         // No vary by header?
         if (_headers.Count == 0)
@@ -51,13 +51,13 @@ internal sealed class VaryByHeaderPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }

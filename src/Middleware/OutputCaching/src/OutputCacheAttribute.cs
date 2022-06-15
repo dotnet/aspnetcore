@@ -7,15 +7,15 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// Specifies the parameters necessary for setting appropriate headers in output caching.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class OutputCacheAttribute : Attribute, IPoliciesMetadata
+public class OutputCacheAttribute : Attribute, IOutputCachePolicy
 {
     // A nullable-int cannot be used as an Attribute parameter.
     // Hence this nullable-int is present to back the Duration property.
     // The same goes for nullable-ResponseCacheLocation and nullable-bool.
     private int? _duration;
-    private bool? _noStore;
+    private bool? _noCache;
 
-    private IOutputCachingPolicy? _policy;
+    private IOutputCachePolicy? _policy;
 
     /// <summary>
     /// Gets or sets the duration in seconds for which the response is cached.
@@ -27,13 +27,13 @@ public class OutputCacheAttribute : Attribute, IPoliciesMetadata
     }
 
     /// <summary>
-    /// Gets or sets the value which determines whether the data should be stored or not.
+    /// Gets or sets the value which determines whether the reponse should be cached or not.
     /// When set to <see langword="true"/>, the response won't be cached.
     /// </summary>
-    public bool NoStore
+    public bool NoCache
     {
-        get => _noStore ?? false;
-        set => _noStore = value;
+        get => _noCache ?? false;
+        set => _noCache = value;
     }
 
     /// <summary>
@@ -57,16 +57,33 @@ public class OutputCacheAttribute : Attribute, IPoliciesMetadata
     /// </summary>
     public string? PolicyName { get; set; }
 
-    /// <inheritdoc />
-    public IOutputCachingPolicy Policy => _policy ??= GetPolicy();
-
-    private IOutputCachingPolicy GetPolicy()
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
+        return GetPolicy().OnRequestAsync(context);
+    }
+
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
+    {
+        return GetPolicy().OnServeFromCacheAsync(context);
+    }
+
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
+    {
+        return GetPolicy().OnServeResponseAsync(context);
+    }
+
+    private IOutputCachePolicy GetPolicy()
+    {
+        if (_policy != null)
+        {
+            return _policy;
+        }
+
         var builder = new OutputCachePolicyBuilder();
 
-        if (_noStore != null && _noStore.Value)
+        if (_noCache != null && _noCache.Value)
         {
-            builder.NoStore();
+            builder.NoCache();
         }
 
         if (PolicyName != null)
@@ -84,6 +101,6 @@ public class OutputCacheAttribute : Attribute, IPoliciesMetadata
             builder.Expire(TimeSpan.FromSeconds(_duration.Value));
         }
 
-        return builder.Build();
+        return _policy = builder.Build();
     }
 }

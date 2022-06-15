@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// When applied, the cached content will be different for every provided value.
 /// </summary>
-internal sealed class VaryByValuePolicy : IOutputCachingPolicy
+internal sealed class VaryByValuePolicy : IOutputCachePolicy
 {
     private readonly Action<HttpContext, CachedVaryByRules>? _varyBy;
     private readonly Func<HttpContext, CachedVaryByRules, Task>? _varyByAsync;
@@ -61,7 +61,7 @@ internal sealed class VaryByValuePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc/>
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         _varyBy?.Invoke(context.HttpContext, context.CachedVaryByRules);
 
@@ -69,13 +69,13 @@ internal sealed class VaryByValuePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc/>
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }

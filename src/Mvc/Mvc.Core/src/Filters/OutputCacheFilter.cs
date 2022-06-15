@@ -25,10 +25,7 @@ internal partial class OutputCacheFilter : IActionFilter
 
     public void OnActionExecuting(ActionExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // If there are more filters which can override the values written by this filter,
         // then skip execution of this filter.
@@ -39,7 +36,7 @@ internal partial class OutputCacheFilter : IActionFilter
             return;
         }
 
-        var outputCachingFeature = context.HttpContext.Features.Get<IOutputCachingFeature>();
+        var outputCachingFeature = context.HttpContext.Features.Get<IOutputCacheFeature>();
         if (outputCachingFeature == null)
         {
             throw new InvalidOperationException(

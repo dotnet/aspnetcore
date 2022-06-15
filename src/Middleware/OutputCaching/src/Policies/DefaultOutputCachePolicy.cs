@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy which caches un-authenticated, GET and HEAD, 200 responses.
 /// </summary>
-internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
+internal sealed class DefaultOutputCachePolicy : IOutputCachePolicy
 {
     public static readonly DefaultOutputCachePolicy Instance = new();
 
@@ -18,7 +18,7 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         var attemptOutputCaching = AttemptOutputCaching(context);
         context.EnableOutputCaching = true;
@@ -33,13 +33,13 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         var response = context.HttpContext.Response;
 
@@ -62,7 +62,7 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachingPolicy
         return Task.CompletedTask;
     }
 
-    private static bool AttemptOutputCaching(OutputCachingContext context)
+    private static bool AttemptOutputCaching(OutputCacheContext context)
     {
         // Check if the current request fulfisls the requirements to be cached
 

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// When applied, the cached content will be different for every value of the provided query string keys.
 /// It also disables the default behavior which is to vary on all query string keys.
 /// </summary>
-internal sealed class VaryByQueryPolicy : IOutputCachingPolicy
+internal sealed class VaryByQueryPolicy : IOutputCachePolicy
 {
     private StringValues _queryKeys { get; set; }
 
@@ -37,7 +37,7 @@ internal sealed class VaryByQueryPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         // No vary by query?
         if (_queryKeys.Count == 0)
@@ -59,13 +59,13 @@ internal sealed class VaryByQueryPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }

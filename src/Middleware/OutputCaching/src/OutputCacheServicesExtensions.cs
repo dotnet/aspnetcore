@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods for the OutputCaching middleware.
 /// </summary>
-public static class OutputCachingServicesExtensions
+public static class OutputCacheServicesExtensions
 {
     /// <summary>
     /// Add output caching services.
@@ -24,13 +24,13 @@ public static class OutputCachingServicesExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddTransient<IConfigureOptions<OutputCachingOptions>, OutputCachingOptionsSetup>();
+        services.AddTransient<IConfigureOptions<OutputCacheOptions>, OutputCacheOptionsSetup>();
 
         services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
         services.TryAddSingleton<IOutputCacheStore>(sp =>
         {
-            var outputCacheOptions = sp.GetRequiredService<IOptions<OutputCachingOptions>>();
+            var outputCacheOptions = sp.GetRequiredService<IOptions<OutputCacheOptions>>();
             return new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions
             {
                 SizeLimit = outputCacheOptions.Value.SizeLimit
@@ -43,9 +43,9 @@ public static class OutputCachingServicesExtensions
     /// Add output caching services and configure the related options.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
-    /// <param name="configureOptions">A delegate to configure the <see cref="OutputCachingOptions"/>.</param>
+    /// <param name="configureOptions">A delegate to configure the <see cref="OutputCacheOptions"/>.</param>
     /// <returns></returns>
-    public static IServiceCollection AddOutputCaching(this IServiceCollection services, Action<OutputCachingOptions> configureOptions)
+    public static IServiceCollection AddOutputCaching(this IServiceCollection services, Action<OutputCacheOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);

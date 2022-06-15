@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Represent the current caching context for the request.
 /// </summary>
-public sealed class OutputCachingContext
+public sealed class OutputCacheContext
 {
-    internal OutputCachingContext(HttpContext httpContext, IOutputCacheStore store, OutputCachingOptions options, ILogger logger)
+    internal OutputCacheContext(HttpContext httpContext, IOutputCacheStore store, OutputCacheOptions options, ILogger logger)
     {
         HttpContext = httpContext;
         Logger = logger;
@@ -62,21 +62,6 @@ public sealed class OutputCachingContext
     public HashSet<string> Tags { get; } = new();
 
     /// <summary>
-    /// Gets the logger.
-    /// </summary>
-    public ILogger Logger { get; }
-
-    /// <summary>
-    /// Gets the options.
-    /// </summary>
-    public OutputCachingOptions Options { get; }
-
-    /// <summary>
-    /// Gets the <see cref="IOutputCacheStore"/> instance.
-    /// </summary>
-    public IOutputCacheStore Store { get; }
-
-    /// <summary>
     /// Gets or sets the amount of time the response should be cached for.
     /// </summary>
     public TimeSpan? ResponseExpirationTimeSpan { get; set; }
@@ -95,5 +80,9 @@ public sealed class OutputCachingContext
 
     internal Stream OriginalResponseStream { get; set; }
 
-    internal OutputCachingStream OutputCachingStream { get; set; }
+    internal OutputCacheStream OutputCachingStream { get; set; }
+    internal ILogger Logger { get; }
+    internal OutputCacheOptions Options { get; }
+    internal IOutputCacheStore Store { get; }
+
 }

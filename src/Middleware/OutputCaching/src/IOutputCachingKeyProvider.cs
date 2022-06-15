@@ -8,7 +8,7 @@ internal interface IOutputCachingKeyProvider
     /// <summary>
     /// Create a key for storing cached responses.
     /// </summary>
-    /// <param name="context">The <see cref="OutputCachingContext"/>.</param>
+    /// <param name="context">The <see cref="OutputCacheContext"/>.</param>
     /// <returns>The created key.</returns>
-    string CreateStorageKey(OutputCachingContext context);
+    string CreateStorageKey(OutputCacheContext context);
 }

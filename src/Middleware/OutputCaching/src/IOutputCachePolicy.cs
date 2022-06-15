@@ -6,25 +6,25 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// An implementation of this interface can update how the current request is cached.
 /// </summary>
-public interface IOutputCachingPolicy
+public interface IOutputCachePolicy
 {
     /// <summary>
-    /// Updates the <see cref="OutputCachingContext"/> before the cache middleware is invoked.
+    /// Updates the <see cref="OutputCacheContext"/> before the cache middleware is invoked.
     /// At that point the cache middleware can still be enabled or disabled for the request.
     /// </summary>
     /// <param name="context">The current request's caching context.</param>
-    Task OnRequestAsync(OutputCachingContext context);
+    Task OnRequestAsync(OutputCacheContext context);
 
     /// <summary>
-    /// Updates the <see cref="OutputCachingContext"/> before the cached response is used.
+    /// Updates the <see cref="OutputCacheContext"/> before the cached response is used.
     /// At that point the freshness of the cached response can be updated.
     /// </summary>
     /// <param name="context">The current request's caching context.</param>
-    Task OnServeFromCacheAsync(OutputCachingContext context);
+    Task OnServeFromCacheAsync(OutputCacheContext context);
 
     /// <summary>
-    /// Updates the <see cref="OutputCachingContext"/> before the response is served and can be cached.
+    /// Updates the <see cref="OutputCacheContext"/> before the response is served and can be cached.
     /// At that point cacheability of the response can be updated.
     /// </summary>
-    Task OnServeResponseAsync(OutputCachingContext context);
+    Task OnServeResponseAsync(OutputCacheContext context);
 }

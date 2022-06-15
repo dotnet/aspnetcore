@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that defines a custom expiration duration.
 /// </summary>
-internal sealed class ExpirationPolicy : IOutputCachingPolicy
+internal sealed class ExpirationPolicy : IOutputCachePolicy
 {
     private readonly TimeSpan _expiration;
 
@@ -20,7 +20,7 @@ internal sealed class ExpirationPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         context.ResponseExpirationTimeSpan = _expiration;
 
@@ -28,13 +28,13 @@ internal sealed class ExpirationPolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
-internal sealed class OutputCachingKeyProvider : IOutputCachingKeyProvider
+internal sealed class OutputCacheKeyProvider : IOutputCachingKeyProvider
 {
     // Use the record separator for delimiting components of the cache key to avoid possible collisions
     private const char KeyDelimiter = '\x1e';
@@ -17,9 +17,9 @@ internal sealed class OutputCachingKeyProvider : IOutputCachingKeyProvider
     private const char KeySubDelimiter = '\x1f';
 
     private readonly ObjectPool<StringBuilder> _builderPool;
-    private readonly OutputCachingOptions _options;
+    private readonly OutputCacheOptions _options;
 
-    internal OutputCachingKeyProvider(ObjectPoolProvider poolProvider, IOptions<OutputCachingOptions> options)
+    internal OutputCacheKeyProvider(ObjectPoolProvider poolProvider, IOptions<OutputCacheOptions> options)
     {
         ArgumentNullException.ThrowIfNull(poolProvider);
         ArgumentNullException.ThrowIfNull(options);
@@ -29,14 +29,14 @@ internal sealed class OutputCachingKeyProvider : IOutputCachingKeyProvider
     }
 
     // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2
-    public string CreateStorageKey(OutputCachingContext context)
+    public string CreateStorageKey(OutputCacheContext context)
     {
         ArgumentNullException.ThrowIfNull(_builderPool);
 
         var varyByRules = context.CachedVaryByRules;
         if (varyByRules == null)
         {
-            throw new InvalidOperationException($"{nameof(CachedVaryByRules)} must not be null on the {nameof(OutputCachingContext)}");
+            throw new InvalidOperationException($"{nameof(CachedVaryByRules)} must not be null on the {nameof(OutputCacheContext)}");
         }
 
         var request = context.HttpContext.Request;

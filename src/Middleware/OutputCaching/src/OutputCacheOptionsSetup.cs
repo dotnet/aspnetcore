@@ -5,16 +5,16 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
-internal sealed class OutputCachingOptionsSetup : IConfigureOptions<OutputCachingOptions>
+internal sealed class OutputCacheOptionsSetup : IConfigureOptions<OutputCacheOptions>
 {
     private readonly IServiceProvider _services;
 
-    public OutputCachingOptionsSetup(IServiceProvider services)
+    public OutputCacheOptionsSetup(IServiceProvider services)
     {
         _services = services;
     }
 
-    public void Configure(OutputCachingOptions options)
+    public void Configure(OutputCacheOptions options)
     {
         options.ApplicationServices = _services;
     }

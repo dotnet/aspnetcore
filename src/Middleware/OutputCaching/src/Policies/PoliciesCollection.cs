@@ -2,36 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.OutputCaching.Policies;
 
 /// <summary>
 /// A collection of policies.
 /// </summary>
-public sealed class PoliciesCollection : IReadOnlyCollection<IOutputCachingPolicy>
+public sealed class PoliciesCollection : IReadOnlyCollection<IOutputCachePolicy>
 {
-    private const DynamicallyAccessedMemberTypes ActivatorAccessibility = DynamicallyAccessedMemberTypes.PublicConstructors;
-
-    private readonly OutputCachingOptions _options;
-    private List<IOutputCachingPolicy>? _policies;
-
-    internal PoliciesCollection(OutputCachingOptions options)
-    {
-        _options = options;
-    }
+    private List<IOutputCachePolicy>? _policies;
 
     /// <inheritdoc/>
     public int Count => _policies == null ? 0 : _policies.Count;
 
     /// <summary>
-    /// Adds an <see cref="IOutputCachingPolicy"/> instance.
+    /// Adds an <see cref="IOutputCachePolicy"/> instance.
     /// </summary>
     /// <param name="policy">The policy</param>
-    public void AddPolicy(IOutputCachingPolicy policy)
+    public void AddPolicy(IOutputCachePolicy policy)
     {
         ArgumentNullException.ThrowIfNull(policy);
 
@@ -40,30 +29,7 @@ public sealed class PoliciesCollection : IReadOnlyCollection<IOutputCachingPolic
     }
 
     /// <summary>
-    /// Adds a dynamically resolved <see cref="IOutputCachingPolicy"/> instance.
-    /// </summary>
-    /// <param name="policyType">The type of policy to add.</param>
-    public void AddPolicy([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type policyType)
-    {
-        if (ActivatorUtilities.GetServiceOrCreateInstance(_options.ApplicationServices, policyType) is not IOutputCachingPolicy policy)
-        {
-            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Policy_InvalidType));
-        }
-
-        AddPolicy(policy);
-    }
-
-    /// <summary>
-    /// Adds a dynamically resolved <see cref="IOutputCachingPolicy"/> instance.
-    /// </summary>
-    /// <typeparam name="T">The type of policy to add.</typeparam>
-    public void AddPolicy<[DynamicallyAccessedMembers(ActivatorAccessibility)] T>(string name) where T : IOutputCachingPolicy
-    {
-        AddPolicy(typeof(T));
-    }
-
-    /// <summary>
-    /// Adds <see cref="IOutputCachingPolicy"/> instance.
+    /// Adds <see cref="IOutputCachePolicy"/> instance.
     /// </summary>
     public void AddPolicy(Action<OutputCachePolicyBuilder> build)
     {
@@ -81,9 +47,9 @@ public sealed class PoliciesCollection : IReadOnlyCollection<IOutputCachingPolic
     }
 
     /// <inheritdoc/>
-    public IEnumerator<IOutputCachingPolicy> GetEnumerator()
+    public IEnumerator<IOutputCachePolicy> GetEnumerator()
     {
-        return _policies == null ? Enumerable.Empty<IOutputCachingPolicy>().GetEnumerator() : _policies.GetEnumerator();
+        return _policies == null ? Enumerable.Empty<IOutputCachePolicy>().GetEnumerator() : _policies.GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()

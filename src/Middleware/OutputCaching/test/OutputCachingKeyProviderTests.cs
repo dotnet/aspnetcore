@@ -28,7 +28,7 @@ public class OutputCachingKeyProviderTests
     [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_CaseInsensitivePath_NormalizesPath()
     {
-        var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new OutputCachingOptions()
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new OutputCacheOptions()
         {
             UseCaseSensitivePaths = false
         });
@@ -42,7 +42,7 @@ public class OutputCachingKeyProviderTests
     [Fact]
     public void OutputCachingKeyProvider_CreateStorageKey_CaseSensitivePath_PreservesPathCase()
     {
-        var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new OutputCachingOptions()
+        var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new OutputCacheOptions()
         {
             UseCaseSensitivePaths = true
         });

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that prevents the response from being cached.
 /// </summary>
-internal class NoStorePolicy : IOutputCachingPolicy
+internal class NoStorePolicy : IOutputCachePolicy
 {
     public static NoStorePolicy Instance = new();
 
@@ -15,7 +15,7 @@ internal class NoStorePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeResponseAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
     {
         context.AllowCacheStorage = false;
 
@@ -23,13 +23,13 @@ internal class NoStorePolicy : IOutputCachingPolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnServeFromCacheAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachingPolicy.OnRequestAsync(OutputCachingContext context)
+    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }

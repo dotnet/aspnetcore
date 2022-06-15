@@ -76,17 +76,17 @@ internal class TestUtils
 
     internal static IOutputCachingKeyProvider CreateTestKeyProvider()
     {
-        return CreateTestKeyProvider(new OutputCachingOptions());
+        return CreateTestKeyProvider(new OutputCacheOptions());
     }
 
-    internal static IOutputCachingKeyProvider CreateTestKeyProvider(OutputCachingOptions options)
+    internal static IOutputCachingKeyProvider CreateTestKeyProvider(OutputCacheOptions options)
     {
-        return new OutputCachingKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
+        return new OutputCacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
     }
 
     internal static IEnumerable<IHostBuilder> CreateBuildersWithOutputCaching(
         Action<IApplicationBuilder> configureDelegate = null,
-        OutputCachingOptions options = null,
+        OutputCacheOptions options = null,
         Action<HttpContext> contextAction = null)
     {
         return CreateBuildersWithOutputCaching(configureDelegate, options, new RequestDelegate[]
@@ -111,7 +111,7 @@ internal class TestUtils
 
     private static IEnumerable<IHostBuilder> CreateBuildersWithOutputCaching(
         Action<IApplicationBuilder> configureDelegate = null,
-        OutputCachingOptions options = null,
+        OutputCacheOptions options = null,
         IEnumerable<RequestDelegate> requestDelegates = null)
     {
         if (configureDelegate == null)
@@ -157,20 +157,20 @@ internal class TestUtils
                     .Configure(app =>
                     {
                         configureDelegate(app);
-                        app.UseOutputCaching();
+                        app.UseOutputCache();
                         app.Run(requestDelegate);
                     });
                 });
         }
     }
 
-    internal static OutputCachingMiddleware CreateTestMiddleware(
+    internal static OutputCacheMiddleware CreateTestMiddleware(
         RequestDelegate next = null,
         IOutputCacheStore cache = null,
-        OutputCachingOptions options = null,
+        OutputCacheOptions options = null,
         TestSink testSink = null,
         IOutputCachingKeyProvider keyProvider = null,
-        IOutputCachingPolicyProvider policyProvider = null)
+        OutputCachePolicyProvider policyProvider = null)
     {
         if (next == null)
         {
@@ -182,29 +182,24 @@ internal class TestUtils
         }
         if (options == null)
         {
-            options = new OutputCachingOptions();
+            options = new OutputCacheOptions();
         }
         if (keyProvider == null)
         {
-            keyProvider = new OutputCachingKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
-        }
-        if (policyProvider == null)
-        {
-            policyProvider = new TestOutputCachingPolicyProvider();
+            keyProvider = new OutputCacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
         }
 
-        return new OutputCachingMiddleware(
+        return new OutputCacheMiddleware(
             next,
             Options.Create(options),
             testSink == null ? (ILoggerFactory)NullLoggerFactory.Instance : new TestLoggerFactory(testSink, true),
-            policyProvider,
             cache,
             keyProvider);
     }
 
-    internal static OutputCachingContext CreateTestContext(IOutputCacheStore cache = null, OutputCachingOptions options = null)
+    internal static OutputCacheContext CreateTestContext(IOutputCacheStore cache = null, OutputCacheOptions options = null)
     {
-        return new OutputCachingContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCachingOptions()).Value, NullLogger.Instance)
+        return new OutputCacheContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, NullLogger.Instance)
         {
             EnableOutputCaching = true,
             AllowCacheStorage = true,
@@ -213,9 +208,9 @@ internal class TestUtils
         };
     }
 
-    internal static OutputCachingContext CreateTestContext(HttpContext httpContext, IOutputCacheStore cache = null, OutputCachingOptions options = null)
+    internal static OutputCacheContext CreateTestContext(HttpContext httpContext, IOutputCacheStore cache = null, OutputCacheOptions options = null)
     {
-        return new OutputCachingContext(httpContext, cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCachingOptions()).Value, NullLogger.Instance)
+        return new OutputCacheContext(httpContext, cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, NullLogger.Instance)
         {
             EnableOutputCaching = true,
             AllowCacheStorage = true,
@@ -224,9 +219,9 @@ internal class TestUtils
         };
     }
 
-    internal static OutputCachingContext CreateTestContext(ITestSink testSink, IOutputCacheStore cache = null, OutputCachingOptions options = null)
+    internal static OutputCacheContext CreateTestContext(ITestSink testSink, IOutputCacheStore cache = null, OutputCacheOptions options = null)
     {
-        return new OutputCachingContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCachingOptions()).Value, new TestLogger("OutputCachingTests", testSink, true))
+        return new OutputCacheContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, new TestLogger("OutputCachingTests", testSink, true))
         {
             EnableOutputCaching = true,
             AllowCacheStorage = true,
@@ -315,42 +310,6 @@ internal class LoggedMessage
     internal LogLevel LogLevel { get; }
 }
 
-internal class TestOutputCachingPolicyProvider : IOutputCachingPolicyProvider
-{
-    public bool AllowCacheLookupValue { get; set; }
-    public bool AllowCacheStorageValue { get; set; }
-    public bool EnableOutputCaching { get; set; } = true;
-
-    public bool HasPolicies(HttpContext httpContext)
-    {
-        return true;
-    }
-
-    public Task OnRequestAsync(OutputCachingContext context)
-    {
-        context.EnableOutputCaching = EnableOutputCaching;
-        context.AllowCacheLookup = AllowCacheLookupValue;
-        context.AllowCacheStorage = AllowCacheStorageValue;
-
-        return Task.CompletedTask;
-    }
-
-    public Task OnServeFromCacheAsync(OutputCachingContext context)
-    {
-        context.AllowCacheLookup = AllowCacheLookupValue;
-        context.AllowCacheStorage = AllowCacheStorageValue;
-
-        return Task.CompletedTask;
-    }
-
-    public Task OnServeResponseAsync(OutputCachingContext context)
-    {
-        context.AllowCacheStorage = AllowCacheStorageValue;
-
-        return Task.CompletedTask;
-    }
-}
-
 internal class TestResponseCachingKeyProvider : IOutputCachingKeyProvider
 {
     private readonly string _key;
@@ -360,7 +319,7 @@ internal class TestResponseCachingKeyProvider : IOutputCachingKeyProvider
         _key = key;
     }
 
-    public string CreateStorageKey(OutputCachingContext context)
+    public string CreateStorageKey(OutputCacheContext context)
     {
         return _key;
     }
