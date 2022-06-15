@@ -33,7 +33,7 @@ internal sealed class CreateCommand
                 );
 
             var nameOption = cmd.Option(
-                "--name|-n",
+                "-n|--name",
                 Resources.CreateCommand_NameOption_Description,
                 CommandOptionType.SingleValue);
 
@@ -112,7 +112,7 @@ internal sealed class CreateCommand
         var project = DevJwtCliHelpers.GetProject(projectOption.Value());
 
         var scheme = schemeNameOption.HasValue() ? schemeNameOption.Value() : "Bearer";
-        var optionsString = schemeNameOption.HasValue() ? $"{Resources.JwtPrint_Scheme}: {scheme} {Environment.NewLine}" : string.Empty;
+        var optionsString = schemeNameOption.HasValue() ? $"{Resources.JwtPrint_Scheme}: {scheme}{Environment.NewLine}" : string.Empty;
 
         var name = nameOption.HasValue() ? nameOption.Value() : Environment.UserName;
         optionsString += $"{Resources.JwtPrint_Name}: {name}{Environment.NewLine}";
