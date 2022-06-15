@@ -118,7 +118,7 @@ internal sealed class CreateCommand
         optionsString += $"{Resources.JwtPrint_Name}: {name}{Environment.NewLine}";
 
         var audience = audienceOption.HasValue() ? audienceOption.Values : DevJwtCliHelpers.GetAudienceCandidatesFromLaunchSettings(project).ToList();
-        optionsString += audienceOption.HasValue() ? $"{Resources.JwtPrint_Audiences}: {audience} {Environment.NewLine}" : string.Empty;
+        optionsString += audienceOption.HasValue() ? $"{Resources.JwtPrint_Audiences}: {audience}{Environment.NewLine}" : string.Empty;
         if (audience is null)
         {
             reporter.Error(Resources.CreateCommand_NoAudience_Error);
