@@ -43,6 +43,7 @@ Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.BaseAddress.get -> string!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.Environment.get -> string!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping
+Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.RootComponentMapping() -> void
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.ComponentType.get -> System.Type!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.Parameters.get -> Microsoft.AspNetCore.Components.ParameterView
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.RootComponentMapping.RootComponentMapping(System.Type! componentType, string! selector) -> void

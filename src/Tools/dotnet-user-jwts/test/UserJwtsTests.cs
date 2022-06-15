@@ -45,17 +45,21 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
 
         app.Run(new[] { "list", "--project", project });
-        Assert.Contains("Project does not contain a user secrets ID.", _console.GetOutput());
+        Assert.Contains("Set UserSecretsId to ", _console.GetOutput());
+        Assert.Contains("No JWTs created yet!", _console.GetOutput());
     }
 
     [Fact]
-    public void Create_WarnsOnNoSecretInproject()
+    public void Create_CreatesSecretOnNoSecretInproject()
     {
         var project = Path.Combine(_fixture.CreateProject(false), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
-        Assert.Contains("Project does not contain a user secrets ID.", _console.GetOutput());
+        var output = _console.GetOutput();
+        Assert.DoesNotContain("could not find SecretManager.targets", output);
+        Assert.Contains("Set UserSecretsId to ", output);
+        Assert.Contains("New JWT saved", output);
     }
 
     [Fact]
@@ -95,7 +99,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     }
 
     [Fact]
-    public void Delete_RemovesGeneratedToken()
+    public void Remove_RemovesGeneratedToken()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
         var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
@@ -106,7 +110,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var id = matches.SingleOrDefault().Groups[1].Value;
         app.Run(new[] { "create", "--project", project, "--scheme", "Scheme2" });
 
-        app.Run(new[] { "delete", id, "--project", project });
+        app.Run(new[] { "remove", id, "--project", project });
         var appsettingsContent = File.ReadAllText(appsettings);
         Assert.DoesNotContain("Bearer", appsettingsContent);
         Assert.Contains("Scheme2", appsettingsContent);

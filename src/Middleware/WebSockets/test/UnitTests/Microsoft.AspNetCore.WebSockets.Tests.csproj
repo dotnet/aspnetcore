@@ -8,6 +8,7 @@
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
 
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
   </ItemGroup>
 

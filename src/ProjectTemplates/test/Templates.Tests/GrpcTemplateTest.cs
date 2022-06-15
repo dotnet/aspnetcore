@@ -48,6 +48,9 @@ public class GrpcTemplateTest : LoggedTest
         var createResult = await project.RunDotNetNewAsync("grpc", args: args);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
 
+        var expectedLaunchProfileNames = new[] { "http", "https" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+
         var publishResult = await project.RunDotNetPublishAsync();
         Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", project, publishResult));
 
