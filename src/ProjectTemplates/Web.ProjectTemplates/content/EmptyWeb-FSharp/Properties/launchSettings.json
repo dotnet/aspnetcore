@@ -4,10 +4,10 @@
     "anonymousAuthentication": true,
     "iisExpress": {
       "applicationUrl": "http://localhost:8080",
-      //#if(NoHttps)
-      "sslPort": 0
-      //#else
+      //#if (HasHttpsProfile)
       "sslPort": 44300
+      //#else
+      "sslPort": 0
       //#endif
     }
   },
@@ -21,7 +21,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    //#if(!NoHttps)
+    //#if (HasHttpsProfile)
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,

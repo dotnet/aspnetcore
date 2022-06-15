@@ -87,7 +87,7 @@ public class Program
             app.UseSwaggerUI();
         }
         #endif
-        #if (RequiresHttps)
+        #if (HasHttpsProfile)
 
         app.UseHttpsRedirection();
         #endif
