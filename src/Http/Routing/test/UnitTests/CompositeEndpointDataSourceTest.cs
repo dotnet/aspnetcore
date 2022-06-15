@@ -269,7 +269,7 @@ public class CompositeEndpointDataSourceTest
         var receivedContext = Assert.Single(dataSource.ReceivedRouteGroupContexts);
         Assert.Same(context, receivedContext);
 
-        var resolvedEndpoint = Assert.Single(groupedEndpoints);
+        var resolvedEndpoint = Assert.IsType<RouteEndpoint>(Assert.Single(groupedEndpoints));
         Assert.Equal("/prefix/a", resolvedEndpoint.RoutePattern.RawText);
         var resolvedMetadata = Assert.Single(resolvedEndpoint.Metadata);
         Assert.Same(metadata, resolvedMetadata);
@@ -291,15 +291,15 @@ public class CompositeEndpointDataSourceTest
 
     private class TestGroupDataSource : EndpointDataSource
     {
-        public TestGroupDataSource(params RouteEndpoint[] endpoints) => Endpoints = endpoints;
+        public TestGroupDataSource(params Endpoint[] endpoints) => Endpoints = endpoints;
 
         public override IReadOnlyList<Endpoint> Endpoints { get; }
 
         public List<RouteGroupContext> ReceivedRouteGroupContexts { get; } = new();
 
-        public List<IReadOnlyList<RouteEndpoint>> ResolvedGroupedEndpoints { get; } = new();
+        public List<IReadOnlyList<Endpoint>> ResolvedGroupedEndpoints { get; } = new();
 
-        public override IReadOnlyList<RouteEndpoint> GetGroupedEndpoints(RouteGroupContext context)
+        public override IReadOnlyList<Endpoint> GetGroupedEndpoints(RouteGroupContext context)
         {
             ReceivedRouteGroupContexts.Add(context);
             var resolved = base.GetGroupedEndpoints(context);

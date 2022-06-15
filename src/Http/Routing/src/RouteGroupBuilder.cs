@@ -53,14 +53,14 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
         public override IReadOnlyList<Endpoint> Endpoints =>
             GetGroupedEndpointsWithNullablePrefix(null, Array.Empty<Action<EndpointBuilder>>(), _routeGroupBuilder._outerEndpointRouteBuilder.ServiceProvider);
 
-        public override IReadOnlyList<RouteEndpoint> GetGroupedEndpoints(RouteGroupContext context) =>
+        public override IReadOnlyList<Endpoint> GetGroupedEndpoints(RouteGroupContext context) =>
             GetGroupedEndpointsWithNullablePrefix(context.Prefix, context.Conventions, context.ApplicationServices);
 
-        public IReadOnlyList<RouteEndpoint> GetGroupedEndpointsWithNullablePrefix(RoutePattern? prefix, IReadOnlyList<Action<EndpointBuilder>> conventions, IServiceProvider applicationServices)
+        public IReadOnlyList<Endpoint> GetGroupedEndpointsWithNullablePrefix(RoutePattern? prefix, IReadOnlyList<Action<EndpointBuilder>> conventions, IServiceProvider applicationServices)
         {
             if (_routeGroupBuilder._dataSources.Count is 0)
             {
-                return Array.Empty<RouteEndpoint>();
+                return Array.Empty<Endpoint>();
             }
 
             var fullPrefix = RoutePatternFactory.Combine(prefix, _routeGroupBuilder._partialPrefix);
@@ -72,7 +72,7 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
                 return _routeGroupBuilder._dataSources[0].GetGroupedEndpoints(new RouteGroupContext(fullPrefix, combinedConventions, applicationServices));
             }
 
-            var groupedEndpoints = new List<RouteEndpoint>();
+            var groupedEndpoints = new List<Endpoint>();
 
             foreach (var dataSource in _routeGroupBuilder._dataSources)
             {

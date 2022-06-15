@@ -473,13 +473,13 @@ public static class EndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(pattern);
         ArgumentNullException.ThrowIfNull(handler);
 
-        var dataSource = endpoints.DataSources.OfType<RouteHandlerEndpointDataSource>().FirstOrDefault();
+        var dataSource = endpoints.DataSources.OfType<RouteEndpointDataSource>().FirstOrDefault();
         if (dataSource is null)
         {
             var routeHandlerOptions = endpoints.ServiceProvider.GetService<IOptions<RouteHandlerOptions>>();
             var throwOnBadRequest = routeHandlerOptions?.Value.ThrowOnBadRequest ?? false;
 
-            dataSource = new RouteHandlerEndpointDataSource(endpoints.ServiceProvider, throwOnBadRequest);
+            dataSource = new RouteEndpointDataSource(endpoints.ServiceProvider, throwOnBadRequest);
             endpoints.DataSources.Add(dataSource);
         }
 

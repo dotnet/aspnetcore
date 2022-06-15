@@ -46,5 +46,5 @@ public sealed class RequestDelegateFactoryOptions
     /// <see cref="IEndpointMetadataProvider" /> or <see cref="IEndpointParameterMetadataProvider" />, i.e. this metadata will be less specific than any
     /// inferred by the call to <see cref="RequestDelegateFactory.Create(Delegate, RequestDelegateFactoryOptions?)"/>.
     /// </remarks>
-    public IEnumerable<object>? InitialEndpointMetadata { get; init; }
+    public IList<object>? EndpointMetadata { get; init; }
 }

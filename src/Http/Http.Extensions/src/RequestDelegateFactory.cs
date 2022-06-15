@@ -133,7 +133,7 @@ public static partial class RequestDelegateFactory
 
         var targetableRequestDelegate = CreateTargetableRequestDelegate(handler.Method, targetExpression, factoryContext, targetFactory);
 
-        return new RequestDelegateResult(httpContext => targetableRequestDelegate(handler.Target, httpContext), factoryContext.Metadata);
+        return new RequestDelegateResult(httpContext => targetableRequestDelegate(handler.Target, httpContext), GetMetadataList(factoryContext.Metadata));
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public static partial class RequestDelegateFactory
             {
                 var untargetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression: null, factoryContext);
 
-                return new RequestDelegateResult(httpContext => untargetableRequestDelegate(null, httpContext), factoryContext.Metadata);
+                return new RequestDelegateResult(httpContext => untargetableRequestDelegate(null, httpContext), GetMetadataList(factoryContext.Metadata));
             }
 
             targetFactory = context => Activator.CreateInstance(methodInfo.DeclaringType)!;
@@ -174,7 +174,7 @@ public static partial class RequestDelegateFactory
         var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
         var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression, factoryContext, context => targetFactory(context));
 
-        return new RequestDelegateResult(httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext), factoryContext.Metadata);
+        return new RequestDelegateResult(httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext), GetMetadataList(factoryContext.Metadata));
     }
 
     private static FactoryContext CreateFactoryContext(RequestDelegateFactoryOptions? options)
@@ -186,8 +186,19 @@ public static partial class RequestDelegateFactory
             RouteParameters = options?.RouteParameterNames?.ToList(),
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
-            Filters = options?.RouteHandlerFilterFactories?.ToList()
+            Filters = options?.RouteHandlerFilterFactories?.ToList(),
+            Metadata = options?.EndpointMetadata ?? new List<object>(),
         };
+    }
+
+    private static List<object> GetMetadataList(IList<object> metadata)
+    {
+        if (metadata is List<object> normalList)
+        {
+            return normalList;
+        }
+
+        return new List<object>(metadata);
     }
 
     private static Func<object?, HttpContext, Task> CreateTargetableRequestDelegate(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext, Expression<Func<HttpContext, object?>>? targetFactory = null)
@@ -292,7 +303,7 @@ public static partial class RequestDelegateFactory
             FilterContextExpr).Compile();
         var routeHandlerContext = new RouteHandlerContext(
             methodInfo,
-            new EndpointMetadataCollection(factoryContext.Metadata),
+            factoryContext.Metadata,
             factoryContext.ServiceProvider ?? EmptyServiceProvider.Instance);
 
         for (var i = factoryContext.Filters.Count - 1; i >= 0; i--)
@@ -420,7 +431,7 @@ public static partial class RequestDelegateFactory
         return fallbackConstruction;
     }
 
-    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, List<object> metadata, IServiceProvider? services, ReadOnlySpan<ParameterInfo> parameters)
+    private static void AddTypeProvidedMetadata(MethodInfo methodInfo, IList<object> metadata, IServiceProvider? services, ReadOnlySpan<ParameterInfo> parameters)
     {
         object?[]? invokeArgs = null;
 
@@ -1635,6 +1646,14 @@ public static partial class RequestDelegateFactory
         return Expression.Convert(boundValueExpr, parameter.ParameterType);
     }
 
+    private static void InsertInferredAcceptsMetadata(FactoryContext factoryContext, Type type, string[] contentTypes)
+    {
+        // Unlike most metadata that will probably to be added by filters or metadata providers, we insert the automatically-inferred AcceptsMetadata
+        // to the beginning of the metadata to give it the lowest precedence. It really doesn't makes sense for this metadata to be overridden but
+        // we're preserving the old behavior here out of an abundance of caution.
+        factoryContext.Metadata.Insert(0, new AcceptsMetadata(type, factoryContext.AllowEmptyRequestBody, contentTypes));
+    }
+
     private static Expression BindParameterFromFormFiles(
         ParameterInfo parameter,
         FactoryContext factoryContext)
@@ -1649,7 +1668,7 @@ public static partial class RequestDelegateFactory
         // Do not duplicate the metadata if there are multiple form parameters
         if (!factoryContext.ReadForm)
         {
-            factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, FormFileContentType));
+            InsertInferredAcceptsMetadata(factoryContext, parameter.ParameterType,  FormFileContentType);
         }
 
         factoryContext.ReadForm = true;
@@ -1673,7 +1692,7 @@ public static partial class RequestDelegateFactory
         // Do not duplicate the metadata if there are multiple form parameters
         if (!factoryContext.ReadForm)
         {
-            factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, FormFileContentType));
+            InsertInferredAcceptsMetadata(factoryContext, parameter.ParameterType, FormFileContentType);
         }
 
         factoryContext.ReadForm = true;
@@ -1703,7 +1722,7 @@ public static partial class RequestDelegateFactory
 
         factoryContext.JsonRequestBodyParameter = parameter;
         factoryContext.AllowEmptyRequestBody = allowEmpty || isOptional;
-        factoryContext.Metadata.Add(new AcceptsMetadata(parameter.ParameterType, factoryContext.AllowEmptyRequestBody, DefaultAcceptsContentType));
+        InsertInferredAcceptsMetadata(factoryContext, parameter.ParameterType, DefaultAcceptsContentType);
 
         if (!factoryContext.AllowEmptyRequestBody)
         {
@@ -2053,7 +2072,7 @@ public static partial class RequestDelegateFactory
         public bool HasMultipleBodyParameters { get; set; }
         public bool HasInferredBody { get; set; }
 
-        public List<object> Metadata { get; internal set; } = new();
+        public IList<object> Metadata { get; init; } = default!;
 
         public NullabilityInfoContext NullabilityContext { get; } = new();
 

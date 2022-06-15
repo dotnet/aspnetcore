@@ -11,14 +11,14 @@ namespace Microsoft.AspNetCore.Builder;
 public sealed class RouteHandlerBuilder : IEndpointConventionBuilder
 {
     private readonly IEnumerable<IEndpointConventionBuilder>? _endpointConventionBuilders;
-    private readonly List<Action<EndpointBuilder>>? _conventions;
+    private readonly ICollection<Action<EndpointBuilder>>? _conventions;
 
     /// <summary>
     /// Instantiates a new <see cref="RouteHandlerBuilder" /> given a single
     /// <see cref="IEndpointConventionBuilder" />.
     /// </summary>
-    /// <param name="conventions">The convention list returned from <see cref="RouteHandlerEndpointDataSource.AddEndpoint(Routing.Patterns.RoutePattern, Delegate, IEnumerable{object}?, bool)"/>.</param>
-    internal RouteHandlerBuilder(List<Action<EndpointBuilder>> conventions)
+    /// <param name="conventions">The convention list returned from <see cref="RouteEndpointDataSource.AddEndpoint(Routing.Patterns.RoutePattern, Delegate, IEnumerable{object}?, bool)"/>.</param>
+    internal RouteHandlerBuilder(ICollection<Action<EndpointBuilder>> conventions)
     {
         _conventions = conventions;
     }

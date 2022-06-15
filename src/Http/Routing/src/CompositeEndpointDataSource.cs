@@ -77,17 +77,17 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
     }
 
     /// <inheritdoc/>
-    public override IReadOnlyList<RouteEndpoint> GetGroupedEndpoints(RouteGroupContext context)
+    public override IReadOnlyList<Endpoint> GetGroupedEndpoints(RouteGroupContext context)
     {
         if (_dataSources.Count is 0)
         {
-            return Array.Empty<RouteEndpoint>();
+            return Array.Empty<Endpoint>();
         }
 
         // We could try to optimize the single data source case by returning its result directly like GroupDataSource does,
         // but the CompositeEndpointDataSourceTest class was picky about the Endpoints property creating a shallow copy,
         // so we'll shallow copy here for consistency.
-        var groupedEndpoints = new List<RouteEndpoint>();
+        var groupedEndpoints = new List<Endpoint>();
 
         foreach (var dataSource in _dataSources)
         {

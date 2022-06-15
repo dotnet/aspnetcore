@@ -13,19 +13,19 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
 
-internal sealed class RouteHandlerEndpointDataSource : EndpointDataSource
+internal sealed class RouteEndpointDataSource : EndpointDataSource
 {
     private readonly List<RouteEntry> _routeEntries = new();
     private readonly IServiceProvider _applicationServices;
     private readonly bool _throwOnBadRequest;
 
-    public RouteHandlerEndpointDataSource(IServiceProvider applicationServices, bool throwOnBadRequest)
+    public RouteEndpointDataSource(IServiceProvider applicationServices, bool throwOnBadRequest)
     {
         _applicationServices = applicationServices;
         _throwOnBadRequest = throwOnBadRequest;
     }
 
-    public List<Action<EndpointBuilder>> AddEndpoint(
+    public ICollection<Action<EndpointBuilder>> AddEndpoint(
         RoutePattern pattern,
         Delegate routeHandler,
         IEnumerable<object>? initialEndpointMetadata,
@@ -70,6 +70,17 @@ internal sealed class RouteHandlerEndpointDataSource : EndpointDataSource
 
     public override IChangeToken GetChangeToken() => NullChangeToken.Singleton;
 
+    // For testing
+    internal RouteEndpointBuilder GetSingleRouteEndpointBuilder()
+    {
+        if (_routeEntries.Count != 1)
+        {
+            throw new InvalidOperationException($"There are {_routeEntries.Count} endpoints defined! This can only be called for a single endpoint.");
+        }
+
+        return CreateRouteEndpointBuilder(_routeEntries[0]);
+    }
+
     [UnconditionalSuppressMessage("Trimmer", "IL2026",
         Justification = "We surface a RequireUnreferencedCode in the call to Map method adding this EndpointDataSource. " +
                         "The trimmer is unable to infer this.")]
@@ -93,7 +104,7 @@ internal sealed class RouteHandlerEndpointDataSource : EndpointDataSource
         {
             if (factoryCreatedRequestDelegate is null)
             {
-                throw new InvalidOperationException($"{nameof(RequestDelegateFactory)} has not created the final {nameof(RequestDelegate)} yet.");
+                throw new InvalidOperationException(Resources.RouteEndpointDataSource_RequestDelegateCannotBeCalledBeforeBuild);
             }
 
             return factoryCreatedRequestDelegate(context);
@@ -103,7 +114,7 @@ internal sealed class RouteHandlerEndpointDataSource : EndpointDataSource
         var builder = new RouteEndpointBuilder(redirectedRequestDelegate, pattern, order: 0)
         {
             DisplayName = displayName,
-            ServiceProvider = _applicationServices,
+            ApplicationServices = _applicationServices,
         };
 
         // We own EndpointBuilder.Metadata (in another assembly), so we know it's just a List.
@@ -133,6 +144,7 @@ internal sealed class RouteHandlerEndpointDataSource : EndpointDataSource
             metadata.AddRange(attributes);
         }
 
+        entry.Conventions.HasBeenBuilt = true;
         foreach (var entrySpecificConvention in entry.Conventions)
         {
             entrySpecificConvention(builder);
@@ -143,10 +155,10 @@ internal sealed class RouteHandlerEndpointDataSource : EndpointDataSource
 
         foreach (var item in builder.Metadata)
         {
-            if (item is Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate> filter)
+            if (item is RouteFilterMetadata filterMetadata)
             {
                 routeHandlerFilterFactories ??= new();
-                routeHandlerFilterFactories.Add(filter);
+                routeHandlerFilterFactories.AddRange(filterMetadata.FilterFactories);
             }
         }
 
@@ -163,17 +175,14 @@ internal sealed class RouteHandlerEndpointDataSource : EndpointDataSource
             RouteParameterNames = routeParamNames,
             ThrowOnBadRequest = _throwOnBadRequest,
             DisableInferBodyFromParameters = entry.DisableInferFromBodyParameters,
-            InitialEndpointMetadata = metadata,
+            EndpointMetadata = metadata,
             RouteHandlerFilterFactories = routeHandlerFilterFactories,
         };
 
-        var requestDelegateResult = RequestDelegateFactory.Create(entry.RouteHandler, factoryOptions);
+        // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
+        factoryCreatedRequestDelegate = RequestDelegateFactory.Create(entry.RouteHandler, factoryOptions).RequestDelegate;
 
-        // Give inferred metadata the lowest precedent.
-        metadata.InsertRange(0, requestDelegateResult.EndpointMetadata);
-        factoryCreatedRequestDelegate = requestDelegateResult.RequestDelegate;
-
-        if (ReferenceEquals(requestDelegateResult.RequestDelegate, redirectedRequestDelegate))
+        if (ReferenceEquals(builder.RequestDelegate, redirectedRequestDelegate))
         {
             // No convention has changed builder.RequestDelegate, so we can just replace it with the final version as an optimization.
             // We still set factoryRequestDelegate in case something is still referencing the redirected version of the RequestDelegate.
@@ -186,9 +195,25 @@ internal sealed class RouteHandlerEndpointDataSource : EndpointDataSource
     private struct RouteEntry
     {
         public RoutePattern RoutePattern { get; init; }
-        public List<Action<EndpointBuilder>> Conventions { get; init; }
         public Delegate RouteHandler { get; init; }
         public IEnumerable<object>? InitialEndpointMetadata { get; init; }
         public bool DisableInferFromBodyParameters { get; init; }
+        public ThrowOnAddAfterBuildCollection Conventions { get; init; }
+    }
+
+    // This private class is only exposed to internal code via ICollection<Action<EndpointBuilder>> in RouteEndpointBuilder where only Add is called.
+    private class ThrowOnAddAfterBuildCollection : List<Action<EndpointBuilder>>, ICollection<Action<EndpointBuilder>>
+    {
+        public bool HasBeenBuilt { get; set; }
+
+        void ICollection<Action<EndpointBuilder>>.Add(Action<EndpointBuilder> convention)
+        {
+            if (HasBeenBuilt)
+            {
+                throw new InvalidOperationException(Resources.RouteEndpointDataSource_ConventionsCannotBeModifiedAfterBuild);
+            }
+
+            Add(convention);
+        }
     }
 }

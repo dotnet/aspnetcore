@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http;
@@ -18,19 +19,19 @@ public static class RouteHandlerFilterExtensions
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="filter">The <see cref="IRouteHandlerFilter"/> to register.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
-    public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, IRouteHandlerFilter filter)
-    {
-        builder.AddFilter((routeHandlerContext, next) => (context) => filter.InvokeAsync(context, next));
-        return builder;
-    }
+    public static TBuilder AddRouteHandlerFilter<TBuilder>(this TBuilder builder, IRouteHandlerFilter filter) where TBuilder : IEndpointConventionBuilder =>
+        builder.AddRouteHandlerFilter((routeHandlerContext, next) => (context) => filter.InvokeAsync(context, next));
 
     /// <summary>
     /// Registers a filter of type <typeparamref name="TFilterType"/> onto the route handler.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the <see cref="IEndpointConventionBuilder"/> to configure.</typeparam>
     /// <typeparam name="TFilterType">The type of the <see cref="IRouteHandlerFilter"/> to register.</typeparam>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
-    public static RouteHandlerBuilder AddFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this RouteHandlerBuilder builder) where TFilterType : IRouteHandlerFilter
+    public static TBuilder AddRouteHandlerFilter<TBuilder, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder
+        where TFilterType : IRouteHandlerFilter
     {
         // We call `CreateFactory` twice here since the `CreateFactory` API does not support optional arguments.
         // See https://github.com/dotnet/runtime/issues/67309 for more info.
@@ -44,7 +45,7 @@ public static class RouteHandlerFilterExtensions
             filterFactory = ActivatorUtilities.CreateFactory(typeof(TFilterType), Type.EmptyTypes);
         }
 
-        builder.AddFilter((routeHandlerContext, next) =>
+        builder.AddRouteHandlerFilter((routeHandlerContext, next) =>
         {
             var invokeArguments = new[] { routeHandlerContext };
             return (context) =>
@@ -57,15 +58,41 @@ public static class RouteHandlerFilterExtensions
     }
 
     /// <summary>
+    /// Registers a filter of type <typeparamref name="TFilterType"/> onto the route handler.
+    /// </summary>
+    /// <typeparam name="TFilterType">The type of the <see cref="IRouteHandlerFilter"/> to register.</typeparam>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    public static RouteHandlerBuilder AddRouteHandlerFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this RouteHandlerBuilder builder)
+        where TFilterType : IRouteHandlerFilter
+    {
+        // We have a RouteHandlerBuiler and GroupRouteBuilder-specific AddFilter methods for convenience so you don't have to specify both arguments most the time.
+        return builder.AddRouteHandlerFilter<RouteHandlerBuilder, TFilterType>();
+    }
+
+    /// <summary>
+    /// Registers a filter of type <typeparamref name="TFilterType"/> onto the route handler.
+    /// </summary>
+    /// <typeparam name="TFilterType">The type of the <see cref="IRouteHandlerFilter"/> to register.</typeparam>
+    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    public static RouteGroupBuilder AddRouteHandlerFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this RouteGroupBuilder builder)
+        where TFilterType : IRouteHandlerFilter
+    {
+        // We have a RouteHandlerBuiler and GroupRouteBuilder-specific AddFilter methods for convenience so you don't have to specify both arguments most the time.
+        return builder.AddRouteHandlerFilter<RouteGroupBuilder, TFilterType>();
+    }
+
+    /// <summary>
     /// Registers a filter given a delegate onto the route handler.
     /// </summary>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="routeHandlerFilter">A <see cref="Func{T1, T2, TResult}"/> representing the core logic of the filter.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
-    public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, Func<RouteHandlerInvocationContext, RouteHandlerFilterDelegate, ValueTask<object?>> routeHandlerFilter)
+    public static TBuilder AddRouteHandlerFilter<TBuilder>(this TBuilder builder, Func<RouteHandlerInvocationContext, RouteHandlerFilterDelegate, ValueTask<object?>> routeHandlerFilter)
+        where TBuilder : IEndpointConventionBuilder
     {
-        builder.AddFilter((routeHandlerContext, next) => (context) => routeHandlerFilter(context, next));
-        return builder;
+        return builder.AddRouteHandlerFilter((routeHandlerContext, next) => (context) => routeHandlerFilter(context, next));
     }
 
     /// <summary>
@@ -74,9 +101,33 @@ public static class RouteHandlerFilterExtensions
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="filterFactory">A <see cref="Func{T, T2, TResult}"/> representing the logic for constructing the filter.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
-    public static RouteHandlerBuilder AddFilter(this RouteHandlerBuilder builder, Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate> filterFactory)
+    public static TBuilder AddRouteHandlerFilter<TBuilder>(this TBuilder builder, Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate> filterFactory)
+        where TBuilder : IEndpointConventionBuilder
     {
-        builder.Add(endpointBuilder => endpointBuilder.Metadata.Add(filterFactory));
+        builder.Add(endpointBuilder =>
+        {
+            // Even if we split RouteFilterMetadata across multiple metadata objects, RouteEndointDataSource will still use all of them.
+            // We're just trying to be good citizens and keep the Endpoint.Metadata as small as possible.
+            RouteFilterMetadata? filterMetadata = null;
+
+            foreach (var item in endpointBuilder.Metadata)
+            {
+                if (item is RouteFilterMetadata metadata)
+                {
+                    filterMetadata = metadata;
+                    break;
+                }
+            }
+
+            if (filterMetadata is null)
+            {
+                filterMetadata = new();
+                endpointBuilder.Metadata.Add(filterMetadata);
+            }
+
+            filterMetadata.FilterFactories.Add(filterFactory);
+        });
+
         return builder;
     }
 }
