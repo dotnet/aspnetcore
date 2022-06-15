@@ -408,7 +408,7 @@ public class Project : IDisposable
         if (result.ExitCode != 0 && !string.IsNullOrEmpty(ArtifactsLogDir))
         {
             var sourceFile = Path.Combine(TemplateOutputDir, "msbuild.binlog");
-            Assert.True(File.Exists(sourceFile), $"Log for '{ProjectName}' not found in '{sourceFile}'. Execution output:{Environment.NewLine}{result.Output}{Environment.NewLine}Error:{Environment.NewLine}{result.Error}{Environment.NewLine}{result}");
+            Assert.True(File.Exists(sourceFile), $"Log for '{ProjectName}' not found in '{sourceFile}'. Execution output:{result.Output}~Error:~{result.Error}~{result}");
             var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
             File.Move(sourceFile, destination, overwrite: true); // binlog will exist on retries
         }
