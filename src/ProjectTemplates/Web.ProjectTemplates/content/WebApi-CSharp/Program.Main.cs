@@ -87,7 +87,7 @@ public class Program
             app.UseSwaggerUI();
         }
         #endif
-        #if (RequiresHttps)
+        #if (HasHttpsProfile)
 
         app.UseHttpsRedirection();
         #endif
@@ -126,7 +126,7 @@ public class Program
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
-                    Date = DateTime.Now.AddDays(index),
+                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                     TemperatureC = Random.Shared.Next(-20, 55),
                     Summary = summaries[Random.Shared.Next(summaries.Length)]
                 })
@@ -143,7 +143,7 @@ public class Program
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
-                    Date = DateTime.Now.AddDays(index),
+                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                     TemperatureC = Random.Shared.Next(-20, 55),
                     Summary = summaries[Random.Shared.Next(summaries.Length)]
                 })
@@ -160,7 +160,7 @@ public class Program
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
-                    Date = DateTime.Now.AddDays(index),
+                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                     TemperatureC = Random.Shared.Next(-20, 55),
                     Summary = summaries[Random.Shared.Next(summaries.Length)]
                 })

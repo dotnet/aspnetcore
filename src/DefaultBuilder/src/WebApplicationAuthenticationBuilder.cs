@@ -14,34 +14,34 @@ internal class WebApplicationAuthenticationBuilder : AuthenticationBuilder
 
     public override AuthenticationBuilder AddPolicyScheme(string authenticationScheme, string? displayName, Action<PolicySchemeOptions> configureOptions)
     {
-        RegisterServices(authenticationScheme);
+        RegisterServices();
         return base.AddPolicyScheme(authenticationScheme, displayName, configureOptions);
     }
 
     public override AuthenticationBuilder AddRemoteScheme<TOptions, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(string authenticationScheme, string? displayName, Action<TOptions>? configureOptions)
     {
-        RegisterServices(authenticationScheme);
+        RegisterServices();
         return base.AddRemoteScheme<TOptions, THandler>(authenticationScheme, displayName, configureOptions);
     }
 
     public override AuthenticationBuilder AddScheme<TOptions, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(string authenticationScheme, string? displayName, Action<TOptions>? configureOptions)
     {
-        RegisterServices(authenticationScheme);
+        RegisterServices();
         return base.AddScheme<TOptions, THandler>(authenticationScheme, displayName, configureOptions);
     }
 
     public override AuthenticationBuilder AddScheme<TOptions, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(string authenticationScheme, Action<TOptions>? configureOptions)
     {
-        RegisterServices(authenticationScheme);
+        RegisterServices();
         return base.AddScheme<TOptions, THandler>(authenticationScheme, configureOptions);
     }
 
-    private void RegisterServices(string authenticationScheme)
+    private void RegisterServices()
     {
         if (!IsAuthenticationConfigured)
         {
             IsAuthenticationConfigured = true;
-            Services.AddAuthentication(authenticationScheme);
+            Services.AddAuthentication();
             Services.AddAuthorization();
         }
     }
