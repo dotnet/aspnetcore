@@ -3,7 +3,7 @@
       "iisExpress": {
         "applicationUrl": "http://localhost:8080",
         //#if(RequiresHttps)
-        "sslPort": 44300
+        "sslPort": 44300,
         //#else
         "sslPort": 0
         //#endif
