@@ -125,7 +125,7 @@ internal sealed class CreateCommand
             isValid = false;
         }
         var issuer = issuerOption.HasValue() ? issuerOption.Value() : DevJwtsDefaults.Issuer;
-        optionsString += issuerOption.HasValue() ? $"{Resources.JwtPrint_Issuer}: {issuer} {Environment.NewLine}" : string.Empty;
+        optionsString += issuerOption.HasValue() ? $"{Resources.JwtPrint_Issuer}: {issuer}{Environment.NewLine}" : string.Empty;
 
         var notBefore = DateTime.UtcNow;
         if (notBeforeOption.HasValue())
@@ -135,7 +135,7 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.FormatCreateCommand_InvalidDate_Error("--not-before"));
                 isValid = false;
             }
-            optionsString += $"{Resources.JwtPrint_NotBefore}: {notBefore:O} {Environment.NewLine}";
+            optionsString += $"{Resources.JwtPrint_NotBefore}: {notBefore:O}{Environment.NewLine}";
         }
 
         var expiresOn = notBefore.AddMonths(3);
@@ -146,7 +146,7 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.FormatCreateCommand_InvalidDate_Error("--expires-on"));
                 isValid = false;
             }
-            optionsString += $"{Resources.JwtPrint_ExpiresOn}: {expiresOn:O} {Environment.NewLine}";
+            optionsString += $"{Resources.JwtPrint_ExpiresOn}: {expiresOn:O}{Environment.NewLine}";
         }
 
         if (validForOption.HasValue())
@@ -156,14 +156,14 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.FormatCreateCommand_InvalidPeriod_Error("--valid-for"));
             }
             expiresOn = notBefore.Add(validForValue);
-            optionsString += $"{Resources.JwtPrint_ExpiresOn}: {expiresOn:O} {Environment.NewLine}";
+            optionsString += $"{Resources.JwtPrint_ExpiresOn}: {expiresOn:O}{Environment.NewLine}";
         }
 
         var roles = rolesOption.HasValue() ? rolesOption.Values : new List<string>();
-        optionsString += rolesOption.HasValue() ? $"{Resources.JwtPrint_Roles}: [{string.Join(',', roles)}] {Environment.NewLine}" : string.Empty;
+        optionsString += rolesOption.HasValue() ? $"{Resources.JwtPrint_Roles}: [{string.Join(',', roles)}]{Environment.NewLine}" : string.Empty;
 
         var scopes = scopesOption.HasValue() ? scopesOption.Values : new List<string>();
-        optionsString += scopesOption.HasValue() ? $"{Resources.JwtPrint_Scopes}: {string.Join(',', scopes)} {Environment.NewLine}" : string.Empty;
+        optionsString += scopesOption.HasValue() ? $"{Resources.JwtPrint_Scopes}: {string.Join(',', scopes)}{Environment.NewLine}" : string.Empty;
 
         var claims = new Dictionary<string, string>();
         if (claimsOption.HasValue())
@@ -173,7 +173,7 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.CreateCommand_InvalidClaims_Error);
                 isValid = false;
             }
-            optionsString += $"{Resources.JwtPrint_CustomClaims}: [{string.Join(',', claims.Select(kvp => $"{kvp.Key}={kvp.Value}"))}] {Environment.NewLine}";
+            optionsString += $"{Resources.JwtPrint_CustomClaims}: [{string.Join(',', claims.Select(kvp => $"{kvp.Key}={kvp.Value}"))}]{Environment.NewLine}";
         }
 
         return (
