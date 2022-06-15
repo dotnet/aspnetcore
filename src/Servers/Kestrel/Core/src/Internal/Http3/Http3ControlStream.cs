@@ -163,6 +163,11 @@ internal abstract class Http3ControlStream : Http3UnidirectionalStream
         }
     }
 
+    protected void OnStreamClosed()
+    {
+        Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"), Http3ErrorCode.InternalError);
+    }
+
     private ValueTask ProcessSettingsFrameAsync(ReadOnlySequence<byte> payload)
     {
         if (_haveReceivedSettingsFrame)

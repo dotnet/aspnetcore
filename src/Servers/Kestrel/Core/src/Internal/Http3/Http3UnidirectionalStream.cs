@@ -65,11 +65,6 @@ internal class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWorkItem
         minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
     ));
 
-    protected void OnStreamClosed()
-    {
-        Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"), Http3ErrorCode.InternalError);
-    }
-
     public PipeReader Input => _context.Transport.Input;
     public KestrelTrace Log => _context.ServiceContext.Log;
 

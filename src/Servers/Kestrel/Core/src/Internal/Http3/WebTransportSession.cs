@@ -58,9 +58,15 @@ internal class WebTransportSession
     /// <returns>True is the process succeeded. False otherwise</returns>
     public bool TryRemoveStream(long streamId)
     {
-        ThrowIfInvalidSession();
+        // Don't check for if the session was aborted because
+        // removing streams is part of the process
+        ThrowIfInvalidSessionCore();
 
-        return _openStreams.Remove(streamId);
+        var t = _openStreams.Remove(streamId);
+        var f = t ? "Sucessfully" : "Failed to";
+        Console.WriteLine($"{f} Removed stream with id: {streamId}. {_openStreams.Count} stream left.");
+
+        return t;
     }
 
     // TODO add a graceful close
@@ -72,10 +78,13 @@ internal class WebTransportSession
 
         _aborted = true;
 
+        Console.WriteLine("Aborting the WebTransport session");
+
         _controlStream.Abort(new Connections.ConnectionAbortedException(), System.Net.Http.Http3ErrorCode.NoError);
         foreach (var stream in _openStreams)
         {
             stream.Value.Abort(new Connections.ConnectionAbortedException(), System.Net.Http.Http3ErrorCode.NoError);
+            Console.WriteLine($"Aborted stream with id: {stream.Value.StreamId}. {_openStreams.Count} stream left.");
         }
 
         _openStreams.Clear();
@@ -85,14 +94,19 @@ internal class WebTransportSession
 
     private void ThrowIfInvalidSession()
     {
-        if (!_webtransportEnabled)
-        {
-            throw new Exception("WebTransport is currently disabled.");
-        }
+        ThrowIfInvalidSessionCore();
 
         if (_aborted)
         {
-            throw new Exception("Session has been aborted.");
+            throw new Exception("Session has already been aborted.");
+        }
+    }
+
+    private void ThrowIfInvalidSessionCore()
+    {
+        if (!_webtransportEnabled)
+        {
+            throw new Exception("WebTransport is currently disabled.");
         }
     }
 }
