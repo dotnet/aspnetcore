@@ -21,7 +21,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         Pop-Location
     }
 
-    Run-DotnetNew "--install", "$PSScriptRoot/../../../artifacts/packages/Debug/Shipping/$templateNupkg"
+    Run-DotnetNew "install", "$PSScriptRoot/../../../artifacts/packages/Debug/Shipping/$templateNupkg"
 
     New-Item -ErrorAction Ignore -Path $tmpDir -ItemType Directory
     Push-Location $tmpDir
@@ -65,7 +65,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
             Push-Location Server
         }
         if ($templateArgs -match '-au') {
-            dotnet.exe ef migrations add mvc
+            dotnet.exe ef migrations add Initial
         }
         dotnet.exe publish --configuration Release
         Set-Location .\bin\Release\net7.0\publish

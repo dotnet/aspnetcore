@@ -215,6 +215,7 @@ public class Http3TlsTests : LoggedTest
     [ConditionalFact]
     [MsQuicSupported]
     [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41894")]
     public async Task ClientCertificate_Allow_NotAvailable_Optional()
     {
         var builder = CreateHostBuilder(async context =>
@@ -253,7 +254,7 @@ public class Http3TlsTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    public async Task OnAuthentice_Available_Throws()
+    public async Task OnAuthenticate_Available_Throws()
     {
         var builder = CreateHostBuilder(async context =>
         {

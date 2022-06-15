@@ -117,7 +117,7 @@ internal sealed class RequestCookieCollection : IRequestCookieCollection
         return Store.ContainsKey(key);
     }
 
-    public bool TryGetValue(string key, [MaybeNullWhen(false)] out string? value)
+    public bool TryGetValue(string key, [NotNullWhen(true)] out string? value)
     {
         if (Store == null)
         {

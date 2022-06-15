@@ -18,6 +18,7 @@ Typically, we will update the Major Version before updating the TFM. This is bec
 * In [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs), update `ListedTargetingPackAssemblies` by incrementing the AssemblyVersion of all aspnetcore assemblies by 1 major version. Once dotnet/runtime updates their AssemblyVersions, we also need to update those in this file. They typically make that change at the same time as their TFM update, but we change our AssemblyVersions as soon as we update branding.
 * Add entries to [NuGet.config](/NuGet.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet7` and `dotnet7-transport`) and adding entries for the new feeds (`dotnet8` and `dotnet8-transport`). Make an effort to remove old feeds here at the same time.
 * In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add entries to `_templatePackages ` for `Microsoft.DotNet.Web.ProjectTemplates` and `Microsoft.DotNet.Web.Spa.ProjectTemplates` matching the new version.
+* In [src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs], update the references to `ReferenceAssemblies.Net.Netx0` with the latest version.
 
 ### Validation
 

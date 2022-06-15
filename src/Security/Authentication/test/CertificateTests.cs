@@ -6,11 +6,13 @@ using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -23,7 +25,7 @@ public class ClientCertificateAuthenticationTests
     [Fact]
     public async Task VerifySchemeDefaults()
     {
-        var services = new ServiceCollection();
+        var services = new ServiceCollection().ConfigureAuthTestServices();
         services.AddAuthentication().AddCertificate();
         var sp = services.BuildServiceProvider();
         var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();

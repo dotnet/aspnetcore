@@ -15,7 +15,7 @@ internal sealed class HubClients<THub> : IHubClients where THub : Hub
 
     public ISingleClientProxy Single(string connectionId)
     {
-        return new SingleClientProxyWithInvoke<THub>(_lifetimeManager, connectionId);
+        return new SingleClientProxy<THub>(_lifetimeManager, connectionId);
     }
 
     public IClientProxy All { get; }

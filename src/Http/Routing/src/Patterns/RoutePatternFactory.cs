@@ -27,7 +27,7 @@ public static class RoutePatternFactory
     /// </summary>
     /// <param name="pattern">The route pattern string to parse.</param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
-    public static RoutePattern Parse(string pattern)
+    public static RoutePattern Parse([StringSyntax("Route")] string pattern)
     {
         if (pattern == null)
         {
@@ -55,7 +55,7 @@ public static class RoutePatternFactory
     /// </param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-    public static RoutePattern Parse(string pattern, object? defaults, object? parameterPolicies)
+    public static RoutePattern Parse([StringSyntax("Route")] string pattern, object? defaults, object? parameterPolicies)
     {
         if (pattern == null)
         {
@@ -83,7 +83,7 @@ public static class RoutePatternFactory
     /// Multiple policies can be specified for a key by providing a collection as the value.
     /// </param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
-    public static RoutePattern Parse(string pattern, RouteValueDictionary? defaults, RouteValueDictionary? parameterPolicies)
+    public static RoutePattern Parse([StringSyntax("Route")] string pattern, RouteValueDictionary? defaults, RouteValueDictionary? parameterPolicies)
     {
         if (pattern == null)
         {
@@ -115,7 +115,7 @@ public static class RoutePatternFactory
     /// </param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
-    public static RoutePattern Parse(string pattern, object? defaults, object? parameterPolicies, object? requiredValues)
+    public static RoutePattern Parse([StringSyntax("Route")] string pattern, object? defaults, object? parameterPolicies, object? requiredValues)
     {
         if (pattern == null)
         {
@@ -146,7 +146,7 @@ public static class RoutePatternFactory
     /// Route values that can be substituted for parameters in the route pattern. See remarks on <see cref="RoutePattern.RequiredValues"/>.
     /// </param>
     /// <returns>The <see cref="RoutePattern"/>.</returns>
-    public static RoutePattern Parse(string pattern, RouteValueDictionary? defaults, RouteValueDictionary? parameterPolicies, RouteValueDictionary? requiredValues)
+    public static RoutePattern Parse([StringSyntax("Route")] string pattern, RouteValueDictionary? defaults, RouteValueDictionary? parameterPolicies, RouteValueDictionary? requiredValues)
     {
         if (pattern is null)
         {

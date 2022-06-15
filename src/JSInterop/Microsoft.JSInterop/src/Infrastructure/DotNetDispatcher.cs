@@ -41,6 +41,7 @@ public static class DotNetDispatcher
     /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
     /// <param name="argsJson">A JSON representation of the parameters.</param>
     /// <returns>A JSON representation of the return value, or null.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     public static string? Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, string argsJson)
     {
         // This method doesn't need [JSInvokable] because the platform is responsible for having
@@ -70,6 +71,7 @@ public static class DotNetDispatcher
     /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
     /// <param name="argsJson">A JSON representation of the parameters.</param>
     /// <returns>A JSON representation of the return value, or null.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     public static void BeginInvokeDotNet(JSRuntime jsRuntime, DotNetInvocationInfo invocationInfo, string argsJson)
     {
         // This method doesn't need [JSInvokable] because the platform is responsible for having
@@ -136,6 +138,7 @@ public static class DotNetDispatcher
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     private static void EndInvokeDotNetAfterTask(Task task, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo)
     {
         if (task.Exception != null)
@@ -208,6 +211,7 @@ public static class DotNetDispatcher
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     internal static object?[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, string arguments, Type[] parameterTypes)
     {
         if (parameterTypes.Length == 0)
@@ -425,6 +429,7 @@ public static class DotNetDispatcher
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "We expect application code is configured to ensure JSInvokable methods are retained. https://github.com/dotnet/aspnetcore/issues/29946")]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072", Justification = "We expect application code is configured to ensure JSInvokable methods are retained. https://github.com/dotnet/aspnetcore/issues/29946")]
+    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "We expect application code is configured to ensure JSInvokable methods are retained. https://github.com/dotnet/aspnetcore/issues/29946")]
     private static Dictionary<string, (MethodInfo, Type[])> ScanAssemblyForCallableMethods(AssemblyKey assemblyKey)
     {
         // TODO: Consider looking first for assembly-level attributes (i.e., if there are any,

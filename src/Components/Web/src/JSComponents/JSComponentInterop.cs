@@ -178,6 +178,7 @@ public class JSComponentInterop
         return new(null, callback);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "EventCallback and EventCallback<TValue> constructors are referenced statically and will be preserved.")]
     private static object CreateEventCallbackWithSingleParameter(Type eventCallbackType, IJSObjectReference? jsObjectReference)
     {
         var callback = jsObjectReference is null ? null : new Func<object, Task>(
@@ -195,6 +196,7 @@ public class JSComponentInterop
     {
         public readonly Dictionary<string, ParameterInfo> ParameterInfoByName;
 
+        [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "OpenComponent already has the right set of attributes")]
         public ParameterTypeCache(Type componentType)
         {
             ParameterInfoByName = new(StringComparer.OrdinalIgnoreCase);

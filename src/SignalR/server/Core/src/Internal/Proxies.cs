@@ -122,23 +122,6 @@ internal sealed class AllClientsExceptProxy<THub> : IClientProxy where THub : Hu
     }
 }
 
-internal sealed class SingleClientProxy<THub> : IClientProxy where THub : Hub
-{
-    private readonly string _connectionId;
-    private readonly HubLifetimeManager<THub> _lifetimeManager;
-
-    public SingleClientProxy(HubLifetimeManager<THub> lifetimeManager, string connectionId)
-    {
-        _lifetimeManager = lifetimeManager;
-        _connectionId = connectionId;
-    }
-
-    public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
-    {
-        return _lifetimeManager.SendConnectionAsync(_connectionId, method, args, cancellationToken);
-    }
-}
-
 internal sealed class MultipleClientProxy<THub> : IClientProxy where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -156,12 +139,12 @@ internal sealed class MultipleClientProxy<THub> : IClientProxy where THub : Hub
     }
 }
 
-internal sealed class SingleClientProxyWithInvoke<THub> : ISingleClientProxy where THub : Hub
+internal sealed class SingleClientProxy<THub> : ISingleClientProxy where THub : Hub
 {
     private readonly string _connectionId;
     private readonly HubLifetimeManager<THub> _lifetimeManager;
 
-    public SingleClientProxyWithInvoke(HubLifetimeManager<THub> lifetimeManager, string connectionId)
+    public SingleClientProxy(HubLifetimeManager<THub> lifetimeManager, string connectionId)
     {
         _lifetimeManager = lifetimeManager;
         _connectionId = connectionId;

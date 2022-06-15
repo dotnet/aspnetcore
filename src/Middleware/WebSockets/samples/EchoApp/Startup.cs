@@ -29,7 +29,7 @@ public class Startup
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
-                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync(new WebSocketAcceptContext() { DangerousEnableCompression = true });
                 await Echo(context, webSocket, loggerFactory.CreateLogger("Echo"));
             }
             else

@@ -170,12 +170,15 @@ function findClosestAnchorAncestorLegacy(element: Element | null, tagName: strin
 }
 
 function isWithinBaseUriSpace(href: string) {
-  const baseUriWithTrailingSlash = toBaseUriWithTrailingSlash(document.baseURI!); // TODO: Might baseURI really be null?
-  return href.startsWith(baseUriWithTrailingSlash);
+  const baseUriWithoutTrailingSlash = toBaseUriWithoutTrailingSlash(document.baseURI!);
+  const nextChar = href.charAt(baseUriWithoutTrailingSlash.length);
+
+  return href.startsWith(baseUriWithoutTrailingSlash)
+    && (nextChar === '' || nextChar === '/' || nextChar === '?' || nextChar === '#');
 }
 
-function toBaseUriWithTrailingSlash(baseUri: string) {
-  return baseUri.substr(0, baseUri.lastIndexOf('/') + 1);
+function toBaseUriWithoutTrailingSlash(baseUri: string) {
+  return baseUri.substring(0, baseUri.lastIndexOf('/'));
 }
 
 function eventHasSpecialKey(event: MouseEvent) {

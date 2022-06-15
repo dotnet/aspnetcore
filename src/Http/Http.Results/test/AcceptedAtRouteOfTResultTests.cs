@@ -122,7 +122,7 @@ public class AcceptedAtRouteOfTResultTests
         // Arrange
         AcceptedAtRoute<Todo> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<AcceptedAtRoute<Todo>>(context);

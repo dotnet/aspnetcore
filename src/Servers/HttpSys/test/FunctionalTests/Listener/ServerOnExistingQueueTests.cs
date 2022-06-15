@@ -243,7 +243,7 @@ public class ServerOnExistingQueueTests
         var statusCode = HttpApi.HttpCreateRequestQueue(
                 HttpApi.Version,
                 queueName,
-                null,
+                IntPtr.Zero,
                 0,
                 out requestQueueHandle);
 

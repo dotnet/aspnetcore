@@ -18,4 +18,12 @@ public class QuarantinedTestAttributeTest
             throw new Exception("Flaky!");
         }
     }
+
+    [Fact]
+    [QuarantinedTest("No issue, used to verify retry is working")]
+    public void FlakyTestToEnsureRetryWorks()
+    {
+        // Fail 20% of the time
+        Assert.True(new Random().Next(100) <= 80);
+    }
 }
