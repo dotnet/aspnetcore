@@ -20,6 +20,5 @@
   "postActions/restore/description": "Restore NuGet packages required by this project.",
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
   "postActions/restoreClient/description": "Restore NuGet packages required by this project.",
-  "postActions/restoreClient/manualInstructions/default/text": "Run 'dotnet restore'",
-  "postActions/open-file/description": "Opens Readme.txt in the editor"
+  "postActions/restoreClient/manualInstructions/default/text": "Run 'dotnet restore'"
 }
