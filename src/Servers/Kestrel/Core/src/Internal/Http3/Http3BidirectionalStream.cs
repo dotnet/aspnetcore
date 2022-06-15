@@ -867,9 +867,8 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
                         _context.StreamContext.ConnectionClosed.Register(state =>
                         {
                             var stream = (Http3BidirectionalStream<TContext>)state!;
-                            stream._context.WebTransportSession.Abort();
+                            stream._context.WebTransportSession.Abort(new(), Http3ErrorCode.NoError);
                         }, this);
-
                         break;
                     }
                 }

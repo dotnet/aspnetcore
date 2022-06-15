@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http;
-using System.IO;
+using System.Net.Http;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal class WebTransportSession
@@ -68,23 +68,16 @@ internal class WebTransportSession
         // removing streams is part of the process
         ThrowIfInvalidSessionCore();
 
-        bool result;
         lock (_openStreams)
         {
-            result = _openStreams.Remove(streamId);
+            return _openStreams.Remove(streamId);
         }
-
-        // for debugging todo remove
-        var f = result ? "Sucessfully" : "Failed to";
-        Console.WriteLine($"{f} Removed stream with id: {streamId}. {_openStreams.Count} stream left.");
-
-        return result;
     }
 
     // TODO add a graceful close
     // TODO handle the client closing (abort and graceful)
     // TODO handle a stream ending/completing (I think I did this but I need to make sure)
-    public void Abort()
+    public void Abort(ConnectionAbortedException exception, Http3ErrorCode error)
     {
         Console.WriteLine("Aborting WebTransport session");
 
@@ -94,20 +87,18 @@ internal class WebTransportSession
         {
             return;
         }
-
         _aborted = true;
 
-        _controlStream.Abort(new Connections.ConnectionAbortedException(), System.Net.Http.Http3ErrorCode.NoError);
-        foreach (var stream in _openStreams)
+        lock (_openStreams)
         {
-            if (stream.Value is null) // TODO why does this happen sometimes?
+            _controlStream.Abort(exception, error);
+            foreach (var stream in _openStreams)
             {
-                continue;
+                stream.Value.Abort(exception, error);
             }
-            stream.Value.Abort(new Connections.ConnectionAbortedException(), System.Net.Http.Http3ErrorCode.NoError);
-        }
 
-        _openStreams.Clear();
+            _openStreams.Clear();
+        }
 
         // Eventual todo: implement http datagrams and send the close webtransport session capsule
     }
@@ -122,7 +113,7 @@ internal class WebTransportSession
         }
     }
 
-    private void ThrowIfInvalidSessionCore()
+    private static void ThrowIfInvalidSessionCore()
     {
         if (!_webtransportEnabled)
         {

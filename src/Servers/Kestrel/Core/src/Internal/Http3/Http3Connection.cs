@@ -523,9 +523,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             streamContext,
             _clientSettings,
             _serverSettings,
-            _webtransportSession);
-        httpConnectionContext.TimeoutControl = _context.TimeoutControl;
-        httpConnectionContext.Transport = streamContext.Transport;
+            _webtransportSession)
+        {
+            TimeoutControl = _context.TimeoutControl,
+            Transport = streamContext.Transport
+        };
 
         return httpConnectionContext;
     }
@@ -604,9 +606,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             streamContext,
             _clientSettings,
             _serverSettings,
-            _webtransportSession);
-        httpConnectionContext.TimeoutControl = _context.TimeoutControl;
-        httpConnectionContext.Transport = streamContext.Transport;
+            _webtransportSession)
+        {
+            TimeoutControl = _context.TimeoutControl,
+            Transport = streamContext.Transport
+        };
 
         return new Http3ControlStream<TContext>(application, httpConnectionContext);
     }

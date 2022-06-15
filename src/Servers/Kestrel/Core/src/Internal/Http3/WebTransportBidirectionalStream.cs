@@ -15,7 +15,7 @@ internal class WebTransportBidirectionalStream<TContext> : Http3BidirectionalStr
 
     public WebTransportBidirectionalStream(IHttpApplication<TContext> application, Http3StreamContext context) : base(application, context)
     {
-        context.StreamContext.ConnectionClosed.Register(state => // todo would it be better to use the lifetimehandler callbacks?
+        context.StreamContext.ConnectionClosed.Register(state =>
         {
             var stream = (WebTransportBidirectionalStream<TContext>)state!;
             stream._context.WebTransportSession.TryRemoveStream(stream.StreamId);
