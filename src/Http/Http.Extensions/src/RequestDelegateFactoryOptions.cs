@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
 
@@ -38,13 +39,10 @@ public sealed class RequestDelegateFactoryOptions
     public IReadOnlyList<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? RouteHandlerFilterFactories { get; init; }
 
     /// <summary>
-    /// The initial endpoint metadata to add as part of the creation of the <see cref="RequestDelegateResult.RequestDelegate"/>.
+    /// The <see cref="EndpointBuilder.Metadata"/> to use for the creation of the <see cref="RequestDelegateResult.RequestDelegate"/>.
     /// </summary>
     /// <remarks>
-    /// This metadata will be included in <see cref="RequestDelegateResult.EndpointMetadata" /> <b>before</b> any metadata inferred during creation of the
-    /// <see cref="RequestDelegateResult.RequestDelegate"/> and <b>before</b> any metadata provided by types in the delegate signature that implement
-    /// <see cref="IEndpointMetadataProvider" /> or <see cref="IEndpointParameterMetadataProvider" />, i.e. this metadata will be less specific than any
-    /// inferred by the call to <see cref="RequestDelegateFactory.Create(Delegate, RequestDelegateFactoryOptions?)"/>.
+    /// This metadata will be returned as <see cref="RequestDelegateResult.EndpointMetadata" /> if it is non-null.
     /// </remarks>
     public IList<object>? EndpointMetadata { get; init; }
 }

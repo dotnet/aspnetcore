@@ -79,13 +79,13 @@ public static class OpenApiRouteHandlerBuilderExtensions
         var pattern = routeEndpointBuilder.RoutePattern;
         var metadata = new EndpointMetadataCollection(routeEndpointBuilder.Metadata);
         var methodInfo = metadata.OfType<MethodInfo>().SingleOrDefault();
-        var applicationServices = routeEndpointBuilder.ApplicationServices;
 
-        if (methodInfo is null || applicationServices is null)
+        if (methodInfo is null)
         {
             return;
         }
 
+        var applicationServices = routeEndpointBuilder.ApplicationServices;
         var hostEnvironment = applicationServices.GetService<IHostEnvironment>();
         var serviceProviderIsService = applicationServices.GetService<IServiceProviderIsService>();
         var generator = new OpenApiGenerator(hostEnvironment, serviceProviderIsService);

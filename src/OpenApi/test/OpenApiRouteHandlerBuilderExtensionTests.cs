@@ -134,14 +134,26 @@ public class OpenApiRouteHandlerBuilderExtensionTests
 
         WithLocalSummary(innerGroup.MapDelete("/inner-b", GetString));
 
-        var summaries = builder.DataSources.SelectMany(ds => ds.Endpoints).Select(e => e.Metadata.GetMetadata<OpenApiOperation>().Summary).ToArray();
+        var summaries = builder.DataSources
+            .SelectMany(ds => ds.Endpoints)
+            .ToDictionary(
+                e => ((RouteEndpoint)e).RoutePattern.RawText,
+                e => e.Metadata.GetMetadata<OpenApiOperation>().Summary);
 
-        Assert.Equal(5, summaries.Length);
-        Assert.Contains(" | Local Summary | 200 Status Response Content-Type: text/plain", summaries);
-        Assert.Contains("Outer Group Summary | Local Summary | 200 Status Response Content-Type: text/plain", summaries);
-        Assert.Contains("Outer Group Summary | Local Summary | 200 Status Response Content-Type: text/plain", summaries);
-        Assert.Contains("Outer Group Summary | Inner Group Summary | Local Summary | 200 Status Response Content-Type: text/plain", summaries);
-        Assert.Contains("Outer Group Summary | Inner Group Summary | Local Summary | 200 Status Response Content-Type: text/plain", summaries);
+        Assert.Equal(5, summaries.Count);
+
+        Assert.Equal(" | Local Summary | 200 Status Response Content-Type: text/plain",
+            summaries["/root"]);
+
+        Assert.Equal("Outer Group Summary | Local Summary | 200 Status Response Content-Type: text/plain",
+            summaries["/outer/outer-a"]);
+        Assert.Equal("Outer Group Summary | Local Summary | 200 Status Response Content-Type: text/plain",
+            summaries["/outer/outer-b"]);
+
+        Assert.Equal("Outer Group Summary | Inner Group Summary | Local Summary | 200 Status Response Content-Type: text/plain",
+            summaries["/outer/inner/inner-a"]);
+        Assert.Equal("Outer Group Summary | Inner Group Summary | Local Summary | 200 Status Response Content-Type: text/plain",
+            summaries["/outer/inner/inner-b"]);
     }
 
     private RouteEndpointDataSource GetBuilderEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
