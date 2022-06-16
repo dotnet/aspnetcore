@@ -4,8 +4,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Hosting.Internal;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -20,14 +18,14 @@ public class W3CLoggingMiddlewareTests
         Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(
             null,
             options,
-            new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance)));
+            Helpers.CreateTestW3CLogger(options)));
 
         Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(c =>
             {
                 return Task.CompletedTask;
             },
             null,
-            new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance)));
+            Helpers.CreateTestW3CLogger(options)));
 
         Assert.Throws<ArgumentNullException>(() => new W3CLoggingMiddleware(c =>
             {
@@ -42,7 +40,7 @@ public class W3CLoggingMiddlewareTests
     {
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = W3CLoggingFields.None;
-        var logger = new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance);
+        var logger = Helpers.CreateTestW3CLogger(options);
 
         var middleware = new W3CLoggingMiddleware(
             c =>
@@ -69,7 +67,7 @@ public class W3CLoggingMiddlewareTests
     public async Task DefaultDoesNotLogOptionalFields()
     {
         var options = CreateOptionsAccessor();
-        var logger = new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance);
+        var logger = Helpers.CreateTestW3CLogger(options);
 
         var middleware = new W3CLoggingMiddleware(
             c =>
@@ -111,7 +109,7 @@ public class W3CLoggingMiddlewareTests
         options.CurrentValue.AdditionalRequestHeaders.Add("x-client-ssl-protocol");
         options.CurrentValue.AdditionalRequestHeaders.Add(":invalid");
 
-        var logger = new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance);
+        var logger = Helpers.CreateTestW3CLogger(options);
 
         var middleware = new W3CLoggingMiddleware(
             c =>
@@ -165,7 +163,7 @@ public class W3CLoggingMiddlewareTests
         options.CurrentValue.AdditionalRequestHeaders.Add("Cookie");
         options.CurrentValue.AdditionalRequestHeaders.Add("x-client-ssl-protocol");
 
-        var logger = new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance);
+        var logger = Helpers.CreateTestW3CLogger(options);
 
         var middleware = new W3CLoggingMiddleware(
             c =>
@@ -209,7 +207,7 @@ public class W3CLoggingMiddlewareTests
     {
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = W3CLoggingFields.TimeTaken;
-        var logger = new TestW3CLogger(options, new HostingEnvironment(), NullLoggerFactory.Instance);
+        var logger = Helpers.CreateTestW3CLogger(options);
 
         var middleware = new W3CLoggingMiddleware(
             c =>
