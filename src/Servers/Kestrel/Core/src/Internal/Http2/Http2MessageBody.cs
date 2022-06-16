@@ -19,6 +19,7 @@ internal sealed class Http2MessageBody : MessageBody
         : base(context)
     {
         _context = context;
+        ExtendedConnect = _context.IsExtendedConnectRequest;
     }
 
     protected override void OnReadStarting()
@@ -26,7 +27,7 @@ internal sealed class Http2MessageBody : MessageBody
         // Note ContentLength or MaxRequestBodySize may be null
         var maxRequestBodySize = _context.MaxRequestBodySize;
 
-        if (_context.RequestHeaders.ContentLength > maxRequestBodySize)
+        if (!ExtendedConnect && _context.RequestHeaders.ContentLength > maxRequestBodySize)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
         }
@@ -51,6 +52,7 @@ internal sealed class Http2MessageBody : MessageBody
     {
         base.Reset();
         _readResult = default;
+        ExtendedConnect = _context.IsExtendedConnectRequest;
     }
 
     public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
@@ -62,7 +64,11 @@ internal sealed class Http2MessageBody : MessageBody
 
         // The HTTP/2 flow control window cannot be larger than 2^31-1 which limits bytesRead.
         _context.OnDataRead((int)newlyExaminedBytes);
-        AddAndCheckObservedBytes(newlyExaminedBytes);
+
+        if (!ExtendedConnect)
+        {
+            AddAndCheckObservedBytes(newlyExaminedBytes);
+        }
     }
 
     public override bool TryRead(out ReadResult readResult)

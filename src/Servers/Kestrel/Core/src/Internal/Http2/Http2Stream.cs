@@ -239,7 +239,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
                     return false;
                 }
                 ConnectProtocol = HttpRequestHeaders.HeaderProtocol;
-                IsConnectRequest = true;
+                IsExtendedConnectRequest = true;
             }
             // CONNECT - :scheme and :path must be excluded
             else if (!StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || !StringValues.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
