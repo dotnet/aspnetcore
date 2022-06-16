@@ -110,6 +110,7 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
             formatterContext,
             (IList<IOutputFormatter>)result.Formatters ?? Array.Empty<IOutputFormatter>(),
             result.ContentTypes);
+
         if (selectedFormatter == null)
         {
             // No formatter supports this.
@@ -118,12 +119,14 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
             const int statusCode = StatusCodes.Status406NotAcceptable;
             context.HttpContext.Response.StatusCode = statusCode;
 
-            var provider = context.HttpContext.RequestServices.GetService<IProblemDetailsProvider>();
+            var provider = context.HttpContext.RequestServices.GetService<ProblemDetailsWriterProvider>();
             if (provider != null &&
                 provider.GetWriter(context.HttpContext) is { } problemDetailsWriter)
             {
                 return problemDetailsWriter.WriteAsync(context.HttpContext);
             }
+
+            return Task.CompletedTask;
         }
 
         Log.ObjectResultExecuting(Logger, result, value);

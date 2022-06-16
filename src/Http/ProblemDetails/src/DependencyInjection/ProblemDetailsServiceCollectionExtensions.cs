@@ -16,19 +16,14 @@ public static class ProblemDetailsServiceCollectionExtensions
     /// Adds services required for creation of <see cref="ProblemDetails"/> for failed requests.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="allowedMapping"></param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddProblemDetails(
-        this IServiceCollection services,
-        MappingOptions allowedMapping = MappingOptions.All)
+    public static IServiceCollection AddProblemDetails(this IServiceCollection services)
     {
-        ArgumentNullException.ThrowIfNull(nameof(services));
+        ArgumentNullException.ThrowIfNull(services);
 
         // Adding default services;
-        services.TryAddSingleton<IProblemDetailsProvider, DefaultProblemDetailsEndpointProvider>();
+        services.TryAddSingleton<ProblemDetailsWriterProvider>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultProblemDetailsWriter>());
-
-        services.Configure<ProblemDetailsOptions>(options => options.AllowedMapping = allowedMapping);
 
         return services;
     }
@@ -43,8 +38,8 @@ public static class ProblemDetailsServiceCollectionExtensions
         this IServiceCollection services,
         Action<ProblemDetailsOptions> configureOptions)
     {
-        ArgumentNullException.ThrowIfNull(nameof(services));
-        ArgumentNullException.ThrowIfNull(nameof(configureOptions));
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         // Adding default services
         services.AddProblemDetails();

@@ -7,13 +7,12 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
+internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
 {
     private readonly OutputFormatterSelector _formatterSelector;
     private readonly IHttpResponseStreamWriterFactory _writerFactory;
     private readonly ProblemDetailsFactory _problemDetailsFactory;
     private readonly ProblemDetailsOptions _options;
-
     private static readonly MediaTypeCollection _problemContentTypes = new()
     {
         "application/problem+json",
@@ -34,15 +33,15 @@ internal class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
 
     public bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting)
     {
-        if (isRouting || context.Response.StatusCode >= 500)
+        if (context.Response.StatusCode >= 500 || isRouting)
         {
-            return true;
+            return false;
         }
 
-        if (metadata != null)
+        if (_options.IsEnabled(context.Response.StatusCode))
         {
-            var responseType = metadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
-            var apiControllerAttribute = metadata.GetMetadata<IApiBehaviorMetadata>();
+            var responseType = metadata?.GetMetadata<ProducesErrorResponseTypeAttribute>();
+            var apiControllerAttribute = metadata?.GetMetadata<IApiBehaviorMetadata>();
 
             if (apiControllerAttribute != null && responseType?.Type == typeof(ProblemDetails))
             {
@@ -68,8 +67,7 @@ internal class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
         string? type = null,
         string? detail = null,
         string? instance = null,
-        IDictionary<string, object?>? extensions = null,
-        Action<HttpContext, ProblemDetails>? configureDetails = null)
+        IDictionary<string, object?>? extensions = null)
     {
         var problemDetails = _problemDetailsFactory.CreateProblemDetails(context, statusCode ?? context.Response.StatusCode, title, type, detail, instance);
 
@@ -80,9 +78,6 @@ internal class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
                 problemDetails.Extensions[extension.Key] = extension.Value;
             }
         }
-
-        _options.ConfigureDetails?.Invoke(context, problemDetails);
-        configureDetails?.Invoke(context, problemDetails);
 
         var formatterContext = new OutputFormatterWriteContext(
             context,

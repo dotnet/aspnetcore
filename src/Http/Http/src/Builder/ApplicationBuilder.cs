@@ -133,7 +133,7 @@ public class ApplicationBuilder : IApplicationBuilder
             const int statusCode = StatusCodes.Status404NotFound;
             context.Response.StatusCode = statusCode;
 
-            var endpointProvider = context.RequestServices.GetService<IProblemDetailsProvider>();
+            var endpointProvider = context.RequestServices.GetService<ProblemDetailsWriterProvider>();
             if (endpointProvider != null &&
                 endpointProvider.GetWriter(context, isRouting: true) is { } problemDetailsEndpoint)
             {

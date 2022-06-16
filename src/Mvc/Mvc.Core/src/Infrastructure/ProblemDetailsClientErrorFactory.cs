@@ -2,26 +2,30 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 internal sealed class ProblemDetailsClientErrorFactory : IClientErrorFactory
 {
     private readonly ProblemDetailsFactory _problemDetailsFactory;
-    private readonly IProblemDetailsProvider? _problemDetailsProvider;
+    private readonly ProblemDetailsOptions? _options;
+    private readonly ProblemDetailsWriterProvider? _problemDetailsProvider;
 
     public ProblemDetailsClientErrorFactory(
         ProblemDetailsFactory problemDetailsFactory,
-        IProblemDetailsProvider? problemDetailsProvider = null)
+        IOptions<ProblemDetailsOptions>? options = null,
+        ProblemDetailsWriterProvider? problemDetailsProvider = null)
     {
         _problemDetailsFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
+        _options = options?.Value;
         _problemDetailsProvider = problemDetailsProvider;
     }
 
     public IActionResult? GetClientError(ActionContext actionContext, IClientErrorActionResult clientError)
     {
         if (_problemDetailsProvider != null &&
-           !_problemDetailsProvider.IsEnabled(clientError.StatusCode ?? 500))
+           !_options?.IsEnabled(clientError.StatusCode ?? 500) == true)
         {
             return null;
         }
