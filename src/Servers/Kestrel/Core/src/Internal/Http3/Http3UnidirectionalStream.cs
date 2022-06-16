@@ -84,6 +84,11 @@ internal class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWorkItem
         Input.Complete(abortReason);
     }
 
+    public void Abort()
+    {
+        Abort(new(), Http3ErrorCode.NoError);
+    }
+
     public void OnInputOrOutputCompleted()
     {
         TryClose();

@@ -1,3 +1,17 @@
 #nullable enable
 *REMOVED*~Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!>! options, Microsoft.AspNetCore.Connections.IConnectionListenerFactory! transportFactory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Http.Features.IHttpWebTransportSessionFeature
+Microsoft.AspNetCore.Http.Features.IHttpWebTransportSessionFeature.AcceptAsync() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession!>
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.Abort() -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.OpenBidirectionalStream() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.IHttp3Stream?>
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.OpenUnidirectionalStream() -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.IHttp3Stream?>
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.SessionId.get -> long
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.IHttp3Stream
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.IHttp3Stream.Abort() -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.IHttp3Stream.IsDraining.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.IHttp3Stream.IsReceivingHeader.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.IHttp3Stream.IsRequestStream.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.IHttp3Stream.StreamId.get -> long
+Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.IHttp3Stream.StreamTimeoutTicks.get -> long
 Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!>! options, Microsoft.AspNetCore.Connections.IConnectionListenerFactory! transportFactory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void

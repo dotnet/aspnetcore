@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal protected IHttpResponseTrailersFeature? _currentIHttpResponseTrailersFeature;
         internal protected ITlsConnectionFeature? _currentITlsConnectionFeature;
         internal protected IHttpWebSocketFeature? _currentIHttpWebSocketFeature;
+        internal protected IHttpWebTransportSessionFeature? _currentIHttpWebTransportSessionFeature;
         internal protected IHttp2StreamIdFeature? _currentIHttp2StreamIdFeature;
         internal protected IHttpMinRequestBodyDataRateFeature? _currentIHttpMinRequestBodyDataRateFeature;
         internal protected IHttpMinResponseDataRateFeature? _currentIHttpMinResponseDataRateFeature;
@@ -100,6 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpResponseTrailersFeature = null;
             _currentITlsConnectionFeature = null;
             _currentIHttpWebSocketFeature = null;
+            _currentIHttpWebTransportSessionFeature = null;
             _currentIHttp2StreamIdFeature = null;
             _currentIHttpMinRequestBodyDataRateFeature = null;
             _currentIHttpMinResponseDataRateFeature = null;
@@ -260,6 +262,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIHttpWebSocketFeature;
                 }
+                else if (key == typeof(IHttpWebTransportSessionFeature))
+                {
+                    feature = _currentIHttpWebTransportSessionFeature;
+                }
                 else if (key == typeof(IBadRequestExceptionFeature))
                 {
                     feature = _currentIBadRequestExceptionFeature;
@@ -395,6 +401,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == typeof(IHttpWebSocketFeature))
                 {
                     _currentIHttpWebSocketFeature = (IHttpWebSocketFeature?)value;
+                }
+                else if (key == typeof(IHttpWebTransportSessionFeature))
+                {
+                    _currentIHttpWebTransportSessionFeature = (IHttpWebTransportSessionFeature?)value;
                 }
                 else if (key == typeof(IBadRequestExceptionFeature))
                 {
@@ -533,6 +543,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpWebSocketFeature))
             {
                 feature = Unsafe.As<IHttpWebSocketFeature?, TFeature?>(ref _currentIHttpWebSocketFeature);
+            }
+            else if (typeof(TFeature) == typeof(IHttpWebTransportSessionFeature))
+            {
+                feature = Unsafe.As<IHttpWebTransportSessionFeature?, TFeature?>(ref _currentIHttpWebTransportSessionFeature);
             }
             else if (typeof(TFeature) == typeof(IBadRequestExceptionFeature))
             {
@@ -678,6 +692,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIHttpWebSocketFeature = Unsafe.As<TFeature?, IHttpWebSocketFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IHttpWebTransportSessionFeature))
+            {
+                _currentIHttpWebTransportSessionFeature = Unsafe.As<TFeature?, IHttpWebTransportSessionFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IBadRequestExceptionFeature))
             {
                 _currentIBadRequestExceptionFeature = Unsafe.As<TFeature?, IBadRequestExceptionFeature?>(ref feature);
@@ -809,6 +827,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttpWebSocketFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttpWebSocketFeature), _currentIHttpWebSocketFeature);
+            }
+            if (_currentIHttpWebTransportSessionFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IHttpWebTransportSessionFeature), _currentIHttpWebTransportSessionFeature);
             }
             if (_currentIBadRequestExceptionFeature != null)
             {

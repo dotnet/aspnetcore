@@ -858,17 +858,7 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
                     if (supportedVersions.Any((v) => v.Key.EndsWith(version, StringComparison.InvariantCulture)) &&
                         (_context?.WebTransportSession.Initialize(this, version) ?? false))
                     {
-                        // build and flush the 200 ACK
-                        HttpResponseHeaders.TryAdd(WebTransportSession.VersionHeaderPrefix, version);
-                        Output.WriteResponseHeaders(200, null, HttpResponseHeaders, false, false);
-                        await Output.FlushAsync(CancellationToken.None);
-
-                        // add the close stream listener as we must abort the session once this stream dies
-                        _context.StreamContext.ConnectionClosed.Register(state =>
-                        {
-                            var stream = (Http3BidirectionalStream<TContext>)state!;
-                            stream._context.WebTransportSession.Abort(new(), Http3ErrorCode.NoError);
-                        }, this);
+                        _currentIHttpWebTransportSessionFeature = _context.WebTransportSession;
                         break;
                     }
                 }
@@ -1191,6 +1181,11 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
     /// Used to kick off the request processing loop by derived classes.
     /// </summary>
     public abstract void Execute();
+
+    public void Abort()
+    {
+        Abort(new(), Http3ErrorCode.NoError);
+    }
 
     protected enum RequestHeaderParsingState
     {

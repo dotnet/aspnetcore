@@ -38,6 +38,7 @@ public class HttpProtocolFeatureCollection
                 "ITlsConnectionFeature",
                 "IHttpUpgradeFeature",
                 "IHttpWebSocketFeature",
+                "IHttpWebTransportSessionFeature",
                 "IBadRequestExceptionFeature"
             };
         var maybeFeatures = new[]

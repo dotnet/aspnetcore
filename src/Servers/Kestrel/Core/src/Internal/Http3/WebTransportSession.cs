@@ -3,32 +3,78 @@
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-internal class WebTransportSession
+
+/// <summary>
+/// Controls the session and streams of a WebTransport session
+/// </summary>
+internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSessionFeature
 {
+    #region Public API
+    long IWebTransportSession.SessionId => _controlStream.StreamId;
+
+    async ValueTask<IWebTransportSession> IHttpWebTransportSessionFeature.AcceptAsync()
+    {
+        // build and flush the 200 ACK
+        _controlStream.ResponseHeaders.TryAdd(VersionHeaderPrefix, _version);
+        _controlStream.Output.WriteResponseHeaders(200, null, (Http.HttpResponseHeaders)_controlStream.ResponseHeaders, false, false);
+        await _controlStream.Output.FlushAsync(CancellationToken.None);
+
+        // add the close stream listener as we must abort the session once this stream dies
+        _controlStream.OnCompleted(_ =>
+        {
+            Abort(new(), Http3ErrorCode.NoError);
+
+            return Task.CompletedTask;
+        }, this);
+
+        return this;
+    }
+
+    void IWebTransportSession.Abort()
+    {
+        Abort(new(), Http3ErrorCode.NoError);
+    }
+
+    ValueTask<IHttp3Stream?> IWebTransportSession.OpenBidirectionalStream()
+    {
+        ThrowIfInvalidSession();
+
+        return default!; // TODO Implement
+    }
+
+    ValueTask<IHttp3Stream?> IWebTransportSession.OpenUnidirectionalStream()
+    {
+        ThrowIfInvalidSession();
+
+        return default!; // TODO Implement
+    }
+    #endregion
+
     private bool _aborted;
+    private string _version = "";
     private readonly Dictionary<long, IHttp3Stream> _openStreams = new(); // todo should this maybe just be a list as I am not actually indexing based on id?
     private static bool _webtransportEnabled;
     private Http3BidirectionalStream _controlStream = default!;
 
-    public static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
+    internal static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
 
     // Order is important for both of these arrays as we choose the first
     // supported version (index 0 is the most prefered option)
-    public static readonly byte[][] suppportedWebTransportVersionsBytes =
+    internal static readonly byte[][] suppportedWebTransportVersionsBytes =
     {
          new byte[] { 0x64, 0x72, 0x61, 0x66, 0x74, 0x30, 0x32 } // "draft02" 
     };
 
-    public static readonly string[] suppportedWebTransportVersions =
+    internal static readonly string[] suppportedWebTransportVersions =
     {
         "draft02"
     };
 
-    public long SessionId => _controlStream.StreamId;
-
-    public bool Initialize(Http3BidirectionalStream controlStream, string version)
+    internal bool Initialize(Http3BidirectionalStream controlStream, string version)
     {
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out _webtransportEnabled);
 
@@ -38,7 +84,7 @@ internal class WebTransportSession
             _aborted = false;
         }
 
-        // todo once we support multiple versions, actually use the version
+        _version = version;
 
         return _webtransportEnabled;
     }
@@ -47,7 +93,7 @@ internal class WebTransportSession
     /// Adds a new stream to the internal list of open streams.
     /// </summary>
     /// <param name="stream">A reference to the new stream that is being added</param>
-    public void AddStream(IHttp3Stream stream)
+    internal void AddStream(IHttp3Stream stream)
     {
         ThrowIfInvalidSession();
 
@@ -62,7 +108,7 @@ internal class WebTransportSession
     /// </summary>
     /// <param name="streamId">A reference to the new stream that is being added</param>
     /// <returns>True is the process succeeded. False otherwise</returns>
-    public bool TryRemoveStream(long streamId)
+    internal bool TryRemoveStream(long streamId)
     {
         // Don't check for if the session was aborted because
         // removing streams is part of the process
@@ -77,7 +123,7 @@ internal class WebTransportSession
     // TODO add a graceful close
     // TODO handle the client closing (abort and graceful)
     // TODO handle a stream ending/completing (I think I did this but I need to make sure)
-    public void Abort(ConnectionAbortedException exception, Http3ErrorCode error)
+    internal void Abort(ConnectionAbortedException exception, Http3ErrorCode error)
     {
         Console.WriteLine("Aborting WebTransport session");
 
