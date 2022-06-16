@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
@@ -106,6 +107,70 @@ public class HelloWorldTests : LoggedTest
                         throw new NotImplementedException(variant.Server.ToString());
                 }
             }
+        }
+    }
+
+    public static TestMatrix SelfHostTestVariants
+        => TestMatrix.ForServers(ServerType.Kestrel, ServerType.HttpSys)
+            .WithTfms(Tfm.Default)
+            .WithApplicationTypes(ApplicationType.Portable)
+            .WithAllHostingModels()
+            .WithAllArchitectures();
+
+    [ConditionalTheory]
+    [MemberData(nameof(SelfHostTestVariants))]
+    public async Task ApplicationException(TestVariant variant)
+    {
+        var testName = $"ApplicationException_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
+        using (StartLog(out var loggerFactory,
+            variant.Server == ServerType.Nginx ? LogLevel.Trace : LogLevel.Debug, // https://github.com/aspnet/ServerTests/issues/144
+            testName))
+        {
+            var logger = loggerFactory.CreateLogger("ApplicationException");
+
+            var deploymentParameters = new DeploymentParameters(variant)
+            {
+                ApplicationPath = Helpers.GetApplicationPath()
+            };
+
+            if (variant.Server == ServerType.Nginx)
+            {
+                deploymentParameters.ServerConfigTemplateContent = Helpers.GetNginxConfigContent("nginx.conf");
+            }
+
+            if (variant.Server == ServerType.IISExpress)
+            {
+                deploymentParameters.EnvironmentVariables[DebugEnvironmentVariable] = "console";
+            }
+
+            var output = string.Empty;
+            using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
+            {
+                deployer.ProcessOutputListener = (data) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(data))
+                    {
+                        output += data + '\n';
+                    }
+                };
+
+                var deploymentResult = await deployer.DeployAsync();
+
+                // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+                using (var response = await RetryHelper.RetryRequest(() =>
+                {
+                    return deploymentResult.HttpClient.GetAsync("/throwexception");
+                }, logger, deploymentResult.HostShutdownToken))
+                {
+                    Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+                    var body = await response.Content.ReadAsStringAsync();
+                    Assert.Empty(body);
+                }
+            }
+            // Output should contain the ApplicationException and the 500 status code
+            Assert.Contains("System.ApplicationException: Application exception", output);
+            Assert.Contains("/throwexception - - - 500", output);
         }
     }
 }
