@@ -452,6 +452,7 @@ public class ClientHandlerTests
         using (var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/"))
         {
             message.Content = new StringContent("Hello World");
+            message.Content.Dispose();
 
             responseTask = invoker.SendAsync(message, CancellationToken.None);
         }
