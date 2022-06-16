@@ -104,17 +104,11 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
     {
         // CompositeDataSource is registered as a singleton by default by AddRouting().
         // UseEndpoints() adds all root data sources to this singleton.
+        List<IDisposable>? disposables = null;
+
         lock (_lock)
         {
             _disposed = true;
-
-            if (_changeTokenRegistrations is not null)
-            {
-                foreach (var registration in _changeTokenRegistrations)
-                {
-                    registration.Dispose();
-                }
-            }
 
             if (_dataSources is ObservableCollection<EndpointDataSource> observableDataSources)
             {
@@ -123,7 +117,30 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
 
             foreach (var dataSource in _dataSources)
             {
-                (dataSource as IDisposable)?.Dispose();
+                if (dataSource is IDisposable disposableDataSource)
+                {
+                    disposables ??= new List<IDisposable>();
+                    disposables.Add(disposableDataSource);
+                }
+            }
+
+            if (_changeTokenRegistrations is not null)
+            {
+                foreach (var registration in _changeTokenRegistrations)
+                {
+                    disposables ??= new List<IDisposable>();
+                    disposables.Add(registration);
+                }
+            }
+        }
+
+        // Dispose everything outside of the lock in case a registration is blocking on HandleChange completing
+        // on another thread or something.
+        if (disposables is not null)
+        {
+            foreach (var disposable in disposables)
+            {
+                disposable.Dispose();
             }
         }
     }
@@ -162,6 +179,8 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
 
     private void HandleChange(bool collectionChanged)
     {
+        CancellationTokenSource? oldTokenSource = null;
+
         lock (_lock)
         {
             if (_disposed)
@@ -169,31 +188,34 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
                 return;
             }
 
-            // Don't update endpoints if no one has read them yet.
-            if (_endpoints is not null)
-            {
-                // Refresh the endpoints from datasource so that callbacks can get the latest endpoints
-                _endpoints = _dataSources.SelectMany(d => d.Endpoints).ToArray();
-            }
-
-            // Prevent consumers from re-registering callback to inflight events as that can
-            // cause a stackoverflow
+            // Prevent consumers from re-registering callback to in-flight events as that can
+            // cause a stack overflow.
             // Example:
-            // 1. B registers A
-            // 2. A fires event causing B's callback to get called
+            // 1. B registers A.
+            // 2. A fires event causing B's callback to get called.
             // 3. B executes some code in its callback, but needs to re-register callback
-            //    in the same callback
-            var oldTokenSource = _cts;
+            //    in the same callback.
+            oldTokenSource = _cts;
 
             // Don't create a new change token if no one is listening.
             if (oldTokenSource is not null)
             {
+                // We have to hook to any OnChange callbacks before caching endpoints,
+                // otherwise we might miss changes that occurred to one of the _dataSources after caching.
                 CreateChangeTokenUnsynchronized(collectionChanged);
-                // Raise consumer callbacks. Any new callback registration would happen on the new token
-                // created in earlier step.
-                oldTokenSource.Cancel();
+            }
+
+            // Don't update endpoints if no one has read them yet.
+            if (_endpoints is not null)
+            {
+                // Refresh the endpoints from data source so that callbacks can get the latest endpoints.
+                _endpoints = _dataSources.SelectMany(d => d.Endpoints).ToArray();
             }
         }
+
+        // Raise consumer callbacks. Any new callback registration would happen on the new token
+        // created in earlier step. Avoid raising callbacks in a lock to avoid possible deadlocks.
+        oldTokenSource?.Cancel();
     }
 
     [MemberNotNull(nameof(_consumerChangeToken))]
