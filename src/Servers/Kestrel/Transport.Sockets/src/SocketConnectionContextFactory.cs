@@ -42,7 +42,6 @@ public sealed class SocketConnectionContextFactory : IDisposable
 
         _options = options;
         _logger = logger;
-        _memoryPool = _options.MemoryPoolFactory();
         _settingsCount = _options.IOQueueCount;
 
         var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
