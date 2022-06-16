@@ -282,7 +282,6 @@ public class OpenApiOperationGeneratorTests
         static void AssertQueryParameter(OpenApiOperation operation, string type)
         {
             var param = Assert.Single(operation.Parameters); ;
-            Assert.Equal(type, type);
             Assert.Equal(ParameterLocation.Query, param.In);
         }
 
