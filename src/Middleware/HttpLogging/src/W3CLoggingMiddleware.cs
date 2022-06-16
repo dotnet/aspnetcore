@@ -226,7 +226,7 @@ internal sealed class W3CLoggingMiddleware
 
         if (options.LoggingFields.HasFlag(W3CLoggingFields.ProtocolStatus))
         {
-            shouldLog |= AddToList(elements, _protocolStatusIndex, response.StatusCode.ToString(CultureInfo.InvariantCulture));
+            shouldLog |= AddToList(elements, _protocolStatusIndex, StatusCodeHelper.ToStatusString(response.StatusCode));
         }
 
         if (options.LoggingFields.HasFlag(W3CLoggingFields.TimeTaken))
