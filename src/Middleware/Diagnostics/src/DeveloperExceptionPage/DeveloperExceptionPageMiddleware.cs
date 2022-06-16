@@ -10,11 +10,8 @@ using Microsoft.AspNetCore.Diagnostics.RazorViews;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.StackTrace.Sources;
@@ -35,7 +32,7 @@ public class DeveloperExceptionPageMiddleware
     private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
     private readonly Func<ErrorContext, Task> _exceptionHandler;
     private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
-    private readonly IProblemDetailsProvider? _problemDetailsProvider;
+    private readonly ProblemDetailsWriterProvider? _problemDetailsProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -54,7 +51,7 @@ public class DeveloperExceptionPageMiddleware
         IWebHostEnvironment hostingEnvironment,
         DiagnosticSource diagnosticSource,
         IEnumerable<IDeveloperPageExceptionFilter> filters,
-        IProblemDetailsProvider? problemDetailsProvider = null)
+        ProblemDetailsWriterProvider? problemDetailsProvider = null)
     {
         if (next == null)
         {
@@ -173,19 +170,22 @@ public class DeveloperExceptionPageMiddleware
 
         if (_problemDetailsProvider?.GetWriter(httpContext) is { } writer)
         {
-            void ConfigureDetails(HttpContext context, ProblemDetails problemDetails)
+            var exceptionExtensions = new Dictionary<string, object?>
             {
-                problemDetails.Extensions.Add("exception", new
                 {
-                    Headers = httpContext.Request.Headers,
-                    Error = errorContext.Exception.ToString(),
-                    Path = context.Request.Path,
-                    Endpoint = context.GetEndpoint()?.ToString(),
-                    RouteValues = context.Features.Get<IRouteValuesFeature>()?.RouteValues,
-                });
-            }
+                    "exception",
+                    new
+                    {
+                        Headers = httpContext.Request.Headers,
+                        Error = errorContext.Exception.ToString(),
+                        Path = httpContext.Request.Path,
+                        Endpoint = httpContext.GetEndpoint()?.ToString(),
+                        RouteValues = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues,
+                    }
+                }
+            };
 
-            return writer.WriteAsync(httpContext, configureDetails: ConfigureDetails);
+            return writer.WriteAsync(httpContext, extensions: exceptionExtensions);
         }
 
         httpContext.Response.ContentType = "text/plain; charset=utf-8";

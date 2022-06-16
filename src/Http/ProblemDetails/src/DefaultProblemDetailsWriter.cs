@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -17,23 +16,7 @@ internal sealed class DefaultProblemDetailsWriter : IProblemDetailsWriter
     }
 
     public bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting)
-    {
-        if (isRouting || context.Response.StatusCode >= 500)
-        {
-            return true;
-        }
-
-        var problemDetailsMetadata = metadata?.GetMetadata<ProblemDetailsResponseMetadata>();
-        return problemDetailsMetadata != null;
-
-        //var headers = context.Request.GetTypedHeaders();
-        //var acceptHeader = headers.Accept;
-        //if (acceptHeader != null &&
-        //    !acceptHeader.Any(h => _problemMediaType.IsSubsetOf(h)))
-        //{
-        //    return false;
-        //}
-    }
+        => (isRouting || context.Response.StatusCode >= 500) && _options.IsEnabled(context.Response.StatusCode, isRouting);
 
     public Task WriteAsync(
         HttpContext context,
@@ -42,8 +25,7 @@ internal sealed class DefaultProblemDetailsWriter : IProblemDetailsWriter
         string? type = null,
         string? detail = null,
         string? instance = null,
-        IDictionary<string, object?>? extensions = null,
-        Action<HttpContext, ProblemDetails>? configureDetails = null)
+        IDictionary<string, object?>? extensions = null)
     {
         var problemDetails = new ProblemDetails
         {
@@ -63,11 +45,8 @@ internal sealed class DefaultProblemDetailsWriter : IProblemDetailsWriter
         }
 
         ProblemDetailsDefaults.Apply(problemDetails, context.Response.StatusCode);
-
         _options.ConfigureDetails?.Invoke(context, problemDetails);
-        configureDetails?.Invoke(context, problemDetails);
 
         return context.Response.WriteAsJsonAsync(problemDetails, typeof(ProblemDetails), ProblemDetailsJsonContext.Default, contentType: "application/problem+json");
     }
 }
-

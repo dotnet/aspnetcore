@@ -29,7 +29,6 @@ public interface IProblemDetailsWriter
     /// <param name="detail"></param>
     /// <param name="instance"></param>
     /// <param name="extensions"></param>
-    /// <param name="configureDetails"></param>
     /// <returns></returns>
     Task WriteAsync(
         HttpContext context,
@@ -38,6 +37,5 @@ public interface IProblemDetailsWriter
         string? type = null,
         string? detail = null,
         string? instance = null,
-        IDictionary<string, object?>? extensions = null,
-        Action<HttpContext, ProblemDetails>? configureDetails = null);
+        IDictionary<string, object?>? extensions = null);
 }

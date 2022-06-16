@@ -4,7 +4,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -137,7 +136,7 @@ public abstract class TextOutputFormatter : OutputFormatter
             const int statusCode = StatusCodes.Status406NotAcceptable;
             context.HttpContext.Response.StatusCode = statusCode;
 
-            var provider = context.HttpContext.RequestServices.GetService<IProblemDetailsProvider>();
+            var provider = context.HttpContext.RequestServices.GetService<ProblemDetailsWriterProvider>();
             if (provider != null &&
                 provider.GetWriter(context.HttpContext) is { } problemDetailsWriter)
             {

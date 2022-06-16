@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -27,7 +25,7 @@ public class ExceptionHandlerMiddleware
     private readonly ILogger _logger;
     private readonly Func<object, Task> _clearCacheHeadersDelegate;
     private readonly DiagnosticListener _diagnosticListener;
-    private readonly IProblemDetailsProvider? _problemDetailsProvider;
+    private readonly ProblemDetailsWriterProvider? _problemDetailsProvider;
 
     /// <summary>
     /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
@@ -36,28 +34,15 @@ public class ExceptionHandlerMiddleware
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <param name="options">The options for configuring the middleware.</param>
     /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
-    public ExceptionHandlerMiddleware(
-        RequestDelegate next,
-        ILoggerFactory loggerFactory,
-        IOptions<ExceptionHandlerOptions> options,
-        DiagnosticListener diagnosticListener)
-        : this(next, loggerFactory, options, diagnosticListener, null)
-    { }
-
-    /// <summary>
-    /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
-    /// </summary>
-    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
-    /// <param name="options">The options for configuring the middleware.</param>
-    /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
+    /// <param name="problemDetailsOptions"></param>
     /// <param name="problemDetailsProvider">The <see cref="IProblemDetailsProvider"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public ExceptionHandlerMiddleware(
         RequestDelegate next,
         ILoggerFactory loggerFactory,
         IOptions<ExceptionHandlerOptions> options,
         DiagnosticListener diagnosticListener,
-        IProblemDetailsProvider? problemDetailsProvider = null)
+        IOptions<ProblemDetailsOptions>? problemDetailsOptions = null,
+        ProblemDetailsWriterProvider? problemDetailsProvider = null)
     {
         _next = next;
         _options = options.Value;
@@ -70,7 +55,9 @@ public class ExceptionHandlerMiddleware
         {
             if (_options.ExceptionHandlingPath == null)
             {
-                if (_problemDetailsProvider == null || _problemDetailsProvider.IsEnabled(statusCode: DefaultStatusCode) == false)
+                if (_problemDetailsProvider == null ||
+                    problemDetailsOptions?.Value == null ||
+                    problemDetailsOptions.Value.IsEnabled(statusCode: DefaultStatusCode) == false)
                 {
                     throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
                 }

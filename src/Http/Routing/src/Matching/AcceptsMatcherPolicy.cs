@@ -265,7 +265,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
                 const int statusCode = StatusCodes.Status415UnsupportedMediaType;
                 context.Response.StatusCode = statusCode;
 
-                var endpointProvider = context.RequestServices.GetService<IProblemDetailsProvider>();
+                var endpointProvider = context.RequestServices.GetService<ProblemDetailsWriterProvider>();
                 if (endpointProvider != null &&
                     endpointProvider.GetWriter(context, isRouting: true) is { } problemDetailsEndpoint)
                 {
