@@ -26,10 +26,10 @@ internal sealed class MacOSCertificateManager : CertificateManager
     private const string MacOSTrustCertificateCommandLine = "security";
     private static readonly string MacOSTrustCertificateCommandLineArguments = $"add-trusted-cert -p basic -p ssl -k {MacOSUserKeyChain} ";
 
-    // Remove a certificate from the per-user trust settings.
-    // Note: This operation will require user authentication via a dialog.
-    private const string MacOSRemoveCertificateTrustCommandLine = "security";
-    private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "remove-trusted-cert {0}";
+    // // Remove a certificate from the per-user trust settings.
+    // // Note: This operation will require user authentication via a dialog.
+    // private const string MacOSRemoveCertificateTrustCommandLine = "security";
+    // private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "remove-trusted-cert {0}";
 
     // Well-known location on disk where dev-certs are stored.
     private static readonly string MacOSUserHttpsCertificateLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".aspnet", "dev-certs", "https");
@@ -183,15 +183,15 @@ internal sealed class MacOSCertificateManager : CertificateManager
 
     protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
     {
-        if (IsTrusted(certificate))
-        {
+        // if (IsTrusted(certificate)) //// necessary?
+        // {
             RemoveCertificateFromKeyChain(MacOSUserKeyChain, certificate);
             RemoveCertificateFromUserStoreCore(certificate);
-        }
-        else
-        {
-            Log.MacOSCertificateUntrusted(GetDescription(certificate));
-        }
+        // }
+        // else
+        // {
+        //     Log.MacOSCertificateUntrusted(GetDescription(certificate));
+        // }
     }
 
     private static void RemoveCertificateFromKeyChain(string keyChain, X509Certificate2 certificate)
@@ -200,7 +200,10 @@ internal sealed class MacOSCertificateManager : CertificateManager
         {
             // Trying to remove the certificate from the keychain will fail if the certificate
             // has a "trust rule" applied to it.
-            RemoveCertificateTrustRule(certificate);
+            // if (IsTrusted(certificate))
+            // {
+            //     RemoveCertificateTrustRule(certificate);
+            // }
         }
         catch
         {
@@ -243,44 +246,44 @@ internal sealed class MacOSCertificateManager : CertificateManager
         Log.MacOSRemoveCertificateFromKeyChainEnd();
     }
 
-    private static void RemoveCertificateTrustRule(X509Certificate2 certificate)
-    {
-        Log.MacOSRemoveCertificateTrustRuleStart(GetDescription(certificate));
-        var certificatePath = Path.GetTempFileName();
-        try
-        {
-            var certBytes = certificate.Export(X509ContentType.Cert);
-            File.WriteAllBytes(certificatePath, certBytes);
-            var processInfo = new ProcessStartInfo(
-                MacOSRemoveCertificateTrustCommandLine,
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    MacOSRemoveCertificateTrustCommandLineArgumentsFormat,
-                    certificatePath
-                ));
-            using var process = Process.Start(processInfo);
-            process!.WaitForExit();
-            if (process.ExitCode != 0)
-            {
-                Log.MacOSRemoveCertificateTrustRuleError(process.ExitCode);
-            }
-            Log.MacOSRemoveCertificateTrustRuleEnd();
-        }
-        finally
-        {
-            try
-            {
-                if (File.Exists(certificatePath))
-                {
-                    File.Delete(certificatePath);
-                }
-            }
-            catch
-            {
-                // We don't care about failing to do clean-up on a temp file.
-            }
-        }
-    }
+    // private static void RemoveCertificateTrustRule(X509Certificate2 certificate)
+    // {
+    //     Log.MacOSRemoveCertificateTrustRuleStart(GetDescription(certificate));
+    //     var certificatePath = Path.GetTempFileName();
+    //     try
+    //     {
+    //         var certBytes = certificate.Export(X509ContentType.Cert);
+    //         File.WriteAllBytes(certificatePath, certBytes);
+    //         var processInfo = new ProcessStartInfo(
+    //             MacOSRemoveCertificateTrustCommandLine,
+    //             string.Format(
+    //                 CultureInfo.InvariantCulture,
+    //                 MacOSRemoveCertificateTrustCommandLineArgumentsFormat,
+    //                 certificatePath
+    //             ));
+    //         using var process = Process.Start(processInfo);
+    //         process!.WaitForExit();
+    //         if (process.ExitCode != 0)
+    //         {
+    //             Log.MacOSRemoveCertificateTrustRuleError(process.ExitCode);
+    //         }
+    //         Log.MacOSRemoveCertificateTrustRuleEnd();
+    //     }
+    //     finally
+    //     {
+    //         try
+    //         {
+    //             if (File.Exists(certificatePath))
+    //             {
+    //                 File.Delete(certificatePath);
+    //             }
+    //         }
+    //         catch
+    //         {
+    //             // We don't care about failing to do clean-up on a temp file.
+    //         }
+    //     }
+    // }
 
     // We don't have a good way of checking on the underlying implementation if it is exportable, so just return true.
     protected override bool IsExportable(X509Certificate2 c) => true;
