@@ -430,6 +430,9 @@ internal sealed class Program
             case EnsureCertificateResult.UserCancelledTrustStep:
                 reporter.Warn("The user cancelled the trust step.");
                 return ErrorUserCancelledTrustPrompt;
+            case EnsureCertificateResult.ExistingHttpsCertificateTrusted:
+                reporter.Output("Successfully trusted the existing HTTPS certificate.");
+                return Success;
             default:
                 reporter.Error("Something went wrong. The HTTPS developer certificate could not be created.");
                 return CriticalError;
