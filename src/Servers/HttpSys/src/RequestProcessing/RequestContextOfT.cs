@@ -32,6 +32,7 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
             if (messagePump.Stopping)
             {
                 SetFatalResponse(503);
+                Dispose();
                 return;
             }
 
@@ -55,10 +56,6 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
             catch (Exception ex)
             {
                 Log.RequestProcessError(Logger, ex);
-                if (context != null)
-                {
-                    application.DisposeContext(context, ex);
-                }
                 if (Response.HasStarted)
                 {
                     // Otherwise the default is Cancel = 0x8 (h2) or 0x010c (h3).
@@ -91,6 +88,11 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
                         SetFatalResponse(StatusCodes.Status500InternalServerError);
                     }
                 }
+                if (context != null)
+                {
+                    application.DisposeContext(context, ex);
+                }
+                Dispose();
             }
             finally
             {
