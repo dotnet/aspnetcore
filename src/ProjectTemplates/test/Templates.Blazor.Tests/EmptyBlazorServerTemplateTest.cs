@@ -12,7 +12,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Templates.Test;
+namespace Templates.Blazor.Test;
 
 public class EmptyBlazorServerTemplateTest : BlazorTemplateTest
 {
