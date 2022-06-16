@@ -39,19 +39,12 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         Abort(new(), Http3ErrorCode.NoError);
     }
 
-    ValueTask<IHttp3Stream?> IWebTransportSession.OpenBidirectionalStream()
-    {
-        ThrowIfInvalidSession();
+    //ValueTask<IHttp3Stream?> IWebTransportSession.OpenUnidirectionalStream()
+    //{
+    //    ThrowIfInvalidSession();
 
-        return default!; // TODO Implement
-    }
-
-    ValueTask<IHttp3Stream?> IWebTransportSession.OpenUnidirectionalStream()
-    {
-        ThrowIfInvalidSession();
-
-        return default!; // TODO Implement
-    }
+    //    return default!; // TODO Implement
+    //}
     #endregion
 
     private bool _aborted;
@@ -120,13 +113,8 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         }
     }
 
-    // TODO add a graceful close
-    // TODO handle the client closing (abort and graceful)
-    // TODO handle a stream ending/completing (I think I did this but I need to make sure)
     internal void Abort(ConnectionAbortedException exception, Http3ErrorCode error)
     {
-        Console.WriteLine("Aborting WebTransport session");
-
         ThrowIfInvalidSessionCore();
 
         if (_aborted)
