@@ -204,6 +204,19 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     }
 
     [Fact]
+    public void CreateCommand_DisplaysErrorForInvalidExpiresOnCombination()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--expires-on", DateTime.UtcNow.AddDays(2).ToString("O"), "--valid-for", "2h" });
+        var output = _console.GetOutput();
+
+        Assert.Contains($"'--valid-for' and '--expires-on' are mutually exclusive flags. Provide either option but not both.", output);
+        Assert.DoesNotContain("Expires On: ", output);
+    }
+
+    [Fact]
     public void PrintCommand_ShowsBasicOptions()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");

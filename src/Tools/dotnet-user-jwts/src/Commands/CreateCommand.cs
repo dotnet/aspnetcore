@@ -146,7 +146,17 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.FormatCreateCommand_InvalidDate_Error("--expires-on"));
                 isValid = false;
             }
-            optionsString += $"{Resources.JwtPrint_ExpiresOn}: {expiresOn:O}{Environment.NewLine}";
+
+            if (validForOption.HasValue())
+            {
+                reporter.Error(Resources.CreateCommand_InvalidExpiresOn_Error);
+                isValid = false;
+            }
+            else
+            {
+                optionsString += $"{Resources.JwtPrint_ExpiresOn}: {expiresOn:O}{Environment.NewLine}";
+            }
+
         }
 
         if (validForOption.HasValue())
@@ -156,7 +166,16 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.FormatCreateCommand_InvalidPeriod_Error("--valid-for"));
             }
             expiresOn = notBefore.Add(validForValue);
-            optionsString += $"{Resources.JwtPrint_ExpiresOn}: {expiresOn:O}{Environment.NewLine}";
+
+            if (expiresOnOption.HasValue())
+            {
+                reporter.Error(Resources.CreateCommand_InvalidExpiresOn_Error);
+                isValid = false;
+            }
+            else
+            {
+                optionsString += $"{Resources.JwtPrint_ExpiresOn}: {expiresOn:O}{Environment.NewLine}";
+            }
         }
 
         var roles = rolesOption.HasValue() ? rolesOption.Values : new List<string>();
