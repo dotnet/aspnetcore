@@ -37,6 +37,7 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
             }
 
             TContext? context = default;
+            Exception? applicationException = null;
             messagePump.IncrementOutstandingRequest();
             try
             {
@@ -50,11 +51,11 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
                 {
                     await OnCompleted();
                 }
-                application.DisposeContext(context, null);
-                Dispose();
             }
             catch (Exception ex)
             {
+                applicationException = ex;
+
                 Log.RequestProcessError(Logger, ex);
                 if (Response.HasStarted)
                 {
@@ -88,14 +89,15 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
                         SetFatalResponse(StatusCodes.Status500InternalServerError);
                     }
                 }
-                if (context != null)
-                {
-                    application.DisposeContext(context, ex);
-                }
-                Dispose();
             }
             finally
             {
+                if (context != null)
+                {
+                    application.DisposeContext(context, applicationException);
+                }
+                Dispose();
+
                 if (messagePump.DecrementOutstandingRequest() == 0 && messagePump.Stopping)
                 {
                     Log.RequestsDrained(Logger);
