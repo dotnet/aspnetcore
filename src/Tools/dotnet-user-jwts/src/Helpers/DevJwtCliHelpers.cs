@@ -160,7 +160,7 @@ internal static class DevJwtCliHelpers
         {
             var scopesValue = jwt.Scopes.IsNullOrEmpty()
                 ? "none"
-                : string.Join(',', jwt.Scopes);
+                : string.Join(", ", jwt.Scopes);
             reporter.Output($"{Resources.JwtPrint_Scopes}: {scopesValue}");
         }
         
@@ -168,7 +168,7 @@ internal static class DevJwtCliHelpers
         {
             var rolesValue = jwt.Roles.IsNullOrEmpty()
                 ? "none"
-                : String.Join(',', jwt.Roles);
+                : String.Join(", ", jwt.Roles);
             reporter.Output($"{Resources.JwtPrint_Roles}: [{rolesValue}]");
         }
 
@@ -176,7 +176,7 @@ internal static class DevJwtCliHelpers
         {
             var customClaimsValue = jwt.CustomClaims.IsNullOrEmpty()
                 ? "none"
-                : string.Join(',', jwt.CustomClaims.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+                : string.Join(", ", jwt.CustomClaims.Select(kvp => $"{kvp.Key}={kvp.Value}"));
             reporter.Output($"{Resources.JwtPrint_CustomClaims}: [{customClaimsValue}]");
         }
 
