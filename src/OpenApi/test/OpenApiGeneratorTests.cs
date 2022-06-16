@@ -696,10 +696,12 @@ public class OpenApiOperationGeneratorTests
 
         var fromFileParam0 = operation0.RequestBody;
         var fromFileParam0ContentType = Assert.Single(fromFileParam0.Content.Values);
+        Assert.Equal("multipart/form-data", fromFileParam0.Content.Keys.SingleOrDefault());
         Assert.True(fromFileParam0.Required);
 
         var fromFileParam1 = operation1.RequestBody;
         var fromFileParam1ContentType = Assert.Single(fromFileParam1.Content.Values);
+        Assert.Equal("multipart/form-data", fromFileParam1.Content.Keys.SingleOrDefault());
         Assert.False(fromFileParam1.Required);
     }
 
