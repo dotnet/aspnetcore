@@ -101,6 +101,7 @@ internal sealed class ParameterBindingMethodCache
 
             if (type == typeof(Uri))
             {
+                // UriKind.RelativeOrAbsolute is also used by UriTypeConverter which is used in MVC.
                 return (expression, formatProvider) => Expression.Call(
                     UriTryCreateMethod,
                     TempSourceStringExpr,
