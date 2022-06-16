@@ -42,11 +42,11 @@ internal sealed class ListCommand
         if (jwtStore.Jwts is { Count: > 0 } jwts)
         {
             var table = new ConsoleTable(reporter);
-            table.AddColumns("Id", "Scheme Name", "Audience", "Issued", "Expires");
+            table.AddColumns(Resources.JwtPrint_Id, Resources.JwtPrint_Scheme, Resources.JwtPrint_Audiences, Resources.JwtPrint_IssuedOn, Resources.JwtPrint_ExpiresOn);
 
             if (showTokens)
             {
-                table.AddColumns("Encoded Token");
+                table.AddColumns(Resources.JwtPrint_Token);
             }
 
             foreach (var jwtRow in jwts)

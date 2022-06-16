@@ -51,6 +51,11 @@ public class Program
         {
             userJwts.Execute(args);
         }
+        catch (CommandParsingException parsingException)
+        {
+            _reporter.Error(parsingException.Message);
+            userJwts.ShowHelp();
+        }
         catch (Exception ex)
         {
             _reporter.Error(ex.Message);
