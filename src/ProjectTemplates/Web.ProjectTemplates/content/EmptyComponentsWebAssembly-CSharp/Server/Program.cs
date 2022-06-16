@@ -10,9 +10,6 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-#if (IndividualLocalAuth)
-    app.UseMigrationsEndPoint();
-#endif
     app.UseWebAssemblyDebugging();
 }
 else
@@ -25,7 +22,6 @@ else
 
 #if (RequiresHttps)
 app.UseHttpsRedirection();
-
 #endif
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
