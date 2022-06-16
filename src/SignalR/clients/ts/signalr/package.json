@@ -55,5 +55,9 @@
     "eventsource": "^1.0.7",
     "request": "^2.88.0",
     "ws": "^6.0.0"
+  },
+  "resolutions": {
+    "//": "Avoid version that drops support for TypeScript < 3.7",
+    "@types/node": "<12.20.21"
   }
 }
