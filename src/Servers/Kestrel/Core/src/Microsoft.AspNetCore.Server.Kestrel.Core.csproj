@@ -26,9 +26,6 @@
     <Compile Include="$(SharedSourceRoot)runtime\Http3\**\*.cs" Link="Shared\runtime\Http3\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)Hpack\**\*.cs" Link="Shared\Hpack\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" />
-    <Compile Remove="Internal\Http3\Streams\**" />
-    <EmbeddedResource Remove="Internal\Http3\Streams\**" />
-    <None Remove="Internal\Http3\Streams\**" />
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
   </ItemGroup>
 

@@ -36,11 +36,11 @@ internal class WebTransportBidirectionalStream<TContext> : Http3BidirectionalStr
         {
             case Http3ErrorCode.RequestIncomplete: // JS API ref: stream.writable.close()
                 _outputOpen = false;
-                _context.Transport.Output.Complete();
+                _context.Transport.Output.Complete(); // todo async?
                 break;
             case Http3ErrorCode.RequestRejected: // JS API ref: stream.readable.cancel()
                 _inputOpen = false;
-                _context.Transport.Input.Complete();
+                _context.Transport.Input.Complete(); // todo async?
                 break;
             default:
                 _inputOpen = _outputOpen = false;

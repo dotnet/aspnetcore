@@ -215,7 +215,7 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
         OnHeaderCore(HeaderType.Dynamic, index, name, value);
     }
 
-    public virtual void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+    public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
         OnHeaderCore(HeaderType.NameAndValue, staticTableIndex: null, name, value);
     }
@@ -746,27 +746,24 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
         return RequestBodyPipe.Writer.CompleteAsync();
     }
 
-    protected virtual Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
+    private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
     {
-        switch (_incomingFrame.Type)
+        return _incomingFrame.Type switch
         {
-            case Http3FrameType.Data:
-                return ProcessDataFrameAsync(payload);
-            case Http3FrameType.Headers:
-                return ProcessHeadersFrameAsync(application, payload, isCompleted);
-            case Http3FrameType.Settings:
-            case Http3FrameType.CancelPush:
-            case Http3FrameType.GoAway:
-            case Http3FrameType.MaxPushId:
-                // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
-                // These frames need to be on a control stream
-                throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
-            case Http3FrameType.PushPromise:
-                // The server should never receive push promise
-                throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame);
-            default:
-                return ProcessUnknownFrameAsync();
-        }
+            Http3FrameType.Data => ProcessDataFrameAsync(payload),
+            Http3FrameType.Headers => ProcessHeadersFrameAsync(application, payload, isCompleted),
+            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
+            // These frames need to be on a control stream
+            Http3FrameType.Settings or
+            Http3FrameType.CancelPush or
+            Http3FrameType.GoAway or
+            Http3FrameType.MaxPushId => throw new Http3ConnectionErrorException(
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame),
+            // The server should never receive push promise
+            Http3FrameType.PushPromise => throw new Http3ConnectionErrorException(
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame),
+            _ => ProcessUnknownFrameAsync(),
+        };
     }
 
     private static Task ProcessUnknownFrameAsync()
