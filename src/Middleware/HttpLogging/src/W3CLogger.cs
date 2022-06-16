@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging;
@@ -16,7 +14,7 @@ internal class W3CLogger : IAsyncDisposable
     private readonly IOptionsMonitor<W3CLoggerOptions> _options;
     private W3CLoggingFields _loggingFields;
 
-    public W3CLogger(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
+    public W3CLogger(IOptionsMonitor<W3CLoggerOptions> options, W3CLoggerProcessor messageQueue)
     {
         _options = options;
         _loggingFields = _options.CurrentValue.LoggingFields;
@@ -24,13 +22,7 @@ internal class W3CLogger : IAsyncDisposable
         {
             _loggingFields = options.LoggingFields;
         });
-        _messageQueue = InitializeMessageQueue(_options, environment, factory);
-    }
-
-    // Virtual for testing
-    internal virtual W3CLoggerProcessor InitializeMessageQueue(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
-    {
-        return new W3CLoggerProcessor(options, environment, factory);
+        _messageQueue = messageQueue;
     }
 
     public ValueTask DisposeAsync() => _messageQueue.DisposeAsync();
