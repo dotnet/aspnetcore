@@ -47,7 +47,7 @@
   "devDependencies": {
     "@types/eventsource": "^1.0.2",
     "@types/jest": "^23.3.2",
-    "@types/node": "^10.9.4",
+    "@types/node": "~10.9.4",
     "@types/request": "^2.47.1",
     "es6-promise": "^4.2.2"
   },
@@ -57,7 +57,7 @@
     "ws": "^6.0.0"
   },
   "resolutions": {
-    "//": "Avoid version that drops support for TypeScript < 3.7",
-    "@types/node": "<12.20.21"
+    "//": "Avoid versions that drop support for TypeScript < 3.7",
+    "@types/node": "~10.9.4"
   }
 }

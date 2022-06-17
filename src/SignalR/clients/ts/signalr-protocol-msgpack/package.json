@@ -48,5 +48,9 @@
   "devDependencies": {
     "@types/msgpack5": "^3.4.1",
     "buffer": "^5.0.8"
+  },
+  "resolutions": {
+    "//": "Avoid versions that drop support for TypeScript < 3.7",
+    "@types/node": "~10.9.4"
   }
 }
