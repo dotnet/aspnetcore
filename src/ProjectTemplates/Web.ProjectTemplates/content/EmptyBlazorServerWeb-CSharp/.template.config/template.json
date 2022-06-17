@@ -131,17 +131,13 @@
       },
       "replaces": "44300"
     },
-    "RequiresHttps": {
-      "type": "computed",
-      "value": "(!NoHttps)"
-    },
     "HasHttpProfile": {
       "type": "computed",
-      "value": "(!RequiresHttps)"
+      "value": "(NoHttps)"
     },
     "HasHttpsProfile": {
       "type": "computed",
-      "value": "(RequiresHttps || !NoHttps)"
+      "value": "(!NoHttps)"
     },
     "NoHttps": {
       "type": "parameter",
