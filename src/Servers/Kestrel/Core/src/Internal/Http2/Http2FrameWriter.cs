@@ -173,8 +173,12 @@ internal sealed class Http2FrameWriter
 
                         if (actual > 0)
                         {
+                            // actual > int.MaxValue should never be possible because it would exceed Http2PeerSettings.MaxWindowSize
+                            // which is a protocol-defined limit. There's no way Kestrel would try to write more than that in one go.
+                            Debug.Assert(actual <= int.MaxValue);
+
                             // If we got here it means we're going to cancel the write. Restore any consumed bytes to the connection window.
-                            if (actual > int.MaxValue || !TryUpdateConnectionWindow((int)actual))
+                            if (!TryUpdateConnectionWindow((int)actual))
                             {
                                 // This branch can only ever be taken given both a buggy client and aborting streams mid-write. Even then, we're much more likely catch the
                                 // error in Http2Connection.ProcessFrameAsync() before catching it here. This branch is technically possible though, so we defend against it.
