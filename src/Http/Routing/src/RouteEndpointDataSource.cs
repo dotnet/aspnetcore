@@ -202,7 +202,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     }
 
     // This private class is only exposed to internal code via ICollection<Action<EndpointBuilder>> in RouteEndpointBuilder where only Add is called.
-    private class ThrowOnAddAfterBuildCollection : List<Action<EndpointBuilder>>, ICollection<Action<EndpointBuilder>>
+    private sealed class ThrowOnAddAfterBuildCollection : List<Action<EndpointBuilder>>, ICollection<Action<EndpointBuilder>>
     {
         public bool HasBeenBuilt { get; set; }
 
