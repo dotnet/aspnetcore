@@ -19,6 +19,29 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
         _options = options.Value;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="statusCode"></param>
+    /// <param name="isRouting"></param>
+    /// <returns></returns>
+    public bool IsEnabled(int statusCode, bool isRouting = false)
+    {
+        if (_options.AllowedMapping == MappingOptions.Unspecified)
+        {
+            return false;
+        }
+
+        return isRouting ?
+            _options.AllowedMapping.HasFlag(MappingOptions.RoutingFailures) :
+            statusCode switch
+            {
+                >= 400 and <= 499 => _options.AllowedMapping.HasFlag(MappingOptions.ClientErrors),
+                >= 500 => _options.AllowedMapping.HasFlag(MappingOptions.Exceptions),
+                _ => false,
+            };
+    }
+
     public Task WriteAsync(
         HttpContext context,
         EndpointMetadataCollection? currentMetadata = null,
@@ -30,7 +53,7 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
         string? instance = null,
         IDictionary<string, object?>? extensions = null)
     {
-        if (!_options.IsEnabled(context.Response.StatusCode, isRouting))
+        if (IsEnabled(context.Response.StatusCode, isRouting))
         {
             return Task.CompletedTask;
         }

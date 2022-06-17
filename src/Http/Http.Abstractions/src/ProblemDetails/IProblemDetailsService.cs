@@ -31,4 +31,12 @@ public interface IProblemDetailsService
         string? detail = null,
         string? instance = null,
         IDictionary<string, object?>? extensions = null);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="statusCode"></param>
+    /// <param name="isRouting"></param>
+    /// <returns></returns>
+    bool IsEnabled(int statusCode, bool isRouting = false);
 }

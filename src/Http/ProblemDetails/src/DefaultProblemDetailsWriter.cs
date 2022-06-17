@@ -1,12 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed class DefaultProblemDetailsWriter : IProblemDetailsWriter
+internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWriter
 {
     private readonly ProblemDetailsOptions _options;
 
@@ -49,4 +50,8 @@ internal sealed class DefaultProblemDetailsWriter : IProblemDetailsWriter
 
         return context.Response.WriteAsJsonAsync(problemDetails, typeof(ProblemDetails), ProblemDetailsJsonContext.Default, contentType: "application/problem+json");
     }
+
+    [JsonSerializable(typeof(ProblemDetails))]
+    internal sealed partial class ProblemDetailsJsonContext : JsonSerializerContext
+    { }
 }
