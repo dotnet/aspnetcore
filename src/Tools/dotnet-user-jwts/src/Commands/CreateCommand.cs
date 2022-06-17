@@ -3,6 +3,8 @@
 
 using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -11,7 +13,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 internal sealed class CreateCommand
 {
     private static readonly string[] _dateTimeFormats = new[] {
-        "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy/MM/dd", "yyyy/MM/dd HH:mm" };
+        "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy/MM/dd", "yyyy/MM/dd HH:mm", "yyyy-MM-ddTHH:mm:ss.fffffffzzz"  };
     private static readonly string[] _timeSpanFormats = new[] {
         @"d\dh\hm\ms\s", @"d\dh\hm\m", @"d\dh\h", @"d\d",
         @"h\hm\ms\s", @"h\hm\m", @"h\h",
@@ -32,7 +34,7 @@ internal sealed class CreateCommand
                 );
 
             var nameOption = cmd.Option(
-                "--name",
+                "-n|--name",
                 Resources.CreateCommand_NameOption_Description,
                 CommandOptionType.SingleValue);
 
@@ -76,11 +78,16 @@ internal sealed class CreateCommand
                 Resources.CreateCommand_ValidForOption_Description,
                 CommandOptionType.SingleValue);
 
+            var outputOption = cmd.Option(
+                "-o|--output",
+                Resources.CreateCommand_OutputOption_Description,
+                CommandOptionType.SingleValue);
+
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
             {
-                var (options, isValid) = ValidateArguments(
+                var (options, isValid, optionsString) = ValidateArguments(
                     cmd.Reporter, cmd.ProjectOption, schemeNameOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption);
 
                 if (!isValid)
@@ -88,12 +95,12 @@ internal sealed class CreateCommand
                     return 1;
                 }
 
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options);
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, outputOption.Value());
             });
         });
     }
 
-    private static (JwtCreatorOptions, bool) ValidateArguments(
+    private static (JwtCreatorOptions, bool, string) ValidateArguments(
         IReporter reporter,
         CommandOption projectOption,
         CommandOption schemeNameOption,
@@ -109,16 +116,22 @@ internal sealed class CreateCommand
     {
         var isValid = true;
         var project = DevJwtCliHelpers.GetProject(projectOption.Value());
+
         var scheme = schemeNameOption.HasValue() ? schemeNameOption.Value() : "Bearer";
+        var optionsString = schemeNameOption.HasValue() ? $"{Resources.JwtPrint_Scheme}: {scheme}{Environment.NewLine}" : string.Empty;
+
         var name = nameOption.HasValue() ? nameOption.Value() : Environment.UserName;
+        optionsString += $"{Resources.JwtPrint_Name}: {name}{Environment.NewLine}";
 
         var audience = audienceOption.HasValue() ? audienceOption.Values : DevJwtCliHelpers.GetAudienceCandidatesFromLaunchSettings(project).ToList();
+        optionsString += audienceOption.HasValue() ? $"{Resources.JwtPrint_Audiences}: {audience}{Environment.NewLine}" : string.Empty;
         if (audience is null)
         {
             reporter.Error(Resources.CreateCommand_NoAudience_Error);
             isValid = false;
         }
         var issuer = issuerOption.HasValue() ? issuerOption.Value() : DevJwtsDefaults.Issuer;
+        optionsString += issuerOption.HasValue() ? $"{Resources.JwtPrint_Issuer}: {issuer}{Environment.NewLine}" : string.Empty;
 
         var notBefore = DateTime.UtcNow;
         if (notBeforeOption.HasValue())
@@ -128,6 +141,7 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.FormatCreateCommand_InvalidDate_Error("--not-before"));
                 isValid = false;
             }
+            optionsString += $"{Resources.JwtPrint_NotBefore}: {notBefore:O}{Environment.NewLine}";
         }
 
         var expiresOn = notBefore.AddMonths(3);
@@ -138,6 +152,17 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.FormatCreateCommand_InvalidDate_Error("--expires-on"));
                 isValid = false;
             }
+
+            if (validForOption.HasValue())
+            {
+                reporter.Error(Resources.CreateCommand_InvalidExpiresOn_Error);
+                isValid = false;
+            }
+            else
+            {
+                optionsString += $"{Resources.JwtPrint_ExpiresOn}: {expiresOn:O}{Environment.NewLine}";
+            }
+
         }
 
         if (validForOption.HasValue())
@@ -147,10 +172,23 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.FormatCreateCommand_InvalidPeriod_Error("--valid-for"));
             }
             expiresOn = notBefore.Add(validForValue);
+
+            if (expiresOnOption.HasValue())
+            {
+                reporter.Error(Resources.CreateCommand_InvalidExpiresOn_Error);
+                isValid = false;
+            }
+            else
+            {
+                optionsString += $"{Resources.JwtPrint_ExpiresOn}: {expiresOn:O}{Environment.NewLine}";
+            }
         }
 
         var roles = rolesOption.HasValue() ? rolesOption.Values : new List<string>();
+        optionsString += rolesOption.HasValue() ? $"{Resources.JwtPrint_Roles}: [{string.Join(", ", roles)}]{Environment.NewLine}" : string.Empty;
+
         var scopes = scopesOption.HasValue() ? scopesOption.Values : new List<string>();
+        optionsString += scopesOption.HasValue() ? $"{Resources.JwtPrint_Scopes}: {string.Join(", ", scopes)}{Environment.NewLine}" : string.Empty;
 
         var claims = new Dictionary<string, string>();
         if (claimsOption.HasValue())
@@ -160,9 +198,13 @@ internal sealed class CreateCommand
                 reporter.Error(Resources.CreateCommand_InvalidClaims_Error);
                 isValid = false;
             }
+            optionsString += $"{Resources.JwtPrint_CustomClaims}: [{string.Join(", ", claims.Select(kvp => $"{kvp.Key}={kvp.Value}"))}]{Environment.NewLine}";
         }
 
-        return (new JwtCreatorOptions(scheme, name, audience, issuer, notBefore, expiresOn, roles, scopes, claims), isValid);
+        return (
+            new JwtCreatorOptions(scheme, name, audience, issuer, notBefore, expiresOn, roles, scopes, claims),
+            isValid,
+            optionsString);
 
         static bool ParseDate(string datetime, out DateTime parsedDateTime) =>
             DateTime.TryParseExact(datetime, _dateTimeFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out parsedDateTime);
@@ -171,7 +213,9 @@ internal sealed class CreateCommand
     private static int Execute(
         IReporter reporter,
         string projectPath,
-        JwtCreatorOptions options)
+        JwtCreatorOptions options,
+        string optionsString,
+        string outputFormat)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
         {
@@ -195,7 +239,20 @@ internal sealed class CreateCommand
         var settingsToWrite = new JwtAuthenticationSchemeSettings(options.Scheme, options.Audiences, options.Issuer);
         settingsToWrite.Save(appsettingsFilePath);
 
-        reporter.Output(Resources.FormatCreateCommand_Confirmed(jwtToken.Id));
+        switch (outputFormat)
+        {
+            case "token":
+                reporter.Output(jwt.Token);
+                break;
+            case "json":
+                reporter.Output(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
+                break;
+            default:
+                reporter.Output(Resources.FormatCreateCommand_Confirmed(jwtToken.Id));
+                reporter.Output(optionsString);
+                reporter.Output($"{Resources.JwtPrint_Token}: {jwt.Token}");
+                break;
+        }
 
         return 0;
     }

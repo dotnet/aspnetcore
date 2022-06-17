@@ -156,6 +156,9 @@
   <data name="CreateCommand_InvalidDate_Error" xml:space="preserve">
     <value>The date provided for '{type}' could not be parsed. Dates must consist of a date and can include an optional timestamp.</value>
   </data>
+  <data name="CreateCommand_InvalidExpiresOn_Error" xml:space="preserve">
+    <value>'--valid-for' and '--expires-on' are mutually exclusive flags. Provide either option but not both.</value>
+  </data>
   <data name="CreateCommand_InvalidPeriod_Error" xml:space="preserve">
     <value>The period provided for '{0}' could not be parsed. Ensure you use a format like '10d', '22h', '45s' etc.</value>
   </data>
@@ -171,6 +174,9 @@
   <data name="CreateCommand_NotBeforeOption_Description" xml:space="preserve">
     <value>The UTC date &amp; time the JWT should not be valid before in the format 'yyyy-MM-dd [[HH:mm[[:ss]]]]'. Defaults to the date &amp; time the JWT is created.</value>
   </data>
+  <data name="CreateCommand_OutputOption_Description" xml:space="preserve">
+    <value>The format to use for displaying output from the command. Can be one of 'default', 'token', or 'json'.</value>
+  </data>
   <data name="CreateCommand_RoleOption_Description" xml:space="preserve">
     <value>A role claim to add to the JWT. Specify once for each role.</value>
   </data>
@@ -182,6 +188,51 @@
   </data>
   <data name="CreateCommand_ValidForOption_Description" xml:space="preserve">
     <value>The period the JWT should expire after. Specify using a number followed by a duration type like 'd' for days, 'h' for hours, 'm' for minutes, and 's' for seconds, e.g. '365d'. Do not use this option in conjunction with the --expires-on option.</value>
+  </data>
+  <data name="JwtPrint_Audiences" xml:space="preserve">
+    <value>Audience(s)</value>
+  </data>
+  <data name="JwtPrint_CompactToken" xml:space="preserve">
+    <value>Compact Token</value>
+  </data>
+  <data name="JwtPrint_CustomClaims" xml:space="preserve">
+    <value>Custom Claims</value>
+  </data>
+  <data name="JwtPrint_ExpiresOn" xml:space="preserve">
+    <value>Expires On</value>
+  </data>
+  <data name="JwtPrint_Id" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="JwtPrint_IssuedOn" xml:space="preserve">
+    <value>Issued On</value>
+  </data>
+  <data name="JwtPrint_Issuer" xml:space="preserve">
+    <value>Issuer</value>
+  </data>
+  <data name="JwtPrint_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="JwtPrint_NotBefore" xml:space="preserve">
+    <value>Not Before</value>
+  </data>
+  <data name="JwtPrint_Roles" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+  <data name="JwtPrint_Scheme" xml:space="preserve">
+    <value>Scheme</value>
+  </data>
+  <data name="JwtPrint_Scopes" xml:space="preserve">
+    <value>Scopes</value>
+  </data>
+  <data name="JwtPrint_Token" xml:space="preserve">
+    <value>Token</value>
+  </data>
+  <data name="JwtPrint_TokenHeader" xml:space="preserve">
+    <value>Token Header</value>
+  </data>
+  <data name="JwtPrint_TokenPayload" xml:space="preserve">
+    <value>Token Payload</value>
   </data>
   <data name="KeyCommand_Canceled" xml:space="preserve">
     <value>Key reset canceled.</value>
@@ -234,8 +285,8 @@
   <data name="PrintCommand_NoJwtFound" xml:space="preserve">
     <value>No token with ID '{0}' found.</value>
   </data>
-  <data name="PrintCommand_ShowFullOption_Description" xml:space="preserve">
-    <value>Whether to show the full JWT contents in addition to the compact serialized format.</value>
+  <data name="PrintCommand_ShowAllOption_Description" xml:space="preserve">
+    <value>Whether to show all details associated with the JWT.</value>
   </data>
   <data name="ProjectOption_Description" xml:space="preserve">
     <value>The path of the project to operate on. Defaults to the project in the current directory.</value>

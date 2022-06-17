@@ -7,6 +7,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -145,16 +146,48 @@ internal static class DevJwtCliHelpers
         return null;
     }
 
-    public static void PrintJwt(IReporter reporter, Jwt jwt, JwtSecurityToken fullToken = null)
+    public static void PrintJwt(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken = null)
     {
-        reporter.Output(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
+        reporter.Output($"{Resources.JwtPrint_Id}: {jwt.Id}");
+        reporter.Output($"{Resources.JwtPrint_Name}: {jwt.Name}");
+        reporter.Output($"{Resources.JwtPrint_Scheme}: {jwt.Scheme}");
+        reporter.Output($"{Resources.JwtPrint_Audiences}: {jwt.Audience}");
+        reporter.Output($"{Resources.JwtPrint_NotBefore}: {jwt.NotBefore:O}");
+        reporter.Output($"{Resources.JwtPrint_ExpiresOn}: {jwt.Expires:O}");
+        reporter.Output($"{Resources.JwtPrint_IssuedOn}: {jwt.Issued:O}");
 
-        if (fullToken is not null)
+        if (!jwt.Scopes.IsNullOrEmpty() || showAll)
         {
-            reporter.Output($"Token Header: {fullToken.Header.SerializeToJson()}");
-            reporter.Output($"Token Payload: {fullToken.Payload.SerializeToJson()}");
+            var scopesValue = jwt.Scopes.IsNullOrEmpty()
+                ? "none"
+                : string.Join(", ", jwt.Scopes);
+            reporter.Output($"{Resources.JwtPrint_Scopes}: {scopesValue}");
         }
-        reporter.Output($"Compact Token: {jwt.Token}");
+        
+        if (!jwt.Roles.IsNullOrEmpty() || showAll)
+        {
+            var rolesValue = jwt.Roles.IsNullOrEmpty()
+                ? "none"
+                : String.Join(", ", jwt.Roles);
+            reporter.Output($"{Resources.JwtPrint_Roles}: [{rolesValue}]");
+        }
+
+        if (!jwt.CustomClaims.IsNullOrEmpty() || showAll)
+        {
+            var customClaimsValue = jwt.CustomClaims.IsNullOrEmpty()
+                ? "none"
+                : string.Join(", ", jwt.CustomClaims.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+            reporter.Output($"{Resources.JwtPrint_CustomClaims}: [{customClaimsValue}]");
+        }
+
+        if (showAll)
+        {
+            reporter.Output($"{Resources.JwtPrint_TokenHeader}: {fullToken.Header.SerializeToJson()}");
+            reporter.Output($"{Resources.JwtPrint_TokenPayload}: {fullToken.Payload.SerializeToJson()}");
+        }
+
+        var tokenValueFieldName = showAll ? Resources.JwtPrint_CompactToken : Resources.JwtPrint_Token;
+        reporter.Output($"{tokenValueFieldName}: {jwt.Token}");
     }
 
     public static bool TryParseClaims(List<string> input, out Dictionary<string, string> claims)
