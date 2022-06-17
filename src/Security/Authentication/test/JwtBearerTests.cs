@@ -9,10 +9,12 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Authentication.Tests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -881,6 +883,41 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         using var dom = JsonDocument.Parse(responseBody);
         Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("expires").ValueKind);
         Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("issued").ValueKind);
+    }
+
+    [Fact]
+    public async Task ForwardSchemeOverridesSchemeFromConfig()
+    {
+        // Arrange
+        var defaultSchemeFromConfig = "DefaultSchemeFromConfig";
+        var defaultSchemeFromForward = "DefaultSchemeFromForward";
+        var services = new ServiceCollection().AddLogging();
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:DefaultScheme", defaultSchemeFromConfig)
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        var builder = services.AddAuthentication(o =>
+        {
+            o.AddScheme<TestHandler>(defaultSchemeFromForward, defaultSchemeFromForward);
+        });
+        builder.AddJwtBearer(defaultSchemeFromConfig, o => o.ForwardAuthenticate = defaultSchemeFromForward);
+        var forwardAuthentication = new TestHandler();
+        services.AddSingleton(forwardAuthentication);
+
+        var sp = services.BuildServiceProvider();
+        var context = new DefaultHttpContext();
+        context.RequestServices = sp;
+
+        // Assert
+        Assert.Equal(0, forwardAuthentication.AuthenticateCount);
+        await context.AuthenticateAsync();
+        Assert.Equal(1, forwardAuthentication.AuthenticateCount);
+        var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+        var defaultSchemeFromServices = await schemeProvider.GetDefaultAuthenticateSchemeAsync();
+        Assert.Equal(defaultSchemeFromConfig, defaultSchemeFromServices.Name);
     }
 
     class InvalidTokenValidator : ISecurityTokenValidator

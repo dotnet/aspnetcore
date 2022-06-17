@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Authentication.AddJwtBearer();
 builder.Authentication.AddJwtBearer("ClaimedDetails");
+builder.Authentication.AddJwtBearer("InvalidScheme");
 
 builder.Services.AddAuthorization(options =>
     options.AddPolicy("is_admin", policy =>

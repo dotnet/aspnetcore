@@ -59,6 +59,34 @@ public class OpenApiRouteHandlerBuilderExtensionTests
     }
 
     [Fact]
+    public void WithOpenApi_CanSetSchemaInOperationWithOverride()
+    {
+        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiOperationGeneratorTests) };
+        var serviceProviderIsService = new ServiceProviderIsService();
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
+            .AddSingleton<IHostEnvironment>(hostEnvironment)
+            .BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        string GetString(string id) => "Foo";
+        _ = builder.MapDelete("/{id}", GetString)
+            .WithOpenApi(generatedOperation => {
+                generatedOperation.Parameters[0].Schema = new() { Type = "number" };
+                return generatedOperation;
+            });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        // Trigger Endpoint build by calling getter.
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var operation = endpoint.Metadata.GetMetadata<OpenApiOperation>();
+        Assert.NotNull(operation);
+        var parameter = Assert.Single(operation.Parameters);
+        Assert.Equal("number", parameter.Schema.Type);
+    }
+
+    [Fact]
     public void WithOpenApi_WorksWithMapGroup()
     {
         var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiOperationGeneratorTests) };

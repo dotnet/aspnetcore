@@ -34,7 +34,7 @@ public class IdentityUIPackageTest : LoggedTest
         }
     }
 
-    public static string[] Bootstrap5ContentFiles { get; } = new string[]
+    public static string[] Bootstrap5ContentFiles { get; } = new []
     {
             "Identity/favicon.ico",
             "Identity/css/site.css",
@@ -99,7 +99,6 @@ public class IdentityUIPackageTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Template tests are currently failing on Windows: https://github.com/dotnet/aspnetcore/issues/41937")]
     public async Task IdentityUIPackage_WorksWithDifferentOptions()
     {
         var packageOptions = new Dictionary<string, string>();

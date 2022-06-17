@@ -15,11 +15,7 @@ internal sealed class PrintCommand
             cmd.Description = Resources.PrintCommand_Description;
 
             var idArgument = cmd.Argument("[id]", Resources.PrintCommand_IdArgument_Description);
-
-            var showFullOption = cmd.Option(
-                "--show-full",
-                Resources.PrintCommand_ShowFullOption_Description,
-                CommandOptionType.NoValue);
+            var showAllOption = cmd.Option("--show-all", Resources.PrintCommand_ShowAllOption_Description, CommandOptionType.NoValue);
 
             cmd.HelpOption("-h|--help");
 
@@ -30,12 +26,16 @@ internal sealed class PrintCommand
                     cmd.ShowHelp();
                     return 0;
                 }
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), idArgument.Value, showFullOption.HasValue());
+                return Execute(
+                    cmd.Reporter,
+                    cmd.ProjectOption.Value(),
+                    idArgument.Value,
+                    showAllOption.HasValue());
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, string id, bool showFull)
+    private static int Execute(IReporter reporter, string projectPath, string id, bool showAll)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
         {
@@ -50,13 +50,8 @@ internal sealed class PrintCommand
         }
 
         reporter.Output(Resources.FormatPrintCommand_Confirmed(id));
-        JwtSecurityToken fullToken;
-
-        if (showFull)
-        {
-            fullToken = JwtIssuer.Extract(jwt.Token);
-            DevJwtCliHelpers.PrintJwt(reporter, jwt, fullToken);
-        }
+        JwtSecurityToken fullToken = JwtIssuer.Extract(jwt.Token);
+        DevJwtCliHelpers.PrintJwt(reporter, jwt, showAll, fullToken);
 
         return 0;
     }
