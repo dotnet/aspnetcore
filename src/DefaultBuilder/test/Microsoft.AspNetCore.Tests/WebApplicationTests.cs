@@ -2037,15 +2037,16 @@ public class WebApplicationTests
             return Task.FromResult(AuthenticateResult.Success(
                 new AuthenticationTicket(principal, "custom")));
         }
-        public Task ChallengeAsync(AuthenticationProperties properties) => Task.FromResult(0);
+        public Task ChallengeAsync(AuthenticationProperties properties) => Task.CompletedTask;
 
         public Task ForbidAsync(AuthenticationProperties properties) => Task.FromResult(0);
 
         public Task<bool> HandleRequestAsync() => Task.FromResult(false);
+
         public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
         {
             _context = context;
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 
