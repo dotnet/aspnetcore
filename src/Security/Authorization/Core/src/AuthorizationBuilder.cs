@@ -25,7 +25,7 @@ public class AuthorizationBuilder
     public virtual IServiceCollection Services { get; }
 
     /// <summary>
-    /// Determines whether authentication handlers should be invoked after <see cref="AuthorizationHandlerContext.HasFailed"/>.
+    /// Determines whether authorization handlers should be invoked after <see cref="AuthorizationHandlerContext.HasFailed"/>.
     /// Defaults to true.
     /// </summary>
     /// <returns>The builder.</returns>
