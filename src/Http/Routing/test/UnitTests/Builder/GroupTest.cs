@@ -275,7 +275,7 @@ public class GroupTest
 
         ((IEndpointConventionBuilder)group).Add(builder =>
         {
-            builder.DisplayName = "Replaced!";
+            builder.DisplayName = $"Prefixed! {builder.DisplayName}";
             builder.RequestDelegate = ctx =>
             {
                 replacementCalled = true;
@@ -294,7 +294,7 @@ public class GroupTest
 
         Assert.False(mapGetCalled);
         Assert.True(replacementCalled);
-        Assert.Equal("HTTP: GET Replaced!", endpoint.DisplayName);
+        Assert.Equal("Prefixed! HTTP: GET /group/", endpoint.DisplayName);
 
         var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
         Assert.Equal(42, routeEndpoint.Order);

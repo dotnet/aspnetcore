@@ -28,16 +28,14 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     public ICollection<Action<EndpointBuilder>> AddEndpoint(
         RoutePattern pattern,
         Delegate routeHandler,
-        IEnumerable<object>? initialEndpointMetadata,
-        bool disableInferFromBodyParameters)
+        IEnumerable<string>? httpMethods)
     {
         RouteEntry entry = new()
         {
             RoutePattern = pattern,
             RouteHandler = routeHandler,
-            InitialEndpointMetadata = initialEndpointMetadata,
-            DisableInferFromBodyParameters = disableInferFromBodyParameters,
-            Conventions = new()
+            HttpMethods = httpMethods,
+            Conventions = new(),
         };
 
         _routeEntries.Add(entry);
@@ -99,6 +97,12 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             displayName = $"{displayName} => {endpointName}";
         }
 
+        if (entry.HttpMethods is not null)
+        {
+            // Prepends the HTTP method to the DisplayName produced with pattern + method name
+            displayName = $"HTTP: {string.Join(", ", entry.HttpMethods)} {displayName}";
+        }
+
         RequestDelegate? factoryCreatedRequestDelegate = null;
         RequestDelegate redirectedRequestDelegate = context =>
         {
@@ -123,9 +127,9 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         // Add MethodInfo as first metadata item
         builder.Metadata.Add(handler.Method);
 
-        if (entry.InitialEndpointMetadata is not null)
+        if (entry.HttpMethods is not null)
         {
-            metadata.AddRange(entry.InitialEndpointMetadata);
+            builder.Metadata.Add(new HttpMethodMetadata(entry.HttpMethods));
         }
 
         // Apply group conventions before entry-specific conventions added to the RouteHandlerBuilder.
@@ -174,7 +178,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             ServiceProvider = _applicationServices,
             RouteParameterNames = routeParamNames,
             ThrowOnBadRequest = _throwOnBadRequest,
-            DisableInferBodyFromParameters = entry.DisableInferFromBodyParameters,
+            DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
             EndpointMetadata = metadata,
             RouteHandlerFilterFactories = routeHandlerFilterFactories,
         };
@@ -192,12 +196,41 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         return builder;
     }
 
+    private static bool ShouldDisableInferredBodyParameters(IEnumerable<string>? httpMethods)
+    {
+        static bool ShouldDisableInferredBodyForMethod(string method) =>
+            // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
+            method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
+            method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
+            method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
+            method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
+            method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
+            method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
+
+        // If the endpoint accepts any kind of request, we should still infer parameters can come from the body.
+        if (httpMethods is null)
+        {
+            return false;
+        }
+
+        foreach (var method in httpMethods)
+        {
+            if (ShouldDisableInferredBodyForMethod(method))
+            {
+                // If the route handler was mapped explicitly to handle an HTTP method that does not normally have a request body,
+                // we assume any invocation of the handler will not have a request body no matter what other HTTP methods it may support.
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private struct RouteEntry
     {
         public RoutePattern RoutePattern { get; init; }
         public Delegate RouteHandler { get; init; }
-        public IEnumerable<object>? InitialEndpointMetadata { get; init; }
-        public bool DisableInferFromBodyParameters { get; init; }
+        public IEnumerable<string>? HttpMethods { get; init; }
         public ThrowOnAddAfterBuildCollection Conventions { get; init; }
     }
 

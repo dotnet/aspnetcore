@@ -331,35 +331,7 @@ public static class EndpointRouteBuilderExtensions
        Delegate handler)
     {
         ArgumentNullException.ThrowIfNull(httpMethods);
-
-        var disableInferredBody = false;
-        foreach (var method in httpMethods)
-        {
-            disableInferredBody = ShouldDisableInferredBody(method);
-            if (disableInferredBody is true)
-            {
-                break;
-            }
-        }
-
-        var initialMetadata = new object[] { new HttpMethodMetadata(httpMethods) };
-        var builder = endpoints.Map(RoutePatternFactory.Parse(pattern), handler, disableInferredBody, initialMetadata);
-
-        // Prepends the HTTP method to the DisplayName produced with pattern + method name
-        builder.Add(b => b.DisplayName = $"HTTP: {string.Join(", ", httpMethods)} {b.DisplayName}");
-
-        return builder;
-
-        static bool ShouldDisableInferredBody(string method)
-        {
-            // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
-            return method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
-                   method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
-                   method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
-                   method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
-                   method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
-                   method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
-        }
+        return endpoints.Map(RoutePatternFactory.Parse(pattern), handler, httpMethods);
     }
 
     /// <summary>
@@ -393,7 +365,7 @@ public static class EndpointRouteBuilderExtensions
         RoutePattern pattern,
         Delegate handler)
     {
-        return Map(endpoints, pattern, handler, disableInferBodyFromParameters: false);
+        return Map(endpoints, pattern, handler, httpMethods: null);
     }
 
     /// <summary>
@@ -466,8 +438,7 @@ public static class EndpointRouteBuilderExtensions
         this IEndpointRouteBuilder endpoints,
         RoutePattern pattern,
         Delegate handler,
-        bool disableInferBodyFromParameters,
-        IEnumerable<object>? initialEndpointMetadata = null)
+        IEnumerable<string>? httpMethods = null)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(pattern);
@@ -483,7 +454,7 @@ public static class EndpointRouteBuilderExtensions
             endpoints.DataSources.Add(dataSource);
         }
 
-        var conventions = dataSource.AddEndpoint(pattern, handler, initialEndpointMetadata, disableInferBodyFromParameters);
+        var conventions = dataSource.AddEndpoint(pattern, handler, httpMethods);
 
         return new RouteHandlerBuilder(conventions);
     }
