@@ -39,10 +39,16 @@ public sealed class RequestDelegateFactoryOptions
     public IReadOnlyList<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? RouteHandlerFilterFactories { get; init; }
 
     /// <summary>
-    /// The <see cref="EndpointBuilder.Metadata"/> to use for the creation of the <see cref="RequestDelegateResult.RequestDelegate"/>.
+    /// The mutable initial endpoint metadata to add as part of the creation of the <see cref="RequestDelegateResult.RequestDelegate"/>. In most cases,
+    /// this should come from <see cref="EndpointBuilder.Metadata"/>.
     /// </summary>
     /// <remarks>
-    /// This metadata will be returned as <see cref="RequestDelegateResult.EndpointMetadata" /> if it is non-null.
+    /// This metadata will be included in <see cref="RequestDelegateResult.EndpointMetadata" /> <b>before</b> most metadata inferred during creation of the
+    /// <see cref="RequestDelegateResult.RequestDelegate"/> and <b>before</b> any metadata provided by types in the delegate signature that implement
+    /// <see cref="IEndpointMetadataProvider" /> or <see cref="IEndpointParameterMetadataProvider" />. The exception to this general rule is the
+    /// <see cref="IAcceptsMetadata"/> that <see cref="RequestDelegateFactory.Create(Delegate, RequestDelegateFactoryOptions?)"/> infers automatically
+    /// without any custom metadata providers which instead is inserted at the start to give it lower precedence. Custom metadata providers can choose to do
+    /// insert their metadata at the start to give lower precedence, but this is unusual.
     /// </remarks>
     public IList<object>? EndpointMetadata { get; init; }
 }

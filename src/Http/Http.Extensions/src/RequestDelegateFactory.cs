@@ -133,7 +133,7 @@ public static partial class RequestDelegateFactory
 
         var targetableRequestDelegate = CreateTargetableRequestDelegate(handler.Method, targetExpression, factoryContext, targetFactory);
 
-        return new RequestDelegateResult(httpContext => targetableRequestDelegate(handler.Target, httpContext), GetMetadataList(factoryContext.Metadata));
+        return new RequestDelegateResult(httpContext => targetableRequestDelegate(handler.Target, httpContext), AsReadOnlyList(factoryContext.Metadata));
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public static partial class RequestDelegateFactory
             {
                 var untargetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression: null, factoryContext);
 
-                return new RequestDelegateResult(httpContext => untargetableRequestDelegate(null, httpContext), GetMetadataList(factoryContext.Metadata));
+                return new RequestDelegateResult(httpContext => untargetableRequestDelegate(null, httpContext), AsReadOnlyList(factoryContext.Metadata));
             }
 
             targetFactory = context => Activator.CreateInstance(methodInfo.DeclaringType)!;
@@ -174,7 +174,7 @@ public static partial class RequestDelegateFactory
         var targetExpression = Expression.Convert(TargetExpr, methodInfo.DeclaringType);
         var targetableRequestDelegate = CreateTargetableRequestDelegate(methodInfo, targetExpression, factoryContext, context => targetFactory(context));
 
-        return new RequestDelegateResult(httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext), GetMetadataList(factoryContext.Metadata));
+        return new RequestDelegateResult(httpContext => targetableRequestDelegate(targetFactory(httpContext), httpContext), AsReadOnlyList(factoryContext.Metadata));
     }
 
     private static FactoryContext CreateFactoryContext(RequestDelegateFactoryOptions? options)
@@ -191,11 +191,11 @@ public static partial class RequestDelegateFactory
         };
     }
 
-    private static List<object> GetMetadataList(IList<object> metadata)
+    private static IReadOnlyList<object> AsReadOnlyList(IList<object> metadata)
     {
-        if (metadata is List<object> normalList)
+        if (metadata is IReadOnlyList<object> readOnlyList)
         {
-            return normalList;
+            return readOnlyList;
         }
 
         return new List<object>(metadata);
