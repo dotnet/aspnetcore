@@ -209,6 +209,14 @@
       "type": "computed",
       "value": "(!NoHttps)"
     },
+    "HasHttpProfile": {
+      "type": "computed",
+      "value": "(!RequiresHttps)"
+    },
+    "HasHttpsProfile": {
+      "type": "computed",
+      "value": "(RequiresHttps || !NoHttps)"
+    },
     "NoHttps": {
       "type": "parameter",
       "datatype": "bool",
