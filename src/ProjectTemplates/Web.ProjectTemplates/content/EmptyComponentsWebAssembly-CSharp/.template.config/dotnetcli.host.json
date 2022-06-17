@@ -30,9 +30,6 @@
       "longName": "exclude-launch-settings",
       "shortName": ""
     },
-    "UserSecretsId": {
-      "isHidden": true
-    },
     "NoHttps": {
       "longName": "no-https",
       "shortName": ""
