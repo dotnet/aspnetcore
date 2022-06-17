@@ -1,3 +1,33 @@
 #nullable enable
+Microsoft.AspNetCore.Authorization.AuthorizationBuilder
+Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AuthorizationBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.Add(Microsoft.Extensions.DependencyInjection.ServiceDescriptor! item) -> void
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.AuthorizationBuilderServiceCollection(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.Clear() -> void
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.Contains(Microsoft.Extensions.DependencyInjection.ServiceDescriptor! item) -> bool
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.CopyTo(Microsoft.Extensions.DependencyInjection.ServiceDescriptor![]! array, int arrayIndex) -> void
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.Count.get -> int
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<Microsoft.Extensions.DependencyInjection.ServiceDescriptor!>!
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.IndexOf(Microsoft.Extensions.DependencyInjection.ServiceDescriptor! item) -> int
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.Insert(int index, Microsoft.Extensions.DependencyInjection.ServiceDescriptor! item) -> void
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.IsReadOnly.get -> bool
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.Remove(Microsoft.Extensions.DependencyInjection.ServiceDescriptor! item) -> bool
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.RemoveAt(int index) -> void
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.this[int index].get -> Microsoft.Extensions.DependencyInjection.ServiceDescriptor!
+Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection.this[int index].set -> void
 Microsoft.AspNetCore.Authorization.Infrastructure.PassThroughAuthorizationHandler.PassThroughAuthorizationHandler(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions!>! options) -> void
 static Microsoft.AspNetCore.Authorization.AuthorizationPolicy.CombineAsync(Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizeData!>! authorizeData, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationPolicy!>! policies) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy?>!
+*REMOVED*static Microsoft.Extensions.DependencyInjection.AuthorizationServiceCollectionExtensions.AddAuthorizationCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+*REMOVED*static Microsoft.Extensions.DependencyInjection.AuthorizationServiceCollectionExtensions.AddAuthorizationCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, 
+static Microsoft.Extensions.DependencyInjection.AuthorizationServiceCollectionExtensions.AddAuthorizationCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilderServiceCollection!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddDefaultPolicy(string! name, Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddDefaultPolicy(string! name, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!>! configurePolicy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddFallbackPolicy(string! name, Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddFallbackPolicy(string! name, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!>! configurePolicy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddPolicy(string! name, Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddPolicy(string! name, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!>! configurePolicy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.SetDefaultPolicy(Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.SetFallbackPolicy(Microsoft.AspNetCore.Authorization.AuthorizationPolicy? policy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.SetInvokeHandlersAfterFailure(bool invoke) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
