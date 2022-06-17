@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
-/// Represents the information accessible to <see cref="EndpointDataSource.GetGroupedEndpoints(RouteGroupContext)"/>.
+/// Represents the information accessible to <see cref="EndpointDataSource.GetEndpointGroup(RouteGroupContext)"/>.
 /// </summary>
 public sealed class RouteGroupContext
 {
@@ -29,7 +29,7 @@ public sealed class RouteGroupContext
     }
 
     /// <summary>
-    /// Gets the prefix for all the <see cref="RouteEndpoint.RoutePattern"/> on all <see cref="RouteEndpoint"/> instances returned by the call to <see cref="EndpointDataSource.GetGroupedEndpoints(RouteGroupContext)"/>.
+    /// Gets the prefix for all the <see cref="RouteEndpoint.RoutePattern"/> on all <see cref="RouteEndpoint"/> instances returned by the call to <see cref="EndpointDataSource.GetEndpointGroup(RouteGroupContext)"/>.
     /// This accounts for nested groups and gives the full group prefix, not just the prefix supplied to the innermost call to <see cref="EndpointRouteBuilderExtensions.MapGroup(IEndpointRouteBuilder, RoutePattern)"/>.
     /// </summary>
     public RoutePattern Prefix { get; }

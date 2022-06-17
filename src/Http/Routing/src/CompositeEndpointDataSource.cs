@@ -77,7 +77,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
     }
 
     /// <inheritdoc/>
-    public override IReadOnlyList<Endpoint> GetGroupedEndpoints(RouteGroupContext context)
+    public override IReadOnlyList<Endpoint> GetEndpointGroup(RouteGroupContext context)
     {
         if (_dataSources.Count is 0)
         {
@@ -91,7 +91,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
 
         foreach (var dataSource in _dataSources)
         {
-            groupedEndpoints.AddRange(dataSource.GetGroupedEndpoints(context));
+            groupedEndpoints.AddRange(dataSource.GetEndpointGroup(context));
         }
 
         // There's no need to cache these the way we do with _endpoints. This is only ever used to get intermediate results.

@@ -58,7 +58,8 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         }
     }
 
-    public override IReadOnlyList<RouteEndpoint> GetGroupedEndpoints(RouteGroupContext context)
+    // I just want to point out that we're using fancy covariant returns introduced by C# 9! Not that it matters here :D
+    public override IReadOnlyList<RouteEndpoint> GetEndpointGroup(RouteGroupContext context)
     {
         var endpoints = new List<RouteEndpoint>(_routeEntries.Count);
         foreach (var entry in _routeEntries)
