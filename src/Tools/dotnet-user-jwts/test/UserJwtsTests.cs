@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 using Xunit;
 using Xunit.Abstractions;
 using System.Text.RegularExpressions;
+using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
@@ -276,5 +278,33 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains($"Scopes: none", output);
         Assert.Contains($"Roles: [none]", output);
         Assert.Contains($"Custom Claims: [foo=bar]", output);
+    }
+
+    [Fact]
+    public void Create_WithJsonOutput_CanBeSerialized()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--output", "json" });
+        var output = _console.GetOutput();
+        var deserialized = JsonSerializer.Deserialize<Jwt>(output);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal("Bearer", deserialized.Scheme);
+        Assert.Equal(Environment.UserName, deserialized.Name);
+    }
+
+    [Fact]
+    public void Create_WithTokenOutput_ProducesSingleValue()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "-o", "token" });
+        var output = _console.GetOutput();
+
+        var handler = new JwtSecurityTokenHandler();
+        Assert.True(handler.CanReadToken(output.Trim()));
     }
 }
