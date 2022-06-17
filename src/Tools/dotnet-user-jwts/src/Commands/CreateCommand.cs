@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -77,6 +78,11 @@ internal sealed class CreateCommand
                 Resources.CreateCommand_ValidForOption_Description,
                 CommandOptionType.SingleValue);
 
+            var outputOption = cmd.Option(
+                "-o|--output",
+                Resources.CreateCommand_OutputOption_Description,
+                CommandOptionType.SingleValue);
+
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
@@ -89,7 +95,7 @@ internal sealed class CreateCommand
                     return 1;
                 }
 
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString);
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, outputOption.Value());
             });
         });
     }
@@ -208,7 +214,8 @@ internal sealed class CreateCommand
         IReporter reporter,
         string projectPath,
         JwtCreatorOptions options,
-        string optionsString)
+        string optionsString,
+        string outputFormat)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
         {
@@ -232,9 +239,20 @@ internal sealed class CreateCommand
         var settingsToWrite = new JwtAuthenticationSchemeSettings(options.Scheme, options.Audiences, options.Issuer);
         settingsToWrite.Save(appsettingsFilePath);
 
-        reporter.Output(Resources.FormatCreateCommand_Confirmed(jwtToken.Id));
-        reporter.Output(optionsString);
-        reporter.Output($"{Resources.JwtPrint_Token}: {jwt.Token}");
+        switch (outputFormat)
+        {
+            case "token":
+                reporter.Output(jwt.Token);
+                break;
+            case "json":
+                reporter.Output(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
+                break;
+            default:
+                reporter.Output(Resources.FormatCreateCommand_Confirmed(jwtToken.Id));
+                reporter.Output(optionsString);
+                reporter.Output($"{Resources.JwtPrint_Token}: {jwt.Token}");
+                break;
+        }
 
         return 0;
     }
