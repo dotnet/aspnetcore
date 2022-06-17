@@ -5,8 +5,13 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -1974,6 +1979,43 @@ public class WebApplicationTests
         Assert.Contains(builder.Services, service => service.ServiceType == typeof(IOptions<>));
         Assert.Contains(builder.Services, service => service.ServiceType == typeof(ILoggerFactory));
         Assert.Contains(builder.Services, service => service.ServiceType == typeof(ILogger<>));
+    }
+
+    [Fact]
+    public async Task RegisterAuthMiddlewaresCorrectly()
+    {
+        var helloEndpointCalled = false;
+        var helloProtectedEndpointCalled = false;
+
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Authentication.AddJwtBearer();
+        await using var app = builder.Build();
+
+        app.Use(next =>
+        {
+            return async context =>
+            {
+                // IAuthenticationFeature is added by the authentication middleware
+                // during invocation. This middleware should run after authentication
+                // and be able to access the feature.
+                var authFeature = context.Features.Get<IAuthenticationFeature>();
+                Assert.NotNull(authFeature);
+                await next(context);
+            };
+        });
+
+        app.MapGet("/hello", () => helloEndpointCalled = true).AllowAnonymous();
+        app.MapGet("/hello-protected", () => helloProtectedEndpointCalled = true)
+            .RequireAuthorization(new AuthorizeAttribute() { AuthenticationSchemes = "Bearer" });
+
+        await app.StartAsync();
+        var client = app.GetTestClient();
+        await client.GetStringAsync("/hello");
+        await Assert.ThrowsAsync<HttpRequestException>(async () => await client.GetStringAsync("/hello-protected"));
+
+        Assert.True(helloEndpointCalled);
+        Assert.False(helloProtectedEndpointCalled);
     }
 
     public class RandomConfigurationSource : IConfigurationSource

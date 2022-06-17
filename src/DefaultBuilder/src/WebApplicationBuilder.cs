@@ -180,8 +180,8 @@ public sealed class WebApplicationBuilder
             // Don't add more than one instance of the middleware
             if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
             {
-                _builtApplication.UseAuthentication();
-                _builtApplication.UseAuthorization();
+                app.UseAuthentication();
+                app.UseAuthorization();
             }
         }
 
