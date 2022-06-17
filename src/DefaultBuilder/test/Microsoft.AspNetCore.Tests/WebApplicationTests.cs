@@ -1985,9 +1985,15 @@ public class WebApplicationTests
     public async Task RegisterAuthMiddlewaresCorrectly()
     {
         var helloEndpointCalled = false;
-        var helloProtectedEndpointCalled = false;
+        var customMiddlewareExecuted = false;
+        var username = "foobar";
 
         var builder = WebApplication.CreateBuilder();
+        builder.Services.AddAuthenticationCore(o =>
+        {
+            o.AddScheme<UberHandler>("testSchemeName", "testDisplayName");
+            o.DefaultScheme = "testSchemeName";
+        });
         builder.WebHost.UseTestServer();
         builder.Authentication.AddJwtBearer();
         await using var app = builder.Build();
@@ -2001,21 +2007,46 @@ public class WebApplicationTests
                 // and be able to access the feature.
                 var authFeature = context.Features.Get<IAuthenticationFeature>();
                 Assert.NotNull(authFeature);
+                customMiddlewareExecuted = true;
+                Assert.Equal("foobar", context.User.Identity.Name);
                 await next(context);
             };
         });
 
         app.MapGet("/hello", () => helloEndpointCalled = true).AllowAnonymous();
-        app.MapGet("/hello-protected", () => helloProtectedEndpointCalled = true)
-            .RequireAuthorization(new AuthorizeAttribute() { AuthenticationSchemes = "Bearer" });
 
         await app.StartAsync();
         var client = app.GetTestClient();
-        await client.GetStringAsync("/hello");
-        await Assert.ThrowsAsync<HttpRequestException>(async () => await client.GetStringAsync("/hello-protected"));
+        await client.GetStringAsync($"/hello?username={username}");
 
         Assert.True(helloEndpointCalled);
-        Assert.False(helloProtectedEndpointCalled);
+        Assert.True(customMiddlewareExecuted);
+    }
+
+    private class UberHandler : IAuthenticationHandler, IAuthenticationRequestHandler
+    {
+        private HttpContext _context;
+
+        public Task<AuthenticateResult> AuthenticateAsync()
+        {
+            var username = _context.Request.Query["username"];
+            var principal = new ClaimsPrincipal();
+            var id = new ClaimsIdentity();
+            id.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, username));
+            principal.AddIdentity(id);
+            return Task.FromResult(AuthenticateResult.Success(
+                new AuthenticationTicket(principal, "custom")));
+        }
+        public Task ChallengeAsync(AuthenticationProperties properties) => Task.FromResult(0);
+
+        public Task ForbidAsync(AuthenticationProperties properties) => Task.FromResult(0);
+
+        public Task<bool> HandleRequestAsync() => Task.FromResult(false);
+        public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
+        {
+            _context = context;
+            return Task.FromResult(0);
+        }
     }
 
     public class RandomConfigurationSource : IConfigurationSource
