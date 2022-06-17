@@ -992,6 +992,9 @@ internal abstract class CertificateManager
 
         [Event(69, Level = EventLevel.Error, Message = "An error has occurred while removing certificate '{0}' from the user profile folder: {1}.")]
         internal void MacOSRemoveCertificateFromUserProfileDirError(string certificateThumbprint, string errorMessage) => WriteEvent(69, certificateThumbprint, errorMessage);
+
+        [Event(70, Level = EventLevel.Error, Message = "The file '{0}' is not a valid certificate.")]
+        internal void MacOSFileIsNotAValidCertificate(string path) => WriteEvent(70, path);
     }
 
     internal sealed class UserCancelledTrustException : Exception
