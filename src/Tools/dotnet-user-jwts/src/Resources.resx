@@ -175,7 +175,7 @@
     <value>The UTC date &amp; time the JWT should not be valid before in the format 'yyyy-MM-dd [[HH:mm[[:ss]]]]'. Defaults to the date &amp; time the JWT is created.</value>
   </data>
   <data name="CreateCommand_OutputOption_Description" xml:space="preserve">
-    <value>The forma to use for displaying output from the command. Can be one of 'default', 'token', or 'json'.</value>
+    <value>The format to use for displaying output from the command. Can be one of 'default', 'token', or 'json'.</value>
   </data>
   <data name="CreateCommand_RoleOption_Description" xml:space="preserve">
     <value>A role claim to add to the JWT. Specify once for each role.</value>
