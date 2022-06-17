@@ -10,22 +10,22 @@ internal sealed class ProblemDetailsClientErrorFactory : IClientErrorFactory
 {
     private readonly ProblemDetailsFactory _problemDetailsFactory;
     private readonly ProblemDetailsOptions? _options;
-    private readonly IProblemDetailsService? _problemDetailsProvider;
+    private readonly IProblemDetailsService? _problemDetailsService;
 
     public ProblemDetailsClientErrorFactory(
         ProblemDetailsFactory problemDetailsFactory,
         IOptions<ProblemDetailsOptions>? options = null,
-        IProblemDetailsService? problemDetailsProvider = null)
+        IProblemDetailsService? problemDetailsService = null)
     {
         _problemDetailsFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
         _options = options?.Value;
-        _problemDetailsProvider = problemDetailsProvider;
+        _problemDetailsService = problemDetailsService;
     }
 
     public IActionResult? GetClientError(ActionContext actionContext, IClientErrorActionResult clientError)
     {
-        if (_problemDetailsProvider != null &&
-           !_options?.IsEnabled(clientError.StatusCode ?? 500) == true)
+        if (_problemDetailsService != null &&
+            _problemDetailsService.IsEnabled(clientError.StatusCode ?? 500) == false)
         {
             return null;
         }

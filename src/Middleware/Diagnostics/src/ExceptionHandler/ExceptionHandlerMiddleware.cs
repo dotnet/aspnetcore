@@ -34,14 +34,12 @@ public class ExceptionHandlerMiddleware
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <param name="options">The options for configuring the middleware.</param>
     /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
-    /// <param name="problemDetailsOptions">The options for configuring <see cref="ProblemDetails"/> generation.</param>
     /// <param name="problemDetailsService">The <see cref="IProblemDetailsService"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public ExceptionHandlerMiddleware(
         RequestDelegate next,
         ILoggerFactory loggerFactory,
         IOptions<ExceptionHandlerOptions> options,
         DiagnosticListener diagnosticListener,
-        IOptions<ProblemDetailsOptions>? problemDetailsOptions = null,
         IProblemDetailsService? problemDetailsService = null)
     {
         _next = next;
@@ -56,8 +54,7 @@ public class ExceptionHandlerMiddleware
             if (_options.ExceptionHandlingPath == null)
             {
                 if (problemDetailsService == null ||
-                    problemDetailsOptions?.Value == null ||
-                    problemDetailsOptions.Value.IsEnabled(statusCode: DefaultStatusCode) == false)
+                    problemDetailsService.IsEnabled(statusCode: DefaultStatusCode) == false)
                 {
                     throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
                 }

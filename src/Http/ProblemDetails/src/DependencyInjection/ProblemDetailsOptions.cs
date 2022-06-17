@@ -19,29 +19,6 @@ public class ProblemDetailsOptions
     /// 
     /// </summary>
     public Action<HttpContext, ProblemDetails>? ConfigureDetails { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="statusCode"></param>
-    /// <param name="isRouting"></param>
-    /// <returns></returns>
-    public bool IsEnabled(int statusCode, bool isRouting = false)
-    {
-        if (AllowedMapping == MappingOptions.Unspecified)
-        {
-            return false;
-        }
-
-        return isRouting ?
-            AllowedMapping.HasFlag(MappingOptions.RoutingFailures) :
-            statusCode switch
-            {
-                >= 400 and <= 499 => AllowedMapping.HasFlag(MappingOptions.ClientErrors),
-                >= 500 => AllowedMapping.HasFlag(MappingOptions.Exceptions),
-                _ => false,
-            };
-    }
 }
 
 /// <summary>

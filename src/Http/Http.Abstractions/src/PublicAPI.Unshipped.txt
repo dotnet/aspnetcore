@@ -13,6 +13,9 @@ Microsoft.AspNetCore.Http.HttpValidationProblemDetails
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
+Microsoft.AspNetCore.Http.IProblemDetailsService
+Microsoft.AspNetCore.Http.IProblemDetailsService.IsEnabled(int statusCode, bool isRouting = false) -> bool
+Microsoft.AspNetCore.Http.IProblemDetailsService.WriteAsync(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.EndpointMetadataCollection? currentMetadata = null, bool isRouting = false, int? statusCode = null, string? title = null, string? type = null, string? detail = null, string? instance = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.IProblemDetailsWriter
 Microsoft.AspNetCore.Http.IProblemDetailsWriter.CanWrite(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, bool isRouting) -> bool
 Microsoft.AspNetCore.Http.IProblemDetailsWriter.WriteAsync(Microsoft.AspNetCore.Http.HttpContext! context, int? statusCode = null, string? title = null, string? type = null, string? detail = null, string? instance = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> System.Threading.Tasks.Task!
@@ -23,9 +26,6 @@ Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata.MaxRequestBodySize.get -> long?
-Microsoft.AspNetCore.Http.ProblemDetailsWriterProvider
-Microsoft.AspNetCore.Http.ProblemDetailsWriterProvider.GetWriter(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.EndpointMetadataCollection? currentMetadata = null, bool isRouting = false) -> Microsoft.AspNetCore.Http.IProblemDetailsWriter?
-Microsoft.AspNetCore.Http.ProblemDetailsWriterProvider.ProblemDetailsWriterProvider(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.IProblemDetailsWriter!>! writers) -> void
 Microsoft.AspNetCore.Http.RouteHandlerContext
 Microsoft.AspNetCore.Http.RouteHandlerContext.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Http.RouteHandlerContext.EndpointMetadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection!
