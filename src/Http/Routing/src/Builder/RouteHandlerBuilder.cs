@@ -17,7 +17,7 @@ public sealed class RouteHandlerBuilder : IEndpointConventionBuilder
     /// Instantiates a new <see cref="RouteHandlerBuilder" /> given a single
     /// <see cref="IEndpointConventionBuilder" />.
     /// </summary>
-    /// <param name="conventions">The convention list returned from <see cref="RouteEndpointDataSource.AddEndpoint(Routing.Patterns.RoutePattern, Delegate, IEnumerable{object}?, bool)"/>.</param>
+    /// <param name="conventions">The convention list returned from <see cref="RouteEndpointDataSource.AddEndpoint(Routing.Patterns.RoutePattern, Delegate, IEnumerable{string}?)"/>.</param>
     internal RouteHandlerBuilder(ICollection<Action<EndpointBuilder>> conventions)
     {
         _conventions = conventions;
