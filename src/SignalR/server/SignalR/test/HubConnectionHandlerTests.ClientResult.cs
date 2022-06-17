@@ -171,7 +171,7 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
-    public async Task CanReturnClientResultToTypedHubThreeWays()
+    public async Task CanReturnClientResultToTypedHubTwoWays()
     {
         using (StartVerifiableLog())
         {
@@ -191,7 +191,7 @@ public partial class HubConnectionHandlerTests
                 nameof(HubT.GetClientResultTwoWays),
                 new object[] { 7, 3 })).DefaultTimeout();
 
-            // Send back "value + 4" to all three invocations.
+            // Send back "value + 4" to both invocations.
             for (int i = 0; i < 2; i++)
             {
                 // Hub asks client for a result, this is an invocation message with an ID.
