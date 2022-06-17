@@ -10,12 +10,12 @@ internal sealed class ProblemDetailsClientErrorFactory : IClientErrorFactory
 {
     private readonly ProblemDetailsFactory _problemDetailsFactory;
     private readonly ProblemDetailsOptions? _options;
-    private readonly ProblemDetailsWriterProvider? _problemDetailsProvider;
+    private readonly IProblemDetailsService? _problemDetailsProvider;
 
     public ProblemDetailsClientErrorFactory(
         ProblemDetailsFactory problemDetailsFactory,
         IOptions<ProblemDetailsOptions>? options = null,
-        ProblemDetailsWriterProvider? problemDetailsProvider = null)
+        IProblemDetailsService? problemDetailsProvider = null)
     {
         _problemDetailsFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
         _options = options?.Value;

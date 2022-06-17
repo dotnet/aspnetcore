@@ -33,7 +33,7 @@ public class DeveloperExceptionPageMiddleware
     private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
     private readonly Func<ErrorContext, Task> _exceptionHandler;
     private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
-    private readonly ProblemDetailsWriterProvider? _problemDetailsProvider;
+    private readonly IProblemDetailsService? _problemDetailsService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -44,7 +44,7 @@ public class DeveloperExceptionPageMiddleware
     /// <param name="hostingEnvironment"></param>
     /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/> used for writing diagnostic messages.</param>
     /// <param name="filters">The list of registered <see cref="IDeveloperPageExceptionFilter"/>.</param>
-    /// <param name="problemDetailsProvider">The <see cref="ProblemDetailsWriterProvider"/> used for writing <see cref="ProblemDetails"/> messages.</param>
+    /// <param name="problemDetailsService">The <see cref="IProblemDetailsService"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public DeveloperExceptionPageMiddleware(
         RequestDelegate next,
         IOptions<DeveloperExceptionPageOptions> options,
@@ -52,7 +52,7 @@ public class DeveloperExceptionPageMiddleware
         IWebHostEnvironment hostingEnvironment,
         DiagnosticSource diagnosticSource,
         IEnumerable<IDeveloperPageExceptionFilter> filters,
-        ProblemDetailsWriterProvider? problemDetailsProvider = null)
+        IProblemDetailsService? problemDetailsService = null)
     {
         if (next == null)
         {
@@ -76,7 +76,7 @@ public class DeveloperExceptionPageMiddleware
         _diagnosticSource = diagnosticSource;
         _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _logger, _options.SourceCodeLineCount);
         _exceptionHandler = DisplayException;
-        _problemDetailsProvider = problemDetailsProvider;
+        _problemDetailsService = problemDetailsService;
 
         foreach (var filter in filters.Reverse())
         {
@@ -165,11 +165,11 @@ public class DeveloperExceptionPageMiddleware
         return DisplayRuntimeException(httpContext, errorContext.Exception);
     }
 
-    private Task DisplayExceptionContent(ErrorContext errorContext)
+    private async Task DisplayExceptionContent(ErrorContext errorContext)
     {
         var httpContext = errorContext.HttpContext;
 
-        if (_problemDetailsProvider?.GetWriter(httpContext) is { } writer)
+        if (_problemDetailsService != null)
         {
             var exceptionExtensions = new Dictionary<string, object?>
             {
@@ -186,22 +186,26 @@ public class DeveloperExceptionPageMiddleware
                 }
             };
 
-            return writer.WriteAsync(httpContext, extensions: exceptionExtensions);
+            await _problemDetailsService.WriteAsync(httpContext, extensions: exceptionExtensions);
         }
 
-        httpContext.Response.ContentType = "text/plain; charset=utf-8";
-
-        var sb = new StringBuilder();
-        sb.AppendLine(errorContext.Exception.ToString());
-        sb.AppendLine();
-        sb.AppendLine("HEADERS");
-        sb.AppendLine("=======");
-        foreach (var pair in httpContext.Request.Headers)
+        // If the response has not started, assume the problem details was not written.
+        if (!httpContext.Response.HasStarted)
         {
-            sb.AppendLine(FormattableString.Invariant($"{pair.Key}: {pair.Value}"));
-        }
+            httpContext.Response.ContentType = "text/plain; charset=utf-8";
 
-        return httpContext.Response.WriteAsync(sb.ToString());
+            var sb = new StringBuilder();
+            sb.AppendLine(errorContext.Exception.ToString());
+            sb.AppendLine();
+            sb.AppendLine("HEADERS");
+            sb.AppendLine("=======");
+            foreach (var pair in httpContext.Request.Headers)
+            {
+                sb.AppendLine(FormattableString.Invariant($"{pair.Key}: {pair.Value}"));
+            }
+
+            await httpContext.Response.WriteAsync(sb.ToString());
+        }
     }
 
     private Task DisplayCompilationException(

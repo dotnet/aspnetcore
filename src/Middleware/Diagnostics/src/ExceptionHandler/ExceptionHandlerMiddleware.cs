@@ -25,7 +25,7 @@ public class ExceptionHandlerMiddleware
     private readonly ILogger _logger;
     private readonly Func<object, Task> _clearCacheHeadersDelegate;
     private readonly DiagnosticListener _diagnosticListener;
-    private readonly ProblemDetailsWriterProvider? _problemDetailsProvider;
+    private readonly IProblemDetailsService? _problemDetailsService;
 
     /// <summary>
     /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
@@ -35,27 +35,27 @@ public class ExceptionHandlerMiddleware
     /// <param name="options">The options for configuring the middleware.</param>
     /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
     /// <param name="problemDetailsOptions">The options for configuring <see cref="ProblemDetails"/> generation.</param>
-    /// <param name="problemDetailsProvider">The <see cref="ProblemDetailsWriterProvider"/> used for writing <see cref="ProblemDetails"/> messages.</param>
+    /// <param name="problemDetailsService">The <see cref="IProblemDetailsService"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public ExceptionHandlerMiddleware(
         RequestDelegate next,
         ILoggerFactory loggerFactory,
         IOptions<ExceptionHandlerOptions> options,
         DiagnosticListener diagnosticListener,
         IOptions<ProblemDetailsOptions>? problemDetailsOptions = null,
-        ProblemDetailsWriterProvider? problemDetailsProvider = null)
+        IProblemDetailsService? problemDetailsService = null)
     {
         _next = next;
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         _clearCacheHeadersDelegate = ClearCacheHeaders;
         _diagnosticListener = diagnosticListener;
-        _problemDetailsProvider = problemDetailsProvider;
+        _problemDetailsService = problemDetailsService;
 
         if (_options.ExceptionHandler == null)
         {
             if (_options.ExceptionHandlingPath == null)
             {
-                if (_problemDetailsProvider == null ||
+                if (problemDetailsService == null ||
                     problemDetailsOptions?.Value == null ||
                     problemDetailsOptions.Value.IsEnabled(statusCode: DefaultStatusCode) == false)
                 {
@@ -152,11 +152,7 @@ public class ExceptionHandlerMiddleware
             }
             else
             {
-                var writer = _problemDetailsProvider!.GetWriter(context, exceptionHandlerFeature.Endpoint?.Metadata);
-                if (writer != null)
-                {
-                    await writer.WriteAsync(context);
-                }
+                await _problemDetailsService!.WriteAsync(context, exceptionHandlerFeature.Endpoint?.Metadata);
             }
 
             // If the response has already started, assume exception handler was successful.

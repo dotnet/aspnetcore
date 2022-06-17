@@ -16,7 +16,7 @@ internal sealed class DefaultProblemDetailsWriter : IProblemDetailsWriter
     }
 
     public bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting)
-        => (isRouting || context.Response.StatusCode >= 500) && _options.IsEnabled(context.Response.StatusCode, isRouting);
+        => (isRouting || context.Response.StatusCode >= 500);
 
     public Task WriteAsync(
         HttpContext context,
