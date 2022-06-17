@@ -14,10 +14,9 @@ public sealed class RouteHandlerBuilder : IEndpointConventionBuilder
     private readonly ICollection<Action<EndpointBuilder>>? _conventions;
 
     /// <summary>
-    /// Instantiates a new <see cref="RouteHandlerBuilder" /> given a single
-    /// <see cref="IEndpointConventionBuilder" />.
+    /// Instantiates a new <see cref="RouteHandlerBuilder" /> given a ThrowOnAddAfterBuildCollection from <see cref="RouteEndpointDataSource.AddEndpoint(Routing.Patterns.RoutePattern, Delegate, IEnumerable{string}?, bool)"/>.
     /// </summary>
-    /// <param name="conventions">The convention list returned from <see cref="RouteEndpointDataSource.AddEndpoint(Routing.Patterns.RoutePattern, Delegate, IEnumerable{string}?)"/>.</param>
+    /// <param name="conventions">The convention list returned from <see cref="RouteEndpointDataSource"/>.</param>
     internal RouteHandlerBuilder(ICollection<Action<EndpointBuilder>> conventions)
     {
         _conventions = conventions;

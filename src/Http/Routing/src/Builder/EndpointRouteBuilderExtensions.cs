@@ -331,7 +331,7 @@ public static class EndpointRouteBuilderExtensions
        Delegate handler)
     {
         ArgumentNullException.ThrowIfNull(httpMethods);
-        return endpoints.Map(RoutePatternFactory.Parse(pattern), handler, httpMethods);
+        return endpoints.Map(RoutePatternFactory.Parse(pattern), handler, httpMethods, isFallback: false);
     }
 
     /// <summary>
@@ -365,7 +365,7 @@ public static class EndpointRouteBuilderExtensions
         RoutePattern pattern,
         Delegate handler)
     {
-        return Map(endpoints, pattern, handler, httpMethods: null);
+        return Map(endpoints, pattern, handler, httpMethods: null, isFallback: false);
     }
 
     /// <summary>
@@ -427,10 +427,7 @@ public static class EndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(pattern);
         ArgumentNullException.ThrowIfNull(handler);
 
-        var conventionBuilder = endpoints.Map(pattern, handler);
-        conventionBuilder.WithDisplayName("Fallback " + pattern);
-        conventionBuilder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
-        return conventionBuilder;
+        return endpoints.Map(RoutePatternFactory.Parse(pattern), handler, httpMethods: null, isFallback: true);
     }
 
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
@@ -438,7 +435,8 @@ public static class EndpointRouteBuilderExtensions
         this IEndpointRouteBuilder endpoints,
         RoutePattern pattern,
         Delegate handler,
-        IEnumerable<string>? httpMethods = null)
+        IEnumerable<string>? httpMethods,
+        bool isFallback)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(pattern);
@@ -454,7 +452,7 @@ public static class EndpointRouteBuilderExtensions
             endpoints.DataSources.Add(dataSource);
         }
 
-        var conventions = dataSource.AddEndpoint(pattern, handler, httpMethods);
+        var conventions = dataSource.AddEndpoint(pattern, handler, httpMethods, isFallback);
 
         return new RouteHandlerBuilder(conventions);
     }

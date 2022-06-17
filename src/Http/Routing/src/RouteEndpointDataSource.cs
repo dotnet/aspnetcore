@@ -28,14 +28,16 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     public ICollection<Action<EndpointBuilder>> AddEndpoint(
         RoutePattern pattern,
         Delegate routeHandler,
-        IEnumerable<string>? httpMethods)
+        IEnumerable<string>? httpMethods,
+        bool isFallback)
     {
         RouteEntry entry = new()
         {
             RoutePattern = pattern,
             RouteHandler = routeHandler,
             HttpMethods = httpMethods,
-            Conventions = new(),
+            IsFallback = isFallback,
+            Conventions = new ThrowOnAddAfterBuildCollection(),
         };
 
         _routeEntries.Add(entry);
@@ -103,6 +105,11 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             displayName = $"HTTP: {string.Join(", ", entry.HttpMethods)} {displayName}";
         }
 
+        if (entry.IsFallback)
+        {
+            displayName = $"Fallback {displayName}";
+        }
+
         RequestDelegate? factoryCreatedRequestDelegate = null;
         RequestDelegate redirectedRequestDelegate = context =>
         {
@@ -114,8 +121,11 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             return factoryCreatedRequestDelegate(context);
         };
 
-        // The Map methods don't support customizing the order, so we always use the default of 0 unless a convention changes it later.
-        var builder = new RouteEndpointBuilder(redirectedRequestDelegate, pattern, order: 0)
+        // The Map methods don't support customizing the order apart from using int.MaxValue to give MapFallback the lowest precedences.
+        // Otherwise, we always use the default of 0 unless a convention changes it later.
+        var order = entry.IsFallback ? int.MaxValue : 0;
+
+        var builder = new RouteEndpointBuilder(redirectedRequestDelegate, pattern, order)
         {
             DisplayName = displayName,
             ApplicationServices = _applicationServices,
@@ -231,6 +241,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         public RoutePattern RoutePattern { get; init; }
         public Delegate RouteHandler { get; init; }
         public IEnumerable<string>? HttpMethods { get; init; }
+        public bool IsFallback { get; init; }
         public ThrowOnAddAfterBuildCollection Conventions { get; init; }
     }
 
