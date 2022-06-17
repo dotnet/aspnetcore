@@ -116,7 +116,7 @@ public class Program
         {
             return async ctx =>
             {
-                Version httpVersion = ctx.GetRandomVersion(httpVersions);
+                var httpVersion = ctx.GetRandomVersion(httpVersions);
                 try
                 {
                     using (var req = new HttpRequestMessage(HttpMethod.Get, serverUri + path) { Version = httpVersion })
@@ -139,12 +139,13 @@ public class Program
                             return;
                         }
 
-                        string name = e.InnerException?.GetType().Name;
+                        var name = e.InnerException?.GetType().Name;
                         switch (name)
                         {
                             case "Http2ProtocolException":
                             case "Http2ConnectionException":
                             case "Http2StreamException":
+                                // This can be improved when https://github.com/dotnet/runtime/issues/43239 is available.
                                 if (e.InnerException.Message.Contains("INTERNAL_ERROR") || e.InnerException.Message.Contains("CANCEL"))
                                 {
                                     return;
@@ -460,7 +461,7 @@ public class Program
                     endpoints.MapGet("/parallel-abort", async context =>
                     {
                         // Server writes some content and aborts the connection in the background.
-                        Task writeTask = context.Response.WriteAsync(contentSource.Substring(0, contentSource.Length));
+                        var writeTask = context.Response.WriteAsync(contentSource.Substring(0, contentSource.Length));
                         await Task.Yield();
                         context.Abort();
                         await writeTask;
