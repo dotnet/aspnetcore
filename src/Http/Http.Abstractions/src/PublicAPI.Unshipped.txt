@@ -9,9 +9,10 @@ Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext
 Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.DefaultRouteHandlerInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetRequiredMetadata<T>() -> T!
-Microsoft.AspNetCore.Http.IProblemDetailsProvider
-Microsoft.AspNetCore.Http.IProblemDetailsProvider.GetWriter(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.EndpointMetadataCollection? currentMetadata = null, bool isRouting = false) -> Microsoft.AspNetCore.Http.IProblemDetailsWriter?
-Microsoft.AspNetCore.Http.IProblemDetailsProvider.IsEnabled(int statusCode, bool isRouting = false) -> bool
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
 Microsoft.AspNetCore.Http.IProblemDetailsWriter
 Microsoft.AspNetCore.Http.IProblemDetailsWriter.CanWrite(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, bool isRouting) -> bool
 Microsoft.AspNetCore.Http.IProblemDetailsWriter.WriteAsync(Microsoft.AspNetCore.Http.HttpContext! context, int? statusCode = null, string? title = null, string? type = null, string? detail = null, string? instance = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> System.Threading.Tasks.Task!
@@ -22,6 +23,9 @@ Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata.MaxRequestBodySize.get -> long?
+Microsoft.AspNetCore.Http.ProblemDetailsWriterProvider
+Microsoft.AspNetCore.Http.ProblemDetailsWriterProvider.GetWriter(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.EndpointMetadataCollection? currentMetadata = null, bool isRouting = false) -> Microsoft.AspNetCore.Http.IProblemDetailsWriter?
+Microsoft.AspNetCore.Http.ProblemDetailsWriterProvider.ProblemDetailsWriterProvider(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.IProblemDetailsWriter!>! writers) -> void
 Microsoft.AspNetCore.Http.RouteHandlerContext
 Microsoft.AspNetCore.Http.RouteHandlerContext.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Http.RouteHandlerContext.EndpointMetadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection!
@@ -40,6 +44,19 @@ Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
 Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata.Summary.get -> string!
+Microsoft.AspNetCore.Mvc.ProblemDetails
+Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Status.get -> int?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Status.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Title.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
 abstract Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.Arguments.get -> System.Collections.Generic.IList<object?>!
 abstract Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.GetArgument<T>(int index) -> T
 abstract Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!

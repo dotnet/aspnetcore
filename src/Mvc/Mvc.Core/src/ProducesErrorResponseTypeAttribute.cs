@@ -3,8 +3,6 @@
 
 namespace Microsoft.AspNetCore.Mvc;
 
-using Microsoft.AspNetCore.Http.Metadata;
-
 /// <summary>
 /// Specifies the type returned by default by controllers annotated with <see cref="ApiControllerAttribute"/>.
 /// <para>

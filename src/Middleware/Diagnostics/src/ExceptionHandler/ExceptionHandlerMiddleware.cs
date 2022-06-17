@@ -34,8 +34,8 @@ public class ExceptionHandlerMiddleware
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <param name="options">The options for configuring the middleware.</param>
     /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
-    /// <param name="problemDetailsOptions"></param>
-    /// <param name="problemDetailsProvider">The <see cref="IProblemDetailsProvider"/> used for writing <see cref="ProblemDetails"/> messages.</param>
+    /// <param name="problemDetailsOptions">The options for configuring <see cref="ProblemDetails"/> generation.</param>
+    /// <param name="problemDetailsProvider">The <see cref="ProblemDetailsWriterProvider"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public ExceptionHandlerMiddleware(
         RequestDelegate next,
         ILoggerFactory loggerFactory,

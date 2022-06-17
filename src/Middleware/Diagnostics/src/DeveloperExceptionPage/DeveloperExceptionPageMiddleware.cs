@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Diagnostics.RazorViews;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -37,13 +38,13 @@ public class DeveloperExceptionPageMiddleware
     /// <summary>
     /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
     /// </summary>
-    /// <param name="next"></param>
-    /// <param name="options"></param>
-    /// <param name="loggerFactory"></param>
+    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+    /// <param name="options">The options for configuring the middleware.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <param name="hostingEnvironment"></param>
-    /// <param name="diagnosticSource"></param>
-    /// <param name="filters"></param>
-    /// <param name="problemDetailsProvider"></param>
+    /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/> used for writing diagnostic messages.</param>
+    /// <param name="filters">The list of registered <see cref="IDeveloperPageExceptionFilter"/>.</param>
+    /// <param name="problemDetailsProvider">The <see cref="ProblemDetailsWriterProvider"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public DeveloperExceptionPageMiddleware(
         RequestDelegate next,
         IOptions<DeveloperExceptionPageOptions> options,
