@@ -86,10 +86,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         {
             try
             {
-                if (File.Exists(tmpFile))
-                {
-                    File.Delete(tmpFile);
-                }
+                File.Delete(tmpFile);
             }
             catch
             {
@@ -169,10 +166,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
         finally
         {
-            if (File.Exists(tmpFile))
-            {
-                File.Delete(tmpFile);
-            }
+            File.Delete(tmpFile);
         }
     }
 
@@ -251,7 +245,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         return certificate;
     }
 
-    private static bool SaveCertificateToUserKeychain(X509Certificate2 certificate)
+    private static void SaveCertificateToUserKeychain(X509Certificate2 certificate)
     {
         var passwordBytes = new byte[48];
         RandomNumberGenerator.Fill(passwordBytes.AsSpan()[0..35]);
@@ -262,7 +256,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
 
         var processInfo = new ProcessStartInfo(
             MacOSAddCertificateToKeyChainCommandLine,
-            string.Format(CultureInfo.InvariantCulture,MacOSAddCertificateToKeyChainCommandLineArgumentsFormat, certificatePath, password))
+            string.Format(CultureInfo.InvariantCulture, MacOSAddCertificateToKeyChainCommandLineArgumentsFormat, certificatePath, password))
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true
@@ -286,7 +280,6 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
 
         Log.MacOSAddCertificateToKeyChainEnd();
-        return true;
     }
 
     private static string GetCertificateFilePath(X509Certificate2 certificate) =>

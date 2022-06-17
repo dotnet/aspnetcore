@@ -781,7 +781,6 @@ internal abstract class CertificateManager
             .Single(c => c.SerialNumber == certificate.SerialNumber);
 
         store.Remove(matching);
-        store.Close();
     }
 
     internal static string ToCertificateDescription(IEnumerable<X509Certificate2> certificates)
