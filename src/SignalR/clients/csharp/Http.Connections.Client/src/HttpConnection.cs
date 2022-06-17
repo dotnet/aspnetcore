@@ -32,7 +32,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
 
-    private readonly ILogger _logger;
+    internal readonly ILogger _logger;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
     private bool _started;
