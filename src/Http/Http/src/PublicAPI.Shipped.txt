@@ -166,6 +166,7 @@ Microsoft.AspNetCore.Http.Features.TlsConnectionFeature.ClientCertificate.set ->
 Microsoft.AspNetCore.Http.Features.TlsConnectionFeature.GetClientCertificateAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Security.Cryptography.X509Certificates.X509Certificate2?>!
 Microsoft.AspNetCore.Http.Features.TlsConnectionFeature.TlsConnectionFeature() -> void
 Microsoft.AspNetCore.Http.FormCollection
+Microsoft.AspNetCore.Http.FormCollection.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Http.FormCollection.ContainsKey(string! key) -> bool
 Microsoft.AspNetCore.Http.FormCollection.Count.get -> int
 Microsoft.AspNetCore.Http.FormCollection.Enumerator
@@ -198,6 +199,7 @@ Microsoft.AspNetCore.Http.FormFileCollection.GetFile(string! name) -> Microsoft.
 Microsoft.AspNetCore.Http.FormFileCollection.GetFiles(string! name) -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.IFormFile!>!
 Microsoft.AspNetCore.Http.FormFileCollection.this[string! name].get -> Microsoft.AspNetCore.Http.IFormFile?
 Microsoft.AspNetCore.Http.HeaderDictionary
+Microsoft.AspNetCore.Http.HeaderDictionary.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.Add(string! key, Microsoft.Extensions.Primitives.StringValues value) -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.Add(System.Collections.Generic.KeyValuePair<string!, Microsoft.Extensions.Primitives.StringValues> item) -> void
 Microsoft.AspNetCore.Http.HeaderDictionary.Clear() -> void
@@ -234,6 +236,7 @@ Microsoft.AspNetCore.Http.MiddlewareFactory.Create(System.Type! middlewareType) 
 Microsoft.AspNetCore.Http.MiddlewareFactory.MiddlewareFactory(System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Http.MiddlewareFactory.Release(Microsoft.AspNetCore.Http.IMiddleware! middleware) -> void
 Microsoft.AspNetCore.Http.QueryCollection
+Microsoft.AspNetCore.Http.QueryCollection.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Http.QueryCollection.ContainsKey(string! key) -> bool
 Microsoft.AspNetCore.Http.QueryCollection.Count.get -> int
 Microsoft.AspNetCore.Http.QueryCollection.Enumerator

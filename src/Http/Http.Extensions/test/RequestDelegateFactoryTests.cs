@@ -523,6 +523,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     new object[] { (Action<HttpContext, float[]>)Store, new[] { "0.5" },new[] { 0.5f } },
                     new object[] { (Action<HttpContext, Half[]>)Store, new[] { "0.5" }, new[] { (Half)0.5f } },
                     new object[] { (Action<HttpContext, decimal[]>)Store, new[] { "0.5" },new[] { 0.5m } },
+                    new object[] { (Action<HttpContext, Uri[]>)Store, new[] { "https://example.org" }, new[] { new Uri("https://example.org") } },
                     new object[] { (Action<HttpContext, DateTime[]>)Store, new[] { now.ToString("o") },new[] { now.ToUniversalTime() } },
                     new object[] { (Action<HttpContext, DateTimeOffset[]>)Store, new[] { "1970-01-01T00:00:00.0000000+00:00" },new[] { DateTimeOffset.UnixEpoch } },
                     new object[] { (Action<HttpContext, TimeSpan[]>)Store, new[] { "00:00:42" },new[] { TimeSpan.FromSeconds(42) } },
@@ -573,6 +574,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                     new object[] { (Action<HttpContext, float>)Store, "0.5", 0.5f },
                     new object[] { (Action<HttpContext, Half>)Store, "0.5", (Half)0.5f },
                     new object[] { (Action<HttpContext, decimal>)Store, "0.5", 0.5m },
+                    new object[] { (Action<HttpContext, Uri>)Store, "https://example.org", new Uri("https://example.org") },
                     new object[] { (Action<HttpContext, DateTime>)Store, now.ToString("o"), now.ToUniversalTime() },
                     new object[] { (Action<HttpContext, DateTimeOffset>)Store, "1970-01-01T00:00:00.0000000+00:00", DateTimeOffset.UnixEpoch },
                     new object[] { (Action<HttpContext, TimeSpan>)Store, "00:00:42", TimeSpan.FromSeconds(42) },
@@ -3669,6 +3671,46 @@ public class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
+    public static IEnumerable<object?[]> UriDelegates
+    {
+        get
+        {
+            string uriParsing(Uri uri) => $"Uri: {uri.OriginalString}";
+
+            return new List<object?[]>
+                {
+                    new object?[] { (Func<Uri, string>)uriParsing, "https://example.org", "Uri: https://example.org" },
+                    new object?[] { (Func<Uri, string>)uriParsing, "https://example.org/path/to/file?name=value1&name=value2", "Uri: https://example.org/path/to/file?name=value1&name=value2" },
+                    new object?[] { (Func<Uri, string>)uriParsing, "/path/to/file?name=value1&name=value2", "Uri: /path/to/file?name=value1&name=value2" },
+                    new object?[] { (Func<Uri, string>)uriParsing, "?name=value1&name=value2", "Uri: ?name=value1&name=value2" },
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(UriDelegates))]
+    public async Task RequestDelegateCanProcessUriValues(Delegate @delegate, string uri, string expectedResponse)
+    {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["uri"] = uri
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal(expectedResponse, decodedResponseBody);
+    }
+
     public static IEnumerable<object?[]> DateTimeDelegates
     {
         get
@@ -6025,6 +6067,36 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.DoesNotContain(result.EndpointMetadata, m => m is IAcceptsMetadata);
     }
 
+    [Fact]
+    public void Create_SetsApplicationServices_OnEndpointMetadataContext()
+    {
+        // Arrange
+        var @delegate = (Todo todo) => new AccessesServicesMetadataResult();
+        var metadataService = new MetadataService();
+        var serviceProvider = new ServiceCollection().AddSingleton(metadataService).BuildServiceProvider();
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, new() { ServiceProvider = serviceProvider });
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is MetadataService);
+    }
+
+    [Fact]
+    public void Create_SetsApplicationServices_OnEndpointParameterMetadataContext()
+    {
+        // Arrange
+        var @delegate = (AccessesServicesMetadataBinder parameter1) => "Test";
+        var metadataService = new MetadataService();
+        var serviceProvider = new ServiceCollection().AddSingleton(metadataService).BuildServiceProvider();
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, new() { ServiceProvider = serviceProvider });
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is MetadataService);
+    }
+
     private DefaultHttpContext CreateHttpContext()
     {
         var responseFeature = new TestHttpResponseFeature();
@@ -6039,6 +6111,35 @@ public class RequestDelegateFactoryTests : LoggedTest
                     [typeof(IHttpRequestLifetimeFeature)] = new TestHttpRequestLifetimeFeature(),
                 }
         };
+    }
+
+    private record MetadataService;
+
+    private class AccessesServicesMetadataResult : IResult, IEndpointMetadataProvider
+    {
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            if (context.ApplicationServices?.GetRequiredService<MetadataService>() is { } metadataService)
+            {
+                context.EndpointMetadata.Add(metadataService);
+            }
+        }
+
+        public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
+    }
+
+    private class AccessesServicesMetadataBinder : IEndpointMetadataProvider
+    {
+        public static ValueTask<AccessesServicesMetadataBinder> BindAsync(HttpContext context, ParameterInfo parameter) =>
+            new(new AccessesServicesMetadataBinder());
+
+        public static void PopulateMetadata(EndpointMetadataContext context)
+        {
+            if (context.ApplicationServices?.GetRequiredService<MetadataService>() is { } metadataService)
+            {
+                context.EndpointMetadata.Add(metadataService);
+            }
+        }
     }
 
     private class Attribute1 : Attribute

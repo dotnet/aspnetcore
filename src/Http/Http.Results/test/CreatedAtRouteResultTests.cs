@@ -71,7 +71,7 @@ public partial class CreatedAtRouteResultTests
         // Arrange
         CreatedAtRoute MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<CreatedAtRoute>(context);

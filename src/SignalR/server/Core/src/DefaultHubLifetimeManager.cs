@@ -51,6 +51,11 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         }
 
         _groups.Add(connection, groupName);
+        // Connection disconnected while adding to group, remove it in case the Add was called after OnDisconnectedAsync removed items from the group
+        if (connection.ConnectionAborted.IsCancellationRequested)
+        {
+            _groups.Remove(connection.ConnectionId, groupName);
+        }
 
         return Task.CompletedTask;
     }

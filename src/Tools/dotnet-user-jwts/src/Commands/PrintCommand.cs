@@ -12,13 +12,13 @@ internal sealed class PrintCommand
     {
         app.Command("print", cmd =>
         {
-            cmd.Description = "Print the details of a given JWT";
+            cmd.Description = Resources.PrintCommand_Description;
 
-            var idArgument = cmd.Argument("[id]", "The ID of the JWT to print");
+            var idArgument = cmd.Argument("[id]", Resources.PrintCommand_IdArgument_Description);
 
             var showFullOption = cmd.Option(
                 "--show-full",
-                "Whether to show the full JWT contents in addition to the compact serialized format",
+                Resources.PrintCommand_ShowFullOption_Description,
                 CommandOptionType.NoValue);
 
             cmd.HelpOption("-h|--help");
@@ -43,14 +43,13 @@ internal sealed class PrintCommand
         }
         var jwtStore = new JwtStore(userSecretsId);
 
-        if (!jwtStore.Jwts.ContainsKey(id))
+        if (!jwtStore.Jwts.TryGetValue(id, out var jwt))
         {
-            reporter.Output($"No token with ID '{id}' found");
+            reporter.Output(Resources.FormatPrintCommand_NoJwtFound(id));
             return 1;
         }
 
-        reporter.Output($"Found JWT with ID '{id}'");
-        var jwt = jwtStore.Jwts[id];
+        reporter.Output(Resources.FormatPrintCommand_Confirmed(id));
         JwtSecurityToken fullToken;
 
         if (showFull)

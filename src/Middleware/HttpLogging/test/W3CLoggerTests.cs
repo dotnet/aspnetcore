@@ -27,10 +27,11 @@ public class W3CLoggerTests
             await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
             {
                 var elements = new string[W3CLoggingMiddleware._fieldsLength];
+                var additionalHeaders = new string[0];
                 AddToList(elements, W3CLoggingMiddleware._dateIndex, _timestampOne.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 AddToList(elements, W3CLoggingMiddleware._timeIndex, _timestampOne.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
 
-                logger.Log(elements);
+                logger.Log(elements, additionalHeaders);
                 await logger.Processor.WaitForWrites(4).DefaultTimeout();
 
                 var lines = logger.Processor.Lines;
@@ -69,11 +70,12 @@ public class W3CLoggerTests
             await using (var logger = new TestW3CLogger(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), NullLoggerFactory.Instance))
             {
                 var elements = new string[W3CLoggingMiddleware._fieldsLength];
+                var additionalHeaders = new string[0];
                 AddToList(elements, W3CLoggingMiddleware._uriQueryIndex, null);
                 AddToList(elements, W3CLoggingMiddleware._hostIndex, null);
                 AddToList(elements, W3CLoggingMiddleware._protocolStatusIndex, null);
 
-                logger.Log(elements);
+                logger.Log(elements, additionalHeaders);
                 await logger.Processor.WaitForWrites(4).DefaultTimeout();
 
                 var lines = logger.Processor.Lines;

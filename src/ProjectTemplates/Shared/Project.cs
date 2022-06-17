@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
@@ -286,6 +287,63 @@ public class Project : IDisposable
         {
             Assert.False(doesExist, "Expected file not to exist, but it does: " + path);
         }
+    }
+
+    public async Task<Project> VerifyLaunchSettings(string[] expectedLaunchProfileNames)
+    {
+        var launchSettingsFiles = Directory.EnumerateFiles(TemplateOutputDir, "launchSettings.json", SearchOption.AllDirectories);
+
+        foreach (var filePath in launchSettingsFiles)
+        {
+            using var launchSettingsFile = File.OpenRead(filePath);
+            using var launchSettings = await JsonDocument.ParseAsync(launchSettingsFile);
+
+            var profiles = launchSettings.RootElement.GetProperty("profiles");
+            var profilesEnumerator = profiles.EnumerateObject().GetEnumerator();
+
+            foreach (var expectedProfileName in expectedLaunchProfileNames)
+            {
+                Assert.True(profilesEnumerator.MoveNext());
+
+                var actualProfile = profilesEnumerator.Current;
+
+                // Launch profile names are case sensitive
+                Assert.Equal(expectedProfileName, actualProfile.Name, StringComparer.Ordinal);
+
+                if (actualProfile.Value.GetProperty("commandName").GetString() == "Project")
+                {
+                    var applicationUrl = actualProfile.Value.GetProperty("applicationUrl");
+                    if (string.Equals(expectedProfileName, "http", StringComparison.Ordinal))
+                    {
+                        Assert.DoesNotContain("https://", applicationUrl.GetString());
+                    }
+
+                    if (string.Equals(expectedProfileName, "https", StringComparison.Ordinal))
+                    {
+                        Assert.StartsWith("https://", applicationUrl.GetString());
+                    }
+                }
+            }
+
+            // Check there are no more launch profiles defined
+            Assert.False(profilesEnumerator.MoveNext());
+
+            if (launchSettings.RootElement.TryGetProperty("iisSettings", out var iisSettings)
+                && iisSettings.TryGetProperty("iisExpress", out var iisExpressSettings))
+            {
+                var iisSslPort = iisExpressSettings.GetProperty("sslPort").GetInt32();
+                if (expectedLaunchProfileNames.Contains("https"))
+                {
+                    Assert.True(iisSslPort >= 44300 && iisSslPort <= 44399, $"IIS Express port was expected to be >= 44300 and <= 44399 but was {iisSslPort} in file {filePath}");
+                }
+                else
+                {
+                    Assert.Equal(0, iisSslPort);
+                }
+            }
+        }
+
+        return this;
     }
 
     public string ReadFile(string path)
