@@ -205,17 +205,13 @@
       "displayName": "_Progressive Web Application",
       "description": "If specified, produces a Progressive Web Application (PWA) supporting installation and offline use."
     },
-    "RequiresHttps": {
-      "type": "computed",
-      "value": "(!NoHttps)"
-    },
     "HasHttpProfile": {
       "type": "computed",
-      "value": "(!RequiresHttps)"
+      "value": "(NoHttps)"
     },
     "HasHttpsProfile": {
       "type": "computed",
-      "value": "(RequiresHttps || !NoHttps)"
+      "value": "(!NoHttps)"
     },
     "NoHttps": {
       "type": "parameter",
