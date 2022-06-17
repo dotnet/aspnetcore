@@ -37,6 +37,9 @@ module.exports = (env, args) => ({
                     passes: 3
                 },
                 mangle: {
+                  properties: {
+                      regex: /^_/
+                  }
                 },
                 module: false,
                 format: {
