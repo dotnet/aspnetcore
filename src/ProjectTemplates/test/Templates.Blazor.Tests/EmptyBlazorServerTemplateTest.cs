@@ -25,4 +25,7 @@ public class EmptyBlazorServerTemplateTest : BlazorTemplateTest
 
     [Fact]
     public Task EmptyBlazorServerTemplateWorks() => CreateBuildPublishAsync();
+
+    [Fact]
+    public Task EmptyBlazorServerTemplate_NoHttps_Works() => CreateBuildPublishAsync(args: new[] { ArgConstants.NoHttps });
 }
