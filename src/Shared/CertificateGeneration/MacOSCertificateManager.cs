@@ -224,10 +224,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
 
     protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation)
     {
-        // We do this for backwards compatibility with previous versions. .NET 7.0 and onwards will ignore the
-        // certificate on the keychain and load it directly from disk.
-        var keychainSaveSuccess = SaveCertificateToUserKeychain(certificate);
-        Debug.Assert(keychainSaveSuccess);
+        SaveCertificateToUserKeychain(certificate);
 
         try
         {
@@ -284,7 +281,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
             if (process.ExitCode != 0)
             {
                 Log.MacOSAddCertificateToKeyChainError(process.ExitCode, output);
-                return false;
+                throw new InvalidOperationException("Failed to add the certificate to the keychain. Are you running in a non-interactive session perhaps?");
             }
         }
 
