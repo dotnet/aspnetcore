@@ -22,7 +22,7 @@ public static class ProblemDetailsServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         // Adding default services;
-        services.TryAddSingleton<ProblemDetailsWriterProvider>();
+        services.TryAddSingleton<IProblemDetailsService, ProblemDetailsService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultProblemDetailsWriter>());
 
         return services;

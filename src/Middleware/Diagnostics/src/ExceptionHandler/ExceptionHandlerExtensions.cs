@@ -131,7 +131,7 @@ public static class ExceptionHandlerExtensions
                     options.Value.ExceptionHandler = builder.Build();
                 }
 
-                var problemDetailsProvider = app.ApplicationServices.GetService<ProblemDetailsWriterProvider>();
+                var problemDetailsProvider = app.ApplicationServices.GetService<IProblemDetailsService>();
                 var problemDetailsOption = app.ApplicationServices.GetService<IOptions<ProblemDetailsOptions>>();
                 return new ExceptionHandlerMiddleware(next, loggerFactory, options, diagnosticListener, problemDetailsOption, problemDetailsProvider).Invoke;
             });

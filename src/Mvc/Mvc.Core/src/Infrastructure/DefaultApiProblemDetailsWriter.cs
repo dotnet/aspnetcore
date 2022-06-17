@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -12,7 +11,6 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
     private readonly OutputFormatterSelector _formatterSelector;
     private readonly IHttpResponseStreamWriterFactory _writerFactory;
     private readonly ProblemDetailsFactory _problemDetailsFactory;
-    private readonly ProblemDetailsOptions _options;
     private static readonly MediaTypeCollection _problemContentTypes = new()
     {
         "application/problem+json",
@@ -22,23 +20,16 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
     public DefaultApiProblemDetailsWriter(
         OutputFormatterSelector formatterSelector,
         IHttpResponseStreamWriterFactory writerFactory,
-        ProblemDetailsFactory problemDetailsFactory,
-        IOptions<ProblemDetailsOptions> options)
+        ProblemDetailsFactory problemDetailsFactory)
     {
         _formatterSelector = formatterSelector;
         _writerFactory = writerFactory;
         _problemDetailsFactory = problemDetailsFactory;
-        _options = options.Value;
     }
 
     public bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting)
     {
-        if (context.Response.StatusCode >= 500 || isRouting)
-        {
-            return false;
-        }
-
-        if (_options.IsEnabled(context.Response.StatusCode))
+        static bool HasMetadata(EndpointMetadataCollection? metadata)
         {
             var responseType = metadata?.GetMetadata<ProducesErrorResponseTypeAttribute>();
             var apiControllerAttribute = metadata?.GetMetadata<IApiBehaviorMetadata>();
@@ -47,17 +38,20 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
             {
                 return true;
             }
+            return false;
+
         }
 
-        return false;
+        if (isRouting)
+        {
+            return false;
+        }
 
-        //var headers = context.Request.GetTypedHeaders();
-        //var acceptHeader = headers.Accept;
-        //if (acceptHeader != null &&
-        //    !acceptHeader.Any(h => _problemMediaType.IsSubsetOf(h)))
-        //{
-        //    return false;
-        //}
+        return context.Response.StatusCode switch
+        {
+            >= 400 and <= 499 => HasMetadata(metadata),
+            _ => false,
+        };
     }
 
     public Task WriteAsync(
