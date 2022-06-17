@@ -136,7 +136,7 @@ public class EndpointMetadataApiDescriptionProviderTest
             var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
             Assert.Equal(200, responseType.StatusCode);
             Assert.Equal(expectedType, responseType.Type);
-            Assert.Equal(expectedType, responseType.ModelMetadata.ModelType);
+            Assert.Equal(expectedType, responseType.ModelMetadata?.ModelType);
 
             var responseFormat = Assert.Single(responseType.ApiResponseFormats);
             Assert.Equal("application/json", responseFormat.MediaType);
@@ -144,7 +144,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         }
 
         AssertJsonResponse(GetApiDescription(() => new InferredJsonClass()), typeof(InferredJsonClass));
-        AssertJsonResponse(GetApiDescription(() => (IInferredJsonInterface)null), typeof(IInferredJsonInterface));
+        AssertJsonResponse(GetApiDescription(() => (IInferredJsonInterface)null!), typeof(IInferredJsonInterface));
     }
 
     [Fact]
@@ -155,7 +155,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
         Assert.Equal(200, responseType.StatusCode);
         Assert.Equal(typeof(string), responseType.Type);
-        Assert.Equal(typeof(string), responseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(string), responseType.ModelMetadata?.ModelType);
 
         var responseFormat = Assert.Single(responseType.ApiResponseFormats);
         Assert.Equal("text/plain", responseFormat.MediaType);
@@ -170,7 +170,7 @@ public class EndpointMetadataApiDescriptionProviderTest
             var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
             Assert.Equal(200, responseType.StatusCode);
             Assert.Equal(typeof(void), responseType.Type);
-            Assert.Equal(typeof(void), responseType.ModelMetadata.ModelType);
+            Assert.Equal(typeof(void), responseType.ModelMetadata?.ModelType);
 
             Assert.Empty(responseType.ApiResponseFormats);
         }
@@ -192,7 +192,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.Equal(201, responseType.StatusCode);
         Assert.Equal(typeof(TimeSpan), responseType.Type);
-        Assert.Equal(typeof(TimeSpan), responseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(TimeSpan), responseType.ModelMetadata?.ModelType);
 
         var responseFormat = Assert.Single(responseType.ApiResponseFormats);
         Assert.Equal("application/custom", responseFormat.MediaType);
@@ -212,7 +212,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.Equal(201, createdResponseType.StatusCode);
         Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
-        Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata?.ModelType);
 
         var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
         Assert.Equal("application/json", createdResponseFormat.MediaType);
@@ -221,7 +221,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.Equal(400, badRequestResponseType.StatusCode);
         Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.Type);
-        Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.ModelMetadata?.ModelType);
 
         var badRequestResponseFormat = Assert.Single(badRequestResponseType.ApiResponseFormats);
         Assert.Equal("application/json", badRequestResponseFormat.MediaType);
@@ -241,7 +241,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.Equal(201, createdResponseType.StatusCode);
         Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
-        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
 
         var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
         Assert.Equal("application/json", createdResponseFormat.MediaType);
@@ -250,7 +250,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         Assert.Equal(400, badRequestResponseType.StatusCode);
         Assert.Equal(typeof(void), badRequestResponseType.Type);
-        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata.ModelType);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
 
         Assert.Empty(badRequestResponseType.ApiResponseFormats);
     }
@@ -524,7 +524,7 @@ public class EndpointMetadataApiDescriptionProviderTest
             .FirstOrDefault();
 
         Assert.NotNull(apiExplorerSettings);
-        Assert.True(apiExplorerSettings.IgnoreApi);
+        Assert.True(apiExplorerSettings!.IgnoreApi);
     }
 
 #nullable disable
@@ -1194,11 +1194,11 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         var descriptionMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointDescriptionMetadata>().SingleOrDefault();
         Assert.NotNull(descriptionMetadata);
-        Assert.Equal("A description", descriptionMetadata.Description);
+        Assert.Equal("A description", descriptionMetadata!.Description);
 
         var summaryMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointSummaryMetadata>().SingleOrDefault();
         Assert.NotNull(summaryMetadata);
-        Assert.Equal("A summary", summaryMetadata.Summary);
+        Assert.Equal("A summary", summaryMetadata!.Summary);
     }
 
     [Fact]
@@ -1225,11 +1225,11 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         var descriptionMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointDescriptionMetadata>().SingleOrDefault();
         Assert.NotNull(descriptionMetadata);
-        Assert.Equal("A description", descriptionMetadata.Description);
+        Assert.Equal("A description", descriptionMetadata!.Description);
 
         var summaryMetadata = apiDescription.ActionDescriptor.EndpointMetadata.OfType<IEndpointSummaryMetadata>().SingleOrDefault();
         Assert.NotNull(summaryMetadata);
-        Assert.Equal("A summary", summaryMetadata.Summary);
+        Assert.Equal("A summary", summaryMetadata!.Summary);
     }
 
     [Theory]
@@ -1302,7 +1302,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     private static TestEndpointRouteBuilder CreateBuilder() =>
         new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
 
-    private static ApiDescription GetApiDescription(Delegate action, string? pattern = null, string displayName = null, IEnumerable<string>? httpMethods = null) =>
+    private static ApiDescription GetApiDescription(Delegate action, string? pattern = null, string? displayName = null, IEnumerable<string>? httpMethods = null) =>
         Assert.Single(GetApiDescriptions(action, pattern, displayName: displayName, httpMethods: httpMethods));
 
     private static void TestAction()
@@ -1332,10 +1332,10 @@ public class EndpointMetadataApiDescriptionProviderTest
 
     private class HostEnvironment : IHostEnvironment
     {
-        public string EnvironmentName { get; set; }
-        public string ApplicationName { get; set; }
-        public string ContentRootPath { get; set; }
-        public IFileProvider ContentRootFileProvider { get; set; }
+        public string EnvironmentName { get; set; } = null!;
+        public string? ApplicationName { get; set; }
+        public string ContentRootPath { get; set; } = null!;
+        public IFileProvider ContentRootFileProvider { get; set; } = null!;
     }
 
     private class TestEndpointRouteBuilder : IEndpointRouteBuilder

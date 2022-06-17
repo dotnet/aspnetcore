@@ -390,9 +390,6 @@ public static class EndpointRouteBuilderExtensions
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder MapFallback(this IEndpointRouteBuilder endpoints, Delegate handler)
     {
-        ArgumentNullException.ThrowIfNull(endpoints);
-        ArgumentNullException.ThrowIfNull(handler);
-
         return endpoints.MapFallback("{*path:nonfile}", handler);
     }
 
@@ -423,10 +420,6 @@ public static class EndpointRouteBuilderExtensions
         [StringSyntax("Route")] string pattern,
         Delegate handler)
     {
-        ArgumentNullException.ThrowIfNull(endpoints);
-        ArgumentNullException.ThrowIfNull(pattern);
-        ArgumentNullException.ThrowIfNull(handler);
-
         return endpoints.Map(RoutePatternFactory.Parse(pattern), handler, httpMethods: null, isFallback: true);
     }
 
