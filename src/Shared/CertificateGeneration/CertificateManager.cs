@@ -346,7 +346,14 @@ internal abstract class CertificateManager
                 return result;
             }
 
-            result = EnsureCertificateResult.ExistingHttpsCertificateTrusted;
+            if (result == EnsureCertificateResult.ValidCertificatePresent)
+            {
+                result = EnsureCertificateResult.ExistingHttpsCertificateTrusted;
+            }
+            else
+            {
+                result = EnsureCertificateResult.NewHttpsCertificateTrusted;
+            }
         }
 
         DisposeCertificates(!isNewCertificate ? certificates : certificates.Append(certificate));

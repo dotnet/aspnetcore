@@ -433,6 +433,9 @@ internal sealed class Program
             case EnsureCertificateResult.ExistingHttpsCertificateTrusted:
                 reporter.Output("Successfully trusted the existing HTTPS certificate.");
                 return Success;
+            case EnsureCertificateResult.NewHttpsCertificateTrusted:
+                reporter.Output("Successfully created and trusted a new HTTPS certificate.");
+                return Success;
             default:
                 reporter.Error("Something went wrong. The HTTPS developer certificate could not be created.");
                 return CriticalError;

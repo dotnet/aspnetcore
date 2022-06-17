@@ -13,6 +13,7 @@ internal enum EnsureCertificateResult
     FailedToTrustTheCertificate,
     UserCancelledTrustStep,
     FailedToMakeKeyAccessible,
-    ExistingHttpsCertificateTrusted
+    ExistingHttpsCertificateTrusted,
+    NewHttpsCertificateTrusted
 }
 
