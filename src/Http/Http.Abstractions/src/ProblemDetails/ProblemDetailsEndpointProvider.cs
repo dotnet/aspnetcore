@@ -12,6 +12,10 @@ public sealed class ProblemDetailsWriterProvider
 {
     private readonly IProblemDetailsWriter[] _writers;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="writers"></param>
     public ProblemDetailsWriterProvider(IEnumerable<IProblemDetailsWriter> writers)
     {
         _writers = writers.ToArray();
