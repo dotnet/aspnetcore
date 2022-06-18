@@ -47,7 +47,7 @@ public sealed class RequestDelegateFactoryOptions
     /// <see cref="RequestDelegateResult.RequestDelegate"/> and <b>before</b> any metadata provided by types in the delegate signature that implement
     /// <see cref="IEndpointMetadataProvider" /> or <see cref="IEndpointParameterMetadataProvider" />. The exception to this general rule is the
     /// <see cref="IAcceptsMetadata"/> that <see cref="RequestDelegateFactory.Create(Delegate, RequestDelegateFactoryOptions?)"/> infers automatically
-    /// without any custom metadata providers which instead is inserted at the start to give it lower precedence. Custom metadata providers can choose to do
+    /// without any custom metadata providers which instead is inserted at the start to give it lower precedence. Custom metadata providers can choose to
     /// insert their metadata at the start to give lower precedence, but this is unusual.
     /// </remarks>
     public IList<object>? EndpointMetadata { get; init; }

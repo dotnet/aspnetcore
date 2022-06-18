@@ -123,13 +123,10 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
                 }
             }
 
-            if (_changeTokenRegistrations is not null)
+            if (_changeTokenRegistrations is { Count: > 0 })
             {
-                foreach (var registration in _changeTokenRegistrations)
-                {
-                    disposables ??= new List<IDisposable>();
-                    disposables.Add(registration);
-                }
+                disposables ??= new List<IDisposable>();
+                disposables.AddRange(_changeTokenRegistrations);
             }
         }
 
@@ -155,16 +152,18 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
 
         lock (_lock)
         {
-            if (_endpoints is null)
+            if (_endpoints is not null)
             {
-                // Now that we're caching the _enpoints, we're responsible for keeping them up-to-date even if the caller
-                // hasn't started listening for changes themselves yet.
-                EnsureChangeTokenInitialized();
-
-                // Note: we can't use DataSourceDependentCache here because we also need to handle a list of change
-                // tokens, which is a complication most of our code doesn't have.
-                CreateEndopintsUnsynchronized();
+                return;
             }
+
+            // Now that we're caching the _enpoints, we're responsible for keeping them up-to-date even if the caller
+            // hasn't started listening for changes themselves yet.
+            EnsureChangeTokenInitialized();
+
+            // Note: we can't use DataSourceDependentCache here because we also need to handle a list of change
+            // tokens, which is a complication most of our code doesn't have.
+            CreateEndopintsUnsynchronized();
         }
     }
 
@@ -178,11 +177,13 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
 
         lock (_lock)
         {
-            if (_consumerChangeToken is null)
+            if (_consumerChangeToken is not null)
             {
-                // This is our first time initializing the change token, so the collection has "changed" from nothing.
-                CreateChangeTokenUnsynchronized(collectionChanged: true);
+                return;
             }
+
+            // This is our first time initializing the change token, so the collection has "changed" from nothing.
+            CreateChangeTokenUnsynchronized(collectionChanged: true);
         }
     }
 

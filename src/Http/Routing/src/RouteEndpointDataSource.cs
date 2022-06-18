@@ -237,11 +237,11 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
     private struct RouteEntry
     {
-        public required RoutePattern RoutePattern { get; init; }
-        public required Delegate RouteHandler { get; init; }
-        public required IEnumerable<string>? HttpMethods { get; init; }
-        public required bool IsFallback { get; init; }
-        public required ThrowOnAddAfterBuildCollection Conventions { get; init; }
+        public RoutePattern RoutePattern { get; init; }
+        public Delegate RouteHandler { get; init; }
+        public IEnumerable<string>? HttpMethods { get; init; }
+        public bool IsFallback { get; init; }
+        public ThrowOnAddAfterBuildCollection Conventions { get; init; }
     }
 
     // This private class is only exposed to internal code via ICollection<Action<EndpointBuilder>> in RouteEndpointBuilder where only Add is called.
