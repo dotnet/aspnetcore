@@ -692,6 +692,15 @@ public class StreamingHub : TestHub
         }
     }
 
+    public async IAsyncEnumerable<string> ExceptionAsyncEnumerable()
+    {
+        await Task.Yield();
+        throw new Exception("Exception from async enumerable");
+#pragma warning disable CS0162 // Unreachable code detected
+        yield break;
+#pragma warning restore CS0162 // Unreachable code detected
+    }
+
     public async Task<IAsyncEnumerable<string>> CounterAsyncEnumerableAsync(int count)
     {
         await Task.Yield();
