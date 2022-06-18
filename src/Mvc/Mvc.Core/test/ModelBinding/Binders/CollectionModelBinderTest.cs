@@ -205,6 +205,25 @@ public class CollectionModelBinderTest
         Assert.Empty(boundCollection.Model);
     }
 
+    [Fact]
+    public async Task BindSimpleCollection_RawValueWithNull_ReturnsListWithoutNull()
+    {
+        // Arrange
+        var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
+        var valueProvider = new SimpleValueProvider
+            {
+                { "someName", "420" },
+            };
+        var context = GetModelBindingContext(valueProvider);
+
+        // Act
+        var boundCollection = await binder.BindSimpleCollection(context, new ValueProviderResult(new[] { null, "42", "100", null, "200" }));
+
+        // Assert
+        Assert.NotNull(boundCollection.Model);
+        Assert.Equal(new[] { 42, 100, 200 }, boundCollection.Model);
+    }
+
     private IActionResult ActionWithListParameter(List<string> parameter) => null;
 
     [Theory]
