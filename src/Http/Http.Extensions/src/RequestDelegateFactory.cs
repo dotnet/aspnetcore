@@ -1648,9 +1648,9 @@ public static partial class RequestDelegateFactory
 
     private static void InsertInferredAcceptsMetadata(FactoryContext factoryContext, Type type, string[] contentTypes)
     {
-        // Unlike most metadata that will probably to be added by filters or metadata providers, we insert the automatically-inferred AcceptsMetadata
-        // to the beginning of the metadata to give it the lowest precedence. It really doesn't makes sense for this metadata to be overridden but
-        // we're preserving the old behavior here out of an abundance of caution.
+        // Insert the automatically-inferred AcceptsMetadata at the beginning of the list to give it the lowest precedence.
+        // It really doesn't makes sense for this metadata to be overridden, but we're preserving the old behavior out of an abundance of caution.
+        // I suspect most filters and metadata providers will just add their metadata to the end of the list.
         factoryContext.Metadata.Insert(0, new AcceptsMetadata(type, factoryContext.AllowEmptyRequestBody, contentTypes));
     }
 

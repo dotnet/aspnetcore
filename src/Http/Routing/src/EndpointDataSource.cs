@@ -26,11 +26,11 @@ public abstract class EndpointDataSource
     public abstract IReadOnlyList<Endpoint> Endpoints { get; }
 
     /// <summary>
-    /// Get the <see cref="RouteEndpoint"/> instances for this <see cref="EndpointDataSource"/> given the specified <see cref="RouteGroupContext.Prefix"/>.
+    /// Get the <see cref="Endpoint"/> instances for this <see cref="EndpointDataSource"/> given the specified <see cref="RouteGroupContext.Prefix"/> and <see cref="RouteGroupContext.Conventions"/>.
     /// </summary>
-    /// <param name="context">Details about how the returned <see cref="RouteEndpoint"/> instances should be grouped and a reference to application services.</param>
+    /// <param name="context">Details about how the returned <see cref="Endpoint"/> instances should be grouped and a reference to application services.</param>
     /// <returns>
-    /// Returns a read-only collection of <see cref="RouteEndpoint"/> instances given the specified group <see cref="RouteGroupContext.Prefix"/> and <see cref="RouteGroupContext.Conventions"/>.
+    /// Returns a read-only collection of <see cref="Endpoint"/> instances given the specified group <see cref="RouteGroupContext.Prefix"/> and <see cref="RouteGroupContext.Conventions"/>.
     /// </returns>
     public virtual IReadOnlyList<Endpoint> GetEndpointGroup(RouteGroupContext context)
     {

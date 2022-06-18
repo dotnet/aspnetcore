@@ -35,12 +35,6 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
     ICollection<EndpointDataSource> IEndpointRouteBuilder.DataSources => _dataSources;
     void IEndpointConventionBuilder.Add(Action<EndpointBuilder> convention) => _conventions.Add(convention);
 
-    // For testing
-    // This accounts for nested groups and gives the full group prefix, not just the prefix supplied to the last call to MapGroup
-    // If the _outerEndpointRouteBuilder is not a RouteGroupBuilder (like a wrapper around RouteGroupBuilder) this will not have
-    // the final prefix used in GroupDataSource.GetGroupedEndpoints() which is why this is not public even though it seems useful.
-    internal RoutePattern GroupPrefix => RoutePatternFactory.Combine((_outerEndpointRouteBuilder as RouteGroupBuilder)?.GroupPrefix, _partialPrefix);
-
     private sealed class GroupEndpointDataSource : EndpointDataSource, IDisposable
     {
         private readonly RouteGroupBuilder _routeGroupBuilder;

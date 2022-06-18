@@ -23,9 +23,7 @@ public class GroupTest
     public async Task Prefix_CanBeEmpty()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
-
         var group = builder.MapGroup("");
-        Assert.Equal("", group.GroupPrefix.RawText);
 
         group.MapGet("/{id}", (int id, HttpContext httpContext) =>
         {
@@ -56,9 +54,7 @@ public class GroupTest
     public async Task PrefixWithRouteParameter_CanBeUsed()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
-
         var group = builder.MapGroup("/{org}");
-        Assert.Equal("/{org}", group.GroupPrefix.RawText);
 
         group.MapGet("/{id}", (string org, int id, HttpContext httpContext) =>
         {
@@ -92,9 +88,7 @@ public class GroupTest
     public async Task NestedPrefixWithRouteParameters_CanBeUsed()
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
-
         var group = builder.MapGroup("/{org}").MapGroup("/{id}");
-        Assert.Equal("/{org}/{id}", group.GroupPrefix.RawText);
 
         group.MapGet("/", (string org, int id, HttpContext httpContext) =>
         {

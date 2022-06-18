@@ -49,10 +49,10 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     {
         get
         {
-            var endpoints = new List<RouteEndpoint>(_routeEntries.Count);
-            foreach (var entry in _routeEntries)
+            var endpoints = new RouteEndpoint[_routeEntries.Count];
+            for (int i = 0; i < _routeEntries.Count; i++)
             {
-                endpoints.Add((RouteEndpoint)CreateRouteEndpointBuilder(entry).Build());
+                endpoints[i] = (RouteEndpoint)CreateRouteEndpointBuilder(_routeEntries[i]).Build();
             }
             return endpoints;
         }
@@ -60,10 +60,10 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
     public override IReadOnlyList<RouteEndpoint> GetEndpointGroup(RouteGroupContext context)
     {
-        var endpoints = new List<RouteEndpoint>(_routeEntries.Count);
-        foreach (var entry in _routeEntries)
+        var endpoints = new RouteEndpoint[_routeEntries.Count];
+        for (int i = 0; i < _routeEntries.Count; i++)
         {
-            endpoints.Add((RouteEndpoint)CreateRouteEndpointBuilder(entry, context.Prefix, context.Conventions).Build());
+            endpoints[i] = (RouteEndpoint)CreateRouteEndpointBuilder(_routeEntries[i], context.Prefix, context.Conventions).Build();
         }
         return endpoints;
     }
@@ -82,9 +82,9 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     }
 
     [UnconditionalSuppressMessage("Trimmer", "IL2026",
-        Justification = "We surface a RequireUnreferencedCode in the call to Map method adding this EndpointDataSource. " +
-                        "The trimmer is unable to infer this.")]
-    private RouteEndpointBuilder CreateRouteEndpointBuilder(RouteEntry entry, RoutePattern? groupPrefix = null, IReadOnlyList<Action<EndpointBuilder>>? groupConventions = null)
+        Justification = "We surface a RequireUnreferencedCode in the call to Map method adding this EndpointDataSource. The trimmer is unable to infer this.")]
+    private RouteEndpointBuilder CreateRouteEndpointBuilder(
+        RouteEntry entry, RoutePattern? groupPrefix = null, IReadOnlyList<Action<EndpointBuilder>>? groupConventions = null)
     {
         var pattern = RoutePatternFactory.Combine(groupPrefix, entry.RoutePattern);
         var handler = entry.RouteHandler;
