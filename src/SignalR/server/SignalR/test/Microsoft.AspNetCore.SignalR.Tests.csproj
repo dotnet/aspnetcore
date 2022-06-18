@@ -26,6 +26,8 @@
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="System.Reactive.Linq" />
+    <!-- Pull in requested STEW version consistently. -->
+    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
 </Project>

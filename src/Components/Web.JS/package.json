@@ -17,7 +17,7 @@
     "@aspnet/signalr": "link:../../SignalR/clients/ts/signalr",
     "@aspnet/signalr-protocol-msgpack": "link:../../SignalR/clients/ts/signalr-protocol-msgpack",
     "@dotnet/jsinterop": "https://pkgs.dev.azure.com/dnceng/public/_apis/packaging/feeds/40ffd17d-412e-4e95-b1ca-c5e6b3774cd2/npm/packages/@dotnet/jsinterop/versions/3.0.0-preview9.19415.3/content",
-    "@types/emscripten": "^1.39.3",
+    "@types/emscripten": "1.39.3",
     "@types/jest": "^24.9.1",
     "@types/jsdom": "11.0.6",
     "@typescript-eslint/eslint-plugin": "^1.13.0",
@@ -27,16 +27,15 @@
     "rimraf": "^2.7.1",
     "ts-jest": "^24.3.0",
     "ts-loader": "^4.4.1",
-    "typescript": "^3.8.3",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "typescript": "~3.8.3",
+    "webpack": "~4.42.1",
+    "webpack-cli": "3.3.11"
   },
   "resolutions": {
     "**/set-value": "^2.0.1",
     "bl": ">=2.2.1",
     "lodash": ">=4.17.21",
     "tar": ">=4.4.18",
-    "url-parse": ">=1.5.8",
     "minimist": ">=1.2.6",
     "ansi-regex": "^4.1.1"
   }

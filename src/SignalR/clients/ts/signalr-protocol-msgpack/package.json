@@ -50,6 +50,7 @@
     "buffer": "^5.0.8"
   },
   "resolutions": {
-    "url-parse": ">=1.5.8"
+    "//": "Avoid versions that drop support for TypeScript < 3.7",
+    "@types/node": "~10.9.4"
   }
 }

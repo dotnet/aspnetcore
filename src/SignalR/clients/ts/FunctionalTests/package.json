@@ -13,7 +13,6 @@
     "@types/debug": "0.0.30",
     "@types/jasmine": "^2.8.8",
     "@types/karma": "^1.7.5",
-    "@types/node": "^9.6.28",
     "debug": "^3.1.0",
     "es6-promise": "^4.2.4",
     "jasmine": "^3.2.0",
@@ -32,8 +31,10 @@
     "karma-summary-reporter": "^1.6.0",
     "rxjs": "^6.3.3",
     "ts-node": "^8.6.2",
-    "typescript": "^3.7.5",
-    "ws": " ^6.0.0"
+    "typescript": "~3.7.5",
+    "ws": " ^6.0.0",
+    "//": "Avoid versions that drop support for TypeScript < 3.8",
+    "@types/node": "<9.6.58"
   },
   "scripts": {
     "preclean": "cd .. && yarn run build",
@@ -53,10 +54,11 @@
   },
   "resolutions": {
     "lodash": ">=4.7.14",
-    "url-parse": ">=1.5.8",
     "minimist": ">=1.2.6",
     "async": ">=3.2.2",
-    "ansi-regex": "^4.1.1"
+    "ansi-regex": "^4.1.1",
+    "//": "Avoid versions that drop support for TypeScript < 3.8",
+    "@types/bluebird": "<3.5.35"
   },
   "author": "",
   "license": "Apache-2.0"
