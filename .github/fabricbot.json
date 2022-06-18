@@ -3367,7 +3367,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "${issueAuthor}, this change will be considered for inclusion in the blog post for the release it'll ship in. Nice work!\n\nPlease ensure that the original comment in this thread contains a clear explanation of what the change does, why it's important (what problem does it solve?), and, if relevant, include things like code samples and/or performance numbers.\n\nThis content may not be exactly what goes into the blog post, but it will help the team putting together the announcement.\n\nThanks!"
+              "comment": "@${issueAuthor}, this change will be considered for inclusion in the blog post for the release it'll ship in. Nice work!\n\nPlease ensure that the original comment in this thread contains a clear explanation of what the change does, why it's important (what problem does it solve?), and, if relevant, include things like code samples and/or performance numbers.\n\nThis content may not be exactly what goes into the blog post, but it will help the team putting together the announcement.\n\nThanks!"
             }
           }
         ]
