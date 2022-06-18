@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
@@ -20,7 +19,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
     private readonly object _lock = new();
     private readonly ICollection<EndpointDataSource> _dataSources;
 
-    private IReadOnlyList<Endpoint>? _endpoints;
+    private List<Endpoint>? _endpoints;
     private IChangeToken? _consumerChangeToken;
     private CancellationTokenSource? _cts;
     private List<IDisposable>? _changeTokenRegistrations;
@@ -149,6 +148,11 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
     [MemberNotNull(nameof(_endpoints))]
     private void EnsureEndpointsInitialized()
     {
+        if (_endpoints is not null)
+        {
+            return;
+        }
+
         lock (_lock)
         {
             if (_endpoints is null)
@@ -159,7 +163,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
 
                 // Note: we can't use DataSourceDependentCache here because we also need to handle a list of change
                 // tokens, which is a complication most of our code doesn't have.
-                _endpoints = _dataSources.SelectMany(d => d.Endpoints).ToArray();
+                CreateEndopintsUnsynchronized();
             }
         }
     }
@@ -167,6 +171,11 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
     [MemberNotNull(nameof(_consumerChangeToken))]
     private void EnsureChangeTokenInitialized()
     {
+        if (_consumerChangeToken is not null)
+        {
+            return;
+        }
+
         lock (_lock)
         {
             if (_consumerChangeToken is null)
@@ -180,6 +189,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
     private void HandleChange(bool collectionChanged)
     {
         CancellationTokenSource? oldTokenSource = null;
+        List<IDisposable>? oldChangeTokenRegistrations = null;
 
         lock (_lock)
         {
@@ -196,6 +206,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
             // 3. B executes some code in its callback, but needs to re-register callback
             //    in the same callback.
             oldTokenSource = _cts;
+            oldChangeTokenRegistrations = _changeTokenRegistrations;
 
             // Don't create a new change token if no one is listening.
             if (oldTokenSource is not null)
@@ -209,12 +220,21 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
             if (_endpoints is not null)
             {
                 // Refresh the endpoints from data source so that callbacks can get the latest endpoints.
-                _endpoints = _dataSources.SelectMany(d => d.Endpoints).ToArray();
+                CreateEndopintsUnsynchronized();
             }
         }
 
-        // Raise consumer callbacks. Any new callback registration would happen on the new token
-        // created in earlier step. Avoid raising callbacks in a lock to avoid possible deadlocks.
+        // Disposing registrations can block on user defined code on running on other threads that could try to acquire the _lock.
+        if (collectionChanged && oldChangeTokenRegistrations is not null)
+        {
+            foreach (var registration in oldChangeTokenRegistrations)
+            {
+                registration.Dispose();
+            }
+        }
+
+        // Raise consumer callbacks. Any new callback registration would happen on the new token created in earlier step.
+        // Avoid raising callbacks inside a lock.
         oldTokenSource?.Cancel();
     }
 
@@ -226,25 +246,24 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
 
         if (collectionChanged)
         {
-            if (_changeTokenRegistrations is null)
-            {
-                _changeTokenRegistrations = new();
-            }
-            else
-            {
-                foreach (var registration in _changeTokenRegistrations)
-                {
-                    registration.Dispose();
-                }
-                _changeTokenRegistrations.Clear();
-            }
-
+            _changeTokenRegistrations = new();
             foreach (var dataSource in _dataSources)
             {
                 _changeTokenRegistrations.Add(ChangeToken.OnChange(
                     dataSource.GetChangeToken,
                     () => HandleChange(collectionChanged: false)));
             }
+        }
+    }
+
+    [MemberNotNull(nameof(_endpoints))]
+    private void CreateEndopintsUnsynchronized()
+    {
+        _endpoints = new List<Endpoint>();
+
+        foreach (var dataSource in _dataSources)
+        {
+            _endpoints.AddRange(dataSource.Endpoints);
         }
     }
 

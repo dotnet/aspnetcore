@@ -1158,17 +1158,18 @@ public static class RoutePatternFactory
         Func<int, string, Action<T>>? checkDuplicates = null,
         string? rawText = null)
     {
-        if (leftList.Count is 0)
+        var leftCount = leftList.Count;
+        if (leftCount is 0)
         {
             return rightList;
         }
-        if (rightList.Count is 0)
+
+        var rightCount = rightList.Count;
+        if (rightCount is 0)
         {
             return leftList;
         }
 
-        var leftCount = leftList.Count;
-        var rightCount = rightList.Count;
         var combinedList = new T[leftCount + rightCount];
         var check = checkDuplicates?.Invoke(combinedList.Length, rawText!);
 
@@ -1178,6 +1179,7 @@ public static class RoutePatternFactory
             check?.Invoke(item);
             combinedList[i] = item;
         }
+
         for (int i = 0; i < rightCount; i++)
         {
             var item = rightList[i];

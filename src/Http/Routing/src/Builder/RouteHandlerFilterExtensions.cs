@@ -108,14 +108,14 @@ public static class RouteHandlerFilterExtensions
         {
             // Even if we split RouteFilterMetadata across multiple metadata objects, RouteEndointDataSource will still use all of them.
             // We're just trying to be good citizens and keep the Endpoint.Metadata as small as possible.
-            RouteFilterMetadata? filterMetadata = null;
+            RouteHandlerFilterMetadata? filterMetadata = null;
 
             foreach (var item in endpointBuilder.Metadata)
             {
-                if (item is RouteFilterMetadata metadata)
+                if (item is RouteHandlerFilterMetadata metadata)
                 {
+                    // Don't break early in case there is somehow higher priority metadata later in the list.
                     filterMetadata = metadata;
-                    break;
                 }
             }
 

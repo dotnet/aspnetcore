@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing;
 
-internal class RouteFilterMetadata
+internal class RouteHandlerFilterMetadata
 {
     public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>> FilterFactories { get; } = new();
 }

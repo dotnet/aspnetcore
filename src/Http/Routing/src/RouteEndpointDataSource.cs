@@ -45,7 +45,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         return entry.Conventions;
     }
 
-    public override IReadOnlyList<Endpoint> Endpoints
+    public override IReadOnlyList<RouteEndpoint> Endpoints
     {
         get
         {
@@ -58,7 +58,6 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         }
     }
 
-    // I just want to point out that we're using fancy covariant returns introduced by C# 9! Not that it matters here :D
     public override IReadOnlyList<RouteEndpoint> GetEndpointGroup(RouteGroupContext context)
     {
         var endpoints = new List<RouteEndpoint>(_routeEntries.Count);
@@ -74,7 +73,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     // For testing
     internal RouteEndpointBuilder GetSingleRouteEndpointBuilder()
     {
-        if (_routeEntries.Count != 1)
+        if (_routeEntries.Count is not 1)
         {
             throw new InvalidOperationException($"There are {_routeEntries.Count} endpoints defined! This can only be called for a single endpoint.");
         }
@@ -122,11 +121,11 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             return factoryCreatedRequestDelegate(context);
         };
 
-        // The Map methods don't support customizing the order apart from using int.MaxValue to give MapFallback the lowest precedences.
+        // The Map methods don't support customizing the order apart from using int.MaxValue to give MapFallback the lowest priority.
         // Otherwise, we always use the default of 0 unless a convention changes it later.
         var order = entry.IsFallback ? int.MaxValue : 0;
 
-        var builder = new RouteEndpointBuilder(redirectedRequestDelegate, pattern, order)
+        RouteEndpointBuilder builder = new(redirectedRequestDelegate, pattern, order)
         {
             DisplayName = displayName,
             ApplicationServices = _applicationServices,
@@ -152,7 +151,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             }
         }
 
-        // Add delegate attributes as metadata before programmatic conventions.
+        // Add delegate attributes as metadata before entry-specific conventions but after group conventions.
         var attributes = handler.Method.GetCustomAttributes();
         if (attributes is not null)
         {
@@ -170,21 +169,20 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
         foreach (var item in builder.Metadata)
         {
-            if (item is RouteFilterMetadata filterMetadata)
+            if (item is RouteHandlerFilterMetadata filterMetadata)
             {
                 routeHandlerFilterFactories ??= new();
                 routeHandlerFilterFactories.AddRange(filterMetadata.FilterFactories);
             }
         }
 
-        var routeParams = pattern.Parameters;
-        var routeParamNames = new List<string>(routeParams.Count);
-        foreach (var parameter in routeParams)
+        var routeParamNames = new List<string>(pattern.Parameters.Count);
+        foreach (var parameter in pattern.Parameters)
         {
             routeParamNames.Add(parameter.Name);
         }
 
-        var factoryOptions = new RequestDelegateFactoryOptions
+        RequestDelegateFactoryOptions factoryOptions = new()
         {
             ServiceProvider = _applicationServices,
             RouteParameterNames = routeParamNames,
@@ -239,11 +237,11 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
     private struct RouteEntry
     {
-        public RoutePattern RoutePattern { get; init; }
-        public Delegate RouteHandler { get; init; }
-        public IEnumerable<string>? HttpMethods { get; init; }
-        public bool IsFallback { get; init; }
-        public ThrowOnAddAfterBuildCollection Conventions { get; init; }
+        public required RoutePattern RoutePattern { get; init; }
+        public required Delegate RouteHandler { get; init; }
+        public required IEnumerable<string>? HttpMethods { get; init; }
+        public required bool IsFallback { get; init; }
+        public required ThrowOnAddAfterBuildCollection Conventions { get; init; }
     }
 
     // This private class is only exposed to internal code via ICollection<Action<EndpointBuilder>> in RouteEndpointBuilder where only Add is called.

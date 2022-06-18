@@ -75,7 +75,7 @@ public abstract class EndpointDataSource
 
             // The RoutePattern, RequestDelegate, Order and DisplayName can all be overridden by non-group-aware conventions.
             // Unlike with metadata, if a convention is applied to a group that changes any of these, I would expect these
-            // to be overridden as there's reasonable way to merge these properties.
+            // to be overridden as there's no reasonable way to merge these properties.
             wrappedEndpoints[i] = (RouteEndpoint)routeEndpointBuilder.Build();
         }
 
@@ -83,7 +83,6 @@ public abstract class EndpointDataSource
     }
 
     // We don't implement DebuggerDisplay directly on the EndpointDataSource base type because this could have side effects.
-    // REVIEW: Should we just make this public/protected? Derived types that can provide endpoints without side effects might find this useful.
     internal static string GetDebuggerDisplayStringForEndpoints(IReadOnlyList<Endpoint>? endpoints)
     {
         if (endpoints is null)
@@ -154,7 +153,7 @@ public abstract class EndpointDataSource
                 }
 
                 sb.Append(key);
-                sb.Append('=');
+                sb.Append(" = ");
 
                 if (value is null)
                 {
