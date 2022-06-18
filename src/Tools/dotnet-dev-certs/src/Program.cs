@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools;
 
 internal sealed class Program
 {
+    // NOTE: Exercise caution when touching these exit codes, since existing tooling
+    // might depend on some of these values.
     private const int CriticalError = -1;
     private const int Success = 0;
     private const int ErrorCreatingTheCertificate = 1;
