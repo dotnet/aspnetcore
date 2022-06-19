@@ -37,7 +37,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             RouteHandler = routeHandler,
             HttpMethods = httpMethods,
             IsFallback = isFallback,
-            Conventions = new ThrowOnAddAfterBuildCollection(),
+            Conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection(),
         };
 
         _routeEntries.Add(entry);
@@ -131,10 +131,9 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             ApplicationServices = _applicationServices,
         };
 
-        // We own EndpointBuilder.Metadata (in another assembly), so we know it's just a List.
-        var metadata = (List<object>)builder.Metadata;
-
-        // Add MethodInfo as first metadata item
+        // Add MethodInfo and HttpMethodMetadata (if any) as first metadata items as they are intrinsic to the route much like
+        // the pattern or default display name. This gives visibility to conventions like WithOpenApi() to intrinsic route details
+        // (namely the MethodInfo) even when applied early as group conventions.
         builder.Metadata.Add(handler.Method);
 
         if (entry.HttpMethods is not null)
@@ -155,10 +154,13 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         var attributes = handler.Method.GetCustomAttributes();
         if (attributes is not null)
         {
-            metadata.AddRange(attributes);
+            foreach (var attribute in attributes)
+            {
+                builder.Metadata.Add(attribute);
+            }
         }
 
-        entry.Conventions.HasBeenBuilt = true;
+        entry.Conventions.IsReadonly = true;
         foreach (var entrySpecificConvention in entry.Conventions)
         {
             entrySpecificConvention(builder);
@@ -188,7 +190,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             RouteParameterNames = routeParamNames,
             ThrowOnBadRequest = _throwOnBadRequest,
             DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
-            EndpointMetadata = metadata,
+            EndpointMetadata = builder.Metadata,
             RouteHandlerFilterFactories = routeHandlerFilterFactories,
         };
 
@@ -241,17 +243,19 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         public Delegate RouteHandler { get; init; }
         public IEnumerable<string>? HttpMethods { get; init; }
         public bool IsFallback { get; init; }
-        public ThrowOnAddAfterBuildCollection Conventions { get; init; }
+        public ThrowOnAddAfterEndpointBuiltConventionCollection Conventions { get; init; }
     }
 
     // This private class is only exposed to internal code via ICollection<Action<EndpointBuilder>> in RouteEndpointBuilder where only Add is called.
-    private sealed class ThrowOnAddAfterBuildCollection : List<Action<EndpointBuilder>>, ICollection<Action<EndpointBuilder>>
+    private sealed class ThrowOnAddAfterEndpointBuiltConventionCollection : List<Action<EndpointBuilder>>, ICollection<Action<EndpointBuilder>>
     {
-        public bool HasBeenBuilt { get; set; }
+        // We throw if someone tries to add conventions to the RouteEntry after endpoints have already been resolved meaning the conventions
+        // will not be observed given RouteEndpointDataSource is not meant to be dynamic and uses NullChangeToken.Singleton.
+        public bool IsReadonly { get; set; }
 
         void ICollection<Action<EndpointBuilder>>.Add(Action<EndpointBuilder> convention)
         {
-            if (HasBeenBuilt)
+            if (IsReadonly)
             {
                 throw new InvalidOperationException(Resources.RouteEndpointDataSource_ConventionsCannotBeModifiedAfterBuild);
             }

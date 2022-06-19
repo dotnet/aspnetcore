@@ -163,7 +163,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
 
             // Note: we can't use DataSourceDependentCache here because we also need to handle a list of change
             // tokens, which is a complication most of our code doesn't have.
-            CreateEndopintsUnsynchronized();
+            CreateEndpointsUnsynchronized();
         }
     }
 
@@ -221,7 +221,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
             if (_endpoints is not null)
             {
                 // Refresh the endpoints from data source so that callbacks can get the latest endpoints.
-                CreateEndopintsUnsynchronized();
+                CreateEndpointsUnsynchronized();
             }
         }
 
@@ -258,7 +258,7 @@ public sealed class CompositeEndpointDataSource : EndpointDataSource, IDisposabl
     }
 
     [MemberNotNull(nameof(_endpoints))]
-    private void CreateEndopintsUnsynchronized()
+    private void CreateEndpointsUnsynchronized()
     {
         _endpoints = new List<Endpoint>();
 

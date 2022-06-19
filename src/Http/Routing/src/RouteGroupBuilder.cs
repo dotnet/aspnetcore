@@ -53,21 +53,41 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
 
         public IReadOnlyList<Endpoint> GetGroupedEndpointsWithNullablePrefix(RoutePattern? prefix, IReadOnlyList<Action<EndpointBuilder>> conventions, IServiceProvider applicationServices)
         {
-            if (_routeGroupBuilder._dataSources.Count is 0)
+            return _routeGroupBuilder._dataSources.Count switch
             {
-                return Array.Empty<Endpoint>();
-            }
+                0 => Array.Empty<Endpoint>(),
+                1 => _routeGroupBuilder._dataSources[0].GetEndpointGroup(GetNextRouteGroupContext(prefix, conventions, applicationServices)),
+                _ => SelectEndpointsFromAllDataSources(GetNextRouteGroupContext(prefix, conventions, applicationServices)),
+            };
+        }
 
+        public override IChangeToken GetChangeToken() => _routeGroupBuilder._dataSources.Count switch
+        {
+            0 => NullChangeToken.Singleton,
+            1 => _routeGroupBuilder._dataSources[0].GetChangeToken(),
+            _ => GetCompositeChangeToken(),
+        };
+
+        public void Dispose()
+        {
+            _compositeDataSource?.Dispose();
+
+            foreach (var dataSource in _routeGroupBuilder._dataSources)
+            {
+                (dataSource as IDisposable)?.Dispose();
+            }
+        }
+
+        private RouteGroupContext GetNextRouteGroupContext(RoutePattern? prefix, IReadOnlyList<Action<EndpointBuilder>> conventions, IServiceProvider applicationServices)
+        {
             var fullPrefix = RoutePatternFactory.Combine(prefix, _routeGroupBuilder._partialPrefix);
             // Apply conventions passed in from the outer group first so their metadata is added earlier in the list at a lower precedent.
             var combinedConventions = RoutePatternFactory.CombineLists(conventions, _routeGroupBuilder._conventions);
-            var context = new RouteGroupContext(fullPrefix, combinedConventions, applicationServices);
+            return new RouteGroupContext(fullPrefix, combinedConventions, applicationServices);
+        }
 
-            if (_routeGroupBuilder._dataSources.Count is 1)
-            {
-                return _routeGroupBuilder._dataSources[0].GetEndpointGroup(context);
-            }
-
+        private IReadOnlyList<Endpoint> SelectEndpointsFromAllDataSources(RouteGroupContext context)
+        {
             var groupedEndpoints = new List<Endpoint>();
 
             foreach (var dataSource in _routeGroupBuilder._dataSources)
@@ -78,18 +98,8 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
             return groupedEndpoints;
         }
 
-        public override IChangeToken GetChangeToken()
+        private IChangeToken GetCompositeChangeToken()
         {
-            if (_routeGroupBuilder._dataSources.Count is 0)
-            {
-                return NullChangeToken.Singleton;
-            }
-
-            if (_routeGroupBuilder._dataSources.Count is 1)
-            {
-                return _routeGroupBuilder._dataSources[0].GetChangeToken();
-            }
-
             // We are not guarding against concurrent RouteGroupBuilder._dataSources mutation.
             // This is only to avoid double initialization of _compositeDataSource if GetChangeToken() is called concurrently.
             lock (_routeGroupBuilder._dataSources)
@@ -98,16 +108,6 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
             }
 
             return _compositeDataSource.GetChangeToken();
-        }
-
-        public void Dispose()
-        {
-            _compositeDataSource?.Dispose();
-
-            foreach (var dataSource in _routeGroupBuilder._dataSources)
-            {
-                (dataSource as IDisposable)?.Dispose();
-            }
         }
     }
 }
