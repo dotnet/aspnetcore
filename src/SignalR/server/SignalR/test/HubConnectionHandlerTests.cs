@@ -2070,6 +2070,10 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     [InlineData(nameof(StreamingHub.ExceptionAsyncEnumerable), null)]
     [InlineData(nameof(StreamingHub.ExceptionStream), "Exception: Exception from channel")]
     [InlineData(nameof(StreamingHub.ExceptionStream), null)]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionStream), "ChannelClosedException: ChannelClosedException from channel")]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionStream), null)]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionInnerExceptionStream), "Exception: ChannelClosedException from channel")]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionInnerExceptionStream), null)]
     public async Task ReceiveCorrectErrorFromStreamThrowing(string streamMethod, string detailedError)
     {
         bool ExpectedErrors(WriteContext writeContext)

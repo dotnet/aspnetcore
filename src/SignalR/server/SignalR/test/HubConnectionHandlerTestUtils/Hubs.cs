@@ -729,6 +729,20 @@ public class StreamingHub : TestHub
         return channel.Reader;
     }
 
+    public ChannelReader<int> ChannelClosedExceptionStream()
+    {
+        var channel = Channel.CreateUnbounded<int>();
+        channel.Writer.TryComplete(new ChannelClosedException("ChannelClosedException from channel"));
+        return channel.Reader;
+    }
+
+    public ChannelReader<int> ChannelClosedExceptionInnerExceptionStream()
+    {
+        var channel = Channel.CreateUnbounded<int>();
+        channel.Writer.TryComplete(new ChannelClosedException(new Exception("ChannelClosedException from channel")));
+        return channel.Reader;
+    }
+
     public ChannelReader<int> ThrowStream()
     {
         throw new Exception("Throw from hub method");
