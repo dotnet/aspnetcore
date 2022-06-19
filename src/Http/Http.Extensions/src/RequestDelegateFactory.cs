@@ -104,6 +104,7 @@ public static partial class RequestDelegateFactory
 
     private static readonly ConstructorInfo DefaultRouteHandlerInvocationContextConstructor = typeof(DefaultRouteHandlerInvocationContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
     private static readonly MethodInfo RouteHandlerInvocationContextGetArgument = typeof(RouteHandlerInvocationContext).GetMethod(nameof(RouteHandlerInvocationContext.GetArgument))!;
+    private static readonly PropertyInfo ListIndexer = typeof(IList<object>).GetProperty("Item")!;
     private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(RouteHandlerInvocationContext), "context");
     private static readonly MemberExpression FilterContextHttpContextExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerInvocationContext).GetProperty(nameof(RouteHandlerInvocationContext.HttpContext))!);
     private static readonly MemberExpression FilterContextArgumentsExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerInvocationContext).GetProperty(nameof(RouteHandlerInvocationContext.Arguments))!);
@@ -547,9 +548,9 @@ public static partial class RequestDelegateFactory
                 }
                 else
                 {
-                    // We box if dynamic code isn't supportedfactoryContext.ContextArgAccess.Add(
+                    // We box if dynamic code isn't supported
                     factoryContext.ContextArgAccess.Add(Expression.Convert(
-                        Expression.Property(FilterContextArgumentsExpr, "Item", Expression.Constant(i)),
+                        Expression.Property(FilterContextArgumentsExpr, ListIndexer, Expression.Constant(i)),
                     parameters[i].ParameterType));
                 }
             }
