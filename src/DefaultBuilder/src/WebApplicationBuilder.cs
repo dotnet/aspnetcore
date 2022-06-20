@@ -180,8 +180,11 @@ public sealed class WebApplicationBuilder
             // Don't add more than one instance of the middleware
             if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
             {
-                _builtApplication.UseAuthentication();
-                _builtApplication.UseAuthorization();
+                // The Use invocations will set the property on the outer pipeline,
+                // but we want to set it on the inner pipeline as well
+                _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
+                app.UseAuthentication();
+                app.UseAuthorization();
             }
         }
 
