@@ -44,7 +44,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     private Http3FrameWriter _frameWriter = default!;
     private Http3OutputProducer _http3Output = default!;
-    protected Http3StreamContext _context = default!;
+    private Http3StreamContext _context = default!;
     private IProtocolErrorCodeFeature _errorCodeFeature = default!;
     private IStreamIdFeature _streamIdFeature = default!;
     private IStreamAbortFeature _streamAbortFeature = default!;
@@ -145,7 +145,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         AbortCore(abortReason, errorCode);
     }
 
-    protected virtual void AbortCore(Exception exception, Http3ErrorCode errorCode)
+    private void AbortCore(Exception exception, Http3ErrorCode errorCode)
     {
         lock (_completionLock)
         {

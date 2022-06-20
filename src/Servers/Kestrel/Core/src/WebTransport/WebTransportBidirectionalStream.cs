@@ -27,7 +27,10 @@ public class WebTransportBidirectionalStream : WebTransportBaseStream
     /// </summary>
     public override void Execute()
     {
-        // TODO
+        // both of these are async and start a new
+        // while loop on a background thread
+        Input.Execute();
+        Output.Execute();
     }
 
     // TODO add methods here for managing the streams

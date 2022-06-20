@@ -45,9 +45,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private readonly Http3PeerSettings _clientSettings = new();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
-    #pragma warning disable CA2252
     private readonly WebTransportSession _webtransportSession = new();
-    #pragma warning restore CA2252
 
     public Http3Connection(HttpMultiplexedConnectionContext context)
     {
@@ -304,11 +302,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
-                                    #pragma warning disable CA2252
                                     var stream = new WebTransportInputStream(context);
-
                                     _webtransportSession.AddStream(stream);
-                                    #pragma warning restore CA2252
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
                                 {
@@ -348,10 +343,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 {
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
-                                        #pragma warning disable CA2252
                                         var stream2 = new WebTransportBidirectionalStream(context);
                                         _webtransportSession.AddStream(stream2);
-                                        #pragma warning restore CA2252
                                     }
                                     else
                                     {

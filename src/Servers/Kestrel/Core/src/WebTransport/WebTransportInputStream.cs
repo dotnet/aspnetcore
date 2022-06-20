@@ -8,7 +8,6 @@ using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 

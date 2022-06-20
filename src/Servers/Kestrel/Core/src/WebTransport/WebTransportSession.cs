@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
@@ -109,7 +109,6 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
             _pendingStreams.Enqueue(stream);
         }
     }
-
 
     /// <summary>
     /// Pops the first stream from the list of pending streams.

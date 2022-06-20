@@ -7,10 +7,11 @@ using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 /// <summary>
 /// Represents a base WebTransport stream. Do not use directly as it does not

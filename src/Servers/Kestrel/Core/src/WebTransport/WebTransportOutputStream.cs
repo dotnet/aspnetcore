@@ -8,7 +8,6 @@ using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
@@ -20,10 +19,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 public class WebTransportOutputStream : WebTransportBaseStream
 {
     private readonly Http3FrameWriter _frameWriter;
-    private Pipe _requestBodyPipe { get; set; } = default!;
+    private Pipe RequestBodyPipe { get; set; } = default!;
     private int _isClosed;
     private readonly object _dataWriterLock = new();
-    private ValueTask<FlushResult> _dataWriteProcessingTask;
+    private readonly ValueTask<FlushResult> _dataWriteProcessingTask;
     private readonly TimingPipeFlusher _flusher;
 
     internal WebTransportOutputStream(Http3StreamContext context) : base(context)
@@ -38,10 +37,10 @@ public class WebTransportOutputStream : WebTransportBaseStream
                 context.ClientPeerSettings,
                 this);
 
-        _requestBodyPipe = CreateRequestBodyPipe(64 * 1024);
+        RequestBodyPipe = CreateRequestBodyPipe(64 * 1024);
 
         _flusher = new TimingPipeFlusher(timeoutControl: null, Log);
-        _flusher.Initialize(_requestBodyPipe.Writer);
+        _flusher.Initialize(RequestBodyPipe.Writer);
 
         _dataWriteProcessingTask = ProcessDataWrites().Preserve();
     }
@@ -52,10 +51,10 @@ public class WebTransportOutputStream : WebTransportBaseStream
 
         base.AbortCore(abortReason, errorCode);
 
-        _requestBodyPipe.Writer.Complete();
+        RequestBodyPipe.Writer.Complete();
         lock (_dataWriterLock)
         {
-            _requestBodyPipe.Writer.Complete(new OperationCanceledException());
+            RequestBodyPipe.Writer.Complete(new OperationCanceledException());
         }
         _frameWriter.Abort(abortReason);
     }
@@ -69,7 +68,7 @@ public class WebTransportOutputStream : WebTransportBaseStream
 
             do
             {
-                readResult = await _requestBodyPipe.Reader.ReadAsync();
+                readResult = await RequestBodyPipe.Reader.ReadAsync();
 
                 if (readResult.IsCompleted)
                 {
@@ -100,7 +99,7 @@ public class WebTransportOutputStream : WebTransportBaseStream
                     flushResult = await _frameWriter.WriteDataAsync(readResult.Buffer);
                 }
 
-                _requestBodyPipe.Reader.AdvanceTo(readResult.Buffer.End);
+                RequestBodyPipe.Reader.AdvanceTo(readResult.Buffer.End);
             } while (!readResult.IsCompleted);
         }
         catch (OperationCanceledException)
@@ -112,7 +111,7 @@ public class WebTransportOutputStream : WebTransportBaseStream
             Log.LogCritical(ex, nameof(Http3OutputProducer) + "." + nameof(ProcessDataWrites) + " observed an unexpected exception.");
         }
 
-        await _requestBodyPipe.Reader.CompleteAsync();
+        await RequestBodyPipe.Reader.CompleteAsync();
 
         return flushResult;
 
@@ -150,7 +149,7 @@ public class WebTransportOutputStream : WebTransportBaseStream
                 return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
-            _requestBodyPipe.Writer.Write(data.Span);
+            RequestBodyPipe.Writer.Write(data.Span);
             return _flusher.FlushAsync();//FlushAsync(this, cancellationToken);
         }
     }
