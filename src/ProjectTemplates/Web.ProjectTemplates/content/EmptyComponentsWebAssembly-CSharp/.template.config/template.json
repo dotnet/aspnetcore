@@ -206,8 +206,10 @@
       "description": "If specified, produces a Progressive Web Application (PWA) supporting installation and offline use."
     },
     "HasHttpProfile": {
-      "type": "computed",
-      "value": "(NoHttps)"
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Always have HTTP profile."
     },
     "HasHttpsProfile": {
       "type": "computed",
