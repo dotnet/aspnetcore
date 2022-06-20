@@ -26,6 +26,14 @@ public class UserJwtsTestFixture : IDisposable
     private const string LaunchSettingsTemplate = @"
 {
   ""profiles"": {
+    ""iisSettings"": {
+        ""windowsAuthentication"": false,
+        ""anonymousAuthentication"": true,
+        ""iisExpress"": {
+            ""applicationUrl"": ""http://localhost:23528"",
+            ""sslPort"": 44395
+        }
+    },
     ""HttpApiSampleApp"": {
       ""commandName"": ""Project"",
       ""dotnetRunMessages"": true,

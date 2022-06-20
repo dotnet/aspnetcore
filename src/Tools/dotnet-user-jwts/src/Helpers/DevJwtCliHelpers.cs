@@ -109,11 +109,12 @@ internal static class DevJwtCliHelpers
         return newKeyMaterial;
     }
 
-    public static string[] GetAudienceCandidatesFromLaunchSettings(string project)
+    public static List<string> GetAudienceCandidatesFromLaunchSettings(string project)
     {
         ArgumentException.ThrowIfNullOrEmpty(nameof(project));
 
         var launchSettingsFilePath = Path.Combine(Path.GetDirectoryName(project)!, "Properties", "launchSettings.json");
+        var applicationUrls = new List<string>();
         if (File.Exists(launchSettingsFilePath))
         {
             using var launchSettingsFileStream = new FileStream(launchSettingsFilePath, FileMode.Open, FileAccess.Read);
@@ -125,26 +126,66 @@ internal static class DevJwtCliHelpers
                     var profilesEnumerator = profiles.EnumerateObject();
                     foreach (var profile in profilesEnumerator)
                     {
-                        if (profile.Value.TryGetProperty("commandName", out var commandName))
+                        if (ExtractKestrelUrlsFromProfile(profile) is { } kestrelUrls)
                         {
-                            if (commandName.ValueEquals("Project"))
-                            {
-                                if (profile.Value.TryGetProperty("applicationUrl", out var applicationUrl))
-                                {
-                                    var value = applicationUrl.GetString();
-                                    if (value is { } applicationUrls)
-                                    {
-                                        return applicationUrls.Split(';');
-                                    }
-                                }
-                            }
+                            applicationUrls.AddRange(kestrelUrls);
+                        }
+
+                        if (ExtractIISExpressUrlFromProfile(profile) is { } iisUrls)
+                        {
+                            applicationUrls.AddRange(iisUrls);
                         }
                     }
                 }
             }
         }
 
-        return null;
+        return applicationUrls;
+
+        static List<string> ExtractIISExpressUrlFromProfile(JsonProperty profile)
+        {
+
+            if (profile.NameEquals("iisSettings"))
+            {
+                if (profile.Value.TryGetProperty("iisExpress", out var iisExpress))
+                {
+                    List<string> iisUrls = new();
+                    if (iisExpress.TryGetProperty("applicationUrl", out var iisUrl))
+                    {
+                        iisUrls.Add(iisUrl.GetString());
+                    }
+
+                    if (iisExpress.TryGetProperty("sslPort", out var sslPort))
+                    {
+                        iisUrls.Add($"https://localhost:{sslPort.GetInt32()}");
+                    }
+
+                    return iisUrls;
+                }
+            }
+
+            return null;
+        }
+
+        static string[] ExtractKestrelUrlsFromProfile(JsonProperty profile)
+        {
+            if (profile.Value.TryGetProperty("commandName", out var commandName))
+            {
+                if (commandName.ValueEquals("Project"))
+                {
+                    if (profile.Value.TryGetProperty("applicationUrl", out var applicationUrl))
+                    {
+                        var value = applicationUrl.GetString();
+                        if (value is { } urls)
+                        {
+                            return urls.Split(';');
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 
     public static void PrintJwt(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken = null)
@@ -169,7 +210,7 @@ internal static class DevJwtCliHelpers
         {
             var rolesValue = jwt.Roles.IsNullOrEmpty()
                 ? "none"
-                : String.Join(", ", jwt.Roles);
+                : string.Join(", ", jwt.Roles);
             reporter.Output($"{Resources.JwtPrint_Roles}: [{rolesValue}]");
         }
 
