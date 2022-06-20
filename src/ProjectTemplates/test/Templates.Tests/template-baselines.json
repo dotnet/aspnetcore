@@ -1720,7 +1720,8 @@
         "Server/Properties/launchSettings.json",
         "Server/appsettings.Development.json",
         "Server/appsettings.json",
-        "Server/Program.cs"
+        "Server/Program.cs",
+        "Shared/HelloWorld.cs"
       ]
     },
     "PWA": {
@@ -1772,27 +1773,8 @@
         "Server/Properties/launchSettings.json",
         "Server/appsettings.Development.json",
         "Server/appsettings.json",
-        "Server/Program.cs"
-      ]
-    },
-    "ExcludeLaunchSettings": {
-      "Template": "blazorwasm-empty",
-      "Arguments": "new blazorwasm-empty --pwa --hosted",
-      "Files": [
-        "Client/_Imports.razor",
-        "Client/App.razor",
-        "Client/MainLayout.razor",
-        "Client/Program.cs",
-        "Client/Pages/Index.razor",
-        "Client/Properties/launchSettings.json",
-        "Client/wwwroot/index.html",
-        "Client/wwwroot/manifest.json",
-        "Client/wwwroot/service-worker.js",
-        "Client/wwwroot/service-worker.published.js",
-        "Client/wwwroot/css/app.css",
-        "Server/appsettings.Development.json",
-        "Server/appsettings.json",
-        "Server/Program.cs"
+        "Server/Program.cs",
+        "Shared/HelloWorld.cs"
       ]
     }
   }
