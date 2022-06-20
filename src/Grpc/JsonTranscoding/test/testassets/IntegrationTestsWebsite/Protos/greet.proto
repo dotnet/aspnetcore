@@ -20,6 +20,21 @@ service Greeter {
       body: "*"
     };
   }
+  rpc SayHelloComplex (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name=from/*}"
+    };
+  }
+  rpc SayHelloComplexCatchAll1 (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/{name=v1/greeter/**/b}/c/d/one"
+    };
+  }
+  rpc SayHelloComplexCatchAll2 (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/{name=v1/greeter/**/b}/c/d/two"
+    };
+  }
 }
 
 // The request message containing the user's name.

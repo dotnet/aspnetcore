@@ -5,6 +5,8 @@ using System.Net;
 using Google.Protobuf.Reflection;
 using Grpc.AspNetCore.Server;
 using Grpc.Core.Interceptors;
+using Grpc.Shared;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -68,6 +70,7 @@ internal static class TestHelpers
             bodyDescriptor,
             bodyDescriptorRepeated ?? false,
             bodyFieldDescriptors,
-            routeParameterDescriptors ?? new Dictionary<string, List<FieldDescriptor>>());
+            routeParameterDescriptors ?? new Dictionary<string, List<FieldDescriptor>>(),
+            JsonTranscodingRouteAdapter.Parse(HttpRoutePattern.Parse("/")!));
     }
 }

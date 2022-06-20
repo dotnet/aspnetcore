@@ -23,6 +23,8 @@
     <Compile Include="..\Shared\AuthContextHelpers.cs" Link="Internal\Shared\AuthContextHelpers.cs" />
     <Compile Include="..\Shared\ServiceDescriptorHelpers.cs" Link="Internal\Shared\ServiceDescriptorHelpers.cs" />
     <Compile Include="..\Shared\X509CertificateHelpers.cs" Link="Internal\Shared\X509CertificateHelpers.cs" />
+    <Compile Include="..\Shared\HttpRoutePattern.cs" Link="Internal\Shared\HttpRoutePattern.cs" />
+    <Compile Include="..\Shared\HttpRoutePatternParser.cs" Link="Internal\Shared\HttpRoutePatternParser.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Internal\Shared" />
 
     <Protobuf Include="Internal\Protos\errors.proto" Access="Internal" />
