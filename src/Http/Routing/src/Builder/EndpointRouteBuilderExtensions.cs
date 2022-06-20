@@ -69,11 +69,6 @@ public static class EndpointRouteBuilderExtensions
         [StringSyntax("Route")] string pattern,
         RequestDelegate requestDelegate)
     {
-        var returnType = requestDelegate.Method.ReturnType;
-        if (returnType is { IsGenericType: true } && returnType.GetGenericTypeDefinition() == typeof(Task<>))
-        {
-            return MapMethods(endpoints, pattern, GetVerb, requestDelegate as Delegate);
-        }
         return MapMethods(endpoints, pattern, GetVerb, requestDelegate);
     }
 
@@ -205,7 +200,7 @@ public static class EndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(requestDelegate);
 
         var returnType = requestDelegate.Method.ReturnType;
-        if (returnType is { IsGenericType: true } && returnType.GetGenericTypeDefinition() == typeof(Task<>))
+        if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
         {
             return Map(endpoints, pattern, requestDelegate as Delegate);
         }
