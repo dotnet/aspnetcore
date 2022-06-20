@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
 using Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 using Xunit;
@@ -306,5 +307,41 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         var handler = new JwtSecurityTokenHandler();
         Assert.True(handler.CanReadToken(output.Trim()));
+    }
+
+    [Fact]
+    public void Create_GracefullyHandles_NoLaunchSettings()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        var app = new Program(_console);
+        var launchSettingsPath = Path.Combine(projectPath, "Properties", "launchSettings.json");
+
+        File.Delete(launchSettingsPath);
+
+        app.Run(new[] { "create", "--project", project });
+        var output = _console.GetOutput();
+
+        Assert.Contains(Resources.CreateCommand_NoAudience_Error, output);
+    }
+
+    [Fact]
+    public async Task Create_GracefullyHandles_PrepopulatedSecrets()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+        await File.WriteAllTextAsync(secretsFilePath,
+@"{
+  ""Foo"": {
+    ""Bar"": ""baz""
+  }
+}");
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", project});
+        var output = _console.GetOutput();
+
+        Assert.Contains("New JWT saved", output);
+        Assert.Contains(DevJwtsDefaults.SigningKeyConfigurationKey, await File.ReadAllTextAsync(secretsFilePath));
     }
 }

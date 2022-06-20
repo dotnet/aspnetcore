@@ -4,6 +4,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
@@ -84,23 +85,23 @@ internal static class DevJwtCliHelpers
         var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
         Directory.CreateDirectory(Path.GetDirectoryName(secretsFilePath));
 
-        IDictionary<string, string> secrets = null;
+        JsonObject secrets = null;
         if (File.Exists(secretsFilePath))
         {
             using var secretsFileStream = new FileStream(secretsFilePath, FileMode.Open, FileAccess.Read);
             if (secretsFileStream.Length > 0)
             {
-                secrets = JsonSerializer.Deserialize<IDictionary<string, string>>(secretsFileStream) ?? new Dictionary<string, string>();
+                secrets = JsonSerializer.Deserialize<JsonObject>(secretsFileStream);
             }
         }
 
-        secrets ??= new Dictionary<string, string>();
+        secrets ??= new JsonObject();
 
         if (reset && secrets.ContainsKey(DevJwtsDefaults.SigningKeyConfigurationKey))
         {
             secrets.Remove(DevJwtsDefaults.SigningKeyConfigurationKey);
         }
-        secrets.Add(DevJwtsDefaults.SigningKeyConfigurationKey, Convert.ToBase64String(newKeyMaterial));
+        secrets.Add(DevJwtsDefaults.SigningKeyConfigurationKey, JsonValue.Create(Convert.ToBase64String(newKeyMaterial)));
 
         using var secretsWriteStream = new FileStream(secretsFilePath, FileMode.Create, FileAccess.Write);
         JsonSerializer.Serialize(secretsWriteStream, secrets);
@@ -163,7 +164,7 @@ internal static class DevJwtCliHelpers
                 : string.Join(", ", jwt.Scopes);
             reporter.Output($"{Resources.JwtPrint_Scopes}: {scopesValue}");
         }
-        
+
         if (!jwt.Roles.IsNullOrEmpty() || showAll)
         {
             var rolesValue = jwt.Roles.IsNullOrEmpty()

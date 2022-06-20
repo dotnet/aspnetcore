@@ -31,4 +31,8 @@
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests" />
+  </ItemGroup>
 </Project>

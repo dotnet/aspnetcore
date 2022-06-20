@@ -123,7 +123,7 @@ internal sealed class CreateCommand
         var name = nameOption.HasValue() ? nameOption.Value() : Environment.UserName;
         optionsString += $"{Resources.JwtPrint_Name}: {name}{Environment.NewLine}";
 
-        var audience = audienceOption.HasValue() ? audienceOption.Values : DevJwtCliHelpers.GetAudienceCandidatesFromLaunchSettings(project).ToList();
+        var audience = audienceOption.HasValue() ? audienceOption.Values : DevJwtCliHelpers.GetAudienceCandidatesFromLaunchSettings(project)?.ToList();
         optionsString += audienceOption.HasValue() ? $"{Resources.JwtPrint_Audiences}: {audience}{Environment.NewLine}" : string.Empty;
         if (audience is null)
         {
