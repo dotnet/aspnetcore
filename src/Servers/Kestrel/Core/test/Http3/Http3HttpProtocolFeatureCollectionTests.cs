@@ -60,7 +60,7 @@ public class Http3HttpProtocolFeatureCollectionTests
         Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate);
     }
 
-    private class TestHttp3Stream : Http3BidirectionalStream
+    private class TestHttp3Stream : Http3Stream
     {
         public override void Execute()
         {

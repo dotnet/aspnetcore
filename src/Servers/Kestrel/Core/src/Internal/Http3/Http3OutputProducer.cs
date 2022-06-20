@@ -20,7 +20,7 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
     private readonly TimingPipeFlusher _flusher;
     private readonly KestrelTrace _log;
     private readonly MemoryPool<byte> _memoryPool;
-    private readonly Http3BidirectionalStream _stream;
+    private readonly Http3Stream _stream;
     private readonly Pipe _pipe;
     private readonly PipeWriter _pipeWriter;
     private readonly PipeReader _pipeReader;
@@ -36,7 +36,7 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
     public Http3OutputProducer(
          Http3FrameWriter frameWriter,
          MemoryPool<byte> pool,
-         Http3BidirectionalStream stream,
+         Http3Stream stream,
          KestrelTrace log)
     {
         _frameWriter = frameWriter;

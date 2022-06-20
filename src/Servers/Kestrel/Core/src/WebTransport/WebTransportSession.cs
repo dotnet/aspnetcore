@@ -59,7 +59,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     private readonly Dictionary<long, WebTransportBaseStream> _openStreams = new(); // todo should this maybe just be a list as I am not actually indexing based on id?
     private readonly ConcurrentQueue<WebTransportBaseStream> _pendingStreams = new();
     private static bool _webtransportEnabled;
-    private Http3BidirectionalStream _controlStream = default!;
+    private Http3Stream _controlStream = default!;
 
     internal static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
 
@@ -81,7 +81,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     /// <param name="controlStream">The stream overwhich the ENHANCED CONNECT request was established</param>
     /// <param name="version">The version of the WebTransport spec to use</param>
     /// <returns>True if the initialization completed successfully. False otherwise.</returns>
-    internal bool Initialize(Http3BidirectionalStream controlStream, string version)
+    internal bool Initialize(Http3Stream controlStream, string version)
     {
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out _webtransportEnabled);
 

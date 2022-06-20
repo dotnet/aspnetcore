@@ -26,7 +26,7 @@ using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3Stream, IHttpStreamHeadersHandler, IThreadPoolWorkItem
+internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpStreamHeadersHandler, IThreadPoolWorkItem
 {
     private static ReadOnlySpan<byte> AuthorityBytes => ":authority"u8;
     private static ReadOnlySpan<byte> MethodBytes => ":method"u8;
@@ -671,7 +671,7 @@ internal abstract partial class Http3BidirectionalStream : HttpProtocol, IHttp3S
                 // something that is more lightweight than a CTS.
                 _context.StreamContext.ConnectionClosed.Register(static s =>
                 {
-                    var stream = (Http3BidirectionalStream)s!;
+                    var stream = (Http3Stream)s!;
 
                     if (!stream.IsCompleted)
                     {

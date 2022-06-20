@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
 internal sealed class Http3MessageBody : MessageBody
 {
-    private readonly Http3BidirectionalStream _context;
+    private readonly Http3Stream _context;
     private ReadResult _readResult;
 
-    private Http3MessageBody(Http3BidirectionalStream context)
+    private Http3MessageBody(Http3Stream context)
         : base(context)
     {
         _context = context;
@@ -31,7 +31,7 @@ internal sealed class Http3MessageBody : MessageBody
         }
     }
 
-    public static MessageBody For(Http3BidirectionalStream context)
+    public static MessageBody For(Http3Stream context)
     {
         return new Http3MessageBody(context);
     }
