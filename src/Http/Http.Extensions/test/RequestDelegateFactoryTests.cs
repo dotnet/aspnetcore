@@ -6081,6 +6081,37 @@ public class RequestDelegateFactoryTests : LoggedTest
         Assert.Contains(result.EndpointMetadata, m => m is MetadataService);
     }
 
+    [Fact]
+    public void Create_ReturnsSameRequestDelegatePassedIn_IfNotModifiedByFilters()
+    {
+        RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
+        var filter1Tag = new TagsAttribute("filter1");
+        var filter2Tag = new TagsAttribute("filter2");
+
+        RequestDelegateFactoryOptions options = new()
+        {
+            RouteHandlerFilterFactories = new List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>()
+            {
+                (routeHandlerContext, next) =>
+                {
+                    routeHandlerContext.EndpointMetadata.Add(filter1Tag);
+                    return next;
+                },
+                (routeHandlerContext, next) =>
+                {
+                    routeHandlerContext.EndpointMetadata.Add(filter2Tag);
+                    return next;
+                },
+            }
+        };
+
+        var result = RequestDelegateFactory.Create(initialRequestDelegate, options);
+        Assert.Same(initialRequestDelegate, result.RequestDelegate);
+        Assert.Collection(result.EndpointMetadata,
+            m => Assert.Same(filter2Tag, m),
+            m => Assert.Same(filter1Tag, m));
+    }
+
     private DefaultHttpContext CreateHttpContext()
     {
         var responseFeature = new TestHttpResponseFeature();

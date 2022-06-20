@@ -79,8 +79,9 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
     }
 
-    [Fact]
-    public async Task MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate()
+    [Theory]
+    [MemberData(nameof(MapMethods))]
+    public async Task MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
     {
         var httpContext = new DefaultHttpContext();
         var responseBodyStream = new MemoryStream();
@@ -91,7 +92,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         static async Task<string> GenericTypeTaskDelegate(HttpContext context) => await Task.FromResult("String Test");
 
         // Act
-        var endpointBuilder = builder.MapGet("/", GenericTypeTaskDelegate);
+        var endpointBuilder = map(builder, "/", GenericTypeTaskDelegate);
 
         // Assert
         var dataSource = GetBuilderEndpointDataSource(builder);
@@ -104,6 +105,67 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
 
         Assert.Equal("String Test", responseBody);
+    }
+
+    [Theory]
+    [MemberData(nameof(MapMethods))]
+    public async Task MapEndpoint_CanBeFiltered_ByRouteHandlerFilters(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
+        var httpContext = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
+        var filterTag = new TagsAttribute("filter");
+
+        var endpointBuilder = map(builder, "/", initialRequestDelegate).AddRouteHandlerFilter(filterFactory: (routeHandlerContext, next) =>
+        {
+            routeHandlerContext.EndpointMetadata.Add(filterTag);
+            return async invocationContext =>
+            {
+                Assert.IsAssignableFrom<HttpContext>(Assert.Single(invocationContext.Arguments));
+                // Ignore thre result and write filtered because we can!
+                await next(invocationContext);
+                return "filtered!";
+            };
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        Assert.NotSame(initialRequestDelegate, endpoint.RequestDelegate);
+        Assert.Same(filterTag, endpoint.Metadata.GetMetadata<ITagsMetadata>());
+
+        Assert.NotNull(endpoint.RequestDelegate);
+        var requestDelegate = endpoint.RequestDelegate!;
+        await requestDelegate(httpContext);
+
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+
+        Assert.Equal("filtered!", responseBody);
+    }
+
+    [Theory]
+    [MemberData(nameof(MapMethods))]
+    public void MapEndpoint_UsesOriginalRequestDelegateInstance_IfFilterDoesNotChangePerRequestBehavior(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
+
+        RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
+        var filterTag = new TagsAttribute("filter");
+
+        var endpointBuilder = map(builder, "/", initialRequestDelegate).AddRouteHandlerFilter((routeHandlerContext, next) =>
+        {
+            routeHandlerContext.EndpointMetadata.Add(filterTag);
+            return next;
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        Assert.Same(initialRequestDelegate, endpoint.RequestDelegate);
+        Assert.Same(filterTag, endpoint.Metadata.GetMetadata<ITagsMetadata>());
     }
 
     [Fact]

@@ -19,6 +19,8 @@ public static class RouteHandlerFilterExtensions
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="filter">The <see cref="IRouteHandlerFilter"/> to register.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+
+    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static TBuilder AddRouteHandlerFilter<TBuilder>(this TBuilder builder, IRouteHandlerFilter filter) where TBuilder : IEndpointConventionBuilder =>
         builder.AddRouteHandlerFilter((routeHandlerContext, next) => (context) => filter.InvokeAsync(context, next));
 
@@ -29,6 +31,7 @@ public static class RouteHandlerFilterExtensions
     /// <typeparam name="TFilterType">The type of the <see cref="IRouteHandlerFilter"/> to register.</typeparam>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static TBuilder AddRouteHandlerFilter<TBuilder, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this TBuilder builder)
         where TBuilder : IEndpointConventionBuilder
         where TFilterType : IRouteHandlerFilter
@@ -63,6 +66,7 @@ public static class RouteHandlerFilterExtensions
     /// <typeparam name="TFilterType">The type of the <see cref="IRouteHandlerFilter"/> to register.</typeparam>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static RouteHandlerBuilder AddRouteHandlerFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this RouteHandlerBuilder builder)
         where TFilterType : IRouteHandlerFilter
     {
@@ -76,6 +80,7 @@ public static class RouteHandlerFilterExtensions
     /// <typeparam name="TFilterType">The type of the <see cref="IRouteHandlerFilter"/> to register.</typeparam>
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static RouteGroupBuilder AddRouteHandlerFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFilterType>(this RouteGroupBuilder builder)
         where TFilterType : IRouteHandlerFilter
     {
@@ -89,6 +94,7 @@ public static class RouteHandlerFilterExtensions
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="routeHandlerFilter">A method representing the core logic of the filter.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static TBuilder AddRouteHandlerFilter<TBuilder>(this TBuilder builder, Func<RouteHandlerInvocationContext, RouteHandlerFilterDelegate, ValueTask<object?>> routeHandlerFilter)
         where TBuilder : IEndpointConventionBuilder
     {
@@ -101,31 +107,19 @@ public static class RouteHandlerFilterExtensions
     /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
     /// <param name="filterFactory">A method representing the logic for constructing the filter.</param>
     /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the route handler.</returns>
+    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static TBuilder AddRouteHandlerFilter<TBuilder>(this TBuilder builder, Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate> filterFactory)
         where TBuilder : IEndpointConventionBuilder
     {
         builder.Add(endpointBuilder =>
         {
-            // Even if we split RouteFilterMetadata across multiple metadata objects, RouteEndointDataSource will still use all of them.
-            // We're just trying to be good citizens and keep the Endpoint.Metadata as small as possible.
-            RouteHandlerFilterMetadata? filterMetadata = null;
-
-            foreach (var item in endpointBuilder.Metadata)
+            if (endpointBuilder is not RouteEndpointBuilder routeEndpointBuilder)
             {
-                if (item is RouteHandlerFilterMetadata metadata)
-                {
-                    // Don't break early in case there is somehow higher priority metadata later in the list.
-                    filterMetadata = metadata;
-                }
+                return;
             }
 
-            if (filterMetadata is null)
-            {
-                filterMetadata = new();
-                endpointBuilder.Metadata.Add(filterMetadata);
-            }
-
-            filterMetadata.FilterFactories.Add(filterFactory);
+            routeEndpointBuilder.RouteHandlerFilterFactories ??= new();
+            routeEndpointBuilder.RouteHandlerFilterFactories.Add(filterFactory);
         });
 
         return builder;

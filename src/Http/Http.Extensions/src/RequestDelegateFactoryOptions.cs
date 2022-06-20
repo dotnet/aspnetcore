@@ -51,4 +51,8 @@ public sealed class RequestDelegateFactoryOptions
     /// insert their metadata at the start to give lower precedence, but this is unusual.
     /// </remarks>
     public IList<object>? EndpointMetadata { get; init; }
+
+    // TODO: Add a RouteEndpointBuilder property and remove the EndpointMetadata property. Then do the same in RouteHandlerContext, EndpointMetadataContext
+    // and EndpointParameterMetadataContext. This will allow seeing the entire route pattern if the caller chooses to allow it.
+    // We'll probably want to add the RouteEndpointBuilder constructor without a RequestDelegate back and make it public too.
 }

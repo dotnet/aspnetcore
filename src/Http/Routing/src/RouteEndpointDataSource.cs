@@ -82,7 +82,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     }
 
     [UnconditionalSuppressMessage("Trimmer", "IL2026",
-        Justification = "We surface a RequireUnreferencedCode in the call to Map method adding this EndpointDataSource. The trimmer is unable to infer this.")]
+        Justification = "We surface a RequireUnreferencedCode in the call to the Map method adding this EndpointDataSource. The trimmer is unable to infer this.")]
     private RouteEndpointBuilder CreateRouteEndpointBuilder(
         RouteEntry entry, RoutePattern? groupPrefix = null, IReadOnlyList<Action<EndpointBuilder>>? groupConventions = null)
     {
@@ -166,18 +166,6 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             entrySpecificConvention(builder);
         }
 
-        // Let's see if any of the conventions added a filter before creating the RequestDelegate.
-        List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? routeHandlerFilterFactories = null;
-
-        foreach (var item in builder.Metadata)
-        {
-            if (item is RouteHandlerFilterMetadata filterMetadata)
-            {
-                routeHandlerFilterFactories ??= new();
-                routeHandlerFilterFactories.AddRange(filterMetadata.FilterFactories);
-            }
-        }
-
         var routeParamNames = new List<string>(pattern.Parameters.Count);
         foreach (var parameter in pattern.Parameters)
         {
@@ -191,11 +179,14 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             ThrowOnBadRequest = _throwOnBadRequest,
             DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
             EndpointMetadata = builder.Metadata,
-            RouteHandlerFilterFactories = routeHandlerFilterFactories,
+            RouteHandlerFilterFactories = builder.RouteHandlerFilterFactories,
         };
 
         // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
         factoryCreatedRequestDelegate = RequestDelegateFactory.Create(entry.RouteHandler, factoryOptions).RequestDelegate;
+
+        // Clear out any filters so they don't get rerun in Build(). We can rethink how we do this later when exposed as public API.
+        builder.RouteHandlerFilterFactories = null;
 
         if (ReferenceEquals(builder.RequestDelegate, redirectedRequestDelegate))
         {

@@ -63,7 +63,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="pattern">The route pattern.</param>
     /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
+    [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapGet(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -85,6 +85,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="pattern">The route pattern.</param>
     /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapPost(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -101,6 +102,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="pattern">The route pattern.</param>
     /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapPut(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -117,6 +119,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="pattern">The route pattern.</param>
     /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapDelete(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -133,6 +136,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="pattern">The route pattern.</param>
     /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapPatch(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -150,6 +154,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
     /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapMethods(
        this IEndpointRouteBuilder endpoints,
        [StringSyntax("Route")] string pattern,
@@ -172,6 +177,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="pattern">The route pattern.</param>
     /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder Map(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -188,6 +194,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="pattern">The route pattern.</param>
     /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+    [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder Map(
         this IEndpointRouteBuilder endpoints,
         RoutePattern pattern,
@@ -196,6 +203,12 @@ public static class EndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(pattern);
         ArgumentNullException.ThrowIfNull(requestDelegate);
+
+        var returnType = requestDelegate.Method.ReturnType;
+        if (returnType is { IsGenericType: true } && returnType.GetGenericTypeDefinition() == typeof(Task<>))
+        {
+            return Map(endpoints, pattern, requestDelegate as Delegate);
+        }
 
         const int defaultOrder = 0;
 
