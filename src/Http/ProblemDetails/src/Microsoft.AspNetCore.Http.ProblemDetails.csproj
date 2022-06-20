@@ -18,6 +18,11 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ProblemDetailsDefaults.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)HttpValidationProblemDetailsJsonConverter.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.ProblemDetails.Tests" />
   </ItemGroup>
   
 </Project>

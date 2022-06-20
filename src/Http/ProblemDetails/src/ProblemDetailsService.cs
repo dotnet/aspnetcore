@@ -53,7 +53,7 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
         string? instance = null,
         IDictionary<string, object?>? extensions = null)
     {
-        if (IsEnabled(context.Response.StatusCode, isRouting))
+        if (!IsEnabled(context.Response.StatusCode, isRouting))
         {
             return Task.CompletedTask;
         }

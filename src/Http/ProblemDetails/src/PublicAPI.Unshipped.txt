@@ -10,7 +10,6 @@ Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedMapping.get -> Microsoft.
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedMapping.set -> void
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.ConfigureDetails.get -> System.Action<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Mvc.ProblemDetails!>?
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.ConfigureDetails.set -> void
-Microsoft.AspNetCore.Http.ProblemDetailsOptions.IsEnabled(int statusCode, bool isRouting = false) -> bool
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.ProblemDetailsOptions() -> void
 Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions
 static Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions.AddProblemDetails(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
