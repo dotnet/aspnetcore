@@ -1516,6 +1516,21 @@
         "wwwroot/css/site.css"
       ]
     },
+    "EmptyExcludeLaunchSettings": {
+      "Template": "blazorserver-empty",
+      "Arguments": "new blazorserver-empty --exclude-launch-settings",
+      "Files": [
+        "App.razor",
+        "appsettings.Development.json",
+        "appsettings.json",
+        "MainLayout.razor",
+        "Program.cs",
+        "_Imports.razor",
+        "Pages/Index.razor",
+        "Pages/_Host.cshtml",
+        "wwwroot/css/site.css"
+      ]
+    },
     "SingleOrg": {
       "Template": "blazorserver",
       "Arguments": "new blazorserver -au SingleOrg",
