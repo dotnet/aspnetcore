@@ -552,7 +552,7 @@ public static partial class RequestDelegateFactory
         factoryContext.BoxedArgs = new Expression[parameters.Length];
         factoryContext.Parameters = new List<ParameterInfo>(parameters);
 
-        var hasFilters = factoryContext.Filters is { Count: > 0 };
+        var hasFilters = factoryContext.FilterFactories is { Count: > 0 };
 
         for (var i = 0; i < parameters.Length; i++)
         {

@@ -57,8 +57,8 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
 
         // Only replace the RequestDelegate if filters have been applied to this builder and they were not already handled by RouteEndpointDataSource.
         // This affects other data sources like DefaultEndpointDataSource (this is people manually newing up a data source with a list of Endpoints),
-        // ModelEndpointDataSource (Map(RoutePattern, RequestDelegate) and by extension MapHub, MapHealChecks, etc...),
-        // ActionEndpointDataSourceBase (MapControllers, MapRozorPages, etc...) and people with custom data sources or otherwise manually building endpoints
+        // ModelEndpointDataSource (Map(RoutePattern, RequestDelegate) and by extension MapHub, MapHealthChecks, etc...),
+        // ActionEndpointDataSourceBase (MapControllers, MapRazorPages, etc...) and people with custom data sources or otherwise manually building endpoints
         // using this type. At the moment this class is sealed, so at the moment we do not need to concern ourselves with what derived types may be doing.
         if (RouteHandlerFilterFactories is { Count: > 0 })
         {
