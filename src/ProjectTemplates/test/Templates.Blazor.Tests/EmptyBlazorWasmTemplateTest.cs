@@ -111,5 +111,4 @@ public class EmptyBlazorWasmTemplateTest : BlazorTemplateTest
         Assert.True(doesExist, $"Expected file to exist, but it doesn't: {path}");
         return File.ReadAllText(Path.Combine(basePath, path));
     }
-
 }
