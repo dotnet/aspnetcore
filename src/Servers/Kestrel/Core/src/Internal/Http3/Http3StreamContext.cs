@@ -6,6 +6,7 @@ using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 

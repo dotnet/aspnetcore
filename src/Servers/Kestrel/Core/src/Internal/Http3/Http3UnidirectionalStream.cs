@@ -109,7 +109,7 @@ internal class Http3UnidirectionalStream : IHttp3Stream, IThreadPoolWorkItem
     {
         await _frameWriter.WriteStreamIdAsync(id);
     }
-
+    
     protected async ValueTask<long> TryReadStreamHeaderAsync()
     {
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2

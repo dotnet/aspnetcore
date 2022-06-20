@@ -18,10 +18,13 @@ public class Startup
     {
         app.Use(async (context, next) =>
         {
-            var feature = (IHttpWebTransportSessionFeature)context.Features[typeof(IHttpWebTransportSessionFeature)];
+            var feature = context.Features.Get<IHttpWebTransportSessionFeature>();
             if (feature is not null)
             {
-                var session = await feature.AcceptAsync();
+                var session = await feature.AcceptAsync(CancellationToken.None);
+
+                var stream = await session.AcceptStreamAsync(CancellationToken.None);
+
             }
             else
             {

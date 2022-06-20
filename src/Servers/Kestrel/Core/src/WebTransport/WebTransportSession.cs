@@ -1,27 +1,34 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Net.Http;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
 /// <summary>
 /// Controls the session and streams of a WebTransport session
 /// </summary>
+[RequiresPreviewFeatures("WebTransport is a preview feature")]
 internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSessionFeature
 {
     #region Public API
     long IWebTransportSession.SessionId => _controlStream.StreamId;
 
-    async ValueTask<IWebTransportSession> IHttpWebTransportSessionFeature.AcceptAsync()
+    async ValueTask<IWebTransportSession> IHttpWebTransportSessionFeature.AcceptAsync(CancellationToken token)
     {
+        ThrowIfInvalidSession();
+
         // build and flush the 200 ACK
         _controlStream.ResponseHeaders.TryAdd(VersionHeaderPrefix, _version);
         _controlStream.Output.WriteResponseHeaders(200, null, (Http.HttpResponseHeaders)_controlStream.ResponseHeaders, false, false);
-        await _controlStream.Output.FlushAsync(CancellationToken.None);
+        await _controlStream.Output.FlushAsync(token);
 
         // add the close stream listener as we must abort the session once this stream dies
         _controlStream.OnCompleted(_ =>
@@ -39,17 +46,18 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         Abort(new(), Http3ErrorCode.NoError);
     }
 
-    //ValueTask<IHttp3Stream?> IWebTransportSession.OpenUnidirectionalStream()
-    //{
-    //    ThrowIfInvalidSession();
+    ValueTask<Stream?> IWebTransportSession.OpenUnidirectionalStreamAsync()
+    {
+        ThrowIfInvalidSession();
 
-    //    return default!; // TODO Implement
-    //}
+        return default!; // TODO Implement
+    }
     #endregion
 
-    private bool _aborted;
+    private bool _initialized;
     private string _version = "";
-    private readonly Dictionary<long, IHttp3Stream> _openStreams = new(); // todo should this maybe just be a list as I am not actually indexing based on id?
+    private readonly Dictionary<long, WebTransportBaseStream> _openStreams = new(); // todo should this maybe just be a list as I am not actually indexing based on id?
+    private readonly ConcurrentQueue<WebTransportBaseStream> _pendingStreams = new();
     private static bool _webtransportEnabled;
     private Http3BidirectionalStream _controlStream = default!;
 
@@ -67,6 +75,12 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         "draft02"
     };
 
+    /// <summary>
+    /// Initialize the WebTransport session and prepare it to make a connection
+    /// </summary>
+    /// <param name="controlStream">The stream overwhich the ENHANCED CONNECT request was established</param>
+    /// <param name="version">The version of the WebTransport spec to use</param>
+    /// <returns>True if the initialization completed successfully. False otherwise.</returns>
     internal bool Initialize(Http3BidirectionalStream controlStream, string version)
     {
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out _webtransportEnabled);
@@ -74,7 +88,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         if (_webtransportEnabled)
         {
             _controlStream = controlStream;
-            _aborted = false;
+            _initialized = true;
         }
 
         _version = version;
@@ -86,14 +100,44 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     /// Adds a new stream to the internal list of open streams.
     /// </summary>
     /// <param name="stream">A reference to the new stream that is being added</param>
-    internal void AddStream(IHttp3Stream stream)
+    internal void AddStream(WebTransportBaseStream stream)
     {
         ThrowIfInvalidSession();
 
-        lock (_openStreams)
+        lock (_pendingStreams)
         {
-            _openStreams.Add(stream.StreamId, stream);
+            _pendingStreams.Enqueue(stream);
         }
+    }
+
+
+    /// <summary>
+    /// Pops the first stream from the list of pending streams.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token to abort waiting for a stream</param>
+    /// <returns>An instance of WebTransportStream that corresponds to the new stream to accept</returns>
+    public ValueTask<WebTransportBaseStream?> AcceptStreamAsync(CancellationToken cancellationToken) // todo use the cancellation token
+    {
+        ThrowIfInvalidSession();
+
+        _pendingStreams.TryDequeue(out var stream);
+        return ValueTask.FromResult(stream);
+
+        //var success = _pendingStreams.TryDequeue(out var stream);
+        //if (success)
+        //{
+        //    if (stream!.Type == WebTransportStreamType.Bidirectional)
+        //    {
+        //        KestrelEventSource.Log.RequestQueuedStart(stream!._stream, AspNetCore.Http.HttpProtocol.Http3);
+        //    }
+        //    ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
+
+        //    return ValueTask.FromResult(stream!);
+        //}
+        //else
+        //{
+        //    // TODO implement
+        //}
     }
 
     /// <summary>
@@ -117,22 +161,24 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     {
         ThrowIfInvalidSessionCore();
 
-        if (_aborted)
+        if (!_initialized)
         {
             return;
         }
-        _aborted = true;
+        _initialized = false;
 
         lock (_openStreams)
         {
             _controlStream.Abort(exception, error);
             foreach (var stream in _openStreams)
             {
-                stream.Value.Abort(exception, error);
+                stream.Value.Abort();// todo (exception, error);
             }
 
             _openStreams.Clear();
         }
+
+        _pendingStreams.Clear();
 
         // Eventual todo: implement http datagrams and send the close webtransport session capsule
     }
@@ -141,9 +187,9 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     {
         ThrowIfInvalidSessionCore();
 
-        if (_aborted)
+        if (!_initialized)
         {
-            throw new Exception("Session has already been aborted.");
+            throw new Exception("Session has already been aborted or has never been initialized.");
         }
     }
 

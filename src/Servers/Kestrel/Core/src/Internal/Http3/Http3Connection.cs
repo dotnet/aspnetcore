@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
+using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
@@ -43,7 +45,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private readonly Http3PeerSettings _clientSettings = new();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
+    #pragma warning disable CA2252
     private readonly WebTransportSession _webtransportSession = new();
+    #pragma warning restore CA2252
 
     public Http3Connection(HttpMultiplexedConnectionContext context)
     {
@@ -295,25 +299,23 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                         {
                             if (!streamDirectionFeature.CanWrite)
                             {
-                                // Unidirectional stream
-                                Http3UnidirectionalStream stream;
-
                                 var context = CreateHttpStreamContext(streamContext);
                                 var streamType = await ReadStreamType(context);
 
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
-                                    stream = new WebTransportUnidirectionalStream<TContext>(application, context);
+                                    #pragma warning disable CA2252
+                                    var stream = new WebTransportInputStream(context);
 
                                     _webtransportSession.AddStream(stream);
+                                    #pragma warning restore CA2252
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
                                 {
-                                    stream = new Http3ControlStream<TContext>(application, context);
+                                    var stream = new Http3ControlStream<TContext>(application, context);
+                                    _streamLifetimeHandler.OnStreamCreated(stream);
+                                    ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                                 }
-
-                                _streamLifetimeHandler.OnStreamCreated(stream);
-                                ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                             }
                             else
                             {
@@ -336,26 +338,26 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 var persistentStateFeature = streamContext.Features.Get<IPersistentStateFeature>();
                                 Debug.Assert(persistentStateFeature != null, $"Required {nameof(IPersistentStateFeature)} not on stream context.");
 
-                                Http3BidirectionalStream stream;
+                                Http3BidirectionalStream? stream = default!;
 
                                 var context = CreateHttpStreamContext(streamContext);
                                 var streamType = await ReadStreamType(context);
-
                                 // Check whether there is an existing HTTP/3 stream on the transport stream.
                                 // A stream will only be cached if the transport stream itself is reused.
                                 if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s))
                                 {
-
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
-                                        stream = new WebTransportBidirectionalStream<TContext>(application, context);
-                                        _webtransportSession.AddStream(stream);
+                                        #pragma warning disable CA2252
+                                        var stream2 = new WebTransportBidirectionalStream(context);
+                                        _webtransportSession.AddStream(stream2);
+                                        #pragma warning restore CA2252
                                     }
                                     else
                                     {
                                         stream = new Http3BidirectionalStream<TContext>(application, context);
+                                        persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
                                     }
-                                    persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
                                 }
                                 else
                                 {
@@ -363,10 +365,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                     stream.InitializeWithExistingContext(streamContext.Transport);
                                 }
 
-                                _streamLifetimeHandler.OnStreamCreated(stream);
-
-                                KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
-                                ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
+                                if (stream != null)
+                                {
+                                    _streamLifetimeHandler.OnStreamCreated(stream);
+                                    KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
+                                    ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
+                                }
                             }
                         });
                 }
