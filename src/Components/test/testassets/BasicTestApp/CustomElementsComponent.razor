@@ -10,16 +10,15 @@
 
 @for (var i = 0; i < _customElements.Count; i++)
 {
-    var index = i;
-    var customElement = _customElements[index];
+    var customElement = _customElements[i];
     var clickCount = customElement.ClickCount;
     <p>
-        <button id="increment-@index" @onclick="customElement.IncrementCount">Increment</button><br />
-        <button id="update-complex-parameters-@index" @onclick="customElement.UpdateComplexParameters">Update complex parameters</button><br />
+        <button id="increment-@i" @onclick="customElement.IncrementCount">Increment</button><br />
+        <button id="update-complex-parameters-@i" @onclick="customElement.UpdateComplexParameters">Update complex parameters</button><br />
         <my-custom-element
             @ref="@customElement.Reference"
-            id="custom-element-@index"
-            string-param="Custom element @index (Clicked @clickCount times)"
+            id="custom-element-@i"
+            string-param="Custom element @i (Clicked @clickCount times)"
             bool-param="@((clickCount % 2 == 0).ToString())"
             int-param="@clickCount"
             long-param="@clickCount"
@@ -39,7 +38,9 @@
     private List<CustomElementWrapper> _customElements = new();
 
     private void AddCustomElement()
-        => _customElements.Add(new(JSRuntime));
+    {
+        _customElements.Add(new(JSRuntime));
+    }
 
     private void RemoveCustomElement()
     {
