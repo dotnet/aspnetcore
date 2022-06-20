@@ -7,14 +7,13 @@ namespace Microsoft.AspNetCore.Authentication;
 
 /// <summary>
 /// Provides an interface for implmenting a construct that provides
-/// access to specific configuration sections.
+/// access to authentication-related configuration sections.
 /// </summary>
 public interface IAuthenticationConfigurationProvider
 {
     /// <summary>
-    /// Returns the specified <see cref="ConfigurationSection"/> object.
+    /// Gets the <see cref="ConfigurationSection"/> where authentication
+    /// options are stored.
     /// </summary>
-    /// <param name="authenticationScheme">The path to the section to be returned.</param>
-    /// <returns>The specified <see cref="ConfigurationSection"/> object, or null if the requested section does not exist.</returns>
-    IConfiguration GetAuthenticationSchemeConfiguration(string authenticationScheme);
+    IConfiguration AuthenticationConfiguration { get; }
 }

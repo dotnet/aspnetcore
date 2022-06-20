@@ -6,15 +6,15 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-internal sealed class DeleteCommand
+internal sealed class RemoveCommand
 {
     public static void Register(ProjectCommandLineApplication app)
     {
-        app.Command("delete", cmd =>
+        app.Command("remove", cmd =>
         {
-            cmd.Description = "Delete a given JWT";
+            cmd.Description = Resources.RemoveCommand_Description;
 
-            var idArgument = cmd.Argument("[id]", "The ID of the JWT to delete");
+            var idArgument = cmd.Argument("[id]", Resources.RemoveCommand_IdArgument_Description);
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
@@ -39,7 +39,7 @@ internal sealed class DeleteCommand
 
         if (!jwtStore.Jwts.ContainsKey(id))
         {
-            reporter.Error($"[ERROR] No JWT with ID '{id}' found");
+            reporter.Error(Resources.FormatRemoveCommand_NoJwtFound(id));
             return 1;
         }
 
@@ -49,7 +49,7 @@ internal sealed class DeleteCommand
         jwtStore.Jwts.Remove(id);
         jwtStore.Save();
 
-        reporter.Output($"Deleted JWT with ID '{id}'");
+        reporter.Output(Resources.FormatRemoveCommand_Confirmed(id));
 
         return 0;
     }

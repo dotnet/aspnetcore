@@ -13,16 +13,16 @@ internal sealed class KeyCommand
     {
         app.Command("key", cmd =>
         {
-            cmd.Description = "Display or reset the signing key used to issue JWTs";
+            cmd.Description = Resources.KeyCommand_Description;
 
             var resetOption = cmd.Option(
                 "--reset",
-                "Reset the signing key. This will invalidate all previously issued JWTs for this project.",
+                Resources.KeyCommand_ResetOption_Description,
                 CommandOptionType.NoValue);
 
             var forceOption = cmd.Option(
                 "--force",
-                "Don't prompt for confirmation before resetting the signing key.",
+                Resources.KeyCommand_ForceOption_Description,
                 CommandOptionType.NoValue);
 
             cmd.HelpOption("-h|--help");
@@ -45,16 +45,17 @@ internal sealed class KeyCommand
         {
             if (!force)
             {
-                reporter.Output("Are you sure you want to reset the JWT signing key? This will invalidate all JWTs previously issued for this project.\n [Y]es / [N]o");
+                reporter.Output(Resources.KeyCommand_Permission);
+                reporter.Error("[Y]es / [N]o");
                 if (Console.ReadLine().Trim().ToUpperInvariant() != "Y")
                 {
-                    reporter.Output("Key reset canceled.");
+                    reporter.Output(Resources.KeyCommand_Canceled);
                     return 0;
                 }
             }
 
             var key = DevJwtCliHelpers.CreateSigningKeyMaterial(userSecretsId, reset: true);
-            reporter.Output($"New signing key created: {Convert.ToBase64String(key)}");
+            reporter.Output(Resources.FormatKeyCommand_KeyCreated(Convert.ToBase64String(key)));
             return 0; 
         }
 
@@ -65,11 +66,11 @@ internal sealed class KeyCommand
 
         if (signingKeyMaterial is null)
         {
-            reporter.Output("Signing key for JWTs was not found. One will be created automatically when the first JWT is created, or you can force creation of a key with the --reset option.");
+            reporter.Output(Resources.KeyCommand_KeyNotFound);
             return 0;
         }
 
-        reporter.Output($"Signing Key: {signingKeyMaterial}");
+        reporter.Output(Resources.FormatKeyCommand_Confirmed(signingKeyMaterial));
         return 0;
     }
 }

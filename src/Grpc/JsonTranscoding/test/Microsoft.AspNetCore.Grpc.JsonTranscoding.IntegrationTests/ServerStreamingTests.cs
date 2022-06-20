@@ -80,7 +80,6 @@ public class ServerStreamingTests : IntegrationTestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41629")]
     public async Task GetWithRouteParameter_WriteMultiple_CancellationBefore_CallCanceled()
     {
         // Arrange

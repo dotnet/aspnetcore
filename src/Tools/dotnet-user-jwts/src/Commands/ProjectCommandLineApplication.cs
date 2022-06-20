@@ -17,7 +17,7 @@ internal sealed class ProjectCommandLineApplication : CommandLineApplication
     {
         ProjectOption = Option(
             "-p|--project",
-            "The path of the project to operate on. Defaults to the project in the current directory",
+            Resources.ProjectOption_Description,
             CommandOptionType.SingleValue);
         Reporter = reporter;
     }

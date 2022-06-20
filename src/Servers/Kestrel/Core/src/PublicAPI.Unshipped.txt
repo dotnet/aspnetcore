@@ -1,5 +1,4 @@
 #nullable enable
-*REMOVED*~Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!>! options, Microsoft.AspNetCore.Connections.IConnectionListenerFactory! transportFactory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Http.Features.IHttpWebTransportSessionFeature
 Microsoft.AspNetCore.Http.Features.IHttpWebTransportSessionFeature.AcceptAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession!>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession
@@ -13,7 +12,6 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Unidire
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBaseStream
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBaseStream.Abort() -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBidirectionalStream
-Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!>! options, Microsoft.AspNetCore.Connections.IConnectionListenerFactory! transportFactory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportInputStream
 Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportOutputStream
 Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportOutputStream.WriteDataAsync(System.ReadOnlyMemory<byte> data, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult>

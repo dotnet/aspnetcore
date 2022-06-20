@@ -9,6 +9,8 @@ Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext
 Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.DefaultRouteHandlerInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetRequiredMetadata<T>() -> T!
+Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>
+Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>.BindAsync(Microsoft.AspNetCore.Http.HttpContext! context, System.Reflection.ParameterInfo! parameter) -> System.Threading.Tasks.ValueTask<TSelf?>
 Microsoft.AspNetCore.Http.IRouteHandlerFilter.InvokeAsync(Microsoft.AspNetCore.Http.RouteHandlerInvocationContext! context, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate! next) -> System.Threading.Tasks.ValueTask<object?>
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?

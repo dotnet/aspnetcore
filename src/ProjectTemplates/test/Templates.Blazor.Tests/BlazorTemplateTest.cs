@@ -15,7 +15,7 @@ using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Templates.Test;
+namespace Templates.Blazor.Test;
 
 public abstract class BlazorTemplateTest : LoggedTest
 {
@@ -54,6 +54,21 @@ public abstract class BlazorTemplateTest : LoggedTest
 
         var createResult = await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args, errorOnRestoreError: false);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
+
+        if (serverProject || auth is null)
+        {
+            // External auth mechanisms (which is any auth at all for Blazor WASM) require https to work and thus don't honor the --no-https flag
+            var requiresHttps = string.Equals(auth, "IndividualB2C", StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(auth, "SingleOrg", StringComparison.OrdinalIgnoreCase)
+                                || (!serverProject && auth is not null);
+            var noHttps = args?.Contains(ArgConstants.NoHttps) ?? false;
+            var expectedLaunchProfileNames = requiresHttps
+                ? new[] { "https", "IIS Express" }
+                : noHttps
+                    ? new[] { "http", "IIS Express" }
+                    : new[] { "http", "https", "IIS Express" };
+            await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        }
 
         if (!onlyCreate)
         {

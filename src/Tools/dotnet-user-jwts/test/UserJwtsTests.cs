@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 using Xunit;
 using Xunit.Abstractions;
 using System.Text.RegularExpressions;
+using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
@@ -45,17 +47,21 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
 
         app.Run(new[] { "list", "--project", project });
-        Assert.Contains("Project does not contain a user secrets ID.", _console.GetOutput());
+        Assert.Contains("Set UserSecretsId to ", _console.GetOutput());
+        Assert.Contains("No JWTs created yet!", _console.GetOutput());
     }
 
     [Fact]
-    public void Create_WarnsOnNoSecretInproject()
+    public void Create_CreatesSecretOnNoSecretInproject()
     {
         var project = Path.Combine(_fixture.CreateProject(false), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
-        Assert.Contains("Project does not contain a user secrets ID.", _console.GetOutput());
+        var output = _console.GetOutput();
+        Assert.DoesNotContain("could not find SecretManager.targets", output);
+        Assert.Contains("Set UserSecretsId to ", output);
+        Assert.Contains("New JWT saved", output);
     }
 
     [Fact]
@@ -95,7 +101,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     }
 
     [Fact]
-    public void Delete_RemovesGeneratedToken()
+    public void Remove_RemovesGeneratedToken()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
         var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
@@ -106,7 +112,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var id = matches.SingleOrDefault().Groups[1].Value;
         app.Run(new[] { "create", "--project", project, "--scheme", "Scheme2" });
 
-        app.Run(new[] { "delete", id, "--project", project });
+        app.Run(new[] { "remove", id, "--project", project });
         var appsettingsContent = File.ReadAllText(appsettings);
         Assert.DoesNotContain("Bearer", appsettingsContent);
         Assert.Contains("Scheme2", appsettingsContent);
@@ -142,5 +148,163 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         app.Run(new[] { "key", "--reset", "--force", "--project", project });
         Assert.Contains("New signing key created:", _console.GetOutput());
+    }
+
+    [Fact]
+    public void Command_ShowsHelpForInvalidCommand()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        var exception = Record.Exception(() => app.Run(new[] { "not-real", "--project", project }));
+
+        Assert.Null(exception);
+        Assert.Contains("Unrecognized command or argument 'not-real'", _console.GetOutput());
+    }
+
+    [Fact]
+    public void CreateCommand_ShowsBasicTokenDetails()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project });
+        var output = _console.GetOutput();
+
+        Assert.Contains($"Name: {Environment.UserName}", output);
+        Assert.Contains("Token: ", output);
+        Assert.DoesNotContain("Scheme", output);
+    }
+
+    [Fact]
+    public void CreateCommand_SupportsODateTimeFormats()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--expires-on", DateTime.Now.AddDays(2).ToString("O") });
+        var output = _console.GetOutput();
+
+        Assert.Contains($"Name: {Environment.UserName}", output);
+        Assert.Contains("Token: ", output);
+        Assert.Contains("Expires On", output);
+        Assert.DoesNotContain("Scheme", output);
+    }
+
+    [Fact]
+    public void CreateCommand_ShowsCustomizedTokenDetails()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--scheme", "customScheme" });
+        var output = _console.GetOutput();
+
+        Assert.Contains($"Name: {Environment.UserName}", output);
+        Assert.Contains("Token: ", output);
+        Assert.Contains("Scheme: customScheme", output);
+    }
+
+    [Fact]
+    public void CreateCommand_DisplaysErrorForInvalidExpiresOnCombination()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--expires-on", DateTime.UtcNow.AddDays(2).ToString("O"), "--valid-for", "2h" });
+        var output = _console.GetOutput();
+
+        Assert.Contains($"'--valid-for' and '--expires-on' are mutually exclusive flags. Provide either option but not both.", output);
+        Assert.DoesNotContain("Expires On: ", output);
+    }
+
+    [Fact]
+    public void PrintCommand_ShowsBasicOptions()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project });
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+
+        app.Run(new[] { "print", id, "--project", project });
+        var output = _console.GetOutput();
+
+        Assert.Contains($"ID: {id}", output);
+        Assert.Contains($"Name: {Environment.UserName}", output);
+        Assert.Contains($"Scheme: Bearer", output);
+        Assert.Contains($"Audience(s): https://localhost:5001, http://localhost:5000", output);
+    }
+
+    [Fact]
+    public void PrintCommand_ShowsCustomizedOptions()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--role", "foobar" });
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+
+        app.Run(new[] { "print", id, "--project", project });
+        var output = _console.GetOutput();
+
+        Assert.Contains($"ID: {id}", output);
+        Assert.Contains($"Name: {Environment.UserName}", output);
+        Assert.Contains($"Scheme: Bearer", output);
+        Assert.Contains($"Audience(s): https://localhost:5001, http://localhost:5000", output);
+        Assert.Contains($"Roles: [foobar]", output);
+        Assert.DoesNotContain("Custom Claims", output);
+    }
+
+    [Fact]
+    public void PrintComamnd_ShowsAllOptionsWithShowAll()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--claim", "foo=bar" });
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+
+        app.Run(new[] { "print", id, "--project", project, "--show-all" });
+        var output = _console.GetOutput();
+
+        Assert.Contains($"ID: {id}", output);
+        Assert.Contains($"Name: {Environment.UserName}", output);
+        Assert.Contains($"Scheme: Bearer", output);
+        Assert.Contains($"Audience(s): https://localhost:5001, http://localhost:5000", output);
+        Assert.Contains($"Scopes: none", output);
+        Assert.Contains($"Roles: [none]", output);
+        Assert.Contains($"Custom Claims: [foo=bar]", output);
+    }
+
+    [Fact]
+    public void Create_WithJsonOutput_CanBeSerialized()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "--output", "json" });
+        var output = _console.GetOutput();
+        var deserialized = JsonSerializer.Deserialize<Jwt>(output);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal("Bearer", deserialized.Scheme);
+        Assert.Equal(Environment.UserName, deserialized.Name);
+    }
+
+    [Fact]
+    public void Create_WithTokenOutput_ProducesSingleValue()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project, "-o", "token" });
+        var output = _console.GetOutput();
+
+        var handler = new JwtSecurityTokenHandler();
+        Assert.True(handler.CanReadToken(output.Trim()));
     }
 }

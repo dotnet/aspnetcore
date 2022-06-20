@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
+    <TestGroupName>ProjectTemplates.Blazor.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>

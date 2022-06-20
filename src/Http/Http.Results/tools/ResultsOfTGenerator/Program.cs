@@ -137,7 +137,7 @@ public class Program
             writer.WriteIndentedLine("/// <inheritdoc/>");
             writer.WriteIndentedLine("public Task ExecuteAsync(HttpContext httpContext)");
             writer.WriteIndentedLine("{");
-            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));");
+            writer.WriteIndentedLine(2, "ArgumentNullException.ThrowIfNull(httpContext);");
             writer.WriteLine();
             writer.WriteIndentedLine(2, "if (Result is null)");
             writer.WriteIndentedLine(2, "{");
