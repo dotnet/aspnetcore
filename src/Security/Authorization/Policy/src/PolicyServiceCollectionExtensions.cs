@@ -13,11 +13,19 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class PolicyServiceCollectionExtensions
 {
     /// <summary>
+    /// Adds authorization services to the specified <see cref="IServiceCollection" />.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <returns>The <see cref="AuthorizationBuilder"/> so that additional calls can be chained.</returns>
+    public static AuthorizationBuilder AddAuthorizationBuilder(this IServiceCollection services)
+        => new AuthorizationBuilder(services.AddAuthorization());
+
+    /// <summary>
     /// Adds the authorization policy evaluator service to the specified <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-    /// <returns>The <see cref="AuthorizationBuilderServiceCollection"/> so that additional calls can be chained.</returns>
-    public static AuthorizationBuilderServiceCollection AddAuthorizationPolicyEvaluator(this IServiceCollection services)
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddAuthorizationPolicyEvaluator(this IServiceCollection services)
     {
         if (services == null)
         {
@@ -27,15 +35,15 @@ public static class PolicyServiceCollectionExtensions
         services.TryAddSingleton<AuthorizationPolicyMarkerService>();
         services.TryAddTransient<IPolicyEvaluator, PolicyEvaluator>();
         services.TryAddTransient<IAuthorizationMiddlewareResultHandler, AuthorizationMiddlewareResultHandler>();
-        return new AuthorizationBuilderServiceCollection(services);
+        return services;
     }
 
     /// <summary>
     /// Adds authorization policy services to the specified <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-    /// <returns>The <see cref="AuthorizationBuilderServiceCollection"/> so that additional calls can be chained.</returns>
-    public static AuthorizationBuilderServiceCollection AddAuthorization(this IServiceCollection services)
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddAuthorization(this IServiceCollection services)
     {
         if (services == null)
         {
@@ -44,7 +52,7 @@ public static class PolicyServiceCollectionExtensions
 
         services.AddAuthorizationCore();
         services.AddAuthorizationPolicyEvaluator();
-        return new AuthorizationBuilderServiceCollection(services);
+        return services;
     }
 
     /// <summary>
@@ -52,8 +60,8 @@ public static class PolicyServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="configure">An action delegate to configure the provided <see cref="AuthorizationOptions"/>.</param>
-    /// <returns>The <see cref="AuthorizationBuilderServiceCollection"/> so that additional calls can be chained.</returns>
-    public static AuthorizationBuilderServiceCollection AddAuthorization(this IServiceCollection services, Action<AuthorizationOptions> configure)
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddAuthorization(this IServiceCollection services, Action<AuthorizationOptions> configure)
     {
         if (services == null)
         {
@@ -62,6 +70,6 @@ public static class PolicyServiceCollectionExtensions
 
         services.AddAuthorizationCore(configure);
         services.AddAuthorizationPolicyEvaluator();
-        return new AuthorizationBuilderServiceCollection(services);
+        return services;
     }
 }

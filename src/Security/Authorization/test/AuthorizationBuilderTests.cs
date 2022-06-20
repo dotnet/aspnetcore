@@ -106,21 +106,11 @@ public class AuthorizationBuilderTests
 
 internal class TestHelpers
 {
-    public static AuthorizationBuilderServiceCollection CreateAuthorizationBuilder()
+    public static AuthorizationBuilder CreateAuthorizationBuilder()
     {
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddOptions();
-        return services.AddAuthorizationCore();
-    }
-
-    public static IAuthorizationService BuildAuthorizationService(Action<IServiceCollection> setupServices = null)
-    {
-        var services = new ServiceCollection();
-        services.AddAuthorizationCore();
-        services.AddLogging();
-        services.AddOptions();
-        setupServices?.Invoke(services);
-        return services.BuildServiceProvider().GetRequiredService<IAuthorizationService>();
+        return services.AddAuthorizationBuilder();
     }
 }
