@@ -314,7 +314,7 @@ public class Http2WebSocketTests : Http2TestBase
     }
 
     [Fact]
-    public async Task ExtendedCONNET_AcceptAsyncStream_IsNotLimitedByMinRequestBodyDataRate()
+    public async Task ExtendedCONNECT_AcceptAsyncStream_IsNotLimitedByMinRequestBodyDataRate()
     {
         var limits = _serviceContext.ServerOptions.Limits;
 
@@ -376,7 +376,7 @@ public class Http2WebSocketTests : Http2TestBase
     }
 
     [Fact]
-    public async Task ExtendedCONNET_AcceptAsyncStream_IsNotLimitedByMaxRequestBodySize()
+    public async Task ExtendedCONNECT_AcceptAsyncStream_IsNotLimitedByMaxRequestBodySize()
     {
         var limits = _serviceContext.ServerOptions.Limits;
 

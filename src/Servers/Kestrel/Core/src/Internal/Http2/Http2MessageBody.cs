@@ -27,7 +27,7 @@ internal sealed class Http2MessageBody : MessageBody
         // Note ContentLength or MaxRequestBodySize may be null
         var maxRequestBodySize = _context.MaxRequestBodySize;
 
-        if (!ExtendedConnect && _context.RequestHeaders.ContentLength > maxRequestBodySize)
+        if (_context.RequestHeaders.ContentLength > maxRequestBodySize)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
         }
@@ -65,6 +65,7 @@ internal sealed class Http2MessageBody : MessageBody
         // The HTTP/2 flow control window cannot be larger than 2^31-1 which limits bytesRead.
         _context.OnDataRead((int)newlyExaminedBytes);
 
+        // Don't limit extended CONNECT requests to the MaxRequestBodySize.
         if (!ExtendedConnect)
         {
             AddAndCheckObservedBytes(newlyExaminedBytes);

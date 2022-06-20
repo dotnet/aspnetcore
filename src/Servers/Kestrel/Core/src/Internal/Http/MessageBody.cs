@@ -152,7 +152,7 @@ internal abstract class MessageBody
 
         _stopped = true;
 
-        if (!RequestUpgrade)
+        if (!RequestUpgrade && !ExtendedConnect)
         {
             // Accessing TraceIdentifier will lazy-allocate a string ID
             // Don't access TraceIdentifer unless logging is enabled.
