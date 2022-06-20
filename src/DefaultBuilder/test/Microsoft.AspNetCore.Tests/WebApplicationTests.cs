@@ -5,8 +5,13 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -1975,6 +1980,73 @@ public class WebApplicationTests
         Assert.Contains(builder.Services, service => service.ServiceType == typeof(IOptions<>));
         Assert.Contains(builder.Services, service => service.ServiceType == typeof(ILoggerFactory));
         Assert.Contains(builder.Services, service => service.ServiceType == typeof(ILogger<>));
+    }
+
+    [Fact]
+    public async Task RegisterAuthMiddlewaresCorrectly()
+    {
+        var helloEndpointCalled = false;
+        var customMiddlewareExecuted = false;
+        var username = "foobar";
+
+        var builder = WebApplication.CreateBuilder();
+        builder.Services.AddAuthenticationCore(o =>
+        {
+            o.DefaultScheme = "testSchemeName";
+        });
+        builder.Authentication.AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        app.Use(next =>
+        {
+            return async context =>
+            {
+                // IAuthenticationFeature is added by the authentication middleware
+                // during invocation. This middleware should run after authentication
+                // and be able to access the feature.
+                var authFeature = context.Features.Get<IAuthenticationFeature>();
+                Assert.NotNull(authFeature);
+                customMiddlewareExecuted = true;
+                Assert.Equal(username, context.User.Identity.Name);
+                await next(context);
+            };
+        });
+
+        app.MapGet("/hello", (ClaimsPrincipal user) =>
+        {
+            helloEndpointCalled = true;
+            Assert.Equal(username, user.Identity.Name);
+        }).AllowAnonymous();
+
+        await app.StartAsync();
+        var client = app.GetTestClient();
+        await client.GetStringAsync($"/hello?username={username}");
+
+        Assert.True(helloEndpointCalled);
+        Assert.True(customMiddlewareExecuted);
+    }
+
+    private class UberHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+    {
+        public UberHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock) { }
+
+        protected override Task HandleChallengeAsync(AuthenticationProperties properties) => Task.CompletedTask;
+
+        protected override Task HandleForbiddenAsync(AuthenticationProperties properties) => Task.CompletedTask;
+
+        public Task<bool> HandleRequestAsync() => Task.FromResult(false);
+
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var username = Request.Query["username"];
+            var principal = new ClaimsPrincipal();
+            var id = new ClaimsIdentity();
+            id.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, username));
+            principal.AddIdentity(id);
+            return Task.FromResult(AuthenticateResult.Success(
+                new AuthenticationTicket(principal, "custom")));
+        }
     }
 
     public class RandomConfigurationSource : IConfigurationSource
