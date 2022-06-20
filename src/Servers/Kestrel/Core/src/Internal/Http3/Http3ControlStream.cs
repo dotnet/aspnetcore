@@ -6,18 +6,100 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal abstract class Http3ControlStream : Http3UnidirectionalStream
+internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 {
+    private const int ControlStreamTypeId = 0;
+    private const int EncoderStreamTypeId = 2;
+    private const int DecoderStreamTypeId = 3;
+
+    private readonly Http3FrameWriter _frameWriter;
+    private readonly Http3StreamContext _context;
     private readonly Http3PeerSettings _serverPeerSettings;
+    private readonly IStreamIdFeature _streamIdFeature;
+    private readonly IProtocolErrorCodeFeature _errorCodeFeature;
+    private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
+    private volatile int _isClosed;
+    private int _gracefulCloseInitiator;
+    private long _headerType;
+
     private bool _haveReceivedSettingsFrame;
 
-    public Http3ControlStream(Http3StreamContext context) : base(context)
+    public long StreamId => _streamIdFeature.StreamId;
+
+    public Http3ControlStream(Http3StreamContext context)
     {
+        var httpLimits = context.ServiceContext.ServerOptions.Limits;
+        _context = context;
         _serverPeerSettings = context.ServerPeerSettings;
+        _streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
+        _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
+        _headerType = -1;
+
+        _frameWriter = new Http3FrameWriter(
+            context.StreamContext,
+            context.TimeoutControl,
+            httpLimits.MinResponseDataRate,
+            context.MemoryPool,
+            context.ServiceContext.Log,
+            _streamIdFeature,
+            context.ClientPeerSettings,
+            this);
+        _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
+    }
+
+    private void OnStreamClosed()
+    {
+        Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"), Http3ErrorCode.InternalError);
+    }
+
+    public PipeReader Input => _context.Transport.Input;
+    public KestrelTrace Log => _context.ServiceContext.Log;
+
+    public long StreamTimeoutTicks { get; set; }
+    public bool IsReceivingHeader => _headerType == -1;
+    public bool IsDraining => false;
+    public bool IsRequestStream => false;
+    public string TraceIdentifier => _context.StreamContext.ConnectionId;
+
+    public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
+    {
+        // TODO - Should there be a check here to track abort state to avoid
+        // running twice for a request?
+
+        Log.Http3StreamAbort(_context.ConnectionId, errorCode, abortReason);
+
+        _errorCodeFeature.Error = (long)errorCode;
+        _frameWriter.Abort(abortReason);
+
+        Input.Complete(abortReason);
+    }
+
+    public void OnInputOrOutputCompleted()
+    {
+        TryClose();
+    }
+
+    private bool TryClose()
+    {
+        if (Interlocked.Exchange(ref _isClosed, 1) == 0)
+        {
+            Input.Complete();
+            return true;
+        }
+
+        return false;
+    }
+
+    internal async ValueTask SendStreamIdAsync(long id)
+    {
+        await _frameWriter.WriteStreamIdAsync(id);
     }
 
     internal ValueTask<FlushResult> SendGoAway(long id)
@@ -31,7 +113,42 @@ internal abstract class Http3ControlStream : Http3UnidirectionalStream
         await _frameWriter.WriteSettingsAsync(_serverPeerSettings.GetNonProtocolDefaults());
     }
 
-    public override async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application)
+    private async ValueTask<long> TryReadStreamHeaderAsync()
+    {
+        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2
+        while (_isClosed == 0)
+        {
+            var result = await Input.ReadAsync();
+            var readableBuffer = result.Buffer;
+            var consumed = readableBuffer.Start;
+            var examined = readableBuffer.End;
+
+            try
+            {
+                if (!readableBuffer.IsEmpty)
+                {
+                    var id = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
+                    if (id != -1)
+                    {
+                        return id;
+                    }
+                }
+
+                if (result.IsCompleted)
+                {
+                    return -1;
+                }
+            }
+            finally
+            {
+                Input.AdvanceTo(consumed, examined);
+            }
+        }
+
+        return -1;
+    }
+
+    public async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
     {
         try
         {
@@ -40,7 +157,7 @@ internal abstract class Http3ControlStream : Http3UnidirectionalStream
 
             switch (_headerType)
             {
-                case (long)Http3StreamType.Control:
+                case ControlStreamTypeId:
                     if (!_context.StreamLifetimeHandler.OnInboundControlStream(this))
                     {
                         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1
@@ -49,7 +166,7 @@ internal abstract class Http3ControlStream : Http3UnidirectionalStream
 
                     await HandleControlStream();
                     break;
-                case (long)Http3StreamType.Encoder:
+                case EncoderStreamTypeId:
                     if (!_context.StreamLifetimeHandler.OnInboundEncoderStream(this))
                     {
                         // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
@@ -58,7 +175,7 @@ internal abstract class Http3ControlStream : Http3UnidirectionalStream
 
                     await HandleEncodingDecodingTask();
                     break;
-                case (long)Http3StreamType.Decoder:
+                case DecoderStreamTypeId:
                     if (!_context.StreamLifetimeHandler.OnInboundDecoderStream(this))
                     {
                         // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#section-4.2
@@ -161,11 +278,6 @@ internal abstract class Http3ControlStream : Http3UnidirectionalStream
             default:
                 return ProcessUnknownFrameAsync(_incomingFrame.Type);
         }
-    }
-
-    protected void OnStreamClosed()
-    {
-        Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"), Http3ErrorCode.InternalError);
     }
 
     private ValueTask ProcessSettingsFrameAsync(ReadOnlySequence<byte> payload)
@@ -277,5 +389,30 @@ internal abstract class Http3ControlStream : Http3UnidirectionalStream
             var message = CoreStrings.FormatHttp3ErrorControlStreamFrameReceivedBeforeSettings(Http3Formatting.ToFormattedType(frameType));
             throw new Http3ConnectionErrorException(message, Http3ErrorCode.MissingSettings);
         }
+    }
+
+    public void StopProcessingNextRequest()
+        => StopProcessingNextRequest(serverInitiated: true);
+
+    public void StopProcessingNextRequest(bool serverInitiated)
+    {
+        var initiator = serverInitiated ? GracefulCloseInitiator.Server : GracefulCloseInitiator.Client;
+
+        if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
+        {
+            Input.CancelPendingRead();
+        }
+    }
+
+    /// <summary>
+    /// Used to kick off the request processing loop by derived classes.
+    /// </summary>
+    public abstract void Execute();
+
+    private static class GracefulCloseInitiator
+    {
+        public const int None = 0;
+        public const int Server = 1;
+        public const int Client = 2;
     }
 }
