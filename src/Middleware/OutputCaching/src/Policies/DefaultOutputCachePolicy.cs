@@ -18,7 +18,7 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
         var attemptOutputCaching = AttemptOutputCaching(context);
         context.EnableOutputCaching = true;
@@ -33,13 +33,13 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
         var response = context.HttpContext.Response;
 

@@ -26,7 +26,7 @@ internal sealed class LockingPolicy : IOutputCachePolicy
     public static readonly LockingPolicy Disabled = new(false);
 
     /// <inheritdoc /> 
-    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
         context.AllowLocking = _lockResponse;
 
@@ -34,13 +34,13 @@ internal sealed class LockingPolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc /> 
-    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc /> 
-    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
         return Task.CompletedTask;
     }

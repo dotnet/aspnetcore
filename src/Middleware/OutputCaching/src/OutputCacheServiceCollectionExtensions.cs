@@ -13,14 +13,14 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods for the OutputCaching middleware.
 /// </summary>
-public static class OutputCacheServicesExtensions
+public static class OutputCacheServiceCollectionExtensions
 {
     /// <summary>
     /// Add output caching services.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
     /// <returns></returns>
-    public static IServiceCollection AddOutputCaching(this IServiceCollection services)
+    public static IServiceCollection AddOutputCache(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -45,13 +45,13 @@ public static class OutputCacheServicesExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
     /// <param name="configureOptions">A delegate to configure the <see cref="OutputCacheOptions"/>.</param>
     /// <returns></returns>
-    public static IServiceCollection AddOutputCaching(this IServiceCollection services, Action<OutputCacheOptions> configureOptions)
+    public static IServiceCollection AddOutputCache(this IServiceCollection services, Action<OutputCacheOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
-        services.AddOutputCaching();
+        services.AddOutputCache();
 
         return services;
     }

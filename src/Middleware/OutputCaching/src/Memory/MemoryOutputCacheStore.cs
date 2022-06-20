@@ -31,32 +31,19 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask<OutputCacheEntry?> GetAsync(string key, CancellationToken token)
+    /// <inheritdoc />
+    public ValueTask<byte[]?> GetAsync(string key, CancellationToken token)
     {
-        var entry = _cache.Get(key);
-
-        if (entry is MemoryOutputCacheResponse memoryCachedResponse)
-        {
-            var outputCacheEntry = new OutputCacheEntry
-            {
-                Created = memoryCachedResponse.Created,
-                StatusCode = memoryCachedResponse.StatusCode,
-                Headers = memoryCachedResponse.Headers,
-                Body = memoryCachedResponse.Body,
-                Tags = memoryCachedResponse.Tags
-            };
-
-            return ValueTask.FromResult<OutputCacheEntry?>(outputCacheEntry);
-        }
-
-        return ValueTask.FromResult(default(OutputCacheEntry));
+        var entry = _cache.Get(key) as byte[];
+        return ValueTask.FromResult(entry);
     }
 
-    public ValueTask SetAsync(string key, OutputCacheEntry cachedResponse, TimeSpan validFor, CancellationToken token)
+    /// <inheritdoc />
+    public ValueTask SetAsync(string key, byte[] value, string[] tags, TimeSpan validFor, CancellationToken token)
     {
-        if (cachedResponse.Tags != null)
+        if (tags != null)
         {
-            foreach (var tag in cachedResponse.Tags)
+            foreach (var tag in tags)
             {
                 var keys = _taggedEntries.GetOrAdd(tag, _ => new HashSet<string>());
 
@@ -73,18 +60,11 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
         _cache.Set(
             key,
-            new MemoryOutputCacheResponse
-            {
-                Created = cachedResponse.Created,
-                StatusCode = cachedResponse.StatusCode,
-                Headers = cachedResponse.Headers,
-                Body = cachedResponse.Body,
-                Tags = cachedResponse.Tags ?? Array.Empty<string>()
-            },
+            value,
             new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = validFor,
-                Size = CacheEntryHelpers.EstimateCachedResponseSize(cachedResponse)
+                Size = value.Length
             });
 
         return ValueTask.CompletedTask;

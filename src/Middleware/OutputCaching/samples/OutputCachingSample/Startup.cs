@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.OutputCaching;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOutputCaching(options =>
+builder.Services.AddOutputCache(options =>
 {
     // Define policies for all requests which are not configured per endpoint or per request
-    options.BasePolicies.AddPolicy(b => b.With(c => c.HttpContext.Request.Path.StartsWithSegments("/js")).Expire(TimeSpan.FromDays(1)).AddPolicy<EnableCachePolicy>());
-    options.BasePolicies.AddPolicy(b => b.With(c => c.HttpContext.Request.Path.StartsWithSegments("/js")).NoCache());
+    options.AddBasePolicy(builder => builder.With(c => c.HttpContext.Request.Path.StartsWithSegments("/js")).Expire(TimeSpan.FromDays(1)));
+    options.AddBasePolicy(builder => builder.With(c => c.HttpContext.Request.Path.StartsWithSegments("/js")).NoCache());
 
     options.AddPolicy("NoCache", b => b.NoCache());
 });
@@ -31,7 +31,7 @@ app.MapGet("/attribute", [OutputCache(PolicyName = "NoCache")] () => Gravatar.Wr
 
 var blog = app.MapGroup("blog").CacheOutput(x => x.Tag("blog"));
 blog.MapGet("/", Gravatar.WriteGravatar);
-blog.MapGet("/post/{id}", Gravatar.WriteGravatar).CacheOutput(x => x.Tag("byid")); // check we get the two tags. Or if we need to get the last one
+blog.MapGet("/post/{id}", Gravatar.WriteGravatar).CacheOutput(x => x.Tag("blog", "byid")); // Calling CacheOutput() here overwrites the group's policy
 
 app.MapPost("/purge/{tag}", async (IOutputCacheStore cache, string tag) =>
 {
@@ -43,7 +43,7 @@ app.MapPost("/purge/{tag}", async (IOutputCacheStore cache, string tag) =>
 // Cached entries will vary by culture, but any other additional query is ignored and returns the same cached content
 app.MapGet("/query", Gravatar.WriteGravatar).CacheOutput(p => p.VaryByQuery("culture"));
 
-app.MapGet("/vary", Gravatar.WriteGravatar).CacheOutput(c => c.VaryByValue((context) => ("time", (DateTime.Now.Second % 2).ToString(CultureInfo.InvariantCulture))));
+app.MapGet("/vary", Gravatar.WriteGravatar).CacheOutput(c => c.VaryByValue((context) => new KeyValuePair<string, string>("time", (DateTime.Now.Second % 2).ToString(CultureInfo.InvariantCulture))));
 
 long requests = 0;
 

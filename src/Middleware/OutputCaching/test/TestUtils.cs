@@ -74,12 +74,12 @@ internal class TestUtils
         return Task.CompletedTask;
     }
 
-    internal static IOutputCachingKeyProvider CreateTestKeyProvider()
+    internal static IOutputCacheKeyProvider CreateTestKeyProvider()
     {
         return CreateTestKeyProvider(new OutputCacheOptions());
     }
 
-    internal static IOutputCachingKeyProvider CreateTestKeyProvider(OutputCacheOptions options)
+    internal static IOutputCacheKeyProvider CreateTestKeyProvider(OutputCacheOptions options)
     {
         return new OutputCacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
     }
@@ -137,7 +137,7 @@ internal class TestUtils
                     .UseTestServer()
                     .ConfigureServices(services =>
                     {
-                        services.AddOutputCaching(outputCachingOptions =>
+                        services.AddOutputCache(outputCachingOptions =>
                         {
                             if (options != null)
                             {
@@ -150,7 +150,7 @@ internal class TestUtils
                             }
                             else
                             {
-                                outputCachingOptions.BasePolicies.AddPolicy(new OutputCachePolicyBuilder().Build());
+                                outputCachingOptions.BasePolicies.Add(new OutputCachePolicyBuilder().Build());
                             }
                         });
                     })
@@ -169,8 +169,8 @@ internal class TestUtils
         IOutputCacheStore cache = null,
         OutputCacheOptions options = null,
         TestSink testSink = null,
-        IOutputCachingKeyProvider keyProvider = null,
-        OutputCachePolicyProvider policyProvider = null)
+        IOutputCacheKeyProvider keyProvider = null
+        )
     {
         if (next == null)
         {
@@ -252,17 +252,10 @@ internal static class HttpResponseWritingExtensions
 {
     internal static void Write(this HttpResponse response, string text)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(text);
 
-        if (text == null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
-
-        byte[] data = Encoding.UTF8.GetBytes(text);
+        var data = Encoding.UTF8.GetBytes(text);
         response.Body.Write(data, 0, data.Length);
     }
 }
@@ -310,7 +303,7 @@ internal class LoggedMessage
     internal LogLevel LogLevel { get; }
 }
 
-internal class TestResponseCachingKeyProvider : IOutputCachingKeyProvider
+internal class TestResponseCachingKeyProvider : IOutputCacheKeyProvider
 {
     private readonly string _key;
 
@@ -327,7 +320,7 @@ internal class TestResponseCachingKeyProvider : IOutputCachingKeyProvider
 
 internal class TestOutputCache : IOutputCacheStore
 {
-    private readonly IDictionary<string, OutputCacheEntry> _storage = new Dictionary<string, OutputCacheEntry>();
+    private readonly IDictionary<string, byte[]> _storage = new Dictionary<string, byte[]>();
     public int GetCount { get; private set; }
     public int SetCount { get; private set; }
 
@@ -336,20 +329,20 @@ internal class TestOutputCache : IOutputCacheStore
         throw new NotImplementedException();
     }
 
-    public ValueTask<OutputCacheEntry> GetAsync(string key, CancellationToken token)
+    public ValueTask<byte[]> GetAsync(string key, CancellationToken token)
     {
         GetCount++;
         try
         {
-            return new ValueTask<OutputCacheEntry>(_storage[key]);
+            return ValueTask.FromResult(_storage[key]);
         }
         catch
         {
-            return new ValueTask<OutputCacheEntry>(default(OutputCacheEntry));
+            return ValueTask.FromResult(default(byte[]));
         }
     }
 
-    public ValueTask SetAsync(string key, OutputCacheEntry entry, TimeSpan validFor, CancellationToken token)
+    public ValueTask SetAsync(string key, byte[] entry, string[] tags, TimeSpan validFor, CancellationToken token)
     {
         SetCount++;
         _storage[key] = entry;

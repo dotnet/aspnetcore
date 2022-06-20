@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
-using Microsoft.AspNetCore.OutputCaching.Policies;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
@@ -35,16 +34,13 @@ public class OutputCacheOptions
     public bool UseCaseSensitivePaths { get; set; }
 
     /// <summary>
-    /// Gets the policy applied to all requests.
-    /// </summary>
-    public PoliciesCollection BasePolicies { get; internal set; } = new();
-
-    /// <summary>
     /// Gets the application <see cref="IServiceProvider"/>.
     /// </summary>
-    public IServiceProvider ApplicationServices { get; set; } = default!;
+    public IServiceProvider ApplicationServices { get; internal set; } = default!;
 
-    internal IDictionary<string, IOutputCachePolicy>? NamedPolicies { get; set; }
+    internal Dictionary<string, IOutputCachePolicy>? NamedPolicies { get; set; }
+
+    internal List<IOutputCachePolicy>? BasePolicies { get; set; }
 
     /// <summary>
     /// For testing purposes only.
@@ -74,5 +70,27 @@ public class OutputCacheOptions
         build(builder);
         NamedPolicies ??= new Dictionary<string, IOutputCachePolicy>(StringComparer.OrdinalIgnoreCase);
         NamedPolicies[name] = builder.Build();
+    }
+
+    /// <summary>
+    /// Adds an <see cref="IOutputCachePolicy"/> instance to base policies.
+    /// </summary>
+    /// <param name="policy">The policy to add</param>
+    public void AddBasePolicy(IOutputCachePolicy policy)
+    {
+        BasePolicies ??= new();
+        BasePolicies.Add(policy);
+    }
+
+    /// <summary>
+    /// Builds and adds an <see cref="IOutputCachePolicy"/> instance to base policies.
+    /// </summary>
+    /// <param name="build">an action on <see cref="OutputCachePolicyBuilder"/>.</param>
+    public void AddBasePolicy(Action<OutputCachePolicyBuilder> build)
+    {
+        var builder = new OutputCachePolicyBuilder();
+        build(builder);
+        BasePolicies ??= new();
+        BasePolicies.Add(builder.Build());
     }
 }

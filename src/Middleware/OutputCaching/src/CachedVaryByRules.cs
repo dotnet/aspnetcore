@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.OutputCaching;
@@ -8,20 +9,16 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Represents vary-by rules.
 /// </summary>
-public class CachedVaryByRules
+public sealed class CachedVaryByRules
 {
-    internal Dictionary<string, string>? VaryByCustom;
+    private Dictionary<string, string>? _varyByCustom;
+
+    internal bool HasVaryByCustom => _varyByCustom != null && _varyByCustom.Any();
 
     /// <summary>
-    /// Defines a custom key-pair value to vary the cache by.
+    /// Gets a dictionary of key-pair values to vary the cache by.
     /// </summary>
-    /// <param name="key">The key.</param>
-    /// <param name="value">The value.</param>
-    public void SetVaryByCustom(string key, string value)
-    {
-        VaryByCustom ??= new();
-        VaryByCustom[key] = value;
-    }
+    public IDictionary<string, string> VaryByCustom => _varyByCustom ??= new();
 
     /// <summary>
     /// Gets or sets the list of headers to vary by.

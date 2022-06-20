@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.OutputCaching.Policies;
-
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
@@ -11,13 +9,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 public interface IOutputCacheFeature
 {
     /// <summary>
-    /// Gets the caching context.
+    /// Gets the cache context.
     /// </summary>
     OutputCacheContext Context { get; }
-
-    // Remove
-    /// <summary>
-    /// Gets the policies.
-    /// </summary>
-    PoliciesCollection Policies { get; }
 }

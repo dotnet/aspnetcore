@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// Specifies the parameters necessary for setting appropriate headers in output caching.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class OutputCacheAttribute : Attribute, IOutputCachePolicy
+public class OutputCacheAttribute : Attribute
 {
     // A nullable-int cannot be used as an Attribute parameter.
     // Hence this nullable-int is present to back the Duration property.
@@ -15,7 +15,7 @@ public class OutputCacheAttribute : Attribute, IOutputCachePolicy
     private int? _duration;
     private bool? _noCache;
 
-    private IOutputCachePolicy? _policy;
+    private IOutputCachePolicy? _builtPolicy;
 
     /// <summary>
     /// Gets or sets the duration in seconds for which the response is cached.
@@ -23,7 +23,7 @@ public class OutputCacheAttribute : Attribute, IOutputCachePolicy
     public int Duration
     {
         get => _duration ?? 0;
-        set => _duration = value;
+        init => _duration = value;
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ public class OutputCacheAttribute : Attribute, IOutputCachePolicy
     public bool NoCache
     {
         get => _noCache ?? false;
-        set => _noCache = value;
+        init => _noCache = value;
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ public class OutputCacheAttribute : Attribute, IOutputCachePolicy
     /// <remarks>
     /// <see cref="VaryByQueryKeys"/> requires the output cache middleware.
     /// </remarks>
-    public string[]? VaryByQueryKeys { get; set; }
+    public string[]? VaryByQueryKeys { get; init; }
 
     /// <summary>
     /// Gets or sets the headers to vary by.
@@ -50,33 +50,18 @@ public class OutputCacheAttribute : Attribute, IOutputCachePolicy
     /// <remarks>
     /// <see cref="VaryByHeaders"/> requires the output cache middleware.
     /// </remarks>
-    public string[]? VaryByHeaders { get; set; }
+    public string[]? VaryByHeaders { get; init; }
 
     /// <summary>
     /// Gets or sets the value of the cache policy name.
     /// </summary>
-    public string? PolicyName { get; set; }
+    public string? PolicyName { get; init; }
 
-    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
+    internal IOutputCachePolicy BuildPolicy()
     {
-        return GetPolicy().OnRequestAsync(context);
-    }
-
-    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
-    {
-        return GetPolicy().OnServeFromCacheAsync(context);
-    }
-
-    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
-    {
-        return GetPolicy().OnServeResponseAsync(context);
-    }
-
-    private IOutputCachePolicy GetPolicy()
-    {
-        if (_policy != null)
+        if (_builtPolicy != null)
         {
-            return _policy;
+            return _builtPolicy;
         }
 
         var builder = new OutputCachePolicyBuilder();
@@ -101,6 +86,6 @@ public class OutputCacheAttribute : Attribute, IOutputCachePolicy
             builder.Expire(TimeSpan.FromSeconds(_duration.Value));
         }
 
-        return _policy = builder.Build();
+        return _builtPolicy = builder.Build();
     }
 }

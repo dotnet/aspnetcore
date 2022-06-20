@@ -20,29 +20,29 @@ internal sealed class CompositePolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc/>
-    async Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
+    async Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
         foreach (var policy in _policies)
         {
-            await policy.OnRequestAsync(context);
+            await policy.CacheRequestAsync(context);
         }
     }
 
     /// <inheritdoc/>
-    async Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
+    async Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
         foreach (var policy in _policies)
         {
-            await policy.OnServeFromCacheAsync(context);
+            await policy.ServeFromCacheAsync(context);
         }
     }
 
     /// <inheritdoc/>
-    async Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
+    async Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
         foreach (var policy in _policies)
         {
-            await policy.OnServeResponseAsync(context);
+            await policy.ServeResponseAsync(context);
         }
     }
 }

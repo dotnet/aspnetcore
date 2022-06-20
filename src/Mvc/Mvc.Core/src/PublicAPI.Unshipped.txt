@@ -13,17 +13,5 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataP
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.SystemTextJsonValidationMetadataProvider(System.Text.Json.JsonNamingPolicy! namingPolicy) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.get -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.set -> void
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Duration.get -> int
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Duration.set -> void
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.NoCache.get -> bool
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.NoCache.set -> void
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Order.get -> int
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.Order.set -> void
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.OutputCacheAttribute() -> void
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.PolicyName.get -> string?
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.PolicyName.set -> void
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.VaryByQueryKeys.get -> string![]?
-Microsoft.AspNetCore.Mvc.OutputCacheAttribute.VaryByQueryKeys.set -> void
 virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.PostConfigure(string? name, TOptions! options) -> void
 static Microsoft.AspNetCore.Mvc.ControllerBase.Empty.get -> Microsoft.AspNetCore.Mvc.EmptyResult!

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Builder;
 /// <summary>
 /// Extension methods for adding the <see cref="OutputCacheMiddleware"/> to an application.
 /// </summary>
-public static class OutputCacheExtensions
+public static class OutputCacheApplicationBuilderExtensions
 {
     /// <summary>
     /// Adds the <see cref="OutputCacheMiddleware"/> for caching HTTP responses.

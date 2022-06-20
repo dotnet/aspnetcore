@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
-internal interface IOutputCachingKeyProvider
+internal interface IOutputCacheKeyProvider
 {
     /// <summary>
     /// Create a key for storing cached responses.

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.OutputCaching.Memory;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -25,8 +24,9 @@ public class OutputCachingMiddlewareTests
         {
             OnlyIfCached = true
         }.ToString();
+        middleware.TryGetRequestPolicies(context.HttpContext, out var policies);
 
-        Assert.True(await middleware.TryServeFromCacheAsync(context));
+        Assert.True(await middleware.TryServeFromCacheAsync(context, policies));
         Assert.Equal(StatusCodes.Status504GatewayTimeout, context.HttpContext.Response.StatusCode);
         TestUtils.AssertLoggedMessages(
             sink.Writes,
@@ -40,8 +40,9 @@ public class OutputCachingMiddlewareTests
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
         var context = TestUtils.CreateTestContext(cache);
+        middleware.TryGetRequestPolicies(context.HttpContext, out var policies);
 
-        Assert.False(await middleware.TryServeFromCacheAsync(context));
+        Assert.False(await middleware.TryServeFromCacheAsync(context, policies));
         Assert.Equal(1, cache.GetCount);
         TestUtils.AssertLoggedMessages(
             sink.Writes,
@@ -55,8 +56,9 @@ public class OutputCachingMiddlewareTests
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
         var context = TestUtils.CreateTestContext(cache);
+        middleware.TryGetRequestPolicies(context.HttpContext, out var policies);
 
-        await cache.SetAsync(
+        await OutputCacheEntryFormatter.StoreAsync(
             "BaseKey",
             new OutputCacheEntry()
             {
@@ -64,9 +66,10 @@ public class OutputCachingMiddlewareTests
                 Body = new CachedResponseBody(new List<byte[]>(0), 0)
             },
             TimeSpan.Zero,
+            cache,
             default);
 
-        Assert.True(await middleware.TryServeFromCacheAsync(context));
+        Assert.True(await middleware.TryServeFromCacheAsync(context, policies));
         Assert.Equal(1, cache.GetCount);
         TestUtils.AssertLoggedMessages(
             sink.Writes,
@@ -80,11 +83,11 @@ public class OutputCachingMiddlewareTests
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
         var context = TestUtils.CreateTestContext(cache);
+        middleware.TryGetRequestPolicies(context.HttpContext, out var policies);
         context.CacheKey = "BaseKey";
 
         context.HttpContext.Response.Headers["MyHeader"] = "OldValue";
-        await cache.SetAsync(
-            context.CacheKey,
+        await OutputCacheEntryFormatter.StoreAsync(context.CacheKey,
             new OutputCacheEntry()
             {
                 Headers = new HeaderDictionary()
@@ -94,9 +97,10 @@ public class OutputCachingMiddlewareTests
                 Body = new CachedResponseBody(new List<byte[]>(0), 0)
             },
             TimeSpan.Zero,
+            cache,
             default);
 
-        Assert.True(await middleware.TryServeFromCacheAsync(context));
+        Assert.True(await middleware.TryServeFromCacheAsync(context, policies));
         Assert.Equal("NewValue", context.HttpContext.Response.Headers["MyHeader"]);
         Assert.Equal(1, cache.GetCount);
         TestUtils.AssertLoggedMessages(
@@ -112,17 +116,18 @@ public class OutputCachingMiddlewareTests
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
         var context = TestUtils.CreateTestContext(cache);
         context.HttpContext.Request.Headers.IfNoneMatch = "*";
+        middleware.TryGetRequestPolicies(context.HttpContext, out var policies);
 
-        await cache.SetAsync(
-            "BaseKey",
+        await OutputCacheEntryFormatter.StoreAsync("BaseKey",
             new OutputCacheEntry()
             {
                 Body = new CachedResponseBody(new List<byte[]>(0), 0)
             },
             TimeSpan.Zero,
+            cache,
             default);
 
-        Assert.True(await middleware.TryServeFromCacheAsync(context));
+        Assert.True(await middleware.TryServeFromCacheAsync(context, policies));
         Assert.Equal(1, cache.GetCount);
         TestUtils.AssertLoggedMessages(
             sink.Writes,
@@ -558,7 +563,7 @@ public class OutputCachingMiddlewareTests
 
         middleware.FinalizeCacheHeaders(context);
 
-        Assert.Equal(new StringValues(new[] { "HeaderB, heaDera" }), context.CachedResponse.Headers.Vary);
+        Assert.Equal(new StringValues(new[] { "HeaderB, heaDera" }), context.CachedResponse.Headers[HeaderNames.Vary]);
     }
 
     [Fact]
@@ -702,7 +707,7 @@ public class OutputCachingMiddlewareTests
         middleware.ShimResponseStream(context);
         await context.HttpContext.Response.WriteAsync(new string('0', 10));
 
-        context.OutputCachingStream.DisableBuffering();
+        context.OutputCacheStream.DisableBuffering();
 
         await middleware.FinalizeCacheBodyAsync(context);
 
@@ -724,7 +729,7 @@ public class OutputCachingMiddlewareTests
                 SizeLimit = 100
             })));
         var context = TestUtils.CreateTestContext();
-
+        middleware.TryGetRequestPolicies(context.HttpContext, out var policies);
         middleware.ShimResponseStream(context);
 
         await context.HttpContext.Response.WriteAsync(new string('0', 101));
@@ -741,7 +746,7 @@ public class OutputCachingMiddlewareTests
             LoggedMessage.ResponseCached);
 
         // The entry cannot be retrieved
-        Assert.False(await middleware.TryServeFromCacheAsync(context));
+        Assert.False(await middleware.TryServeFromCacheAsync(context, policies));
     }
 
     [Fact]

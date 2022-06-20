@@ -12,19 +12,19 @@ public interface IOutputCachePolicy
     /// Updates the <see cref="OutputCacheContext"/> before the cache middleware is invoked.
     /// At that point the cache middleware can still be enabled or disabled for the request.
     /// </summary>
-    /// <param name="context">The current request's caching context.</param>
-    Task OnRequestAsync(OutputCacheContext context);
+    /// <param name="context">The current request's cache context.</param>
+    Task CacheRequestAsync(OutputCacheContext context);
 
     /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the cached response is used.
     /// At that point the freshness of the cached response can be updated.
     /// </summary>
-    /// <param name="context">The current request's caching context.</param>
-    Task OnServeFromCacheAsync(OutputCacheContext context);
+    /// <param name="context">The current request's cache context.</param>
+    Task ServeFromCacheAsync(OutputCacheContext context);
 
     /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the response is served and can be cached.
     /// At that point cacheability of the response can be updated.
     /// </summary>
-    Task OnServeResponseAsync(OutputCacheContext context);
+    Task ServeResponseAsync(OutputCacheContext context);
 }

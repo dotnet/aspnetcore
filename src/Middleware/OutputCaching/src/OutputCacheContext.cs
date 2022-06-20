@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// Represent the current caching context for the request.
+/// Represent the current cache context for the request.
 /// </summary>
 public sealed class OutputCacheContext
 {
@@ -80,7 +80,7 @@ public sealed class OutputCacheContext
 
     internal Stream OriginalResponseStream { get; set; }
 
-    internal OutputCacheStream OutputCachingStream { get; set; }
+    internal OutputCacheStream OutputCacheStream { get; set; }
     internal ILogger Logger { get; }
     internal OutputCacheOptions Options { get; }
     internal IOutputCacheStore Store { get; }

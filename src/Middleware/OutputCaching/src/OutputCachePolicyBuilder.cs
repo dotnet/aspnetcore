@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Provides helper methods to create custom policies.
 /// </summary>
-public sealed class OutputCachePolicyBuilder : IOutputCachePolicy
+public sealed class OutputCachePolicyBuilder
 {
     private const DynamicallyAccessedMemberTypes ActivatorAccessibility = DynamicallyAccessedMemberTypes.PublicConstructors;
 
     private IOutputCachePolicy? _builtPolicy;
     private readonly List<IOutputCachePolicy> _policies = new();
-    private List<Func<OutputCacheContext, Task<bool>>>? _requirements;
+    private List<Func<OutputCacheContext, CancellationToken, Task<bool>>>? _requirements;
 
     /// <summary>
     /// Creates a new <see cref="OutputCachePolicyBuilder"/> instance.
@@ -29,20 +29,30 @@ public sealed class OutputCachePolicyBuilder : IOutputCachePolicy
     }
 
     /// <summary>
-    /// Adds a policy instance.
+    /// Adds a dynamically resolved policy.
     /// </summary>
-    public OutputCachePolicyBuilder AddPolicy(IOutputCachePolicy policy)
+    /// <param name="policyType">The type of policy to add</param>
+    public OutputCachePolicyBuilder AddPolicy([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type policyType)
     {
         _builtPolicy = null;
-        _policies.Add(policy);
+        _policies.Add(new TypedPolicy(policyType));
         return this;
+    }
+
+    /// <summary>
+    /// Adds a dynamically resolved policy.
+    /// </summary>
+    /// <typeparam name="T">The policy type.</typeparam>
+    public OutputCachePolicyBuilder AddPolicy<[DynamicallyAccessedMembers(ActivatorAccessibility)] T>() where T : IOutputCachePolicy
+    {
+        return AddPolicy(typeof(T));
     }
 
     /// <summary>
     /// Adds a requirement to the current policy.
     /// </summary>
     /// <param name="predicate">The predicate applied to the policy.</param>
-    public OutputCachePolicyBuilder With(Func<OutputCacheContext, Task<bool>> predicate)
+    public OutputCachePolicyBuilder With(Func<OutputCacheContext, CancellationToken, Task<bool>> predicate)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
@@ -62,14 +72,14 @@ public sealed class OutputCachePolicyBuilder : IOutputCachePolicy
 
         _builtPolicy = null;
         _requirements ??= new();
-        _requirements.Add(c => Task.FromResult(predicate(c)));
+        _requirements.Add((c, t) => Task.FromResult(predicate(c)));
         return this;
     }
 
     /// <summary>
     /// Adds a policy to vary the cached responses by query strings.
     /// </summary>
-    /// <param name="queryKeys">The query keys to vary the cached responses by.</param>
+    /// <param name="queryKeys">The query keys to vary the cached responses by. Leave empty to ignore all query strings.</param>
     /// <remarks>
     /// By default all query keys vary the cache entries. However when specific query keys are specified only these are then taken into account.
     /// </remarks>
@@ -99,7 +109,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachePolicy
     /// Adds a policy to vary the cached responses by custom values.
     /// </summary>
     /// <param name="varyBy">The value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, Task<string>> varyBy)
+    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, CancellationToken, Task<string>> varyBy)
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
@@ -112,7 +122,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachePolicy
     /// Adds a policy to vary the cached responses by custom key/value.
     /// </summary>
     /// <param name="varyBy">The key/value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, Task<(string, string)>> varyBy)
+    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, CancellationToken, Task<KeyValuePair<string, string>>> varyBy)
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
@@ -138,7 +148,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachePolicy
     /// Adds a policy to vary the cached responses by custom key/value.
     /// </summary>
     /// <param name="varyBy">The key/value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, (string, string)> varyBy)
+    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, KeyValuePair<string, string>> varyBy)
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
@@ -198,6 +208,7 @@ public sealed class OutputCachePolicyBuilder : IOutputCachePolicy
     /// <summary>
     /// Clears the current policies.
     /// </summary>
+    /// <remarks>It also removed the default cache policy.</remarks>
     public OutputCachePolicyBuilder Clear()
     {
         _builtPolicy = null;
@@ -223,6 +234,10 @@ public sealed class OutputCachePolicyBuilder : IOutputCachePolicy
         return this;
     }
 
+    /// <summary>
+    /// Creates the <see cref="IOutputCachePolicy"/>.
+    /// </summary>
+    /// <returns>The<see cref="IOutputCachePolicy"/> instance.</returns>
     internal IOutputCachePolicy Build()
     {
         if (_builtPolicy != null)
@@ -230,16 +245,19 @@ public sealed class OutputCachePolicyBuilder : IOutputCachePolicy
             return _builtPolicy;
         }
 
-        var policies = new CompositePolicy(_policies.ToArray());
+        var policies = _policies.Count == 1
+            ? _policies[0]
+            : new CompositePolicy(_policies.ToArray())
+            ;
 
         // If the policy was built with requirements, wrap it
         if (_requirements != null && _requirements.Any())
         {
-            return new PredicatePolicy(async c =>
+            policies = new PredicatePolicy(async c =>
             {
                 foreach (var r in _requirements)
                 {
-                    if (!await r(c))
+                    if (!await r(c, c.HttpContext.RequestAborted))
                     {
                         return false;
                     }
@@ -250,39 +268,5 @@ public sealed class OutputCachePolicyBuilder : IOutputCachePolicy
         }
 
         return _builtPolicy = policies;
-    }
-
-    /// <summary>
-    /// Adds a dynamically resolved policy.
-    /// </summary>
-    /// <param name="policyType">The type of policy to add</param>
-    public OutputCachePolicyBuilder AddPolicy([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type policyType)
-    {
-        AddPolicy(new TypedPolicy(policyType));
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a dynamically resolved policy.
-    /// </summary>
-    /// <typeparam name="T">The policy type.</typeparam>
-    public OutputCachePolicyBuilder AddPolicy<[DynamicallyAccessedMembers(ActivatorAccessibility)] T>() where T : IOutputCachePolicy
-    {
-        return AddPolicy(typeof(T));
-    }
-
-    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
-    {
-        return Build().OnRequestAsync(context);
-    }
-
-    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
-    {
-        return Build().OnServeFromCacheAsync(context);
-    }
-
-    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
-    {
-        return Build().OnServeResponseAsync(context);
     }
 }

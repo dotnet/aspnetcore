@@ -25,21 +25,21 @@ internal sealed class PredicatePolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
-        return ExecuteAwaited(static (policy, context) => policy.OnRequestAsync(context), _policy, context);
+        return ExecuteAwaited(static (policy, context) => policy.CacheRequestAsync(context), _policy, context);
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
-        return ExecuteAwaited(static (policy, context) => policy.OnServeFromCacheAsync(context), _policy, context);
+        return ExecuteAwaited(static (policy, context) => policy.ServeFromCacheAsync(context), _policy, context);
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
-        return ExecuteAwaited(static (policy, context) => policy.OnServeResponseAsync(context), _policy, context);
+        return ExecuteAwaited(static (policy, context) => policy.ServeResponseAsync(context), _policy, context);
     }
 
     private Task ExecuteAwaited(Func<IOutputCachePolicy, OutputCacheContext, Task> action, IOutputCachePolicy policy, OutputCacheContext context)

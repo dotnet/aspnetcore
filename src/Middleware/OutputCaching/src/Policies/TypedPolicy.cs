@@ -33,20 +33,20 @@ internal sealed class TypedPolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc/>
-    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
-        return CreatePolicy(context)?.OnRequestAsync(context) ?? Task.CompletedTask;
+        return CreatePolicy(context)?.CacheRequestAsync(context) ?? Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
-        return CreatePolicy(context)?.OnServeFromCacheAsync(context) ?? Task.CompletedTask;
+        return CreatePolicy(context)?.ServeFromCacheAsync(context) ?? Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
-        return CreatePolicy(context)?.OnServeResponseAsync(context) ?? Task.CompletedTask;
+        return CreatePolicy(context)?.ServeResponseAsync(context) ?? Task.CompletedTask;
     }
 }

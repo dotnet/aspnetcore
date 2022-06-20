@@ -20,7 +20,7 @@ internal sealed class ProfilePolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.OnServeResponseAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -29,11 +29,11 @@ internal sealed class ProfilePolicy : IOutputCachePolicy
             return Task.CompletedTask;
         }
 
-        return policy.OnServeResponseAsync(context);
+        return policy.ServeResponseAsync(context);
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.OnServeFromCacheAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -42,11 +42,11 @@ internal sealed class ProfilePolicy : IOutputCachePolicy
             return Task.CompletedTask;
         }
 
-        return policy.OnServeFromCacheAsync(context);
+        return policy.ServeFromCacheAsync(context);
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.OnRequestAsync(OutputCacheContext context)
+    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
         var policy = GetProfilePolicy(context);
 
@@ -55,7 +55,7 @@ internal sealed class ProfilePolicy : IOutputCachePolicy
             return Task.CompletedTask;
         }
 
-        return policy.OnRequestAsync(context); ;
+        return policy.CacheRequestAsync(context); ;
     }
 
     internal IOutputCachePolicy? GetProfilePolicy(OutputCacheContext context)

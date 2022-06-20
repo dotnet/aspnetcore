@@ -23,9 +23,8 @@ internal class OutputCacheMiddleware
     private readonly RequestDelegate _next;
     private readonly OutputCacheOptions _options;
     private readonly ILogger _logger;
-    private readonly OutputCachePolicyProvider _policyProvider;
     private readonly IOutputCacheStore _store;
-    private readonly IOutputCachingKeyProvider _keyProvider;
+    private readonly IOutputCacheKeyProvider _keyProvider;
     private readonly WorkDispatcher<string, OutputCacheEntry?> _outputCacheEntryDispatcher;
     private readonly WorkDispatcher<string, OutputCacheEntry?> _requestDispatcher;
 
@@ -58,7 +57,7 @@ internal class OutputCacheMiddleware
         IOptions<OutputCacheOptions> options,
         ILoggerFactory loggerFactory,
         IOutputCacheStore cache,
-        IOutputCachingKeyProvider keyProvider)
+        IOutputCacheKeyProvider keyProvider)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(options);
@@ -73,7 +72,6 @@ internal class OutputCacheMiddleware
         _keyProvider = keyProvider;
         _outputCacheEntryDispatcher = new();
         _requestDispatcher = new();
-        _policyProvider = new(_options);
     }
 
     /// <summary>
@@ -84,7 +82,7 @@ internal class OutputCacheMiddleware
     public async Task Invoke(HttpContext httpContext)
     {
         // Skip the middleware if there is no policy for the current request
-        if (!_policyProvider.HasPolicies(httpContext))
+        if (!TryGetRequestPolicies(httpContext, out var policies))
         {
             await _next(httpContext);
             return;
@@ -97,7 +95,10 @@ internal class OutputCacheMiddleware
 
         try
         {
-            await _policyProvider.OnRequestAsync(context);
+            foreach (var policy in policies)
+            {
+                await policy.CacheRequestAsync(context);
+            }
 
             // Should we attempt any caching logic?
             if (context.EnableOutputCaching)
@@ -105,7 +106,7 @@ internal class OutputCacheMiddleware
                 // Can this request be served from cache?
                 if (context.AllowCacheLookup)
                 {
-                    if (await TryServeFromCacheAsync(context))
+                    if (await TryServeFromCacheAsync(context, policies))
                     {
                         return;
                     }
@@ -127,7 +128,7 @@ internal class OutputCacheMiddleware
                             // If the result was processed by another request, serve it from cache
                             if (!executed)
                             {
-                                if (await TryServeFromCacheAsync(context))
+                                if (await TryServeFromCacheAsync(context, policies))
                                 {
                                     return;
                                 }
@@ -148,7 +149,10 @@ internal class OutputCacheMiddleware
                                 await _next(httpContext);
 
                                 // The next middleware might change the policy
-                                await _policyProvider.OnServeResponseAsync(context);
+                                foreach (var policy in policies)
+                                {
+                                    await policy.ServeResponseAsync(context);
+                                }
 
                                 // If there was no response body, check the response headers now. We can cache things like redirects.
                                 StartResponse(context);
@@ -175,11 +179,49 @@ internal class OutputCacheMiddleware
         }
         finally
         {
-            RemoveOutputCachingFeature(httpContext);
+            RemoveOutputCacheFeature(httpContext);
         }
     }
 
-    internal async Task<bool> TryServeCachedResponseAsync(OutputCacheContext context, OutputCacheEntry? cacheEntry)
+    internal bool TryGetRequestPolicies(HttpContext httpContext, out IReadOnlyList<IOutputCachePolicy> policies)
+    {
+        policies = Array.Empty<IOutputCachePolicy>();
+        List<IOutputCachePolicy>? result = null;
+
+        if (_options.BasePolicies != null)
+        {
+            result = new();
+            result.AddRange(_options.BasePolicies);
+        }
+
+        var metadata = httpContext.GetEndpoint()?.Metadata;
+
+        var policy = metadata?.GetMetadata<IOutputCachePolicy>();
+
+        if (policy != null)
+        {
+            result ??= new();
+            result.Add(policy);
+        }
+
+        var attribute = metadata?.GetMetadata<OutputCacheAttribute>();
+
+        if (attribute != null)
+        {
+            result ??= new();
+            result.Add(attribute.BuildPolicy());
+        }
+
+        if (result != null)
+        {
+            policies = result;
+            return true;
+        }
+
+        return false;
+    }
+
+    internal async Task<bool> TryServeCachedResponseAsync(OutputCacheContext context, OutputCacheEntry? cacheEntry, IReadOnlyList<IOutputCachePolicy> policies)
     {
         if (cacheEntry == null)
         {
@@ -191,7 +233,10 @@ internal class OutputCacheMiddleware
         var cacheEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cacheEntryAge > TimeSpan.Zero ? cacheEntryAge : TimeSpan.Zero;
 
-        await _policyProvider.OnServeFromCacheAsync(context);
+        foreach (var policy in policies)
+        {
+            await policy.ServeFromCacheAsync(context);
+        }
 
         context.IsCacheEntryFresh = true;
 
@@ -259,7 +304,7 @@ internal class OutputCacheMiddleware
         return false;
     }
 
-    internal async Task<bool> TryServeFromCacheAsync(OutputCacheContext cacheContext)
+    internal async Task<bool> TryServeFromCacheAsync(OutputCacheContext cacheContext, IReadOnlyList<IOutputCachePolicy> policies)
     {
         CreateCacheKey(cacheContext);
 
@@ -267,9 +312,9 @@ internal class OutputCacheMiddleware
         // TODO: should it be part of the cache implementations or can we assume all caches would benefit from it?
         // It makes sense for caches that use IO (disk, network) or need to deserialize the state but could also be a global option
 
-        var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, cacheContext, static async (key, cacheContext) => await cacheContext.Store.GetAsync(key, cacheContext.HttpContext.RequestAborted));
+        var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, cacheContext, static async (key, cacheContext) => await OutputCacheEntryFormatter.GetAsync(key, cacheContext.Store, cacheContext.HttpContext.RequestAborted));
 
-        if (await TryServeCachedResponseAsync(cacheContext, cacheEntry))
+        if (await TryServeCachedResponseAsync(cacheContext, cacheEntry, policies))
         {
             return true;
         }
@@ -361,7 +406,7 @@ internal class OutputCacheMiddleware
             return;
         }
 
-        context.OutputCachingStream.DisableBuffering();
+        context.OutputCacheStream.DisableBuffering();
     }
 
     /// <summary>
@@ -369,13 +414,13 @@ internal class OutputCacheMiddleware
     /// </summary>
     internal async ValueTask FinalizeCacheBodyAsync(OutputCacheContext context)
     {
-        if (context.AllowCacheStorage && context.OutputCachingStream.BufferingEnabled)
+        if (context.AllowCacheStorage && context.OutputCacheStream.BufferingEnabled)
         {
             // If AllowCacheLookup is false, the cache key was not created
             CreateCacheKey(context);
 
             var contentLength = context.HttpContext.Response.ContentLength;
-            var cachedResponseBody = context.OutputCachingStream.GetCachedResponseBody();
+            var cachedResponseBody = context.OutputCacheStream.GetCachedResponseBody();
             if (!contentLength.HasValue || contentLength == cachedResponseBody.Length
                 || (cachedResponseBody.Length == 0
                     && HttpMethods.IsHead(context.HttpContext.Request.Method)))
@@ -395,7 +440,7 @@ internal class OutputCacheMiddleware
                     throw new InvalidOperationException("Cache key must be defined");
                 }
 
-                await _store.SetAsync(context.CacheKey, context.CachedResponse, context.CachedResponseValidFor, context.HttpContext.RequestAborted);
+                await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.CachedResponseValidFor, _store, context.HttpContext.RequestAborted);
             }
             else
             {
@@ -447,15 +492,15 @@ internal class OutputCacheMiddleware
     {
         // Shim response stream
         context.OriginalResponseStream = context.HttpContext.Response.Body;
-        context.OutputCachingStream = new OutputCacheStream(
+        context.OutputCacheStream = new OutputCacheStream(
             context.OriginalResponseStream,
             _options.MaximumBodySize,
             StreamUtilities.BodySegmentSize,
             () => StartResponse(context));
-        context.HttpContext.Response.Body = context.OutputCachingStream;
+        context.HttpContext.Response.Body = context.OutputCacheStream;
     }
 
-    internal static void RemoveOutputCachingFeature(HttpContext context) =>
+    internal static void RemoveOutputCacheFeature(HttpContext context) =>
         context.Features.Set<IOutputCacheFeature?>(null);
 
     internal static void UnshimResponseStream(OutputCacheContext context)
@@ -464,7 +509,7 @@ internal class OutputCacheMiddleware
         context.HttpContext.Response.Body = context.OriginalResponseStream;
 
         // Remove IOutputCachingFeature
-        RemoveOutputCachingFeature(context.HttpContext);
+        RemoveOutputCacheFeature(context.HttpContext);
     }
 
     internal static bool ContentIsNotModified(OutputCacheContext context)
@@ -480,11 +525,11 @@ internal class OutputCacheMiddleware
                 return true;
             }
 
-            if (!StringValues.IsNullOrEmpty(cachedResponseHeaders.ETag)
-                && EntityTagHeaderValue.TryParse(cachedResponseHeaders.ETag.ToString(), out var eTag)
+            if (!StringValues.IsNullOrEmpty(cachedResponseHeaders[HeaderNames.ETag])
+                && EntityTagHeaderValue.TryParse(cachedResponseHeaders[HeaderNames.ETag].ToString(), out var eTag)
                 && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out var ifNoneMatchEtags))
             {
-                for (var i = 0; i < ifNoneMatchEtags.Count; i++)
+                for (var i = 0; i < ifNoneMatchEtags?.Count; i++)
                 {
                     var requestETag = ifNoneMatchEtags[i];
                     if (eTag.Compare(requestETag, useStrongComparison: false))
@@ -500,8 +545,8 @@ internal class OutputCacheMiddleware
             var ifModifiedSince = context.HttpContext.Request.Headers.IfModifiedSince;
             if (!StringValues.IsNullOrEmpty(ifModifiedSince))
             {
-                if (!HeaderUtilities.TryParseDate(cachedResponseHeaders.LastModified.ToString(), out var modified) &&
-                    !HeaderUtilities.TryParseDate(cachedResponseHeaders.Date.ToString(), out modified))
+                if (!HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.LastModified].ToString(), out var modified) &&
+                    !HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.Date].ToString(), out modified))
                 {
                     return false;
                 }

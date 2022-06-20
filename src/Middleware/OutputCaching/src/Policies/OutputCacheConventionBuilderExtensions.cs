@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.OutputCaching;
 
-namespace Microsoft.AspNetCore.OutputCaching;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// A set of endpoint extension methods.
 /// </summary>
-public static class PolicyExtensions
+public static class OutputCacheConventionBuilderExtensions
 {
     /// <summary>
     /// Marks an endpoint to be cached with the default policy.

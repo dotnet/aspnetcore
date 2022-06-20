@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <inheritdoc />
-public sealed class OutputCacheEntry
+internal sealed class OutputCacheEntry
 {
     /// <summary>
     /// Gets the created date and time of the cache entry.
@@ -21,7 +21,7 @@ public sealed class OutputCacheEntry
     /// <summary>
     /// Gets the headers of the cache entry.
     /// </summary>
-    public IHeaderDictionary Headers { get; set; } = default!;
+    public HeaderDictionary Headers { get; set; } = default!;
 
     /// <summary>
     /// Gets the body of the cache entry.
