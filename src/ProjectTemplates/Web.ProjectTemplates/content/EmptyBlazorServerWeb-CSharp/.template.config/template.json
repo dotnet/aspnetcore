@@ -132,8 +132,10 @@
       "replaces": "44300"
     },
     "HasHttpProfile": {
-      "type": "computed",
-      "value": "(NoHttps)"
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Always have HTTP profile."
     },
     "HasHttpsProfile": {
       "type": "computed",
