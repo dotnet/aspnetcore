@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// <summary>
 /// An interface which can be used to identify a type which provides metadata needed for enabling request rate limiting support.
 /// </summary>
-public interface IRateLimiterMetadata
+internal interface IRateLimiterMetadata
 {
     /// <summary>
     /// The name of the limiter which needs to be applied.

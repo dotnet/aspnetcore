@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.RateLimiting;
 public sealed class RateLimiterOptions
 {
     private PartitionedRateLimiter<HttpContext> _limiter = new NoLimiter<HttpContext>();
-    private Func<HttpContext, RateLimitLease, Task> _onRejected = (context, lease) =>
+    private Func<OnRejectedContext, CancellationToken, ValueTask> _onRejected = (context, token) =>
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     };
     private IDictionary<string, RateLimiterPolicy> PartitionMap { get; }
         = new Dictionary<string, RateLimiterPolicy>(StringComparer.Ordinal);
@@ -22,19 +22,19 @@ public sealed class RateLimiterOptions
     /// <summary>
     /// Gets or sets the <see cref="PartitionedRateLimiter{TResource}"/>
     /// </summary>
-    public PartitionedRateLimiter<HttpContext> Limiter
+    public PartitionedRateLimiter<HttpContext>? GlobalLimiter
     {
         get => _limiter;
-        set => _limiter = value ?? throw new ArgumentNullException(nameof(value));
+        set => _limiter = value;
     }
 
     /// <summary>
-    /// Gets or sets a <see cref="Func{HttpContext, RateLimitLease, Task}"/> that handles requests rejected by this middleware.
+    /// Gets or sets a <see cref="Func{OnRejectedContext, CancellationToken, ValueTask}"/> that handles requests rejected by this middleware.
     /// </summary>
-    public Func<HttpContext, RateLimitLease, Task> OnRejected
+    public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected
     {
         get => _onRejected;
-        set => _onRejected = value ?? throw new ArgumentNullException(nameof(value));
+        set => _onRejected = value;
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public sealed class RateLimiterOptions
     /// This status code will be set before <see cref="OnRejected"/> is called, so any status code set by
     /// <see cref="OnRejected"/> will "win" over this default.
     /// </remarks>
-    public int DefaultRejectionStatusCode { get; set; } = StatusCodes.Status503ServiceUnavailable;
+    public int RejectionStatusCode { get; set; } = StatusCodes.Status503ServiceUnavailable;
 
     /// <summary>
     /// Adds a new rate limiting policy with the given name.
@@ -53,11 +53,11 @@ public sealed class RateLimiterOptions
     /// <param name="name">The name to be associated with the given <see cref="RateLimiter"/></param>
     /// <param name="partitioner">Method called every time an Acquire or WaitAsync call is made to figure out what rate limiter to apply to the request.</param>
     /// <param name="global">Determines if this policy should be shared across endpoints. Defaults to false.</param>
-    public RateLimiterOptions AddPolicy<TKey>(string policyName, Func<HttpContext, RateLimitPartition<TKey>> partitioner)
+    public RateLimiterOptions AddPolicy<TPartitionKey>(string policyName, Func<HttpContext, RateLimitPartition<TPartitionKey>> partitioner)
     {
-        if (name == null)
+        if (policyName == null)
         {
-            throw new ArgumentNullException(nameof(name));
+            throw new ArgumentNullException(nameof(policyName));
         }
 
         if (partitioner == null)
@@ -65,23 +65,28 @@ public sealed class RateLimiterOptions
             throw new ArgumentNullException(nameof(partitioner));
         }
 
-        if (PartitionMap.ContainsKey(name))
+        if (PartitionMap.ContainsKey(policyName))
         {
             throw new ArgumentException("There already exists a partition with the name {name}");
         }
 
-        PartitionMap.Add(name, partitioner);
+        PartitionMap.Add(policyName, partitioner);
 
         return this;
 
         Func<HttpContext, RateLimitPartition<AspNetKey>> func = context =>
         {
-            RateLimitPartition<TKey> partition = partitioner(context);
-            return new RateLimitPartition<AspNetKey<TKey>>(new AspNetKey<TKey>(partition.PartitionKey), partition.Factory(partition.PartitionKey))
+            RateLimitPartition<TPartitionKey> partition = partitioner(context);
+            return new RateLimitPartition<AspNetKey<TPartitionKey>>(new AspNetKey<TPartitionKey>(partition.PartitionKey), partition.Factory(partition.PartitionKey));
         };
     }
 
-    public RateLimiterOptions AddPolicy<TKey, TPolicy>(string name, bool global = false) where TPolicy : IRateLimiterPolicy<TKey>
+    public RateLimiterOptions AddPolicy<TPartitionKey, TPolicy>(string policyName) where TPolicy : IRateLimiterPolicy<TPartitionKey>
+    {
+        return this;
+    }
+
+    public RateLimiterOptions AddPolicy<TPartitionKey>(string policyName, IRateLimiterPolicy<TPartitionKey> policy)
     {
         return this;
     }

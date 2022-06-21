@@ -5,10 +5,9 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.RateLimiting;
-
-public interface IRateLimiterPolicy<TPartitionKey>
+public sealed class OnRejectedContext
 {
-    public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected { get; }
+    public required HttpContext HttpContext { get; init; }
 
-    public RateLimitPartition<TPartitionKey> GetPartition(HttpContext httpContext);
+    public required RateLimitLease Lease { get; init; }
 }
