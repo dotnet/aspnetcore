@@ -239,17 +239,10 @@
       }
     }
   },
-  "tags": [
-    {
-      "type": "projectType",
-      "add": [ "Cloud", "Web" ],
-      "remove": [ "*" ]
-    },
-    {
-      "type": "platform",
-      "add": [ "Linux", "macOS", "Windows" ]
-    }
-  ],
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
   "postActions": [
     {
       "id": "restore",
