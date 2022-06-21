@@ -436,9 +436,10 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
     {
         lock (_dataWriterLock)
         {
+            // Stop() always schedules a completion if one wasn't scheduled already.
             Stop();
             // We queued the stream to complete but didn't complete the response yet
-            if (_completeScheduled && !_completedResponse)
+            if (!_completedResponse)
             {
                 // Set the error so that we can write the RST when the response completes.
                 _resetErrorCode = error;

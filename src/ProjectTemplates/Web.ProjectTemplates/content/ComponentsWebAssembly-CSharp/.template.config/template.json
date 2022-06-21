@@ -559,7 +559,15 @@
     },
     "RequiresHttps": {
       "type": "computed",
-      "value": "(OrganizationalAuth || IndividualAuth || !NoHttps)"
+      "value": "(OrganizationalAuth || IndividualAuth)"
+    },
+    "HasHttpProfile": {
+      "type": "computed",
+      "value": "(!RequiresHttps)"
+    },
+    "HasHttpsProfile": {
+      "type": "computed",
+      "value": "(RequiresHttps || !NoHttps)"
     },
     "NoHttps": {
       "type": "parameter",

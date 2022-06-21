@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,8 +20,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2C_AddsAllAuthenticationHandlers()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -37,8 +37,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2C_ConfiguresAllOptions()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -101,8 +100,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2C_AllowsOverridingCookiesAndOpenIdConnectSettings()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -145,8 +143,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2C_RegisteringAddCookiesAndAddOpenIdConnectHasNoImpactOnAzureAAExtensions()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -191,8 +188,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2C_ThrowsForDuplicatedSchemes()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureADB2C(o => { })
@@ -212,8 +208,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2C_ThrowsWhenOpenIdSchemeIsAlreadyInUse()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureADB2C(o => { })
@@ -236,8 +231,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2C_ThrowsWhenCookieSchemeIsAlreadyInUse()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureADB2C(o => { })
@@ -260,8 +254,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2CBearer_AddsAllAuthenticationHandlers()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -277,8 +270,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2CBearer_ConfiguresAllOptions()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -313,8 +305,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2CBearer_CanOverrideJwtBearerOptionsConfiguration()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -346,8 +337,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2CBearer_RegisteringJwtBearerHasNoImpactOnAzureAAExtensions()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -380,8 +370,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2CBearer_ThrowsForDuplicatedSchemes()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureADB2CBearer(o => { })
@@ -401,8 +390,7 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
     public void AddAzureADB2CBearer_ThrowsWhenBearerSchemeIsAlreadyInUse()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureADB2CBearer(o => { })
@@ -419,5 +407,13 @@ public class AzureADB2CAuthenticationBuilderExtensionsTests
             () => azureADB2COptionsMonitor.Get(AzureADB2CDefaults.AuthenticationScheme));
 
         Assert.Equal(expectedMessage, exception.Message);
+    }
+
+    private IServiceCollection GenerateServicesForTest()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        return services;
     }
 }

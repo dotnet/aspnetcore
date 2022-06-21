@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,9 +17,11 @@ namespace Microsoft.AspNetCore.Builder;
 public sealed class WebApplicationBuilder
 {
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+    private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
+    private readonly WebApplicationAuthenticationBuilder _webAuthBuilder;
 
     private WebApplication? _builtApplication;
 
@@ -79,6 +82,7 @@ public sealed class WebApplicationBuilder
 
         Host = new ConfigureHostBuilder(bootstrapHostBuilder.Context, Configuration, Services);
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
+        _webAuthBuilder = new WebApplicationAuthenticationBuilder(Services);
     }
 
     /// <summary>
@@ -112,6 +116,11 @@ public sealed class WebApplicationBuilder
     /// To build after configuration, call <see cref="Build"/>.
     /// </summary>
     public ConfigureHostBuilder Host { get; }
+
+    /// <summary>
+    /// An <see cref="AuthenticationBuilder"/> for configuring authentication-related properties.
+    /// </summary>
+    public AuthenticationBuilder Authentication => _webAuthBuilder;
 
     /// <summary>
     /// Builds the <see cref="WebApplication"/>.
@@ -163,6 +172,19 @@ public sealed class WebApplicationBuilder
             {
                 // UseEndpoints will be looking for the RouteBuilder so make sure it's set
                 app.Properties[EndpointRouteBuilderKey] = localRouteBuilder;
+            }
+        }
+
+        if (_webAuthBuilder.IsAuthenticationConfigured)
+        {
+            // Don't add more than one instance of the middleware
+            if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
+            {
+                // The Use invocations will set the property on the outer pipeline,
+                // but we want to set it on the inner pipeline as well
+                _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
+                app.UseAuthentication();
+                app.UseAuthorization();
             }
         }
 

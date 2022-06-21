@@ -56,6 +56,7 @@ public class StartupTests : IISFunctionalTestBase
     [InlineData(".\\dotnet.exe", "something.dll", @"Could not find dotnet.exe at '.*?\\.\\dotnet.exe'")]
     [InlineData("dotnet.exe", "", @"Application arguments are empty.")]
     [InlineData("dotnet.zip", "", @"Process path 'dotnet.zip' doesn't have '.exe' extension.")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41856")]
     public async Task InvalidProcessPath_ExpectServerError(string path, string arguments, string subError)
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();

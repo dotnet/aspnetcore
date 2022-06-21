@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -27,6 +28,9 @@ public static class AuthenticationServiceCollectionExtensions
         services.AddDataProtection();
         services.AddWebEncoders();
         services.TryAddSingleton<ISystemClock, SystemClock>();
+        services.TryAddSingleton<IAuthenticationConfigurationProvider, DefaultAuthenticationConfigurationProvider>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, AuthenticationConfigureOptions>());
+
         return new AuthenticationBuilder(services);
     }
 

@@ -1,0 +1,13 @@
+#nullable enable
+Microsoft.AspNetCore.Builder.RequestDecompressionBuilderExtensions
+Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider
+Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider.GetDecompressionStream(System.IO.Stream! stream) -> System.IO.Stream!
+Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider
+Microsoft.AspNetCore.RequestDecompression.IRequestDecompressionProvider.GetDecompressionStream(Microsoft.AspNetCore.Http.HttpContext! context) -> System.IO.Stream?
+Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions
+Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.DecompressionProviders.get -> System.Collections.Generic.IDictionary<string!, Microsoft.AspNetCore.RequestDecompression.IDecompressionProvider!>!
+Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions.RequestDecompressionOptions() -> void
+Microsoft.Extensions.DependencyInjection.RequestDecompressionServiceExtensions
+static Microsoft.AspNetCore.Builder.RequestDecompressionBuilderExtensions.UseRequestDecompression(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.Extensions.DependencyInjection.RequestDecompressionServiceExtensions.AddRequestDecompression(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.RequestDecompressionServiceExtensions.AddRequestDecompression(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.RequestDecompression.RequestDecompressionOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

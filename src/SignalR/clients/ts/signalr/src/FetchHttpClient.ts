@@ -7,7 +7,7 @@ import { CookieJar } from "@types/tough-cookie";
 import { AbortError, HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
-import { Platform, getGlobalThis } from "./Utils";
+import { Platform, getGlobalThis, isArrayBuffer } from "./Utils";
 
 export class FetchHttpClient extends HttpClient {
     private readonly _abortControllerType: { prototype: AbortController, new(): AbortController };
@@ -84,14 +84,26 @@ export class FetchHttpClient extends HttpClient {
             }, msTimeout);
         }
 
+        if (request.content === "") {
+            request.content = undefined;
+        }
+        if (request.content) {
+            // Explicitly setting the Content-Type header for React Native on Android platform.
+            request.headers = request.headers || {};
+            if (isArrayBuffer(request.content)) {
+                request.headers["Content-Type"] = "application/octet-stream";
+            } else {
+                request.headers["Content-Type"] = "text/plain;charset=UTF-8";
+            }
+        }
+
         let response: Response;
         try {
             response = await this._fetchType(request.url!, {
-                body: request.content!,
+                body: request.content,
                 cache: "no-cache",
                 credentials: request.withCredentials === true ? "include" : "same-origin",
                 headers: {
-                    "Content-Type": "text/plain;charset=UTF-8",
                     "X-Requested-With": "XMLHttpRequest",
                     ...request.headers,
                 },

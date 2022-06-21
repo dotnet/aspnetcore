@@ -56,6 +56,17 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
+    public async Task MaxRequestHeadersTotalSizeDoesNotThrowForMaxValue()
+    {
+        const string headerLine = "Header: value\r\n";
+        _serviceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize = int.MaxValue;
+        _http1Connection.Reset();
+
+        await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
+        var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
+    }
+
+    [Fact]
     public async Task TakeMessageHeadersThrowsWhenHeadersExceedTotalSizeLimit()
     {
         const string headerLine = "Header: value\r\n";

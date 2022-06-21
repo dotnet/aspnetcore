@@ -1384,13 +1384,15 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     [Theory]
-    [InlineData("/redirect_test")]
-    [InlineData("http://example.com/redirect_to")]
-    public async Task RedirectUriIsHoneredAfterSignin(string redirectUrl)
+    [InlineData("/redirect_test", "/loginpath")]
+    [InlineData("/redirect_test", "/testpath")]
+    [InlineData("http://example.com/redirect_to", "/loginpath")]
+    [InlineData("http://example.com/redirect_to", "/testpath")]
+    public async Task RedirectUriIsHonoredAfterSignin(string redirectUrl, string loginPath)
     {
         using var host = await CreateHost(o =>
         {
-            o.LoginPath = "/testpath";
+            o.LoginPath = loginPath;
             o.Cookie.Name = "TestCookie";
         },
         async context =>
@@ -1408,7 +1410,29 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     [Fact]
-    public async Task RedirectUriInQueryIsHoneredAfterSignin()
+    public async Task RedirectUriInQueryIsIgnoredAfterSigninForUnrecognizedEndpoints()
+    {
+        using var host = await CreateHost(o =>
+        {
+            o.LoginPath = "/loginpath";
+            o.ReturnUrlParameter = "return";
+            o.Cookie.Name = "TestCookie";
+        },
+        async context =>
+        {
+            await context.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", CookieAuthenticationDefaults.AuthenticationScheme))));
+        });
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/testpath?return=%2Fret_path_2");
+
+        Assert.NotEmpty(transaction.SetCookie);
+        Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RedirectUriInQueryIsHonoredAfterSignin()
     {
         using var host = await CreateHost(o =>
         {
