@@ -173,7 +173,7 @@ internal sealed class ChunkingCookieManager
             return;
         }
 
-        var templateLength = options.CreateCookie(key, string.Empty).ToString().Length;
+        var templateLength = options.CreateCookieHeader(key, string.Empty).ToString().Length;
 
         // Normal cookie
         if (!ChunkSize.HasValue || ChunkSize.Value > templateLength + value.Length)

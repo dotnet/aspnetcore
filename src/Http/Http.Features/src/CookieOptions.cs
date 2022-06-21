@@ -93,7 +93,7 @@ public class CookieOptions
     /// <summary>
     /// Creates a <see cref="SetCookieHeaderValue"/> using the current options.
     /// </summary>
-    public SetCookieHeaderValue CreateCookie(string name, string value)
+    public SetCookieHeaderValue CreateCookieHeader(string name, string value)
     {
         var cookie = new SetCookieHeaderValue(name, value)
         {

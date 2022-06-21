@@ -98,7 +98,7 @@ internal sealed class ResponseCookiesWrapper : IResponseCookies, ITrackingConsen
         Debug.Assert(key != null);
         ApplyAppendPolicy(ref key, ref value, options);
 
-        return options.CreateCookie(Uri.EscapeDataString(key), Uri.EscapeDataString(value)).ToString();
+        return options.CreateCookieHeader(Uri.EscapeDataString(key), Uri.EscapeDataString(value)).ToString();
     }
 
     private bool CheckPolicyRequired()

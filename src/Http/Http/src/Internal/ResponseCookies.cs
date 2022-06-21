@@ -68,7 +68,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var cookie = options.CreateCookie(
+        var cookie = options.CreateCookieHeader(
             _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
             Uri.EscapeDataString(value)).ToString();
 
@@ -101,7 +101,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var cookieSuffix = options.CreateCookie(string.Empty, string.Empty).ToString()[1..];
+        var cookieSuffix = options.CreateCookieHeader(string.Empty, string.Empty).ToString()[1..];
         var cookies = new string[keyValuePairs.Length];
         var position = 0;
 
