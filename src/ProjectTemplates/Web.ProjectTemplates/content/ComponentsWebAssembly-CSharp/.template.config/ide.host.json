@@ -7,7 +7,7 @@
     {
       "id": "Hosted",
       "isVisible": true,
-      "PersistenceScope": "TemplateGroup"
+      "persistenceScope": "templateGroup"
     },
     {
       "id": "PWA",
