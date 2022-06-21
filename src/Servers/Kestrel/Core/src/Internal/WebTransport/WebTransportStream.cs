@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -24,6 +23,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 [RequiresPreviewFeatures("WebTransport is a preview feature")]
 internal class WebTransportStream : Stream, IHttp3Stream
 {
+    private readonly Http3FrameWriter _frameWriter; // todo replace with _context.Transport.Output
+    private volatile bool _isClosed;
+
+    private PipeReader Input => _context.Transport.Input;
+
     internal readonly Http3StreamContext _context;
     internal readonly IStreamIdFeature _streamIdFeature = default!;
     internal readonly IStreamAbortFeature _streamAbortFeature = default!;
@@ -31,11 +35,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
     internal readonly WebTransportStreamType _type;
     internal KestrelTrace Log => _context.ServiceContext.Log;
 
-    private readonly Http3FrameWriter _frameWriter;
-    private readonly Http3RawFrame _incomingFrame = new(); // todo I probably did something wrong as this is never used
-    private volatile bool _isClosed;
-    private Pipe RequestBodyPipe { get; set; } = default!;
-    private PipeReader Input => _context.Transport.Input;
+    long IHttp3Stream.StreamId => _streamIdFeature.StreamId;
 
     internal WebTransportStream(Http3StreamContext context, WebTransportStreamType type)
     {
@@ -64,25 +64,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
             context.ClientPeerSettings,
             this);
 
-        RequestBodyPipe = CreateRequestBodyPipe(64 * 1024);
-
         _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
-    }
-
-    long IHttp3Stream.StreamId => _streamIdFeature.StreamId;
-
-    /// <summary>
-    /// Hard abort the stream and cancel data transmission.
-    /// </summary>
-    /// <param name="abortReason"></param>
-    public void Abort(ConnectionAbortedException abortReason)
-    {
-        AbortCore(abortReason, Http3ErrorCode.InternalError);
-    }
-
-    void IHttp3Stream.Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
-    {
-        AbortCore(abortReason, errorCode);
     }
 
     internal virtual void AbortCore(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
@@ -94,68 +76,14 @@ internal class WebTransportStream : Stream, IHttp3Stream
 
         _streamAbortFeature.AbortRead((long)errorCode, abortReason);
 
-        RequestBodyPipe.Writer.Complete(new OperationCanceledException());
-
         _frameWriter.Abort(abortReason);
 
         Input.Complete(abortReason);
     }
 
-    internal Pipe CreateRequestBodyPipe(uint windowSize) => new(new PipeOptions
-    (
-        pool: _context.MemoryPool,
-        readerScheduler: _context.ServiceContext.Scheduler,
-        writerScheduler: PipeScheduler.Inline,
-        // Never pause within the window range. Flow control will prevent more data from being added.
-        // See the assert in OnDataAsync.
-        pauseWriterThreshold: windowSize + 1,
-        resumeWriterThreshold: windowSize + 1,
-        useSynchronizationContext: false,
-        minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
-    ));
-
-    //internal void Execute()
-    //{
-    //    // do the message reading and writting loop but place data in a buffer
-    //    // then the user can read from it by calling the functions below from the
-    //    // stream class
-
-    //}
-
-    /// <summary>
-    /// Can data be read from this stream
-    /// </summary>
-    public override bool CanRead => _type != WebTransportStreamType.Output && !_isClosed;
-
-    /// <summary>
-    /// Seeking is not supported by WebTransport
-    /// </summary>
-    public override bool CanSeek => false;
-
-    /// <summary>
-    /// Can data be written to this stream
-    /// </summary>
-    public override bool CanWrite => _type != WebTransportStreamType.Input && !_isClosed;
-
-    public override void Flush()
+    void IHttp3Stream.Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
     {
-        FlushAsync(default).GetAwaiter().GetResult();
-    }
-
-    public override Task FlushAsync(CancellationToken cancellationToken)
-    {
-        return _frameWriter.FlushAsync(null, cancellationToken).GetAsTask();
-    }
-
-    public override int Read(byte[] buffer, int offset, int count)
-    {
-        if (!CanRead)
-        {
-            throw new NotSupportedException();
-        }
-
-        // since there is no seekig we ignore the offset parameter
-        return ReadAsyncInternal(new(buffer), default).GetAwaiter().GetResult();
+        AbortCore(abortReason, errorCode);
     }
 
     private async ValueTask<int> ReadAsyncInternal(Memory<byte> destination, CancellationToken cancellationToken)
@@ -198,6 +126,51 @@ internal class WebTransportStream : Stream, IHttp3Stream
         }
     }
 
+    /// <summary>
+    /// Hard abort the stream and cancel data transmission.
+    /// </summary>
+    /// <param name="abortReason"></param>
+    public void Abort(ConnectionAbortedException abortReason)
+    {
+        AbortCore(abortReason, Http3ErrorCode.InternalError);
+    }
+
+    /// <summary>
+    /// Can data be read from this stream
+    /// </summary>
+    public override bool CanRead => _type != WebTransportStreamType.Output && !_isClosed;
+
+    /// <summary>
+    /// Seeking is not supported by WebTransport
+    /// </summary>
+    public override bool CanSeek => false;
+
+    /// <summary>
+    /// Can data be written to this stream
+    /// </summary>
+    public override bool CanWrite => _type != WebTransportStreamType.Input && !_isClosed;
+
+    public override void Flush()
+    {
+        FlushAsync(default).GetAwaiter().GetResult();
+    }
+
+    public override Task FlushAsync(CancellationToken cancellationToken)
+    {
+        return _frameWriter.FlushAsync(null, cancellationToken).GetAsTask();
+    }
+
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        if (!CanRead)
+        {
+            throw new NotSupportedException();
+        }
+
+        // since there is no seekig we ignore the offset parameter
+        return ReadAsyncInternal(new(buffer), default).GetAwaiter().GetResult();
+    }
+
     public override void Write(byte[] buffer, int offset, int count)
     {
         if (!CanWrite)
@@ -211,6 +184,11 @@ internal class WebTransportStream : Stream, IHttp3Stream
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         return _frameWriter.WriteDataAsync(new ReadOnlySequence<byte>(new Memory<byte>(buffer, offset, count))).GetAsTask();
+    }
+
+    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return _frameWriter.WriteDataAsync(new ReadOnlySequence<byte>(buffer)).GetAsValueTask();
     }
 
     #region Unsupported stream functionality

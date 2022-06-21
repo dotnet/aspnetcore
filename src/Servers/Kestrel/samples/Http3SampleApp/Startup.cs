@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
-using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Http3SampleApp;
 
@@ -33,9 +31,9 @@ public class Startup
                 await stream.FlushAsync();
 
                 // READ FROM A STREAM:
-                //var memory = new Memory<byte>(new byte[4096]);
-                //var test = await stream.ReadAsync(memory);
-                //Console.WriteLine(System.Text.ASCIIEncoding.Default.GetString(memory.ToArray()));
+                var memory = new Memory<byte>(new byte[4096]);
+                var test = await stream.ReadAsync(memory);
+                Console.WriteLine(System.Text.Encoding.Default.GetString(memory.ToArray()));
             }
             else
             {
