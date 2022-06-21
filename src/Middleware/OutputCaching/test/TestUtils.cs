@@ -363,3 +363,23 @@ internal class TestClock : ISystemClock
 {
     public DateTimeOffset UtcNow { get; set; }
 }
+
+internal class AllowTestPolicy : IOutputCachePolicy
+{
+    public ValueTask CacheRequestAsync(OutputCacheContext context)
+    {
+        context.AllowCacheLookup = true;
+        context.AllowCacheStorage = true;
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask ServeFromCacheAsync(OutputCacheContext context)
+    {
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask ServeResponseAsync(OutputCacheContext context)
+    {
+        return ValueTask.CompletedTask;
+    }
+}

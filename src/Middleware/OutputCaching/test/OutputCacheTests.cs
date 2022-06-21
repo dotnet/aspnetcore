@@ -23,14 +23,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
-                var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -47,14 +45,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
-                var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, "different"));
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, "different"));
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -69,14 +65,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.PostAsync("", new StringContent(string.Empty));
-                var subsequentResponse = await client.PostAsync("", new StringContent(string.Empty));
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.PostAsync("", new StringContent(string.Empty));
+            var subsequentResponse = await client.PostAsync("", new StringContent(string.Empty));
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -91,14 +85,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var subsequentResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, ""));
-                var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, ""));
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var subsequentResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, ""));
+            var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, ""));
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -113,14 +105,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, ""));
-                var subsequentResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, ""));
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, ""));
+            var subsequentResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, ""));
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -137,23 +127,21 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
 
-                var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
 
-                // verify the response is cached
-                var cachedResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
-                await AssertCachedResponseAsync(initialResponse, cachedResponse);
+            // verify the response is cached
+            var cachedResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            await AssertCachedResponseAsync(initialResponse, cachedResponse);
 
-                // assert cached response still served
-                client.DefaultRequestHeaders.CacheControl =
-                    new System.Net.Http.Headers.CacheControlHeaderValue { NoCache = true };
-                var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            // assert cached response still served
+            client.DefaultRequestHeaders.CacheControl =
+                new System.Net.Http.Headers.CacheControlHeaderValue { NoCache = true };
+            var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -170,23 +158,21 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
 
-                var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
 
-                // verify the response is cached
-                var cachedResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
-                await AssertCachedResponseAsync(initialResponse, cachedResponse);
+            // verify the response is cached
+            var cachedResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            await AssertCachedResponseAsync(initialResponse, cachedResponse);
 
-                // assert cached response still served
-                client.DefaultRequestHeaders.Pragma.Clear();
-                client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("no-cache"));
-                var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            // assert cached response still served
+            client.DefaultRequestHeaders.Pragma.Clear();
+            client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("no-cache"));
+            var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -203,14 +189,35 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, "path"));
-                var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, "PATH"));
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, "path"));
+            var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, "PATH"));
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
+        }
+    }
+
+    [Theory]
+    [InlineData("GET")]
+    [InlineData("HEAD")]
+    public async Task ServesFreshContent_If_PathCasingDiffers(string method)
+    {
+        var options = new OutputCacheOptions { UseCaseSensitivePaths = true };
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, "path"));
+            var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, "PATH"));
+
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -219,9 +226,10 @@ public class OutputCacheTests
     [InlineData("HEAD")]
     public async Task ServesFreshContent_If_ResponseExpired(string method)
     {
-        var options = new OutputCacheOptions();
-        options.AddBasePolicy(b => b.VaryByHeader(HeaderNames.From));
-        options.DefaultExpirationTimeSpan = TimeSpan.FromMicroseconds(100);
+        var options = new OutputCacheOptions
+        {
+            DefaultExpirationTimeSpan = TimeSpan.FromMicroseconds(100)
+        };
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
@@ -231,15 +239,13 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
-                await Task.Delay(1);
-                var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            await Task.Delay(1);
+            var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -256,15 +262,41 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("abc");
-                var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
-                var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("abc");
+            var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
+        }
+    }
+
+    [Theory]
+    [InlineData("GET")]
+    [InlineData("HEAD")]
+    public async Task ServesCachedContent_If_Authorization_HeaderExists(string method)
+    {
+        var options = new OutputCacheOptions();
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
+
+        // This is added after the DefaultPolicy which disables caching for authenticated requests
+        options.AddBasePolicy(b => b.AddPolicy<AllowTestPolicy>());
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("abc");
+            var initialResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+            var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest(method, ""));
+
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -279,15 +311,13 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                client.DefaultRequestHeaders.From = "user@example.com";
-                var initialResponse = await client.GetAsync("");
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.From = "user@example.com";
+            var initialResponse = await client.GetAsync("");
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -305,16 +335,14 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                client.DefaultRequestHeaders.From = "user@example.com";
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.From = "user2@example.com";
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.From = "user@example.com";
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.From = "user2@example.com";
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -332,14 +360,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?query=value");
-                var subsequentResponse = await client.GetAsync("?query=value");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("?query=value");
+            var subsequentResponse = await client.GetAsync("?query=value");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -357,14 +383,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
-                var subsequentResponse = await client.GetAsync("?QueryA=valuea&QueryB=valueb");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
+            var subsequentResponse = await client.GetAsync("?QueryA=valuea&QueryB=valueb");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -382,14 +406,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
-                var subsequentResponse = await client.GetAsync("?QueryA=valuea&QueryB=valueb");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
+            var subsequentResponse = await client.GetAsync("?QueryA=valuea&QueryB=valueb");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -407,14 +429,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?QueryA=ValueA&QueryB=ValueB");
-                var subsequentResponse = await client.GetAsync("?QueryB=ValueB&QueryA=ValueA");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("?QueryA=ValueA&QueryB=ValueB");
+            var subsequentResponse = await client.GetAsync("?QueryB=ValueB&QueryA=ValueA");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -432,14 +452,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?QueryA=ValueA&QueryB=ValueB");
-                var subsequentResponse = await client.GetAsync("?QueryB=ValueB&QueryA=ValueA");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("?QueryA=ValueA&QueryB=ValueB");
+            var subsequentResponse = await client.GetAsync("?QueryB=ValueB&QueryA=ValueA");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -456,14 +474,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?query=value");
-                var subsequentResponse = await client.GetAsync("?query=value2");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("?query=value");
+            var subsequentResponse = await client.GetAsync("?query=value2");
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -481,14 +497,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?other=value1");
-                var subsequentResponse = await client.GetAsync("?other=value2");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("?other=value1");
+            var subsequentResponse = await client.GetAsync("?other=value2");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -505,14 +519,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
-                var subsequentResponse = await client.GetAsync("?querya=ValueA&queryb=ValueB");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
+            var subsequentResponse = await client.GetAsync("?querya=ValueA&queryb=ValueB");
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -529,14 +541,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
-                var subsequentResponse = await client.GetAsync("?querya=ValueA&queryb=ValueB");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
+            var subsequentResponse = await client.GetAsync("?querya=ValueA&queryb=ValueB");
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -551,18 +561,16 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
             {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
-                {
-                    MaxAge = TimeSpan.FromSeconds(0)
-                };
-                var subsequentResponse = await client.GetAsync("");
+                MaxAge = TimeSpan.FromSeconds(0)
+            };
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -577,19 +585,17 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
             {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
-                {
-                    OnlyIfCached = true
-                };
-                var subsequentResponse = await client.GetAsync("/different");
+                OnlyIfCached = true
+            };
+            var subsequentResponse = await client.GetAsync("/different");
 
-                initialResponse.EnsureSuccessStatusCode();
-                Assert.Equal(System.Net.HttpStatusCode.GatewayTimeout, subsequentResponse.StatusCode);
-            }
+            initialResponse.EnsureSuccessStatusCode();
+            Assert.Equal(System.Net.HttpStatusCode.GatewayTimeout, subsequentResponse.StatusCode);
         }
     }
 
@@ -604,14 +610,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -626,18 +630,16 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
             {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
-                {
-                    NoStore = true
-                };
-                var subsequentResponse = await client.GetAsync("");
+                NoStore = true
+            };
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -652,18 +654,16 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
             {
-                var client = server.CreateClient();
-                client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue()
-                {
-                    NoStore = true
-                };
-                var initialResponse = await client.GetAsync("");
-                var subsequentResponse = await client.GetAsync("");
+                NoStore = true
+            };
+            var initialResponse = await client.GetAsync("");
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -678,14 +678,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -706,17 +704,15 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.IfModifiedSince = DateTimeOffset.MaxValue;
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.IfModifiedSince = DateTimeOffset.MaxValue;
+            var subsequentResponse = await client.GetAsync("");
 
-                initialResponse.EnsureSuccessStatusCode();
-                Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
-                Assert304Headers(initialResponse, subsequentResponse);
-            }
+            initialResponse.EnsureSuccessStatusCode();
+            Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
+            Assert304Headers(initialResponse, subsequentResponse);
         }
     }
 
@@ -731,15 +727,13 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.IfModifiedSince = DateTimeOffset.MinValue;
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.IfModifiedSince = DateTimeOffset.MinValue;
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -759,17 +753,15 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.IfNoneMatch.Add(new System.Net.Http.Headers.EntityTagHeaderValue("\"E1\""));
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.IfNoneMatch.Add(new System.Net.Http.Headers.EntityTagHeaderValue("\"E1\""));
+            var subsequentResponse = await client.GetAsync("");
 
-                initialResponse.EnsureSuccessStatusCode();
-                Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
-                Assert304Headers(initialResponse, subsequentResponse);
-            }
+            initialResponse.EnsureSuccessStatusCode();
+            Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
+            Assert304Headers(initialResponse, subsequentResponse);
         }
     }
 
@@ -784,23 +776,23 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.IfNoneMatch.Add(new System.Net.Http.Headers.EntityTagHeaderValue("\"E2\""));
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.IfNoneMatch.Add(new System.Net.Http.Headers.EntityTagHeaderValue("\"E2\""));
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
     [Fact]
     public async Task ServesCachedContent_IfBodySize_IsCacheable()
     {
-        var options = new OutputCacheOptions();
-        options.MaximumBodySize = 1000;
+        var options = new OutputCacheOptions
+        {
+            MaximumBodySize = 1000
+        };
         options.AddBasePolicy(b => b.Build());
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
@@ -811,14 +803,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -836,14 +826,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("");
-                var subsequentResponse = await client.GetAsync("/different");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("");
+            var subsequentResponse = await client.GetAsync("/different");
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -861,14 +849,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("/path");
-                var subsequentResponse = await client.GetAsync("/Path");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.GetAsync("/path");
+            var subsequentResponse = await client.GetAsync("/Path");
 
-                await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -883,18 +869,16 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                client.DefaultRequestHeaders.From = "user@example.com";
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.From = "user2@example.com";
-                var otherResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.From = "user@example.com";
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.From = "user@example.com";
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.From = "user2@example.com";
+            var otherResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.From = "user@example.com";
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -909,27 +893,25 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                client.DefaultRequestHeaders.From = "user@example.com";
-                client.DefaultRequestHeaders.Pragma.Clear();
-                client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
-                client.DefaultRequestHeaders.MaxForwards = 1;
-                var initialResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.From = "user2@example.com";
-                client.DefaultRequestHeaders.Pragma.Clear();
-                client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
-                client.DefaultRequestHeaders.MaxForwards = 2;
-                var otherResponse = await client.GetAsync("");
-                client.DefaultRequestHeaders.From = "user@example.com";
-                client.DefaultRequestHeaders.Pragma.Clear();
-                client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
-                client.DefaultRequestHeaders.MaxForwards = 1;
-                var subsequentResponse = await client.GetAsync("");
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.From = "user@example.com";
+            client.DefaultRequestHeaders.Pragma.Clear();
+            client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+            client.DefaultRequestHeaders.MaxForwards = 1;
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.From = "user2@example.com";
+            client.DefaultRequestHeaders.Pragma.Clear();
+            client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+            client.DefaultRequestHeaders.MaxForwards = 2;
+            var otherResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.From = "user@example.com";
+            client.DefaultRequestHeaders.Pragma.Clear();
+            client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+            client.DefaultRequestHeaders.MaxForwards = 1;
+            var subsequentResponse = await client.GetAsync("");
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -944,14 +926,12 @@ public class OutputCacheTests
 
             await host.StartAsync();
 
-            using (var server = host.GetTestServer())
-            {
-                var client = server.CreateClient();
-                var initialResponse = await client.SendAsync(TestUtils.CreateRequest("HEAD", "?contentLength=10"));
-                var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest("HEAD", "?contentLength=10"));
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            var initialResponse = await client.SendAsync(TestUtils.CreateRequest("HEAD", "?contentLength=10"));
+            var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest("HEAD", "?contentLength=10"));
 
-                await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-            }
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
