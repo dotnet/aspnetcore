@@ -8,7 +8,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
-public class OutputCachingTests
+public class OutputCacheTests
 {
     [Theory]
     [InlineData("GET")]
@@ -220,7 +220,7 @@ public class OutputCachingTests
     public async Task ServesFreshContent_If_ResponseExpired(string method)
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new OutputCachePolicyBuilder().VaryByHeader(HeaderNames.From).Build());
+        options.AddBasePolicy(b => b.VaryByHeader(HeaderNames.From));
         options.DefaultExpirationTimeSpan = TimeSpan.FromMicroseconds(100);
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
@@ -295,7 +295,7 @@ public class OutputCachingTests
     public async Task ServesFreshContent_IfVaryHeader_Mismatches()
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new OutputCachePolicyBuilder().VaryByHeader(HeaderNames.From).Build());
+        options.AddBasePolicy(b => b.VaryByHeader(HeaderNames.From).Build());
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
@@ -322,7 +322,7 @@ public class OutputCachingTests
     public async Task ServesCachedContent_IfVaryQueryKeys_Matches()
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new OutputCachePolicyBuilder().VaryByQuery("query").Build());
+        options.AddBasePolicy(b => b.VaryByQuery("query"));
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
@@ -347,7 +347,7 @@ public class OutputCachingTests
     public async Task ServesCachedContent_IfVaryQueryKeysExplicit_Matches_QueryKeyCaseInsensitive()
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new OutputCachePolicyBuilder().VaryByQuery("QueryA", "queryb").Build());
+        options.AddBasePolicy(b => b.VaryByQuery("QueryA", "queryb"));
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
@@ -372,7 +372,7 @@ public class OutputCachingTests
     public async Task ServesCachedContent_IfVaryQueryKeyStar_Matches_QueryKeyCaseInsensitive()
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new OutputCachePolicyBuilder().VaryByQuery("*").Build());
+        options.AddBasePolicy(b => b.VaryByQuery("*"));
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
@@ -397,7 +397,7 @@ public class OutputCachingTests
     public async Task ServesCachedContent_IfVaryQueryKeyExplicit_Matches_OrderInsensitive()
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new OutputCachePolicyBuilder().VaryByQuery("QueryB", "QueryA").Build());
+        options.AddBasePolicy(b => b.VaryByQuery("QueryB", "QueryA"));
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
@@ -422,7 +422,7 @@ public class OutputCachingTests
     public async Task ServesCachedContent_IfVaryQueryKeyStar_Matches_OrderInsensitive()
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new OutputCachePolicyBuilder().VaryByQuery("*").Build());
+        options.AddBasePolicy(b => b.VaryByQuery("*"));
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
@@ -447,7 +447,7 @@ public class OutputCachingTests
     public async Task ServesFreshContent_IfVaryQueryKey_Mismatches()
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new OutputCachePolicyBuilder().VaryByQuery("query").Build());
+        options.AddBasePolicy(b => b.VaryByQuery("query").Build());
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
@@ -471,7 +471,7 @@ public class OutputCachingTests
     public async Task ServesCachedContent_IfOtherVaryQueryKey_Mismatches()
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new OutputCachePolicyBuilder().VaryByQuery("query").Build());
+        options.AddBasePolicy(b => b.VaryByQuery("query").Build());
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
@@ -496,7 +496,7 @@ public class OutputCachingTests
     public async Task ServesFreshContent_IfVaryQueryKeyExplicit_Mismatch_QueryKeyCaseSensitive()
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new VaryByQueryPolicy("QueryA", "QueryB"));
+        options.AddBasePolicy(new VaryByQueryPolicy("QueryA", "QueryB"));
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
@@ -520,7 +520,7 @@ public class OutputCachingTests
     public async Task ServesFreshContent_IfVaryQueryKeyStar_Mismatch_QueryKeyValueCaseSensitive()
     {
         var options = new OutputCacheOptions();
-        options.BasePolicies.Add(new VaryByQueryPolicy("*"));
+        options.AddBasePolicy(new VaryByQueryPolicy("*"));
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
@@ -801,7 +801,7 @@ public class OutputCachingTests
     {
         var options = new OutputCacheOptions();
         options.MaximumBodySize = 1000;
-        options.BasePolicies.Add(new OutputCachePolicyBuilder().Build());
+        options.AddBasePolicy(b => b.Build());
 
         var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 

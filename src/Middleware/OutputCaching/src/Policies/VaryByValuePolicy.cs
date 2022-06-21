@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 internal sealed class VaryByValuePolicy : IOutputCachePolicy
 {
     private readonly Action<HttpContext, CachedVaryByRules>? _varyBy;
-    private readonly Func<HttpContext, CachedVaryByRules, CancellationToken, Task>? _varyByAsync;
+    private readonly Func<HttpContext, CachedVaryByRules, CancellationToken, ValueTask>? _varyByAsync;
 
     /// <summary>
     /// Creates a policy that doesn't vary the cached content based on values.
@@ -31,7 +31,7 @@ internal sealed class VaryByValuePolicy : IOutputCachePolicy
     /// <summary>
     /// Creates a policy that vary the cached content based on the specified value.
     /// </summary>
-    public VaryByValuePolicy(Func<HttpContext, CancellationToken, Task<string>> varyBy)
+    public VaryByValuePolicy(Func<HttpContext, CancellationToken, ValueTask<string>> varyBy)
     {
         _varyByAsync = async (context, rules, token) => rules.VaryByPrefix += await varyBy(context, token);
     }
@@ -51,7 +51,7 @@ internal sealed class VaryByValuePolicy : IOutputCachePolicy
     /// <summary>
     /// Creates a policy that vary the cached content based on the specified value.
     /// </summary>
-    public VaryByValuePolicy(Func<HttpContext, CancellationToken, Task<KeyValuePair<string, string>>> varyBy)
+    public VaryByValuePolicy(Func<HttpContext, CancellationToken, ValueTask<KeyValuePair<string, string>>> varyBy)
     {
         _varyBy = async (context, rules) =>
         {
@@ -61,22 +61,22 @@ internal sealed class VaryByValuePolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc/>
-    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
         _varyBy?.Invoke(context.HttpContext, context.CachedVaryByRules);
 
-        return _varyByAsync?.Invoke(context.HttpContext, context.CachedVaryByRules, context.HttpContext.RequestAborted) ?? Task.CompletedTask;
+        return _varyByAsync?.Invoke(context.HttpContext, context.CachedVaryByRules, context.HttpContext.RequestAborted) ?? ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
-    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
-    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

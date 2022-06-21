@@ -15,22 +15,22 @@ internal class NoStorePolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
         context.AllowCacheStorage = false;
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

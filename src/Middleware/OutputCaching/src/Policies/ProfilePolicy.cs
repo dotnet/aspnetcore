@@ -20,39 +20,39 @@ internal sealed class ProfilePolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
         var policy = GetProfilePolicy(context);
 
         if (policy == null)
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         return policy.ServeResponseAsync(context);
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
         var policy = GetProfilePolicy(context);
 
         if (policy == null)
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         return policy.ServeFromCacheAsync(context);
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
         var policy = GetProfilePolicy(context);
 
         if (policy == null)
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         return policy.CacheRequestAsync(context); ;

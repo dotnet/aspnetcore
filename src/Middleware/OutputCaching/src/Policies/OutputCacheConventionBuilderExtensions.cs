@@ -22,7 +22,7 @@ public static class OutputCacheConventionBuilderExtensions
 
         builder.Add(endpointBuilder =>
         {
-            endpointBuilder.Metadata.Add(DefaultOutputCachePolicy.Instance);
+            endpointBuilder.Metadata.Add(DefaultPolicy.Instance);
         });
         return builder;
     }

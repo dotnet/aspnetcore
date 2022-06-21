@@ -9,16 +9,16 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy which caches un-authenticated, GET and HEAD, 200 responses.
 /// </summary>
-internal sealed class DefaultOutputCachePolicy : IOutputCachePolicy
+internal sealed class DefaultPolicy : IOutputCachePolicy
 {
-    public static readonly DefaultOutputCachePolicy Instance = new();
+    public static readonly DefaultPolicy Instance = new();
 
-    private DefaultOutputCachePolicy()
+    private DefaultPolicy()
     {
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
         var attemptOutputCaching = AttemptOutputCaching(context);
         context.EnableOutputCaching = true;
@@ -29,17 +29,17 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachePolicy
         // Vary by any query by default
         context.CachedVaryByRules.QueryKeys = "*";
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
         var response = context.HttpContext.Response;
 
@@ -48,7 +48,7 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachePolicy
         {
             context.Logger.ResponseWithSetCookieNotCacheable();
             context.AllowCacheStorage = false;
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         // Check response code
@@ -56,10 +56,10 @@ internal sealed class DefaultOutputCachePolicy : IOutputCachePolicy
         {
             context.Logger.ResponseWithUnsuccessfulStatusCodeNotCacheable(response.StatusCode);
             context.AllowCacheStorage = false;
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     private static bool AttemptOutputCaching(OutputCacheContext context)

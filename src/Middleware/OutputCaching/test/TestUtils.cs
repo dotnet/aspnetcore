@@ -150,6 +150,7 @@ internal class TestUtils
                             }
                             else
                             {
+                                outputCachingOptions.BasePolicies = new();
                                 outputCachingOptions.BasePolicies.Add(new OutputCachePolicyBuilder().Build());
                             }
                         });
@@ -227,6 +228,13 @@ internal class TestUtils
             AllowCacheStorage = true,
             AllowCacheLookup = true,
             ResponseTime = DateTimeOffset.UtcNow
+        };
+    }
+
+    internal static OutputCacheContext CreateUninitializedContext(IOutputCacheStore cache = null, OutputCacheOptions options = null)
+    {
+        return new OutputCacheContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, NullLogger.Instance)
+        {
         };
     }
 

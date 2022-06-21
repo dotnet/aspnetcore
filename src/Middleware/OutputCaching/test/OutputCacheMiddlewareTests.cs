@@ -11,7 +11,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
-public class OutputCachingMiddlewareTests
+public class OutputCacheMiddlewareTests
 {
     [Fact]
     public async Task TryServeFromCacheAsync_OnlyIfCached_Serves504()

@@ -25,7 +25,7 @@ public sealed class OutputCachePolicyBuilder
     public OutputCachePolicyBuilder()
     {
         _builtPolicy = null;
-        _policies.Add(DefaultOutputCachePolicy.Instance);
+        _policies.Add(DefaultPolicy.Instance);
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public sealed class OutputCachePolicyBuilder
     /// Adds a policy to vary the cached responses by custom values.
     /// </summary>
     /// <param name="varyBy">The value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, CancellationToken, Task<string>> varyBy)
+    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, CancellationToken, ValueTask<string>> varyBy)
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
@@ -122,7 +122,7 @@ public sealed class OutputCachePolicyBuilder
     /// Adds a policy to vary the cached responses by custom key/value.
     /// </summary>
     /// <param name="varyBy">The key/value to vary the cached responses by.</param>
-    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, CancellationToken, Task<KeyValuePair<string, string>>> varyBy)
+    public OutputCachePolicyBuilder VaryByValue(Func<HttpContext, CancellationToken, ValueTask<KeyValuePair<string, string>>> varyBy)
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 

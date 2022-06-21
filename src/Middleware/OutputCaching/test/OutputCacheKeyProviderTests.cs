@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
-public class OutputCachingKeyProviderTests
+public class OutputCacheKeyProviderTests
 {
     private const char KeyDelimiter = '\x1e';
     private const char KeySubDelimiter = '\x1f';

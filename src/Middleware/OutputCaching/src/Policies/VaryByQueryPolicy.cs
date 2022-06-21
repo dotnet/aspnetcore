@@ -37,36 +37,36 @@ internal sealed class VaryByQueryPolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
         // No vary by query?
         if (_queryKeys.Count == 0)
         {
             context.CachedVaryByRules.QueryKeys = _queryKeys;
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         // If the current key is "*" (default) replace it
         if (context.CachedVaryByRules.QueryKeys.Count == 1 && string.Equals(context.CachedVaryByRules.QueryKeys[0], "*", StringComparison.Ordinal))
         {
             context.CachedVaryByRules.QueryKeys = _queryKeys;
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         context.CachedVaryByRules.QueryKeys = StringValues.Concat(context.CachedVaryByRules.QueryKeys, _queryKeys);
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

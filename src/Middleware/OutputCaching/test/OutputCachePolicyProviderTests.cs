@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
-public class OutputCachingPolicyProviderTests
+public class OutputCachePolicyProviderTests
 {
     public static TheoryData<string> CacheableMethods
     {

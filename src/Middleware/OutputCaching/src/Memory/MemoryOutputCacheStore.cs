@@ -20,6 +20,8 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
     public ValueTask EvictByTagAsync(string tag, CancellationToken token)
     {
+        ArgumentNullException.ThrowIfNull(tag);
+
         if (_taggedEntries.TryGetValue(tag, out var keys))
         {
             foreach (var key in keys)
@@ -34,6 +36,8 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
     /// <inheritdoc />
     public ValueTask<byte[]?> GetAsync(string key, CancellationToken token)
     {
+        ArgumentNullException.ThrowIfNull(key);
+
         var entry = _cache.Get(key) as byte[];
         return ValueTask.FromResult(entry);
     }
@@ -41,6 +45,9 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
     /// <inheritdoc />
     public ValueTask SetAsync(string key, byte[] value, string[] tags, TimeSpan validFor, CancellationToken token)
     {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(value);
+
         if (tags != null)
         {
             foreach (var tag in tags)

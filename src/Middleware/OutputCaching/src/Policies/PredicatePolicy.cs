@@ -10,39 +10,39 @@ internal sealed class PredicatePolicy : IOutputCachePolicy
 {
     // TODO: Accept a non async predicate too?
 
-    private readonly Func<OutputCacheContext, Task<bool>> _predicate;
+    private readonly Func<OutputCacheContext, ValueTask<bool>> _predicate;
     private readonly IOutputCachePolicy _policy;
 
     /// <summary>
     /// Creates a new <see cref="PredicatePolicy"/> instance.
     /// </summary>
-    /// <param name="predicate">The predicate.</param>
+    /// <param name="asyncPredicate">The predicate.</param>
     /// <param name="policy">The policy.</param>
-    public PredicatePolicy(Func<OutputCacheContext, Task<bool>> predicate, IOutputCachePolicy policy)
+    public PredicatePolicy(Func<OutputCacheContext, ValueTask<bool>> asyncPredicate, IOutputCachePolicy policy)
     {
-        _predicate = predicate;
+        _predicate = asyncPredicate;
         _policy = policy;
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
     {
         return ExecuteAwaited(static (policy, context) => policy.CacheRequestAsync(context), _policy, context);
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
     {
         return ExecuteAwaited(static (policy, context) => policy.ServeFromCacheAsync(context), _policy, context);
     }
 
     /// <inheritdoc />
-    Task IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
     {
         return ExecuteAwaited(static (policy, context) => policy.ServeResponseAsync(context), _policy, context);
     }
 
-    private Task ExecuteAwaited(Func<IOutputCachePolicy, OutputCacheContext, Task> action, IOutputCachePolicy policy, OutputCacheContext context)
+    private ValueTask ExecuteAwaited(Func<IOutputCachePolicy, OutputCacheContext, ValueTask> action, IOutputCachePolicy policy, OutputCacheContext context)
     {
         ArgumentNullException.ThrowIfNull(action);
 
@@ -60,12 +60,12 @@ internal sealed class PredicatePolicy : IOutputCachePolicy
                 return action(policy, context);
             }
 
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         return Awaited(task);
 
-        async Task Awaited(Task<bool> task)
+        async ValueTask Awaited(ValueTask<bool> task)
         {
             if (await task)
             {
