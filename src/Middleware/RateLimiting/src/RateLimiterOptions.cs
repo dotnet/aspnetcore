@@ -53,7 +53,7 @@ public sealed class RateLimiterOptions
     /// <param name="name">The name to be associated with the given <see cref="RateLimiter"/></param>
     /// <param name="partitioner">Method called every time an Acquire or WaitAsync call is made to figure out what rate limiter to apply to the request.</param>
     /// <param name="global">Determines if this policy should be shared across endpoints. Defaults to false.</param>
-    public RateLimiterOptions AddPolicy<TKey>(string name, Func<HttpContext, RateLimitPartition<TKey>> partitioner, bool global = false)
+    public RateLimiterOptions AddPolicy<TKey>(string policyName, Func<HttpContext, RateLimitPartition<TKey>> partitioner)
     {
         if (name == null)
         {
@@ -72,6 +72,17 @@ public sealed class RateLimiterOptions
 
         PartitionMap.Add(name, partitioner);
 
+        return this;
+
+        Func<HttpContext, RateLimitPartition<AspNetKey>> func = context =>
+        {
+            RateLimitPartition<TKey> partition = partitioner(context);
+            return new RateLimitPartition<AspNetKey<TKey>>(new AspNetKey<TKey>(partition.PartitionKey), partition.Factory(partition.PartitionKey))
+        };
+    }
+
+    public RateLimiterOptions AddPolicy<TKey, TPolicy>(string name, bool global = false) where TPolicy : IRateLimiterPolicy<TKey>
+    {
         return this;
     }
 }
