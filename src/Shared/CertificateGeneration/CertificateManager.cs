@@ -66,6 +66,12 @@ internal abstract class CertificateManager
         certificate.Extensions.OfType<X509Extension>()
         .Any(e => string.Equals(AspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal));
 
+    // Check whether the world is in a consistent state or some cleanup is necessary.
+    public virtual bool IsSystemStateConsistent(StoreName storeName, StoreLocation location)
+    {
+        return true;
+    }
+
     public IList<X509Certificate2> ListCertificates(
         StoreName storeName,
         StoreLocation location,

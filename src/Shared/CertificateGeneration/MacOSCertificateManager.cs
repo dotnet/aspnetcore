@@ -399,6 +399,13 @@ internal sealed class MacOSCertificateManager : CertificateManager
         return ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false);
     }
 
+    public override bool IsSystemStateConsistent(StoreName storeName, StoreLocation location)
+    {
+        using var store = new X509Store(storeName, location);
+        store.Open(OpenFlags.ReadOnly);
+        return CheckKeychainAndDiskConsistency(store);
+    }
+
     protected override void PopulateCertificatesFromStore(X509Store store, List<X509Certificate2> certificates)
     {
         bool useDiskStore = store.Name! == StoreName.My.ToString() && store.Location == StoreLocation.CurrentUser;
