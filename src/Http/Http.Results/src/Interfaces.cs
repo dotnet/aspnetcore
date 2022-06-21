@@ -16,7 +16,7 @@ public interface IStatusCodeHttpResult
 /// Defines a contract that represents the result of an HTTP endpoint
 /// that contains an object <see cref="RawValue"/>.
 /// </summary>
-public interface IValueHttpResult : IStatusCodeHttpResult
+public interface IValueHttpResult
 {
     object? RawValue { get; }
 }
@@ -25,7 +25,7 @@ public interface IValueHttpResult : IStatusCodeHttpResult
 /// Defines a contract that represents the result of an HTTP endpoint
 /// that contains an <see cref="Value"/>.
 /// </summary>
-public interface IValueHttpResult<TValue> : IValueHttpResult
+public interface IValueHttpResult<out TValue>
 {
     TValue? Value { get; }
 }
@@ -42,15 +42,16 @@ public interface IContentHttpResult
 /// <summary>
 /// Defines a contract that represents the file result of an HTTP endpoint.
 /// </summary>
-public interface IFileHttpResult : IContentHttpResult
+public interface IFileHttpResult
 {
+    string? ContentType { get; }
     string? FileDownloadName { get; }
 }
 
 /// <summary>
 /// Defines a contract that represents the a multi <see cref="IResult"/> types.
 /// </summary>
-public interface IMultiResults
+public interface INestedHttpResult
 {
     IResult Result { get; }
 }

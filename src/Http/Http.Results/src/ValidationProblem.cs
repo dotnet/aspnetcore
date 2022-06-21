@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write Problem Details
 /// HTTP API responses based on https://tools.ietf.org/html/rfc7807
 /// </summary>
-public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
+public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IContentHttpResult, IValueHttpResult, IValueHttpResult<HttpValidationProblemDetails>
 {
     internal ValidationProblem(HttpValidationProblemDetails problemDetails)
     {
@@ -29,6 +29,10 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
     /// Gets the <see cref="HttpValidationProblemDetails"/> instance.
     /// </summary>
     public HttpValidationProblemDetails ProblemDetails { get; }
+
+    object? IValueHttpResult.RawValue => ProblemDetails;
+
+    HttpValidationProblemDetails? IValueHttpResult<HttpValidationProblemDetails>.Value => ProblemDetails;
 
     /// <summary>
     /// Gets the value for the <c>Content-Type</c> header: <c>application/problem+json</c>.
