@@ -2,14 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.IO.Pipelines;
 using System.Net.Http;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
@@ -56,8 +54,8 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
 
     private bool _initialized;
     private string _version = "";
-    private readonly Dictionary<long, WebTransportBaseStream> _openStreams = new();
-    private readonly ConcurrentQueue<WebTransportBaseStream> _pendingStreams = new();
+    private readonly Dictionary<long, WebTransportStream> _openStreams = new();
+    private readonly ConcurrentQueue<WebTransportStream> _pendingStreams = new();
     private static bool _webtransportEnabled;
     private Http3Stream _controlStream = default!;
     private readonly SemaphoreSlim _pendingAcceptStreamRequests = new(0);
@@ -101,7 +99,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     /// Adds a new stream to the internal list of open streams.
     /// </summary>
     /// <param name="stream">A reference to the new stream that is being added</param>
-    internal void AddStream(WebTransportBaseStream stream)
+    internal void AddStream(WebTransportStream stream)
     {
         ThrowIfInvalidSession();
 
@@ -113,12 +111,11 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     }
 
     /// <summary>
-    /// Pops the first stream from the list of pending streams. Keeps poping until a stream of the correct type
-    /// (as specified by the generic) is found.
+    /// Pops the first stream from the list of pending streams.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token to abort waiting for a stream</param>
     /// <returns>An instance of WebTransportStream that corresponds to the new stream to accept</returns>
-    public async ValueTask<TStream> AcceptStreamAsync<TStream>(CancellationToken cancellationToken) where TStream : WebTransportBaseStream // todo use the cancellation token more properly
+    public async ValueTask<Stream> AcceptStreamAsync(CancellationToken cancellationToken)
     {
         ThrowIfInvalidSession();
 
@@ -132,20 +129,12 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         var success = _pendingStreams.TryDequeue(out var stream);
         if (!success)
         {
-            throw new Exception("Failed to get next stream even though there is one available");
+            throw new Exception("Failed to accept the next stream in the queue");
         }
 
-        ThreadPool.UnsafeQueueUserWorkItem(stream!, preferLocal: false);
+        //ThreadPool.UnsafeQueueUserWorkItem(stream!, preferLocal: false);
 
-        // if we get a stream of the correct type, return it otherwise discard and continue waiting
-        if (stream is TStream)
-        {
-            return (TStream)stream!;
-        }
-        else
-        {
-            return await AcceptStreamAsync<TStream>(cancellationToken);
-        }
+        return stream!;
     }
 
     /// <summary>
@@ -180,7 +169,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
             _controlStream.Abort(exception, error);
             foreach (var stream in _openStreams)
             {
-                stream.Value.Abort();// todo (exception, error);
+                stream.Value.Abort(exception);// todo (exception, error);
             }
 
             _openStreams.Clear();

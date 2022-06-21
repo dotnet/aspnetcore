@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
@@ -302,7 +303,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
-                                    var stream = new WebTransportInputStream(context);
+                                    var stream = new WebTransportStream(context, WebTransportStreamType.Input);
                                     _webtransportSession.AddStream(stream);
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
@@ -343,7 +344,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 {
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
-                                        var stream2 = new WebTransportBidirectionalStream(context);
+                                        var stream2 = new WebTransportStream(context, WebTransportStreamType.Bidirectional);
                                         _webtransportSession.AddStream(stream2);
                                     }
                                     else

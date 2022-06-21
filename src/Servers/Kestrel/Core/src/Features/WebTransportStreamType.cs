@@ -12,11 +12,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 public enum WebTransportStreamType
 {
     /// <summary>
-    /// Represents a unidirectional WebTransport stream
-    /// </summary>
-    Unidirectional,
-    /// <summary>
     /// Represents a bidirectional WebTransport stream
     /// </summary>
-    Bidirectional
+    Bidirectional,
+    /// <summary>
+    /// Represents a unidirectional inbound WebTransport stream
+    /// </summary>
+    Input,
+    /// <summary>
+    /// Represents a unidirectional outbound WebTransport stream
+    /// </summary>
+    Output,
 }

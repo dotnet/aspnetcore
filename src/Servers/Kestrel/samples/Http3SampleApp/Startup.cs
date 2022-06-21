@@ -25,12 +25,20 @@ public class Startup
             {
                 var session = await feature.AcceptAsync(CancellationToken.None);
 
-                // opens either a bidirectional or unidirectional stream
-                test(await session.AcceptStreamAsync<WebTransportBaseStream>(CancellationToken.None));
-                // waits specifically for a bidirectional stream. Discarding all undirectional ones until it gets a bidirectional one
-                test(await session.AcceptStreamAsync<WebTransportBidirectionalStream>(CancellationToken.None));
-                // waits specifically for a undirectional input stream
-                test(await session.AcceptStreamAsync<WebTransportInputStream>(CancellationToken.None));
+                var stream = await session.AcceptStreamAsync(CancellationToken.None);
+
+                //await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
+                //await stream.FlushAsync();
+
+                // prints the @T which represents the stream type - todo prevent this from being sent to the application
+                var memory = new Memory<byte>(new byte[4096]);
+                var test = await stream.ReadAsync(memory);
+                Console.WriteLine(System.Text.ASCIIEncoding.Default.GetString(memory.ToArray()));
+
+                // prints the data send from the client
+                var memory2 = new Memory<byte>(new byte[4096]);
+                var test2 = await stream.ReadAsync(memory2);
+                Console.WriteLine(System.Text.ASCIIEncoding.Default.GetString(memory2.ToArray()));
             }
             else
             {
@@ -39,20 +47,5 @@ public class Startup
 
             await Task.Delay(TimeSpan.FromMinutes(150));
         });
-    }
-
-    private void test(WebTransportBaseStream stream)
-    {
-        if (stream != null)
-        {
-            if (stream.GetType() == typeof(WebTransportBidirectionalStream))
-            {
-                Console.WriteLine("bidirectional"); 
-            }
-            else if (stream.GetType() == typeof(WebTransportInputStream))
-            {
-                Console.WriteLine("unidirectional");
-            }
-        }
     }
 }

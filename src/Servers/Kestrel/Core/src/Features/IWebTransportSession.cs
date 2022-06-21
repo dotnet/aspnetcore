@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
-using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
@@ -29,7 +28,7 @@ public interface IWebTransportSession
     /// <exception cref="Exception">If This is not a valid WebTransport session or it fails to get a stream to accept.</exception>
     /// <param name="cancellationToken">The cancelation token used to cancel the operation</param>
     /// <returns>The unidirectional or bidirectional stream that is next in the queue</returns>
-    public ValueTask<TStream> AcceptStreamAsync<TStream>(CancellationToken cancellationToken) where TStream : WebTransportBaseStream;
+    public ValueTask<Stream> AcceptStreamAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Tries to open a new unidirectional stream.
