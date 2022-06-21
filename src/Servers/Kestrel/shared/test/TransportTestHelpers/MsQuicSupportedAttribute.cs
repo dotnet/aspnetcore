@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Testing;
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
 public class MsQuicSupportedAttribute : Attribute, ITestCondition
 {
-    public bool IsMet => QuicImplementationProviders.MsQuic.IsSupported;
+    public bool IsMet => QuicListener.IsSupported;
 
     public string SkipReason => "QUIC is not supported on the current test machine";
 }
