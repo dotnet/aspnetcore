@@ -18,7 +18,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         _cache = cache;
     }
 
-    public ValueTask EvictByTagAsync(string tag, CancellationToken token)
+    public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(tag);
 
@@ -34,7 +34,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
     }
 
     /// <inheritdoc />
-    public ValueTask<byte[]?> GetAsync(string key, CancellationToken token)
+    public ValueTask<byte[]?> GetAsync(string key, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(key);
 
@@ -43,7 +43,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
     }
 
     /// <inheritdoc />
-    public ValueTask SetAsync(string key, byte[] value, string[] tags, TimeSpan validFor, CancellationToken token)
+    public ValueTask SetAsync(string key, byte[] value, string[] tags, TimeSpan validFor, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Enable HTTP response caching.
 /// </summary>
-internal class OutputCacheMiddleware
+internal sealed class OutputCacheMiddleware
 {
     // see https://tools.ietf.org/html/rfc7232#section-4.1
     private static readonly string[] HeadersToIncludeIn304 =
@@ -79,15 +79,19 @@ internal class OutputCacheMiddleware
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the middleware has completed processing.</returns>
-    public async Task Invoke(HttpContext httpContext)
+    public Task Invoke(HttpContext httpContext)
     {
         // Skip the middleware if there is no policy for the current request
         if (!TryGetRequestPolicies(httpContext, out var policies))
         {
-            await _next(httpContext);
-            return;
+            return _next(httpContext);
         }
 
+        return InvokeAwaited(httpContext, policies);
+    }
+
+    private async Task InvokeAwaited(HttpContext httpContext, IReadOnlyList<IOutputCachePolicy> policies)
+    {
         var context = new OutputCacheContext(httpContext, _store, _options, _logger);
 
         // Add IOutputCacheFeature

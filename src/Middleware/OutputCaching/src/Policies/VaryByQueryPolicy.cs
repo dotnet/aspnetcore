@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 internal sealed class VaryByQueryPolicy : IOutputCachePolicy
 {
-    private StringValues _queryKeys { get; set; }
+    private readonly StringValues _queryKeys;
 
     /// <summary>
     /// Creates a policy that doesn't vary the cached content based on query string.

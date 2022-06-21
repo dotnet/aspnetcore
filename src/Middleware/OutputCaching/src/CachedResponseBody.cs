@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Represents a cached response body.
 /// </summary>
-public class CachedResponseBody
+internal sealed class CachedResponseBody
 {
     /// <summary>
     /// Creates a new <see cref="CachedResponseBody"/> instance.

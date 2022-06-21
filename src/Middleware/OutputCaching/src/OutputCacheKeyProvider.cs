@@ -174,7 +174,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
         }
     }
 
-    private class QueryKeyComparer : IComparer<KeyValuePair<string, StringValues>>
+    private sealed class QueryKeyComparer : IComparer<KeyValuePair<string, StringValues>>
     {
         private readonly StringComparer _stringComparer;
 

@@ -1,10 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.OutputCacheApplicationBuilderExtensions
-Microsoft.AspNetCore.OutputCaching.CachedResponseBody
-Microsoft.AspNetCore.OutputCaching.CachedResponseBody.CachedResponseBody(System.Collections.Generic.List<byte[]!>! segments, long length) -> void
-Microsoft.AspNetCore.OutputCaching.CachedResponseBody.CopyToAsync(System.IO.Pipelines.PipeWriter! destination, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.OutputCaching.CachedResponseBody.Length.get -> long
-Microsoft.AspNetCore.OutputCaching.CachedResponseBody.Segments.get -> System.Collections.Generic.List<byte[]!>!
 Microsoft.AspNetCore.OutputCaching.CachedVaryByRules
 Microsoft.AspNetCore.OutputCaching.CachedVaryByRules.CachedVaryByRules() -> void
 Microsoft.AspNetCore.OutputCaching.CachedVaryByRules.Headers.get -> Microsoft.Extensions.Primitives.StringValues
@@ -20,10 +15,10 @@ Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy.CacheRequestAsync(Microsof
 Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy.ServeFromCacheAsync(Microsoft.AspNetCore.OutputCaching.OutputCacheContext! context) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy.ServeResponseAsync(Microsoft.AspNetCore.OutputCaching.OutputCacheContext! context) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.OutputCaching.IOutputCacheStore
-Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.EvictByTagAsync(string! tag, System.Threading.CancellationToken token) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.EvictByTagAsync(string! tag, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy
-Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.GetAsync(string! key, System.Threading.CancellationToken token) -> System.Threading.Tasks.ValueTask<byte[]?>
-Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.SetAsync(string! key, byte[]! value, string![]! tags, System.TimeSpan validFor, System.Threading.CancellationToken token) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.GetAsync(string! key, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<byte[]?>
+Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.SetAsync(string! key, byte[]! value, string![]! tags, System.TimeSpan validFor, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Duration.get -> int
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Duration.init -> void

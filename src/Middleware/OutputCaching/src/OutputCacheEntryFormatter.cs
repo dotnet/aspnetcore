@@ -9,13 +9,13 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Formats <see cref="OutputCacheEntry"/> instance to match structures supported by the <see cref="IOutputCacheStore"/> implementations.
 /// </summary>
-internal class OutputCacheEntryFormatter
+internal static class OutputCacheEntryFormatter
 {
-    public static async ValueTask<OutputCacheEntry?> GetAsync(string key, IOutputCacheStore store, CancellationToken token)
+    public static async ValueTask<OutputCacheEntry?> GetAsync(string key, IOutputCacheStore store, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(key);
 
-        var content = await store.GetAsync(key, token);
+        var content = await store.GetAsync(key, cancellationToken);
 
         if (content == null)
         {
@@ -24,7 +24,7 @@ internal class OutputCacheEntryFormatter
 
         using var br = new MemoryStream(content);
 
-        var formatter = await JsonSerializer.DeserializeAsync(br, FormatterEntrySerializerContext.Default.FormatterEntry, cancellationToken: token);
+        var formatter = await JsonSerializer.DeserializeAsync(br, FormatterEntrySerializerContext.Default.FormatterEntry, cancellationToken: cancellationToken);
 
         if (formatter == null)
         {
@@ -52,7 +52,7 @@ internal class OutputCacheEntryFormatter
         return outputCacheEntry;
     }
 
-    public static async ValueTask StoreAsync(string key, OutputCacheEntry value, TimeSpan duration, IOutputCacheStore store, CancellationToken token)
+    public static async ValueTask StoreAsync(string key, OutputCacheEntry value, TimeSpan duration, IOutputCacheStore store, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -75,7 +75,7 @@ internal class OutputCacheEntryFormatter
 
         using var br = new MemoryStream();
 
-        await JsonSerializer.SerializeAsync(br, formatterEntry, FormatterEntrySerializerContext.Default.FormatterEntry, token);
-        await store.SetAsync(key, br.ToArray(), value.Tags ?? Array.Empty<string>(), duration, token);
+        await JsonSerializer.SerializeAsync(br, formatterEntry, FormatterEntrySerializerContext.Default.FormatterEntry, cancellationToken);
+        await store.SetAsync(key, br.ToArray(), value.Tags ?? Array.Empty<string>(), duration, cancellationToken);
     }
 }

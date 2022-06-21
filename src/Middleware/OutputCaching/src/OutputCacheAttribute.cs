@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// Specifies the parameters necessary for setting appropriate headers in output caching.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class OutputCacheAttribute : Attribute
+public sealed class OutputCacheAttribute : Attribute
 {
     // A nullable-int cannot be used as an Attribute parameter.
     // Hence this nullable-int is present to back the Duration property.
