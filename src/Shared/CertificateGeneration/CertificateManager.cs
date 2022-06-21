@@ -1001,6 +1001,12 @@ internal abstract class CertificateManager
 
         [Event(70, Level = EventLevel.Error, Message = "The file '{0}' is not a valid certificate.")]
         internal void MacOSFileIsNotAValidCertificate(string path) => WriteEvent(70, path);
+
+        [Event(71, Level = EventLevel.Warning, Message = "The on-disk store and the keychain are not in a consistent state. This might occur if you've used an older version of this tool in the past. Running with the --clean argument will remove the development certificates from both locations and start clean.")]
+        internal void MacOSDiskAndKeychainInconsistent() => WriteEvent(71);
+
+        [Event(72, Level = EventLevel.Warning, Message = "The on-disk store directory was not found.")]
+        internal void MacOSDiskStoreDoesNotExist() => WriteEvent(72);
     }
 
     internal sealed class UserCancelledTrustException : Exception
