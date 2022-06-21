@@ -18,6 +18,14 @@
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
+      "condition": "(Hosted && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
+      "path": "ComponentsWebAssembly-CSharp.sln"
+    },
+    {
+      "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Server/ComponentsWebAssembly-CSharp.Server.csproj"
+    },
+    {
       "condition": "(!Hosted)",
       "path": "EmptyComponentsWebAssembly-CSharp.csproj"
     },
