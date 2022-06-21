@@ -79,7 +79,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
         Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
         Assert.NotEmpty(actionModel.Selectors);
-        Assert.Empty(actionModel.Selectors[0].EndpointMetadata);
+        Assert.NotEmpty(actionModel.Selectors[0].EndpointMetadata.OfType<ProducesErrorResponseTypeAttribute>());
     }
 
     [Fact]
@@ -122,7 +122,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
         Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
         Assert.NotEmpty(actionModel.Selectors);
-        Assert.Empty(actionModel.Selectors[0].EndpointMetadata);
+        Assert.NotEmpty(actionModel.Selectors[0].EndpointMetadata.OfType<ProducesErrorResponseTypeAttribute>());
     }
 
     [Fact]

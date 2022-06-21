@@ -12,6 +12,23 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public class EndpointMetadataConventionTest
 {
+    [Fact]
+    public void Apply_DefaultErrorTypeMetadata()
+    {
+        // Arrange
+        var action = GetActionModel(typeof(TestController), nameof(TestController.MultipleSelectorsActionWithMetadataInActionResult));
+        var errorType = typeof(ProblemDetails);
+        var convention = GetConvention(errorType: errorType);
+
+        //Act
+        convention.Apply(action);
+
+        // Assert
+        foreach (var selector in action.Selectors)
+        {
+            Assert.Contains(selector.EndpointMetadata, m => m is ProducesErrorResponseTypeAttribute attribute && attribute.Type == errorType);
+        }
+    }
     [Theory]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInValueTaskOfResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInValueTaskOfActionResult))]
@@ -185,10 +202,11 @@ public class EndpointMetadataConventionTest
         Assert.DoesNotContain(action.Selectors[0].EndpointMetadata, m => m is IAcceptsMetadata);
     }
 
-    private static EndpointMetadataConvention GetConvention(IServiceProvider services = null)
+    private static EndpointMetadataConvention GetConvention(IServiceProvider services = null, Type errorType = null)
     {
+        errorType ??= typeof(void);
         services ??= Mock.Of<IServiceProvider>();
-        return new EndpointMetadataConvention(services, typeof(void));
+        return new EndpointMetadataConvention(services, errorType);
     }
 
     private static ApplicationModelProviderContext GetContext(Type type)

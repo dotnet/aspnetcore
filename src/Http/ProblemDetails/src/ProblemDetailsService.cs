@@ -37,7 +37,7 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
             statusCode switch
             {
                 >= 400 and <= 499 => _options.AllowedMapping.HasFlag(MappingOptions.ClientErrors),
-                >= 500 => _options.AllowedMapping.HasFlag(MappingOptions.Exceptions),
+                >= 500 and <= 599 => _options.AllowedMapping.HasFlag(MappingOptions.Exceptions),
                 _ => false,
             };
     }
@@ -53,24 +53,25 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
         string? instance = null,
         IDictionary<string, object?>? extensions = null)
     {
-        if (!IsEnabled(context.Response.StatusCode, isRouting))
-        {
-            return Task.CompletedTask;
-        }
-
-        currentMetadata ??= context.GetEndpoint()?.Metadata;
         var writer = GetWriter(context, currentMetadata, isRouting);
-
         return writer != null ?
             writer.WriteAsync(context, statusCode, title, type, detail, instance, extensions) :
             Task.CompletedTask;
     }
 
-    private IProblemDetailsWriter? GetWriter(
+    // Internal for testing
+    internal IProblemDetailsWriter? GetWriter(
         HttpContext context,
         EndpointMetadataCollection? currentMetadata,
         bool isRouting)
     {
+        if (!IsEnabled(context.Response.StatusCode, isRouting))
+        {
+            return null;
+        }
+
+        currentMetadata ??= context.GetEndpoint()?.Metadata;
+
         for (var i = 0; i < _writers.Length; i++)
         {
             if (_writers[i].CanWrite(context, currentMetadata, isRouting: isRouting))
