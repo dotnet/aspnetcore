@@ -52,6 +52,12 @@
       ],
       "modifiers": [
         {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "Properties/launchSettings.json"
+          ]
+        },
+        {
           "condition": "(!Hosted)",
           "exclude": [
             "Server/**",
