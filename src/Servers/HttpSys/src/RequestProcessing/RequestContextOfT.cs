@@ -96,13 +96,14 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
                 {
                     application.DisposeContext(context, applicationException);
                 }
-                Dispose();
 
                 if (messagePump.DecrementOutstandingRequest() == 0 && messagePump.Stopping)
                 {
                     Log.RequestsDrained(Logger);
                     messagePump.SetShutdownSignal();
                 }
+
+                Dispose();
             }
         }
         catch (Exception ex)

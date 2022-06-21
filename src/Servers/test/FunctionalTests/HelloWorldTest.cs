@@ -122,9 +122,7 @@ public class HelloWorldTests : LoggedTest
     public async Task ApplicationException(TestVariant variant)
     {
         var testName = $"ApplicationException_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
-        using (StartLog(out var loggerFactory,
-            variant.Server == ServerType.Nginx ? LogLevel.Trace : LogLevel.Debug, // https://github.com/aspnet/ServerTests/issues/144
-            testName))
+        using (StartLog(out var loggerFactory, LogLevel.Debug, testName))
         {
             var logger = loggerFactory.CreateLogger("ApplicationException");
 
@@ -132,16 +130,6 @@ public class HelloWorldTests : LoggedTest
             {
                 ApplicationPath = Helpers.GetApplicationPath()
             };
-
-            if (variant.Server == ServerType.Nginx)
-            {
-                deploymentParameters.ServerConfigTemplateContent = Helpers.GetNginxConfigContent("nginx.conf");
-            }
-
-            if (variant.Server == ServerType.IISExpress)
-            {
-                deploymentParameters.EnvironmentVariables[DebugEnvironmentVariable] = "console";
-            }
 
             var output = string.Empty;
             using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
