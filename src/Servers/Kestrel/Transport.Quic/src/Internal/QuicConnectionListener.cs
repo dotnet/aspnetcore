@@ -23,7 +23,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
 
     public QuicConnectionListener(QuicTransportOptions options, ILogger log, EndPoint endpoint, SslServerAuthenticationOptions sslServerAuthenticationOptions)
     {
-        if (!QuicConnection.IsSupported)
+        if (!QuicListener.IsSupported)
         {
             throw new NotSupportedException("QUIC is not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
         }
