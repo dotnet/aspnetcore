@@ -1779,7 +1779,20 @@
         "Server/appsettings.json",
         "Server/Program.cs",
         "Shared/SharedClass.cs"
-      ]
+      ],
+      "ExcludeLaunchSettings": {
+        "Template": "blazorwasm-empty",
+        "Arguments": "new blazorwasm-empty --exclude-launch-settings",
+        "Files": [
+          "Pages/Index.razor",
+          "wwwroot/css/app.css",
+          "wwwroot/index.html",
+          "_Imports.razor",
+          "App.razor",
+          "MainLayout.razor",
+          "Program.cs"
+        ]
+      }
     }
   }
 }
