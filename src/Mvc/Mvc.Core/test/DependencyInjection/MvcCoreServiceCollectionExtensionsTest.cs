@@ -324,6 +324,13 @@ public class MvcCoreServiceCollectionExtensionsTest
                             typeof(DynamicControllerEndpointMatcherPolicy),
                         }
                     },
+                    {
+                        typeof(IProblemDetailsWriter),
+                        new Type[]
+                        {
+                            typeof(DefaultApiProblemDetailsWriter),
+                        }
+                    },
                 };
         }
     }
