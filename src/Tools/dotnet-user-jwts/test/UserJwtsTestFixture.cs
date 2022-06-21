@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 public class UserJwtsTestFixture : IDisposable
 {
     private Stack<Action> _disposables = new Stack<Action>();
-    private string TestSecretsId = Guid.NewGuid().ToString();
+    internal string TestSecretsId = Guid.NewGuid().ToString();
 
     private const string ProjectTemplate = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
@@ -26,6 +26,14 @@ public class UserJwtsTestFixture : IDisposable
     private const string LaunchSettingsTemplate = @"
 {
   ""profiles"": {
+    ""iisSettings"": {
+        ""windowsAuthentication"": false,
+        ""anonymousAuthentication"": true,
+        ""iisExpress"": {
+            ""applicationUrl"": ""http://localhost:23528"",
+            ""sslPort"": 44395
+        }
+    },
     ""HttpApiSampleApp"": {
       ""commandName"": ""Project"",
       ""dotnetRunMessages"": true,
@@ -71,7 +79,7 @@ public class UserJwtsTestFixture : IDisposable
                 catch { }
             });
         }
-     
+
         _disposables.Push(() => TryDelete(projectPath.FullName));
 
         return projectPath.FullName;
