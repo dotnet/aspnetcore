@@ -55,13 +55,4 @@ public static class JSComponentConfigurationExtensions
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicMethods, typeof(JSComponentInterop))]
     public static void RegisterForJavaScript(this IJSComponentConfiguration configuration, [DynamicallyAccessedMembers(Component)] Type componentType, string identifier, string javaScriptInitializer)
         => configuration.JSComponents.Add(componentType, identifier, javaScriptInitializer);
-
-    /// <summary>
-    /// Marks the specified component type as allowed for use as a custom element.
-    /// </summary>
-    /// <typeparam name="TComponent">The component type.</typeparam>
-    /// <param name="configuration">The <see cref="IJSComponentConfiguration"/>.</param>
-    /// <param name="customElementName">A unique name for the custom element. This must conform to custom element naming rules, so it must contain a dash character.</param>
-    public static void RegisterAsCustomElement<[DynamicallyAccessedMembers(Component)] TComponent>(this IJSComponentConfiguration configuration, string customElementName) where TComponent : IComponent
-        => configuration.RegisterForJavaScript<TComponent>(customElementName, "Blazor._internal.customElements.add");
 }

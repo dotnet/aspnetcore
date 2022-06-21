@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "lib": [ "dom", "es2019" ]
+  },
+  "files": [
+    "BlazorCustomElements.ts"
+  ]
+}
