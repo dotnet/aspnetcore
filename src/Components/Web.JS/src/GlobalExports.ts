@@ -15,7 +15,6 @@ import { Platform, Pointer, System_String, System_Array, System_Object, System_B
 import { getNextChunk, receiveDotNetDataStream } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
-import { customElementsFunctions } from './Rendering/CustomElements';
 
 interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
@@ -31,7 +30,6 @@ interface IBlazor {
   _internal: {
     navigationManager: typeof navigationManagerInternalFunctions | any,
     domWrapper: typeof domFunctions,
-    customElements: typeof customElementsFunctions,
     Virtualize: typeof Virtualize,
     PageTitle: typeof PageTitle,
     forceCloseConnection?: () => Promise<void>;
@@ -78,7 +76,6 @@ export const Blazor: IBlazor = {
   _internal: {
     navigationManager: navigationManagerInternalFunctions,
     domWrapper: domFunctions,
-    customElements: customElementsFunctions,
     Virtualize,
     PageTitle,
     InputFile,
