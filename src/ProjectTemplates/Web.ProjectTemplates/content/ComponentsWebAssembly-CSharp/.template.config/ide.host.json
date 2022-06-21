@@ -12,7 +12,7 @@
     {
       "id": "PWA",
       "isVisible": true,
-      "PersistenceScope": "TemplateGroup"
+      "persistenceScope": "templateGroup"
     },
     {
       "id": "UseProgramMain",
