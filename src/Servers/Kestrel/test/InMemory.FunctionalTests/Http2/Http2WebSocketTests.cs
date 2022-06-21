@@ -11,9 +11,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -307,6 +309,132 @@ public class Http2WebSocketTests : Http2TestBase
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
 
         await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.ProtocolRequiresConnect);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
+    public async Task ExtendedCONNECT_AcceptAsyncStream_IsNotLimitedByMinRequestBodyDataRate()
+    {
+        var limits = _serviceContext.ServerOptions.Limits;
+
+        // Use non-default value to ensure the min request and response rates aren't mixed up.
+        limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+
+        await InitializeConnectionAsync(async context =>
+        {
+            var connectFeature = context.Features.Get<IHttpExtendedConnectFeature>();
+            var stream = await connectFeature.AcceptAsync();
+            Assert.Equal(0, await stream.ReadAsync(new byte[1]));
+            await stream.WriteAsync(new byte[] { 0x01 });
+        });
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
+            new KeyValuePair<string, string>(HeaderNames.Protocol, "websocket"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/chat"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
+            new KeyValuePair<string, string>(HeaderNames.WebSocketSubProtocols, "chat, superchat"),
+            new KeyValuePair<string, string>(HeaderNames.SecWebSocketExtensions, "permessage-deflate"),
+            new KeyValuePair<string, string>(HeaderNames.SecWebSocketVersion, "13"),
+            new KeyValuePair<string, string>(HeaderNames.Origin, "http://www.example.com"),
+        };
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, headers);
+
+        // Don't send any more data and advance just to and then past the grace period.
+        AdvanceClock(limits.MinRequestBodyDataRate.GracePeriod + TimeSpan.FromTicks(1));
+
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+        await SendDataAsync(1, Array.Empty<byte>(), endStream: true);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+
+        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+        Assert.Equal(2, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+        var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+            withLength: 1,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+        Assert.Equal(0x01, dataFrame.Payload.Span[0]);
+
+        dataFrame = await ExpectAsync(Http2FrameType.DATA,
+            withLength: 0,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
+    public async Task ExtendedCONNECT_AcceptAsyncStream_IsNotLimitedByMaxRequestBodySize()
+    {
+        var limits = _serviceContext.ServerOptions.Limits;
+
+        // We're going to send more than the MaxRequestBodySize bytes from the client to the server over the connection
+        // Since this is not a request body, this should be allowed like it would be for an upgraded connection.
+        limits.MaxRequestBodySize = 5;
+
+        await InitializeConnectionAsync(async context =>
+        {
+            var connectFeature = context.Features.Get<IHttpExtendedConnectFeature>();
+            var maxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
+            // Extended connects don't have a meaningful request body to limit.
+            Assert.True(maxRequestBodySizeFeature.IsReadOnly);
+            var stream = await connectFeature.AcceptAsync();
+            Assert.True(maxRequestBodySizeFeature.IsReadOnly);
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            Assert.Equal(_serviceContext.ServerOptions.Limits.MaxRequestBodySize + 1, memoryStream.Length);
+            await stream.WriteAsync(new byte[] { 0x01 });
+        });
+
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
+            new KeyValuePair<string, string>(HeaderNames.Protocol, "websocket"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/chat"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
+            new KeyValuePair<string, string>(HeaderNames.WebSocketSubProtocols, "chat, superchat"),
+            new KeyValuePair<string, string>(HeaderNames.SecWebSocketExtensions, "permessage-deflate"),
+            new KeyValuePair<string, string>(HeaderNames.SecWebSocketVersion, "13"),
+            new KeyValuePair<string, string>(HeaderNames.Origin, "http://www.example.com"),
+        };
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, headers);
+
+        await SendDataAsync(1, new byte[(int)limits.MaxRequestBodySize + 1], endStream: true);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+
+        _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+        Assert.Equal(2, _decodedHeaders.Count);
+        Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+        var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+            withLength: 1,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+        Assert.Equal(0x01, dataFrame.Payload.Span[0]);
+
+        dataFrame = await ExpectAsync(Http2FrameType.DATA,
+            withLength: 0,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }

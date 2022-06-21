@@ -466,7 +466,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     DependsOnTargets="_ExpandRuntimePackageRoot">
 
     <PropertyGroup>
-      <CompositeTargetDir>$(TargetDir)Composite\</CompositeTargetDir>
+      <CompositeTargetDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Composite', '$(Configuration)'))</CompositeTargetDir>
       <ManagedAssetsFullPath>$(RuntimePackageRoot)$(ManagedAssetsPackagePath)</ManagedAssetsFullPath>
       <NativeAssetsFullPath>$(RuntimePackageRoot)$(NativeAssetsPackagePath)</NativeAssetsFullPath>
 
