@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write Problem Details
 /// HTTP API responses based on https://tools.ietf.org/html/rfc7807
 /// </summary>
-public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IContentHttpResult, IValueHttpResult, IValueHttpResult<HttpValidationProblemDetails>
+public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IContentTypeHttpResult, IValueHttpResult, IValueHttpResult<HttpValidationProblemDetails>
 {
     internal ValidationProblem(HttpValidationProblemDetails problemDetails)
     {
