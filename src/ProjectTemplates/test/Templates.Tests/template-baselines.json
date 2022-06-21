@@ -1698,6 +1698,8 @@
         "Pages/Index.razor",
         "Properties/launchSettings.json",
         "wwwroot/css/app.css",
+        "wwwroot/icon-192.png",
+        "wwwroot/icon-512.png",
         "wwwroot/index.html",
         "_Imports.razor",
         "App.razor",
@@ -1715,13 +1717,15 @@
         "Client/Program.cs",
         "Client/Pages/Index.razor",
         "Client/Properties/launchSettings.json",
+        "wwwroot/icon-192.png",
+        "wwwroot/icon-512.png",
         "Client/wwwroot/index.html",
         "Client/wwwroot/css/app.css",
         "Server/Properties/launchSettings.json",
         "Server/appsettings.Development.json",
         "Server/appsettings.json",
         "Server/Program.cs",
-        "Shared/HelloWorld.cs"
+        "Shared/SharedClass.cs"
       ]
     },
     "PWA": {
@@ -1751,6 +1755,8 @@
         "Properties/launchSettings.json",
         "wwwroot/css/app.css",
         "wwwroot/index.html",
+        "wwwroot/icon-192.png",
+        "wwwroot/icon-512.png",
         "_Imports.razor",
         "App.razor",
         "MainLayout.razor",
@@ -1786,6 +1792,8 @@
         "Files": [
           "Pages/Index.razor",
           "wwwroot/css/app.css",
+          "wwwroot/icon-192.png",
+          "wwwroot/icon-512.png",
           "wwwroot/index.html",
           "_Imports.razor",
           "App.razor",
