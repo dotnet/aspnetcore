@@ -6,11 +6,13 @@
   "symbolInfo": [
     {
       "id": "Hosted",
-      "isVisible": "true"
+      "isVisible": "true",
+      "persistenceScope": "templateGroup"
     },
     {
       "id": "PWA",
-      "isVisible": "true"
+      "isVisible": "true",
+      "persistenceScope": "templateGroup"
     }
   ]
 }
