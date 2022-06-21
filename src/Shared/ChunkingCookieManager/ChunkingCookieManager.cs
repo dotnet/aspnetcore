@@ -173,18 +173,7 @@ internal sealed class ChunkingCookieManager
             return;
         }
 
-        var template = new SetCookieHeaderValue(key)
-        {
-            Domain = options.Domain,
-            Expires = options.Expires,
-            SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
-            HttpOnly = options.HttpOnly,
-            Path = options.Path,
-            Secure = options.Secure,
-            MaxAge = options.MaxAge,
-        };
-
-        var templateLength = template.ToString().Length;
+        var templateLength = options.CreateCookieHeader(key, string.Empty).ToString().Length;
 
         // Normal cookie
         if (!ChunkSize.HasValue || ChunkSize.Value > templateLength + value.Length)
@@ -324,15 +313,9 @@ internal sealed class ChunkingCookieManager
             keyValuePairs[i] = KeyValuePair.Create(string.Concat(key, "C", i.ToString(CultureInfo.InvariantCulture)), string.Empty);
         }
 
-        responseCookies.Append(keyValuePairs, new CookieOptions()
+        responseCookies.Append(keyValuePairs, new CookieOptions(options)
         {
-            Path = options.Path,
-            Domain = options.Domain,
-            SameSite = options.SameSite,
-            Secure = options.Secure,
-            IsEssential = options.IsEssential,
             Expires = DateTimeOffset.UnixEpoch,
-            HttpOnly = options.HttpOnly,
         });
     }
 }
