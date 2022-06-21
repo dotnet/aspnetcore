@@ -1,9 +1,9 @@
 #nullable enable
 Microsoft.AspNetCore.SignalR.HubOptions.DisableImplicitFromServicesParameters.get -> bool
 Microsoft.AspNetCore.SignalR.HubOptions.DisableImplicitFromServicesParameters.set -> void
-Microsoft.AspNetCore.SignalR.IHubCallerClients.Single(string! connectionId) -> Microsoft.AspNetCore.SignalR.ISingleClientProxy!
-Microsoft.AspNetCore.SignalR.IHubClients.Single(string! connectionId) -> Microsoft.AspNetCore.SignalR.ISingleClientProxy!
-Microsoft.AspNetCore.SignalR.IHubClients<T>.Single(string! connectionId) -> T
+Microsoft.AspNetCore.SignalR.IHubCallerClients.Caller.get -> Microsoft.AspNetCore.SignalR.ISingleClientProxy!
+Microsoft.AspNetCore.SignalR.IHubCallerClients.Client(string! connectionId) -> Microsoft.AspNetCore.SignalR.ISingleClientProxy!
+Microsoft.AspNetCore.SignalR.IHubClients.Client(string! connectionId) -> Microsoft.AspNetCore.SignalR.ISingleClientProxy!
 Microsoft.AspNetCore.SignalR.ISingleClientProxy
 Microsoft.AspNetCore.SignalR.ISingleClientProxy.InvokeCoreAsync<T>(string! method, object?[]! args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
 override Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<THub>.InvokeConnectionAsync<T>(string! connectionId, string! methodName, object?[]! args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<T>!
