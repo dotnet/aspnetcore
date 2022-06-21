@@ -14,7 +14,7 @@ public static class RateLimiterOptionsExtensions
     /// <param name="policyName">The name that will be associated with the limiter.</param>
     /// <param name="tokenBucketRateLimiterOptions">The <see cref="TokenBucketRateLimiterOptions"/> to be used for the limiter.</param>
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
-    public static RateLimiterOptions AddTokenBucketRateLimiter(this RateLimiterOptions options, string policyName, TokenBucketRateLimiterOptions tokenBucketRateLimiterOptions)
+    public static RateLimiterOptions AddTokenBucketLimiter(this RateLimiterOptions options, string policyName, TokenBucketRateLimiterOptions tokenBucketRateLimiterOptions)
     {
         return options.AddPolicy<NoKey>(policyName, context =>
         {
@@ -30,7 +30,7 @@ public static class RateLimiterOptionsExtensions
     /// <param name="policyName">The name that will be associated with the limiter.</param>
     /// <param name="fixedWindowRateLimiterOptions">The <see cref="FixedWindowRateLimiterOptions"/> to be used for the limiter.</param>
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
-    public static RateLimiterOptions AddFixedWindowRateLimiter(this RateLimiterOptions options, string policyName, FixedWindowRateLimiterOptions fixedWindowRateLimiterOptions)
+    public static RateLimiterOptions AddFixedWindowLimiter(this RateLimiterOptions options, string policyName, FixedWindowRateLimiterOptions fixedWindowRateLimiterOptions)
     {
         return options.AddPolicy<NoKey>(policyName, context =>
         {
@@ -46,7 +46,7 @@ public static class RateLimiterOptionsExtensions
     /// <param name="policyName">The name that will be associated with the limiter.</param>
     /// <param name="slidingWindowRateLimiterOptions">The <see cref="SlidingWindowRateLimiterOptions"/> to be used for the limiter.</param>
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
-    public static RateLimiterOptions AddSlidingWindowRateLimiter(this RateLimiterOptions options, string policyName, SlidingWindowRateLimiterOptions slidingWindowRateLimiterOptions)
+    public static RateLimiterOptions AddSlidingWindowLimiter(this RateLimiterOptions options, string policyName, SlidingWindowRateLimiterOptions slidingWindowRateLimiterOptions)
     {
         return options.AddPolicy<NoKey>(policyName, context =>
         {

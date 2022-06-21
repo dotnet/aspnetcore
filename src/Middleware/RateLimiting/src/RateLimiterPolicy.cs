@@ -18,6 +18,8 @@ internal sealed class RateLimiterPolicy : IRateLimiterPolicy<AspNetKey>
 
     public int CustomRejectionStatusCode => throw new NotImplementedException();
 
+    public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected => throw new NotImplementedException();
+
     public RateLimitPartition<AspNetKey> GetPartition(HttpContext httpContext)
     {
         throw new NotImplementedException();
