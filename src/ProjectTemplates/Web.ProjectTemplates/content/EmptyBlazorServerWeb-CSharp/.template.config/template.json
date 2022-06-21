@@ -14,17 +14,10 @@
   "identity": "Microsoft.Web.Blazor.Server.Empty.CSharp.7.0",
   "shortName": "blazorserver-empty",
   "thirdPartyNotices": "https://aka.ms/aspnetcore/7.0-third-party-notices",
-  "tags": [
-    {
-      "type": "projectType",
-      "add": [ "Cloud", "Web" ],
-      "remove": [ "*" ]
-    },
-    {
-      "type": "platform",
-      "add": [ "Linux", "macOS", "Windows" ]
-    }
-  ],
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
   "sourceName": "EmptyBlazorServerWeb-CSharp",
   "preferNameDirectory": true,
   "sources": [

@@ -3,5 +3,16 @@
   "order": 650,
   "icon": "ide/icon.png",
   "disableHttpsSymbol": "NoHttps",
-  "supportsDocker": true
+  "supportsDocker": true,
+  "tags": [
+    {
+      "type": "projectType",
+      "add": [ "Cloud", "Web" ],
+      "remove": [ "*" ]
+    },
+    {
+      "type": "platform",
+      "add": [ "Linux", "macOS", "Windows" ]
+    }
+  ]
 }
