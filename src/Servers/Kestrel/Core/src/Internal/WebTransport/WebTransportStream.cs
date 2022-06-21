@@ -144,7 +144,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
 
     public override Task FlushAsync(CancellationToken cancellationToken)
     {
-        return RequestBodyPipe.Writer.FlushAsync(cancellationToken).GetAsTask();
+        return _frameWriter.FlushAsync(null, cancellationToken).GetAsTask();
     }
 
     public override int Read(byte[] buffer, int offset, int count)
@@ -154,13 +154,12 @@ internal class WebTransportStream : Stream, IHttp3Stream
             throw new NotSupportedException();
         }
 
-        return ReadAsyncInternal(new(buffer), offset, default).GetAwaiter().GetResult();
+        // since there is no seekig we ignore the offset parameter
+        return ReadAsyncInternal(new(buffer), default).GetAwaiter().GetResult();
     }
 
-    private async ValueTask<int> ReadAsyncInternal(Memory<byte> destination, int offset, CancellationToken cancellationToken)
+    private async ValueTask<int> ReadAsyncInternal(Memory<byte> destination, CancellationToken cancellationToken)
     {
-        //Input.AdvanceTo(new SequencePosition(Input, offset));
-
         while (true)
         {
             var result = await Input.ReadAsync(cancellationToken);
@@ -199,49 +198,6 @@ internal class WebTransportStream : Stream, IHttp3Stream
         }
     }
 
-    //private async ValueTask<int> ReadAsyncInternal(Memory<byte> destination, int offset, CancellationToken cancellationToken)
-    //{
-    //    var numBytes = 0;
-
-    //    Input.AdvanceTo(new SequencePosition(Input, offset));
-
-    //    while (!_isClosed)
-    //    {
-    //        var result = await Input.ReadAsync(cancellationToken);
-    //        var readableBuffer = result.Buffer;
-    //        var consumed = readableBuffer.Start;
-    //        var examined = readableBuffer.End;
-
-    //        try
-    //        {
-    //            if (!readableBuffer.IsEmpty)
-    //            {
-    //                // need to kick off httpprotocol process request async here.
-    //                while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, out var framePayload))
-    //                {
-    //                    Log.Http3FrameReceived(_context.ConnectionId, _streamIdFeature.StreamId, _incomingFrame);
-
-    //                    consumed = examined = framePayload.End;
-
-    //                    // write to the destination buffer
-    //                    readableBuffer.ToArray().CopyTo(destination);
-    //                }
-    //            }
-
-    //            if (result.IsCompleted)
-    //            {
-    //                return numBytes;
-    //            }
-    //        }
-    //        finally
-    //        {
-    //            numBytes = consumed.GetInteger();
-    //            Input.AdvanceTo(consumed, examined);
-    //        }
-    //    }
-    //    return 0;
-    //}
-
     public override void Write(byte[] buffer, int offset, int count)
     {
         if (!CanWrite)
@@ -254,7 +210,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
 
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        return RequestBodyPipe.Writer.WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).GetAsTask();
+        return _frameWriter.WriteDataAsync(new ReadOnlySequence<byte>(new Memory<byte>(buffer, offset, count))).GetAsTask();
     }
 
     #region Unsupported stream functionality

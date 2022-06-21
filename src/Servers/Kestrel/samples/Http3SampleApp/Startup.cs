@@ -27,18 +27,15 @@ public class Startup
 
                 var stream = await session.AcceptStreamAsync(CancellationToken.None);
 
-                //await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
-                //await stream.FlushAsync();
+                // WRITE TO A STREAM
+                await Task.Delay(200);
+                await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
+                await stream.FlushAsync();
 
-                // prints the @T which represents the stream type - todo prevent this from being sent to the application
-                var memory = new Memory<byte>(new byte[4096]);
-                var test = await stream.ReadAsync(memory);
-                Console.WriteLine(System.Text.ASCIIEncoding.Default.GetString(memory.ToArray()));
-
-                // prints the data send from the client
-                var memory2 = new Memory<byte>(new byte[4096]);
-                var test2 = await stream.ReadAsync(memory2);
-                Console.WriteLine(System.Text.ASCIIEncoding.Default.GetString(memory2.ToArray()));
+                // READ FROM A STREAM:
+                //var memory = new Memory<byte>(new byte[4096]);
+                //var test = await stream.ReadAsync(memory);
+                //Console.WriteLine(System.Text.ASCIIEncoding.Default.GetString(memory.ToArray()));
             }
             else
             {
