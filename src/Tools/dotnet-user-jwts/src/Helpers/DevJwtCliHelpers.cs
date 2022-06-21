@@ -144,7 +144,6 @@ internal static class DevJwtCliHelpers
 
         static List<string> ExtractIISExpressUrlFromProfile(JsonProperty profile)
         {
-
             if (profile.NameEquals("iisSettings"))
             {
                 if (profile.Value.TryGetProperty("iisExpress", out var iisExpress))
