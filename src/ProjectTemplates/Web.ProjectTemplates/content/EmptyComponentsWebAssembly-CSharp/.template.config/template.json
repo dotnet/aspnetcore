@@ -232,10 +232,17 @@
       }
     }
   },
-  "tags": {
-    "language": "C#",
-    "type": "project"
-  },
+  "tags": [
+    {
+      "type": "projectType",
+      "add": [ "Cloud", "Web" ],
+      "remove": [ "*" ]
+    },
+    {
+      "type": "platform",
+      "add": [ "Linux", "macOS", "Windows" ]
+    }
+  ],
   "postActions": [
     {
       "id": "restore",

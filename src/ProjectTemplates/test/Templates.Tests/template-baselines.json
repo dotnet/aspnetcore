@@ -1731,6 +1731,8 @@
         "Pages/Index.razor",
         "Properties/launchSettings.json",
         "wwwroot/css/app.css",
+        "wwwroot/icon-192.png",
+        "wwwroot/icon-512.png",
         "wwwroot/index.html",
         "wwwroot/manifest.json",
         "wwwroot/service-worker.js",
@@ -1765,6 +1767,8 @@
         "Client/Program.cs",
         "Client/Pages/Index.razor",
         "Client/Properties/launchSettings.json",
+        "Client/wwwroot/icon-192.png",
+        "Client/wwwroot/icon-512.png",
         "Client/wwwroot/index.html",
         "Client/wwwroot/manifest.json",
         "Client/wwwroot/service-worker.js",
@@ -1774,7 +1778,7 @@
         "Server/appsettings.Development.json",
         "Server/appsettings.json",
         "Server/Program.cs",
-        "Shared/HelloWorld.cs"
+        "Shared/SharedClass.cs"
       ]
     }
   }
