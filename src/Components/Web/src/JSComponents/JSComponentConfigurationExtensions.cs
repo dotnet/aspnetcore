@@ -62,6 +62,6 @@ public static class JSComponentConfigurationExtensions
     /// <typeparam name="TComponent">The component type.</typeparam>
     /// <param name="configuration">The <see cref="IJSComponentConfiguration"/>.</param>
     /// <param name="customElementName">A unique name for the custom element. This must conform to custom element naming rules, so it must contain a dash character.</param>
-    public static void RegisterAsCustomElement<TComponent>(this IJSComponentConfiguration configuration, string customElementName) where TComponent : IComponent
+    public static void RegisterAsCustomElement<[DynamicallyAccessedMembers(Component)] TComponent>(this IJSComponentConfiguration configuration, string customElementName) where TComponent : IComponent
         => configuration.RegisterForJavaScript<TComponent>(customElementName, "Blazor._internal.customElements.add");
 }
