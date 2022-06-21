@@ -6,7 +6,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.RateLimiting;
-internal sealed class RateLimiterPolicy
+internal sealed class RateLimiterPolicy : IRateLimiterPolicy<AspNetKey>
 {
     [Required]
     public Func<HttpContext, RateLimitPartition<AspNetKey>> Partitioner { get; init; }
@@ -15,6 +15,13 @@ internal sealed class RateLimiterPolicy
     public string PolicyName { get; init; }
 
     public PartitionKeyScope KeyScope { get; init; } = PartitionKeyScope.Policy;
+
+    public int CustomRejectionStatusCode => throw new NotImplementedException();
+
+    public RateLimitPartition<AspNetKey> GetPartition(HttpContext httpContext)
+    {
+        throw new NotImplementedException();
+    }
 }
 internal enum PartitionKeyScope
 {

@@ -14,23 +14,23 @@ public static class RateLimiterEndpointConventionBuilderExtensions
     /// Adds the specified rate limiter to the endpoint(s).
     /// </summary>
     /// <param name="builder">The endpoint convention builder.</param>
-    /// <param name="name">The name of the rate limiter to add to the endpoint.</param>
+    /// <param name="policyName">The name of the rate limiter to add to the endpoint.</param>
     /// <returns>The original convention builder parameter.</returns>
-    public static TBuilder RequireRateLimiting<TBuilder>(this TBuilder builder, String name) where TBuilder : IEndpointConventionBuilder
+    public static TBuilder RequireRateLimiting<TBuilder>(this TBuilder builder, String policyName) where TBuilder : IEndpointConventionBuilder
     {
         if (builder == null)
         {
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (name == null)
+        if (policyName == null)
         {
-            throw new ArgumentNullException(nameof(name));
+            throw new ArgumentNullException(nameof(policyName));
         }
 
         builder.Add(endpointBuilder =>
         {
-            endpointBuilder.Metadata.Add(new RateLimiterMetadata(name));
+            endpointBuilder.Metadata.Add(new RateLimiterMetadata(policyName));
         });
 
         return builder;
