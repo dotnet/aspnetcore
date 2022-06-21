@@ -42,22 +42,22 @@ public abstract class WebTransportBaseStream : IHttp3Stream, IThreadPoolWorkItem
 
     long IHttp3Stream.StreamId => _streamIdFeature.StreamId;
 
-    bool IHttp3Stream.IsReceivingHeader => throw new NotImplementedException(); // todo remove this
+    bool IHttp3Stream.IsReceivingHeader => throw new NotImplementedException(); // not-applicable
 
-    bool IHttp3Stream.IsDraining => throw new NotImplementedException(); // todo remove this
+    bool IHttp3Stream.IsDraining => throw new NotImplementedException(); // not-applicable
 
-    bool IHttp3Stream.IsRequestStream => throw new NotImplementedException(); // todo remove this
+    bool IHttp3Stream.IsRequestStream => throw new NotImplementedException(); // not-applicable
 
-    string IHttp3Stream.TraceIdentifier => throw new NotImplementedException(); // todo remove this
+    string IHttp3Stream.TraceIdentifier => throw new NotImplementedException(); // not-applicable
 
-    long IHttp3Stream.StreamTimeoutTicks { get => throw new NotImplementedException(); set => throw new NotImplementedException(); } // todo remove this
+    long IHttp3Stream.StreamTimeoutTicks { get => throw new NotImplementedException(); set => throw new NotImplementedException(); } // not-applicable
 
     /// <summary>
     /// Aborts the stream using a generic exception and no error code. Also logs a message
     /// </summary>
     public void Abort()
     {
-        AbortCore(new(), Http3ErrorCode.NoError); // todo why is this cast necessary?
+        AbortCore(new(), Http3ErrorCode.NoError);
     }
 
     void IHttp3Stream.Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)

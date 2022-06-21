@@ -26,10 +26,10 @@ public interface IWebTransportSession
     /// <summary>
     /// Returns the next incoming stream
     /// </summary>
-    /// <exception cref="Exception">If This is not a valid WebTransport session.</exception>
+    /// <exception cref="Exception">If This is not a valid WebTransport session or it fails to get a stream to accept.</exception>
     /// <param name="cancellationToken">The cancelation token used to cancel the operation</param>
     /// <returns>The unidirectional or bidirectional stream that is next in the queue</returns>
-    public ValueTask<WebTransportBaseStream?> AcceptStreamAsync(CancellationToken cancellationToken);
+    public ValueTask<TStream> AcceptStreamAsync<TStream>(CancellationToken cancellationToken) where TStream : WebTransportBaseStream;
 
     /// <summary>
     /// Tries to open a new unidirectional stream.

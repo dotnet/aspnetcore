@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.IO.Pipelines;
 using System.Net.Http;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
@@ -18,7 +20,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 [RequiresPreviewFeatures("WebTransport is a preview feature")]
 internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSessionFeature
 {
-    #region Public API
     long IWebTransportSession.SessionId => _controlStream.StreamId;
 
     async ValueTask<IWebTransportSession> IHttpWebTransportSessionFeature.AcceptAsync(CancellationToken token)
@@ -52,14 +53,14 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
 
         return default!; // TODO Implement
     }
-    #endregion
 
     private bool _initialized;
     private string _version = "";
-    private readonly Dictionary<long, WebTransportBaseStream> _openStreams = new(); // todo should this maybe just be a list as I am not actually indexing based on id?
+    private readonly Dictionary<long, WebTransportBaseStream> _openStreams = new();
     private readonly ConcurrentQueue<WebTransportBaseStream> _pendingStreams = new();
     private static bool _webtransportEnabled;
     private Http3Stream _controlStream = default!;
+    private readonly SemaphoreSlim _pendingAcceptStreamRequests = new(0);
 
     internal static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
 
@@ -107,36 +108,44 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         lock (_pendingStreams)
         {
             _pendingStreams.Enqueue(stream);
+            _pendingAcceptStreamRequests.Release();
         }
     }
 
     /// <summary>
-    /// Pops the first stream from the list of pending streams.
+    /// Pops the first stream from the list of pending streams. Keeps poping until a stream of the correct type
+    /// (as specified by the generic) is found.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token to abort waiting for a stream</param>
     /// <returns>An instance of WebTransportStream that corresponds to the new stream to accept</returns>
-    public ValueTask<WebTransportBaseStream?> AcceptStreamAsync(CancellationToken cancellationToken) // todo use the cancellation token
+    public async ValueTask<TStream> AcceptStreamAsync<TStream>(CancellationToken cancellationToken) where TStream : WebTransportBaseStream // todo use the cancellation token more properly
     {
         ThrowIfInvalidSession();
 
-        _pendingStreams.TryDequeue(out var stream);
-        return ValueTask.FromResult(stream);
-
-        //var success = _pendingStreams.TryDequeue(out var stream);
-        //if (success)
+        //if (cancellationToken.IsCancellationRequested)
         //{
-        //    if (stream!.Type == WebTransportStreamType.Bidirectional)
-        //    {
-        //        KestrelEventSource.Log.RequestQueuedStart(stream!._stream, AspNetCore.Http.HttpProtocol.Http3);
-        //    }
-        //    ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
+        //    return new ValueTask<FlushResult>(Task.FromCanceled<FlushResult>(cancellationToken));
+        //}
 
-        //    return ValueTask.FromResult(stream!);
-        //}
-        //else
-        //{
-        //    // TODO implement
-        //}
+        await _pendingAcceptStreamRequests.WaitAsync(cancellationToken);
+
+        var success = _pendingStreams.TryDequeue(out var stream);
+        if (!success)
+        {
+            throw new Exception("Failed to get next stream even though there is one available");
+        }
+
+        ThreadPool.UnsafeQueueUserWorkItem(stream!, preferLocal: false);
+
+        // if we get a stream of the correct type, return it otherwise discard and continue waiting
+        if (stream is TStream)
+        {
+            return (TStream)stream!;
+        }
+        else
+        {
+            return await AcceptStreamAsync<TStream>(cancellationToken);
+        }
     }
 
     /// <summary>

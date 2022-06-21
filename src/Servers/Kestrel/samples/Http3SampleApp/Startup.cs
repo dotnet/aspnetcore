@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
+using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Http3SampleApp;
 
@@ -23,8 +25,12 @@ public class Startup
             {
                 var session = await feature.AcceptAsync(CancellationToken.None);
 
-                var stream = await session.AcceptStreamAsync(CancellationToken.None);
-
+                // opens either a bidirectional or unidirectional stream
+                test(await session.AcceptStreamAsync<WebTransportBaseStream>(CancellationToken.None));
+                // waits specifically for a bidirectional stream. Discarding all undirectional ones until it gets a bidirectional one
+                test(await session.AcceptStreamAsync<WebTransportBidirectionalStream>(CancellationToken.None));
+                // waits specifically for a undirectional input stream
+                test(await session.AcceptStreamAsync<WebTransportInputStream>(CancellationToken.None));
             }
             else
             {
@@ -33,5 +39,20 @@ public class Startup
 
             await Task.Delay(TimeSpan.FromMinutes(150));
         });
+    }
+
+    private void test(WebTransportBaseStream stream)
+    {
+        if (stream != null)
+        {
+            if (stream.GetType() == typeof(WebTransportBidirectionalStream))
+            {
+                Console.WriteLine("bidirectional"); 
+            }
+            else if (stream.GetType() == typeof(WebTransportInputStream))
+            {
+                Console.WriteLine("unidirectional");
+            }
+        }
     }
 }
