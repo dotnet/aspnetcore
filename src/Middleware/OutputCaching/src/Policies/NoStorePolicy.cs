@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that prevents the response from being cached.
 /// </summary>
-internal class NoStorePolicy : IOutputCachePolicy
+internal sealed class NoStorePolicy : IOutputCachePolicy
 {
     public static NoStorePolicy Instance = new();
 

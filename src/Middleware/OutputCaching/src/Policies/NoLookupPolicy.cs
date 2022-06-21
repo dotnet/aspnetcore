@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// A policy that prevents the response from being served from cached.
 /// </summary>
-internal class NoLookupPolicy : IOutputCachePolicy
+internal sealed class NoLookupPolicy : IOutputCachePolicy
 {
     public static NoLookupPolicy Instance = new();
 

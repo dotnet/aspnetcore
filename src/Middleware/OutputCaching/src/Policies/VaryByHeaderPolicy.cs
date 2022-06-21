@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 internal sealed class VaryByHeaderPolicy : IOutputCachePolicy
 {
-    private StringValues _headers { get; set; }
+    private readonly StringValues _headers;
 
     /// <summary>
     /// Creates a policy that doesn't vary the cached content based on headers.
