@@ -1577,12 +1577,13 @@ public class WebApplicationTests
         app.Start();
 
         var ds = app.Services.GetRequiredService<EndpointDataSource>();
-        Assert.Equal(5, ds.Endpoints.Count);
-        Assert.Equal("One", ds.Endpoints[0].DisplayName);
-        Assert.Equal("Two", ds.Endpoints[1].DisplayName);
-        Assert.Equal("Three", ds.Endpoints[2].DisplayName);
-        Assert.Equal("Four", ds.Endpoints[3].DisplayName);
-        Assert.Equal("Five", ds.Endpoints[4].DisplayName);
+        var displayNames = ds.Endpoints.Select(e => e.DisplayName).ToArray();
+        Assert.Equal(5, displayNames.Length);
+        Assert.Contains("One", displayNames);
+        Assert.Contains("Two", displayNames);
+        Assert.Contains("Three", displayNames);
+        Assert.Contains("Four", displayNames);
+        Assert.Contains("Five", displayNames);
 
         var client = app.GetTestClient();
 

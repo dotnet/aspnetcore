@@ -1,18 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http.HttpResults;
 using System.Reflection;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
-
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
 
 string Plaintext() => "Hello, World!";
 app.MapGet("/plaintext", Plaintext);
@@ -24,15 +19,43 @@ app.MapGet("/", () => $"""
     Date and Time: {DateTime.Now}
     """);
 
-var nestedGroup = app.MapGroup("/group/{groupName}")
-   .MapGroup("/nested/{nestedName}")
-   .WithTags("nested");
+var outer = app.MapGroup("/outer");
+var inner = outer.MapGroup("/inner");
 
-nestedGroup
-   .MapGet("/", (string groupName, string nestedName) =>
-   {
-       return $"Hello from {groupName}:{nestedName}!";
-   });
+inner.AddRouteHandlerFilter((routeContext, next) =>
+{
+    var tags = routeContext.EndpointMetadata.OfType<ITagsMetadata>().FirstOrDefault();
+
+    return async invocationContext =>
+    {
+        Console.WriteLine("Running filter!");
+        var result = await next(invocationContext);
+        return ((string)result) + " | /inner filter! Tags:" + tags is null ? "(null)" : string.Join(", ", tags.Tags);
+    };
+});
+
+outer.MapGet("/outerget", () => "I'm nested.");
+inner.MapGet("/innerget", () => "I'm more nested.");
+
+inner.AddRouteHandlerFilter((routeContext, next) =>
+{
+    Console.WriteLine($"Building filter! Num args: {routeContext.MethodInfo.GetParameters().Length}"); ;
+    return async invocationContext =>
+    {
+        Console.WriteLine("Running filter!");
+        var result = await next(invocationContext);
+        return ((string)result) + "| nested filter!";
+    };
+});
+
+var superNested = inner.MapGroup("/group/{groupName}")
+   .MapGroup("/nested/{nestedName}")
+   .WithTags("nested", "more", "tags");
+
+superNested.MapGet("/", (string groupName, string nestedName) =>
+{
+   return $"Hello from {groupName}:{nestedName}!";
+});
 
 object Json() => new { message = "Hello, World!" };
 app.MapGet("/json", Json).WithTags("json");
