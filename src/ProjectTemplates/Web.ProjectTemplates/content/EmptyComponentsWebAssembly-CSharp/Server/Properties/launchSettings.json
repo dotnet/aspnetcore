@@ -1,14 +1,12 @@
 {
-    "iisSettings": {
-      "iisExpress": {
-        "applicationUrl": "http://localhost:8080",
-        //#if(HasHttpsProfile)
-        "sslPort": 44300
-        //#else
-        "sslPort": 0
-        //#endif
-      }
-    },
+  "iisExpress": {
+      "applicationUrl": "http://localhost:8080",
+      //#if (HasHttpsProfile)
+      "sslPort": 44300
+      //#else
+      "sslPort": 0
+      //#endif
+  },
   "profiles": {
     //#if (HasHttpProfile)
     "http": {

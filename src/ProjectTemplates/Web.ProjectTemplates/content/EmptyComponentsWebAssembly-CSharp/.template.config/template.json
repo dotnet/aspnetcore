@@ -56,12 +56,6 @@
           }
         },
         {
-          "condition": "(Hosted)",
-          "exclude": [
-            "Client/wwwroot/sample-data/**"
-          ]
-        },
-        {
           "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
           "exclude": [
             "*.sln"

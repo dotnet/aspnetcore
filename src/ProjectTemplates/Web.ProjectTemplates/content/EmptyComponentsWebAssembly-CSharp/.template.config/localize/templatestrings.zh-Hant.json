@@ -14,6 +14,7 @@
   "symbols/iisHttpsPort/description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used.",
   "symbols/PWA/displayName": "_Progressive Web Application",
   "symbols/PWA/description": "If specified, produces a Progressive Web Application (PWA) supporting installation and offline use.",
+  "symbols/HasHttpProfile/description": "Always have HTTP profile.",
   "symbols/NoHttps/description": "Whether to turn off HTTPS.",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
