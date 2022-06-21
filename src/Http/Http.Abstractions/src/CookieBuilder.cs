@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Http;
 public class CookieBuilder
 {
     private string? _name;
+    private List<string>? _extensions;
 
     /// <summary>
     /// The name of the cookie.
@@ -80,7 +81,10 @@ public class CookieBuilder
     /// <summary>
     /// Gets a collection of additional values to append to the cookie.
     /// </summary>
-    public IList<string> Extensions { get; } = new List<string>();
+    public IList<string> Extensions
+    {
+        get => _extensions ??= new List<string>();
+    }
 
     /// <summary>
     /// Creates the cookie options from the given <paramref name="context"/>.
@@ -113,9 +117,13 @@ public class CookieBuilder
             Secure = SecurePolicy == CookieSecurePolicy.Always || (SecurePolicy == CookieSecurePolicy.SameAsRequest && context.Request.IsHttps),
             Expires = Expiration.HasValue ? expiresFrom.Add(Expiration.GetValueOrDefault()) : default(DateTimeOffset?)
         };
-        foreach (var extension in Extensions)
+
+        if (_extensions?.Count > 0)
         {
-            options.Extensions.Add(extension);
+            foreach (var extension in _extensions)
+            {
+                options.Extensions.Add(extension);
+            }
         }
         return options;
     }

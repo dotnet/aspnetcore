@@ -10,13 +10,14 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public class CookieOptions
 {
+    private List<string>? _extensions;
+
     /// <summary>
     /// Creates a default cookie with a path of '/'.
     /// </summary>
     public CookieOptions()
     {
         Path = "/";
-        Extensions = new List<string>();
     }
 
     /// <summary>
@@ -34,7 +35,11 @@ public class CookieOptions
         HttpOnly = options.HttpOnly;
         MaxAge = options.MaxAge;
         IsEssential = options.IsEssential;
-        Extensions = new List<string>(options.Extensions);
+
+        if (options._extensions?.Count > 0)
+        {
+            _extensions = new List<string>(options._extensions);
+        }
     }
 
     /// <summary>
@@ -88,7 +93,10 @@ public class CookieOptions
     /// <summary>
     /// Gets a collection of additional values to append to the cookie.
     /// </summary>
-    public IList<string> Extensions { get; }
+    public IList<string> Extensions
+    {
+        get => _extensions ??= new List<string>();
+    }
 
     /// <summary>
     /// Creates a <see cref="SetCookieHeaderValue"/> using the current options.
@@ -106,9 +114,12 @@ public class CookieOptions
             SameSite = (Net.Http.Headers.SameSiteMode)SameSite,
         };
 
-        foreach (var extension in Extensions)
+        if (_extensions?.Count > 0)
         {
-            cookie.Extensions.Add(extension);
+            foreach (var extension in _extensions)
+            {
+                cookie.Extensions.Add(extension);
+            }
         }
 
         return cookie;
