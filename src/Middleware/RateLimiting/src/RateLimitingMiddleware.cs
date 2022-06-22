@@ -3,6 +3,7 @@
 
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -20,6 +21,7 @@ internal sealed partial class RateLimitingMiddleware
     private readonly int _rejectionStatusCode;
     private readonly IDictionary<string, AspNetPolicy> _policyMap;
     private readonly AspNetKey _defaultPolicyKey = new AspNetKey<PolicyNameKey>(new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
+    private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
     /// Creates a new <see cref="RateLimitingMiddleware"/>.
@@ -27,17 +29,33 @@ internal sealed partial class RateLimitingMiddleware
     /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
     /// <param name="logger">The <see cref="ILogger"/> used for logging.</param>
     /// <param name="options">The options for the middleware.</param>
-    public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimiterOptions> options)
+    public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimiterOptions> options, IServiceProvider serviceProvider)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
 
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+
         _onRejected = options.Value.OnRejected;
         _rejectionStatusCode = options.Value.RejectionStatusCode;
         _policyMap = options.Value.PolicyMap;
 
+        foreach (var item in options.Value.UnactivatedPolicyMap)
+        {
+            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, item.Value);
+            _policyMap.Add(item.Key, new AspNetPolicy(RateLimiterOptions.ConvertPartitioner<TPartitionKey>(((IRateLimiterPolicy<TPartitionKey>)instance).GetPartition)));
+        }    
+
         var _globalLimiter = options.Value.GlobalLimiter;
+        if (_globalLimiter is null)
+        {
+            _limiter = CreateEndpointLimiter();
+        }
+        else
+        {
+            _limiter = PartitionedRateLimiter.CreateChained();
+        }
 
     }
 
@@ -60,7 +78,18 @@ internal sealed partial class RateLimitingMiddleware
             // OnRejected "wins" over DefaultRejectionStatusCode - we set DefaultRejectionStatusCode first,
             // then call OnRejected in case it wants to do any further modification of the status code.
             context.Response.StatusCode = _rejectionStatusCode;
-            await _onRejected(new OnRejectedContext() { HttpContext = context, Lease = lease }, context.RequestAborted);
+
+            AspNetPolicy? policy;
+            var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.Name;
+            // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
+            if (!(name is null) && _policyMap.TryGetValue(name, out policy) && !(policy.OnRejected is null))
+            {
+                await policy.OnRejected(new OnRejectedContext() { HttpContext = context, Lease = lease }, context.RequestAborted);
+            }
+            else if (!(_onRejected is null))
+            {
+                await _onRejected(new OnRejectedContext() { HttpContext = context, Lease = lease }, context.RequestAborted);
+            }
         }
     }
 
@@ -91,7 +120,7 @@ internal sealed partial class RateLimitingMiddleware
                 }
             }
             return RateLimitPartition.CreateNoLimiter<AspNetKey>(_defaultPolicyKey);
-        });
+        }, new AspNetKeyEqualityComparer());
     }
 
     private static partial class RateLimiterLog
