@@ -168,7 +168,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
         }
 
         // since there is no seekig we ignore the offset parameter
-        return ReadAsyncInternal(new(buffer), default).GetAwaiter().GetResult();
+        return ReadAsyncInternal(new(buffer), default).GetAwaiter().GetResult(); // todo find a better way
     }
 
     public override void Write(byte[] buffer, int offset, int count)
@@ -183,12 +183,12 @@ internal class WebTransportStream : Stream, IHttp3Stream
 
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        return _frameWriter.WriteDataAsync(new ReadOnlySequence<byte>(new Memory<byte>(buffer, offset, count))).GetAsTask();
+        return _context.Transport.Output.WriteAsync(new Memory<byte>(buffer, offset, count), cancellationToken).GetAsTask();
     }
 
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
     {
-        return _frameWriter.WriteDataAsync(new ReadOnlySequence<byte>(buffer)).GetAsValueTask();
+        return _context.Transport.Output.WriteAsync(buffer, cancellationToken).GetAsValueTask();
     }
 
     #region Unsupported stream functionality

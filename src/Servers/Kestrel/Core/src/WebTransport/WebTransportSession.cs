@@ -47,16 +47,22 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         Abort(new(), Http3ErrorCode.NoError);
     }
 
-    async ValueTask<Stream?> IWebTransportSession.OpenUnidirectionalStreamAsync()
+    async ValueTask<Stream> IWebTransportSession.OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
     {
         ThrowIfInvalidSession();
 
+        // create the stream
         var features = new FeatureCollection();
         features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
-        var connectionContext = await _connection!._multiplexedContext.ConnectAsync(features);
+        var connectionContext = await _connection!._multiplexedContext.ConnectAsync(features, cancellationToken);
         var streamContext = _connection.CreateHttpStreamContext(connectionContext);
+        var stream = new WebTransportStream(streamContext, WebTransportStreamType.Output);
 
-        return new WebTransportStream(streamContext, WebTransportStreamType.Output);
+        // send the stream type (unidirectional) todo merge the Http3StreamType classes. Why are there 2 to begin with?
+        await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 0x40 /*quic integer length*/, (byte)Http3.Http3StreamType.WebTransportUnidirectional, 0x00 /*body*/}), cancellationToken);
+        await stream.FlushAsync(cancellationToken);
+
+        return stream;
     }
 
     private static bool _webtransportEnabled;

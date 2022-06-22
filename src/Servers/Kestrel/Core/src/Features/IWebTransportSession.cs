@@ -33,7 +33,8 @@ public interface IWebTransportSession
     /// <summary>
     /// Opens a new unidirectional stream.
     /// </summary>
+    /// <param name="cancellationToken">The cancelation token used to cancel the operation</param>
     /// <exception cref="Exception">If This is not a valid WebTransport session.</exception>
     /// <returns>The unidirectional stream</returns>
-    public ValueTask<Stream?> OpenUnidirectionalStreamAsync();
+    public ValueTask<Stream> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken);
 }

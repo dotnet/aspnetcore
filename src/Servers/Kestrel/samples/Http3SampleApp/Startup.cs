@@ -23,26 +23,10 @@ public class Startup
             {
                 var session = await feature.AcceptAsync(CancellationToken.None);
 
-                // wait to verify no issues with sync
-                await Task.Delay(1000);
-                // open a new stream
-                var stream = await session.OpenUnidirectionalStreamAsync();
+                // OPEN A NEW UNIDIRECTIONAL OUTPUT STREAM
+                //var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
 
-                // wait to verify no issues with sync
-                await Task.Delay(200);
-                // send the stream type
-                await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 0x04, 0x54, 0x00 }));
-                await stream.FlushAsync();
-
-                // wait to verify no issues with sync
-                await Task.Delay(200);
-                // send random message
-                await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
-                await stream.FlushAsync();
-
-
-                // THIS STUFF BELOW WORKS
-
+                //// ACCEPT AN INCOMING STREAM
                 //var stream = await session.AcceptStreamAsync(CancellationToken.None);
 
                 //// WRITE TO A STREAM
