@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 /// <summary>
 /// Controls the session and streams of a WebTransport session.
 /// </summary>
-[RequiresPreviewFeatures("WebTransport is a preview feature")]
 public interface IWebTransportSession
 {
     /// <summary>

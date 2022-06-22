@@ -5,7 +5,6 @@ using System.Buffers;
 using System.ComponentModel;
 using System.IO.Pipelines;
 using System.Net.Http;
-using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -20,7 +19,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 /// Represents a base WebTransport stream. Do not use directly as it does not
 /// contain logic for handling data.
 /// </summary>
-[RequiresPreviewFeatures("WebTransport is a preview feature")]
 internal class WebTransportStream : Stream
 {
     private volatile bool _isClosed;

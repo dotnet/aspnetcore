@@ -843,7 +843,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);
             }
 
-#pragma warning disable CA2252
             if (HttpRequestHeaders.HeaderProtocol == "webtransport")
             {
                 var supportedVersions = HttpRequestHeaders.Where((header) => // TODO do as we go along and store as list in WebTransportSession or is that a memory issue?
@@ -862,7 +861,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                     }
                 }
             }
-#pragma warning restore CA2252
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
         {

@@ -46,18 +46,14 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private readonly Http3PeerSettings _clientSettings = new();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
-#pragma warning disable CA2252
     private readonly WebTransportSession _webtransportSession;
-#pragma warning restore CA2252
 
     public Http3Connection(HttpMultiplexedConnectionContext context)
     {
         _multiplexedContext = (MultiplexedConnectionContext)context.ConnectionContext;
         _context = context;
         _streamLifetimeHandler = this;
-#pragma warning disable CA2252
         _webtransportSession = new(this);
-#pragma warning restore CA2252
 
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
 
@@ -308,10 +304,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
-#pragma warning disable CA2252
                                     var stream = await WebTransportStream.CreateWebTransportStream(context, WebTransportStreamType.Input);
                                     _webtransportSession.AddStream(stream);
-#pragma warning restore CA2252
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
                                 {
@@ -351,10 +345,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 {
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
-#pragma warning disable CA2252
                                         var stream2 = await WebTransportStream.CreateWebTransportStream(context, WebTransportStreamType.Bidirectional);
                                         _webtransportSession.AddStream(stream2);
-#pragma warning restore CA2252
                                     }
                                     else
                                     {

@@ -37,7 +37,6 @@ using Microsoft.AspNetCore.Http.Features;";
             allFeatures: allFeatures,
             implementedFeatures: implementedFeatures,
             extraUsings: usings,
-            fallbackFeatures: null,
-            suppressPreviewFeatureWarnings: false);
+            fallbackFeatures: null);
     }
 }

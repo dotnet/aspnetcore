@@ -5,7 +5,7 @@ namespace CodeGenerator;
 
 public static class FeatureCollectionGenerator
 {
-    public static string GenerateFile(string namespaceName, string className, string[] allFeatures, string[] implementedFeatures, string extraUsings, string fallbackFeatures, bool suppressPreviewFeatureWarnings)
+    public static string GenerateFile(string namespaceName, string className, string[] allFeatures, string[] implementedFeatures, string extraUsings, string fallbackFeatures)
     {
         // NOTE: This list MUST always match the set of feature interfaces implemented by TransportConnection.
         // See also: src/Kestrel/Http/TransportConnection.FeatureCollection.cs
@@ -25,7 +25,7 @@ using System.Runtime.CompilerServices;
 {extraUsings}
 
 #nullable enable
-{(suppressPreviewFeatureWarnings ? "\n#pragma warning disable CA2252 // suppressing preview feature warning\n" : "")}
+
 namespace {namespaceName}
 {{
     internal partial class {className} : IFeatureCollection{Each(implementedFeatures, feature => $@",
@@ -206,7 +206,7 @@ namespace {namespaceName}
         IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
     }}
 }}
-{(suppressPreviewFeatureWarnings ? "#pragma warning restore CA2252 // suppressing preview feature warning" : "")}";
+";
 
         return s;
     }

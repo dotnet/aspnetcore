@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 /// <summary>
 /// Represents the different types of WebTransport streams.
 /// </summary>
-[RequiresPreviewFeatures("WebTransport is a preview feature")]
 public enum WebTransportStreamType
 {
     /// <summary>

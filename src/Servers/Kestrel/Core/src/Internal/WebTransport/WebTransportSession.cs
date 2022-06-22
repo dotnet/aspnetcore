@@ -4,7 +4,6 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -17,7 +16,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 /// <summary>
 /// Controls the WebTransport session and keeps track of all the streams.
 /// </summary>
-[RequiresPreviewFeatures("WebTransport is a preview feature")]
 internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSessionFeature
 {
     private static bool _webtransportEnabled;
@@ -50,6 +48,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
 
     long IWebTransportSession.SessionId => _controlStream.StreamId;
 
+#pragma warning disable CA2252 // WebTransport is a preview feature. Suppress this warning
     async ValueTask<IWebTransportSession> IHttpWebTransportSessionFeature.AcceptAsync(CancellationToken token)
     {
         ThrowIfInvalidSession();
@@ -69,6 +68,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
 
         return this;
     }
+#pragma warning restore CA2252
 
     void IWebTransportSession.Abort()
     {

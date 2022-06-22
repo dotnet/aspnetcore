@@ -44,7 +44,6 @@ using Microsoft.AspNetCore.Http.Features;";
             allFeatures: allFeatures,
             implementedFeatures: implementedFeatures,
             extraUsings: usings,
-            fallbackFeatures: "MultiplexedConnectionFeatures",
-            suppressPreviewFeatureWarnings: false);
+            fallbackFeatures: "MultiplexedConnectionFeatures");
     }
 }
