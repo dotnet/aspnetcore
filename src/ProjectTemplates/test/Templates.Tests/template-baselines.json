@@ -1689,5 +1689,108 @@
         "Program.cs"
       ]
     }
+  },
+  "blazorwasm-empty": {
+    "None": {
+      "Template": "blazorwasm-empty",
+      "Arguments": "new blazorwasm-empty",
+      "Files": [
+        "Pages/Index.razor",
+        "Properties/launchSettings.json",
+        "wwwroot/css/app.css",
+        "wwwroot/index.html",
+        "_Imports.razor",
+        "App.razor",
+        "MainLayout.razor",
+        "Program.cs"
+      ]
+    },
+    "Hosted": {
+      "Template": "blazorwasm-empty",
+      "Arguments": "new blazorwasm-empty --hosted",
+      "Files": [
+        "Client/_Imports.razor",
+        "Client/App.razor",
+        "Client/MainLayout.razor",
+        "Client/Program.cs",
+        "Client/Pages/Index.razor",
+        "Client/Properties/launchSettings.json",
+        "Client/wwwroot/index.html",
+        "Client/wwwroot/css/app.css",
+        "Server/Properties/launchSettings.json",
+        "Server/appsettings.Development.json",
+        "Server/appsettings.json",
+        "Server/Program.cs",
+        "Shared/SharedClass.cs"
+      ]
+    },
+    "PWA": {
+      "Template": "blazorwasm-empty",
+      "Arguments": "new blazorwasm-empty --pwa",
+      "Files": [
+        "Pages/Index.razor",
+        "Properties/launchSettings.json",
+        "wwwroot/css/app.css",
+        "wwwroot/icon-512.png",
+        "wwwroot/index.html",
+        "wwwroot/manifest.json",
+        "wwwroot/service-worker.js",
+        "wwwroot/service-worker.published.js",
+        "_Imports.razor",
+        "App.razor",
+        "MainLayout.razor",
+        "Program.cs"
+      ]
+    },
+    "NoHttps": {
+      "Template": "blazorwasm-empty",
+      "Arguments": "new blazorwasm-empty --no-https",
+      "Files": [
+        "Pages/Index.razor",
+        "Properties/launchSettings.json",
+        "wwwroot/css/app.css",
+        "wwwroot/index.html",
+        "_Imports.razor",
+        "App.razor",
+        "MainLayout.razor",
+        "Program.cs"
+      ]
+    },
+    "PWAHosted": {
+      "Template": "blazorwasm-empty",
+      "Arguments": "new blazorwasm-empty --pwa --hosted",
+      "Files": [
+        "Client/_Imports.razor",
+        "Client/App.razor",
+        "Client/MainLayout.razor",
+        "Client/Program.cs",
+        "Client/Pages/Index.razor",
+        "Client/Properties/launchSettings.json",
+        "Client/wwwroot/icon-512.png",
+        "Client/wwwroot/index.html",
+        "Client/wwwroot/manifest.json",
+        "Client/wwwroot/service-worker.js",
+        "Client/wwwroot/service-worker.published.js",
+        "Client/wwwroot/css/app.css",
+        "Server/Properties/launchSettings.json",
+        "Server/appsettings.Development.json",
+        "Server/appsettings.json",
+        "Server/Program.cs",
+        "Shared/SharedClass.cs"
+      ],
+      "ExcludeLaunchSettings": {
+        "Template": "blazorwasm-empty",
+        "Arguments": "new blazorwasm-empty --exclude-launch-settings",
+        "Files": [
+          "Pages/Index.razor",
+          "wwwroot/css/app.css",
+          "wwwroot/index.html",
+          "_Imports.razor",
+          "App.razor",
+          "MainLayout.razor",
+          "Program.cs"
+        ]
+      }
+    }
   }
 }
