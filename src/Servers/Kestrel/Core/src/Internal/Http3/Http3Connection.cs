@@ -25,18 +25,18 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     internal readonly Dictionary<long, IHttp3Stream> _streams = new();
     internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
 
+    internal readonly MultiplexedConnectionContext _multiplexedContext; // todo revert to private
+
     // The highest opened request stream ID is sent with GOAWAY. The GOAWAY
     // value will signal to the peer to discard all requests with that value or greater.
     // When this value is sent, 4 will be added. We want 0 to be sent for no requests,
     // so start highest opened request stream ID at -4.
     private const long DefaultHighestOpenedRequestStreamId = -4;
     private long _highestOpenedRequestStreamId = DefaultHighestOpenedRequestStreamId;
-
     private readonly object _sync = new();
-    private readonly MultiplexedConnectionContext _multiplexedContext;
     private readonly HttpMultiplexedConnectionContext _context;
     private bool _aborted;
-    private readonly object _protocolSelectionLock = new object();
+    private readonly object _protocolSelectionLock = new();
     private int _gracefulCloseInitiator;
     private int _stoppedAcceptingStreams;
     private bool _gracefulCloseStarted;
@@ -46,13 +46,14 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private readonly Http3PeerSettings _clientSettings = new();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
-    private readonly WebTransportSession _webtransportSession = new();
+    private readonly WebTransportSession _webtransportSession;
 
     public Http3Connection(HttpMultiplexedConnectionContext context)
     {
         _multiplexedContext = (MultiplexedConnectionContext)context.ConnectionContext;
         _context = context;
         _streamLifetimeHandler = this;
+        _webtransportSession = new(this);
 
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
 
@@ -349,13 +350,13 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                     }
                                     else
                                     {
-                                        stream = new Http3BidirectionalStream<TContext>(application, context);
+                                        stream = new Http3Stream<TContext>(application, context);
                                         persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
                                     }
                                 }
                                 else
                                 {
-                                    stream = (Http3BidirectionalStream<TContext>)s!;
+                                    stream = (Http3Stream<TContext>)s!;
                                     stream.InitializeWithExistingContext(streamContext.Transport);
                                 }
 
@@ -505,7 +506,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         return new ConnectionAbortedException(CoreStrings.Http3ConnectionFaulted, error!);
     }
 
-    private Http3StreamContext CreateHttpStreamContext(ConnectionContext streamContext)
+    internal Http3StreamContext CreateHttpStreamContext(ConnectionContext streamContext)
     {
         var httpConnectionContext = new Http3StreamContext(
             _multiplexedContext.ConnectionId,
@@ -590,25 +591,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         var features = new FeatureCollection();
         features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
         var streamContext = await _multiplexedContext.ConnectAsync(features);
-        var httpConnectionContext = new Http3StreamContext(
-            _multiplexedContext.ConnectionId,
-            HttpProtocols.Http3,
-            _context.AltSvcHeader,
-            _multiplexedContext,
-            _context.ServiceContext,
-            streamContext.Features,
-            _context.MemoryPool,
-            streamContext.LocalEndPoint as IPEndPoint,
-            streamContext.RemoteEndPoint as IPEndPoint,
-            _streamLifetimeHandler,
-            streamContext,
-            _clientSettings,
-            _serverSettings,
-            _webtransportSession)
-        {
-            TimeoutControl = _context.TimeoutControl,
-            Transport = streamContext.Transport
-        };
+        var httpConnectionContext = CreateHttpStreamContext(streamContext);
 
         return new Http3ControlStream<TContext>(application, httpConnectionContext);
     }

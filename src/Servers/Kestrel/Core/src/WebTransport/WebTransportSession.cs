@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
@@ -45,20 +47,31 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         Abort(new(), Http3ErrorCode.NoError);
     }
 
-    ValueTask<Stream?> IWebTransportSession.OpenUnidirectionalStreamAsync()
+    async ValueTask<Stream?> IWebTransportSession.OpenUnidirectionalStreamAsync()
     {
         ThrowIfInvalidSession();
 
-        return default!; // TODO Implement
+        var features = new FeatureCollection();
+        features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
+        var connectionContext = await _connection!._multiplexedContext.ConnectAsync(features);
+        var streamContext = _connection.CreateHttpStreamContext(connectionContext);
+
+        return new WebTransportStream(streamContext, WebTransportStreamType.Output);
     }
 
-    private bool _initialized;
-    private string _version = "";
+    private static bool _webtransportEnabled;
+
     private readonly Dictionary<long, WebTransportStream> _openStreams = new();
     private readonly ConcurrentQueue<WebTransportStream> _pendingStreams = new();
-    private static bool _webtransportEnabled;
-    private Http3Stream _controlStream = default!;
     private readonly SemaphoreSlim _pendingAcceptStreamRequests = new(0);
+    private readonly Http3Connection _connection;
+
+    // these should all be effectively readonly after
+    // the initialization method
+    private string _version = "";
+    private Http3Stream _controlStream = default!;
+
+    private bool _initialized;
 
     internal static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
 
@@ -66,21 +79,27 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     // supported version (index 0 is the most prefered option)
     internal static readonly byte[][] suppportedWebTransportVersionsBytes =
     {
-         new byte[] { 0x64, 0x72, 0x61, 0x66, 0x74, 0x30, 0x32 } // "draft02" 
+        new byte[] { 0x64, 0x72, 0x61, 0x66, 0x74, 0x30, 0x32 } // "draft02" 
     };
 
     internal static readonly string[] suppportedWebTransportVersions =
     {
-        "draft02"
+    "draft02"
     };
+
+    internal WebTransportSession(Http3Connection connection)
+    {
+        _connection = connection;
+    }
 
     /// <summary>
     /// Initialize the WebTransport session and prepare it to make a connection
     /// </summary>
     /// <param name="controlStream">The stream overwhich the ENHANCED CONNECT request was established</param>
+    /// <param name="connection">The instance of Http3Connection that created this session</param>
     /// <param name="version">The version of the WebTransport spec to use</param>
     /// <returns>True if the initialization completed successfully. False otherwise.</returns>
-    internal bool Initialize(Http3Stream controlStream, string version)
+    internal bool Initialize(Http3Stream controlStream, string version) // todo merge with constructor
     {
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out _webtransportEnabled);
 
@@ -131,8 +150,6 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         {
             throw new Exception("Failed to accept the next stream in the queue");
         }
-
-        //ThreadPool.UnsafeQueueUserWorkItem(stream!, preferLocal: false);
 
         return stream!;
     }

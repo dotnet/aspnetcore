@@ -7,8 +7,9 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.AcceptStr
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.OpenUnidirectionalStreamAsync() -> System.Threading.Tasks.ValueTask<System.IO.Stream?>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.SessionId.get -> long
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Bidirectional = 1 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Unidirectional = 0 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Bidirectional = 0 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Input = 1 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Output = 2 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBaseStream
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBaseStream.Abort() -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBidirectionalStream

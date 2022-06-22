@@ -31,9 +31,9 @@ public interface IWebTransportSession
     public ValueTask<Stream> AcceptStreamAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Tries to open a new unidirectional stream.
+    /// Opens a new unidirectional stream.
     /// </summary>
     /// <exception cref="Exception">If This is not a valid WebTransport session.</exception>
-    /// <returns>The unidirectional stream or null if the operation failed.</returns>
+    /// <returns>The unidirectional stream</returns>
     public ValueTask<Stream?> OpenUnidirectionalStreamAsync();
 }

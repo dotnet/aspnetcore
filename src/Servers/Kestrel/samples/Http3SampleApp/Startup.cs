@@ -23,17 +23,37 @@ public class Startup
             {
                 var session = await feature.AcceptAsync(CancellationToken.None);
 
-                var stream = await session.AcceptStreamAsync(CancellationToken.None);
+                // wait to verify no issues with sync
+                await Task.Delay(1000);
+                // open a new stream
+                var stream = await session.OpenUnidirectionalStreamAsync();
 
-                // WRITE TO A STREAM
+                // wait to verify no issues with sync
                 await Task.Delay(200);
+                // send the stream type
+                await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 0x04, 0x54, 0x00 }));
+                await stream.FlushAsync();
+
+                // wait to verify no issues with sync
+                await Task.Delay(200);
+                // send random message
                 await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
                 await stream.FlushAsync();
 
-                // READ FROM A STREAM:
-                var memory = new Memory<byte>(new byte[4096]);
-                var test = await stream.ReadAsync(memory);
-                Console.WriteLine(System.Text.Encoding.Default.GetString(memory.ToArray()));
+
+                // THIS STUFF BELOW WORKS
+
+                //var stream = await session.AcceptStreamAsync(CancellationToken.None);
+
+                //// WRITE TO A STREAM
+                //await Task.Delay(200);
+                //await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
+                //await stream.FlushAsync();
+
+                //// READ FROM A STREAM:
+                //var memory = new Memory<byte>(new byte[4096]);
+                //var test = await stream.ReadAsync(memory);
+                //Console.WriteLine(System.Text.Encoding.Default.GetString(memory.ToArray()));
             }
             else
             {
