@@ -114,13 +114,19 @@ internal static class DevJwtCliHelpers
         ArgumentException.ThrowIfNullOrEmpty(nameof(project));
 
         var launchSettingsFilePath = Path.Combine(Path.GetDirectoryName(project)!, "Properties", "launchSettings.json");
-        var applicationUrls = new List<string>();
+        var applicationUrls = new HashSet<string>();
         if (File.Exists(launchSettingsFilePath))
         {
             using var launchSettingsFileStream = new FileStream(launchSettingsFilePath, FileMode.Open, FileAccess.Read);
             if (launchSettingsFileStream.Length > 0)
             {
                 var launchSettingsJson = JsonDocument.Parse(launchSettingsFileStream);
+
+                if (ExtractIISExpressUrlFromProfile(launchSettingsJson.RootElement) is { } iisUrls)
+                {
+                    applicationUrls.UnionWith(iisUrls);
+                }
+
                 if (launchSettingsJson.RootElement.TryGetProperty("profiles", out var profiles))
                 {
                     var profilesEnumerator = profiles.EnumerateObject();
@@ -128,25 +134,20 @@ internal static class DevJwtCliHelpers
                     {
                         if (ExtractKestrelUrlsFromProfile(profile) is { } kestrelUrls)
                         {
-                            applicationUrls.AddRange(kestrelUrls);
-                        }
-
-                        if (ExtractIISExpressUrlFromProfile(profile) is { } iisUrls)
-                        {
-                            applicationUrls.AddRange(iisUrls);
+                            applicationUrls.UnionWith(kestrelUrls);
                         }
                     }
                 }
             }
         }
 
-        return applicationUrls;
+        return applicationUrls.ToList();
 
-        static List<string> ExtractIISExpressUrlFromProfile(JsonProperty profile)
+        static List<string> ExtractIISExpressUrlFromProfile(JsonElement rootElement)
         {
-            if (profile.NameEquals("iisSettings"))
+            if (rootElement.TryGetProperty("iisSettings", out var iisSettings))
             {
-                if (profile.Value.TryGetProperty("iisExpress", out var iisExpress))
+                if (iisSettings.TryGetProperty("iisExpress", out var iisExpress))
                 {
                     List<string> iisUrls = new();
                     if (iisExpress.TryGetProperty("applicationUrl", out var iisUrl))

@@ -25,20 +25,36 @@ public class UserJwtsTestFixture : IDisposable
 
     private const string LaunchSettingsTemplate = @"
 {
+  ""iisSettings"": {
+    ""windowsAuthentication"": false,
+    ""anonymousAuthentication"": true,
+    ""iisExpress"": {
+      ""applicationUrl"": ""http://localhost:23528"",
+      ""sslPort"": 44395
+    }
+  },
   ""profiles"": {
-    ""iisSettings"": {
-        ""windowsAuthentication"": false,
-        ""anonymousAuthentication"": true,
-        ""iisExpress"": {
-            ""applicationUrl"": ""http://localhost:23528"",
-            ""sslPort"": 44395
-        }
-    },
-    ""HttpApiSampleApp"": {
+    ""HttpWebApp"": {
       ""commandName"": ""Project"",
       ""dotnetRunMessages"": true,
       ""launchBrowser"": true,
       ""applicationUrl"": ""https://localhost:5001;http://localhost:5000"",
+      ""environmentVariables"": {
+        ""ASPNETCORE_ENVIRONMENT"": ""Development""
+      }
+    },
+    ""HttpsOnly"": {
+      ""commandName"": ""Project"",
+      ""dotnetRunMessages"": true,
+      ""launchBrowser"": true,
+      ""applicationUrl"": ""https://localhost:5001"",
+      ""environmentVariables"": {
+        ""ASPNETCORE_ENVIRONMENT"": ""Development""
+      }
+    },
+    ""IIS Express"": {
+      ""commandName"": ""IISExpress"",
+      ""launchBrowser"": true,
       ""environmentVariables"": {
         ""ASPNETCORE_ENVIRONMENT"": ""Development""
       }
