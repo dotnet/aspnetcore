@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 public class UnprocessableEntityOfTResultTests
 {
     [Fact]
-    public void NotFoundObjectResult_ProblemDetails_SetsStatusCodeAndValue()
+    public void UnprocessableEntityObjectResult_ProblemDetails_SetsStatusCodeAndValue()
     {
         // Arrange & Act
         var obj = new HttpValidationProblemDetails();
@@ -110,6 +110,40 @@ public class UnprocessableEntityOfTResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<UnprocessableEntity<object>>(null));
+    }
+
+    [Fact]
+    public void UnprocessableEntityObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new UnprocessableEntity<object>(null) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+    }
+
+    [Fact]
+    public void UnprocessableEntityObjectResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var result = new UnprocessableEntity<string>(value) as IValueHttpResult;
+
+        // Assert
+        Assert.IsType<string>(result.RawValue);
+        Assert.Equal(value, result.RawValue);
+    }
+
+    [Fact]
+    public void UnprocessableEntityObjectResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var result = new UnprocessableEntity<string>(value) as IValueHttpResult<string>;
+
+        // Assert
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

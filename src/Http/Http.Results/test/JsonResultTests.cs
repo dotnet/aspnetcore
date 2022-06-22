@@ -217,6 +217,85 @@ public class JsonResultTests
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
+    [Fact]
+    public void JsonResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var contentType = "application/json+custom";
+        var result = new JsonHttpResult<string>(
+            null,
+            StatusCodes.Status200OK,
+            contentType,
+            null) as IContentTypeHttpResult;
+
+        // Assert
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var contentType = "application/json+custom";
+        var result = new JsonHttpResult<string>(
+            null,
+            StatusCodes.Status202Accepted,
+            contentType,
+            null) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IStatusCodeHttpResult_Correctly_WithDefaultStatus()
+    {
+        // Arrange & Act
+        var contentType = "application/json+custom";
+        var result = new JsonHttpResult<string>(
+            null,
+            statusCode: null,
+            contentType,
+            null) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var contentType = "application/json+custom";
+        var result = new JsonHttpResult<string>(
+            value,
+            statusCode: null,
+            contentType,
+            null) as IValueHttpResult;
+
+        // Assert
+        Assert.IsType<string>(result.RawValue);
+        Assert.Equal(value, result.RawValue);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var contentType = "application/json+custom";
+        var result = new JsonHttpResult<string>(
+            value,
+            statusCode: null,
+            contentType,
+            null) as IValueHttpResult<string>;
+
+        // Assert
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
     private static IServiceProvider CreateServices()
     {
         var services = new ServiceCollection();
