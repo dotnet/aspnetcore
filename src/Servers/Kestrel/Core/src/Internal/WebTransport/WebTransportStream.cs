@@ -53,7 +53,7 @@ internal class WebTransportStream : Stream
         context.StreamContext.ConnectionClosed.Register(state =>
         {
             var stream = (WebTransportStream)state!;
-            stream._context.WebTransportSession.TryRemoveStream(stream._streamIdFeature.StreamId);
+            stream._context.WebTransportSession?.TryRemoveStream(stream._streamIdFeature.StreamId);
         }, this);
     }
 

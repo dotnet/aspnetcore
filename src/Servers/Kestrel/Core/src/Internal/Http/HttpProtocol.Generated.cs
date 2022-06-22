@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 #nullable enable
 
+#pragma warning disable CA2252 // suppressing preview feature warning
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class HttpProtocol : IFeatureCollection,
@@ -910,3 +912,4 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
     }
 }
+#pragma warning restore CA2252 // suppressing preview feature warning

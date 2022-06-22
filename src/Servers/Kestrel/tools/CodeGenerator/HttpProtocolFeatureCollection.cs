@@ -95,6 +95,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;";
             allFeatures: allFeatures,
             implementedFeatures: implementedFeatures,
             extraUsings: usings,
-            fallbackFeatures: "ConnectionFeatures");
+            fallbackFeatures: "ConnectionFeatures",
+            suppressPreviewFeatureWarnings: true);
     }
 }
