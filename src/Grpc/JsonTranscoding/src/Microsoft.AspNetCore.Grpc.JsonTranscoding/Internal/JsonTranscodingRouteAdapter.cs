@@ -14,8 +14,20 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 /// - Optional parameters aren't supported.
 /// - Parameters spanning multiple segments are supported.
 ///
-/// This type transforms an HTTP route into an ASP.NET Core route by rewritting it to a compatible
-/// format and providing actions to reconstruct parameters that span multiple segments.
+/// The purpose of this type is to add support for parameters spanning multiple segments and
+/// anonymous any or catch-all segments. This type transforms an HTTP route into an ASP.NET Core
+/// route by rewritting it to a compatible format and providing actions to reconstruct parameters
+/// that span multiple segments.
+///
+/// For example, consider a multi-segment parameter route:
+/// - Before: /v1/{book.name=shelves/*/books/*}
+/// - After: /v1/shelves/{__Complex_book.name_2}/books/{__Complex_book.name_4}
+/// 
+/// It is rewritten so that any * or ** segments become ASP.NET Core route parameters. These parameter
+/// names are never used by the user, and instead they're reconstructed into the final value by the
+/// adapter and then added to the HttpRequest.RouteValues collection.
+/// - Request URL: /v1/shelves/example-shelf/books/example-book
+/// - Route parameter: book.name = shelves/example-self/books/example-book
 /// </summary>
 internal sealed class JsonTranscodingRouteAdapter
 {
@@ -120,10 +132,12 @@ internal sealed class JsonTranscodingRouteAdapter
                         }
                         var finalValue = string.Format(CultureInfo.InvariantCulture, routeValueFormatTemplate, values);
 
-                        // Catch-all route parameter is always the last parameter. The original HTTP pattern
+                        // Catch-all route parameter is always the last parameter. The original HTTP pattern could specify a
+                        // literal suffix after the catch-all, e.g. /{param=**}/suffix. Because ASP.NET Core routing provides
+                        // the entire remainder of the URL in the route value, we must trim the suffix from that route value.
                         if (!string.IsNullOrEmpty(catchAllSuffix))
                         {
-                            finalValue = finalValue.Substring(0, finalValue.Length - catchAllSuffix.Length - 1); // Trim "/{suffix}"
+                            finalValue = finalValue.Substring(0, finalValue.Length - catchAllSuffix.Length - 1);
                         }
                         context.Request.RouteValues[fullPath] = finalValue;
                     });

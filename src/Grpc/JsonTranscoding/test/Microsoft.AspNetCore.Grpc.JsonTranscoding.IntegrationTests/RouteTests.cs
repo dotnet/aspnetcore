@@ -82,4 +82,27 @@ public class RouteTests : IntegrationTestBase
         // Assert 2
         Assert.Equal("Two - Hello v1/greeter/test2/b/c!", result2.RootElement.GetProperty("message").GetString());
     }
+
+    [Fact]
+    public async Task ComplexCatchAllParameter_NestedField_MatchUrl_SuccessResult()
+    {
+        // Arrange
+        Task<HelloReply> UnaryMethod(ComplextHelloRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(new HelloReply { Message = $"Hello {request.Name.FirstName} {request.Name.LastName}!" });
+        }
+        var method = Fixture.DynamicGrpc.AddUnaryMethod<ComplextHelloRequest, HelloReply>(
+            UnaryMethod,
+            Greeter.Descriptor.FindMethodByName("SayHelloComplexCatchAll3"));
+
+        var client = new HttpClient(Fixture.Handler) { BaseAddress = new Uri("http://localhost") };
+
+        // Act
+        var response = await client.GetAsync("/v1/last_name/complex_greeter/test2/b/c/d/two").DefaultTimeout();
+        var responseStream = await response.Content.ReadAsStreamAsync();
+        using var result = await JsonDocument.ParseAsync(responseStream);
+
+        // Assert
+        Assert.Equal("Hello complex_greeter/test2/b last_name!", result.RootElement.GetProperty("message").GetString());
+    }
 }
