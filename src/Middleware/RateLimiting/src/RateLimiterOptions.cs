@@ -14,6 +14,9 @@ public sealed class RateLimiterOptions
     internal IDictionary<string, AspNetPolicy> PolicyMap { get; }
         = new Dictionary<string, AspNetPolicy>(StringComparer.Ordinal);
 
+    internal IDictionary<string, Type> UnactivatedPolicyMap { get; }
+        = new Dictionary<string, Type>(StringComparer.Ordinal);
+
     /// <summary>
     /// Gets or sets the <see cref="PartitionedRateLimiter{TResource}"/>
     /// </summary>
@@ -51,18 +54,12 @@ public sealed class RateLimiterOptions
             throw new ArgumentNullException(nameof(partitioner));
         }
 
-        if (PolicyMap.ContainsKey(policyName))
+        if (PolicyMap.ContainsKey(policyName) || UnactivatedPolicyMap.ContainsKey(policyName))
         {
             throw new ArgumentException("There already exists a policy with the name {name}");
         }
 
-        Func<HttpContext, RateLimitPartition<AspNetKey>> func = context =>
-        {
-            RateLimitPartition<TPartitionKey> partition = partitioner(context);
-            return new RateLimitPartition<AspNetKey<TPartitionKey>>(new AspNetKey<TPartitionKey>(partition.PartitionKey), partition.Factory(partition.PartitionKey));
-        };
-
-        PolicyMap.Add(policyName, new AspNetPolicy(func));
+        PolicyMap.Add(policyName, new AspNetPolicy(ConvertPartitioner<TPartitionKey>(partitioner)));
 
         return this;
     }
@@ -78,10 +75,12 @@ public sealed class RateLimiterOptions
             throw new ArgumentNullException(nameof(policyName));
         }
 
-        if (PolicyMap.ContainsKey(policyName))
+        if (PolicyMap.ContainsKey(policyName) || UnactivatedPolicyMap.ContainsKey(policyName))
         {
             throw new ArgumentException("There already exists a policy with the name {name}");
         }
+
+        UnactivatedPolicyMap.Add(policyName, typeof(TPolicy));
 
         return this;
     }
@@ -98,7 +97,7 @@ public sealed class RateLimiterOptions
             throw new ArgumentNullException(nameof(policyName));
         }
 
-        if (PolicyMap.ContainsKey(policyName))
+        if (PolicyMap.ContainsKey(policyName) || UnactivatedPolicyMap.ContainsKey(policyName))
         {
             throw new ArgumentException("There already exists a policy with the name {name}");
         }
@@ -108,13 +107,7 @@ public sealed class RateLimiterOptions
             throw new ArgumentNullException(nameof(policy));
         }
 
-        Func<HttpContext, RateLimitPartition<AspNetKey>> func = context =>
-        {
-            RateLimitPartition<TPartitionKey> partition = policy.GetPartition(context);
-            return new RateLimitPartition<AspNetKey<TPartitionKey>>(new AspNetKey<TPartitionKey>(partition.PartitionKey), partition.Factory(partition.PartitionKey));
-        };
-
-        PolicyMap.Add(policyName, new AspNetPolicy(func));
+        PolicyMap.Add(policyName, new AspNetPolicy(ConvertPartitioner<TPartitionKey>(policy.GetPartition)));
 
         return this;
     }
@@ -131,7 +124,7 @@ public sealed class RateLimiterOptions
             throw new ArgumentNullException(nameof(partitioner));
         }
 
-        if (PolicyMap.ContainsKey(policyName))
+        if (PolicyMap.ContainsKey(policyName) || UnactivatedPolicyMap.ContainsKey(policyName))
         {
             throw new ArgumentException("There already exists a policy with the name {name}");
         }
@@ -139,5 +132,14 @@ public sealed class RateLimiterOptions
         PolicyMap.Add(policyName, new AspNetPolicy(partitioner));
 
         return this;
+    }
+
+    internal static Func<HttpContext, RateLimitPartition<AspNetKey>> ConvertPartitioner<TPartitionKey>(Func<HttpContext, RateLimitPartition<TPartitionKey>> partitioner)
+    {
+        return (context =>
+        {
+            RateLimitPartition<TPartitionKey> partition = partitioner(context);
+            return new RateLimitPartition<AspNetKey<TPartitionKey>>(new AspNetKey<TPartitionKey>(partition.PartitionKey), partition.Factory(partition.PartitionKey));
+        });
     }
 }

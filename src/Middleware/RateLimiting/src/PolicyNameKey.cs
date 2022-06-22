@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.RateLimiting;
-internal record class PolicyNameKey
+internal class PolicyNameKey
 {
     public string PolicyName { get; init; }
 }
