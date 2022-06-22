@@ -23,11 +23,11 @@ public class Startup
             {
                 var session = await feature.AcceptAsync(CancellationToken.None);
 
-                // OPEN A NEW UNIDIRECTIONAL OUTPUT STREAM
+                //// OPEN A NEW UNIDIRECTIONAL OUTPUT STREAM
                 //var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
 
                 //// ACCEPT AN INCOMING STREAM
-                //var stream = await session.AcceptStreamAsync(CancellationToken.None);
+                //var stream2 = await session.AcceptStreamAsync(CancellationToken.None);
 
                 //// WRITE TO A STREAM
                 //await Task.Delay(200);
@@ -36,7 +36,7 @@ public class Startup
 
                 //// READ FROM A STREAM:
                 //var memory = new Memory<byte>(new byte[4096]);
-                //var test = await stream.ReadAsync(memory);
+                //var test = await stream2.ReadAsync(memory);
                 //Console.WriteLine(System.Text.Encoding.Default.GetString(memory.ToArray()));
             }
             else

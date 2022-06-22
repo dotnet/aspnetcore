@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
@@ -107,7 +106,6 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     /// Initialize the WebTransport session and prepare it to make a connection
     /// </summary>
     /// <param name="controlStream">The stream overwhich the ENHANCED CONNECT request was established</param>
-    /// <param name="connection">The instance of Http3Connection that created this session</param>
     /// <param name="version">The version of the WebTransport spec to use</param>
     /// <returns>True if the initialization completed successfully. False otherwise.</returns>
     internal bool Initialize(Http3Stream controlStream, string version) // todo merge with constructor

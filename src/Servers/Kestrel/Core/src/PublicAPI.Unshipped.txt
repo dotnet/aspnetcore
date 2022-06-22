@@ -1,28 +1,6 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Features.IHttpWebTransportSessionFeature
-Microsoft.AspNetCore.Http.Features.IHttpWebTransportSessionFeature.AcceptAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession!>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.Abort() -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.SessionId.get -> long
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Bidirectional = 0 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Input = 1 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Output = 2 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
-Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBaseStream
-Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBaseStream.Abort() -> void
-Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBidirectionalStream
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportBaseStream
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportBaseStream.Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportInputStream
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportOutputStream
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportOutputStream.WriteDataAsync(System.ReadOnlyMemory<byte> data, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult>
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream<TContext>
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream<TContext>.Abort() -> void
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream<TContext>.StreamId.get -> long
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream<TContext>.Type -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
-override Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBidirectionalStream.Execute() -> void
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportInputStream.Execute() -> void
-virtual Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport.WebTransportBaseStream.Execute() -> void
-virtual Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportBaseStream.Execute() -> void
