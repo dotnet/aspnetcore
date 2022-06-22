@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 /// contain logic for handling data.
 /// </summary>
 [RequiresPreviewFeatures("WebTransport is a preview feature")]
-internal class WebTransportStream : Stream, IHttp3Stream
+internal class WebTransportStream : Stream
 {
     private volatile bool _isClosed;
 
@@ -36,7 +36,10 @@ internal class WebTransportStream : Stream, IHttp3Stream
 
     internal KestrelTrace Log => _context.ServiceContext.Log;
 
-    long IHttp3Stream.StreamId => _streamIdFeature.StreamId;
+    /// <summary>
+    /// The unique identifier of the stream.
+    /// </summary>
+    public long StreamId => _streamIdFeature.StreamId;
 
     private WebTransportStream(Http3StreamContext context, WebTransportStreamType type)
     {
@@ -60,7 +63,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
 
         // skip the first 3 bytes which correspond the the strem header
         // as the application does not need to see them
-        _ = await stream.ReadAsyncInternal(new Memory<byte>(new byte[3]), CancellationToken.None);
+        _ = await stream.ReadAsyncInternal(new Memory<byte>(new byte[3]), 0, 3, CancellationToken.None);
 
         return stream;
     }
@@ -78,12 +81,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
         Input.Complete(abortReason);
     }
 
-    void IHttp3Stream.Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
-    {
-        AbortCore(abortReason, errorCode);
-    }
-
-    private async Task<int> ReadAsyncInternal(Memory<byte> destination, CancellationToken cancellationToken)
+    private async Task<int> ReadAsyncInternal(Memory<byte> destination, int offset, int count, CancellationToken cancellationToken)
     {
         while (true)
         {
@@ -102,11 +100,11 @@ internal class WebTransportStream : Stream, IHttp3Stream
             {
                 if (length != 0)
                 {
-                    var actual = (int)Math.Min(length, destination.Length);
+                    var actual = (int)Math.Min(length, Math.Min(destination.Length, count));
 
                     var slice = actual == length ? buffer : buffer.Slice(0, actual);
                     consumed = slice.End;
-                    slice.CopyTo(destination.Span);
+                    slice.CopyTo(destination[offset..].Span);
 
                     return actual;
                 }
@@ -147,6 +145,10 @@ internal class WebTransportStream : Stream, IHttp3Stream
     /// </summary>
     public override bool CanWrite => _type != WebTransportStreamType.Input && !_isClosed;
 
+    /// <summary>
+    /// Flushes the Output pipe.
+    /// </summary>
+    /// <exception cref="NotSupportedException">If this stream has no output pipe</exception>
     public override void Flush()
     {
         if (!CanWrite)
@@ -157,6 +159,11 @@ internal class WebTransportStream : Stream, IHttp3Stream
         FlushAsync(default).GetAwaiter().GetResult();
     }
 
+    /// <summary>
+    /// Flushes the Output pipe.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+    /// <exception cref="NotSupportedException">If this stream has no output pipe</exception>
     public override Task FlushAsync(CancellationToken cancellationToken)
     {
         if (!CanWrite)
@@ -167,6 +174,14 @@ internal class WebTransportStream : Stream, IHttp3Stream
         return Output.FlushAsync(cancellationToken).GetAsTask();
     }
 
+    /// <summary>
+    /// Read data from the input pipe.
+    /// </summary>
+    /// <param name="buffer">The buffer to read the data into.</param>
+    /// <param name="offset">The starting index of the buffer to store data into.</param>
+    /// <param name="count">The ending index of the buffer to store data into.</param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
     public override int Read(byte[] buffer, int offset, int count)
     {
         if (!CanRead)
@@ -174,8 +189,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
             throw new NotSupportedException();
         }
 
-        // since there is no seeking we ignore the offset and count parameters
-        return ReadAsyncInternal(new(buffer), default).GetAwaiter().GetResult();
+        return ReadAsyncInternal(new(buffer), offset, count, CancellationToken.None).GetAwaiter().GetResult();
     }
 
     public override void Write(byte[] buffer, int offset, int count)
@@ -242,42 +256,6 @@ internal class WebTransportStream : Stream, IHttp3Stream
     public override void SetLength(long value)
     {
         throw new NotSupportedException();
-    }
-    #endregion
-
-    #region Unsupported IHttp3Stream functionality
-    /// <summary>
-    /// Not applicable to WebTransport. Don't use
-    /// </summary>
-    /// <exception cref="NotSupportedException"></exception>
-    bool IHttp3Stream.IsReceivingHeader => throw new NotSupportedException();
-
-    /// <summary>
-    /// Not applicable to WebTransport. Don't use
-    /// </summary>
-    /// <exception cref="NotSupportedException"></exception>
-    bool IHttp3Stream.IsDraining => throw new NotSupportedException();
-
-    /// <summary>
-    /// Not applicable to WebTransport. Don't use
-    /// </summary>
-    /// <exception cref="NotSupportedException"></exception>
-    bool IHttp3Stream.IsRequestStream => throw new NotSupportedException();
-
-    /// <summary>
-    /// Not applicable to WebTransport. Don't use
-    /// </summary>
-    /// <exception cref="NotSupportedException"></exception>
-    string IHttp3Stream.TraceIdentifier => throw new NotSupportedException();
-
-    /// <summary>
-    /// Not applicable to WebTransport. Don't use
-    /// </summary>
-    /// <exception cref="NotSupportedException"></exception>
-    long IHttp3Stream.StreamTimeoutTicks
-    {
-        get => throw new NotSupportedException();
-        set => throw new NotSupportedException();
     }
     #endregion
 }

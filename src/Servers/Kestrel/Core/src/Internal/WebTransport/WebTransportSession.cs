@@ -147,11 +147,6 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     {
         ThrowIfInvalidSession();
 
-        //if (cancellationToken.IsCancellationRequested)
-        //{
-        //    return new ValueTask<FlushResult>(Task.FromCanceled<FlushResult>(cancellationToken));
-        //}
-
         await _pendingAcceptStreamRequests.WaitAsync(cancellationToken);
 
         var success = _pendingStreams.TryDequeue(out var stream);
@@ -159,6 +154,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         {
             throw new Exception("Failed to accept the next stream in the queue");
         }
+        _openStreams.Add(stream!.StreamId, stream);
 
         return stream!;
     }
@@ -195,7 +191,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
             _controlStream.Abort(exception, error);
             foreach (var stream in _openStreams)
             {
-                stream.Value.Abort(exception);// todo (exception, error);
+                stream.Value.Abort(exception);
             }
 
             _openStreams.Clear();
