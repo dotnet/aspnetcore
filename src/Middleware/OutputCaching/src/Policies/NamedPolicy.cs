@@ -4,23 +4,23 @@
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// A policy represented by a named profile.
+/// A named policy.
 /// </summary>
-internal sealed class ProfilePolicy : IOutputCachePolicy
+internal sealed class NamedPolicy : IOutputCachePolicy
 {
-    private readonly string _profileName;
+    private readonly string _policyName;
 
     /// <summary>
-    /// Create a new <see cref="ProfilePolicy"/> instance.
+    /// Create a new <see cref="NamedPolicy"/> instance.
     /// </summary>
-    /// <param name="profileName">The name of the profile.</param>
-    public ProfilePolicy(string profileName)
+    /// <param name="policyName">The name of the profile.</param>
+    public NamedPolicy(string policyName)
     {
-        _profileName = profileName;
+        _policyName = policyName;
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         var policy = GetProfilePolicy(context);
 
@@ -29,11 +29,11 @@ internal sealed class ProfilePolicy : IOutputCachePolicy
             return ValueTask.CompletedTask;
         }
 
-        return policy.ServeResponseAsync(context);
+        return policy.ServeResponseAsync(context, cancellationToken);
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         var policy = GetProfilePolicy(context);
 
@@ -42,11 +42,11 @@ internal sealed class ProfilePolicy : IOutputCachePolicy
             return ValueTask.CompletedTask;
         }
 
-        return policy.ServeFromCacheAsync(context);
+        return policy.ServeFromCacheAsync(context, cancellationToken);
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         var policy = GetProfilePolicy(context);
 
@@ -55,14 +55,14 @@ internal sealed class ProfilePolicy : IOutputCachePolicy
             return ValueTask.CompletedTask;
         }
 
-        return policy.CacheRequestAsync(context); ;
+        return policy.CacheRequestAsync(context, cancellationToken); ;
     }
 
     internal IOutputCachePolicy? GetProfilePolicy(OutputCacheContext context)
     {
         var policies = context.Options.NamedPolicies;
 
-        return policies != null && policies.TryGetValue(_profileName, out var cacheProfile)
+        return policies != null && policies.TryGetValue(_policyName, out var cacheProfile)
             ? cacheProfile
             : null;
     }

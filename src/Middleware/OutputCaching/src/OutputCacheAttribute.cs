@@ -6,6 +6,9 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Specifies the parameters necessary for setting appropriate headers in output caching.
 /// </summary>
+/// <remarks>
+/// This attribute requires the output cache middleware.
+/// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public sealed class OutputCacheAttribute : Attribute
 {
@@ -30,7 +33,7 @@ public sealed class OutputCacheAttribute : Attribute
     /// Gets or sets the value which determines whether the reponse should be cached or not.
     /// When set to <see langword="true"/>, the response won't be cached.
     /// </summary>
-    public bool NoCache
+    public bool NoStore
     {
         get => _noCache ?? false;
         init => _noCache = value;
@@ -39,17 +42,11 @@ public sealed class OutputCacheAttribute : Attribute
     /// <summary>
     /// Gets or sets the query keys to vary by.
     /// </summary>
-    /// <remarks>
-    /// <see cref="VaryByQueryKeys"/> requires the output cache middleware.
-    /// </remarks>
     public string[]? VaryByQueryKeys { get; init; }
 
     /// <summary>
     /// Gets or sets the headers to vary by.
     /// </summary>
-    /// <remarks>
-    /// <see cref="VaryByHeaders"/> requires the output cache middleware.
-    /// </remarks>
     public string[]? VaryByHeaders { get; init; }
 
     /// <summary>
@@ -66,14 +63,14 @@ public sealed class OutputCacheAttribute : Attribute
 
         var builder = new OutputCachePolicyBuilder();
 
+        if (PolicyName != null)
+        {
+            builder.AddPolicy(new NamedPolicy(PolicyName));
+        }
+
         if (_noCache != null && _noCache.Value)
         {
             builder.NoCache();
-        }
-
-        if (PolicyName != null)
-        {
-            builder.Policy(PolicyName);
         }
 
         if (VaryByQueryKeys != null)

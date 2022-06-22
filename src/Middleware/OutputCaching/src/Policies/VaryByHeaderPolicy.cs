@@ -40,28 +40,28 @@ internal sealed class VaryByHeaderPolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         // No vary by header?
         if (_headers.Count == 0)
         {
-            context.CachedVaryByRules.Headers = _headers;
+            context.CacheVaryByRules.Headers = _headers;
             return ValueTask.CompletedTask;
         }
 
-        context.CachedVaryByRules.Headers = StringValues.Concat(context.CachedVaryByRules.Headers, _headers);
+        context.CacheVaryByRules.Headers = StringValues.Concat(context.CacheVaryByRules.Headers, _headers);
 
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }

@@ -6,7 +6,7 @@ internal sealed class FormatterEntry
 {
     public DateTimeOffset Created { get; set; }
     public int StatusCode { get; set; }
-    public Dictionary<string, string?[]> Headers { get; set; } = new();
-    public List<byte[]> Body { get; set; } = new();
-    public string[]? Tags { get; set; }
+    public Dictionary<string, string?[]> Headers { get; set; } = default!;
+    public List<byte[]> Body { get; set; } = default!;
+    public string[] Tags { get; set; } = default!;
 }

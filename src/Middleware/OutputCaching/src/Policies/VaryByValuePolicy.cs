@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 internal sealed class VaryByValuePolicy : IOutputCachePolicy
 {
-    private readonly Action<HttpContext, CachedVaryByRules>? _varyBy;
-    private readonly Func<HttpContext, CachedVaryByRules, CancellationToken, ValueTask>? _varyByAsync;
+    private readonly Action<HttpContext, CacheVaryByRules>? _varyBy;
+    private readonly Func<HttpContext, CacheVaryByRules, CancellationToken, ValueTask>? _varyByAsync;
 
     /// <summary>
     /// Creates a policy that doesn't vary the cached content based on values.
@@ -61,21 +61,21 @@ internal sealed class VaryByValuePolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc/>
-    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        _varyBy?.Invoke(context.HttpContext, context.CachedVaryByRules);
+        _varyBy?.Invoke(context.HttpContext, context.CacheVaryByRules);
 
-        return _varyByAsync?.Invoke(context.HttpContext, context.CachedVaryByRules, context.HttpContext.RequestAborted) ?? ValueTask.CompletedTask;
+        return _varyByAsync?.Invoke(context.HttpContext, context.CacheVaryByRules, context.HttpContext.RequestAborted) ?? ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
-    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
-    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }

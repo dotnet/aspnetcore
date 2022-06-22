@@ -18,7 +18,7 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         var attemptOutputCaching = AttemptOutputCaching(context);
         context.EnableOutputCaching = true;
@@ -27,19 +27,19 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
         context.AllowLocking = true;
 
         // Vary by any query by default
-        context.CachedVaryByRules.QueryKeys = "*";
+        context.CacheVaryByRules.QueryKeys = "*";
 
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         var response = context.HttpContext.Response;
 

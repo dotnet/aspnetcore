@@ -1,13 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Http;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.OutputCaching.Memory;
 using Microsoft.AspNetCore.OutputCaching.Policies;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -19,7 +13,7 @@ public class OutputCachePoliciesTests
         IOutputCachePolicy policy = DefaultPolicy.Instance;
         var context = TestUtils.CreateUninitializedContext();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.True(context.EnableOutputCaching);
     }
@@ -30,7 +24,7 @@ public class OutputCachePoliciesTests
         IOutputCachePolicy policy = DefaultPolicy.Instance;
         var context = TestUtils.CreateUninitializedContext();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.True(context.AllowLocking);
     }
@@ -41,9 +35,9 @@ public class OutputCachePoliciesTests
         IOutputCachePolicy policy = DefaultPolicy.Instance;
         var context = TestUtils.CreateUninitializedContext();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal("*", context.CachedVaryByRules.QueryKeys);
+        Assert.Equal("*", context.CacheVaryByRules.QueryKeys);
     }
 
     [Fact]
@@ -53,7 +47,7 @@ public class OutputCachePoliciesTests
         var context = TestUtils.CreateUninitializedContext();
         context.EnableOutputCaching = true;
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.False(context.EnableOutputCaching);
     }
@@ -65,7 +59,7 @@ public class OutputCachePoliciesTests
         IOutputCachePolicy policy = new ExpirationPolicy(duration);
         var context = TestUtils.CreateUninitializedContext();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.Equal(duration, context.ResponseExpirationTimeSpan);
     }
@@ -76,7 +70,7 @@ public class OutputCachePoliciesTests
         IOutputCachePolicy policy = LockingPolicy.Enabled;
         var context = TestUtils.CreateUninitializedContext();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.True(context.AllowLocking);
     }
@@ -87,7 +81,7 @@ public class OutputCachePoliciesTests
         IOutputCachePolicy policy = LockingPolicy.Disabled;
         var context = TestUtils.CreateUninitializedContext();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.False(context.AllowLocking);
     }
@@ -98,7 +92,7 @@ public class OutputCachePoliciesTests
         IOutputCachePolicy policy = NoLookupPolicy.Instance;
         var context = TestUtils.CreateUninitializedContext();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.False(context.AllowCacheLookup);
     }
@@ -109,7 +103,7 @@ public class OutputCachePoliciesTests
         IOutputCachePolicy policy = NoStorePolicy.Instance;
         var context = TestUtils.CreateUninitializedContext();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.False(context.AllowCacheStorage);
     }
@@ -124,7 +118,7 @@ public class OutputCachePoliciesTests
         IOutputCachePolicy predicate = new PredicatePolicy(c => ValueTask.FromResult(filter), enabled ? EnableCachePolicy.Enabled : EnableCachePolicy.Disabled);
         var context = TestUtils.CreateUninitializedContext();
 
-        await predicate.CacheRequestAsync(context);
+        await predicate.CacheRequestAsync(context, default);
 
         Assert.Equal(expected, context.EnableOutputCaching);
     }
@@ -136,15 +130,15 @@ public class OutputCachePoliciesTests
         context.Options.AddPolicy("enabled", EnableCachePolicy.Enabled);
         context.Options.AddPolicy("disabled", EnableCachePolicy.Disabled);
 
-        IOutputCachePolicy policy = new ProfilePolicy("enabled");
+        IOutputCachePolicy policy = new NamedPolicy("enabled");
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.True(context.EnableOutputCaching);
 
-        policy = new ProfilePolicy("disabled");
+        policy = new NamedPolicy("disabled");
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.False(context.EnableOutputCaching);
     }
@@ -156,7 +150,7 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new TagsPolicy("tag1", "tag2");
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.Contains("tag1", context.Tags);
         Assert.Contains("tag2", context.Tags);
@@ -169,9 +163,9 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new VaryByHeaderPolicy();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Empty(context.CachedVaryByRules.Headers);
+        Assert.Empty(context.CacheVaryByRules.Headers);
     }
 
     [Fact]
@@ -182,9 +176,9 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new VaryByHeaderPolicy(header);
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(header, context.CachedVaryByRules.Headers);
+        Assert.Equal(header, context.CacheVaryByRules.Headers);
     }
 
     [Fact]
@@ -195,9 +189,9 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new VaryByHeaderPolicy(headers);
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(headers, context.CachedVaryByRules.Headers);
+        Assert.Equal(headers, context.CacheVaryByRules.Headers);
     }
 
     [Fact]
@@ -207,9 +201,9 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new VaryByQueryPolicy();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Empty(context.CachedVaryByRules.QueryKeys);
+        Assert.Empty(context.CacheVaryByRules.QueryKeys);
     }
 
     [Fact]
@@ -220,9 +214,9 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new VaryByQueryPolicy(query);
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(query, context.CachedVaryByRules.QueryKeys);
+        Assert.Equal(query, context.CacheVaryByRules.QueryKeys);
     }
 
     [Fact]
@@ -233,9 +227,9 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new VaryByQueryPolicy(queries);
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(queries, context.CachedVaryByRules.QueryKeys);
+        Assert.Equal(queries, context.CacheVaryByRules.QueryKeys);
     }
 
     [Fact]
@@ -246,9 +240,9 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new VaryByValuePolicy(context => value);
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(value, context.CachedVaryByRules.VaryByPrefix);
+        Assert.Equal(value, context.CacheVaryByRules.VaryByPrefix);
     }
 
     [Fact]
@@ -259,9 +253,9 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new VaryByValuePolicy((context, token) => ValueTask.FromResult(value));
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Equal(value, context.CachedVaryByRules.VaryByPrefix);
+        Assert.Equal(value, context.CacheVaryByRules.VaryByPrefix);
     }
 
     [Fact]
@@ -273,9 +267,9 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new VaryByValuePolicy(context => new KeyValuePair<string, string>(key, value));
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Contains(new KeyValuePair<string, string>(key, value), context.CachedVaryByRules.VaryByCustom);
+        Assert.Contains(new KeyValuePair<string, string>(key, value), context.CacheVaryByRules.VaryByCustom);
     }
 
     [Fact]
@@ -287,8 +281,8 @@ public class OutputCachePoliciesTests
 
         IOutputCachePolicy policy = new VaryByValuePolicy((context, token) => ValueTask.FromResult(new KeyValuePair<string, string>(key, value)));
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
-        Assert.Contains(new KeyValuePair<string, string>(key, value), context.CachedVaryByRules.VaryByCustom);
+        Assert.Contains(new KeyValuePair<string, string>(key, value), context.CacheVaryByRules.VaryByCustom);
     }
 }

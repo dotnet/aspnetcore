@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
 /// Represents vary-by rules.
 /// </summary>
-public sealed class CachedVaryByRules
+public sealed class CacheVaryByRules
 {
     private Dictionary<string, string>? _varyByCustom;
 

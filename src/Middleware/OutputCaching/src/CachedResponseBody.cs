@@ -17,6 +17,8 @@ internal sealed class CachedResponseBody
     /// <param name="length">The length.</param>
     public CachedResponseBody(List<byte[]> segments, long length)
     {
+        ArgumentNullException.ThrowIfNull(segments);
+
         Segments = segments;
         Length = length;
     }
@@ -45,17 +47,7 @@ internal sealed class CachedResponseBody
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Copy(segment, destination);
-
-            await destination.FlushAsync(cancellationToken);
+            await destination.WriteAsync(segment, cancellationToken);
         }
-    }
-
-    private static void Copy(byte[] segment, PipeWriter destination)
-    {
-        var span = destination.GetSpan(segment.Length);
-
-        segment.CopyTo(span);
-        destination.Advance(segment.Length);
     }
 }

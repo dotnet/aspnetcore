@@ -22,9 +22,7 @@ internal static class OutputCacheEntryFormatter
             return null;
         }
 
-        using var br = new MemoryStream(content);
-
-        var formatter = await JsonSerializer.DeserializeAsync(br, FormatterEntrySerializerContext.Default.FormatterEntry, cancellationToken: cancellationToken);
+        var formatter = JsonSerializer.Deserialize(content, FormatterEntrySerializerContext.Default.FormatterEntry);
 
         if (formatter == null)
         {
@@ -35,26 +33,27 @@ internal static class OutputCacheEntryFormatter
         {
             StatusCode = formatter.StatusCode,
             Created = formatter.Created,
-            Tags = formatter.Tags
+            Tags = formatter.Tags,
+            Headers = new(),
+            Body = new CachedResponseBody(formatter.Body, formatter.Body.Sum(x => x.Length))
         };
 
         if (formatter.Headers != null)
         {
-            outputCacheEntry.Headers = new();
-
             foreach (var header in formatter.Headers)
             {
                 outputCacheEntry.Headers.TryAdd(header.Key, header.Value);
             }
         }
-        var cachedResponseBody = new CachedResponseBody(formatter.Body, formatter.Body.Sum(x => x.Length));
-        outputCacheEntry.Body = cachedResponseBody;
+
         return outputCacheEntry;
     }
 
     public static async ValueTask StoreAsync(string key, OutputCacheEntry value, TimeSpan duration, IOutputCacheStore store, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(value.Body);
+        ArgumentNullException.ThrowIfNull(value.Headers);
 
         var formatterEntry = new FormatterEntry
         {
@@ -73,9 +72,10 @@ internal static class OutputCacheEntryFormatter
             }
         }
 
-        using var br = new MemoryStream();
+        using var bufferStream = new MemoryStream();
 
-        await JsonSerializer.SerializeAsync(br, formatterEntry, FormatterEntrySerializerContext.Default.FormatterEntry, cancellationToken);
-        await store.SetAsync(key, br.ToArray(), value.Tags ?? Array.Empty<string>(), duration, cancellationToken);
+        JsonSerializer.Serialize(bufferStream, formatterEntry, FormatterEntrySerializerContext.Default.FormatterEntry);
+
+        await store.SetAsync(key, bufferStream.ToArray(), value.Tags ?? Array.Empty<string>(), duration, cancellationToken);
     }
 }

@@ -37,35 +37,35 @@ internal sealed class VaryByQueryPolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         // No vary by query?
         if (_queryKeys.Count == 0)
         {
-            context.CachedVaryByRules.QueryKeys = _queryKeys;
+            context.CacheVaryByRules.QueryKeys = _queryKeys;
             return ValueTask.CompletedTask;
         }
 
         // If the current key is "*" (default) replace it
-        if (context.CachedVaryByRules.QueryKeys.Count == 1 && string.Equals(context.CachedVaryByRules.QueryKeys[0], "*", StringComparison.Ordinal))
+        if (context.CacheVaryByRules.QueryKeys.Count == 1 && string.Equals(context.CacheVaryByRules.QueryKeys[0], "*", StringComparison.Ordinal))
         {
-            context.CachedVaryByRules.QueryKeys = _queryKeys;
+            context.CacheVaryByRules.QueryKeys = _queryKeys;
             return ValueTask.CompletedTask;
         }
 
-        context.CachedVaryByRules.QueryKeys = StringValues.Concat(context.CachedVaryByRules.QueryKeys, _queryKeys);
+        context.CacheVaryByRules.QueryKeys = StringValues.Concat(context.CacheVaryByRules.QueryKeys, _queryKeys);
 
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }

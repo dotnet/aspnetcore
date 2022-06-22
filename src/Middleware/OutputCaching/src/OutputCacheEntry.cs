@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
-/// <inheritdoc />
 internal sealed class OutputCacheEntry
 {
     /// <summary>
@@ -31,5 +30,5 @@ internal sealed class OutputCacheEntry
     /// <summary>
     /// Gets the tags of the cache entry.
     /// </summary>
-    public string[]? Tags { get; set; }
+    public string[] Tags { get; set; } = Array.Empty<string>();
 }

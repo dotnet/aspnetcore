@@ -52,7 +52,7 @@ public class OutputCachePolicyProviderTests
 
         foreach (var policy in policies)
         {
-            await policy.CacheRequestAsync(context);
+            await policy.CacheRequestAsync(context, default);
         }
 
         Assert.True(context.AllowCacheStorage);
@@ -69,7 +69,7 @@ public class OutputCachePolicyProviderTests
         var policy = new OutputCachePolicyBuilder().Build();
         context.HttpContext.Request.Method = method;
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.False(context.AllowCacheLookup);
         Assert.False(context.AllowCacheStorage);
@@ -88,7 +88,7 @@ public class OutputCachePolicyProviderTests
 
         var policy = new OutputCachePolicyBuilder().Build();
 
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.False(context.AllowCacheStorage);
         Assert.False(context.AllowCacheLookup);
@@ -110,7 +110,7 @@ public class OutputCachePolicyProviderTests
         }.ToString();
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.Empty(sink.Writes);
@@ -126,7 +126,7 @@ public class OutputCachePolicyProviderTests
         context.HttpContext.Request.Headers.CacheControl = "max-age=10";
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.CacheRequestAsync(context);
+        await policy.CacheRequestAsync(context, default);
 
         Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
@@ -139,7 +139,7 @@ public class OutputCachePolicyProviderTests
         var context = TestUtils.CreateTestContext(sink);
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
@@ -157,7 +157,7 @@ public class OutputCachePolicyProviderTests
         }.ToString();
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
@@ -175,7 +175,7 @@ public class OutputCachePolicyProviderTests
         }.ToString();
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
@@ -193,7 +193,7 @@ public class OutputCachePolicyProviderTests
         }.ToString();
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
@@ -208,7 +208,7 @@ public class OutputCachePolicyProviderTests
         context.HttpContext.Response.Headers.SetCookie = "cookieName=cookieValue";
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.False(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
@@ -224,7 +224,7 @@ public class OutputCachePolicyProviderTests
         var context = TestUtils.CreateTestContext(sink);
         context.HttpContext.Response.Headers.Vary = "*";
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
@@ -242,7 +242,7 @@ public class OutputCachePolicyProviderTests
         }.ToString();
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
@@ -258,7 +258,7 @@ public class OutputCachePolicyProviderTests
         context.HttpContext.Response.StatusCode = statusCode;
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
@@ -334,7 +334,7 @@ public class OutputCachePolicyProviderTests
         context.HttpContext.Response.StatusCode = statusCode;
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheLookup);
         Assert.False(context.AllowCacheStorage);
@@ -355,7 +355,7 @@ public class OutputCachePolicyProviderTests
         context.ResponseTime = DateTimeOffset.MaxValue;
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
@@ -378,7 +378,7 @@ public class OutputCachePolicyProviderTests
         context.ResponseTime = utcNow + TimeSpan.FromSeconds(9);
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
@@ -401,7 +401,7 @@ public class OutputCachePolicyProviderTests
         context.ResponseTime = utcNow + TimeSpan.FromSeconds(11);
 
         var policy = new OutputCachePolicyBuilder().Build();
-        await policy.ServeResponseAsync(context);
+        await policy.ServeResponseAsync(context, default);
 
         Assert.True(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);

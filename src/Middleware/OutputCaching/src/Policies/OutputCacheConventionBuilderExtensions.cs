@@ -61,4 +61,21 @@ public static class OutputCacheConventionBuilderExtensions
 
         return builder;
     }
+
+    /// <summary>
+    /// Marks an endpoint to be cached using a named policy.
+    /// </summary>
+    public static TBuilder CacheOutput<TBuilder>(this TBuilder builder, string policyName) where TBuilder : IEndpointConventionBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        var policy = new NamedPolicy(policyName);
+
+        builder.Add(endpointBuilder =>
+        {
+            endpointBuilder.Metadata.Add(policy);
+        });
+
+        return builder;
+    }
 }

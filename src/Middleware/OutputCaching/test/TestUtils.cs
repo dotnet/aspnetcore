@@ -355,19 +355,19 @@ internal class TestClock : ISystemClock
 
 internal class AllowTestPolicy : IOutputCachePolicy
 {
-    public ValueTask CacheRequestAsync(OutputCacheContext context)
+    public ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         context.AllowCacheLookup = true;
         context.AllowCacheStorage = true;
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask ServeFromCacheAsync(OutputCacheContext context)
+    public ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask ServeResponseAsync(OutputCacheContext context)
+    public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }

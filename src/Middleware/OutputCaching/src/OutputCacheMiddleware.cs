@@ -101,7 +101,7 @@ internal sealed class OutputCacheMiddleware
         {
             foreach (var policy in policies)
             {
-                await policy.CacheRequestAsync(context);
+                await policy.CacheRequestAsync(context, httpContext.RequestAborted);
             }
 
             // Should we attempt any caching logic?
@@ -121,61 +121,61 @@ internal sealed class OutputCacheMiddleware
                 {
                     // It is also a pre-condition to reponse locking
 
-                    while (true)
+                    var executed = false;
+
+                    if (context.AllowLocking)
                     {
-                        var executed = false;
+                        var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync());
 
-                        if (context.AllowLocking)
+                        // The current request was processed, nothing more to do
+                        if (executed)
                         {
-                            var cacheEntry = await _requestDispatcher.ScheduleAsync(context.CacheKey, key => ExecuteResponseAsync());
-
-                            // If the result was processed by another request, serve it from cache
-                            if (!executed)
-                            {
-                                if (await TryServeFromCacheAsync(context, policies))
-                                {
-                                    return;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            await ExecuteResponseAsync();
+                            return;
                         }
 
-                        async Task<OutputCacheEntry?> ExecuteResponseAsync()
+                        // If the result was processed by another request, try to serve it from cache entry (no lookup)
+                        if (await TryServeCachedResponseAsync(context, cacheEntry, policies))
                         {
-                            // Hook up to listen to the response stream
-                            ShimResponseStream(context);
-
-                            try
-                            {
-                                await _next(httpContext);
-
-                                // The next middleware might change the policy
-                                foreach (var policy in policies)
-                                {
-                                    await policy.ServeResponseAsync(context);
-                                }
-
-                                // If there was no response body, check the response headers now. We can cache things like redirects.
-                                StartResponse(context);
-
-                                // Finalize the cache entry
-                                await FinalizeCacheBodyAsync(context);
-
-                                executed = true;
-                            }
-                            finally
-                            {
-                                UnshimResponseStream(context);
-                            }
-
-                            return context.CachedResponse;
+                            return;
                         }
 
-                        return;
+                        // If the cache entry couldn't be served, continue to processing the request as usual
                     }
+
+                    await ExecuteResponseAsync();
+
+                    async Task<OutputCacheEntry?> ExecuteResponseAsync()
+                    {
+                        // Hook up to listen to the response stream
+                        ShimResponseStream(context);
+
+                        try
+                        {
+                            await _next(httpContext);
+
+                            // The next middleware might change the policy
+                            foreach (var policy in policies)
+                            {
+                                await policy.ServeResponseAsync(context, httpContext.RequestAborted);
+                            }
+
+                            // If there was no response body, check the response headers now. We can cache things like redirects.
+                            StartResponse(context);
+
+                            // Finalize the cache entry
+                            await FinalizeCacheBodyAsync(context);
+
+                            executed = true;
+                        }
+                        finally
+                        {
+                            UnshimResponseStream(context);
+                        }
+
+                        return context.CachedResponse;
+                    }
+
+                    return;
                 }
             }
 
@@ -239,7 +239,7 @@ internal sealed class OutputCacheMiddleware
 
         foreach (var policy in policies)
         {
-            await policy.ServeFromCacheAsync(context);
+            await policy.ServeFromCacheAsync(context, context.HttpContext.RequestAborted);
         }
 
         context.IsCacheEntryFresh = true;
@@ -341,10 +341,10 @@ internal sealed class OutputCacheMiddleware
             return;
         }
 
-        var varyHeaders = context.CachedVaryByRules.Headers;
-        var varyQueryKeys = context.CachedVaryByRules.QueryKeys;
-        var varyByCustomKeys = context.CachedVaryByRules.VaryByCustom;
-        var varyByPrefix = context.CachedVaryByRules.VaryByPrefix;
+        var varyHeaders = context.CacheVaryByRules.Headers;
+        var varyQueryKeys = context.CacheVaryByRules.QueryKeys;
+        var varyByCustomKeys = context.CacheVaryByRules.VaryByCustom;
+        var varyByPrefix = context.CacheVaryByRules.VaryByPrefix;
 
         // Check if any vary rules exist
         if (!StringValues.IsNullOrEmpty(varyHeaders) || !StringValues.IsNullOrEmpty(varyQueryKeys) || !StringValues.IsNullOrEmpty(varyByPrefix) || varyByCustomKeys?.Count > 0)
@@ -355,7 +355,7 @@ internal sealed class OutputCacheMiddleware
             var normalizedVaryByCustom = GetOrderCasingNormalizedDictionary(varyByCustomKeys);
 
             // Update vary rules with normalized values
-            context.CachedVaryByRules = new CachedVaryByRules
+            context.CacheVaryByRules = new CacheVaryByRules
             {
                 VaryByPrefix = varyByPrefix + normalizedVaryByCustom,
                 Headers = normalizedVaryHeaders,

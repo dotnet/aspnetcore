@@ -14,35 +14,35 @@ internal sealed class CompositePolicy : IOutputCachePolicy
     /// Creates a new instance of <see cref="CompositePolicy"/>
     /// </summary>
     /// <param name="policies">The policies to include.</param>
-    public CompositePolicy(params IOutputCachePolicy[] policies!!)
+    public CompositePolicy(params IOutputCachePolicy[] policies)
     {
         _policies = policies;
     }
 
     /// <inheritdoc/>
-    async ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    async ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         foreach (var policy in _policies)
         {
-            await policy.CacheRequestAsync(context);
+            await policy.CacheRequestAsync(context, cancellationToken);
         }
     }
 
     /// <inheritdoc/>
-    async ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    async ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         foreach (var policy in _policies)
         {
-            await policy.ServeFromCacheAsync(context);
+            await policy.ServeFromCacheAsync(context, cancellationToken);
         }
     }
 
     /// <inheritdoc/>
-    async ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    async ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
         foreach (var policy in _policies)
         {
-            await policy.ServeResponseAsync(context);
+            await policy.ServeResponseAsync(context, cancellationToken);
         }
     }
 }

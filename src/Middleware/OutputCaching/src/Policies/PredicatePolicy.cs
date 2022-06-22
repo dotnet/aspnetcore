@@ -25,30 +25,30 @@ internal sealed class PredicatePolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        return ExecuteAwaited(static (policy, context) => policy.CacheRequestAsync(context), _policy, context);
+        return ExecuteAwaited(static (policy, context, cancellationToken) => policy.CacheRequestAsync(context, cancellationToken), _policy, context, cancellationToken);
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        return ExecuteAwaited(static (policy, context) => policy.ServeFromCacheAsync(context), _policy, context);
+        return ExecuteAwaited(static (policy, context, cancellationToken) => policy.ServeFromCacheAsync(context, cancellationToken), _policy, context, cancellationToken);
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        return ExecuteAwaited(static (policy, context) => policy.ServeResponseAsync(context), _policy, context);
+        return ExecuteAwaited(static (policy, context, cancellationToken) => policy.ServeResponseAsync(context, cancellationToken), _policy, context, cancellationToken);
     }
 
-    private ValueTask ExecuteAwaited(Func<IOutputCachePolicy, OutputCacheContext, ValueTask> action, IOutputCachePolicy policy, OutputCacheContext context)
+    private ValueTask ExecuteAwaited(Func<IOutputCachePolicy, OutputCacheContext, CancellationToken, ValueTask> action, IOutputCachePolicy policy, OutputCacheContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(action);
 
         if (_predicate == null)
         {
-            return action(policy, context);
+            return action(policy, context, cancellationToken);
         }
 
         var task = _predicate(context);
@@ -57,7 +57,7 @@ internal sealed class PredicatePolicy : IOutputCachePolicy
         {
             if (task.Result)
             {
-                return action(policy, context);
+                return action(policy, context, cancellationToken);
             }
 
             return ValueTask.CompletedTask;
@@ -69,7 +69,7 @@ internal sealed class PredicatePolicy : IOutputCachePolicy
         {
             if (await task)
             {
-                await action(policy, context);
+                await action(policy, context, cancellationToken);
             }
         }
     }

@@ -25,7 +25,7 @@ app.MapGet("/cached", Gravatar.WriteGravatar).CacheOutput();
 
 app.MapGet("/nocache", Gravatar.WriteGravatar).CacheOutput(x => x.NoCache());
 
-app.MapGet("/profile", Gravatar.WriteGravatar).CacheOutput(x => x.Policy("NoCache"));
+app.MapGet("/profile", Gravatar.WriteGravatar).CacheOutput("NoCache");
 
 app.MapGet("/attribute", [OutputCache(PolicyName = "NoCache")] () => Gravatar.WriteGravatar);
 

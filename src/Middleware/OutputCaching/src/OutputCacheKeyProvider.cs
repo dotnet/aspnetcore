@@ -33,10 +33,10 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
     {
         ArgumentNullException.ThrowIfNull(_builderPool);
 
-        var varyByRules = context.CachedVaryByRules;
+        var varyByRules = context.CacheVaryByRules;
         if (varyByRules == null)
         {
-            throw new InvalidOperationException($"{nameof(CachedVaryByRules)} must not be null on the {nameof(OutputCacheContext)}");
+            throw new InvalidOperationException($"{nameof(CacheVaryByRules)} must not be null on the {nameof(OutputCacheContext)}");
         }
 
         var request = context.HttpContext.Request;

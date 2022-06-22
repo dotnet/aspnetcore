@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -52,9 +50,9 @@ public sealed class OutputCacheContext
     public DateTimeOffset? ResponseTime { get; internal set; }
 
     /// <summary>
-    /// Gets the <see cref="CachedVaryByRules"/> instance.
+    /// Gets the <see cref="CacheVaryByRules"/> instance.
     /// </summary>
-    public CachedVaryByRules CachedVaryByRules { get; set; } = new();
+    public CacheVaryByRules CacheVaryByRules { get; set; } = new();
 
     /// <summary>
     /// Gets the tags of the cached response.
@@ -66,7 +64,7 @@ public sealed class OutputCacheContext
     /// </summary>
     public TimeSpan? ResponseExpirationTimeSpan { get; set; }
 
-    internal string CacheKey { get; set; }
+    internal string CacheKey { get; set; } = default!;
 
     internal TimeSpan CachedResponseValidFor { get; set; }
 
@@ -74,15 +72,14 @@ public sealed class OutputCacheContext
 
     internal TimeSpan CachedEntryAge { get; set; }
 
-    internal OutputCacheEntry CachedResponse { get; set; }
+    internal OutputCacheEntry CachedResponse { get; set; } = default!;
 
     internal bool ResponseStarted { get; set; }
 
-    internal Stream OriginalResponseStream { get; set; }
+    internal Stream OriginalResponseStream { get; set; } = default!;
 
-    internal OutputCacheStream OutputCacheStream { get; set; }
+    internal OutputCacheStream OutputCacheStream { get; set; } = default!;
     internal ILogger Logger { get; }
     internal OutputCacheOptions Options { get; }
     internal IOutputCacheStore Store { get; }
-
 }

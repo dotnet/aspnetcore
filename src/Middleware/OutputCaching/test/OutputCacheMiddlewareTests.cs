@@ -121,7 +121,8 @@ public class OutputCacheMiddlewareTests
         await OutputCacheEntryFormatter.StoreAsync("BaseKey",
             new OutputCacheEntry()
             {
-                Body = new CachedResponseBody(new List<byte[]>(0), 0)
+                Body = new CachedResponseBody(new List<byte[]>(0), 0),
+                Headers = new()
             },
             TimeSpan.Zero,
             cache,
@@ -488,7 +489,7 @@ public class OutputCacheMiddlewareTests
 
         context.HttpContext.Response.Headers.Vary = vary;
         context.HttpContext.Features.Set<IOutputCacheFeature>(new OutputCacheFeature(context));
-        context.CachedVaryByRules.QueryKeys = vary;
+        context.CacheVaryByRules.QueryKeys = vary;
 
         middleware.FinalizeCacheHeaders(context);
 
@@ -579,7 +580,7 @@ public class OutputCacheMiddlewareTests
 
         await context.HttpContext.Response.WriteAsync(new string('0', 20));
 
-        context.CachedResponse = new OutputCacheEntry();
+        context.CachedResponse = new OutputCacheEntry { Headers = new() };
         context.CacheKey = "BaseKey";
         context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
 
@@ -639,7 +640,7 @@ public class OutputCacheMiddlewareTests
             await context.HttpContext.Response.WriteAsync(new string('0', 10));
         }
 
-        context.CachedResponse = new OutputCacheEntry();
+        context.CachedResponse = new OutputCacheEntry { Headers = new() };
         context.CacheKey = "BaseKey";
         context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
 

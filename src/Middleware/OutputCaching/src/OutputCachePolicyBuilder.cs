@@ -28,15 +28,20 @@ public sealed class OutputCachePolicyBuilder
         _policies.Add(DefaultPolicy.Instance);
     }
 
+    internal OutputCachePolicyBuilder AddPolicy(IOutputCachePolicy policy)
+    {
+        _builtPolicy = null;
+        _policies.Add(policy);
+        return this;
+    }
+
     /// <summary>
     /// Adds a dynamically resolved policy.
     /// </summary>
     /// <param name="policyType">The type of policy to add</param>
     public OutputCachePolicyBuilder AddPolicy([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type policyType)
     {
-        _builtPolicy = null;
-        _policies.Add(new TypedPolicy(policyType));
-        return this;
+        return AddPolicy(new TypedPolicy(policyType));
     }
 
     /// <summary>
@@ -87,9 +92,7 @@ public sealed class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(queryKeys);
 
-        _builtPolicy = null;
-        _policies.Add(new VaryByQueryPolicy(queryKeys));
-        return this;
+        return AddPolicy(new VaryByQueryPolicy(queryKeys));
     }
 
     /// <summary>
@@ -100,9 +103,7 @@ public sealed class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(headers);
 
-        _builtPolicy = null;
-        _policies.Add(new VaryByHeaderPolicy(headers));
-        return this;
+        return AddPolicy(new VaryByHeaderPolicy(headers));
     }
 
     /// <summary>
@@ -113,9 +114,7 @@ public sealed class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
-        _builtPolicy = null;
-        _policies.Add(new VaryByValuePolicy(varyBy));
-        return this;
+        return AddPolicy(new VaryByValuePolicy(varyBy));
     }
 
     /// <summary>
@@ -126,9 +125,7 @@ public sealed class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
-        _builtPolicy = null;
-        _policies.Add(new VaryByValuePolicy(varyBy));
-        return this;
+        return AddPolicy(new VaryByValuePolicy(varyBy));
     }
 
     /// <summary>
@@ -139,9 +136,7 @@ public sealed class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
-        _builtPolicy = null;
-        _policies.Add(new VaryByValuePolicy(varyBy));
-        return this;
+        return AddPolicy(new VaryByValuePolicy(varyBy));
     }
 
     /// <summary>
@@ -152,22 +147,7 @@ public sealed class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(varyBy);
 
-        _builtPolicy = null;
-        _policies.Add(new VaryByValuePolicy(varyBy));
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a named policy.
-    /// </summary>
-    /// <param name="profileName">The name of the policy to add.</param>
-    public OutputCachePolicyBuilder Policy(string profileName)
-    {
-        ArgumentNullException.ThrowIfNull(profileName);
-
-        _builtPolicy = null;
-        _policies.Add(new ProfilePolicy(profileName));
-        return this;
+        return AddPolicy(new VaryByValuePolicy(varyBy));
     }
 
     /// <summary>
@@ -178,9 +158,7 @@ public sealed class OutputCachePolicyBuilder
     {
         ArgumentNullException.ThrowIfNull(tags);
 
-        _builtPolicy = null;
-        _policies.Add(new TagsPolicy(tags));
-        return this;
+        return AddPolicy(new TagsPolicy(tags));
     }
 
     /// <summary>
@@ -189,9 +167,7 @@ public sealed class OutputCachePolicyBuilder
     /// <param name="expiration">The expiration of the cached reponse.</param>
     public OutputCachePolicyBuilder Expire(TimeSpan expiration)
     {
-        _builtPolicy = null;
-        _policies.Add(new ExpirationPolicy(expiration));
-        return this;
+        return AddPolicy(new ExpirationPolicy(expiration));
     }
 
     /// <summary>
@@ -200,9 +176,7 @@ public sealed class OutputCachePolicyBuilder
     /// <param name="lockResponse">Whether the request should be locked.</param>
     public OutputCachePolicyBuilder AllowLocking(bool lockResponse = true)
     {
-        _builtPolicy = null;
-        _policies.Add(lockResponse ? LockingPolicy.Enabled : LockingPolicy.Disabled);
-        return this;
+        return AddPolicy(lockResponse ? LockingPolicy.Enabled : LockingPolicy.Disabled);
     }
 
     /// <summary>
@@ -228,10 +202,8 @@ public sealed class OutputCachePolicyBuilder
     /// </remarks>
     public OutputCachePolicyBuilder NoCache()
     {
-        _builtPolicy = null;
         _policies.Clear();
-        _policies.Add(EnableCachePolicy.Disabled);
-        return this;
+        return AddPolicy(EnableCachePolicy.Disabled);
     }
 
     /// <summary>

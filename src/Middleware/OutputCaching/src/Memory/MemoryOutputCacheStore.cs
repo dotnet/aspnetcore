@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.AspNetCore.OutputCaching.Memory;
@@ -9,7 +8,8 @@ namespace Microsoft.AspNetCore.OutputCaching.Memory;
 internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 {
     private readonly IMemoryCache _cache;
-    private readonly ConcurrentDictionary<string, HashSet<string>> _taggedEntries = new();
+    private readonly Dictionary<string, HashSet<string>> _taggedEntries = new();
+    private readonly object _tagsLock = new();
 
     internal MemoryOutputCacheStore(IMemoryCache cache)
     {
@@ -22,11 +22,16 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
     {
         ArgumentNullException.ThrowIfNull(tag);
 
-        if (_taggedEntries.TryGetValue(tag, out var keys))
+        lock (_tagsLock)
         {
-            foreach (var key in keys)
+            if (_taggedEntries.TryGetValue(tag, out var keys))
             {
-                _cache.Remove(key);
+                foreach (var key in keys)
+                {
+                    _cache.Remove(key);
+                }
+
+                _taggedEntries.Remove(tag);
             }
         }
 
@@ -50,22 +55,33 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
         if (tags != null)
         {
-            foreach (var tag in tags)
+            // Lock with SetEntry() to prevent EvictByTagAsync() from trying to remove a tag whose entry hasn't been added yet.
+            // It might be acceptable to not lock SetEntry() since in this case Remove(key) would just no-op and the user retry to evict.
+
+            lock (_tagsLock)
             {
-                var keys = _taggedEntries.GetOrAdd(tag, _ => new HashSet<string>());
-
-                // Copy the list of tags to prevent locking
-
-                var local = new HashSet<string>(keys)
+                foreach (var tag in tags)
                 {
-                    key
-                };
+                    if (!_taggedEntries.TryGetValue(tag, out var keys))
+                    {
+                        keys = new HashSet<string>();
+                        _taggedEntries[tag] = keys;
+                    }
 
-                _taggedEntries[tag] = local;
+                    keys.Add(key);
+                }
+
+                SetEntry();
             }
         }
+        else
+        {
+            SetEntry();
+        }
 
-        _cache.Set(
+        void SetEntry()
+        {
+            _cache.Set(
             key,
             value,
             new MemoryCacheEntryOptions
@@ -73,6 +89,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
                 AbsoluteExpirationRelativeToNow = validFor,
                 Size = value.Length
             });
+        }
 
         return ValueTask.CompletedTask;
     }
