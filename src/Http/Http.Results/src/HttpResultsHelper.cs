@@ -28,7 +28,19 @@ internal static partial class HttpResultsHelper
             return Task.CompletedTask;
         }
 
-        Log.WritingResultAsJson(logger, typeof(T).Name);
+        var declaredType = typeof(T);
+
+        Log.WritingResultAsJson(logger, declaredType.Name);
+
+        if (declaredType.IsValueType)
+        {
+            // In this case the polymorphism is not
+            // relevant and we don't need to box.
+            return httpContext.Response.WriteAsJsonAsync(
+                        value,
+                        options: jsonSerializerOptions,
+                        contentType: contentType);
+        }
 
         return httpContext.Response.WriteAsJsonAsync<object?>(
             value,

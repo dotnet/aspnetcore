@@ -32,6 +32,7 @@ public class ResultsTests
         Assert.Equal(uri, result.Location);
         Assert.Equal(value, result.Value);
     }
+
     [Fact]
     public void AcceptedOfT_WithUrlAndValue_ResultHasCorrectValues()
     {
@@ -40,7 +41,6 @@ public class ResultsTests
         var value = new Todo(1);
 
         // Act
-        Results.AcceptedAtRoute(uri, value:value);
         var result = Results.Accepted(uri, value) as Accepted<Todo>;
 
         // Assert
