@@ -19,7 +19,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseMultipleVariables()
     {
-        var pattern = HttpRoutePattern.Parse("/shelves/{shelf}/books/{book}")!;
+        var pattern = HttpRoutePattern.Parse("/shelves/{shelf}/books/{book}");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/shelves/{shelf}/books/{book}", adapter.ResolvedRouteTemplate);
@@ -29,7 +29,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseComplexVariable()
     {
-        var route = HttpRoutePattern.Parse("/v1/{book.name=shelves/*/books/*}")!;
+        var route = HttpRoutePattern.Parse("/v1/{book.name=shelves/*/books/*}");
         var adapter = JsonTranscodingRouteAdapter.Parse(route);
 
         Assert.Equal("/v1/shelves/{__Complex_book.name_2}/books/{__Complex_book.name_4}", adapter.ResolvedRouteTemplate);
@@ -50,7 +50,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseCatchAllSegment()
     {
-        var pattern = HttpRoutePattern.Parse("/shelves/**")!;
+        var pattern = HttpRoutePattern.Parse("/shelves/**");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/shelves/{**__Discard_1}", adapter.ResolvedRouteTemplate);
@@ -70,7 +70,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseVerb()
     {
-        var pattern = HttpRoutePattern.Parse("/a:foo")!;
+        var pattern = HttpRoutePattern.Parse("/a:foo");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/a", adapter.ResolvedRouteTemplate);
@@ -80,7 +80,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseAnyAndCatchAllSegment()
     {
-        var pattern = HttpRoutePattern.Parse("/*/**")!;
+        var pattern = HttpRoutePattern.Parse("/*/**");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/{__Discard_0}/{**__Discard_1}", adapter.ResolvedRouteTemplate);
@@ -90,7 +90,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseAnyAndCatchAllSegment2()
     {
-        var pattern = HttpRoutePattern.Parse("/*/a/**")!;
+        var pattern = HttpRoutePattern.Parse("/*/a/**");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/{__Discard_0}/a/{**__Discard_2}", adapter.ResolvedRouteTemplate);
@@ -100,7 +100,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseNestedFieldPath()
     {
-        var pattern = HttpRoutePattern.Parse("/a/{a.b.c}")!;
+        var pattern = HttpRoutePattern.Parse("/a/{a.b.c}");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/a/{a.b.c}", adapter.ResolvedRouteTemplate);
@@ -110,7 +110,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseComplexNestedFieldPath()
     {
-        var pattern = HttpRoutePattern.Parse("/a/{a.b.c=*}")!;
+        var pattern = HttpRoutePattern.Parse("/a/{a.b.c=*}");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/a/{a.b.c}", adapter.ResolvedRouteTemplate);
@@ -120,7 +120,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseComplexCatchAll()
     {
-        var pattern = HttpRoutePattern.Parse("/a/{b=**}")!;
+        var pattern = HttpRoutePattern.Parse("/a/{b=**}");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/a/{**b}", adapter.ResolvedRouteTemplate);
@@ -130,7 +130,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseComplexPrefixSuffixCatchAll()
     {
-        var pattern = HttpRoutePattern.Parse("/{x.y.z=a/**/b}/c/d")!;
+        var pattern = HttpRoutePattern.Parse("/{x.y.z=a/**/b}/c/d");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/a/{**__Complex_x.y.z_1:regex(b/c/d$)}", adapter.ResolvedRouteTemplate);
@@ -149,7 +149,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseComplexPrefixSegment()
     {
-        var pattern = HttpRoutePattern.Parse("/a/{b=c/*}")!;
+        var pattern = HttpRoutePattern.Parse("/a/{b=c/*}");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/a/c/{__Complex_b_2}", adapter.ResolvedRouteTemplate);
@@ -168,7 +168,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseComplexPrefixSuffixSegment()
     {
-        var pattern = HttpRoutePattern.Parse("/a/{b=c/*/d}")!;
+        var pattern = HttpRoutePattern.Parse("/a/{b=c/*/d}");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/a/c/{__Complex_b_2}/d", adapter.ResolvedRouteTemplate);
@@ -187,7 +187,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseComplexPathCatchAll()
     {
-        var pattern = HttpRoutePattern.Parse("/a/{b=c/**}")!;
+        var pattern = HttpRoutePattern.Parse("/a/{b=c/**}");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/a/c/{**__Complex_b_2}", adapter.ResolvedRouteTemplate);
@@ -206,7 +206,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseManyVariables()
     {
-        var pattern = HttpRoutePattern.Parse("/{a}/{b}/{c}")!;
+        var pattern = HttpRoutePattern.Parse("/{a}/{b}/{c}");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/{a}/{b}/{c}", adapter.ResolvedRouteTemplate);
@@ -215,7 +215,7 @@ public class JsonTranscodingRouteAdapterTests
     [Fact]
     public void ParseCatchAllVerb()
     {
-        var pattern = HttpRoutePattern.Parse("/a/{b=*}/**:verb")!;
+        var pattern = HttpRoutePattern.Parse("/a/{b=*}/**:verb");
         var adapter = JsonTranscodingRouteAdapter.Parse(pattern);
 
         Assert.Equal("/a/{b}/{**__Discard_2}", adapter.ResolvedRouteTemplate);

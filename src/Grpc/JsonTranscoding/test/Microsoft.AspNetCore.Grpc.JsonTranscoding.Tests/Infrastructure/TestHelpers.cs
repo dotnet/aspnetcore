@@ -71,6 +71,6 @@ internal static class TestHelpers
             bodyDescriptorRepeated ?? false,
             bodyFieldDescriptors,
             routeParameterDescriptors ?? new Dictionary<string, List<FieldDescriptor>>(),
-            JsonTranscodingRouteAdapter.Parse(HttpRoutePattern.Parse("/")!));
+            JsonTranscodingRouteAdapter.Parse(HttpRoutePattern.Parse("/")));
     }
 }
