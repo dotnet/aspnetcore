@@ -230,9 +230,9 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
     private static (RoutePattern routePattern, CallHandlerDescriptorInfo descriptorInfo) ParseRoute(string pattern, string body, string responseBody, MethodDescriptor methodDescriptor)
     {
         var httpRoutePattern = HttpRoutePattern.Parse(pattern);
-        var adaptor = JsonTranscodingRouteAdapter.Parse(httpRoutePattern!);
+        var adapter = JsonTranscodingRouteAdapter.Parse(httpRoutePattern);
 
-        return (RoutePatternFactory.Parse(adaptor.ResolvedRouteTemplate), CreateDescriptorInfo(body, responseBody, methodDescriptor, adaptor));
+        return (RoutePatternFactory.Parse(adapter.ResolvedRouteTemplate), CreateDescriptorInfo(body, responseBody, methodDescriptor, adapter));
     }
 
     private static CallHandlerDescriptorInfo CreateDescriptorInfo(string body, string responseBody, MethodDescriptor methodDescriptor, JsonTranscodingRouteAdapter routeAdapter)

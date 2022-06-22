@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 /// This type transforms an HTTP route into an ASP.NET Core route by rewritting it to a compatible
 /// format and providing actions to reconstruct parameters that span multiple segments.
 /// </summary>
-internal class JsonTranscodingRouteAdapter
+internal sealed class JsonTranscodingRouteAdapter
 {
     public HttpRoutePattern HttpRoutePattern { get; }
     public string ResolvedRouteTemplate { get; }

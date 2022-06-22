@@ -3,7 +3,7 @@
 
 namespace Grpc.Shared;
 
-internal class HttpRoutePattern
+internal sealed class HttpRoutePattern
 {
     public List<string> Segments { get; }
     public string? Verb { get; }
@@ -25,11 +25,11 @@ internal class HttpRoutePattern
     }
 }
 
-internal class HttpRouteVariable
+internal sealed class HttpRouteVariable
 {
-    public int Index;
-    public int StartSegment;
-    public int EndSegment;
-    public List<string> FieldPath = new List<string>();
-    public bool HasCatchAllPath;
+    public int Index { get; set; }
+    public int StartSegment { get; set; }
+    public int EndSegment { get; set; }
+    public List<string> FieldPath { get; } = new List<string>();
+    public bool HasCatchAllPath { get; set; }
 }
