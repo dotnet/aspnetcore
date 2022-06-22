@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
 internal sealed class Http3StreamContext : HttpConnectionContext
 {
+#pragma warning disable CA2252
     public Http3StreamContext(
         string connectionId,
         HttpProtocols protocols,
@@ -26,7 +27,7 @@ internal sealed class Http3StreamContext : HttpConnectionContext
         ConnectionContext streamContext,
         Http3PeerSettings clientPeerSettings,
         Http3PeerSettings serverPeerSettings,
-        WebTransportSession webTransportSession) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+        WebTransportSession? webTransportSession = null) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
     {
         StreamLifetimeHandler = streamLifetimeHandler;
         StreamContext = streamContext;
@@ -39,5 +40,6 @@ internal sealed class Http3StreamContext : HttpConnectionContext
     public ConnectionContext StreamContext { get; }
     public Http3PeerSettings ClientPeerSettings { get; }
     public Http3PeerSettings ServerPeerSettings { get; }
-    public WebTransportSession WebTransportSession { get; }
+    public WebTransportSession? WebTransportSession { get; }
+#pragma warning restore CA2252
 }

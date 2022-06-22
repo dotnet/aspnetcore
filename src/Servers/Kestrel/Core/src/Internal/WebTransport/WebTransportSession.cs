@@ -108,7 +108,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     /// <param name="controlStream">The stream overwhich the ENHANCED CONNECT request was established</param>
     /// <param name="version">The version of the WebTransport spec to use</param>
     /// <returns>True if the initialization completed successfully. False otherwise.</returns>
-    internal bool Initialize(Http3Stream controlStream, string version) // todo merge with constructor
+    internal bool Initialize(Http3Stream controlStream, string version)
     {
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out _webtransportEnabled);
 
