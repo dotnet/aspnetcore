@@ -81,7 +81,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
         AbortCore(abortReason, errorCode);
     }
 
-    private async ValueTask<int> ReadAsyncInternal(Memory<byte> destination, CancellationToken cancellationToken)
+    private async Task<int> ReadAsyncInternal(Memory<byte> destination, CancellationToken cancellationToken)
     {
         while (true)
         {
@@ -163,7 +163,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
         }
 
         // since there is no seekig we ignore the offset parameter
-        return ReadAsyncInternal(new(buffer), default).GetAwaiter().GetResult(); // todo find a better way
+        return ReadAsyncInternal(new(buffer), default).GetAwaiter().GetResult();
     }
 
     public override void Write(byte[] buffer, int offset, int count)
