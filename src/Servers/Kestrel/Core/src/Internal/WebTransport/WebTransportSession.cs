@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
@@ -14,20 +15,48 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
 /// <summary>
-/// Controls the session and streams of a WebTransport session
+/// Controls the WebTransport session and keeps track of all the streams.
 /// </summary>
 [RequiresPreviewFeatures("WebTransport is a preview feature")]
 internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSessionFeature
 {
+    private static bool _webtransportEnabled;
+
+    private readonly Dictionary<long, WebTransportStream> _openStreams = new();
+    private readonly ConcurrentQueue<WebTransportStream> _pendingStreams = new();
+    private readonly SemaphoreSlim _pendingAcceptStreamRequests = new(0);
+    private readonly Http3Connection _connection;
+
+    // these should all be effectively readonly after
+    // the initialization method
+    private string _version = "";
+    private Http3Stream _controlStream = default!;
+
+    private bool _initialized;
+
+    internal static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
+
+    // Order is important for both of these arrays as we choose the first
+    // supported version (index 0 is the most prefered option)
+    internal static readonly byte[][] suppportedWebTransportVersionsBytes =
+    {
+        new byte[] { 0x64, 0x72, 0x61, 0x66, 0x74, 0x30, 0x32 } // "draft02" 
+    };
+
+    internal static readonly string[] suppportedWebTransportVersions =
+    {
+        "draft02"
+    };
+
     long IWebTransportSession.SessionId => _controlStream.StreamId;
 
     async ValueTask<IWebTransportSession> IHttpWebTransportSessionFeature.AcceptAsync(CancellationToken token)
     {
         ThrowIfInvalidSession();
 
-        // build and flush the 200 ACK
+        // build and flush the 200 ACK to accept the connection from the client
         _controlStream.ResponseHeaders.TryAdd(VersionHeaderPrefix, _version);
-        _controlStream.Output.WriteResponseHeaders(200, null, (Http.HttpResponseHeaders)_controlStream.ResponseHeaders, false, false);
+        _controlStream.Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (Http.HttpResponseHeaders)_controlStream.ResponseHeaders, false, false);
         await _controlStream.Output.FlushAsync(token);
 
         // add the close stream listener as we must abort the session once this stream dies
@@ -67,34 +96,6 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
 
         return stream;
     }
-
-    private static bool _webtransportEnabled;
-
-    private readonly Dictionary<long, WebTransportStream> _openStreams = new();
-    private readonly ConcurrentQueue<WebTransportStream> _pendingStreams = new();
-    private readonly SemaphoreSlim _pendingAcceptStreamRequests = new(0);
-    private readonly Http3Connection _connection;
-
-    // these should all be effectively readonly after
-    // the initialization method
-    private string _version = "";
-    private Http3Stream _controlStream = default!;
-
-    private bool _initialized;
-
-    internal static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
-
-    // Order is important for both of these arrays as we choose the first
-    // supported version (index 0 is the most prefered option)
-    internal static readonly byte[][] suppportedWebTransportVersionsBytes =
-    {
-        new byte[] { 0x64, 0x72, 0x61, 0x66, 0x74, 0x30, 0x32 } // "draft02" 
-    };
-
-    internal static readonly string[] suppportedWebTransportVersions =
-    {
-    "draft02"
-    };
 
     internal WebTransportSession(Http3Connection connection)
     {

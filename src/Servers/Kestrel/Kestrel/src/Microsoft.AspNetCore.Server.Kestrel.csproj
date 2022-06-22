@@ -8,7 +8,6 @@
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
-    <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>

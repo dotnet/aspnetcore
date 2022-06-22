@@ -31,8 +31,9 @@ internal class WebTransportStream : Stream, IHttp3Stream
     internal readonly Http3StreamContext _context;
     internal readonly IStreamIdFeature _streamIdFeature = default!;
     internal readonly IStreamAbortFeature _streamAbortFeature = default!;
-    internal readonly IProtocolErrorCodeFeature _errorCodeFeature;
+    internal readonly IProtocolErrorCodeFeature _errorCodeFeature = default!;
     internal readonly WebTransportStreamType _type;
+
     internal KestrelTrace Log => _context.ServiceContext.Log;
 
     long IHttp3Stream.StreamId => _streamIdFeature.StreamId;
@@ -69,6 +70,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
         _isClosed = true;
 
         Log.Http3StreamAbort(_context.ConnectionId, errorCode, abortReason);
+
         _errorCodeFeature.Error = (long)errorCode;
 
         _streamAbortFeature.AbortRead((long)errorCode, abortReason);
@@ -131,27 +133,37 @@ internal class WebTransportStream : Stream, IHttp3Stream
     }
 
     /// <summary>
-    /// Can data be read from this stream
+    /// True if data can be read from this stream. False otherwise.
     /// </summary>
     public override bool CanRead => _type != WebTransportStreamType.Output && !_isClosed;
 
     /// <summary>
-    /// Seeking is not supported by WebTransport
+    /// Seeking is not supported by WebTransport.
     /// </summary>
     public override bool CanSeek => false;
 
     /// <summary>
-    /// Can data be written to this stream
+    /// True if data can be written from this stream. False otherwise.
     /// </summary>
     public override bool CanWrite => _type != WebTransportStreamType.Input && !_isClosed;
 
     public override void Flush()
     {
+        if (!CanWrite)
+        {
+            throw new NotSupportedException();
+        }
+
         FlushAsync(default).GetAwaiter().GetResult();
     }
 
     public override Task FlushAsync(CancellationToken cancellationToken)
     {
+        if (!CanWrite)
+        {
+            throw new NotSupportedException();
+        }
+
         return Output.FlushAsync(cancellationToken).GetAsTask();
     }
 
@@ -162,7 +174,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
             throw new NotSupportedException();
         }
 
-        // since there is no seekig we ignore the offset parameter
+        // since there is no seeking we ignore the offset and count parameters
         return ReadAsyncInternal(new(buffer), default).GetAwaiter().GetResult();
     }
 
@@ -178,11 +190,21 @@ internal class WebTransportStream : Stream, IHttp3Stream
 
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
+        if (!CanWrite)
+        {
+            throw new NotSupportedException();
+        }
+
         return Output.WriteAsync(new Memory<byte>(buffer, offset, count), cancellationToken).GetAsTask();
     }
 
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
     {
+        if (!CanWrite)
+        {
+            throw new NotSupportedException();
+        }
+
         return Output.WriteAsync(buffer, cancellationToken).GetAsValueTask();
     }
 
@@ -224,15 +246,36 @@ internal class WebTransportStream : Stream, IHttp3Stream
     #endregion
 
     #region Unsupported IHttp3Stream functionality
-    bool IHttp3Stream.IsReceivingHeader => throw new NotSupportedException(); // not-applicable
+    /// <summary>
+    /// Not applicable to WebTransport. Don't use
+    /// </summary>
+    /// <exception cref="NotSupportedException"></exception>
+    bool IHttp3Stream.IsReceivingHeader => throw new NotSupportedException();
 
-    bool IHttp3Stream.IsDraining => throw new NotSupportedException(); // not-applicable
+    /// <summary>
+    /// Not applicable to WebTransport. Don't use
+    /// </summary>
+    /// <exception cref="NotSupportedException"></exception>
+    bool IHttp3Stream.IsDraining => throw new NotSupportedException();
 
-    bool IHttp3Stream.IsRequestStream => throw new NotSupportedException(); // not-applicable
+    /// <summary>
+    /// Not applicable to WebTransport. Don't use
+    /// </summary>
+    /// <exception cref="NotSupportedException"></exception>
+    bool IHttp3Stream.IsRequestStream => throw new NotSupportedException();
 
-    string IHttp3Stream.TraceIdentifier => throw new NotSupportedException(); // not-applicable
+    /// <summary>
+    /// Not applicable to WebTransport. Don't use
+    /// </summary>
+    /// <exception cref="NotSupportedException"></exception>
+    string IHttp3Stream.TraceIdentifier => throw new NotSupportedException();
 
-    long IHttp3Stream.StreamTimeoutTicks { // not-applicable
+    /// <summary>
+    /// Not applicable to WebTransport. Don't use
+    /// </summary>
+    /// <exception cref="NotSupportedException"></exception>
+    long IHttp3Stream.StreamTimeoutTicks
+    {
         get => throw new NotSupportedException();
         set => throw new NotSupportedException();
     }
