@@ -122,7 +122,7 @@ internal class HttpRoutePatternParser
                         _hasCatchAllSegment = true;
                         if (_inVariable)
                         {
-                            MarkVariableHasWildardPath();
+                            CurrentVariable.HasCatchAllPath = true;
                         }
                         return true;
                     }
@@ -224,7 +224,7 @@ internal class HttpRoutePatternParser
             return false;
         }
 
-        AddFieldIdentifier(identifier);
+        CurrentVariable.FieldPath.Add(identifier);
         return true;
     }
 
@@ -309,7 +309,19 @@ internal class HttpRoutePatternParser
 
     private char? CurrentChar => _tokenStart < _tokenEnd && _tokenEnd <= _input.Length ? _input[_tokenEnd - 1] : null;
 
-    private HttpRouteVariable CurrentVariable => _variables.Last();
+    private HttpRouteVariable CurrentVariable
+    {
+        get
+        {
+            if (!_inVariable || _variables.LastOrDefault() is not HttpRouteVariable variable)
+            {
+                throw new InvalidOperationException("Unexpected error when updating variable.");
+            }
+
+            return variable;
+        }
+
+    }
 
     private void StartVariable()
     {
@@ -319,39 +331,19 @@ internal class HttpRoutePatternParser
         }
 
         _variables.Add(new HttpRouteVariable());
+        _inVariable = true;
         CurrentVariable.StartSegment = _segments.Count;
         CurrentVariable.HasCatchAllPath = false;
-        _inVariable = true;
     }
 
     private void EndVariable()
     {
-        EnsureCurrentVariable();
         CurrentVariable.EndSegment = _segments.Count;
-        _inVariable = false;
 
         Debug.Assert(CurrentVariable.FieldPath.Any());
         Debug.Assert(CurrentVariable.StartSegment < CurrentVariable.EndSegment);
         Debug.Assert(CurrentVariable.EndSegment <= _segments.Count);
-    }
 
-    private void AddFieldIdentifier(string id)
-    {
-        EnsureCurrentVariable();
-        CurrentVariable.FieldPath.Add(id);
-    }
-
-    private void MarkVariableHasWildardPath()
-    {
-        EnsureCurrentVariable();
-        CurrentVariable.HasCatchAllPath = true;
-    }
-
-    private void EnsureCurrentVariable()
-    {
-        if (!_inVariable || !_variables.Any())
-        {
-            throw new InvalidOperationException("Unexpected error when updating variable.");
-        }
+        _inVariable = false;
     }
 }
