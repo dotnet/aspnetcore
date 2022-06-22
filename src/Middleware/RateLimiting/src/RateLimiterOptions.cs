@@ -11,31 +11,18 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// </summary>
 public sealed class RateLimiterOptions
 {
-    private PartitionedRateLimiter<HttpContext> _limiter = new NoLimiter<HttpContext>();
-    private Func<OnRejectedContext, CancellationToken, ValueTask> _onRejected = (context, token) =>
-    {
-        return ValueTask.CompletedTask;
-    };
-    private IDictionary<string, RateLimiterPolicy> PartitionMap { get; }
-        = new Dictionary<string, RateLimiterPolicy>(StringComparer.Ordinal);
+    internal IDictionary<string, AspNetPolicy> PolicyMap { get; }
+        = new Dictionary<string, AspNetPolicy>(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets or sets the <see cref="PartitionedRateLimiter{TResource}"/>
     /// </summary>
-    public PartitionedRateLimiter<HttpContext>? GlobalLimiter
-    {
-        get => _limiter;
-        set => _limiter = value;
-    }
+    public PartitionedRateLimiter<HttpContext>? GlobalLimiter { get; set; }
 
     /// <summary>
     /// Gets or sets a <see cref="Func{OnRejectedContext, CancellationToken, ValueTask}"/> that handles requests rejected by this middleware.
     /// </summary>
-    public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected
-    {
-        get => _onRejected;
-        set => _onRejected = value;
-    }
+    public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected { get; set; }
 
     /// <summary>
     /// Gets or sets the default status code to set on the response when a request is rejected.
@@ -50,9 +37,8 @@ public sealed class RateLimiterOptions
     /// <summary>
     /// Adds a new rate limiting policy with the given name.
     /// </summary>
-    /// <param name="name">The name to be associated with the given <see cref="RateLimiter"/></param>
+    /// <param name="policyName">The name to be associated with the given <see cref="RateLimiter"/>.</param>
     /// <param name="partitioner">Method called every time an Acquire or WaitAsync call is made to figure out what rate limiter to apply to the request.</param>
-    /// <param name="global">Determines if this policy should be shared across endpoints. Defaults to false.</param>
     public RateLimiterOptions AddPolicy<TPartitionKey>(string policyName, Func<HttpContext, RateLimitPartition<TPartitionKey>> partitioner)
     {
         if (policyName == null)
@@ -65,29 +51,93 @@ public sealed class RateLimiterOptions
             throw new ArgumentNullException(nameof(partitioner));
         }
 
-        if (PartitionMap.ContainsKey(policyName))
+        if (PolicyMap.ContainsKey(policyName))
         {
-            throw new ArgumentException("There already exists a partition with the name {name}");
+            throw new ArgumentException("There already exists a policy with the name {name}");
         }
-
-        PartitionMap.Add(policyName, partitioner);
-
-        return this;
 
         Func<HttpContext, RateLimitPartition<AspNetKey>> func = context =>
         {
             RateLimitPartition<TPartitionKey> partition = partitioner(context);
             return new RateLimitPartition<AspNetKey<TPartitionKey>>(new AspNetKey<TPartitionKey>(partition.PartitionKey), partition.Factory(partition.PartitionKey));
         };
-    }
 
-    public RateLimiterOptions AddPolicy<TPartitionKey, TPolicy>(string policyName) where TPolicy : IRateLimiterPolicy<TPartitionKey>
-    {
+        PolicyMap.Add(policyName, new AspNetPolicy(func));
+
         return this;
     }
 
+    /// <summary>
+    /// Adds a new rate limiting policy with the given name.
+    /// </summary>
+    /// <param name="policyName">The name to be associated with the given TPolicy.</param>
+    public RateLimiterOptions AddPolicy<TPartitionKey, TPolicy>(string policyName) where TPolicy : IRateLimiterPolicy<TPartitionKey>
+    {
+        if (policyName == null)
+        {
+            throw new ArgumentNullException(nameof(policyName));
+        }
+
+        if (PolicyMap.ContainsKey(policyName))
+        {
+            throw new ArgumentException("There already exists a policy with the name {name}");
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a new rate limiting policy with the given name.
+    /// </summary>
+    /// <param name="policyName">The name to be associated with the given <see cref="IRateLimiterPolicy{TPartitionKey}"/>.</param>
+    /// <param name="policy">The <see cref="IRateLimiterPolicy{TPartitionKey}"/> to be applied.</param>
     public RateLimiterOptions AddPolicy<TPartitionKey>(string policyName, IRateLimiterPolicy<TPartitionKey> policy)
     {
+        if (policyName == null)
+        {
+            throw new ArgumentNullException(nameof(policyName));
+        }
+
+        if (PolicyMap.ContainsKey(policyName))
+        {
+            throw new ArgumentException("There already exists a policy with the name {name}");
+        }
+
+        if (policy == null)
+        {
+            throw new ArgumentNullException(nameof(policy));
+        }
+
+        Func<HttpContext, RateLimitPartition<AspNetKey>> func = context =>
+        {
+            RateLimitPartition<TPartitionKey> partition = policy.GetPartition(context);
+            return new RateLimitPartition<AspNetKey<TPartitionKey>>(new AspNetKey<TPartitionKey>(partition.PartitionKey), partition.Factory(partition.PartitionKey));
+        };
+
+        PolicyMap.Add(policyName, new AspNetPolicy(func));
+
+        return this;
+    }
+
+    internal RateLimiterOptions InternalAddPolicy(string policyName, Func<HttpContext, RateLimitPartition<AspNetKey>> partitioner)
+    {
+        if (policyName == null)
+        {
+            throw new ArgumentNullException(nameof(policyName));
+        }
+
+        if (partitioner == null)
+        {
+            throw new ArgumentNullException(nameof(partitioner));
+        }
+
+        if (PolicyMap.ContainsKey(policyName))
+        {
+            throw new ArgumentException("There already exists a policy with the name {name}");
+        }
+
+        PolicyMap.Add(policyName, new AspNetPolicy(partitioner));
+
         return this;
     }
 }

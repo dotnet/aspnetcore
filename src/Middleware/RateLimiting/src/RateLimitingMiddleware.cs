@@ -14,10 +14,12 @@ namespace Microsoft.AspNetCore.RateLimiting;
 internal sealed partial class RateLimitingMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly Func<HttpContext, RateLimitLease, Task> _onRejected;
+    private readonly Func<OnRejectedContext, CancellationToken, ValueTask>? _onRejected;
     private readonly ILogger _logger;
     private readonly PartitionedRateLimiter<HttpContext> _limiter;
     private readonly int _rejectionStatusCode;
+    private readonly IDictionary<string, AspNetPolicy> _policyMap;
+    private readonly AspNetKey _defaultPolicyKey = new AspNetKey<PolicyNameKey>(new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
 
     /// <summary>
     /// Creates a new <see cref="RateLimitingMiddleware"/>.
@@ -31,9 +33,12 @@ internal sealed partial class RateLimitingMiddleware
 
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        _limiter = options.Value.Limiter;
         _onRejected = options.Value.OnRejected;
-        _rejectionStatusCode = options.Value.DefaultRejectionStatusCode;
+        _rejectionStatusCode = options.Value.RejectionStatusCode;
+        _policyMap = options.Value.PolicyMap;
+
+        var _globalLimiter = options.Value.GlobalLimiter;
+
     }
 
     // TODO - EventSource?
@@ -55,7 +60,7 @@ internal sealed partial class RateLimitingMiddleware
             // OnRejected "wins" over DefaultRejectionStatusCode - we set DefaultRejectionStatusCode first,
             // then call OnRejected in case it wants to do any further modification of the status code.
             context.Response.StatusCode = _rejectionStatusCode;
-            await _onRejected(context, lease);
+            await _onRejected(new OnRejectedContext() { HttpContext = context, Lease = lease }, context.RequestAborted);
         }
     }
 
@@ -68,6 +73,25 @@ internal sealed partial class RateLimitingMiddleware
         }
 
         return _limiter.WaitAsync(context, cancellationToken: context.RequestAborted);
+    }
+
+    // Create the endpoint-specific PartitionedRateLimiter
+    private PartitionedRateLimiter<HttpContext> CreateEndpointLimiter()
+    {
+        // If we have a policy for this endpoint, use its partitioner. Else use a NoLimiter.
+        return PartitionedRateLimiter.Create<HttpContext, AspNetKey>(context =>
+        {
+            AspNetPolicy? policy;
+            var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.Name;
+            if (!(name is null))
+            {
+                if (_policyMap.TryGetValue(name, out policy))
+                {
+                    return policy.GetPartition(context);
+                }
+            }
+            return RateLimitPartition.CreateNoLimiter<AspNetKey>(_defaultPolicyKey);
+        });
     }
 
     private static partial class RateLimiterLog
