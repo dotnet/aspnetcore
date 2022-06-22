@@ -453,7 +453,7 @@ internal sealed class OutputCacheMiddleware
         }
         else
         {
-            _logger.LogResponseNotCached();
+            _logger.ResponseNotCached();
         }
     }
 

@@ -43,7 +43,7 @@ public class OutputCachePolicyProviderTests
 
     [Theory]
     [MemberData(nameof(CacheableMethods))]
-    public async Task AttemptOutputCaching_CacheableMethods_Allowed(string method)
+    public async Task AttemptOutputCaching_CacheableMethods_IsAllowed(string method)
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
@@ -99,7 +99,7 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
-    public async Task AllowCacheStorage_NoStore_Allowed()
+    public async Task AllowCacheStorage_NoStore_IsAllowed()
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
@@ -133,7 +133,7 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
-    public async Task IsResponseCacheable_NoPublic_Allowed()
+    public async Task IsResponseCacheable_NoPublic_IsAllowed()
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
@@ -147,7 +147,7 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
-    public async Task IsResponseCacheable_Public_Allowed()
+    public async Task IsResponseCacheable_Public_IsAllowed()
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
@@ -165,7 +165,7 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
-    public async Task IsResponseCacheable_NoCache_Allowed()
+    public async Task IsResponseCacheable_NoCache_IsAllowed()
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
@@ -183,7 +183,7 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
-    public async Task IsResponseCacheable_ResponseNoStore_Allowed()
+    public async Task IsResponseCacheable_ResponseNoStore_IsAllowed()
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
@@ -218,7 +218,7 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
-    public async Task IsResponseCacheable_VaryHeaderByStar_Allowed()
+    public async Task IsResponseCacheable_VaryHeaderByStar_IsAllowed()
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
@@ -232,7 +232,7 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
-    public async Task IsResponseCacheable_Private_Allowed()
+    public async Task IsResponseCacheable_Private_IsAllowed()
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
@@ -251,7 +251,7 @@ public class OutputCachePolicyProviderTests
 
     [Theory]
     [InlineData(StatusCodes.Status200OK)]
-    public async Task IsResponseCacheable_SuccessStatusCodes_Allowed(int statusCode)
+    public async Task IsResponseCacheable_SuccessStatusCodes_IsAllowed(int statusCode)
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(sink);
@@ -363,7 +363,7 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
-    public async Task IsResponseCacheable_MaxAgeOverridesExpiry_ToAllowed()
+    public async Task IsResponseCacheable_MaxAgeOverridesExpiry_IsAllowed()
     {
         var utcNow = DateTimeOffset.UtcNow;
         var sink = new TestSink();
@@ -386,7 +386,7 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
-    public async Task IsResponseCacheable_SharedMaxAgeOverridesMaxAge_ToAllowed()
+    public async Task IsResponseCacheable_SharedMaxAgeOverridesMaxAge_IsAllowed()
     {
         var utcNow = DateTimeOffset.UtcNow;
         var sink = new TestSink();

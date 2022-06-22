@@ -32,5 +32,5 @@ public interface IOutputCacheStore
     /// <param name="tags">The tags associated with the cache entry to store.</param>
     /// <param name="validFor">The amount of time the entry will be kept in the cache before expiring, relative to now.</param>
     /// <param name="cancellationToken">Indicates that the operation should be cancelled.</param>
-    ValueTask SetAsync(string key, byte[] value, string[] tags, TimeSpan validFor, CancellationToken cancellationToken);
+    ValueTask SetAsync(string key, byte[] value, string[]? tags, TimeSpan validFor, CancellationToken cancellationToken);
 }

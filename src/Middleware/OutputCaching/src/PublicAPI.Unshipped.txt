@@ -18,7 +18,7 @@ Microsoft.AspNetCore.OutputCaching.IOutputCacheStore
 Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.EvictByTagAsync(string! tag, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy
 Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.GetAsync(string! key, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<byte[]?>
-Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.SetAsync(string! key, byte[]! value, string![]! tags, System.TimeSpan validFor, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.OutputCaching.IOutputCacheStore.SetAsync(string! key, byte[]! value, string![]? tags, System.TimeSpan validFor, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Duration.get -> int
 Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Duration.init -> void

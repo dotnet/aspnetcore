@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
 using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
@@ -85,9 +86,9 @@ internal class TestUtils
     }
 
     internal static IEnumerable<IHostBuilder> CreateBuildersWithOutputCaching(
-        Action<IApplicationBuilder> configureDelegate = null,
-        OutputCacheOptions options = null,
-        Action<HttpContext> contextAction = null)
+        Action<IApplicationBuilder>? configureDelegate = null,
+        OutputCacheOptions? options = null,
+        Action<HttpContext>? contextAction = null)
     {
         return CreateBuildersWithOutputCaching(configureDelegate, options, new RequestDelegate[]
         {
@@ -110,9 +111,9 @@ internal class TestUtils
     }
 
     private static IEnumerable<IHostBuilder> CreateBuildersWithOutputCaching(
-        Action<IApplicationBuilder> configureDelegate = null,
-        OutputCacheOptions options = null,
-        IEnumerable<RequestDelegate> requestDelegates = null)
+        Action<IApplicationBuilder>? configureDelegate = null,
+        OutputCacheOptions? options = null,
+        IEnumerable<RequestDelegate>? requestDelegates = null)
     {
         if (configureDelegate == null)
         {
@@ -166,11 +167,11 @@ internal class TestUtils
     }
 
     internal static OutputCacheMiddleware CreateTestMiddleware(
-        RequestDelegate next = null,
-        IOutputCacheStore cache = null,
-        OutputCacheOptions options = null,
-        TestSink testSink = null,
-        IOutputCacheKeyProvider keyProvider = null
+        RequestDelegate? next = null,
+        IOutputCacheStore? cache = null,
+        OutputCacheOptions? options = null,
+        TestSink? testSink = null,
+        IOutputCacheKeyProvider? keyProvider = null
         )
     {
         if (next == null)
@@ -198,7 +199,7 @@ internal class TestUtils
             keyProvider);
     }
 
-    internal static OutputCacheContext CreateTestContext(IOutputCacheStore cache = null, OutputCacheOptions options = null)
+    internal static OutputCacheContext CreateTestContext(IOutputCacheStore? cache = null, OutputCacheOptions? options = null)
     {
         return new OutputCacheContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, NullLogger.Instance)
         {
@@ -209,7 +210,7 @@ internal class TestUtils
         };
     }
 
-    internal static OutputCacheContext CreateTestContext(HttpContext httpContext, IOutputCacheStore cache = null, OutputCacheOptions options = null)
+    internal static OutputCacheContext CreateTestContext(HttpContext httpContext, IOutputCacheStore? cache = null, OutputCacheOptions? options = null)
     {
         return new OutputCacheContext(httpContext, cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, NullLogger.Instance)
         {
@@ -220,7 +221,7 @@ internal class TestUtils
         };
     }
 
-    internal static OutputCacheContext CreateTestContext(ITestSink testSink, IOutputCacheStore cache = null, OutputCacheOptions options = null)
+    internal static OutputCacheContext CreateTestContext(ITestSink testSink, IOutputCacheStore? cache = null, OutputCacheOptions? options = null)
     {
         return new OutputCacheContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, new TestLogger("OutputCachingTests", testSink, true))
         {
@@ -231,7 +232,7 @@ internal class TestUtils
         };
     }
 
-    internal static OutputCacheContext CreateUninitializedContext(IOutputCacheStore cache = null, OutputCacheOptions options = null)
+    internal static OutputCacheContext CreateUninitializedContext(IOutputCacheStore? cache = null, OutputCacheOptions? options = null)
     {
         return new OutputCacheContext(new DefaultHttpContext(), cache ?? new TestOutputCache(), options ?? Options.Create(new OutputCacheOptions()).Value, NullLogger.Instance)
         {
@@ -272,34 +273,20 @@ internal class LoggedMessage
 {
     internal static LoggedMessage RequestMethodNotCacheable => new LoggedMessage(1, LogLevel.Debug);
     internal static LoggedMessage RequestWithAuthorizationNotCacheable => new LoggedMessage(2, LogLevel.Debug);
-    internal static LoggedMessage RequestWithNoCacheNotCacheable => new LoggedMessage(3, LogLevel.Debug);
-    internal static LoggedMessage RequestWithPragmaNoCacheNotCacheable => new LoggedMessage(4, LogLevel.Debug);
-    internal static LoggedMessage ExpirationMinFreshAdded => new LoggedMessage(5, LogLevel.Debug);
-    internal static LoggedMessage ExpirationSharedMaxAgeExceeded => new LoggedMessage(6, LogLevel.Debug);
-    internal static LoggedMessage ExpirationMustRevalidate => new LoggedMessage(7, LogLevel.Debug);
-    internal static LoggedMessage ExpirationMaxStaleSatisfied => new LoggedMessage(8, LogLevel.Debug);
-    internal static LoggedMessage ExpirationMaxAgeExceeded => new LoggedMessage(9, LogLevel.Debug);
-    internal static LoggedMessage ExpirationExpiresExceeded => new LoggedMessage(10, LogLevel.Debug);
-    internal static LoggedMessage ResponseWithoutPublicNotCacheable => new LoggedMessage(11, LogLevel.Debug);
-    internal static LoggedMessage ResponseWithNoStoreNotCacheable => new LoggedMessage(12, LogLevel.Debug);
-    internal static LoggedMessage ResponseWithNoCacheNotCacheable => new LoggedMessage(13, LogLevel.Debug);
-    internal static LoggedMessage ResponseWithSetCookieNotCacheable => new LoggedMessage(14, LogLevel.Debug);
-    internal static LoggedMessage ResponseWithVaryStarNotCacheable => new LoggedMessage(15, LogLevel.Debug);
-    internal static LoggedMessage ResponseWithPrivateNotCacheable => new LoggedMessage(16, LogLevel.Debug);
-    internal static LoggedMessage ResponseWithUnsuccessfulStatusCodeNotCacheable => new LoggedMessage(17, LogLevel.Debug);
-    internal static LoggedMessage NotModifiedIfNoneMatchStar => new LoggedMessage(18, LogLevel.Debug);
-    internal static LoggedMessage NotModifiedIfNoneMatchMatched => new LoggedMessage(19, LogLevel.Debug);
-    internal static LoggedMessage NotModifiedIfModifiedSinceSatisfied => new LoggedMessage(20, LogLevel.Debug);
-    internal static LoggedMessage NotModifiedServed => new LoggedMessage(21, LogLevel.Information);
-    internal static LoggedMessage CachedResponseServed => new LoggedMessage(22, LogLevel.Information);
-    internal static LoggedMessage GatewayTimeoutServed => new LoggedMessage(23, LogLevel.Information);
-    internal static LoggedMessage NoResponseServed => new LoggedMessage(24, LogLevel.Information);
-    internal static LoggedMessage VaryByRulesUpdated => new LoggedMessage(25, LogLevel.Debug);
-    internal static LoggedMessage ResponseCached => new LoggedMessage(26, LogLevel.Information);
-    internal static LoggedMessage ResponseNotCached => new LoggedMessage(27, LogLevel.Information);
-    internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(28, LogLevel.Warning);
-    internal static LoggedMessage ExpirationInfiniteMaxStaleSatisfied => new LoggedMessage(29, LogLevel.Debug);
-    internal static LoggedMessage ExpirationExpiresExceededNoExpiration => new LoggedMessage(30, LogLevel.Debug);
+    internal static LoggedMessage ResponseWithSetCookieNotCacheable => new LoggedMessage(3, LogLevel.Debug);
+    internal static LoggedMessage ResponseWithUnsuccessfulStatusCodeNotCacheable => new LoggedMessage(4, LogLevel.Debug);
+    internal static LoggedMessage NotModifiedIfNoneMatchStar => new LoggedMessage(5, LogLevel.Debug);
+    internal static LoggedMessage NotModifiedIfNoneMatchMatched => new LoggedMessage(6, LogLevel.Debug);
+    internal static LoggedMessage NotModifiedIfModifiedSinceSatisfied => new LoggedMessage(7, LogLevel.Debug);
+    internal static LoggedMessage NotModifiedServed => new LoggedMessage(8, LogLevel.Information);
+    internal static LoggedMessage CachedResponseServed => new LoggedMessage(9, LogLevel.Information);
+    internal static LoggedMessage GatewayTimeoutServed => new LoggedMessage(10, LogLevel.Information);
+    internal static LoggedMessage NoResponseServed => new LoggedMessage(11, LogLevel.Information);
+    internal static LoggedMessage VaryByRulesUpdated => new LoggedMessage(12, LogLevel.Debug);
+    internal static LoggedMessage ResponseCached => new LoggedMessage(13, LogLevel.Information);
+    internal static LoggedMessage ResponseNotCached => new LoggedMessage(14, LogLevel.Information);
+    internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(15, LogLevel.Warning);
+    internal static LoggedMessage ExpirationExpiresExceeded => new LoggedMessage(15, LogLevel.Debug);
 
     private LoggedMessage(int evenId, LogLevel logLevel)
     {
@@ -315,12 +302,12 @@ internal class TestResponseCachingKeyProvider : IOutputCacheKeyProvider
 {
     private readonly string _key;
 
-    public TestResponseCachingKeyProvider(string key = null)
+    public TestResponseCachingKeyProvider(string key)
     {
         _key = key;
     }
 
-    public string CreateStorageKey(OutputCacheContext context)
+    public string CreateStorageKey(OutputCacheContext? context)
     {
         return _key;
     }
@@ -328,7 +315,7 @@ internal class TestResponseCachingKeyProvider : IOutputCacheKeyProvider
 
 internal class TestOutputCache : IOutputCacheStore
 {
-    private readonly IDictionary<string, byte[]> _storage = new Dictionary<string, byte[]>();
+    private readonly Dictionary<string, byte[]?> _storage = new();
     public int GetCount { get; private set; }
     public int SetCount { get; private set; }
 
@@ -337,8 +324,10 @@ internal class TestOutputCache : IOutputCacheStore
         throw new NotImplementedException();
     }
 
-    public ValueTask<byte[]> GetAsync(string key, CancellationToken token)
+    public ValueTask<byte[]?> GetAsync(string? key, CancellationToken token)
     {
+        ArgumentNullException.ThrowIfNull(key);
+
         GetCount++;
         try
         {
@@ -350,7 +339,7 @@ internal class TestOutputCache : IOutputCacheStore
         }
     }
 
-    public ValueTask SetAsync(string key, byte[] entry, string[] tags, TimeSpan validFor, CancellationToken token)
+    public ValueTask SetAsync(string key, byte[] entry, string[]? tags, TimeSpan validFor, CancellationToken token)
     {
         SetCount++;
         _storage[key] = entry;

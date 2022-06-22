@@ -21,7 +21,7 @@ internal sealed class LockingPolicy : IOutputCachePolicy
     public static readonly LockingPolicy Enabled = new(true);
 
     /// <summary>
-    /// A policy that disabled locking/
+    /// A policy that disables locking.
     /// </summary>
     public static readonly LockingPolicy Disabled = new(false);
 
