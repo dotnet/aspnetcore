@@ -79,4 +79,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor DoNotUseHostConfigureLogging = new(
+        "ASP0011",
+        "Do not use ConfigureLogging with WebApplication.Host or WebApplication.WebHost",
+        "Favor using builder.Logging",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
 }

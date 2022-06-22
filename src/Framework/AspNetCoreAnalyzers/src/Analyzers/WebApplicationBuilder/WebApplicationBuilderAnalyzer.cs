@@ -5,6 +5,7 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.NetworkInformation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -21,6 +22,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.DoNotUseConfigureWebHostWithConfigureHostBuilder,
         DiagnosticDescriptors.DoNotUseConfigureWithConfigureWebHostBuilder,
         DiagnosticDescriptors.DoNotUseUseStartupWithConfigureWebHostBuilder,
+        DiagnosticDescriptors.DoNotUseHostConfigureLogging
     });
 
     public override void Initialize(AnalysisContext context)
@@ -43,6 +45,12 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
             {
                 wellKnownTypes.HostingAbstractionsWebHostBuilderExtensions,
                 wellKnownTypes.WebHostBuilderExtensions,
+            };
+            //add INamedTypeSymbol[] wellKnownTypes.OURANALYZER
+            INamedTypeSymbol[] configureLoggingTypes =
+            {
+                wellKnownTypes.HostingHostBuilderExtensions,
+                wellKnownTypes.WebHostBuilderExtensions
             };
 
             compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
@@ -95,6 +103,35 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                     operationAnalysisContext.ReportDiagnostic(
                         CreateDiagnostic(
                             DiagnosticDescriptors.DoNotUseUseStartupWithConfigureWebHostBuilder,
+                            invocation));
+                }
+
+                //Configure Logging
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureHostBuilder,
+                        "ConfigureLogging",
+                        configureLoggingTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DoNotUseHostConfigureLogging,
+                            invocation));
+                }
+
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureWebHostBuilder,
+                        "ConfigureLogging",
+                        configureLoggingTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DoNotUseHostConfigureLogging,
                             invocation));
                 }
 
