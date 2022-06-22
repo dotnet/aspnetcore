@@ -222,7 +222,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { Message = $"Hello {r.Name}" });
         };
 
-        ServiceDescriptorHelpers.TryResolveDescriptors(HelloRequest.Descriptor, "sub", out var bodyFieldDescriptors);
+        ServiceDescriptorHelpers.TryResolveDescriptors(HelloRequest.Descriptor, new[] { "sub" }, out var bodyFieldDescriptors);
 
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             bodyDescriptor: HelloRequest.Types.SubMessage.Descriptor,
@@ -264,7 +264,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { Message = $"Hello {r.Name}" });
         };
 
-        ServiceDescriptorHelpers.TryResolveDescriptors(HelloRequest.Descriptor, "repeated_strings", out var bodyFieldDescriptors);
+        ServiceDescriptorHelpers.TryResolveDescriptors(HelloRequest.Descriptor, new[] { "repeated_strings" }, out var bodyFieldDescriptors);
 
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             bodyDescriptor: HelloRequest.Types.SubMessage.Descriptor,
@@ -318,7 +318,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { Message = $"Hello {r.Name}" });
         };
 
-        ServiceDescriptorHelpers.TryResolveDescriptors(HelloRequest.Descriptor, "sub.subfields", out var bodyFieldDescriptors);
+        ServiceDescriptorHelpers.TryResolveDescriptors(HelloRequest.Descriptor, new[] { "sub", "subfields" }, out var bodyFieldDescriptors);
 
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             bodyDescriptor: HelloRequest.Types.SubMessage.Descriptor,
@@ -463,7 +463,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply());
         };
 
-        ServiceDescriptorHelpers.TryResolveDescriptors(HelloRequest.Descriptor, "repeated_strings", out var bodyFieldDescriptors);
+        ServiceDescriptorHelpers.TryResolveDescriptors(HelloRequest.Descriptor, new[] { "repeated_strings" }, out var bodyFieldDescriptors);
 
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             bodyDescriptor: HelloRequest.Types.SubMessage.Descriptor,
@@ -503,7 +503,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
             invoker,
             descriptorInfo: TestHelpers.CreateDescriptorInfo(bodyDescriptor: HelloRequest.Descriptor));
         var httpContext = TestHelpers.CreateHttpContext();
-        httpContext.Request.Body = new MemoryStream("{}"u8);
+        httpContext.Request.Body = new MemoryStream("{}"u8.ToArray());
         httpContext.Request.ContentType = contentType;
         // Act
         await unaryServerCallHandler.HandleCallAsync(httpContext);
@@ -707,7 +707,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
 
         var httpContext = TestHelpers.CreateHttpContext();
         httpContext.Request.ContentType = "application/json";
-        httpContext.Request.Body = new MemoryStream("null"u8);
+        httpContext.Request.Body = new MemoryStream("null"u8.ToArray());
 
         // Act
         await unaryServerCallHandler.HandleCallAsync(httpContext);
@@ -733,7 +733,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply());
         };
 
-        Assert.True(ServiceDescriptorHelpers.TryResolveDescriptors(HelloRequest.Descriptor, "wrappers.float_value", out var bodyFieldDescriptors));
+        Assert.True(ServiceDescriptorHelpers.TryResolveDescriptors(HelloRequest.Descriptor, new[] { "wrappers", "float_value" }, out var bodyFieldDescriptors));
 
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             bodyDescriptor: FloatValue.Descriptor,
@@ -795,7 +795,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { Message = $"Hello {r.Name}" });
         };
 
-        ServiceDescriptorHelpers.TryResolveDescriptors(HttpBodySubField.Descriptor, "sub", out var bodyFieldDescriptors);
+        ServiceDescriptorHelpers.TryResolveDescriptors(HttpBodySubField.Descriptor, new[] { "sub" }, out var bodyFieldDescriptors);
 
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             bodyDescriptor: HttpBody.Descriptor,
@@ -834,7 +834,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
             return Task.FromResult(new HelloReply { Message = $"Hello {r.Name}" });
         };
 
-        ServiceDescriptorHelpers.TryResolveDescriptors(NestedHttpBodySubField.Descriptor, "sub.sub", out var bodyFieldDescriptors);
+        ServiceDescriptorHelpers.TryResolveDescriptors(NestedHttpBodySubField.Descriptor, new[] { "sub", "sub" }, out var bodyFieldDescriptors);
 
         var descriptorInfo = TestHelpers.CreateDescriptorInfo(
             bodyDescriptor: HttpBody.Descriptor,

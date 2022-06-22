@@ -691,6 +691,15 @@ public class StreamingHub : TestHub
         }
     }
 
+    public async IAsyncEnumerable<string> ExceptionAsyncEnumerable()
+    {
+        await Task.Yield();
+        throw new Exception("Exception from async enumerable");
+#pragma warning disable CS0162 // Unreachable code detected
+        yield break;
+#pragma warning restore CS0162 // Unreachable code detected
+    }
+
     public async Task<IAsyncEnumerable<string>> CounterAsyncEnumerableAsync(int count)
     {
         await Task.Yield();
@@ -716,6 +725,20 @@ public class StreamingHub : TestHub
     {
         var channel = Channel.CreateUnbounded<int>();
         channel.Writer.TryComplete(new Exception("Exception from channel"));
+        return channel.Reader;
+    }
+
+    public ChannelReader<int> ChannelClosedExceptionStream()
+    {
+        var channel = Channel.CreateUnbounded<int>();
+        channel.Writer.TryComplete(new ChannelClosedException("ChannelClosedException from channel"));
+        return channel.Reader;
+    }
+
+    public ChannelReader<int> ChannelClosedExceptionInnerExceptionStream()
+    {
+        var channel = Channel.CreateUnbounded<int>();
+        channel.Writer.TryComplete(new ChannelClosedException(new Exception("ChannelClosedException from channel")));
         return channel.Reader;
     }
 

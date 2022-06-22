@@ -5,6 +5,7 @@ Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.get -> System.I
 Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.set -> void
 Microsoft.AspNetCore.Http.AsParametersAttribute
 Microsoft.AspNetCore.Http.AsParametersAttribute.AsParametersAttribute() -> void
+Microsoft.AspNetCore.Http.CookieBuilder.Extensions.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext
 Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.DefaultRouteHandlerInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!
