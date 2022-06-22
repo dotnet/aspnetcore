@@ -101,18 +101,15 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    // https://github.com/dotnet/runtime/issues/57308, RemoteCertificateValidationCallback should allow us to accept a null cert,
-    // but it doesn't right now.
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41894")]
-    public async Task ClientCertificate_Required_NotSent_ConnectionAborted()
+    public async Task ClientCertificate_Required_NotSent_AcceptedViaCallback()
     {
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, clientCertificateRequired: true);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
         using var clientConnection = await QuicConnection.ConnectAsync(options);
 
-        var qex = await Assert.ThrowsAnyAsync<QuicException>(async () => await clientConnection.ConnectAsync().DefaultTimeout());
-        Assert.StartsWith("Connection has been shutdown by transport:", qex.Message);
+        await clientConnection.ConnectAsync().DefaultTimeout();
+        Assert.True(clientConnection.Connected);
     }
 }
