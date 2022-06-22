@@ -392,12 +392,10 @@ export module DotNet {
           if (asyncHandle) {
               // On completion, dispatch result back to .NET
               // Not using "await" because it codegens a lot of boilerplate
-              promise.then(
-                  result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, stringifyArgs([
-                      asyncHandle,
-                      true,
-                      createJSCallResult(result, resultType)
-                  ])),
+              promise
+                .then(result => stringifyArgs([asyncHandle, true, createJSCallResult(result, resultType)]))
+                .then(
+                  result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, result),
                   error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([
                       asyncHandle,
                       false,

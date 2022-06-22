@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
@@ -35,6 +36,7 @@ public static class FallbackEndpointRouteBuilderExtensions
     /// <c>{*path:nonfile}</c>. The order of the registered endpoint will be <c>int.MaxValue</c>.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapFallback(this IEndpointRouteBuilder endpoints, RequestDelegate requestDelegate)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
@@ -64,9 +66,10 @@ public static class FallbackEndpointRouteBuilderExtensions
     /// to exclude requests for static files.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapFallback(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         RequestDelegate requestDelegate)
     {
         ArgumentNullException.ThrowIfNull(endpoints);

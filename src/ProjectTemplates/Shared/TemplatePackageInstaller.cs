@@ -110,7 +110,7 @@ internal static class TemplatePackageInstaller
         foreach (var packagePath in builtPackages)
         {
             output.WriteLine($"Installing templates package {packagePath}...");
-            var result = await RunDotNetNew(output, $"--install \"{packagePath}\"");
+            var result = await RunDotNetNew(output, $"install \"{packagePath}\"");
             Assert.True(result.ExitCode == 0, result.GetFormattedOutput());
         }
 

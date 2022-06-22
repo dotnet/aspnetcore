@@ -438,6 +438,29 @@ public class ClientHandlerTests
     }
 
     [Fact]
+    public async Task ExceptionFromDisposedRequestContent()
+    {
+        var requestCount = 0;
+        var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+        {
+            requestCount++;
+            return Task.CompletedTask;
+        }));
+
+        var invoker = new HttpMessageInvoker(handler);
+        Task<HttpResponseMessage> responseTask;
+        using (var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/"))
+        {
+            message.Content = new StringContent("Hello World");
+            message.Content.Dispose();
+
+            responseTask = invoker.SendAsync(message, CancellationToken.None);
+        }
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => responseTask);
+        Assert.Equal(0, requestCount);
+    }
+
+    [Fact]
     public Task ExceptionBeforeFirstWriteIsReported()
     {
         var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>

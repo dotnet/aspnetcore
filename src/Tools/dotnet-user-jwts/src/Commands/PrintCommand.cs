@@ -12,14 +12,10 @@ internal sealed class PrintCommand
     {
         app.Command("print", cmd =>
         {
-            cmd.Description = "Print the details of a given JWT";
+            cmd.Description = Resources.PrintCommand_Description;
 
-            var idArgument = cmd.Argument("[id]", "The ID of the JWT to print");
-
-            var showFullOption = cmd.Option(
-                "--show-full",
-                "Whether to show the full JWT contents in addition to the compact serialized format",
-                CommandOptionType.NoValue);
+            var idArgument = cmd.Argument("[id]", Resources.PrintCommand_IdArgument_Description);
+            var showAllOption = cmd.Option("--show-all", Resources.PrintCommand_ShowAllOption_Description, CommandOptionType.NoValue);
 
             cmd.HelpOption("-h|--help");
 
@@ -30,12 +26,16 @@ internal sealed class PrintCommand
                     cmd.ShowHelp();
                     return 0;
                 }
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), idArgument.Value, showFullOption.HasValue());
+                return Execute(
+                    cmd.Reporter,
+                    cmd.ProjectOption.Value(),
+                    idArgument.Value,
+                    showAllOption.HasValue());
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, string id, bool showFull)
+    private static int Execute(IReporter reporter, string projectPath, string id, bool showAll)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
         {
@@ -43,21 +43,15 @@ internal sealed class PrintCommand
         }
         var jwtStore = new JwtStore(userSecretsId);
 
-        if (!jwtStore.Jwts.ContainsKey(id))
+        if (!jwtStore.Jwts.TryGetValue(id, out var jwt))
         {
-            reporter.Output($"No token with ID '{id}' found");
+            reporter.Output(Resources.FormatPrintCommand_NoJwtFound(id));
             return 1;
         }
 
-        reporter.Output($"Found JWT with ID '{id}'");
-        var jwt = jwtStore.Jwts[id];
-        JwtSecurityToken fullToken;
-
-        if (showFull)
-        {
-            fullToken = JwtIssuer.Extract(jwt.Token);
-            DevJwtCliHelpers.PrintJwt(reporter, jwt, fullToken);
-        }
+        reporter.Output(Resources.FormatPrintCommand_Confirmed(id));
+        JwtSecurityToken fullToken = JwtIssuer.Extract(jwt.Token);
+        DevJwtCliHelpers.PrintJwt(reporter, jwt, showAll, fullToken);
 
         return 0;
     }

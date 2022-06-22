@@ -182,10 +182,10 @@ public class BlazorServerTemplateTest : BlazorTemplateTest
 
     [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/30882")]
     [InlineData("IndividualB2C", null)]
-    [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+    [InlineData("IndividualB2C", new [] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
     [InlineData("SingleOrg", null)]
-    [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
-    [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+    [InlineData("SingleOrg", new [] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+    [InlineData("SingleOrg", new [] { "--calls-graph" })]
     public Task BlazorServerTemplate_IdentityWeb_BuildAndPublish(string auth, string[] args)
         => CreateBuildPublishAsync(auth, args);
 }

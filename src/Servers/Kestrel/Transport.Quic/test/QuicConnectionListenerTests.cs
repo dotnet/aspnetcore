@@ -44,7 +44,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
         await clientConnection.ConnectAsync().DefaultTimeout();
 
         // Assert
@@ -72,7 +72,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         options.ClientAuthenticationOptions.ClientCertificates = new X509CertificateCollection { testCert };
 
         // Act
-        using var quicConnection = new QuicConnection(options);
+        using var quicConnection = await QuicConnection.ConnectAsync(options);
         await quicConnection.ConnectAsync().DefaultTimeout();
 
         var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -110,7 +110,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, clientCertificateRequired: true);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = new QuicConnection(options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
 
         var qex = await Assert.ThrowsAnyAsync<QuicException>(async () => await clientConnection.ConnectAsync().DefaultTimeout());
         Assert.StartsWith("Connection has been shutdown by transport:", qex.Message);

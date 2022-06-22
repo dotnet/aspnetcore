@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Testing;
 public class HttpSysHttp3SupportedAttribute : Attribute, ITestCondition
 {
     // We have the same OS and TLS version requirements as MsQuic so check that first.
-    public bool IsMet => QuicImplementationProviders.MsQuic.IsSupported && IsRegKeySet;
+    public bool IsMet => QuicListener.IsSupported && IsRegKeySet;
 
     public string SkipReason => "HTTP/3 is not supported or enabled on the current test machine";
 

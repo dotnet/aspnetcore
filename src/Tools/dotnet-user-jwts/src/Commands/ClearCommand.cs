@@ -12,11 +12,11 @@ internal sealed class ClearCommand
     {
         app.Command("clear", cmd =>
         {
-            cmd.Description = "Delete all issued JWTs for a project";
+            cmd.Description = Resources.ClearCommand_Description;
 
             var forceOption = cmd.Option(
                 "--force",
-                "Don't prompt for confirmation before deleting JWTs",
+                Resources.ClearCommand_ForceOption_Description,
                 CommandOptionType.NoValue);
 
             cmd.HelpOption("-h|--help");
@@ -39,16 +39,17 @@ internal sealed class ClearCommand
 
         if (count == 0)
         {
-            reporter.Output($"There are no JWTs to delete from {project}.");
+            reporter.Output(Resources.FormatClearCommand_NoJwtsRemoved(project));
             return 0;
         }
 
         if (!force)
         {
-            reporter.Output($"Are you sure you want to delete {count} JWT(s) for {project}?{Environment.NewLine} [Y]es / [N]o");
+            reporter.Output(Resources.ClearCommand_Permission);
+            reporter.Output("[Y]es / [N]o");
             if (Console.ReadLine().Trim().ToUpperInvariant() != "Y")
             {
-                reporter.Output("Canceled, no JWTs were deleted.");
+                reporter.Output(Resources.ClearCommand_Canceled);
                 return 0;
             }
         }
@@ -62,7 +63,7 @@ internal sealed class ClearCommand
         jwtStore.Jwts.Clear();
         jwtStore.Save();
 
-        reporter.Output($"Deleted {count} token(s) from {project} successfully.");
+        reporter.Output(Resources.FormatClearCommand_Confirmed(count, project));
 
         return 0;
     }
