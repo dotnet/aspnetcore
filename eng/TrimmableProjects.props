@@ -67,6 +67,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Localization.Routing" />
     <TrimmableProject Include="Microsoft.AspNetCore.Localization" />
     <TrimmableProject Include="Microsoft.AspNetCore.RateLimiting" />
+    <TrimmableProject Include="Microsoft.AspNetCore.RequestDecompression" />
     <TrimmableProject Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.ResponseCaching" />
     <TrimmableProject Include="Microsoft.AspNetCore.ResponseCompression" />
