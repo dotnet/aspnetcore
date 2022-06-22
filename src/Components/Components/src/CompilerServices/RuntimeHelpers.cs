@@ -62,7 +62,7 @@ public static class RuntimeHelpers
     /// <returns></returns>
     //
     // This method is used with `@bind-Value` for components. When a component has a generic type, it's
-    // really messy to write to try and write the parameter type for ValueChanged - because it can contain generic
+    // really messy to write the parameter type for ValueChanged - because it can contain generic
     // type parameters. We're using a trick of type inference to generate the proper typing for the delegate
     // so that method-group-to-delegate conversion works.
     public static EventCallback<T> CreateInferredEventCallback<T>(object receiver, EventCallback<T> callback, T value)

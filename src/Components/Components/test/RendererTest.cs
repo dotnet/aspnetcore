@@ -3054,9 +3054,9 @@ public class RendererTest
         {
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "onchange", EventCallback.Factory.CreateBinder(
-            component,
-            RuntimeHelpers.CreateInferredEventCallback(component, __value => value = __value, value),
-            value));
+                component,
+                RuntimeHelpers.CreateInferredEventCallback(component, __value => value = __value, value),
+                value));
             builder.CloseElement();
         };
         var componentId = renderer.AssignRootComponentId(component);
