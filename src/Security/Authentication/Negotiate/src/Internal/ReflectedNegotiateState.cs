@@ -39,7 +39,7 @@ internal sealed class ReflectedNegotiateState : INegotiateState
         var ntAuthType = secAssembly.GetType("System.Net.NTAuthentication", throwOnError: true)!;
         _constructor = ntAuthType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
         _getOutgoingBlob = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
-            info.Name.Equals("GetOutgoingBlob") && info.GetParameters().Length == 3).Single();
+            info.Name.Equals("GetOutgoingBlob") && info.GetParameters().Length == 3 && info.GetParameters()[0].ParameterType == typeof(byte[])).Single();
         _isCompleted = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
             info.Name.Equals("get_IsCompleted")).Single();
         _protocol = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
