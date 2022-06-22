@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 
 internal abstract class CertificateManager
 {
-    internal const int CurrentAspNetCoreCertificateVersion = 2;
+    internal const int CurrentAspNetCoreCertificateVersion = 3;
     internal const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
     internal const string AspNetHttpsOidFriendlyName = "ASP.NET Core HTTPS development certificate";
 
