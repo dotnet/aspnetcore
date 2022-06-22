@@ -119,6 +119,49 @@ public partial class CreatedAtRouteOfTResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<CreatedAtRoute<object>>(null));
     }
 
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new CreatedAtRoute<object>(
+            routeName: null,
+            routeValues: new Dictionary<string, object>(),
+            value: null) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+    }
+
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var result = new CreatedAtRoute<string>(
+            routeName: null,
+            routeValues: new Dictionary<string, object>(),
+            value: value) as IValueHttpResult;
+
+        // Assert
+        Assert.IsType<string>(result.RawValue);
+        Assert.Equal(value, result.RawValue);
+    }
+
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var result = new CreatedAtRoute<string>(
+            routeName: null,
+            routeValues: new Dictionary<string, object>(),
+            value: value) as IValueHttpResult<string>;
+
+        // Assert
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

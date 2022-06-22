@@ -134,6 +134,39 @@ public class ContentResultTests
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
+    [Fact]
+    public void ContentResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var contentType = "application/custom";
+        var result = new ContentHttpResult("content", contentType) as IContentTypeHttpResult;
+
+        // Assert
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
+    public void ContentResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var contentType = "application/custom";
+        var result = new ContentHttpResult("content", contentType, StatusCodes.Status202Accepted) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
+    [Fact]
+    public void ContentResult_Implements_IStatusCodeHttpResult_Correctly_WithDefaultStatus()
+    {
+        // Arrange & Act
+        var contentType = "application/custom";
+        var result = new ContentHttpResult("content", contentType) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+    }
+
     private static IServiceCollection CreateServices()
     {
         var services = new ServiceCollection();

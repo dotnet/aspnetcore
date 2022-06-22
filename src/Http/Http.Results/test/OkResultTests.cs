@@ -73,6 +73,16 @@ public class OkResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Ok>(null));
     }
 
+    [Fact]
+    public void OkObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new Ok() as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

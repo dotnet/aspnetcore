@@ -73,6 +73,16 @@ public class UnprocessableEntityResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<UnprocessableEntity>(null));
     }
 
+    [Fact]
+    public void UnprocessableEntityObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new UnprocessableEntity() as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

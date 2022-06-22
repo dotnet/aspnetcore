@@ -103,6 +103,16 @@ public class AcceptedAtRouteResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<AcceptedAtRoute>(null));
     }
 
+    [Fact]
+    public void AcceptedAtRouteResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new AcceptedAtRoute(null) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

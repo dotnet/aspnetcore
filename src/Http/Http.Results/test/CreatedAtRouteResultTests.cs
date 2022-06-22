@@ -99,6 +99,18 @@ public partial class CreatedAtRouteResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<CreatedAtRoute>(null));
     }
 
+    [Fact]
+    public void CreatedAtRouteResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var result = new CreatedAtRoute(
+            routeName: null,
+            routeValues: new Dictionary<string, object>()) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

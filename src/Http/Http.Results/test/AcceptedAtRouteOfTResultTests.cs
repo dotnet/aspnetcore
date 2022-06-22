@@ -152,6 +152,55 @@ public class AcceptedAtRouteOfTResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<AcceptedAtRoute<object>>(null));
     }
 
+    [Fact]
+    public void AcceptedAtRouteResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
+        {
+            { "test", "case" },
+            { "sample", "route" }
+        });
+        var result = new AcceptedAtRoute<string>(routeValues, null) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
+    [Fact]
+    public void AcceptedAtRouteResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
+        {
+            { "test", "case" },
+            { "sample", "route" }
+        });
+        var value = "Foo";
+        var result = new AcceptedAtRoute<string>(routeValues, value) as IValueHttpResult;
+
+        // Assert
+        Assert.IsType<string>(result.RawValue);
+        Assert.Equal(value, result.RawValue);
+    }
+
+    [Fact]
+    public void AcceptedAtRouteResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
+        {
+            { "test", "case" },
+            { "sample", "route" }
+        });
+        var value = "Foo";
+        var result = new AcceptedAtRoute<string>(routeValues, value) as IValueHttpResult<string>;
+
+        // Assert
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

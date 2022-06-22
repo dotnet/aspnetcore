@@ -69,6 +69,16 @@ public class NotFoundResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<NotFound>(null));
     }
 
+    [Fact]
+    public void NotFoundResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new NotFound() as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

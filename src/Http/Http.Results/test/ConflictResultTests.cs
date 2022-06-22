@@ -74,6 +74,16 @@ public class ConflictResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Conflict>(null));
     }
 
+    [Fact]
+    public void ConflictObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new Conflict() as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

@@ -4,6 +4,7 @@
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
@@ -90,6 +91,40 @@ public class AcceptedOfTResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Accepted<object>>(null));
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new Accepted<string>("location", null) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var result = new Accepted<string>("location", value) as IValueHttpResult;
+
+        // Assert
+        Assert.IsType<string>(result.RawValue);
+        Assert.Equal(value, result.RawValue);
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var result = new Accepted<string>("location", value) as IValueHttpResult<string>;
+
+        // Assert
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

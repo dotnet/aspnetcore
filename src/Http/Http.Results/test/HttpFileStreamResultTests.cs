@@ -88,4 +88,35 @@ public class HttpFileStreamResultTests : FileStreamResultTestBase
         // Act & Assert
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
+
+    [Fact]
+    public void FileStreamHttpResult_Implements_IFileHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var contentType = "application/x-zip";
+        var downloadName = "sample.zip";
+        var result = new FileStreamHttpResult(new MemoryStream(), contentType)
+        {
+            FileDownloadName = downloadName
+        } as IFileHttpResult;
+
+        // Assert
+        Assert.Equal(contentType, result.ContentType);
+        Assert.Equal(downloadName, result.FileDownloadName);
+    }
+
+    [Fact]
+    public void FileStreamHttpResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var contentType = "application/x-zip";
+        var downloadName = "sample.zip";
+        var result = new FileStreamHttpResult(new MemoryStream(), contentType)
+        {
+            FileDownloadName = downloadName
+        } as IContentTypeHttpResult;
+
+        // Assert
+        Assert.Equal(contentType, result.ContentType);
+    }
 }

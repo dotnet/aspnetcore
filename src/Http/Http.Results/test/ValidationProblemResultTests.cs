@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -90,6 +91,51 @@ public class ValidationProblemResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<ValidationProblem>(null));
+    }
+
+    [Fact]
+    public void ValidationProblemResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new ValidationProblem(new HttpValidationProblemDetails()) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+    }
+
+    [Fact]
+    public void ValidationProblemResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var value = new HttpValidationProblemDetails();
+        var result = new ValidationProblem(value) as IValueHttpResult;
+
+        // Assert
+        Assert.IsType<HttpValidationProblemDetails>(result.RawValue);
+        Assert.Equal(value, result.RawValue);
+    }
+
+    [Fact]
+    public void ValidationProblemResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var value = new HttpValidationProblemDetails();
+        var result = new ValidationProblem(value) as IValueHttpResult<HttpValidationProblemDetails>;
+
+        // Assert
+        Assert.IsType<HttpValidationProblemDetails>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void ValidationProblemResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var contentType = "application/problem+json";
+        var result = new ValidationProblem(new()) as IContentTypeHttpResult;
+
+        // Assert
+        Assert.Equal(contentType, result.ContentType);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

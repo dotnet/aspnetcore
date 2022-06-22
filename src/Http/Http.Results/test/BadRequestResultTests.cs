@@ -73,6 +73,16 @@ public class BadRequestResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<BadRequest>(null));
     }
 
+    [Fact]
+    public void BadRequestObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new BadRequest() as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

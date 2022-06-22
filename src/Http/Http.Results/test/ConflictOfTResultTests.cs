@@ -113,6 +113,40 @@ public class ConflictOfTResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Conflict<object>>(null));
     }
 
+    [Fact]
+    public void ConflictObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new Conflict<string>(null) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
+    }
+
+    [Fact]
+    public void ConflictObjectResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var result = new Conflict<string>(value) as IValueHttpResult;
+
+        // Assert
+        Assert.IsType<string>(result.RawValue);
+        Assert.Equal(value, result.RawValue);
+    }
+
+    [Fact]
+    public void ConflictObjectResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var result = new Conflict<string>(value) as IValueHttpResult<string>;
+
+        // Assert
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

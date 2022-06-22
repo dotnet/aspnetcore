@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Mono.TextTemplating;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -125,6 +126,43 @@ public class CreatedOfTResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Created<object>>(null));
+    }
+
+    [Fact]
+    public void CreatedResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var location = "/test/";
+        var result = new Created<string>(location, null) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var location = "/test/";
+        var value = "Foo";
+        var result = new Created<string>(location, value) as IValueHttpResult;
+
+        // Assert
+        Assert.IsType<string>(result.RawValue);
+        Assert.Equal(value, result.RawValue);
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange & Act
+        var location = "/test/";
+        var value = "Foo";
+        var result = new Created<string>(location, value) as IValueHttpResult<string>;
+
+        // Assert
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

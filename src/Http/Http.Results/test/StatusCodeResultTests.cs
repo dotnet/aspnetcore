@@ -35,6 +35,16 @@ public class StatusCodeResultTests
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
+    [Fact]
+    public void StatusCodeResult_Implements_IStatusCodeHttpResult_Correctlys()
+    {
+        // Arrange & Act
+        var result = new StatusCodeHttpResult(StatusCodes.Status406NotAcceptable) as IStatusCodeHttpResult;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status406NotAcceptable, result.StatusCode);
+    }
+
     private static IServiceCollection CreateServices()
     {
         var services = new ServiceCollection();
