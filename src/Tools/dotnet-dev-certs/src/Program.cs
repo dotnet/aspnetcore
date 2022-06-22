@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -272,16 +269,6 @@ internal sealed class Program
     private static int CheckHttpsCertificate(CommandOption trust, IReporter reporter)
     {
         var certificateManager = CertificateManager.Instance;
-
-        if (!certificateManager.IsSystemStateConsistent(StoreName.My, StoreLocation.CurrentUser))
-        {
-            reporter.Output("HTTPS development certificates are in an inconsistent state. This might occur if an older " +
-                "version of this tool was used in the past and left behind some certificates. "+
-                "Running with the --clean argument will attempt to clean up the certificate state. " +
-                "Running with --verbose might help diagnose the issue.");
-            return InvalidCertificateState;
-        }
-
         var certificates = certificateManager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
         var validCertificates = new List<X509Certificate2>();
         if (certificates.Count == 0)
