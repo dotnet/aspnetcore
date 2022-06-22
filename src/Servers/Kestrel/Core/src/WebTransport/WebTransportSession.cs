@@ -57,12 +57,11 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         var streamContext = _connection.CreateHttpStreamContext(connectionContext);
         var stream = await WebTransportStream.CreateWebTransportStream(streamContext, WebTransportStreamType.Output);
 
-        // todo merge the Http3StreamType classes. Why are there 2 to begin with?
         // send the stream header
         // https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-unidirectional-streams
         await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] {
             0x40 /*quic variable-length integer length*/,
-            (byte)Http3.Http3StreamType.WebTransportUnidirectional,
+            (byte)Http3StreamType.WebTransportUnidirectional,
             0x00 /*body*/}), cancellationToken);
         await stream.FlushAsync(cancellationToken);
 
