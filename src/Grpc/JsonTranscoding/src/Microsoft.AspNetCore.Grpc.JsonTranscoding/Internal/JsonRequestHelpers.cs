@@ -338,7 +338,7 @@ internal static class JsonRequestHelpers
     {
         return serverCallContext.DescriptorInfo.PathDescriptorsCache.GetOrAdd(path, p =>
         {
-            ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, p, out var pathDescriptors);
+            ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, p.Split('.'), out var pathDescriptors);
             return pathDescriptors;
         });
     }
