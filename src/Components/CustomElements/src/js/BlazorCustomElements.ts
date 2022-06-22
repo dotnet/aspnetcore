@@ -104,7 +104,7 @@ export class BlazorCustomElement extends HTMLElement {
     }
   }
 
-  static parseAttributeValue(attributeValue: string, type: JSComponentParameterType, parameterName: string) {
+  static parseAttributeValue(attributeValue: string, type: JSComponentParameterType, parameterName: string): any {
     switch (type) {
       case 'string':
         return attributeValue;
