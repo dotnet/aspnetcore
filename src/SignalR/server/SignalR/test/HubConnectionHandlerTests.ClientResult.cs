@@ -105,6 +105,66 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
+    public async Task ThrowsWhenUsedInOnConnectedAsync()
+    {
+        using (StartVerifiableLog(write => write.EventId.Name == "ErrorDispatchingHubEvent"))
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSignalR(o =>
+                {
+                    o.MaximumParallelInvocationsPerClient = 2;
+                    o.EnableDetailedErrors = true;
+                });
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<OnConnectedClientResultHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                // Hub asks client for a result, this is an invocation message with an ID
+                var closeMessage = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal("Connection closed with an error. InvalidOperationException: Client results inside OnConnectedAsync or OnDisconnectedAsync Hub methods are not allowed.", closeMessage.Error);
+            }
+        }
+
+        Assert.Single(TestSink.Writes.Where(write => write.EventId.Name == "ErrorDispatchingHubEvent"));
+    }
+
+    [Fact]
+    public async Task ThrowsWhenUsedInOnDisconnectedAsync()
+    {
+        using (StartVerifiableLog(write => write.EventId.Name == "ErrorDispatchingHubEvent"))
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSignalR(o =>
+                {
+                    o.MaximumParallelInvocationsPerClient = 2;
+                    o.EnableDetailedErrors = true;
+                });
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<OnDisconnectedClientResultHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+                client.Connection.Abort();
+
+                // Hub asks client for a result, this is an invocation message with an ID
+                var closeMessage = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Null(closeMessage.Error);
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connectionHandlerTask).DefaultTimeout();
+                Assert.Equal("Client results inside OnConnectedAsync or OnDisconnectedAsync Hub methods are not allowed.", ex.Message);
+            }
+        }
+
+        Assert.Single(TestSink.Writes.Where(write => write.EventId.Name == "ErrorDispatchingHubEvent"));
+    }
+
+    [Fact]
     public async Task CanUseClientResultsWithIHubContext()
     {
         using (StartVerifiableLog())

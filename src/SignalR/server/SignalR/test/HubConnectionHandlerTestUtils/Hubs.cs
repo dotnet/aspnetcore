@@ -1231,6 +1231,22 @@ public class ConnectionLifetimeState
     public Exception DisconnectedException { get; set; }
 }
 
+public class OnConnectedClientResultHub : Hub
+{
+    public override async Task OnConnectedAsync()
+    {
+        await Clients.Caller.InvokeAsync<int>("Test");
+    }
+}
+
+public class OnDisconnectedClientResultHub : Hub
+{
+    public override async Task OnDisconnectedAsync(Exception ex)
+    {
+        await Clients.Caller.InvokeAsync<int>("Test");
+    }
+}
+
 public class CallerServiceHub : Hub
 {
     private readonly CallerService _service;

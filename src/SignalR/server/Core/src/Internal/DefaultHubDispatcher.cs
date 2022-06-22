@@ -90,6 +90,9 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             {
                 await hub.OnConnectedAsync();
             }
+
+            // OnConnectedAsync is finished, allow hub methods to use client results (ISingleClientProxy.InvokeAsync)
+            connection.HubCallerClients.InvokeAllowed = true;
         }
         finally
         {
@@ -106,6 +109,9 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         try
         {
             InitializeHub(hub, connection);
+
+            // OnDisonnectedAsync is being called, we don't want to allow client results to be used (ISingleClientProxy.InvokeAsync)
+            connection.HubCallerClients.InvokeAllowed = false;
 
             if (_onDisconnectedMiddleware != null)
             {
