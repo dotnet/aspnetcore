@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 [RequiresPreviewFeatures("WebTransport is a preview feature")]
 internal class WebTransportStream : Stream, IHttp3Stream
 {
-    private readonly Http3FrameWriter _frameWriter; // todo replace with _context.Transport.Output
     private volatile bool _isClosed;
 
     private PipeReader Input => _context.Transport.Input;
+    private PipeWriter Output => _context.Transport.Output;
 
     internal readonly Http3StreamContext _context;
     internal readonly IStreamIdFeature _streamIdFeature = default!;
@@ -37,7 +37,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
 
     long IHttp3Stream.StreamId => _streamIdFeature.StreamId;
 
-    internal WebTransportStream(Http3StreamContext context, WebTransportStreamType type)
+    private WebTransportStream(Http3StreamContext context, WebTransportStreamType type)
     {
         _type = type;
         _isClosed = false;
@@ -51,20 +51,17 @@ internal class WebTransportStream : Stream, IHttp3Stream
             var stream = (WebTransportStream)state!;
             stream._context.WebTransportSession.TryRemoveStream(stream._streamIdFeature.StreamId);
         }, this);
+    }
 
-        var httpLimits = context.ServiceContext.ServerOptions.Limits;
+    internal static async ValueTask<WebTransportStream> CreateWebTransportStream(Http3StreamContext context, WebTransportStreamType type)
+    {
+        var stream = new WebTransportStream(context, type);
 
-        _frameWriter = new Http3FrameWriter(
-            context.StreamContext,
-            context.TimeoutControl,
-            httpLimits.MinResponseDataRate,
-            context.MemoryPool,
-            context.ServiceContext.Log,
-            _streamIdFeature,
-            context.ClientPeerSettings,
-            this);
+        // skip the first 3 bytes which correspond the the strem header
+        // as the application does not need to see them
+        _ = await stream.ReadAsyncInternal(new Memory<byte>(new byte[3]), CancellationToken.None);
 
-        _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
+        return stream;
     }
 
     internal virtual void AbortCore(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
@@ -75,8 +72,6 @@ internal class WebTransportStream : Stream, IHttp3Stream
         _errorCodeFeature.Error = (long)errorCode;
 
         _streamAbortFeature.AbortRead((long)errorCode, abortReason);
-
-        _frameWriter.Abort(abortReason);
 
         Input.Complete(abortReason);
     }
@@ -157,7 +152,7 @@ internal class WebTransportStream : Stream, IHttp3Stream
 
     public override Task FlushAsync(CancellationToken cancellationToken)
     {
-        return _frameWriter.FlushAsync(null, cancellationToken).GetAsTask();
+        return Output.FlushAsync(cancellationToken).GetAsTask();
     }
 
     public override int Read(byte[] buffer, int offset, int count)
@@ -183,12 +178,12 @@ internal class WebTransportStream : Stream, IHttp3Stream
 
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        return _context.Transport.Output.WriteAsync(new Memory<byte>(buffer, offset, count), cancellationToken).GetAsTask();
+        return Output.WriteAsync(new Memory<byte>(buffer, offset, count), cancellationToken).GetAsTask();
     }
 
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
     {
-        return _context.Transport.Output.WriteAsync(buffer, cancellationToken).GetAsValueTask();
+        return Output.WriteAsync(buffer, cancellationToken).GetAsValueTask();
     }
 
     #region Unsupported stream functionality

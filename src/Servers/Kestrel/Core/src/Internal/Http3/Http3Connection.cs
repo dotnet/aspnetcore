@@ -304,7 +304,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
-                                    var stream = new WebTransportStream(context, WebTransportStreamType.Input);
+                                    var stream = await WebTransportStream.CreateWebTransportStream(context, WebTransportStreamType.Input);
                                     _webtransportSession.AddStream(stream);
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
@@ -345,7 +345,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 {
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
-                                        var stream2 = new WebTransportStream(context, WebTransportStreamType.Bidirectional);
+                                        var stream2 = await WebTransportStream.CreateWebTransportStream(context, WebTransportStreamType.Bidirectional);
                                         _webtransportSession.AddStream(stream2);
                                     }
                                     else
