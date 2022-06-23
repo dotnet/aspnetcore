@@ -46,6 +46,7 @@ public class ProblemDetailsJsonConverterTest
         // Act
         var problemDetails = converter.Read(ref reader, typeof(ProblemDetails), JsonSerializerOptions);
 
+        //Assert
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);
@@ -75,6 +76,7 @@ public class ProblemDetailsJsonConverterTest
         // Act
         var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(json, JsonSerializerOptions);
 
+        // Assert
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);
@@ -105,6 +107,7 @@ public class ProblemDetailsJsonConverterTest
         // Act
         var problemDetails = converter.Read(ref reader, typeof(ProblemDetails), JsonSerializerOptions);
 
+        // Assert
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);

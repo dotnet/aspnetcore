@@ -29,6 +29,25 @@ public class EndpointMetadataConventionTest
             Assert.Contains(selector.EndpointMetadata, m => m is ProducesErrorResponseTypeAttribute attribute && attribute.Type == errorType);
         }
     }
+
+    [Fact]
+    public void Apply_SkipDefaultErrorTypeMetadata_WhenVoid()
+    {
+        // Arrange
+        var action = GetActionModel(typeof(TestController), nameof(TestController.MultipleSelectorsActionWithMetadataInActionResult));
+        var errorType = typeof(void);
+        var convention = GetConvention(errorType: errorType);
+
+        //Act
+        convention.Apply(action);
+
+        // Assert
+        foreach (var selector in action.Selectors)
+        {
+            Assert.DoesNotContain(selector.EndpointMetadata, m => m is ProducesErrorResponseTypeAttribute);
+        }
+    }
+
     [Theory]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInValueTaskOfResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInValueTaskOfActionResult))]
