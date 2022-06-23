@@ -25,7 +25,12 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Output = output;
     }
 
-    public const string TestCertificateSubject = "CN=aspnet.test";
+    private const string TestCertificateSubject = "CN=aspnet.test";
+
+    // See comment near the definition of AspNetHttpsOid in CertificateManager.
+    private const string AspNetHttpsOid1 = "1.3.6.1.4.1.311.84.1.1";
+    private const string AspNetHttpsOid2 = "1.3.6.1.4.1.311.84.1.3";
+    private static readonly string AspNetHttpsOid = OperatingSystem.IsMacOS() ? AspNetHttpsOid2 : AspNetHttpsOid1;
 
     public ITestOutputHelper Output { get; }
 
@@ -94,7 +99,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
             Assert.Contains(
                 httpsCertificate.Extensions.OfType<X509Extension>(),
                 e => e.Critical == false &&
-                    e.Oid.Value == "1.3.6.1.4.1.311.84.1.1" &&
+                    e.Oid.Value == AspNetHttpsOid &&
                     e.RawData[0] == _manager.AspNetHttpsCertificateVersion);
 
             Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
@@ -409,13 +414,13 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Assert.Contains(
             firstCertificate.Extensions.OfType<X509Extension>(),
             e => e.Critical == false &&
-                e.Oid.Value == "1.3.6.1.4.1.311.84.1.1" &&
+                e.Oid.Value == AspNetHttpsOid &&
                 e.RawData[0] == 2);
 
         Assert.Contains(
             secondCertificate.Extensions.OfType<X509Extension>(),
             e => e.Critical == false &&
-                e.Oid.Value == "1.3.6.1.4.1.311.84.1.1" &&
+                e.Oid.Value == AspNetHttpsOid &&
                 e.RawData[0] == 1);
     }
 }

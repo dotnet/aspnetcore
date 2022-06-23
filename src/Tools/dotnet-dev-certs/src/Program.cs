@@ -366,7 +366,12 @@ internal sealed class Program
                     "already trusted we will run the following command:" + Environment.NewLine +
                     "'security add-trusted-cert -p basic -p ssl -k <<login-keychain>> <<certificate>>'" +
                     Environment.NewLine + "This command might prompt you for your password to install the certificate " +
-                    "on the keychain. To undo these changes: 'security remove-trusted-cert <<certificate>>'");
+                    "on the keychain. To undo these changes: 'security remove-trusted-cert <<certificate>>'" + Environment.NewLine);
+
+                // See comment near the definition of AspNetHttpsOid in CertificateManager.
+                reporter.Warn("NOTE: If your app is targeting a version of .NET earlier than .NET 7, this version of "
+                + "the dev-certs tool will not install the correct certificate for your app. Please use the dev-certs "
+                + "tool from the .NET 6 SDK or the SDK version that matches your app instead.");
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

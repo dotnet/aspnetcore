@@ -16,7 +16,31 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 internal abstract class CertificateManager
 {
     internal const int CurrentAspNetCoreCertificateVersion = 3;
-    internal const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.3";
+
+    //
+    // OIDs used for HTTPS certs
+    //
+    // Why do we have two different OIDs?
+    //
+    // As part of .NET 7 changes to how the dev-certs tool works on macOS, we needed
+    // to rev the OID for the HTTPS cert. Changing the OID means that apps expecting
+    // the older OID will not recognize the newer cert. Therefore, HTTPS certificate
+    // operations (creation, trust, etc.) for older apps will need to be done using
+    // an older, pre-change dev-certs tool (found in .NET 6 and earlier SDKs).
+    //
+    // Clearly, changing the OID causes some friction for people who work on multiple
+    // projects targeting pre- and post-change .NET versions. In order to reduce the
+    // blast radius of this change, we only use the new OID on macOS for now; other
+    // OS's will not be impacted by this change. If, in the future, there's some
+    // reason to change the OID version again, we might be able to reunify the OS's.
+
+    // This was the OID used on all OS's pre-.NET 7
+    internal const string AspNetHttpsOid1 = "1.3.6.1.4.1.311.84.1.1";
+
+    // This is a new OID only used on macOS for .NET 7+
+    internal const string AspNetHttpsOid2 = "1.3.6.1.4.1.311.84.1.3";
+    internal static readonly string AspNetHttpsOid = OperatingSystem.IsMacOS() ? AspNetHttpsOid2 : AspNetHttpsOid1;
+
     internal const string AspNetHttpsOidFriendlyName = "ASP.NET Core HTTPS development certificate";
 
     private const string ServerAuthenticationEnhancedKeyUsageOid = "1.3.6.1.5.5.7.3.1";
