@@ -17,34 +17,13 @@ public class Startup
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app)
     {
-        app.Use(async (context, next) =>
+        app.Run(async context =>
         {
-            var feature = context.Features.Get<IHttpWebTransportSessionFeature>();
-            if (feature is not null && feature.IsWebTransportRequest)
-            {
-                var session = await feature.AcceptAsync(CancellationToken.None);
-
-                //// OPEN A NEW UNIDIRECTIONAL OUTPUT STREAM
-                //var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
-
-                //// ACCEPT AN INCOMING STREAM
-                //var stream2 = await session.AcceptStreamAsync(CancellationToken.None);
-
-                //// WRITE TO A STREAM
-                //await Task.Delay(200);
-                //await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
-                //await stream.FlushAsync();
-
-                //// READ FROM A STREAM:
-                //var memory = new Memory<byte>(new byte[4096]);
-                //var test = await stream2.ReadAsync(memory);
-                //Console.WriteLine(System.Text.Encoding.Default.GetString(memory.ToArray()));
-            }
-            else
-            {
-                await next(context);
-            }
-            await Task.Delay(TimeSpan.FromMinutes(150));
+            var memory = new Memory<byte>(new byte[4096]);
+            var length = await context.Request.Body.ReadAsync(memory);
+            context.Response.Headers["test"] = "foo";
+            // for testing
+            await context.Response.WriteAsync($"Hello World! {context.Request.Protocol} {context.Connection.ClientCertificate?.Subject}");
         });
     }
 }

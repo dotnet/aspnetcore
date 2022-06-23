@@ -30,6 +30,7 @@
       "src\\Servers\\Kestrel\\samples\\PlaintextApp\\PlaintextApp.csproj",
       "src\\Servers\\Kestrel\\samples\\SampleApp\\Kestrel.SampleApp.csproj",
       "src\\Servers\\Kestrel\\samples\\SystemdTestApp\\SystemdTestApp.csproj",
+      "src\\Servers\\Kestrel\\samples\\WebTransportSampleApp\\WebTransportSampleApp\\WebTransportSampleApp.csproj",
       "src\\Servers\\Kestrel\\samples\\http2cat\\http2cat.csproj",
       "src\\Servers\\Kestrel\\stress\\HttpStress.csproj",
       "src\\Servers\\Kestrel\\test\\InMemory.FunctionalTests\\InMemory.FunctionalTests.csproj",
