@@ -10,7 +10,7 @@
     //#endif
     "iisExpress": {
       "applicationUrl": "http://localhost:8080",
-      //#if(RequiresHttps)
+      //#if (HasHttpsProfile)
       "sslPort": 44300
       //#else
       "sslPort": 0
@@ -18,28 +18,42 @@
     }
   },
   "profiles": {
-    "Company.WebApplication1": {
+    //#if (HasHttpProfile)
+    "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      //#if(EnableOpenAPI)
+      //#if (EnableOpenAPI)
       "launchUrl": "swagger",
       //#else
       "launchUrl": "weatherforecast",
       //#endif
-      //#if(RequiresHttps)
-      "applicationUrl": "https://localhost:5001;http://localhost:5000",
-      //#else
       "applicationUrl": "http://localhost:5000",
-      //#endif
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
+    //#endif
+    //#if (HasHttpsProfile)
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      //#if (EnableOpenAPI)
+      "launchUrl": "swagger",
+      //#else
+      "launchUrl": "weatherforecast",
+      //#endif
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    //#endif
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      //#if(EnableOpenAPI)
+      //#if (EnableOpenAPI)
       "launchUrl": "swagger",
       //#else
       "launchUrl": "weatherforecast",

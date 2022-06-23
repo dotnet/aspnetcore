@@ -158,6 +158,24 @@ public class KestrelServerOptions
     internal bool IsDevCertLoaded { get; set; }
 
     /// <summary>
+    /// Internal AppContext switch to toggle the WebTransport and HTTP/3 datagrams experiemental features.
+    /// </summary>
+    private bool? _enableWebTransportAndH3Datagrams;
+    internal bool EnableWebTransportAndH3Datagrams
+    {
+        get
+        {
+            if (!_enableWebTransportAndH3Datagrams.HasValue)
+            {
+                _enableWebTransportAndH3Datagrams = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var enabled) && enabled;
+            }
+
+            return _enableWebTransportAndH3Datagrams.Value;
+        }
+        set => _enableWebTransportAndH3Datagrams = value;
+    }
+
+    /// <summary>
     /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
     /// the prior action.
     /// </summary>

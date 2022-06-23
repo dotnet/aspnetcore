@@ -94,6 +94,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         return await InvokeAsync<TValue>(targetInstanceId, identifier, CancellationToken.None, args);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure JS interop arguments are linker friendly.")]
     internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
         long targetInstanceId,
         string identifier,
@@ -225,6 +226,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     }
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2072:RequiresUnreferencedCode", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
     internal bool EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
     {
         if (!_pendingTasks.TryRemove(taskId, out var tcs))

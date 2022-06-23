@@ -15,13 +15,15 @@ internal sealed class CallHandlerDescriptorInfo
         MessageDescriptor? bodyDescriptor,
         bool bodyDescriptorRepeated,
         List<FieldDescriptor>? bodyFieldDescriptors,
-        Dictionary<string, List<FieldDescriptor>> routeParameterDescriptors)
+        Dictionary<string, List<FieldDescriptor>> routeParameterDescriptors,
+        JsonTranscodingRouteAdapter routeAdapter)
     {
         ResponseBodyDescriptor = responseBodyDescriptor;
         BodyDescriptor = bodyDescriptor;
         BodyDescriptorRepeated = bodyDescriptorRepeated;
         BodyFieldDescriptors = bodyFieldDescriptors;
         RouteParameterDescriptors = routeParameterDescriptors;
+        RouteAdapter = routeAdapter;
         if (BodyFieldDescriptors != null)
         {
             BodyFieldDescriptorsPath = string.Join('.', BodyFieldDescriptors.Select(d => d.Name));
@@ -35,6 +37,7 @@ internal sealed class CallHandlerDescriptorInfo
     public bool BodyDescriptorRepeated { get; }
     public List<FieldDescriptor>? BodyFieldDescriptors { get; }
     public Dictionary<string, List<FieldDescriptor>> RouteParameterDescriptors { get; }
+    public JsonTranscodingRouteAdapter RouteAdapter { get; }
     public ConcurrentDictionary<string, List<FieldDescriptor>?> PathDescriptorsCache { get; }
     public string? BodyFieldDescriptorsPath { get; }
 }

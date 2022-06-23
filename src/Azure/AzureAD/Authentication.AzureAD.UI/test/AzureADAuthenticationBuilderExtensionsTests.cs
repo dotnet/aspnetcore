@@ -20,9 +20,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureAD_AddsAllAuthenticationHandlers()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -39,8 +37,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureAD_ConfiguresAllOptions()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -89,8 +86,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureAD_AllowsOverridingCookiesAndOpenIdConnectSettings()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -134,8 +130,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureAD_RegisteringAddCookiesAndAddOpenIdConnectHasNoImpactOnAzureAAExtensions()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -181,8 +176,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureAD_ThrowsForDuplicatedSchemes()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureAD(o => { })
@@ -202,8 +196,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureAD_ThrowsWhenOpenIdSchemeIsAlreadyInUse()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureAD(o => { })
@@ -226,8 +219,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureAD_ThrowsWhenCookieSchemeIsAlreadyInUse()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureAD(o => { })
@@ -250,8 +242,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureAD_ThrowsWhenInstanceIsNotSet()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureAD(o => { });
@@ -271,8 +262,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     [Fact]
     public void AddAzureAD_SkipsOptionsValidationForNonAzureCookies()
     {
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureAD(o => { })
@@ -288,9 +278,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureADBearer_AddsAllAuthenticationHandlers()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -306,9 +294,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureADBearer_ConfiguresAllOptions()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -342,9 +328,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureADBearer_CanOverrideJwtBearerOptionsConfiguration()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -376,9 +360,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureADBearer_RegisteringJwtBearerHasNoImpactOnAzureAAExtensions()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = GenerateServicesForTest();
 
         // Act
         services.AddAuthentication()
@@ -411,8 +393,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureADBearer_ThrowsForDuplicatedSchemes()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureADBearer(o => { })
@@ -432,8 +413,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureADBearer_ThrowsWhenBearerSchemeIsAlreadyInUse()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureADBearer(o => { })
@@ -456,8 +436,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     public void AddAzureADBearer_ThrowsWhenInstanceIsNotSet()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureADBearer(o => { });
@@ -477,9 +456,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     [Fact]
     public void AddAzureADBearer_SkipsOptionsValidationForNonAzureCookies()
     {
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
-        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureADBearer(o => { })
@@ -494,8 +471,7 @@ public class AzureADAuthenticationBuilderExtensionsTests
     [Fact]
     public void AddAzureAD_SkipsOptionsValidationForNonAzureOpenIdConnect()
     {
-        var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        var services = GenerateServicesForTest();
 
         services.AddAuthentication()
             .AddAzureAD(o => { })
@@ -509,5 +485,13 @@ public class AzureADAuthenticationBuilderExtensionsTests
         var openIdConnectOptions = provider.GetService<IOptionsMonitor<OpenIdConnectOptions>>();
 
         Assert.NotNull(openIdConnectOptions.Get("other"));
+    }
+
+    private IServiceCollection GenerateServicesForTest()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+        services.AddSingleton<IConfiguration>(new ConfigurationManager());
+        return services;
     }
 }

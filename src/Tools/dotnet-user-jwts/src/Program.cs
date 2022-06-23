@@ -37,8 +37,8 @@ public class Program
         CreateCommand.Register(userJwts);
         // dotnet user-jwts print ecd045
         PrintCommand.Register(userJwts);
-        // dotnet user-jwts delete ecd045
-        DeleteCommand.Register(userJwts);
+        // dotnet user-jwts remove ecd045
+        RemoveCommand.Register(userJwts);
         // dotnet user-jwts clear
         ClearCommand.Register(userJwts);
         // dotnet user-jwts key
@@ -47,6 +47,18 @@ public class Program
         // Show help information if no subcommand/option was specified.
         userJwts.OnExecute(() => userJwts.ShowHelp());
 
-        userJwts.Execute(args);
+        try
+        {
+            userJwts.Execute(args);
+        }
+        catch (CommandParsingException parsingException)
+        {
+            _reporter.Error(parsingException.Message);
+            userJwts.ShowHelp();
+        }
+        catch (Exception ex)
+        {
+            _reporter.Error(ex.Message);
+        }
     }
 }

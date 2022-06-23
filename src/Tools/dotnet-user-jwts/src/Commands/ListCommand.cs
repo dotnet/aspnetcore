@@ -12,11 +12,11 @@ internal sealed class ListCommand
     {
         app.Command("list", cmd =>
         {
-            cmd.Description = "Lists the JWTs issued for the project";
+            cmd.Description = Resources.ListCommand_Description;
 
             var showTokensOption = cmd.Option(
                 "--show-tokens",
-                "Indicates whether JWT base64 strings should be shown",
+                Resources.ListCommand_ShowTokenOption_Description,
                 CommandOptionType.NoValue);
 
             cmd.HelpOption("-h|--help");
@@ -36,17 +36,17 @@ internal sealed class ListCommand
         }
         var jwtStore = new JwtStore(userSecretsId);
 
-        reporter.Output($"Project: {project}");
-        reporter.Output($"User Secrets ID: {userSecretsId}");
+        reporter.Output(Resources.FormatListCommand_Project(project));
+        reporter.Output(Resources.FormatListCommand_UserSecretsId(userSecretsId));
 
         if (jwtStore.Jwts is { Count: > 0 } jwts)
         {
             var table = new ConsoleTable(reporter);
-            table.AddColumns("Id", "Scheme Name", "Audience", "Issued", "Expires");
+            table.AddColumns(Resources.JwtPrint_Id, Resources.JwtPrint_Scheme, Resources.JwtPrint_Audiences, Resources.JwtPrint_IssuedOn, Resources.JwtPrint_ExpiresOn);
 
             if (showTokens)
             {
-                table.AddColumns("Encoded Token");
+                table.AddColumns(Resources.JwtPrint_Token);
             }
 
             foreach (var jwtRow in jwts)
@@ -66,7 +66,7 @@ internal sealed class ListCommand
         }
         else
         {
-            reporter.Output("No JWTs created yet!");
+            reporter.Output(Resources.ListCommand_NoJwts);
         }
 
         return 0;
