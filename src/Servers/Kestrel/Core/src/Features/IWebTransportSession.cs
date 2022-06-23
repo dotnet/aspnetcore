@@ -14,10 +14,16 @@ public interface IWebTransportSession
     public long SessionId { get; }
 
     /// <summary>
-    /// Close the WebTransport session and stops all the streams.
+    /// Abruptly close the WebTransport session and stop all the streams.
     /// </summary>
     /// <exception cref="Exception">If This is not a valid WebTransport session.</exception>
     public void Abort();
+
+    /// <summary>
+    /// Elegantly close the WebTransport session and all the streams.
+    /// </summary>
+    /// <exception cref="Exception">If This is not a valid WebTransport session.</exception>
+    public void Close();
 
     /// <summary>
     /// Returns the next incoming stream in the order which Kestel received it. The stream can be either bidirectional or unidirectional.

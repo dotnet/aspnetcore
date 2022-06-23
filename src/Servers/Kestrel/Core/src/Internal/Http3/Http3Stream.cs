@@ -745,7 +745,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         if (_currentIHttpWebTransportSessionFeature is not null && _context.WebTransportSession is not null)
         {
-            _context.WebTransportSession.Abort(new("WebTransport CONNECT stream was closed"), Http3ErrorCode.StreamCreationError);
+            _context.WebTransportSession.Close();
         }
 
         OnTrailersComplete();

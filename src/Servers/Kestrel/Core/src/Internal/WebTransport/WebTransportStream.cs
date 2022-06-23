@@ -52,7 +52,7 @@ internal class WebTransportStream : Stream
         {
             var stream = (WebTransportStream)state!;
             stream._context.WebTransportSession?.TryRemoveStream(stream._streamIdFeature.StreamId);
-            stream.AbortCore(new($"Stream {StreamId} was closed by the client"), Http3ErrorCode.StreamCreationError);
+            stream.AbortCore(new($"Stream {StreamId} was closed by the client"), Http3ErrorCode.StreamCreationError); // todo find a way to distinguish between close and abort
         }, this);
     }
 
@@ -65,19 +65,6 @@ internal class WebTransportStream : Stream
         _ = await stream.ReadAsyncInternal(new Memory<byte>(new byte[3]), 0, 3, CancellationToken.None);
 
         return stream;
-    }
-
-    internal virtual void AbortCore(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
-    {
-        _isClosed = true;
-
-        Log.Http3StreamAbort(_context.ConnectionId, errorCode, abortReason);
-
-        _errorCodeFeature.Error = (long)errorCode;
-
-        _streamAbortFeature.AbortRead((long)errorCode, abortReason);
-
-        Input.Complete(abortReason);
     }
 
     private async Task<int> ReadAsyncInternal(Memory<byte> destination, int offset, int count, CancellationToken cancellationToken)
@@ -120,6 +107,28 @@ internal class WebTransportStream : Stream
         }
     }
 
+    internal virtual void AbortCore(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
+    {
+        _isClosed = true;
+
+        Log.Http3StreamAbort(_context.ConnectionId, errorCode, abortReason);
+
+        _errorCodeFeature.Error = (long)errorCode;
+
+
+        if (CanRead)
+        {
+            _streamAbortFeature.AbortRead((long)errorCode, abortReason);
+            Input.Complete(abortReason);
+        }
+
+        if (CanWrite)
+        {
+            _streamAbortFeature.AbortWrite((long)errorCode, abortReason);
+            Output.Complete(abortReason);
+        }
+    }
+
     /// <summary>
     /// Hard abort the stream and cancel data transmission.
     /// </summary>
@@ -127,6 +136,24 @@ internal class WebTransportStream : Stream
     public void Abort(ConnectionAbortedException abortReason)
     {
         AbortCore(abortReason, Http3ErrorCode.InternalError);
+    }
+
+    /// <summary>
+    /// Soft close the stream and end data transmission.
+    /// </summary>
+    public override void Close()
+    {
+        _isClosed = true;
+
+        if (CanRead)
+        {
+            Input.Complete();
+        }
+
+        if (CanWrite)
+        {
+            Output.Complete();
+        }
     }
 
     /// <summary>
