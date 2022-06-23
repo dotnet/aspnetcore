@@ -19,7 +19,7 @@ public class MemoryOutputCacheStoreTests
         var value = "abc"u8;
         var key = "abc";
 
-        await store.SetAsync(key, value, null, TimeSpan.FromMinutes(1), default);
+        await store.SetAsync(key, value.ToArray(), null, TimeSpan.FromMinutes(1), default);
 
         var result = await store.GetAsync(key, default);
 
@@ -34,7 +34,7 @@ public class MemoryOutputCacheStoreTests
         var value = "abc"u8;
         var key = "abc";
 
-        await store.SetAsync(key, value, null, TimeSpan.FromMilliseconds(5), default);
+        await store.SetAsync(key, value.ToArray(), null, TimeSpan.FromMilliseconds(5), default);
         testClock.Advance(TimeSpan.FromMilliseconds(10));
 
         var result = await store.GetAsync(key, default);
@@ -49,7 +49,7 @@ public class MemoryOutputCacheStoreTests
         var value = "abc"u8;
         string key = null;
 
-        _ = await Assert.ThrowsAsync<ArgumentNullException>("key", () => store.SetAsync(key, value, null, TimeSpan.FromMilliseconds(5), default).AsTask());
+        _ = await Assert.ThrowsAsync<ArgumentNullException>("key", () => store.SetAsync(key, value.ToArray(), null, TimeSpan.FromMilliseconds(5), default).AsTask());
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class MemoryOutputCacheStoreTests
         var key = "abc";
         var tags = new string[] { "tag1" };
 
-        await store.SetAsync(key, value, tags, TimeSpan.FromDays(1), default);
+        await store.SetAsync(key, value.ToArray(), tags, TimeSpan.FromDays(1), default);
         await store.EvictByTagAsync("tag1", default);
         var result = await store.GetAsync(key, default);
 
@@ -88,8 +88,8 @@ public class MemoryOutputCacheStoreTests
         var key2 = "def";
         var tags = new string[] { "tag1" };
 
-        await store.SetAsync(key1, value, tags, TimeSpan.FromDays(1), default);
-        await store.SetAsync(key2, value, tags, TimeSpan.FromDays(1), default);
+        await store.SetAsync(key1, value.ToArray(), tags, TimeSpan.FromDays(1), default);
+        await store.SetAsync(key2, value.ToArray(), tags, TimeSpan.FromDays(1), default);
         await store.EvictByTagAsync("tag1", default);
         var result1 = await store.GetAsync(key1, default);
         var result2 = await store.GetAsync(key2, default);
@@ -107,7 +107,7 @@ public class MemoryOutputCacheStoreTests
         var key = "abc";
         var tags = new string[] { "tag1", "tag2" };
 
-        await store.SetAsync(key, value, tags, TimeSpan.FromDays(1), default);
+        await store.SetAsync(key, value.ToArray(), tags, TimeSpan.FromDays(1), default);
         await store.EvictByTagAsync("tag1", default);
         var result1 = await store.GetAsync(key, default);
 
@@ -125,8 +125,8 @@ public class MemoryOutputCacheStoreTests
         var tags1 = new string[] { "tag1", "tag2" };
         var tags2 = new string[] { "tag2", "tag3" };
 
-        await store.SetAsync(key1, value, tags1, TimeSpan.FromDays(1), default);
-        await store.SetAsync(key2, value, tags2, TimeSpan.FromDays(1), default);
+        await store.SetAsync(key1, value.ToArray(), tags1, TimeSpan.FromDays(1), default);
+        await store.SetAsync(key2, value.ToArray(), tags2, TimeSpan.FromDays(1), default);
         await store.EvictByTagAsync("tag1", default);
 
         var result1 = await store.GetAsync(key1, default);
