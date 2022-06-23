@@ -52,6 +52,7 @@ internal class WebTransportStream : Stream
         {
             var stream = (WebTransportStream)state!;
             stream._context.WebTransportSession?.TryRemoveStream(stream._streamIdFeature.StreamId);
+            stream.AbortCore(new($"Stream {StreamId} was closed by the client"), Http3ErrorCode.StreamCreationError);
         }, this);
     }
 

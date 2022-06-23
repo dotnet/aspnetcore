@@ -743,6 +743,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
         }
 
+        if (_currentIHttpWebTransportSessionFeature is not null && _context.WebTransportSession is not null)
+        {
+            _context.WebTransportSession.Abort(new("WebTransport CONNECT stream was closed"), Http3ErrorCode.StreamCreationError);
+        }
+
         OnTrailersComplete();
         return RequestBodyPipe.Writer.CompleteAsync();
     }
@@ -856,6 +861,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 {
                     _currentIHttpWebTransportSessionFeature = _context.WebTransportSession!;
                 }
+
+                _context!.StreamContext.ConnectionClosed.Register(state =>
+                {
+                    var session = (WebTransportSession)state!;
+                    session.Abort(new("WebTransport CONNECT stream was closed"), Http3ErrorCode.StreamCreationError);
+                }, _context.WebTransportSession!);
             }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
