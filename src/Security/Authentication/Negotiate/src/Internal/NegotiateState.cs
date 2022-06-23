@@ -3,6 +3,7 @@
 
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Security.Claims;
 using System.Security.Principal;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate;
@@ -19,7 +20,7 @@ internal sealed class NegotiateState : INegotiateState
 
     public string? GetOutgoingBlob(string incomingBlob, out BlobErrorType status, out Exception? error)
     {
-        string? outgoingBlob = _instance.GetOutgoingBlob(incomingBlob, out NegotiateAuthenticationStatusCode authStatus);
+        var outgoingBlob = _instance.GetOutgoingBlob(incomingBlob, out var authStatus);
 
         if (authStatus == NegotiateAuthenticationStatusCode.Completed ||
             authStatus == NegotiateAuthenticationStatusCode.ContinueNeeded)
@@ -59,7 +60,8 @@ internal sealed class NegotiateState : INegotiateState
 
     public IIdentity GetIdentity()
     {
-        return _instance.RemoteIdentity;
+        var remoteIdentity = _instance.RemoteIdentity;
+        return remoteIdentity is ClaimsIdentity claimsIdentity ? claimsIdentity.Clone() : remoteIdentity;
     }
 
     public void Dispose()
