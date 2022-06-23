@@ -42,6 +42,23 @@ public class ParameterBindingMethodCacheTests
         Assert.True(parameters[3].IsOut);
     }
 
+    [Fact]
+    public void FindUriTryCreateStringMethod_ReturnsTheExpectedUriTryCreateMethod()
+    {
+        var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(typeof(Uri));
+
+        Assert.NotNull(methodFound);
+
+        var call = methodFound!(Expression.Variable(typeof(Uri), "parsedValue"), Expression.Constant(UriKind.RelativeOrAbsolute)) as MethodCallExpression;
+        Assert.NotNull(call);
+        var parameters = call!.Method.GetParameters();
+
+        Assert.Equal(3, parameters.Length);
+        Assert.Equal(typeof(string), parameters[0].ParameterType);
+        Assert.Equal(typeof(UriKind), parameters[1].ParameterType);
+        Assert.True(parameters[2].IsOut);
+    }
+
     [Theory]
     [InlineData(typeof(DateTime))]
     [InlineData(typeof(DateOnly))]

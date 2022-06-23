@@ -35,7 +35,7 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
             return;
         }
 
-        var configSection = _authenticationConfigurationProvider.GetAuthenticationSchemeConfiguration(name);
+        var configSection = _authenticationConfigurationProvider.GetSchemeConfiguration(name);
 
         if (configSection is null || !configSection.GetChildren().Any())
         {

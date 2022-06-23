@@ -10,7 +10,7 @@
     //#endif
     "iisExpress": {
       "applicationUrl": "http://localhost:8080",
-      //#if(RequiresHttps)
+      //#if (HasHttpsProfile)
       "sslPort": 44300
       //#else
       "sslPort": 0
@@ -18,12 +18,12 @@
     }
   },
   "profiles": {
-    //#if(!RequiresHttps)
+    //#if (HasHttpProfile)
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      //#if(EnableOpenAPI)
+      //#if (EnableOpenAPI)
       "launchUrl": "swagger",
       //#else
       "launchUrl": "weatherforecast",
@@ -34,12 +34,12 @@
       }
     },
     //#endif
-    //#if(!NoHttps)
+    //#if (HasHttpsProfile)
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      //#if(EnableOpenAPI)
+      //#if (EnableOpenAPI)
       "launchUrl": "swagger",
       //#else
       "launchUrl": "weatherforecast",
@@ -53,7 +53,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      //#if(EnableOpenAPI)
+      //#if (EnableOpenAPI)
       "launchUrl": "swagger",
       //#else
       "launchUrl": "weatherforecast",

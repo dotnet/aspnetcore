@@ -65,8 +65,6 @@ public class ClientHandler : HttpMessageHandler
 
         if (requestContent != null)
         {
-            // Read content from the request HttpContent into a pipe in a background task. This will allow the request
-            // delegate to start before the request HttpContent is complete. A background task allows duplex streaming scenarios.
             contextBuilder.SendRequestStream(async writer =>
             {
                 if (requestContent is StreamContent)

@@ -513,7 +513,7 @@ internal sealed class HttpsConnectionMiddleware
         var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
         {
             ServerCertificate = httpsOptions.ServerCertificate,
-            ApplicationProtocols = new List<SslApplicationProtocol>() { SslApplicationProtocol.Http3, new SslApplicationProtocol("h3-29") },
+            ApplicationProtocols = new List<SslApplicationProtocol>() { SslApplicationProtocol.Http3 },
             CertificateRevocationCheckMode = httpsOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
         };
 

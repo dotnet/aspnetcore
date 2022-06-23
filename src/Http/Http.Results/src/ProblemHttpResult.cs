@@ -53,7 +53,7 @@ public sealed class ProblemHttpResult : IResult
             httpContext.Response.StatusCode = code;
         }
 
-        return HttpResultsHelper.WriteResultAsJsonAsync<object?>(
+        return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger,
                 value: ProblemDetails,

@@ -49,6 +49,7 @@ public static class HttpLoggingServicesExtensions
         }
 
         services.Configure(configureOptions);
+        services.AddSingleton<W3CLoggerProcessor>();
         services.AddSingleton<W3CLogger>();
         return services;
     }

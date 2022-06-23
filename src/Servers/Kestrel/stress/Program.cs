@@ -112,6 +112,55 @@ public class Program
             }
         }
 
+        Func<ClientContext, Task> TestAbort(string path)
+        {
+            return async ctx =>
+            {
+                var httpVersion = ctx.GetRandomVersion(httpVersions);
+                try
+                {
+                    using (var req = new HttpRequestMessage(HttpMethod.Get, serverUri + path) { Version = httpVersion })
+                    {
+                        await ctx.HttpClient.SendAsync(req);
+                    }
+                    throw new Exception("Completed unexpectedly");
+                }
+                catch (Exception e)
+                {
+                    if (e is HttpRequestException hre && hre.InnerException is IOException)
+                    {
+                        e = hre.InnerException;
+                    }
+
+                    if (e is IOException ioe)
+                    {
+                        if (httpVersion < HttpVersion.Version20)
+                        {
+                            return;
+                        }
+
+                        var name = e.InnerException?.GetType().Name;
+                        switch (name)
+                        {
+                            case "Http2ProtocolException":
+                            case "Http2ConnectionException":
+                            case "Http2StreamException":
+                                // This can be improved when https://github.com/dotnet/runtime/issues/43239 is available.
+                                if (e.InnerException.Message.Contains("INTERNAL_ERROR") || e.InnerException.Message.Contains("CANCEL"))
+                                {
+                                    return;
+                                }
+                                break;
+                            case "WinHttpException":
+                                return;
+                        }
+                    }
+
+                    throw;
+                }
+            };
+        }
+
         // Set of operations that the client can select from to run.  Each item is a tuple of the operation's name
         // and the delegate to invoke for it, provided with the HttpClient instance on which to make the call and
         // returning asynchronously the retrieved response string from the server.  Individual operations can be
@@ -181,51 +230,9 @@ public class Program
                 }
             }),
 
-            ("GET Aborted",
-            async ctx =>
-            {
-                Version httpVersion = ctx.GetRandomVersion(httpVersions);
-                try
-                {
-                    using (var req = new HttpRequestMessage(HttpMethod.Get, serverUri + "/abort") { Version = httpVersion })
-                    {
-                        await ctx.HttpClient.SendAsync(req);
-                    }
-                    throw new Exception("Completed unexpectedly");
-                }
-                catch (Exception e)
-                {
-                    if (e is HttpRequestException hre && hre.InnerException is IOException)
-                    {
-                        e = hre.InnerException;
-                    }
+            ("GET Abort", TestAbort("/abort")),
 
-                    if (e is IOException ioe)
-                    {
-                        if (httpVersion < HttpVersion.Version20)
-                        {
-                            return;
-                        }
-
-                        string name = e.InnerException?.GetType().Name;
-                        switch (name)
-                        {
-                            case "Http2ProtocolException":
-                            case "Http2ConnectionException":
-                            case "Http2StreamException":
-                                if (e.InnerException.Message.Contains("INTERNAL_ERROR") || e.InnerException.Message.Contains("CANCEL"))
-                                {
-                                    return;
-                                }
-                                break;
-                            case "WinHttpException":
-                                return;
-                        }
-                    }
-
-                    throw;
-                }
-            }),
+            ("GET Parallel Abort", TestAbort("/parallel-abort")),
 
             ("POST",
             async ctx =>
@@ -450,6 +457,14 @@ public class Program
                         // Server writes some content, then aborts the connection
                         await context.Response.WriteAsync(contentSource.Substring(0, contentSource.Length / 2));
                         context.Abort();
+                    });
+                    endpoints.MapGet("/parallel-abort", async context =>
+                    {
+                        // Server writes some content and aborts the connection in the background.
+                        var writeTask = context.Response.WriteAsync(contentSource.Substring(0, contentSource.Length));
+                        await Task.Yield();
+                        context.Abort();
+                        await writeTask;
                     });
                     endpoints.MapPost("/", async context =>
                     {
