@@ -43,7 +43,7 @@ internal sealed partial class RateLimitingMiddleware
 
         foreach (var item in options.Value.UnactivatedPolicyMap)
         {
-            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, item.Value);
+            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, item.Value.Item1);
             _policyMap.Add(item.Key, new AspNetPolicy(RateLimiterOptions.ConvertPartitioner<TPartitionKey>(((IRateLimiterPolicy<TPartitionKey>)instance).GetPartition)));
         }    
 
