@@ -55,7 +55,7 @@ services.AddAntiforgery();
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Services", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -80,7 +80,7 @@ services.AddAntiforgery();
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Services", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -106,7 +106,7 @@ builder.Host.
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Services", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -132,7 +132,7 @@ builder.WebHost.
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Services", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public class Startup { }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Services", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -222,7 +222,7 @@ public class Startup { }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Services", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -255,7 +255,7 @@ public class Startup { }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Services", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -288,7 +288,7 @@ public class Startup { }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Services", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -326,7 +326,7 @@ public class Startup { }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Services", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -359,14 +359,14 @@ builder.Host./*MM2*/ConfigureServices(services =>
 
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, firstDiagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], firstDiagnostic.Location);
-        Assert.Equal("Favor using builder.Services", firstDiagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", firstDiagnostic.GetMessage(CultureInfo.InvariantCulture));
 
         // Second diagnostic
         var secondDiagnostic = diagnostics[1];
 
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, secondDiagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM2"], secondDiagnostic.Location);
-        Assert.Equal("Favor using builder.Services", secondDiagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", secondDiagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -399,14 +399,14 @@ builder.WebHost./*MM2*/ConfigureServices(services =>
 
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, firstDiagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], firstDiagnostic.Location);
-        Assert.Equal("Favor using builder.Services", firstDiagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", firstDiagnostic.GetMessage(CultureInfo.InvariantCulture));
 
         // Second diagnostic
         var secondDiagnostic = diagnostics[1];
 
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureServices, secondDiagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM2"], secondDiagnostic.Location);
-        Assert.Equal("Favor using builder.Services", secondDiagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Favor using builder.Services over ConfigureServices", secondDiagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
 }
