@@ -54,7 +54,8 @@
         {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
-            "Properties/launchSettings.json"
+            "Client/Properties/launchSettings.json",
+            "Server/Properties/launchSettings.json"
           ]
         },
         {
