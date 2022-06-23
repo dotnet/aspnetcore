@@ -1738,7 +1738,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-jwts", "src\Too
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-user-jwts", "dotnet-user-jwts", "{AB4B9E75-719C-4589-B852-20FBFD727730}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalJwtBearerSample", "src\Security\Authentication\JwtBearer\samples\MinimalJwtBearerSample\MinimalJwtBearerSample.csproj", "{7F079E92-32D5-4257-B95B-CFFB0D49C160}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalJwtBearerSample", "src\Security\Authentication\JwtBearer\samples\MinimalJwtBearerSample\MinimalJwtBearerSample.csproj", "{7F079E92-32D5-4257-B95B-CFFB0D49C160}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-jwts.Tests", "src\Tools\dotnet-user-jwts\test\dotnet-user-jwts.Tests.csproj", "{89896261-C5DD-4901-BCA7-7A5F718BC008}"
 EndProject
