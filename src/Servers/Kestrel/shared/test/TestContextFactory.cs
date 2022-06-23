@@ -192,7 +192,7 @@ internal static class TestContextFactory
             streamContext: new DefaultConnectionContext(),
             clientPeerSettings: new Http3PeerSettings(),
             serverPeerSettings: null,
-            webTransportSession: new WebTransportSession()
+            webTransportSession: null
         );
         context.TimeoutControl = timeoutControl;
         context.Transport = transport;
