@@ -319,7 +319,6 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
         if (OperatingSystem.IsWindows() && identity is WindowsIdentity winIdentity)
         {
             user = new WindowsPrincipal(winIdentity);
-            Response.RegisterForDispose(winIdentity);
         }
         else
         {
