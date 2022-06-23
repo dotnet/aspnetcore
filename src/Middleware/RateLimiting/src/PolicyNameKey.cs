@@ -4,5 +4,5 @@
 namespace Microsoft.AspNetCore.RateLimiting;
 internal class PolicyNameKey
 {
-    public string PolicyName { get; init; }
+    public required string PolicyName { get; init; }
 }
