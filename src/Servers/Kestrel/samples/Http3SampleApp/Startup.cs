@@ -43,8 +43,8 @@ public class Startup
             {
                 await next(context);
             }
-
-            await Task.Delay(TimeSpan.FromMinutes(150));
+            await Task.Delay(2000);
+            //await Task.Delay(TimeSpan.FromMinutes(150));
         });
     }
 }

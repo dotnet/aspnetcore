@@ -428,6 +428,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     }
                 }
 
+                if (_webtransportSession is not null)
+                {
+                    _webtransportSession.OnClientConnectionClosed();
+                }
+
                 if (outboundControlStream != null)
                 {
                     // Don't gracefully close the outbound control stream. If the peer detects

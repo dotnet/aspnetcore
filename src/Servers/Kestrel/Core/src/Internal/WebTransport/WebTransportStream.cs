@@ -52,7 +52,6 @@ internal class WebTransportStream : Stream
         {
             var stream = (WebTransportStream)state!;
             stream._context.WebTransportSession?.TryRemoveStream(stream._streamIdFeature.StreamId);
-            stream.AbortCore(new($"Stream {StreamId} was closed by the client"), Http3ErrorCode.StreamCreationError); // todo find a way to distinguish between close and abort
         }, this);
     }
 
@@ -69,52 +68,49 @@ internal class WebTransportStream : Stream
 
     private async Task<int> ReadAsyncInternal(Memory<byte> destination, int offset, int count, CancellationToken cancellationToken)
     {
-        while (true)
+        var result = await Input.ReadAsync(cancellationToken);
+
+        if (result.IsCanceled)
         {
-            var result = await Input.ReadAsync(cancellationToken);
+            throw new OperationCanceledException("The read was canceled");
+        }
 
-            if (result.IsCanceled)
+        var buffer = result.Buffer;
+        var length = buffer.Length;
+
+        var consumed = buffer.End;
+        try
+        {
+            if (length != 0)
             {
-                throw new OperationCanceledException("The read was canceled");
+                var actual = (int)Math.Min(length, Math.Min(destination.Length, count));
+
+                var slice = actual == length ? buffer : buffer.Slice(0, actual);
+                consumed = slice.End;
+                slice.CopyTo(destination[offset..].Span);
+
+                return actual;
             }
-
-            var buffer = result.Buffer;
-            var length = buffer.Length;
-
-            var consumed = buffer.End;
-            try
-            {
-                if (length != 0)
-                {
-                    var actual = (int)Math.Min(length, Math.Min(destination.Length, count));
-
-                    var slice = actual == length ? buffer : buffer.Slice(0, actual);
-                    consumed = slice.End;
-                    slice.CopyTo(destination[offset..].Span);
-
-                    return actual;
-                }
-
-                if (result.IsCompleted)
-                {
-                    return 0;
-                }
-            }
-            finally
-            {
-                Input.AdvanceTo(consumed);
-            }
+            return 0;
+        }
+        finally
+        {
+            Input.AdvanceTo(consumed);
         }
     }
 
     internal virtual void AbortCore(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
     {
+        if (_isClosed)
+        {
+            return;
+        }
+
         _isClosed = true;
 
         Log.Http3StreamAbort(_context.ConnectionId, errorCode, abortReason);
 
         _errorCodeFeature.Error = (long)errorCode;
-
 
         if (CanRead)
         {
@@ -143,6 +139,11 @@ internal class WebTransportStream : Stream
     /// </summary>
     public override void Close()
     {
+        if (_isClosed)
+        {
+            return;
+        }
+
         _isClosed = true;
 
         if (CanRead)

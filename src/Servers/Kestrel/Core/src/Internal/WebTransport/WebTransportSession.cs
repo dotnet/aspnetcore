@@ -60,14 +60,6 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         _controlStream.Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (Http.HttpResponseHeaders)_controlStream.ResponseHeaders, false, false);
         await _controlStream.Output.FlushAsync(token);
 
-        // add the close stream listener as we must abort the session once this stream dies
-        _controlStream.OnCompleted(_ =>
-        {
-            Abort(new(), Http3ErrorCode.NoError);
-
-            return Task.CompletedTask;
-        }, this);
-
         return this;
     }
 #pragma warning restore CA2252
@@ -77,7 +69,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
         Abort(new(), Http3ErrorCode.NoError);
     }
 
-    public void Close()
+    internal void OnClientConnectionClosed()
     {
         if (_isClosing)
         {
@@ -88,8 +80,6 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
 
         _isClosing = true;
         _initialized = false;
-
-        _controlStream.CompleteAsync();
 
         lock (_openStreams)
         {
