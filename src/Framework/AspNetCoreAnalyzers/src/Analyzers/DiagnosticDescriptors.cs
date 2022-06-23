@@ -82,7 +82,7 @@ internal static class DiagnosticDescriptors
 
     internal static readonly DiagnosticDescriptor DoNotUseHostConfigureServices = new(
         "ASP0012",
-        "Do not use ConfigureServices with WebApplicationBuilder.Host or WebApplicationBuilder.WebHost",
+        "Use Host.Services or WebHost.Services over ConfigureServices",
         "Favor using builder.Services over ConfigureServices",
         "Usage",
         DiagnosticSeverity.Warning,
