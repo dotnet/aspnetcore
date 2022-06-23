@@ -21,14 +21,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 /// </summary>
 internal class WebTransportStream : Stream
 {
-    private volatile bool _isClosed;
+    private bool _canRead;
+    private bool _isClosed;
 
     private PipeReader Input => _context.Transport.Input;
     private PipeWriter Output => _context.Transport.Output;
 
     internal readonly Http3StreamContext _context;
     internal readonly IStreamIdFeature _streamIdFeature = default!;
-    internal readonly IStreamAbortFeature _streamAbortFeature = default!;
+    //internal readonly IStreamAbortFeature _streamAbortFeature = default!;
     internal readonly IProtocolErrorCodeFeature _errorCodeFeature = default!;
     internal readonly WebTransportStreamType _type;
 
@@ -41,13 +42,15 @@ internal class WebTransportStream : Stream
 
     private WebTransportStream(Http3StreamContext context, WebTransportStreamType type)
     {
+        _canRead = _type != WebTransportStreamType.Output;
         _type = type;
-        _isClosed = false;
         _context = context;
         _streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
-        _streamAbortFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamAbortFeature>();
+        //_streamAbortFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamAbortFeature>();
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
 
+        // will not trigger if closed only of of the directions of a stream. Stream must be fully
+        // ended before this will be called. Then it will be considered an abort
         context.StreamContext.ConnectionClosed.Register(state =>
         {
             var stream = (WebTransportStream)state!;
@@ -59,28 +62,32 @@ internal class WebTransportStream : Stream
     {
         var stream = new WebTransportStream(context, type);
 
-        // skip the first 3 bytes which correspond the the strem header
-        // as the application does not need to see them
-        _ = await stream.ReadAsyncInternal(new Memory<byte>(new byte[3]), 0, 3, CancellationToken.None);
+        if (stream.CanRead)
+        {
+            // skip the first 3 bytes which correspond the the strem header
+            // as the application does not need to see them
+            _ = await stream.ReadAsyncInternal(new Memory<byte>(new byte[3]), 0, 3, CancellationToken.None);
+        }
 
         return stream;
     }
 
     private async Task<int> ReadAsyncInternal(Memory<byte> destination, int offset, int count, CancellationToken cancellationToken)
     {
-        var result = await Input.ReadAsync(cancellationToken);
-
-        if (result.IsCanceled)
-        {
-            throw new OperationCanceledException("The read was canceled");
-        }
-
-        var buffer = result.Buffer;
-        var length = buffer.Length;
-
-        var consumed = buffer.End;
         try
         {
+            var result = await Input.ReadAsync(cancellationToken);
+
+            if (result.IsCanceled)
+            {
+                throw new OperationCanceledException("The read was canceled");
+            }
+
+            var buffer = result.Buffer;
+            var length = buffer.Length;
+
+            var consumed = buffer.End;
+
             if (length != 0)
             {
                 var actual = (int)Math.Min(length, Math.Min(destination.Length, count));
@@ -89,13 +96,21 @@ internal class WebTransportStream : Stream
                 consumed = slice.End;
                 slice.CopyTo(destination[offset..].Span);
 
+                Input.AdvanceTo(consumed);
+
                 return actual;
             }
-            return 0;
+            else
+            {
+                Input.AdvanceTo(consumed);
+                _canRead = false;
+                return 0;
+            }
         }
-        finally
+        catch (Exception)
         {
-            Input.AdvanceTo(consumed);
+            _canRead = false;
+            return 0;
         }
     }
 
@@ -114,13 +129,13 @@ internal class WebTransportStream : Stream
 
         if (CanRead)
         {
-            _streamAbortFeature.AbortRead((long)errorCode, abortReason);
+            //_streamAbortFeature.AbortRead((long)errorCode, abortReason);
             Input.Complete(abortReason);
         }
 
         if (CanWrite)
         {
-            _streamAbortFeature.AbortWrite((long)errorCode, abortReason);
+            //_streamAbortFeature.AbortWrite((long)errorCode, abortReason);
             Output.Complete(abortReason);
         }
     }
@@ -160,7 +175,7 @@ internal class WebTransportStream : Stream
     /// <summary>
     /// True if data can be read from this stream. False otherwise.
     /// </summary>
-    public override bool CanRead => _type != WebTransportStreamType.Output && !_isClosed;
+    public override bool CanRead => _canRead && !_isClosed;
 
     /// <summary>
     /// Seeking is not supported by WebTransport.
