@@ -254,7 +254,6 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     {
         Response.StatusCode = status;
         Response.ContentLength = 0;
-        Dispose();
     }
 
     internal unsafe void Delegate(DelegationRule destination)

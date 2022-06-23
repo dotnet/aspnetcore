@@ -123,9 +123,9 @@ internal sealed class CreateCommand
         var name = nameOption.HasValue() ? nameOption.Value() : Environment.UserName;
         optionsString += $"{Resources.JwtPrint_Name}: {name}{Environment.NewLine}";
 
-        var audience = audienceOption.HasValue() ? audienceOption.Values : DevJwtCliHelpers.GetAudienceCandidatesFromLaunchSettings(project).ToList();
-        optionsString += audienceOption.HasValue() ? $"{Resources.JwtPrint_Audiences}: {audience}{Environment.NewLine}" : string.Empty;
-        if (audience is null)
+        var audience = audienceOption.HasValue() ? audienceOption.Values : DevJwtCliHelpers.GetAudienceCandidatesFromLaunchSettings(project);
+        optionsString += audienceOption.HasValue() ? $"{Resources.JwtPrint_Audiences}: {string.Join(", ", audience)}{Environment.NewLine}" : string.Empty;
+        if (audience is null || audience.Count == 0)
         {
             reporter.Error(Resources.CreateCommand_NoAudience_Error);
             isValid = false;

@@ -7,12 +7,14 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
 using Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 using Xunit;
 using Xunit.Abstractions;
 using System.Text.RegularExpressions;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
@@ -151,6 +153,34 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     }
 
     [Fact]
+    public async Task Key_CanResetSigningKey_WhenSecretsHasPrepulatedData()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var app = new Program(_console);
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+        await File.WriteAllTextAsync(secretsFilePath,
+@"{
+  ""Foo"": {
+    ""Bar"": ""baz""
+  }
+}");
+
+        app.Run(new[] { "create", "--project", project });
+        app.Run(new[] { "key", "--project", project });
+        Assert.Contains("Signing Key:", _console.GetOutput());
+
+        app.Run(new[] { "key", "--reset", "--force", "--project", project });
+        Assert.Contains("New signing key created:", _console.GetOutput());
+
+        using FileStream openStream = File.OpenRead(secretsFilePath);
+        var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
+        Assert.NotNull(secretsJson);
+        Assert.True(secretsJson.ContainsKey(DevJwtsDefaults.SigningKeyConfigurationKey));
+        Assert.True(secretsJson.TryGetPropertyValue("Foo", out var fooField));
+        Assert.Equal("baz", fooField["Bar"].GetValue<string>());
+    }
+
+    [Fact]
     public void Command_ShowsHelpForInvalidCommand()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
@@ -234,7 +264,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains($"ID: {id}", output);
         Assert.Contains($"Name: {Environment.UserName}", output);
         Assert.Contains($"Scheme: Bearer", output);
-        Assert.Contains($"Audience(s): https://localhost:5001, http://localhost:5000", output);
+        Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
     }
 
     [Fact]
@@ -253,7 +283,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains($"ID: {id}", output);
         Assert.Contains($"Name: {Environment.UserName}", output);
         Assert.Contains($"Scheme: Bearer", output);
-        Assert.Contains($"Audience(s): https://localhost:5001, http://localhost:5000", output);
+        Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
         Assert.Contains($"Roles: [foobar]", output);
         Assert.DoesNotContain("Custom Claims", output);
     }
@@ -274,7 +304,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains($"ID: {id}", output);
         Assert.Contains($"Name: {Environment.UserName}", output);
         Assert.Contains($"Scheme: Bearer", output);
-        Assert.Contains($"Audience(s): https://localhost:5001, http://localhost:5000", output);
+        Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
         Assert.Contains($"Scopes: none", output);
         Assert.Contains($"Roles: [none]", output);
         Assert.Contains($"Custom Claims: [foo=bar]", output);
@@ -306,5 +336,64 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         var handler = new JwtSecurityTokenHandler();
         Assert.True(handler.CanReadToken(output.Trim()));
+    }
+
+    [Fact]
+    public void Create_GracefullyHandles_NoLaunchSettings()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        var app = new Program(_console);
+        var launchSettingsPath = Path.Combine(projectPath, "Properties", "launchSettings.json");
+
+        File.Delete(launchSettingsPath);
+
+        app.Run(new[] { "create", "--project", project });
+        var output = _console.GetOutput();
+
+        Assert.Contains(Resources.CreateCommand_NoAudience_Error, output);
+    }
+
+    [Fact]
+    public async Task Create_GracefullyHandles_PrepopulatedSecrets()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+        await File.WriteAllTextAsync(secretsFilePath,
+@"{
+  ""Foo"": {
+    ""Bar"": ""baz""
+  }
+}");
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", project});
+        var output = _console.GetOutput();
+
+        Assert.Contains("New JWT saved", output);
+        using FileStream openStream = File.OpenRead(secretsFilePath);
+        var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
+        Assert.NotNull(secretsJson);
+        Assert.True(secretsJson.ContainsKey(DevJwtsDefaults.SigningKeyConfigurationKey));
+        Assert.True(secretsJson.TryGetPropertyValue("Foo", out var fooField));
+        Assert.Equal("baz", fooField["Bar"].GetValue<string>());
+    }
+
+    [Fact]
+    public void Create_GetsAudiencesFromAllIISAndKestrel()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", project});
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+        app.Run(new[] { "print", id, "--project", project, "--show-all" });
+        var output = _console.GetOutput();
+
+        Assert.Contains("New JWT saved", output);
+        Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
     }
 }

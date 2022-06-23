@@ -36,6 +36,8 @@ public static class StaticFilesEndpointRouteBuilderExtensions
     /// <c>{*path:nonfile}</c>. The order of the registered endpoint will be <c>int.MaxValue</c>.
     /// </para>
     /// </remarks>
+    [UnconditionalSuppressMessage("Trimmer", "IL2026",
+        Justification = "MapFallbackToFile RequireUnreferencedCode if the RequestDelegate has a Task<T> return type which is not the case here.")]
     public static IEndpointConventionBuilder MapFallbackToFile(
         this IEndpointRouteBuilder endpoints,
         string filePath)
@@ -74,6 +76,8 @@ public static class StaticFilesEndpointRouteBuilderExtensions
     /// <c>{*path:nonfile}</c>. The order of the registered endpoint will be <c>int.MaxValue</c>.
     /// </para>
     /// </remarks>
+    [UnconditionalSuppressMessage("Trimmer", "IL2026",
+        Justification = "MapFallbackToFile RequireUnreferencedCode if the RequestDelegate has a Task<T> return type which is not the case here.")]
     public static IEndpointConventionBuilder MapFallbackToFile(
         this IEndpointRouteBuilder endpoints,
         string filePath,
@@ -119,6 +123,8 @@ public static class StaticFilesEndpointRouteBuilderExtensions
     /// to exclude requests for static files.
     /// </para>
     /// </remarks>
+    [UnconditionalSuppressMessage("Trimmer", "IL2026",
+        Justification = "MapFallbackToFile RequireUnreferencedCode if the RequestDelegate has a Task<T> return type which is not the case here.")]
     public static IEndpointConventionBuilder MapFallbackToFile(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -167,6 +173,8 @@ public static class StaticFilesEndpointRouteBuilderExtensions
     /// to exclude requests for static files.
     /// </para>
     /// </remarks>
+    [UnconditionalSuppressMessage("Trimmer", "IL2026",
+        Justification = "MapFallbackToFile RequireUnreferencedCode if the RequestDelegate has a Task<T> return type which is not the case.")]
     public static IEndpointConventionBuilder MapFallbackToFile(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,

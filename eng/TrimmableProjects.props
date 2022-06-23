@@ -66,6 +66,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.HttpsPolicy" />
     <TrimmableProject Include="Microsoft.AspNetCore.Localization.Routing" />
     <TrimmableProject Include="Microsoft.AspNetCore.Localization" />
+    <TrimmableProject Include="Microsoft.AspNetCore.OutputCaching" />
     <TrimmableProject Include="Microsoft.AspNetCore.RateLimiting" />
     <TrimmableProject Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.ResponseCaching" />
@@ -78,6 +79,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.WebSockets" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Authorization" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.CustomElements" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Forms" />
     <TrimmableProject Include="Microsoft.Authentication.WebAssembly.Msal" />
     <TrimmableProject Include="Microsoft.JSInterop.WebAssembly" />

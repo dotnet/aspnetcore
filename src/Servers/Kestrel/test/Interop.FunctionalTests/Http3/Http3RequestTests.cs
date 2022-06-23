@@ -393,7 +393,6 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public async Task POST_ServerAbort_ClientReceivesAbort(HttpProtocols protocol)
     {
         // Arrange

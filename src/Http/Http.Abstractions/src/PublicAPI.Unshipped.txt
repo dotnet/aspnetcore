@@ -1,10 +1,11 @@
 #nullable enable
 *REMOVED*abstract Microsoft.AspNetCore.Http.HttpResponse.ContentType.get -> string!
 *REMOVED*Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object?
-Microsoft.AspNetCore.Builder.EndpointBuilder.ServiceProvider.get -> System.IServiceProvider?
-Microsoft.AspNetCore.Builder.EndpointBuilder.ServiceProvider.set -> void
+Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Builder.EndpointBuilder.ApplicationServices.set -> void
 Microsoft.AspNetCore.Http.AsParametersAttribute
 Microsoft.AspNetCore.Http.AsParametersAttribute.AsParametersAttribute() -> void
+Microsoft.AspNetCore.Http.CookieBuilder.Extensions.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext
 Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.DefaultRouteHandlerInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!
@@ -18,9 +19,9 @@ Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata.MaxRequestBodySize.get -> long?
 Microsoft.AspNetCore.Http.RouteHandlerContext
 Microsoft.AspNetCore.Http.RouteHandlerContext.ApplicationServices.get -> System.IServiceProvider!
-Microsoft.AspNetCore.Http.RouteHandlerContext.EndpointMetadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection!
+Microsoft.AspNetCore.Http.RouteHandlerContext.EndpointMetadata.get -> System.Collections.Generic.IList<object!>!
 Microsoft.AspNetCore.Http.RouteHandlerContext.MethodInfo.get -> System.Reflection.MethodInfo!
-Microsoft.AspNetCore.Http.RouteHandlerContext.RouteHandlerContext(System.Reflection.MethodInfo! methodInfo, Microsoft.AspNetCore.Http.EndpointMetadataCollection! endpointMetadata, System.IServiceProvider! applicationServices) -> void
+Microsoft.AspNetCore.Http.RouteHandlerContext.RouteHandlerContext(System.Reflection.MethodInfo! methodInfo, System.Collections.Generic.IList<object!>! endpointMetadata, System.IServiceProvider! applicationServices) -> void
 Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate
 Microsoft.AspNetCore.Http.RouteHandlerInvocationContext
 Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.RouteHandlerInvocationContext() -> void
