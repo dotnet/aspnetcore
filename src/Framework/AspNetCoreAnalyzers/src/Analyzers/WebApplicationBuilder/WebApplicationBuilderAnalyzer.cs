@@ -5,7 +5,6 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.NetworkInformation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -46,7 +45,6 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                 wellKnownTypes.HostingAbstractionsWebHostBuilderExtensions,
                 wellKnownTypes.WebHostBuilderExtensions,
             };
-            //add INamedTypeSymbol[] wellKnownTypes.OURANALYZER
             INamedTypeSymbol[] configureLoggingTypes =
             {
                 wellKnownTypes.HostingHostBuilderExtensions,
@@ -106,7 +104,8 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                             invocation));
                 }
 
-                //Configure Logging
+                //var builder = WebApplication.CreateBuilder(args);
+                //builder.Host.ConfigureLogging(x => {})
                 if (IsDisallowedMethod(
                         operationAnalysisContext,
                         invocation,
@@ -121,6 +120,8 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                             invocation));
                 }
 
+                //var builder = WebApplication.CreateBuilder(args);
+                //builder.WebHost.ConfigureLogging(x => {})
                 if (IsDisallowedMethod(
                         operationAnalysisContext,
                         invocation,
