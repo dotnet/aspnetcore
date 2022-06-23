@@ -1,3 +1,5 @@
+To get the process of adding/modifying API going, file a new issue using [the API Proposal issue template](https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=api-suggestion&template=30_api_proposal.md&title=). Below is more information about the process.
+
 ## Process
 
 The goal of the API Review process is to ensure that the new APIs are following common patterns and the best practices.

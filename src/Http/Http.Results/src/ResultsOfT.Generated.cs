@@ -36,7 +36,7 @@ public sealed class Results<TResult1, TResult2> : IResult, IEndpointMetadataProv
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (Result is null)
         {
@@ -99,7 +99,7 @@ public sealed class Results<TResult1, TResult2, TResult3> : IResult, IEndpointMe
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (Result is null)
         {
@@ -171,7 +171,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4> : IResult, I
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (Result is null)
         {
@@ -252,7 +252,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5> : 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (Result is null)
         {
@@ -342,7 +342,7 @@ public sealed class Results<TResult1, TResult2, TResult3, TResult4, TResult5, TR
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        ArgumentNullException.ThrowIfNull(httpContext, nameof(httpContext));
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (Result is null)
         {

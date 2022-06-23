@@ -2728,8 +2728,7 @@ public class ControllerBaseTest
     [Theory]
     [InlineData("")]
     [InlineData("prefix")]
-    public async Task
-        TryUpdateModel_IncludeExpressionWithValueProviderOverload_UsesPassedArguments(string prefix)
+    public async Task TryUpdateModel_IncludeExpressionWithValueProviderOverload_UsesPassedArguments(string prefix)
     {
         // Arrange
         var valueProvider = new Mock<IValueProvider>();
@@ -2757,6 +2756,57 @@ public class ControllerBaseTest
         // Assert
         Assert.NotEqual(0, binder.BindModelCount);
     }
+
+#nullable enable
+    [Fact]
+    public async Task TryUpdateModel_SupportsNullableExpressions()
+    {
+        // Arrange
+        var valueProvider = new Mock<IValueProvider>();
+        valueProvider.Setup(v => v.ContainsPrefix(""))
+            .Returns(true);
+
+        StubModelBinder CreateBinder() => new StubModelBinder(context =>
+        {
+            Assert.Same(
+                valueProvider.Object,
+                Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
+
+            Assert.NotNull(context.PropertyFilter);
+
+            bool InvokePropertyFilter(string propertyName)
+            {
+                var modelMetadata = context.ModelMetadata.Properties[propertyName];
+                Assert.NotNull(modelMetadata);
+                return context.PropertyFilter!(modelMetadata!);
+            }
+
+            Assert.True(InvokePropertyFilter("Include"));
+            Assert.False(InvokePropertyFilter("Exclude"));
+        });
+
+        var binder1 = CreateBinder();
+        var controller1 = GetController(binder1, valueProvider.Object);
+        var model1 = new MyNullableModel();
+
+        // Act
+        await controller1.TryUpdateModelAsync(model1, prefix: "", m => m.Include);
+
+        // Assert
+        Assert.NotEqual(0, binder1.BindModelCount);
+
+        // Arrange (IModelBinder overload)
+        var binder2 = CreateBinder();
+        var controller2 = GetController(binder2, valueProvider.Object);
+        var model2 = new MyNullableModel();
+
+        // Act (IModelBinder overload)
+        await controller2.TryUpdateModelAsync(model2, prefix: "", m => m.Include);
+
+        // Assert (IModelBinder overload)
+        Assert.NotEqual(0, binder2.BindModelCount);
+    }
+#nullable restore
 
     [Fact]
     public async Task TryUpdateModelNonGeneric_PropertyFilterWithValueProviderOverload_UsesPassedArguments()
@@ -3113,6 +3163,15 @@ public class ControllerBaseTest
     {
         public string Property3 { get; set; }
     }
+
+#nullable enable
+    private class MyNullableModel
+    {
+        public string? Include { get; set; }
+
+        public string? Exclude { get; set; }
+    }
+#nullable restore
 
     private class TryValidateModelModel
     {

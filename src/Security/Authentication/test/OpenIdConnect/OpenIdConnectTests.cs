@@ -88,6 +88,7 @@ public class OpenIdConnectTests
                 AuthorizationEndpoint = "https://example.com/provider/login"
             };
             opt.NonceCookie.Path = "/";
+            opt.NonceCookie.Extensions.Add("ExtN");
         });
 
         var server = setting.CreateTestServer();
@@ -100,6 +101,7 @@ public class OpenIdConnectTests
         var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
         var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix, StringComparison.Ordinal));
         Assert.Contains("path=/", nonce);
+        Assert.Contains("ExtN", nonce);
     }
 
     [Fact]
@@ -139,6 +141,7 @@ public class OpenIdConnectTests
                 AuthorizationEndpoint = "https://example.com/provider/login"
             };
             opt.CorrelationCookie.Path = "/";
+            opt.CorrelationCookie.Extensions.Add("ExtC");
         });
 
         var server = setting.CreateTestServer();
@@ -151,6 +154,7 @@ public class OpenIdConnectTests
         var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
         var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
         Assert.Contains("path=/", correlation);
+        Assert.EndsWith("ExtC", correlation);
     }
 
     [Fact]

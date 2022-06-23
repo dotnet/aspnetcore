@@ -15,7 +15,7 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider
 {
     internal ValidationProblem(HttpValidationProblemDetails problemDetails)
     {
-        ArgumentNullException.ThrowIfNull(problemDetails, nameof(problemDetails));
+        ArgumentNullException.ThrowIfNull(problemDetails);
         if (problemDetails is { Status: not null and not StatusCodes.Status400BadRequest })
         {
             throw new ArgumentException($"{nameof(ValidationProblem)} only supports a 400 Bad Request response status code.", nameof(problemDetails));

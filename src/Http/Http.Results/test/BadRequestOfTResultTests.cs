@@ -104,7 +104,7 @@ public class BadRequestOfTResultTests
         // Arrange
         BadRequest<Todo> MyApi() { throw new NotImplementedException(); }
         var metadata = new List<object>();
-        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, null);
+        var context = new EndpointMetadataContext(((Delegate)MyApi).GetMethodInfo(), metadata, EmptyServiceProvider.Instance);
 
         // Act
         PopulateMetadata<BadRequest<Todo>>(context);

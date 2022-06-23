@@ -2619,7 +2619,7 @@ public abstract class ControllerBase
     public async Task<bool> TryUpdateModelAsync<TModel>(
         TModel model,
         string prefix,
-        params Expression<Func<TModel, object>>[] includeExpressions)
+        params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
         if (model == null)
@@ -2710,7 +2710,7 @@ public abstract class ControllerBase
         TModel model,
         string prefix,
         IValueProvider valueProvider,
-        params Expression<Func<TModel, object>>[] includeExpressions)
+        params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
         if (model == null)

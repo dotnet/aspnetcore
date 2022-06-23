@@ -13,11 +13,6 @@ internal static class Constants
     public const string DefaultServerAddress = "http://localhost:5000";
 
     /// <summary>
-    /// The endpoint Kestrel will bind to if nothing else is specified and a default certificate is available.
-    /// </summary>
-    public const string DefaultServerHttpsAddress = "https://localhost:5001";
-
-    /// <summary>
     /// Prefix of host name used to specify Unix sockets in the configuration.
     /// </summary>
     public const string UnixPipeHostPrefix = "unix:/";

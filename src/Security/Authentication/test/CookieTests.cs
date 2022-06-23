@@ -261,6 +261,8 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
             o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             o.Cookie.SameSite = SameSiteMode.None;
             o.Cookie.HttpOnly = true;
+            o.Cookie.Extensions.Add("extension0");
+            o.Cookie.Extensions.Add("extension1=value1");
         }, SignInAsAlice, baseAddress: new Uri("http://example.com/base"));
 
         using var server1 = host.GetTestServer();
@@ -274,6 +276,8 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Contains(" secure", setCookie1);
         Assert.Contains(" samesite=none", setCookie1);
         Assert.Contains(" httponly", setCookie1);
+        Assert.Contains(" extension0", setCookie1);
+        Assert.Contains(" extension1=value1", setCookie1);
 
         using var host2 = await CreateHost(o =>
         {
@@ -294,6 +298,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.DoesNotContain(" domain=", setCookie2);
         Assert.DoesNotContain(" secure", setCookie2);
         Assert.DoesNotContain(" httponly", setCookie2);
+        Assert.DoesNotContain(" extension", setCookie2);
     }
 
     [Fact]
@@ -1384,13 +1389,15 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     [Theory]
-    [InlineData("/redirect_test")]
-    [InlineData("http://example.com/redirect_to")]
-    public async Task RedirectUriIsHoneredAfterSignin(string redirectUrl)
+    [InlineData("/redirect_test", "/loginpath")]
+    [InlineData("/redirect_test", "/testpath")]
+    [InlineData("http://example.com/redirect_to", "/loginpath")]
+    [InlineData("http://example.com/redirect_to", "/testpath")]
+    public async Task RedirectUriIsHonoredAfterSignin(string redirectUrl, string loginPath)
     {
         using var host = await CreateHost(o =>
         {
-            o.LoginPath = "/testpath";
+            o.LoginPath = loginPath;
             o.Cookie.Name = "TestCookie";
         },
         async context =>
@@ -1408,7 +1415,29 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     [Fact]
-    public async Task RedirectUriInQueryIsHoneredAfterSignin()
+    public async Task RedirectUriInQueryIsIgnoredAfterSigninForUnrecognizedEndpoints()
+    {
+        using var host = await CreateHost(o =>
+        {
+            o.LoginPath = "/loginpath";
+            o.ReturnUrlParameter = "return";
+            o.Cookie.Name = "TestCookie";
+        },
+        async context =>
+        {
+            await context.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", CookieAuthenticationDefaults.AuthenticationScheme))));
+        });
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/testpath?return=%2Fret_path_2");
+
+        Assert.NotEmpty(transaction.SetCookie);
+        Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RedirectUriInQueryIsHonoredAfterSignin()
     {
         using var host = await CreateHost(o =>
         {
