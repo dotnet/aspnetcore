@@ -107,9 +107,8 @@ internal sealed class OpenApiGenerator
             responseType = typeof(void);
         }
 
-        var errorMetadata = metadata.GetMetadata<IProducesErrorResponseMetadata>();
+        var errorMetadata = metadata.GetMetadata<ProducesErrorResponseTypeAttribute>();
         var defaultErrorType = errorMetadata?.Type;
-        var defaultErrorContentType = errorMetadata?.ContentType;
 
         var responseProviderMetadata = metadata.GetOrderedMetadata<IApiResponseMetadataProvider>();
         var producesResponseMetadata = metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>();
@@ -128,11 +127,6 @@ internal sealed class OpenApiGenerator
                 if (responseType != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
                 {
                     discoveredTypeAnnotation = responseType;
-                }
-                else if (defaultErrorType != null && defaultErrorContentType != null && statusCode >= 400 && statusCode < 500)
-                {
-                    discoveredContentTypeAnnotation.Add(defaultErrorContentType);
-                    discoveredTypeAnnotation = defaultErrorType;
                 }
             }
 
