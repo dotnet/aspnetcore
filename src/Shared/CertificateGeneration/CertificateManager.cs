@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 
 internal abstract class CertificateManager
 {
-    internal const int CurrentAspNetCoreCertificateVersion = 3;
+    internal const int CurrentAspNetCoreCertificateVersion = 2;
 
     //
     // OIDs used for HTTPS certs
