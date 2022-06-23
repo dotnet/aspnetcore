@@ -29,6 +29,7 @@ internal sealed partial class RateLimitingMiddleware
     /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
     /// <param name="logger">The <see cref="ILogger"/> used for logging.</param>
     /// <param name="options">The options for the middleware.</param>
+    /// <param name="serviceProvider">The service provider for this middleware.</param>
     public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimiterOptions> options, IServiceProvider serviceProvider)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
@@ -41,10 +42,15 @@ internal sealed partial class RateLimitingMiddleware
         _rejectionStatusCode = options.Value.RejectionStatusCode;
         _policyMap = options.Value.PolicyMap;
 
+        var convertPolicyObject = typeof(RateLimiterOptions).GetMethod("ConvertPolicyObject");
+
         foreach (var item in options.Value.UnactivatedPolicyMap)
         {
-            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, item.Value.Item1);
-            _policyMap.Add(item.Key, new AspNetPolicy(RateLimiterOptions.ConvertPartitioner<TPartitionKey>(((IRateLimiterPolicy<TPartitionKey>)instance).GetPartition)));
+            var genericConvertPolicyObject = convertPolicyObject!.MakeGenericMethod(item.Value.PartitionKeyType);
+            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, item.Value.PolicyType);
+            var obj = genericConvertPolicyObject.Invoke(new RateLimiterOptions(), new object[] { instance });
+            var partitioner = (Func<HttpContext, RateLimitPartition<AspNetKey>>)obj!;
+            _policyMap.Add(item.Key, new AspNetPolicy(partitioner!));
         }    
 
         var _globalLimiter = options.Value.GlobalLimiter;
@@ -54,7 +60,7 @@ internal sealed partial class RateLimitingMiddleware
         }
         else
         {
-            _limiter = PartitionedRateLimiter.CreateChained();
+            _limiter = PartitionedRateLimiter.CreateChained(_globalLimiter, CreateEndpointLimiter());
         }
 
     }
