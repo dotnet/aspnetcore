@@ -15,8 +15,8 @@ public sealed class RateLimiterOptions
     internal IDictionary<string, AspNetPolicy> PolicyMap { get; }
         = new Dictionary<string, AspNetPolicy>(StringComparer.Ordinal);
 
-    internal IDictionary<string, PolicyInfo> UnactivatedPolicyMap { get; }
-        = new Dictionary<string, PolicyInfo> (StringComparer.Ordinal);
+    internal IDictionary<string, PolicyTypeInfo> UnactivatedPolicyMap { get; }
+        = new Dictionary<string, PolicyTypeInfo> (StringComparer.Ordinal);
 
     /// <summary>
     /// Gets or sets the <see cref="PartitionedRateLimiter{TResource}"/>
@@ -81,7 +81,7 @@ public sealed class RateLimiterOptions
             throw new ArgumentException("There already exists a policy with the name {name}");
         }
 
-        UnactivatedPolicyMap.Add(policyName, new PolicyInfo { PolicyType = typeof(TPolicy), PartitionKeyType = typeof(TPartitionKey) });
+        UnactivatedPolicyMap.Add(policyName, new PolicyTypeInfo { PolicyType = typeof(TPolicy), PartitionKeyType = typeof(TPartitionKey) });
 
         return this;
     }

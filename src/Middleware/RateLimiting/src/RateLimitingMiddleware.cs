@@ -44,13 +44,13 @@ internal sealed partial class RateLimitingMiddleware
 
         var convertPolicyObject = typeof(RateLimiterOptions).GetMethod("ConvertPolicyObject");
 
-        foreach (var item in options.Value.UnactivatedPolicyMap)
+        foreach (var policyTypeInfo in options.Value.UnactivatedPolicyMap)
         {
-            var genericConvertPolicyObject = convertPolicyObject!.MakeGenericMethod(item.Value.PartitionKeyType);
-            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, item.Value.PolicyType);
+            var genericConvertPolicyObject = convertPolicyObject!.MakeGenericMethod(policyTypeInfo.Value.PartitionKeyType);
+            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, policyTypeInfo.Value.PolicyType);
             var obj = genericConvertPolicyObject.Invoke(new RateLimiterOptions(), new object[] { instance });
             var partitioner = (Func<HttpContext, RateLimitPartition<AspNetKey>>)obj!;
-            _policyMap.Add(item.Key, new AspNetPolicy(partitioner!));
+            _policyMap.Add(policyTypeInfo.Key, new AspNetPolicy(partitioner));
         }    
 
         var _globalLimiter = options.Value.GlobalLimiter;
