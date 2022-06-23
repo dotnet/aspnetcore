@@ -259,7 +259,7 @@ public class DefaultProblemDetailsWriterTest
         Assert.Equal("Bad Request", problemDetails.Title);
     }
 
-    private DefaultProblemDetailsWriter GetWriter(ProblemDetailsOptions? options = null)
+    private DefaultProblemDetailsWriter GetWriter(ProblemDetailsOptions options = null)
     {
         options ??= new ProblemDetailsOptions();
         return new DefaultProblemDetailsWriter(Options.Create(options));
