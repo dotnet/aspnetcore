@@ -23,11 +23,6 @@ internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
         _configure = problemDetailsOptions?.Value?.ConfigureDetails;
     }
 
-    public bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting)
-    {
-        throw new NotImplementedException();
-    }
-
     public override ProblemDetails CreateProblemDetails(
         HttpContext httpContext,
         int? statusCode = null,
