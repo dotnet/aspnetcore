@@ -28,7 +28,7 @@ public class Program
         builder.RootComponents.RegisterForJavaScript<JavaScriptRootComponentParameterTypes>(
             "component-with-many-parameters",
             javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
-        builder.RootComponents.RegisterAsCustomElement<CustomElementParameterTypes>("my-custom-element");
+        builder.RootComponents.RegisterCustomElement<CustomElementParameterTypes>("my-custom-element");
 
         builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
         builder.Services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
