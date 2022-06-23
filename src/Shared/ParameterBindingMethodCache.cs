@@ -35,7 +35,7 @@ internal sealed class ParameterBindingMethodCache
 
     // Since this is shared source, the cache won't be shared between RequestDelegateFactory and the ApiDescriptionProvider sadly :(
     private readonly ConcurrentDictionary<Type, Func<ParameterExpression, Expression, Expression>?> _stringMethodCallCache = new();
-    private readonly ConcurrentDictionary<Type, (Func<ParameterInfo, Expression>?, int)> _bindAsyncMethodCallCache = new();
+    private readonly ConcurrentDictionary<Type, (Func<ParameterInfo, Expression>?, int, Type)> _bindAsyncMethodCallCache = new();
     private readonly ConcurrentDictionary<Type, (ConstructorInfo?, ConstructorParameter[])> _constructorCache = new();
 
     // If IsDynamicCodeSupported is false, we can't use the static Enum.TryParse<T> since there's no easy way for
@@ -192,9 +192,9 @@ internal sealed class ParameterBindingMethodCache
     }
 
     [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
-    public (Expression? Expression, int ParamCount) FindBindAsyncMethod(ParameterInfo parameter)
+    public (Expression? Expression, int ParamCount, Type AwaitedType) FindBindAsyncMethod(ParameterInfo parameter)
     {
-        (Func<ParameterInfo, Expression>?, int) Finder(Type nonNullableParameterType)
+        (Func<ParameterInfo, Expression>?, int, Type) Finder(Type nonNullableParameterType)
         {
             var hasParameterInfo = true;
             var methodInfo = GetIBindableFromHttpContextMethod(nonNullableParameterType);
@@ -235,7 +235,7 @@ internal sealed class ParameterBindingMethodCache
                             typedCall = Expression.Call(methodInfo, HttpContextExpr);
                         }
                         return Expression.Call(GetGenericConvertValueTask(nonNullableParameterType), typedCall);
-                    }, hasParameterInfo ? 2 : 1);
+                    }, hasParameterInfo ? 2 : 1, valueTaskResultType);
 
                     [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Linker workaround. The type is annotated with RequiresUnreferencedCode")]
                     static MethodInfo GetGenericConvertValueTask(Type nonNullableParameterType) => ConvertValueTaskMethod.MakeGenericMethod(nonNullableParameterType);
@@ -259,7 +259,7 @@ internal sealed class ParameterBindingMethodCache
                             typedCall = Expression.Call(methodInfo, HttpContextExpr);
                         }
                         return Expression.Call(GetGenericConvertValueTaskOfNullableResult(nonNullableParameterType), typedCall);
-                    }, hasParameterInfo ? 2 : 1);
+                    }, hasParameterInfo ? 2 : 1, valueTaskResultType);
 
                     [UnconditionalSuppressMessage("Trimmer", "IL2060", Justification = "Linker workaround. The type is annotated with RequiresUnreferencedCode")]
                     static MethodInfo GetGenericConvertValueTaskOfNullableResult(Type nonNullableParameterType) => ConvertValueTaskOfNullableResultMethod.MakeGenericMethod(nonNullableParameterType);
@@ -281,12 +281,12 @@ internal sealed class ParameterBindingMethodCache
                 throw new InvalidOperationException(stringBuilder.ToString());
             }
 
-            return (null, 0);
+            return (null, 0, typeof(void));
         }
 
         var nonNullableParameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
-        var (method, paramCount) = _bindAsyncMethodCallCache.GetOrAdd(nonNullableParameterType, Finder);
-        return (method?.Invoke(parameter), paramCount);
+        var (method, paramCount, returnType) = _bindAsyncMethodCallCache.GetOrAdd(nonNullableParameterType, Finder);
+        return (method?.Invoke(parameter), paramCount, returnType);
 
         static bool ValidateReturnType(MethodInfo methodInfo)
         {

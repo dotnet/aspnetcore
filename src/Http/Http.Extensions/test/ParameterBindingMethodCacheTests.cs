@@ -623,7 +623,7 @@ public class ParameterBindingMethodCacheTests
     {
         var cache = new ParameterBindingMethodCache(throwOnInvalidMethod: false);
         var parameter = new MockParameterInfo(type, "anything");
-        var (expression, _) = cache.FindBindAsyncMethod(parameter);
+        var (expression, _, _) = cache.FindBindAsyncMethod(parameter);
         Assert.Null(expression);
     }
 
@@ -641,7 +641,7 @@ public class ParameterBindingMethodCacheTests
     {
         var cache = new ParameterBindingMethodCache(throwOnInvalidMethod: false);
         var parameter = new MockParameterInfo(typeof(BindAsyncFromMultipleInterfaces), "anything");
-        var (expression, _) = cache.FindBindAsyncMethod(parameter);
+        var (expression, _, _) = cache.FindBindAsyncMethod(parameter);
         Assert.Null(expression);
     }
 
@@ -652,7 +652,7 @@ public class ParameterBindingMethodCacheTests
     {
         var cache = new ParameterBindingMethodCache();
         var parameter = new MockParameterInfo(type, "anything");
-        var (expression, _) = cache.FindBindAsyncMethod(parameter);
+        var (expression, _, _) = cache.FindBindAsyncMethod(parameter);
         Assert.NotNull(expression);
     }
 
