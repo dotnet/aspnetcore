@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
@@ -25,25 +26,19 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     private readonly SemaphoreSlim _pendingAcceptStreamRequests = new(0);
     private readonly Http3Connection _connection;
 
-    // these should all be effectively readonly after
-    // the initialization method
     private string _version = "";
     private Http3Stream _controlStream = default!;
-
     private bool _initialized;
 
-    internal static string VersionHeaderPrefix => "sec-webtransport-http3-draft";
+    internal static string WebTransportProtocolValue => "webtransport";
+    private static string SecPrefix => "sec-webtransport-http3-";
+    internal static string VersionHeaderPrefix => $"{SecPrefix}draft";
 
-    // Order is important for both of these arrays as we choose the first
-    // supported version (index 0 is the most prefered option)
-    internal static readonly byte[][] suppportedWebTransportVersionsBytes =
+    // Order is important as we choose the first supported
+    // version (preferenc dereases as index increases)
+    private static readonly IEnumerable<string> suppportedWebTransportVersions = new string[]
     {
-        new byte[] { 0x64, 0x72, 0x61, 0x66, 0x74, 0x30, 0x32 } // "draft02" 
-    };
-
-    internal static readonly string[] suppportedWebTransportVersions =
-    {
-        "draft02"
+        $"{VersionHeaderPrefix}02"
     };
 
     long IWebTransportSession.SessionId => _controlStream.StreamId;
@@ -108,21 +103,29 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     /// Initialize the WebTransport session and prepare it to make a connection
     /// </summary>
     /// <param name="controlStream">The stream overwhich the ENHANCED CONNECT request was established</param>
-    /// <param name="version">The version of the WebTransport spec to use</param>
-    /// <returns>True if the initialization completed successfully. False otherwise.</returns>
-    internal bool Initialize(Http3Stream controlStream, string version)
+    /// <param name="supportedVersions">A list of supported versions from the client. Kestrel will pick the
+    /// most recent that both client and server support.</param>
+    /// <returns>True if the initialization completed successfully. False otherwise.</returns>'
+    internal bool Initialize(Http3Stream controlStream, IEnumerable<string> supportedVersions)
     {
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out _webtransportEnabled);
 
-        if (_webtransportEnabled)
+        if (!_webtransportEnabled)
         {
-            _controlStream = controlStream;
-            _initialized = true;
+            return false;
         }
 
-        _version = version;
+        var matches = supportedVersions.Intersect(suppportedWebTransportVersions);
 
-        return _webtransportEnabled;
+        if (!matches.Any())
+        {
+            return false;
+        }
+
+        _controlStream = controlStream;
+        _version = matches.First()[SecPrefix.Length..];
+        _initialized = true;
+        return true;
     }
 
     /// <summary>

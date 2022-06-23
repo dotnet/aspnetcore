@@ -843,22 +843,18 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);
             }
 
-            if (HttpRequestHeaders.HeaderProtocol == "webtransport")
+            if (HttpRequestHeaders.HeaderProtocol == WebTransportSession.WebTransportProtocolValue)
             {
-                var supportedVersions = HttpRequestHeaders.Where((header) => // TODO do as we go along and store as list in WebTransportSession or is that a memory issue?
+                // TODO do as we go along and store as list in WebTransportSession or is that a memory issue?
+                var supportedVersions = HttpRequestHeaders.Where((header) =>
                 {
                     return header.Key.StartsWith(WebTransportSession.VersionHeaderPrefix, StringComparison.InvariantCulture)
                             && header.Value == "1";
-                });
+                }).Select((header) => header.Key);
 
-                foreach (var version in WebTransportSession.suppportedWebTransportVersions)
+                if (supportedVersions.Any() && (_context?.WebTransportSession?.Initialize(this, supportedVersions) ?? false))
                 {
-                    if (supportedVersions.Any((v) => v.Key.EndsWith(version, StringComparison.InvariantCulture)) &&
-                        (_context?.WebTransportSession?.Initialize(this, version) ?? false))
-                    {
-                        _currentIHttpWebTransportSessionFeature = _context.WebTransportSession!;
-                        break;
-                    }
+                    _currentIHttpWebTransportSessionFeature = _context.WebTransportSession!;
                 }
             }
         }
