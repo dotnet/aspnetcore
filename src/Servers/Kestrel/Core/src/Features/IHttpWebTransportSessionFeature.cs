@@ -18,4 +18,9 @@ public interface IHttpWebTransportSessionFeature
     /// <returns>An instance of a WebTransportSession which will be used to control the connection.</returns>
     [RequiresPreviewFeatures("WebTransport is a preview feature")]
     ValueTask<IWebTransportSession> AcceptAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Indicates if this request is a WebTransport request.
+    /// </summary>
+    bool IsWebTransportRequest { get; }
 }

@@ -48,6 +48,8 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
 
     long IWebTransportSession.SessionId => _controlStream.StreamId;
 
+    bool IHttpWebTransportSessionFeature.IsWebTransportRequest => _initialized;
+
 #pragma warning disable CA2252 // WebTransport is a preview feature. Suppress this warning
     async ValueTask<IWebTransportSession> IHttpWebTransportSessionFeature.AcceptAsync(CancellationToken token)
     {
