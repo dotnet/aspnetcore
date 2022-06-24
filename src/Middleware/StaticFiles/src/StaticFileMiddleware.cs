@@ -92,7 +92,7 @@ public class StaticFileMiddleware
     }
 
     // Return true because we only want to run if there is no endpoint delegate.
-    private static bool ValidateNoEndpointDelegate(HttpContext context) => context.GetEndpoint()?.RequestDelegate == null;
+    private static bool ValidateNoEndpointDelegate(HttpContext context) => context.GetEndpoint()?.RequestDelegate is null;
 
     private static bool ValidateMethod(HttpContext context)
     {
