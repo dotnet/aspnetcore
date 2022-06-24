@@ -5,4 +5,18 @@ namespace Microsoft.AspNetCore.RateLimiting;
 internal class PolicyNameKey
 {
     public required string PolicyName { get; init; }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is PolicyNameKey key)
+        {
+            return PolicyName.Equals(key.PolicyName);
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return PolicyName.GetHashCode();
+    }
 }

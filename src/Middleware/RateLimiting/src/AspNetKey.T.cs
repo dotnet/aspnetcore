@@ -4,10 +4,15 @@
 namespace Microsoft.AspNetCore.RateLimiting;
 internal sealed class AspNetKey<TKey>: AspNetKey
 {
+    private readonly TKey _key;
+
     public AspNetKey(TKey key)
     {
-        Key = key;
+        _key = key;
     }
 
-    public TKey Key { get; }
+    public override object? GetKey()
+    {
+        return _key;
+    }
 }

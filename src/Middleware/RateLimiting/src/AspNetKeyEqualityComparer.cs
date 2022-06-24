@@ -16,26 +16,29 @@ internal class AspNetKeyEqualityComparer : IEqualityComparer<AspNetKey>
         {
             return false;
         }
-        else if (x is AspNetKey<object> && y is AspNetKey<object>)
+
+        var xKey = x.GetKey();
+        var yKey = y.GetKey();
+        if (xKey == null && yKey == null)
         {
-            return ((AspNetKey<object>)x).Key.Equals(((AspNetKey<object>)y).Key);
+            return true;
         }
-        else
+        else if (xKey == null || yKey == null)
         {
             return false;
         }
+
+        return xKey.Equals(yKey);
     }
 
     public int GetHashCode([DisallowNull] AspNetKey obj)
     {
-        if (obj is AspNetKey<object>)
+        var key = obj.GetKey();
+        if (key is not null)
         {
-            return ((AspNetKey<object>)obj).Key.GetHashCode();
+            return key.GetHashCode();
         }
-        // REVIEW - what's reasonable here? AspNetKey is a completely empty object
-        else
-        {
-            return default;
-        }
+        // REVIEW - is this reasonable?
+        return default;
     }
 }
