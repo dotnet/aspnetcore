@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.RateLimiting;
-internal sealed class AspNetKey<TKey>: AspNetKey
+internal sealed class DefaultKeyType<TKey>: DefaultKeyType
 {
     private readonly TKey _key;
 
-    public AspNetKey(TKey key)
+    public DefaultKeyType(TKey key)
     {
         _key = key;
     }
