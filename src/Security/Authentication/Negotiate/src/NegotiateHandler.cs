@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 /// <summary>
 /// Authenticates requests using Negotiate, Kerberos, or NTLM.
 /// </summary>
-[RequiresUnreferencedCode("Negotiate authentication uses types that cannot be statically analyzed.")]
 public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthenticationRequestHandler
 {
     private const string AuthPersistenceKey = nameof(AuthPersistence);
