@@ -59,7 +59,7 @@ public class DefaultFilesMiddleware
     /// <returns></returns>
     public Task Invoke(HttpContext context)
     {
-        if (context.GetEndpoint() == null
+        if (context.GetEndpoint()?.RequestDelegate == null
             && Helpers.IsGetOrHeadMethod(context.Request.Method)
             && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath))
         {
