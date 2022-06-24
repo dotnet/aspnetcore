@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 public partial class DisallowConfigureAppConfigureHostBuilderTest
 {
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new WebApplicationBuilderAnalyzer());
-    
+
     [Fact]
     public async Task ConfigurationBuilderRunsWithoutDiagnostic()
     {
@@ -25,7 +25,7 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true);
         // Assert
         Assert.Empty(diagnostic);
     }
-   
+
     [Fact]
     public async Task ConfigureAppHostBuilderProducesDiagnostic()
     {
@@ -40,7 +40,7 @@ builder.Host./*MM*/ConfigureAppConfiguration(builder =>
     builder.AddJsonFile(""foo.json"", optional: true);
 });
 ");
-     
+
         // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
@@ -64,7 +64,7 @@ builder.Host./*MM*/ConfigureHostConfiguration(builder =>
     builder.AddJsonFile(""foo.json"", optional: true);
 });
 ");
-     
+
         // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
@@ -89,7 +89,7 @@ builder.WebHost./*MM*/ConfigureAppConfiguration(builder =>
     builder.AddJsonFile(""foo.json"", optional: true);
 });
 ");
-      
+
         // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
