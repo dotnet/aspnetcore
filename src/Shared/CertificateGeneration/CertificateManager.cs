@@ -35,11 +35,11 @@ internal abstract class CertificateManager
     // reason to change the OID version again, we might be able to reunify the OS's.
 
     // This was the OID used on all OS's pre-.NET 7
-    internal const string AspNetHttpsOid1 = "1.3.6.1.4.1.311.84.1.1";
+    internal const string AspNetHttpsOid_NotMacOS = "1.3.6.1.4.1.311.84.1.1";
 
     // This is a new OID only used on macOS for .NET 7+
-    internal const string AspNetHttpsOid2 = "1.3.6.1.4.1.311.84.1.3";
-    internal static readonly string AspNetHttpsOid = OperatingSystem.IsMacOS() ? AspNetHttpsOid2 : AspNetHttpsOid1;
+    internal const string AspNetHttpsOid_MacOS = "1.3.6.1.4.1.311.84.1.3";
+    internal static readonly string AspNetHttpsOid = OperatingSystem.IsMacOS() ? AspNetHttpsOid_MacOS : AspNetHttpsOid_NotMacOS;
 
     internal const string AspNetHttpsOidFriendlyName = "ASP.NET Core HTTPS development certificate";
 
