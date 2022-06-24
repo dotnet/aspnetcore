@@ -4,7 +4,7 @@
 using System.Threading.RateLimiting;
 
 namespace Microsoft.AspNetCore.RateLimiting;
-internal sealed class LeaseContext : IDisposable
+internal struct LeaseContext : IDisposable
 {
     public Rejector? Rejector { get; init; }
 
