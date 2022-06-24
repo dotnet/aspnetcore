@@ -201,11 +201,6 @@ internal sealed partial class RateLimitingMiddleware
         }, new AspNetKeyEqualityComparer());
     }
 
-    internal int GetAvailablePermits(HttpContext resource)
-    {
-        return _endpointLimiter.GetAvailablePermits(resource);
-    }
-
     private static partial class RateLimiterLog
     {
         [LoggerMessage(1, LogLevel.Debug, "Rate limits exceeded, rejecting this request.", EventName = "RequestRejectedLimitsExceeded")]

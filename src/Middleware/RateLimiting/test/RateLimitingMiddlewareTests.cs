@@ -202,7 +202,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
     [Fact]
     public async Task EndpointLimiterRejects_EndpointOnRejectedFires()
     {
-        var onRejectedInvoked = false;
+        var globalOnRejectedInvoked = false;
         var options = CreateOptionsAccessor();
         var name = "myEndpoint";
         // This is the policy that should get used
@@ -210,7 +210,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
         // This OnRejected should be ignored in favor of the one on the policy
         options.Value.OnRejected = (context, token) =>
         {
-            onRejectedInvoked = true;
+            globalOnRejectedInvoked = true;
             context.HttpContext.Response.StatusCode = 429;
             return ValueTask.CompletedTask;
         };
@@ -226,7 +226,73 @@ public class RateLimitingMiddlewareTests : LoggedTest
         var context = new DefaultHttpContext();
         context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
         await middleware.Invoke(context).DefaultTimeout();
-        Assert.False(onRejectedInvoked);
+        Assert.False(globalOnRejectedInvoked);
+
+        Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GlobalAndEndpoint_GlobalRejects_GlobalWins()
+    {
+        var globalOnRejectedInvoked = false;
+        var options = CreateOptionsAccessor();
+        var name = "myEndpoint";
+        // Endpoint always allows - it should not fire
+        options.Value.AddPolicy<string>(name, new TestRateLimiterPolicy("myKey", 404, true));
+        // Global never allows - it should fire
+        options.Value.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
+        options.Value.OnRejected = (context, token) =>
+        {
+            globalOnRejectedInvoked = true;
+            context.HttpContext.Response.StatusCode = 429;
+            return ValueTask.CompletedTask;
+        };
+
+        var middleware = new RateLimitingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+        options,
+        Mock.Of<IServiceProvider>());
+
+        var context = new DefaultHttpContext();
+        context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.True(globalOnRejectedInvoked);
+
+        Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GlobalAndEndpoint_EndpointRejects_EndpointWins()
+    {
+        var globalOnRejectedInvoked = false;
+        var options = CreateOptionsAccessor();
+        var name = "myEndpoint";
+        // Endpoint never allows - it should fire
+        options.Value.AddPolicy<string>(name, new TestRateLimiterPolicy("myKey", 404, false));
+        // Global always allows - it should not fire
+        options.Value.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(true));
+        options.Value.OnRejected = (context, token) =>
+        {
+            globalOnRejectedInvoked = true;
+            context.HttpContext.Response.StatusCode = 429;
+            return ValueTask.CompletedTask;
+        };
+
+        var middleware = new RateLimitingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+        options,
+        Mock.Of<IServiceProvider>());
+
+        var context = new DefaultHttpContext();
+        context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.False(globalOnRejectedInvoked);
 
         Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
     }
