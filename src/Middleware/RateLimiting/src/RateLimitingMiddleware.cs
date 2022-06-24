@@ -121,42 +121,64 @@ internal sealed partial class RateLimitingMiddleware
     private LeaseContext CombinedAcquire(HttpContext context)
     {
         RateLimitLease? globalLease = null;
+        RateLimitLease? endpointLease = null;
 
-        if (_globalLimiter is not null)
+        try
         {
-            globalLease = _globalLimiter.Acquire(context);
-            if (!globalLease.IsAcquired)
+            if (_globalLimiter is not null)
             {
-                return new LeaseContext() { Rejector = Rejector.Global, Lease = globalLease };
+                globalLease = _globalLimiter.Acquire(context);
+                if (!globalLease.IsAcquired)
+                {
+                    return new LeaseContext() { Rejector = Rejector.Global, Lease = globalLease };
+                }
+            }
+            endpointLease = _endpointLimiter.Acquire(context);
+            if (!endpointLease.IsAcquired)
+            {
+                globalLease?.Dispose();
+                return new LeaseContext() { Rejector = Rejector.Endpoint, Lease = endpointLease };
             }
         }
-        RateLimitLease endpointLease = _endpointLimiter.Acquire(context);
-        if (!endpointLease.IsAcquired)
+        catch (Exception)
         {
             globalLease?.Dispose();
-            return new LeaseContext() { Rejector = Rejector.Endpoint, Lease = endpointLease };
+            endpointLease?.Dispose();
+            throw;
         }
+
         return new LeaseContext() { Lease = new AspNetLease(globalLease, endpointLease)};
     }
 
     private async ValueTask<LeaseContext> CombinedWaitASync(HttpContext context, CancellationToken cancellationToken)
     {
         RateLimitLease? globalLease = null;
+        RateLimitLease? endpointLease = null;
 
-        if (_globalLimiter is not null)
+        try
         {
-            globalLease = await _globalLimiter.WaitAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (!globalLease.IsAcquired)
+            if (_globalLimiter is not null)
             {
-                return new LeaseContext() { Rejector = Rejector.Global, Lease = globalLease };
+                globalLease = await _globalLimiter.WaitAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (!globalLease.IsAcquired)
+                {
+                    return new LeaseContext() { Rejector = Rejector.Global, Lease = globalLease };
+                }
+            }
+            endpointLease = await _endpointLimiter.WaitAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (!endpointLease.IsAcquired)
+            {
+                globalLease?.Dispose();
+                return new LeaseContext() { Rejector = Rejector.Endpoint, Lease = endpointLease };
             }
         }
-        RateLimitLease endpointLease = await _endpointLimiter.WaitAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
-        if (!endpointLease.IsAcquired)
+        catch (Exception)
         {
             globalLease?.Dispose();
-            return new LeaseContext() { Rejector = Rejector.Endpoint, Lease = endpointLease };
+            endpointLease?.Dispose();
+            throw;
         }
+
         return new LeaseContext() { Lease = new AspNetLease(globalLease, endpointLease) };
     }
 
