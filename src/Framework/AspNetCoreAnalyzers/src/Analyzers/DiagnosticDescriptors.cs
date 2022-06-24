@@ -82,10 +82,10 @@ internal static class DiagnosticDescriptors
 
     internal static readonly DiagnosticDescriptor DisallowConfigureAppConfigureHostBuilder = new(
         "ASP0013",
-        "Do not use builder.Host.ConfigureAppConfiguration or builder.Host.ConfigureHostConfiguration",
-        "Replace with builder.Configuration",
+        "Suggest switching from using Configure methods to WebApplicationBuilder.Configuration",
+        "Suggest using WebApplicationBuilder.Configuration instead of {0}",
         "Usage",
-        DiagnosticSeverity.Error,
+        DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
 

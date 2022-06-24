@@ -204,7 +204,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         location = Location.Create(operation.Syntax.SyntaxTree, targetSpan);
                     }
 
-                    return Diagnostic.Create(descriptor, location);
+                    return Diagnostic.Create(descriptor, location, methodName);
                 }
 
             }, OperationKind.Invocation);

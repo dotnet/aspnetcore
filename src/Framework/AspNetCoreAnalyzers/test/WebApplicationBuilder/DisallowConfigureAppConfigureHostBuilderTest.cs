@@ -23,7 +23,7 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true);
         var diagnostic = await Runner.GetDiagnosticsAsync(source);
 
         // Assert
-        Assert.Empty(diagnostic); 
+        Assert.Empty(diagnostic);
     }
    
     [Fact]
@@ -48,7 +48,7 @@ builder.Host./*MM*/ConfigureAppConfiguration(builder =>
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Replace with builder.Configuration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -72,7 +72,7 @@ builder.Host./*MM*/ConfigureHostConfiguration(builder =>
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Replace with builder.Configuration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureHostConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -97,7 +97,7 @@ builder.WebHost./*MM*/ConfigureAppConfiguration(builder =>
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Replace with builder.Configuration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -119,7 +119,7 @@ builder.WebHost./*MM*/ConfigureAppConfiguration((context, webHostBuilder) => { }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Replace with builder.Configuration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
     [Fact]
     public async Task ConfigureAppWebHostBuilderProducesDiagnosticInMain()
@@ -145,7 +145,7 @@ public static class Test
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Replace with builder.Configuration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
     [Fact]
     public async Task ConfigureAppWebHostOnBuilderProducesDiagnosticInMain()
@@ -172,7 +172,7 @@ public static class Test
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Replace with builder.Configuration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
     [Fact]
     public async Task TwoInvocationsProduceTwoDiagnostic()
@@ -202,9 +202,9 @@ builder.WebHost./*MM2*/ConfigureAppConfiguration(builder =>
         var diagnostic2 = diagnostics[1];
         Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic1.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], diagnostic1.Location);
-        Assert.Equal("Replace with builder.Configuration", diagnostic1.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureHostConfiguration", diagnostic1.GetMessage(CultureInfo.InvariantCulture));
         Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic2.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM2"], diagnostic2.Location);
-        Assert.Equal("Replace with builder.Configuration", diagnostic2.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic2.GetMessage(CultureInfo.InvariantCulture));
     }
 }
