@@ -4,4 +4,5 @@
 namespace Microsoft.AspNetCore.RateLimiting;
 internal abstract class AspNetKey
 {
+    public abstract object? GetKey();
 }

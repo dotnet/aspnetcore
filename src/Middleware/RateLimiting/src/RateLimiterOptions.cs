@@ -60,7 +60,7 @@ public sealed class RateLimiterOptions
             throw new ArgumentException("There already exists a policy with the name {name}");
         }
 
-        PolicyMap.Add(policyName, new AspNetPolicy(ConvertPartitioner<TPartitionKey>(partitioner)));
+        PolicyMap.Add(policyName, new AspNetPolicy(ConvertPartitioner<TPartitionKey>(partitioner), null));
 
         return this;
     }
@@ -108,7 +108,7 @@ public sealed class RateLimiterOptions
             throw new ArgumentNullException(nameof(policy));
         }
 
-        PolicyMap.Add(policyName, new AspNetPolicy(ConvertPartitioner<TPartitionKey>(policy.GetPartition)));
+        PolicyMap.Add(policyName, new AspNetPolicy(ConvertPartitioner<TPartitionKey>(policy.GetPartition), policy.OnRejected));
 
         return this;
     }
@@ -130,7 +130,7 @@ public sealed class RateLimiterOptions
             throw new ArgumentException("There already exists a policy with the name {name}");
         }
 
-        PolicyMap.Add(policyName, new AspNetPolicy(partitioner));
+        PolicyMap.Add(policyName, new AspNetPolicy(partitioner, null));
 
         return this;
     }

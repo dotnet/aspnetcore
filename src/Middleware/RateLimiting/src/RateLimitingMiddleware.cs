@@ -52,7 +52,7 @@ internal sealed partial class RateLimitingMiddleware
             var instance = ActivatorUtilities.CreateInstance(_serviceProvider, policyTypeInfo.Value.PolicyType);
             var obj = genericConvertPolicyObject.Invoke(new RateLimiterOptions(), new object[] { instance });
             var partitioner = (Func<HttpContext, RateLimitPartition<AspNetKey>>)obj!;
-            _policyMap.Add(policyTypeInfo.Key, new AspNetPolicy(partitioner));
+            _policyMap.Add(policyTypeInfo.Key, new AspNetPolicy(partitioner, ((IRateLimiterPolicy<object>)instance).OnRejected));
         }    
 
         _globalLimiter = options.Value.GlobalLimiter;
@@ -95,11 +95,11 @@ internal sealed partial class RateLimitingMiddleware
                 AspNetPolicy? policy;
                 var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.Name;
                 // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
-                if (!(name is null) && _policyMap.TryGetValue(name, out policy) && !(policy.OnRejected is null))
+                if (name is not null && _policyMap.TryGetValue(name, out policy) && policy.OnRejected is not null)
                 {
                     await policy.OnRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease }, context.RequestAborted);
                 }
-                else if (!(_onRejected is null))
+                else if (_onRejected is not null)
                 {
                     await _onRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease }, context.RequestAborted);
                 }
@@ -142,8 +142,8 @@ internal sealed partial class RateLimitingMiddleware
         }
         catch (Exception)
         {
-            globalLease?.Dispose();
             endpointLease?.Dispose();
+            globalLease?.Dispose();
             throw;
         }
 
@@ -174,8 +174,8 @@ internal sealed partial class RateLimitingMiddleware
         }
         catch (Exception)
         {
-            globalLease?.Dispose();
             endpointLease?.Dispose();
+            globalLease?.Dispose();
             throw;
         }
 
@@ -190,7 +190,7 @@ internal sealed partial class RateLimitingMiddleware
         {
             AspNetPolicy? policy;
             var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.Name;
-            if (!(name is null))
+            if (name is not null)
             {
                 if (_policyMap.TryGetValue(name, out policy))
                 {
@@ -199,6 +199,11 @@ internal sealed partial class RateLimitingMiddleware
             }
             return RateLimitPartition.CreateNoLimiter<AspNetKey>(_defaultPolicyKey);
         }, new AspNetKeyEqualityComparer());
+    }
+
+    internal int GetAvailablePermits(HttpContext resource)
+    {
+        return _endpointLimiter.GetAvailablePermits(resource);
     }
 
     private static partial class RateLimiterLog
