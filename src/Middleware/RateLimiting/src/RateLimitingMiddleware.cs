@@ -20,8 +20,8 @@ internal sealed partial class RateLimitingMiddleware
     private readonly PartitionedRateLimiter<HttpContext>? _globalLimiter;
     private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
     private readonly int _rejectionStatusCode;
-    private readonly IDictionary<string, AspNetPolicy> _policyMap;
-    private readonly AspNetKey _defaultPolicyKey = new AspNetKey<PolicyNameKey>(new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
+    private readonly IDictionary<string, DefaultRateLimiterPolicy> _policyMap;
+    private readonly DefaultKeyType _defaultPolicyKey = new DefaultKeyType<PolicyNameKey>(new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
@@ -51,8 +51,8 @@ internal sealed partial class RateLimitingMiddleware
             var genericConvertPolicyObject = convertPolicyObject!.MakeGenericMethod(policyTypeInfo.Value.PartitionKeyType);
             var instance = ActivatorUtilities.CreateInstance(_serviceProvider, policyTypeInfo.Value.PolicyType);
             var obj = genericConvertPolicyObject.Invoke(new RateLimiterOptions(), new object[] { instance });
-            var partitioner = (Func<HttpContext, RateLimitPartition<AspNetKey>>)obj!;
-            _policyMap.Add(policyTypeInfo.Key, new AspNetPolicy(partitioner, ((IRateLimiterPolicy<object>)instance).OnRejected));
+            var partitioner = (Func<HttpContext, RateLimitPartition<DefaultKeyType>>)obj!;
+            _policyMap.Add(policyTypeInfo.Key, new DefaultRateLimiterPolicy(partitioner, ((IRateLimiterPolicy<object>)instance).OnRejected));
         }    
 
         _globalLimiter = options.Value.GlobalLimiter;
@@ -92,7 +92,7 @@ internal sealed partial class RateLimitingMiddleware
             }
             else
             {
-                AspNetPolicy? policy;
+                DefaultRateLimiterPolicy? policy;
                 var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.Name;
                 // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
                 if (name is not null && _policyMap.TryGetValue(name, out policy) && policy.OnRejected is not null)
@@ -147,7 +147,7 @@ internal sealed partial class RateLimitingMiddleware
             throw;
         }
 
-        return new LeaseContext() { Lease = new AspNetLease(globalLease, endpointLease)};
+        return new LeaseContext() { Lease = new DefaultCombinedLease(globalLease, endpointLease)};
     }
 
     private async ValueTask<LeaseContext> CombinedWaitASync(HttpContext context, CancellationToken cancellationToken)
@@ -179,16 +179,16 @@ internal sealed partial class RateLimitingMiddleware
             throw;
         }
 
-        return new LeaseContext() { Lease = new AspNetLease(globalLease, endpointLease) };
+        return new LeaseContext() { Lease = new DefaultCombinedLease(globalLease, endpointLease) };
     }
 
     // Create the endpoint-specific PartitionedRateLimiter
     private PartitionedRateLimiter<HttpContext> CreateEndpointLimiter()
     {
         // If we have a policy for this endpoint, use its partitioner. Else use a NoLimiter.
-        return PartitionedRateLimiter.Create<HttpContext, AspNetKey>(context =>
+        return PartitionedRateLimiter.Create<HttpContext, DefaultKeyType>(context =>
         {
-            AspNetPolicy? policy;
+            DefaultRateLimiterPolicy? policy;
             var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.Name;
             if (name is not null)
             {
@@ -197,8 +197,8 @@ internal sealed partial class RateLimitingMiddleware
                     return policy.GetPartition(context);
                 }
             }
-            return RateLimitPartition.CreateNoLimiter<AspNetKey>(_defaultPolicyKey);
-        }, new AspNetKeyEqualityComparer());
+            return RateLimitPartition.CreateNoLimiter<DefaultKeyType>(_defaultPolicyKey);
+        }, new DefaultKeyTypeEqualityComparer());
     }
 
     private static partial class RateLimiterLog

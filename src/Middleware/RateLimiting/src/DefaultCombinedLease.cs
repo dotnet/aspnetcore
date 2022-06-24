@@ -4,13 +4,13 @@
 using System.Threading.RateLimiting;
 
 namespace Microsoft.AspNetCore.RateLimiting;
-internal sealed class AspNetLease : RateLimitLease
+internal sealed class DefaultCombinedLease : RateLimitLease
 {
     private readonly RateLimitLease? _globalLease;
     private readonly RateLimitLease _endpointLease;
     private HashSet<string>? _metadataNames;
 
-    public AspNetLease(RateLimitLease? globalLease, RateLimitLease endpointLease)
+    public DefaultCombinedLease(RateLimitLease? globalLease, RateLimitLease endpointLease)
     {
         _globalLease = globalLease;
         _endpointLease = endpointLease;

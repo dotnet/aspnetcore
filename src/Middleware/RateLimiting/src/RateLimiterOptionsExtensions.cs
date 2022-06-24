@@ -21,7 +21,7 @@ public static class RateLimiterOptionsExtensions
     {
         return options.InternalAddPolicy(policyName, context =>
         {
-            return RateLimitPartition.CreateTokenBucketLimiter((AspNetKey)new AspNetKey<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName }),
+            return RateLimitPartition.CreateTokenBucketLimiter((DefaultKeyType)new DefaultKeyType<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName }),
                 _ => tokenBucketRateLimiterOptions);
         });
     }
@@ -37,7 +37,7 @@ public static class RateLimiterOptionsExtensions
     {
         return options.InternalAddPolicy(policyName, context =>
         {
-            return RateLimitPartition.CreateFixedWindowLimiter((AspNetKey)new AspNetKey<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName }),
+            return RateLimitPartition.CreateFixedWindowLimiter((DefaultKeyType)new DefaultKeyType<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName }),
                 _ => fixedWindowRateLimiterOptions);
         });
     }
@@ -53,7 +53,7 @@ public static class RateLimiterOptionsExtensions
     {
         return options.InternalAddPolicy(policyName, context =>
         {
-            return RateLimitPartition.CreateSlidingWindowLimiter((AspNetKey)new AspNetKey<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName }),
+            return RateLimitPartition.CreateSlidingWindowLimiter((DefaultKeyType)new DefaultKeyType<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName }),
                 _ => slidingWindowRateLimiterOptions);
         });
     }
@@ -69,7 +69,7 @@ public static class RateLimiterOptionsExtensions
     {
         return options.InternalAddPolicy(policyName, context =>
         {
-            return RateLimitPartition.CreateConcurrencyLimiter((AspNetKey)new AspNetKey<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName }),
+            return RateLimitPartition.CreateConcurrencyLimiter((DefaultKeyType)new DefaultKeyType<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName }),
                 _ => concurrencyLimiterOptions);
         });
     }
@@ -84,7 +84,7 @@ public static class RateLimiterOptionsExtensions
     {
         return options.InternalAddPolicy(policyName, context =>
         {
-            return RateLimitPartition.CreateNoLimiter((AspNetKey)new AspNetKey<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName }));
+            return RateLimitPartition.CreateNoLimiter((DefaultKeyType)new DefaultKeyType<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName }));
         });
     }
 }

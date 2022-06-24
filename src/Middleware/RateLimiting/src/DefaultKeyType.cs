@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.RateLimiting;
-internal abstract class AspNetKey
+internal abstract class DefaultKeyType
 {
     public abstract object? GetKey();
 }

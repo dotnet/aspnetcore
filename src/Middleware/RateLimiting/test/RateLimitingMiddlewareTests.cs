@@ -297,6 +297,39 @@ public class RateLimitingMiddlewareTests : LoggedTest
         Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
     }
 
+    [Fact]
+    public async Task GlobalAndEndpoint_BothReject_GlobalWins()
+    {
+        var globalOnRejectedInvoked = false;
+        var options = CreateOptionsAccessor();
+        var name = "myEndpoint";
+        // Endpoint never allows - it should not fire
+        options.Value.AddPolicy<string>(name, new TestRateLimiterPolicy("myKey", 404, false));
+        // Global never allows - it should fire
+        options.Value.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
+        options.Value.OnRejected = (context, token) =>
+        {
+            globalOnRejectedInvoked = true;
+            context.HttpContext.Response.StatusCode = 429;
+            return ValueTask.CompletedTask;
+        };
+
+        var middleware = new RateLimitingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+        options,
+        Mock.Of<IServiceProvider>());
+
+        var context = new DefaultHttpContext();
+        context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.True(globalOnRejectedInvoked);
+
+        Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
+    }
+
     private IOptions<RateLimiterOptions> CreateOptionsAccessor() => Options.Create(new RateLimiterOptions());
 
 }

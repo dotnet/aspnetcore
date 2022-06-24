@@ -4,9 +4,9 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.RateLimiting;
-internal class AspNetKeyEqualityComparer : IEqualityComparer<AspNetKey>
+internal class DefaultKeyTypeEqualityComparer : IEqualityComparer<DefaultKeyType>
 {
-    public bool Equals(AspNetKey? x, AspNetKey? y)
+    public bool Equals(DefaultKeyType? x, DefaultKeyType? y)
     {
         if (x == null && y == null)
         {
@@ -31,7 +31,7 @@ internal class AspNetKeyEqualityComparer : IEqualityComparer<AspNetKey>
         return xKey.Equals(yKey);
     }
 
-    public int GetHashCode([DisallowNull] AspNetKey obj)
+    public int GetHashCode([DisallowNull] DefaultKeyType obj)
     {
         var key = obj.GetKey();
         if (key is not null)
