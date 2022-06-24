@@ -15,6 +15,16 @@
     <TestProjectSkipReason>You cannot test native ARM64 projects on a x86/x64 machine</TestProjectSkipReason>
   </PropertyGroup>
 
+  <PropertyGroup Label="Configuration">
+    <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform Condition="'$(Platform)' == ''">x64</Platform>
+    <PlatformToolsetVersion>v143</PlatformToolsetVersion>
+    <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.19041.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
   <Import Project="MicroBuild.Plugin.props" Condition="'$(MicroBuildSentinelFile)' == ''" />
   <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.props" Condition=" '$(MicroBuildPluginDirectory)' != ''" />
 
