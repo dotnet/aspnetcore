@@ -17,7 +17,8 @@ internal sealed partial class RateLimitingMiddleware
     private readonly RequestDelegate _next;
     private readonly Func<OnRejectedContext, CancellationToken, ValueTask>? _onRejected;
     private readonly ILogger _logger;
-    private readonly PartitionedRateLimiter<HttpContext> _limiter;
+    private readonly PartitionedRateLimiter<HttpContext>? _globalLimiter;
+    private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
     private readonly int _rejectionStatusCode;
     private readonly IDictionary<string, AspNetPolicy> _policyMap;
     private readonly AspNetKey _defaultPolicyKey = new AspNetKey<PolicyNameKey>(new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
@@ -42,6 +43,7 @@ internal sealed partial class RateLimitingMiddleware
         _rejectionStatusCode = options.Value.RejectionStatusCode;
         _policyMap = options.Value.PolicyMap;
 
+        // Use reflection to activate policies passed to AddPolicy<TPartitionKey, TPolicy>
         var convertPolicyObject = typeof(RateLimiterOptions).GetMethod("ConvertPolicyObject");
 
         foreach (var policyTypeInfo in options.Value.UnactivatedPolicyMap)
@@ -53,15 +55,8 @@ internal sealed partial class RateLimitingMiddleware
             _policyMap.Add(policyTypeInfo.Key, new AspNetPolicy(partitioner));
         }    
 
-        var _globalLimiter = options.Value.GlobalLimiter;
-        if (_globalLimiter is null)
-        {
-            _limiter = CreateEndpointLimiter();
-        }
-        else
-        {
-            _limiter = PartitionedRateLimiter.CreateChained(_globalLimiter, CreateEndpointLimiter());
-        }
+        _globalLimiter = options.Value.GlobalLimiter;
+        _endpointLimiter = CreateEndpointLimiter();
 
     }
 
@@ -73,8 +68,8 @@ internal sealed partial class RateLimitingMiddleware
     /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
     public async Task Invoke(HttpContext context)
     {
-        using var lease = await TryAcquireAsync(context);
-        if (lease.IsAcquired)
+        using var leaseContext = await TryAcquireAsync(context);
+        if (leaseContext.Lease.IsAcquired)
         {
             await _next(context);
         }
@@ -85,29 +80,84 @@ internal sealed partial class RateLimitingMiddleware
             // then call OnRejected in case it wants to do any further modification of the status code.
             context.Response.StatusCode = _rejectionStatusCode;
 
-            AspNetPolicy? policy;
-            var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.Name;
-            // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
-            if (!(name is null) && _policyMap.TryGetValue(name, out policy) && !(policy.OnRejected is null))
+            // If the global limiter rejected this request, use OnRejected from the options if it exists.
+            // Else the endpoint limiter rejected this request - use OnRejected from the endpoint policy if it exists,
+            // else OnRejected from the options if it exists.
+            if (leaseContext.Rejector.Equals(Rejector.Global))
             {
-                await policy.OnRejected(new OnRejectedContext() { HttpContext = context, Lease = lease }, context.RequestAborted);
+                if (_onRejected is not null)
+                {
+                    await _onRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease }, context.RequestAborted);
+                }
             }
-            else if (!(_onRejected is null))
+            else
             {
-                await _onRejected(new OnRejectedContext() { HttpContext = context, Lease = lease }, context.RequestAborted);
+                AspNetPolicy? policy;
+                var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.Name;
+                // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
+                if (!(name is null) && _policyMap.TryGetValue(name, out policy) && !(policy.OnRejected is null))
+                {
+                    await policy.OnRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease }, context.RequestAborted);
+                }
+                else if (!(_onRejected is null))
+                {
+                    await _onRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease }, context.RequestAborted);
+                }
             }
         }
     }
 
-    private ValueTask<RateLimitLease> TryAcquireAsync(HttpContext context)
+    private ValueTask<LeaseContext> TryAcquireAsync(HttpContext context)
     {
-        var lease = _limiter.Acquire(context);
-        if (lease.IsAcquired)
+        var leaseContext = CombinedAcquire(context);
+        if (leaseContext.Lease.IsAcquired)
         {
-            return ValueTask.FromResult(lease);
+            return ValueTask.FromResult(leaseContext);
         }
 
-        return _limiter.WaitAsync(context, cancellationToken: context.RequestAborted);
+        return CombinedWaitASync(context, context.RequestAborted);
+    }
+
+    private LeaseContext CombinedAcquire(HttpContext context)
+    {
+        RateLimitLease? globalLease = null;
+
+        if (_globalLimiter is not null)
+        {
+            globalLease = _globalLimiter.Acquire(context);
+            if (!globalLease.IsAcquired)
+            {
+                return new LeaseContext() { Rejector = Rejector.Global, Lease = globalLease };
+            }
+        }
+        RateLimitLease endpointLease = _endpointLimiter.Acquire(context);
+        if (!endpointLease.IsAcquired)
+        {
+            globalLease?.Dispose();
+            return new LeaseContext() { Rejector = Rejector.Endpoint, Lease = endpointLease };
+        }
+        return new LeaseContext() { Lease = new AspNetLease(globalLease, endpointLease)};
+    }
+
+    private async ValueTask<LeaseContext> CombinedWaitASync(HttpContext context, CancellationToken cancellationToken)
+    {
+        RateLimitLease? globalLease = null;
+
+        if (_globalLimiter is not null)
+        {
+            globalLease = await _globalLimiter.WaitAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (!globalLease.IsAcquired)
+            {
+                return new LeaseContext() { Rejector = Rejector.Global, Lease = globalLease };
+            }
+        }
+        RateLimitLease endpointLease = await _endpointLimiter.WaitAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        if (!endpointLease.IsAcquired)
+        {
+            globalLease?.Dispose();
+            return new LeaseContext() { Rejector = Rejector.Endpoint, Lease = endpointLease };
+        }
+        return new LeaseContext() { Lease = new AspNetLease(globalLease, endpointLease) };
     }
 
     // Create the endpoint-specific PartitionedRateLimiter
@@ -134,4 +184,10 @@ internal sealed partial class RateLimitingMiddleware
         [LoggerMessage(1, LogLevel.Debug, "Rate limits exceeded, rejecting this request.", EventName = "RequestRejectedLimitsExceeded")]
         internal static partial void RequestRejectedLimitsExceeded(ILogger logger);
     }
+}
+
+internal enum Rejector
+{
+    Global,
+    Endpoint
 }
