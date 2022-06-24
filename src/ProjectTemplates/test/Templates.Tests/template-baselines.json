@@ -1808,37 +1808,37 @@
         "Server/appsettings.json",
         "Server/Program.cs",
         "Shared/SharedClass.cs"
-      ],
-      "ExcludeLaunchSettings": {
-        "Template": "blazorwasm-empty",
-        "Arguments": "new blazorwasm-empty --exclude-launch-settings",
-        "Files": [
-          "Pages/Index.razor",
-          "wwwroot/css/app.css",
-          "wwwroot/index.html",
-          "_Imports.razor",
-          "App.razor",
-          "MainLayout.razor",
-          "Program.cs"
-        ]
-      },
-      "ExcludeLaunchSettingsHosted": {
-        "Template": "blazorwasm-empty",
-        "Arguments": "new blazorwasm-empty --hosted --exclude-launch-settings",
-        "Files": [
-          "Client/_Imports.razor",
-          "Client/App.razor",
-          "Client/MainLayout.razor",
-          "Client/Program.cs",
-          "Client/Pages/Index.razor",
-          "Client/wwwroot/index.html",
-          "Client/wwwroot/css/app.css",
-          "Server/appsettings.Development.json",
-          "Server/appsettings.json",
-          "Server/Program.cs",
-          "Shared/SharedClass.cs"
-        ]
-      }
+      ]
+    },
+    "ExcludeLaunchSettings": {
+      "Template": "blazorwasm-empty",
+      "Arguments": "new blazorwasm-empty --exclude-launch-settings",
+      "Files": [
+        "Pages/Index.razor",
+        "wwwroot/css/app.css",
+        "wwwroot/index.html",
+        "_Imports.razor",
+        "App.razor",
+        "MainLayout.razor",
+        "Program.cs"
+      ]
+    },
+    "ExcludeLaunchSettingsHosted": {
+      "Template": "blazorwasm-empty",
+      "Arguments": "new blazorwasm-empty --hosted --exclude-launch-settings",
+      "Files": [
+        "Client/_Imports.razor",
+        "Client/App.razor",
+        "Client/MainLayout.razor",
+        "Client/Program.cs",
+        "Client/Pages/Index.razor",
+        "Client/wwwroot/index.html",
+        "Client/wwwroot/css/app.css",
+        "Server/appsettings.Development.json",
+        "Server/appsettings.json",
+        "Server/Program.cs",
+        "Shared/SharedClass.cs"
+      ]
     }
   }
 }
