@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Runtime.CompilerServices;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
@@ -53,6 +55,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
+    private IEnumerable<string>? _webTransportVersions;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
     private readonly object _completionLock = new();
@@ -743,7 +746,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
         }
 
-        if (_currentIHttpWebTransportSessionFeature is not null && _context.WebTransportSession is not null)
+        if (_context.WebTransportSession is not null)
         {
             _context.WebTransportSession.OnClientConnectionClosed();
         }
@@ -850,23 +853,21 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             if (HttpRequestHeaders.HeaderProtocol == WebTransportSession.WebTransportProtocolValue)
             {
+                // indicate as webtransport request
+                _currentIHttpWebTransportFeature!.IsWebTransportRequest = true;
+
                 // TODO do as we go along and store as list in WebTransportSession or is that a memory issue?
+                // Also, should this be on a per webtransport session basis? If so, maybe I need a queue?
                 var supportedVersions = HttpRequestHeaders.Where((header) =>
                 {
                     return header.Key.StartsWith(WebTransportSession.VersionHeaderPrefix, StringComparison.InvariantCulture)
                             && header.Value == "1";
                 }).Select((header) => header.Key);
 
-                if (supportedVersions.Any() && (_context?.WebTransportSession?.Initialize(this, supportedVersions) ?? false))
+                if (supportedVersions.Any())
                 {
-                    _currentIHttpWebTransportSessionFeature = _context.WebTransportSession!;
+                    _webTransportVersions = supportedVersions;
                 }
-
-                _context!.StreamContext.ConnectionClosed.Register(state =>
-                {
-                    var session = (WebTransportSession)state!;
-                    session.OnClientConnectionClosed();
-                }, _context.WebTransportSession!);
             }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
@@ -1180,6 +1181,44 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             return (oldCompletionState, _completionState);
         }
+    }
+
+    public override async ValueTask<IWebTransportSession> AcceptAsync(CancellationToken token)
+    {
+        // check if WebTransport was enabled
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var _webtransportEnabled);
+        if (!_webtransportEnabled)
+        {
+            throw new Exception("WebTransport is disabled. Please enable it before starting a session.");
+        }
+
+        // version negotiation
+        if (_webTransportVersions is null)
+        {
+            throw new Exception("Failed to negotiate a common WebTransport version with client.");
+        }
+
+        var matches = _webTransportVersions!.Intersect(WebTransportSession.SuppportedWebTransportVersions);
+
+        if (!matches.Any())
+        {
+            throw new Exception("Failed to negotiate a common WebTransport version with client.");
+        }
+
+        // send version negotiation resulting version
+        var version = matches.First()[WebTransportSession.SecPrefix.Length..];
+        ResponseHeaders.TryAdd(WebTransportSession.VersionHeaderPrefix, version);
+        Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (Http.HttpResponseHeaders)ResponseHeaders, false, false);
+        await Output.FlushAsync(token);
+
+        // listener to abort if this connection is closed
+        _context!.StreamContext.ConnectionClosed.Register(state =>
+        {
+            var session = (WebTransportSession)state!;
+            session.OnClientConnectionClosed();
+        }, _context.WebTransportSession!);
+
+        return _context!.WebTransportSession!;
     }
 
     /// <summary>

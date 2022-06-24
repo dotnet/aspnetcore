@@ -25,19 +25,17 @@ internal sealed class Http3StreamContext : HttpConnectionContext
         IHttp3StreamLifetimeHandler streamLifetimeHandler,
         ConnectionContext streamContext,
         Http3PeerSettings clientPeerSettings,
-        Http3PeerSettings serverPeerSettings,
-        WebTransportSession? webTransportSession = null) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+        Http3PeerSettings serverPeerSettings) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
     {
         StreamLifetimeHandler = streamLifetimeHandler;
         StreamContext = streamContext;
         ClientPeerSettings = clientPeerSettings;
         ServerPeerSettings = serverPeerSettings;
-        WebTransportSession = webTransportSession;
     }
 
     public IHttp3StreamLifetimeHandler StreamLifetimeHandler { get; }
     public ConnectionContext StreamContext { get; }
     public Http3PeerSettings ClientPeerSettings { get; }
     public Http3PeerSettings ServerPeerSettings { get; }
-    public WebTransportSession? WebTransportSession { get; }
+    public WebTransportSession? WebTransportSession { get; set; }
 }

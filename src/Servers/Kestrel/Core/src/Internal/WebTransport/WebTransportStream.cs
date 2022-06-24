@@ -62,12 +62,13 @@ internal class WebTransportStream : Stream
     {
         var stream = new WebTransportStream(context, type);
 
-        if (stream.CanRead)
-        {
-            // skip the first 3 bytes which correspond the the strem header
-            // as the application does not need to see them
-            _ = await stream.ReadAsyncInternal(new Memory<byte>(new byte[3]), 0, 3, CancellationToken.None);
-        }
+        // todo either remove if I implement this as part of connection class or uncomment
+        //if (stream.CanRead)
+        //{
+        //    // skip the first 3 bytes which correspond the the strem header
+        //    // as the application does not need to see them
+        //    _ = await stream.ReadAsyncInternal(new Memory<byte>(new byte[3]), 0, 3, CancellationToken.None);
+        //}
 
         return stream;
     }

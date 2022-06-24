@@ -46,14 +46,13 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private readonly Http3PeerSettings _clientSettings = new();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
-    private readonly WebTransportSession _webtransportSession;
+    private readonly Dictionary<long, WebTransportSession> _webtransportSessions = new();
 
     public Http3Connection(HttpMultiplexedConnectionContext context)
     {
         _multiplexedContext = (MultiplexedConnectionContext)context.ConnectionContext;
         _context = context;
         _streamLifetimeHandler = this;
-        _webtransportSession = new(this);
 
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
 
@@ -300,12 +299,14 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                             if (!streamDirectionFeature.CanWrite)
                             {
                                 var context = CreateHttpStreamContext(streamContext);
-                                var streamType = await ReadStreamType(context);
+                                var streamType = await ReadNextStreamHeader(context);
 
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
+                                    var correspondingSession = await ReadNextStreamHeader(context, true);
                                     var stream = await WebTransportStream.CreateWebTransportStream(context, WebTransportStreamType.Input);
-                                    _webtransportSession.AddStream(stream);
+                                    _webtransportSessions[correspondingSession].AddStream(stream);
+                                    context.WebTransportSession = _webtransportSessions[correspondingSession];
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
                                 {
@@ -338,15 +339,19 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 Http3Stream? stream = default!;
 
                                 var context = CreateHttpStreamContext(streamContext);
-                                var streamType = await ReadStreamType(context);
+                                var streamType = await ReadNextStreamHeader(context);
                                 // Check whether there is an existing HTTP/3 stream on the transport stream.
                                 // A stream will only be cached if the transport stream itself is reused.
                                 if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s))
                                 {
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
+
+                                        var correspondingSession = await ReadNextStreamHeader(context, true);
                                         var stream2 = await WebTransportStream.CreateWebTransportStream(context, WebTransportStreamType.Bidirectional);
-                                        _webtransportSession.AddStream(stream2);
+                                        _webtransportSessions[correspondingSession].AddStream(stream2);
+                                        context.WebTransportSession = _webtransportSessions[correspondingSession];
+
                                     }
                                     else
                                     {
@@ -428,9 +433,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     }
                 }
 
-                if (_webtransportSession is not null)
+                foreach (var session in _webtransportSessions.Values)
                 {
-                    _webtransportSession.OnClientConnectionClosed();
+                    session.OnClientConnectionClosed();
                 }
 
                 if (outboundControlStream != null)
@@ -470,30 +475,37 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         }
     }
 
-    private static async Task<long> ReadStreamType(Http3StreamContext context)
+    private static async Task<long> ReadNextStreamHeader(Http3StreamContext context, bool persist = false)
     {
         var Input = context.Transport.Input;
         var result = await Input.ReadAsync();
         var readableBuffer = result.Buffer;
-        var streamType = 0L;
+        var value = 0L;
         try
         {
             if (!readableBuffer.IsEmpty)
             {
-                streamType = VariableLengthIntegerHelper.GetInteger(readableBuffer, out _, out _);
-            }
+                value = VariableLengthIntegerHelper.GetInteger(readableBuffer, out var consumed, out var examined);
 
-            if (result.IsCompleted && streamType == 1)
-            {
-                streamType = -1;
+                // if it is a webtransport stream we throw away the headers so we can 
+                if (persist || value == (long)Http3StreamType.WebTransportBidirectional || value == (long)Http3StreamType.WebTransportUnidirectional)
+                {
+                    Input.AdvanceTo(examined);
+                }
+
+
+                return value;
             }
         }
         finally
         {
-            Input.AdvanceTo(readableBuffer.Start);
+            if (!persist && (value != (long)Http3StreamType.WebTransportBidirectional && value != (long)Http3StreamType.WebTransportUnidirectional))
+            {
+                Input.AdvanceTo(readableBuffer.Start);
+            }
         }
 
-        return streamType;
+        return 0;
     }
 
     private static ConnectionAbortedException CreateConnectionAbortError(Exception? error, bool clientAbort)
@@ -526,8 +538,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             _streamLifetimeHandler,
             streamContext,
             _clientSettings,
-            _serverSettings,
-            _webtransportSession)
+            _serverSettings)
         {
             TimeoutControl = _context.TimeoutControl,
             Transport = streamContext.Transport

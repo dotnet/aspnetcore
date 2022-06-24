@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http.Features;
 /// <summary>
 /// API for accepting and retrieving WebTransport sessions.
 /// </summary>
-public interface IHttpWebTransportSessionFeature
+public interface IHttpWebTransportFeature
 {
     /// <summary>
     /// Accept the session request and allow streams to start being used.
@@ -17,10 +17,10 @@ public interface IHttpWebTransportSessionFeature
     /// <param name="cancellationToken">The cancellation token to cancel waiting for the session.</param>
     /// <returns>An instance of a WebTransportSession which will be used to control the connection.</returns>
     [RequiresPreviewFeatures("WebTransport is a preview feature")]
-    ValueTask<IWebTransportSession> AcceptAsync(CancellationToken cancellationToken);
+    public ValueTask<IWebTransportSession> AcceptAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Indicates if this request is a WebTransport request.
     /// </summary>
-    bool IsWebTransportRequest { get; }
+    public bool IsWebTransportRequest { get; internal set; }
 }

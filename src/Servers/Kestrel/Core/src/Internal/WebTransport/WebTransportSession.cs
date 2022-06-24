@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -17,52 +15,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 /// <summary>
 /// Controls the WebTransport session and keeps track of all the streams.
 /// </summary>
-internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSessionFeature
+internal class WebTransportSession : IWebTransportSession
 {
-    private static bool _webtransportEnabled;
     private readonly Dictionary<long, WebTransportStream> _openStreams = new();
     private readonly ConcurrentQueue<WebTransportStream> _pendingStreams = new();
     private readonly SemaphoreSlim _pendingAcceptStreamRequests = new(0);
     private readonly Http3Connection _connection;
-
-    private string _version = "";
-    private Http3Stream _controlStream = default!;
-    private bool _initialized;
+    private readonly Http3Stream _controlStream = default!;
     private bool _isClosing;
 
     internal static string WebTransportProtocolValue => "webtransport";
-    private static string SecPrefix => "sec-webtransport-http3-";
+    internal static string SecPrefix => "sec-webtransport-http3-";
     internal static string VersionHeaderPrefix => $"{SecPrefix}draft";
 
     // Order is important as we choose the first supported
     // version (preferenc dereases as index increases)
-    private static readonly IEnumerable<string> suppportedWebTransportVersions = new string[]
+    internal static readonly IEnumerable<string> SuppportedWebTransportVersions = new string[]
     {
         $"{VersionHeaderPrefix}02"
     };
 
     long IWebTransportSession.SessionId => _controlStream.StreamId;
 
-    bool IHttpWebTransportSessionFeature.IsWebTransportRequest => _initialized;
 
-    internal WebTransportSession(Http3Connection connection)
+    internal WebTransportSession(Http3Connection connection, Http3Stream controlStream)
     {
         _connection = connection;
+        _controlStream = controlStream;
+        _isClosing = false;
     }
 
-#pragma warning disable CA2252 // WebTransport is a preview feature. Suppress this warning
-    async ValueTask<IWebTransportSession> IHttpWebTransportSessionFeature.AcceptAsync(CancellationToken token)
-    {
-        ThrowIfInvalidSession();
-
-        // build and flush the 200 ACK to accept the connection from the client
-        _controlStream.ResponseHeaders.TryAdd(VersionHeaderPrefix, _version);
-        _controlStream.Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (Http.HttpResponseHeaders)_controlStream.ResponseHeaders, false, false);
-        await _controlStream.Output.FlushAsync(token);
-
-        return this;
-    }
-#pragma warning restore CA2252
 
     void IWebTransportSession.Abort()
     {
@@ -76,10 +58,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
             return;
         }
 
-        ThrowIfInvalidSession();
-
         _isClosing = true;
-        _initialized = false;
 
         lock (_openStreams)
         {
@@ -101,11 +80,7 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
             return;
         }
 
-        ThrowIfInvalidSession();
-
         _isClosing = true;
-        _initialized = false;
-
         lock (_openStreams)
         {
             _controlStream.Abort(exception, error);
@@ -122,8 +97,10 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
 
     async ValueTask<Stream> IWebTransportSession.OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
     {
-        ThrowIfInvalidSession();
-
+        if (_isClosing)
+        {
+            throw new Exception("WebTransport is closing the session");
+        }
         // create the stream
         var features = new FeatureCollection();
         features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
@@ -143,42 +120,15 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     }
 
     /// <summary>
-    /// Initialize the WebTransport session and prepare it to make a connection
-    /// </summary>
-    /// <param name="controlStream">The stream overwhich the ENHANCED CONNECT request was established</param>
-    /// <param name="supportedVersions">A list of supported versions from the client. Kestrel will pick the
-    /// most recent that both client and server support.</param>
-    /// <returns>True if the initialization completed successfully. False otherwise.</returns>'
-    internal bool Initialize(Http3Stream controlStream, IEnumerable<string> supportedVersions)
-    {
-        AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out _webtransportEnabled);
-
-        if (!_webtransportEnabled)
-        {
-            return false;
-        }
-
-        var matches = supportedVersions.Intersect(suppportedWebTransportVersions);
-
-        if (!matches.Any())
-        {
-            return false;
-        }
-
-        _controlStream = controlStream;
-        _version = matches.First()[SecPrefix.Length..];
-        _initialized = true;
-        _isClosing = false;
-        return true;
-    }
-
-    /// <summary>
     /// Adds a new stream to the internal list of open streams.
     /// </summary>
     /// <param name="stream">A reference to the new stream that is being added</param>
     internal void AddStream(WebTransportStream stream)
     {
-        ThrowIfInvalidSession();
+        if (_isClosing)
+        {
+            throw new Exception("WebTransport is closing the session");
+        }
 
         lock (_pendingStreams)
         {
@@ -194,7 +144,10 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     /// <returns>An instance of WebTransportStream that corresponds to the new stream to accept</returns>
     public async ValueTask<Stream> AcceptStreamAsync(CancellationToken cancellationToken)
     {
-        ThrowIfInvalidSession();
+        if (_isClosing)
+        {
+            throw new Exception("WebTransport is closing the session");
+        }
 
         await _pendingAcceptStreamRequests.WaitAsync(cancellationToken);
 
@@ -215,31 +168,9 @@ internal class WebTransportSession : IWebTransportSession, IHttpWebTransportSess
     /// <returns>True is the process succeeded. False otherwise</returns>
     internal bool TryRemoveStream(long streamId)
     {
-        // Don't check for if the session was aborted because
-        // removing streams is part of the process
-        ThrowIfInvalidSessionCore();
-
         lock (_openStreams)
         {
             return _openStreams.Remove(streamId);
-        }
-    }
-
-    private void ThrowIfInvalidSession()
-    {
-        ThrowIfInvalidSessionCore();
-
-        if (!_initialized)
-        {
-            throw new Exception("Session has already been aborted or has never been initialized.");
-        }
-    }
-
-    private static void ThrowIfInvalidSessionCore()
-    {
-        if (!_webtransportEnabled)
-        {
-            throw new Exception("WebTransport is currently disabled.");
         }
     }
 }

@@ -1,7 +1,7 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Features.IHttpWebTransportSessionFeature
-Microsoft.AspNetCore.Http.Features.IHttpWebTransportSessionFeature.AcceptAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession!>
-Microsoft.AspNetCore.Http.Features.IHttpWebTransportSessionFeature.IsWebTransportRequest.get -> bool
+Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature
+Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature.AcceptAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession!>
+Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature.IsWebTransportRequest.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.Abort() -> void
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>

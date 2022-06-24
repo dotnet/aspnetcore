@@ -39,7 +39,7 @@ public class HttpProtocolFeatureCollection
                 "IHttpExtendedConnectFeature",
                 "IHttpUpgradeFeature",
                 "IHttpWebSocketFeature",
-                "IHttpWebTransportSessionFeature",
+                "IHttpWebTransportFeature",
                 "IBadRequestExceptionFeature"
             };
         var maybeFeatures = new[]
@@ -80,6 +80,7 @@ public class HttpProtocolFeatureCollection
                 "IHttpBodyControlFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpRequestBodyDetectionFeature",
+                "IHttpWebTransportFeature",
                 "IBadRequestExceptionFeature"
             };
 
