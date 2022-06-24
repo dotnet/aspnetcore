@@ -457,6 +457,7 @@ internal sealed class Program
         // See comment near the definition of AspNetHttpsOid in CertificateManager.
         reporter.Warn("NOTE: If your app is targeting a version of .NET earlier than .NET 7, this version of "
             + "the dev-certs tool will not install/check for the correct certificate for your app. Please use "
-            + "the dev-certs tool from the .NET 6 SDK or the SDK version that matches your app instead.");
+            + "the dev-certs tool from the .NET 6 SDK or the SDK version that matches your app instead. For "
+            + "more information, see https://aka.ms/aspnetcore-macos-cert-change".);
     }
 }
