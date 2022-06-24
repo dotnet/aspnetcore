@@ -32,7 +32,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
         await clientConnection.ConnectAsync().DefaultTimeout();
 
         await using var serverConnection = await acceptTask.DefaultTimeout();
@@ -74,7 +74,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
 
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
         await clientConnection.ConnectAsync().DefaultTimeout();
 
         await using var serverConnection = await acceptTask.DefaultTimeout();
@@ -100,7 +100,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var quicConnection = await QuicConnection.ConnectAsync(options);
         await quicConnection.ConnectAsync().DefaultTimeout();
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -143,7 +143,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var quicConnection = await QuicConnection.ConnectAsync(options);
         await quicConnection.ConnectAsync().DefaultTimeout();
 
         var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -194,7 +194,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var quicConnection = await QuicConnection.ConnectAsync(options);
         await quicConnection.ConnectAsync().DefaultTimeout();
 
         var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -240,7 +240,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var quicConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var quicConnection = await QuicConnection.ConnectAsync(options);
         await quicConnection.ConnectAsync().DefaultTimeout();
 
         var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -266,7 +266,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
         await clientConnection.ConnectAsync().DefaultTimeout();
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -310,7 +310,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
         await clientConnection.ConnectAsync().DefaultTimeout();
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -356,7 +356,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
         await clientConnection.ConnectAsync().DefaultTimeout();
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -404,7 +404,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
         await clientConnection.ConnectAsync().DefaultTimeout();
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -462,7 +462,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, testSystemClock);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
         await clientConnection.ConnectAsync().DefaultTimeout();
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -517,7 +517,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
         await clientConnection.ConnectAsync().DefaultTimeout();
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
@@ -596,7 +596,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
-        using var clientConnection = new QuicConnection(QuicImplementationProviders.MsQuic, options);
+        using var clientConnection = await QuicConnection.ConnectAsync(options);
         await clientConnection.ConnectAsync().DefaultTimeout();
 
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();

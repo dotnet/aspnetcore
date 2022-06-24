@@ -78,7 +78,7 @@ internal sealed partial class HttpConnectionDispatcher
                 // POST /{path}
                 await ProcessSend(context);
             }
-            else if (HttpMethods.IsGet(context.Request.Method))
+            else if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsConnect(context.Request.Method))
             {
                 // GET /{path}
                 await ExecuteAsync(context, connectionDelegate, options, logScope);

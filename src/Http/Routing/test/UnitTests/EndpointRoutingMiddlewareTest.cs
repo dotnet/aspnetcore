@@ -180,6 +180,7 @@ public class EndpointRoutingMiddlewareTest
             matcherFactory,
             logger,
             new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>()),
+            new DefaultEndpointDataSource(),
             listener,
             next);
 

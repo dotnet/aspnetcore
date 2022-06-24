@@ -194,6 +194,7 @@ Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Get = 2 -> Mic
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Remove = 1 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType.Replace = 3 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.OperationType
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo
+Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.PositionInfo() -> void
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.Index.get -> int
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.PositionInfo(Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType type, int index) -> void
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionInfo.Type.get -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
@@ -204,6 +205,7 @@ Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.Invalid = 2 -> 
 Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType.OutOfBounds = 3 -> Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType
 Microsoft.AspNetCore.JsonPatch.Internal.ObjectVisitor
 Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath
+Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath.ParsedPath() -> void
 Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter
 Microsoft.AspNetCore.JsonPatch.Internal.PocoAdapter.PocoAdapter() -> void
 Microsoft.AspNetCore.JsonPatch.JsonPatchDocument

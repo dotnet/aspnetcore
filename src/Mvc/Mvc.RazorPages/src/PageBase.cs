@@ -1397,7 +1397,7 @@ public abstract class PageBase : RazorPageBase
     public async Task<bool> TryUpdateModelAsync<TModel>(
         TModel model,
         string prefix,
-        params Expression<Func<TModel, object>>[] includeExpressions)
+        params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
         if (model == null)
@@ -1486,7 +1486,7 @@ public abstract class PageBase : RazorPageBase
         TModel model,
         string prefix,
         IValueProvider valueProvider,
-        params Expression<Func<TModel, object>>[] includeExpressions)
+        params Expression<Func<TModel, object?>>[] includeExpressions)
        where TModel : class
     {
         if (model == null)
