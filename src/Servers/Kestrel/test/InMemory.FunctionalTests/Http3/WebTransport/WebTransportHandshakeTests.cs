@@ -3,14 +3,16 @@
 
 using System.Net;
 using System.Net.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
+namespace InMemory.FunctionalTests.Http3.WebTransport;
 
-public class WebTransportTests : Http3TestBase
+public class WebTransportHandshakeTests : Http3TestBase
 {
     [Fact]
     public async Task WebTransportHandshake_ClientToServerPasses()

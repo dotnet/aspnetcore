@@ -19,8 +19,8 @@ public class Startup
     {
         app.Use(async (context, next) =>
         {
-            var feature = context.Features.Get<IHttpWebTransportSessionFeature>();
-            if (feature is not null && feature.IsWebTransportRequest)
+            var feature = context.Features.GetRequiredFeature<IHttpWebTransportSessionFeature>();
+            if (feature.IsWebTransportRequest)
             {
                 var session = await feature.AcceptAsync(CancellationToken.None);
 
