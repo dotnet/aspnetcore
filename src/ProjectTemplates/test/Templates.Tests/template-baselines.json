@@ -1985,7 +1985,7 @@
     },
     "ExcludeLaunchSettings": {
       "Template": "blazorwasm",
-      "Arguments": "new blazorwasm --pwa --hosted",
+      "Arguments": "new blazorwasm --exclude-launch-settings",
       "Files": [
         "App.razor",
         "_Imports.razor",
