@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
+using Microsoft.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 public partial class DisallowConfigureHostLoggingTest
 {
@@ -71,7 +73,7 @@ logging.AddJsonConsole();
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureLogging, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Logging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -96,7 +98,7 @@ logging.AddJsonConsole();
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureLogging, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Logging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -121,7 +123,7 @@ builder.Host.
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureLogging, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Logging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -147,7 +149,7 @@ logging.AddJsonConsole();
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureLogging, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Logging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -178,7 +180,7 @@ public class Startup { }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureLogging, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Logging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -210,7 +212,7 @@ public class Startup { }
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureLogging, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Logging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -234,7 +236,7 @@ builder.WebHost.
         var diagnostic = Assert.Single(diagnostics);
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureLogging, diagnostic.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Favor using builder.Logging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -265,11 +267,11 @@ logging.AddJsonConsole();
 
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureLogging, diagnostic1.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], diagnostic1.Location);
-        Assert.Equal("Favor using builder.Logging", diagnostic1.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic1.GetMessage(CultureInfo.InvariantCulture));
 
         Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureLogging, diagnostic2.Descriptor);
         AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM2"], diagnostic2.Location);
-        Assert.Equal("Favor using builder.Logging", diagnostic2.GetMessage(CultureInfo.InvariantCulture));
+        Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic2.GetMessage(CultureInfo.InvariantCulture));
     }
 
 }
