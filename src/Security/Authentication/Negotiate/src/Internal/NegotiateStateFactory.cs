@@ -3,8 +3,10 @@
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate;
 
-// For testing
-internal interface INegotiateStateFactory
+internal sealed class NegotiateStateFactory : INegotiateStateFactory
 {
-    INegotiateState CreateInstance();
+    public INegotiateState CreateInstance()
+    {
+        return new NegotiateState();
+    }
 }
