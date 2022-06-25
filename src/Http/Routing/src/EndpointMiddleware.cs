@@ -73,7 +73,10 @@ internal sealed partial class EndpointMiddleware
 
         return _next(httpContext);
 
-        static async Task AwaitRequestTask(Endpoint endpoint, Task requestTask, ILogger logger)
+        static async Task AwaitRequestTask(
+            Endpoint endpoint,
+            Task requestTask,
+            ILogger logger)
         {
             try
             {

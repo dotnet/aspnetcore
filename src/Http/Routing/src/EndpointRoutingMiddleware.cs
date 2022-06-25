@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.Logging;
 
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Routing;
 
 internal sealed partial class EndpointRoutingMiddleware
 {
+    internal const string Http404EndpointDisplayName = "404 HTTP Not Found";
     private const string DiagnosticsEndpointMatchedKey = "Microsoft.AspNetCore.Routing.EndpointMatched";
 
     private readonly MatcherFactory _matcherFactory;
@@ -95,6 +97,13 @@ internal sealed partial class EndpointRoutingMiddleware
         if (endpoint == null)
         {
             Log.MatchFailure(_logger);
+            httpContext.SetEndpoint(new Endpoint(context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                return Task.CompletedTask;
+            },
+            new EndpointMetadataCollection(new RoutingProblemMetadata(StatusCodes.Status404NotFound)),
+            Http404EndpointDisplayName));
         }
         else
         {

@@ -1,13 +1,7 @@
 #nullable enable
-Microsoft.AspNetCore.Http.MappingOptions
-Microsoft.AspNetCore.Http.MappingOptions.All = Microsoft.AspNetCore.Http.MappingOptions.Exceptions | Microsoft.AspNetCore.Http.MappingOptions.RoutingFailures | Microsoft.AspNetCore.Http.MappingOptions.ClientErrors -> Microsoft.AspNetCore.Http.MappingOptions
-Microsoft.AspNetCore.Http.MappingOptions.ClientErrors = 4 -> Microsoft.AspNetCore.Http.MappingOptions
-Microsoft.AspNetCore.Http.MappingOptions.Exceptions = 1 -> Microsoft.AspNetCore.Http.MappingOptions
-Microsoft.AspNetCore.Http.MappingOptions.RoutingFailures = 2 -> Microsoft.AspNetCore.Http.MappingOptions
-Microsoft.AspNetCore.Http.MappingOptions.Unspecified = 0 -> Microsoft.AspNetCore.Http.MappingOptions
 Microsoft.AspNetCore.Http.ProblemDetailsOptions
-Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedMapping.get -> Microsoft.AspNetCore.Http.MappingOptions
-Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedMapping.set -> void
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedProblemTypes.get -> Microsoft.AspNetCore.Http.ProblemTypes
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedProblemTypes.set -> void
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.ConfigureDetails.get -> System.Action<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Mvc.ProblemDetails!>?
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.ConfigureDetails.set -> void
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.ProblemDetailsOptions() -> void

@@ -3,20 +3,34 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-using Microsoft.AspNetCore.Mvc;
-
 /// <summary>
 /// 
 /// </summary>
-public class ProblemDetailsOptions
+[Flags]
+public enum ProblemTypes : uint
 {
     /// <summary>
     /// 
     /// </summary>
-    public ProblemTypes AllowedProblemTypes { get; set; } = ProblemTypes.All;
+    Unspecified = 0,
 
     /// <summary>
     /// 
     /// </summary>
-    public Action<HttpContext, ProblemDetails>? ConfigureDetails { get; set; }
+    Server = 1,
+
+    /// <summary>
+    /// 404 / 405 / 415
+    /// </summary>
+    Routing = 2,
+
+    /// <summary>
+    /// 
+    /// </summary>
+    Client = 4,
+
+    /// <summary>
+    /// 
+    /// </summary>
+    All = Routing | Server | Client,
 }

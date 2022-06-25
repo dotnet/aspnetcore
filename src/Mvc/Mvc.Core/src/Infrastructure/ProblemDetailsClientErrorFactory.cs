@@ -24,8 +24,11 @@ internal sealed class ProblemDetailsClientErrorFactory : IClientErrorFactory
 
     public IActionResult? GetClientError(ActionContext actionContext, IClientErrorActionResult clientError)
     {
+        var statusCode = clientError.StatusCode ?? 500;
+        var problemType = statusCode >= 500 ? ProblemTypes.Server : ProblemTypes.Client;
+
         if (_problemDetailsService != null &&
-            _problemDetailsService.IsEnabled(clientError.StatusCode ?? 500) == false)
+            _problemDetailsService.IsEnabled(problemType) == false)
         {
             return null;
         }

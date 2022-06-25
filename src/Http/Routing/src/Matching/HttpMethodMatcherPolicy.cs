@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -408,18 +409,10 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
                 // Prevent ArgumentException from duplicate key if header already added, such as when the
                 // request is re-executed by an error handler (see https://github.com/dotnet/aspnetcore/issues/6415)
                 context.Response.Headers.Allow = allow;
-
-                const int statusCode = StatusCodes.Status405MethodNotAllowed;
-                context.Response.StatusCode = statusCode;
-
-                if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
-                {
-                    return problemDetailsService.WriteAsync(context, isRouting: true);
-                }
-
+                context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 return Task.CompletedTask;
             },
-            EndpointMetadataCollection.Empty,
+            new EndpointMetadataCollection(new RoutingProblemMetadata(StatusCodes.Status405MethodNotAllowed)),
             Http405EndpointDisplayName);
     }
 

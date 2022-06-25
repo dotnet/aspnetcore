@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -27,31 +28,10 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
         _problemDetailsFactory = problemDetailsFactory;
     }
 
-    public bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting)
+    public bool CanWrite(HttpContext context)
     {
-        static bool HasMetadata(EndpointMetadataCollection? metadata)
-        {
-            var responseType = metadata?.GetMetadata<ProducesErrorResponseTypeAttribute>();
-            var apiControllerAttribute = metadata?.GetMetadata<IApiBehaviorMetadata>();
-
-            if (apiControllerAttribute != null && responseType?.Type == typeof(ProblemDetails))
-            {
-                return true;
-            }
-            return false;
-
-        }
-
-        if (isRouting)
-        {
-            return false;
-        }
-
-        return context.Response.StatusCode switch
-        {
-            >= 400 and <= 499 => HasMetadata(metadata),
-            _ => false,
-        };
+        var apiControllerAttribute = context.GetEndpoint()?.Metadata.GetMetadata<IApiBehaviorMetadata>();
+        return apiControllerAttribute != null;
     }
 
     public Task WriteAsync(
@@ -86,7 +66,8 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
 
         if (selectedFormatter == null)
         {
-            return Task.CompletedTask;
+            return Results.Problem(problemDetails)
+                .ExecuteAsync(context);
         }
 
         return selectedFormatter.WriteAsync(formatterContext);

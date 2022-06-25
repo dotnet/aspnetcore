@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -22,19 +24,30 @@ internal sealed class EndpointMetadataConvention : IActionModelConvention
 
     public void Apply(ActionModel action)
     {
-        if (_defaultErrorType != typeof(void))
-        {
-            for (var i = 0; i < action.Selectors.Count; i++)
-            {
-                action.Selectors[i].EndpointMetadata.Add(new ProducesErrorResponseTypeAttribute(_defaultErrorType));
-            }
-        }
+        // Set the problem metadata when defaultError is ProblemDetails
+        ApplyProblemMetadata(action);
 
         // Get metadata from parameter types
         ApplyParametersMetadata(action);
 
         // Get metadata from return type
         ApplyReturnTypeMetadata(action);
+    }
+
+    private void ApplyProblemMetadata(ActionModel action)
+    {
+        if (_defaultErrorType == typeof(ProblemDetails))
+        {
+            var problemDetailsService = _serviceProvider.GetService<IProblemDetailsService>();
+
+            if (problemDetailsService != null)
+            {
+                for (var i = 0; i < action.Selectors.Count; i++)
+                {
+                    action.Selectors[i].EndpointMetadata.Add(new ProblemMetadata());
+                }
+            }
+        }
     }
 
     private void ApplyReturnTypeMetadata(ActionModel action)

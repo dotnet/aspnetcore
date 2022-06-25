@@ -12,10 +12,8 @@ public interface IProblemDetailsWriter
     /// 
     /// </summary>
     /// <param name="context"></param>
-    /// <param name="metadata"></param>
-    /// <param name="isRouting"></param>
     /// <returns></returns>
-    bool CanWrite(HttpContext context, EndpointMetadataCollection? metadata, bool isRouting);
+    bool CanWrite(HttpContext context);
 
     /// <summary>
     /// 
@@ -30,10 +28,10 @@ public interface IProblemDetailsWriter
     /// <returns></returns>
     Task WriteAsync(
         HttpContext context,
-        int? statusCode = null,
-        string? title = null,
-        string? type = null,
-        string? detail = null,
-        string? instance = null,
-        IDictionary<string, object?>? extensions = null);
+        int? statusCode,
+        string? title,
+        string? type,
+        string? detail,
+        string? instance,
+        IDictionary<string, object?>? extensions);
 }

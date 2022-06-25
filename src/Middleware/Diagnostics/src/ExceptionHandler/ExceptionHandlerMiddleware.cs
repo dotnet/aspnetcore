@@ -54,7 +54,7 @@ public class ExceptionHandlerMiddleware
             if (_options.ExceptionHandlingPath == null)
             {
                 if (problemDetailsService == null ||
-                    problemDetailsService.IsEnabled(statusCode: DefaultStatusCode) == false)
+                    problemDetailsService.IsEnabled(ProblemTypes.Server) == false)
                 {
                     throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
                 }
@@ -149,7 +149,10 @@ public class ExceptionHandlerMiddleware
             }
             else
             {
-                await _problemDetailsService!.WriteAsync(context, exceptionHandlerFeature.Endpoint?.Metadata);
+                await _problemDetailsService!.WriteAsync(
+                    context,
+                    exceptionHandlerFeature.Endpoint?.Metadata,
+                    statusCode: DefaultStatusCode);
             }
 
             // If the response has already started, assume exception handler was successful.
