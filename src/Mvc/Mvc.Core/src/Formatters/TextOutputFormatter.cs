@@ -138,7 +138,9 @@ public abstract class TextOutputFormatter : OutputFormatter
 
             if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
             {
-                return problemDetailsService.WriteAsync(context.HttpContext, isRouting: true);
+                return problemDetailsService.WriteAsync(
+                    context.HttpContext,
+                    statusCode: statusCode);
             }
 
             return Task.CompletedTask;

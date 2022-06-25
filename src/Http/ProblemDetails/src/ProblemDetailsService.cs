@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http;
@@ -19,33 +20,19 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
         _options = options.Value;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="statusCode"></param>
-    /// <param name="isRouting"></param>
-    /// <returns></returns>
-    public bool IsEnabled(int statusCode, bool isRouting = false)
+    public bool IsEnabled(ProblemTypes type)
     {
-        if (_options.AllowedMapping == MappingOptions.Unspecified)
+        if (_options.AllowedProblemTypes == ProblemTypes.Unspecified)
         {
             return false;
         }
 
-        return isRouting ?
-            _options.AllowedMapping.HasFlag(MappingOptions.RoutingFailures) :
-            statusCode switch
-            {
-                >= 400 and <= 499 => _options.AllowedMapping.HasFlag(MappingOptions.ClientErrors),
-                >= 500 and <= 599 => _options.AllowedMapping.HasFlag(MappingOptions.Exceptions),
-                _ => false,
-            };
+        return _options.AllowedProblemTypes.HasFlag(type);
     }
 
     public Task WriteAsync(
         HttpContext context,
-        EndpointMetadataCollection? currentMetadata = null,
-        bool isRouting = false,
+        EndpointMetadataCollection? additionalMetadata = null,
         int? statusCode = null,
         string? title = null,
         string? type = null,
@@ -53,28 +40,56 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
         string? instance = null,
         IDictionary<string, object?>? extensions = null)
     {
-        var writer = GetWriter(context, currentMetadata, isRouting);
-        return writer != null ?
-            writer.WriteAsync(context, statusCode, title, type, detail, instance, extensions) :
-            Task.CompletedTask;
+        static ProblemTypes CalculateProblemType(
+            HttpContext context,
+            EndpointMetadataCollection? metadataCollection,
+            int statusCode)
+        {
+            var problemMetadata = metadataCollection?.GetMetadata<IProblemMetadata>() ??
+                context.GetEndpoint()?.Metadata.GetMetadata<IProblemMetadata>();
+
+            if (problemMetadata != null)
+            {
+                var expectedProblemType = statusCode >= 500 ? ProblemTypes.Server : ProblemTypes.Client;
+
+                if (problemMetadata.StatusCode == statusCode)
+                {
+                    return problemMetadata.ProblemType;
+                }
+                else if (problemMetadata.StatusCode == null &&
+                    problemMetadata.ProblemType.HasFlag(expectedProblemType))
+                {
+                    return expectedProblemType;
+                }
+            }
+
+            return ProblemTypes.Unspecified;
+        }
+
+        var problemStatusCode = statusCode ?? context.Response.StatusCode;
+        var problemType = CalculateProblemType(context, additionalMetadata, statusCode: problemStatusCode);
+
+        if (IsEnabled(problemType) && GetWriter(context) is { } writer)
+        {
+            return writer.WriteAsync(
+                context,
+                statusCode,
+                title,
+                type,
+                detail,
+                instance,
+                extensions);
+        }
+
+        return Task.CompletedTask;
     }
 
     // Internal for testing
-    internal IProblemDetailsWriter? GetWriter(
-        HttpContext context,
-        EndpointMetadataCollection? currentMetadata,
-        bool isRouting)
+    internal IProblemDetailsWriter? GetWriter(HttpContext context)
     {
-        if (!IsEnabled(context.Response.StatusCode, isRouting))
-        {
-            return null;
-        }
-
-        currentMetadata ??= context.GetEndpoint()?.Metadata;
-
         for (var i = 0; i < _writers.Length; i++)
         {
-            if (_writers[i].CanWrite(context, currentMetadata, isRouting: isRouting))
+            if (_writers[i].CanWrite(context))
             {
                 return _writers[i];
             }

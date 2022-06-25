@@ -186,7 +186,10 @@ public class DeveloperExceptionPageMiddleware
                 }
             };
 
-            await _problemDetailsService.WriteAsync(httpContext, extensions: exceptionExtensions);
+            await _problemDetailsService.WriteAsync(
+                httpContext,
+                extensions: exceptionExtensions,
+                statusCode: httpContext.Response.StatusCode);
         }
 
         // If the response has not started, assume the problem details was not written.

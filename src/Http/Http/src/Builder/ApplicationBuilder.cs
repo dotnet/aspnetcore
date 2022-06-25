@@ -129,15 +129,7 @@ public class ApplicationBuilder : IApplicationBuilder
                     $"routing.";
                 throw new InvalidOperationException(message);
             }
-
-            const int statusCode = StatusCodes.Status404NotFound;
-            context.Response.StatusCode = statusCode;
-
-            if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
-            {
-                return problemDetailsService.WriteAsync(context, isRouting: true);
-            }
-
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
             return Task.CompletedTask;
         };
 

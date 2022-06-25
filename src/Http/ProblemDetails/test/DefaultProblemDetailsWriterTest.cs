@@ -25,7 +25,7 @@ public class DefaultProblemDetailsWriterTest
         };
 
         // Act
-        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty, isRouting: false);
+        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
 
         // Assert
         Assert.False(canWrite);
@@ -46,7 +46,7 @@ public class DefaultProblemDetailsWriterTest
         };
 
         // Act
-        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty, isRouting: false);
+        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
 
         // Assert
         Assert.False(canWrite);
@@ -65,7 +65,7 @@ public class DefaultProblemDetailsWriterTest
         };
 
         // Act
-        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty, isRouting: false);
+        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
 
         // Assert
         Assert.False(canWrite);
@@ -84,7 +84,7 @@ public class DefaultProblemDetailsWriterTest
         };
 
         // Act
-        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty, isRouting: false);
+        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
 
         // Assert
         Assert.True(canWrite);
@@ -98,7 +98,7 @@ public class DefaultProblemDetailsWriterTest
         var context = new DefaultHttpContext();
 
         // Act
-        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty, isRouting: true);
+        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
 
         // Assert
         Assert.True(canWrite);

@@ -12,14 +12,12 @@
   
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Http" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)ProblemDetailsDefaults.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)HttpValidationProblemDetailsJsonConverter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ProblemDetails\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
