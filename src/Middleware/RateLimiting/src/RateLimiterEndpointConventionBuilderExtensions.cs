@@ -16,7 +16,7 @@ public static class RateLimiterEndpointConventionBuilderExtensions
     /// <param name="builder">The endpoint convention builder.</param>
     /// <param name="policyName">The name of the rate limiter to add to the endpoint.</param>
     /// <returns>The original convention builder parameter.</returns>
-    public static TBuilder RequireRateLimiting<TBuilder>(this TBuilder builder, String policyName) where TBuilder : IEndpointConventionBuilder
+    public static TBuilder RequireRateLimiting<TBuilder>(this TBuilder builder, string policyName) where TBuilder : IEndpointConventionBuilder
     {
         if (builder == null)
         {
