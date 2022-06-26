@@ -21,6 +21,26 @@ public class JsonConverterReadTests
     }
 
     [Fact]
+    public void NonJsonName()
+    {
+        var json = @"{
+  ""field_name"": ""A field name""
+}";
+
+        AssertReadJson<HelloRequest>(json);
+    }
+
+    [Fact]
+    public void JsonCustomizedName()
+    {
+        var json = @"{
+  ""json_customized_name"": ""A field name""
+}";
+
+        AssertReadJson<HelloRequest>(json);
+    }
+
+    [Fact]
     public void ReadObjectProperties()
     {
         var json = @"{
