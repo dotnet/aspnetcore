@@ -3,14 +3,14 @@
 
 namespace Microsoft.AspNetCore.Http.Metadata;
 
-internal class ProblemMetadata : IProblemMetadata
+internal class ProblemMetadata : IProblemDetailsMetadata
 {
-    public ProblemMetadata(ProblemTypes problemType = ProblemTypes.All)
+    public ProblemMetadata(ProblemDetailsTypes problemType = ProblemDetailsTypes.All)
     {
         ProblemType = problemType;
     }
 
     public int? StatusCode => null;
 
-    public ProblemTypes ProblemType { get; }
+    public ProblemDetailsTypes ProblemType { get; }
 }

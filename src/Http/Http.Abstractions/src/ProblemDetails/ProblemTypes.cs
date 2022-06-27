@@ -7,12 +7,12 @@ namespace Microsoft.AspNetCore.Http;
 /// 
 /// </summary>
 [Flags]
-public enum ProblemTypes : uint
+public enum ProblemDetailsTypes : uint
 {
     /// <summary>
     /// 
     /// </summary>
-    Unspecified = 0,
+    None = 0,
 
     /// <summary>
     /// 

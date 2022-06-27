@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -28,9 +27,10 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
         _problemDetailsFactory = problemDetailsFactory;
     }
 
-    public bool CanWrite(HttpContext context)
+    public bool CanWrite(HttpContext context, EndpointMetadataCollection? additionalMetadata)
     {
-        var apiControllerAttribute = context.GetEndpoint()?.Metadata.GetMetadata<IApiBehaviorMetadata>();
+        var apiControllerAttribute = additionalMetadata?.GetMetadata<IApiBehaviorMetadata>() ??
+            context.GetEndpoint()?.Metadata.GetMetadata<IApiBehaviorMetadata>();
         return apiControllerAttribute != null;
     }
 

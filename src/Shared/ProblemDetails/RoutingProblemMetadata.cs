@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Http.Metadata;
 
 using Microsoft.AspNetCore.Http;
 
-internal sealed class RoutingProblemMetadata : IProblemMetadata
+internal sealed class RoutingProblemMetadata : IProblemDetailsMetadata
 {
     public RoutingProblemMetadata(int statusCode = StatusCodes.Status404NotFound)
     {
@@ -14,5 +14,5 @@ internal sealed class RoutingProblemMetadata : IProblemMetadata
 
     public int? StatusCode { get; }
 
-    public ProblemTypes ProblemType => ProblemTypes.Routing;
+    public ProblemDetailsTypes ProblemType => ProblemDetailsTypes.Routing;
 }

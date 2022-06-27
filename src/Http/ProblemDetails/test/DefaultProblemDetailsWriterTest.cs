@@ -55,26 +55,7 @@ public class DefaultProblemDetailsWriterTest
     [Theory]
     [InlineData(400)]
     [InlineData(499)]
-    public void CanWrite_IsFalse_ForClientErrors(int statusCode)
-    {
-        // Arrange
-        var writer = GetWriter();
-        var context = new DefaultHttpContext()
-        {
-            Response = { StatusCode = statusCode },
-        };
-
-        // Act
-        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
-
-        // Assert
-        Assert.False(canWrite);
-    }
-
-    [Theory]
-    [InlineData(500)]
-    [InlineData(599)]
-    public void CanWrite_IsTrue_ForServerErrors(int statusCode)
+    public void CanWrite_IsTrue_ForClientErrors(int statusCode)
     {
         // Arrange
         var writer = GetWriter();
@@ -90,12 +71,17 @@ public class DefaultProblemDetailsWriterTest
         Assert.True(canWrite);
     }
 
-    [Fact]
-    public void CanWrite_IsTrue_ForRoutingErrors()
+    [Theory]
+    [InlineData(500)]
+    [InlineData(599)]
+    public void CanWrite_IsTrue_ForServerErrors(int statusCode)
     {
         // Arrange
         var writer = GetWriter();
-        var context = new DefaultHttpContext();
+        var context = new DefaultHttpContext()
+        {
+            Response = { StatusCode = statusCode },
+        };
 
         // Act
         var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
@@ -259,7 +245,7 @@ public class DefaultProblemDetailsWriterTest
         Assert.Equal("Bad Request", problemDetails.Title);
     }
 
-    private DefaultProblemDetailsWriter GetWriter(ProblemDetailsOptions options = null)
+    private static DefaultProblemDetailsWriter GetWriter(ProblemDetailsOptions options = null)
     {
         options ??= new ProblemDetailsOptions();
         return new DefaultProblemDetailsWriter(Options.Create(options));

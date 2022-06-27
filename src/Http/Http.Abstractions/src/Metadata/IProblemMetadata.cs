@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Http.Metadata;
 /// <summary>
 /// 
 /// </summary>
-public interface IProblemMetadata
+public interface IProblemDetailsMetadata
 {
     /// <summary>
     /// 
@@ -16,5 +16,5 @@ public interface IProblemMetadata
     /// <summary>
     /// 
     /// </summary>
-    public ProblemTypes ProblemType { get; }
+    public ProblemDetailsTypes ProblemType { get; }
 }

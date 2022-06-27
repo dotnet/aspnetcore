@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -21,7 +21,7 @@ public class ProblemDetailsClientErrorFactoryTest
                     [405] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
         }));
-        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
+        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory, Options.Create(new ProblemDetailsOptions()));
 
         // Act
         var result = factory.GetClientError(GetActionContext(), clientError);
@@ -48,7 +48,7 @@ public class ProblemDetailsClientErrorFactoryTest
                     [415] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
         }));
-        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
+        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory, Options.Create(new ProblemDetailsOptions()));
 
         // Act
         var result = factory.GetClientError(GetActionContext(), clientError);
@@ -78,7 +78,7 @@ public class ProblemDetailsClientErrorFactoryTest
                     [405] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
             }));
-            var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
+            var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory, Options.Create(new ProblemDetailsOptions()));
 
             // Act
             var result = factory.GetClientError(GetActionContext(), clientError);
@@ -104,7 +104,7 @@ public class ProblemDetailsClientErrorFactoryTest
                     [405] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
         }));
-        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
+        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory, Options.Create(new ProblemDetailsOptions()));
 
         // Act
         var result = factory.GetClientError(GetActionContext(), clientError);

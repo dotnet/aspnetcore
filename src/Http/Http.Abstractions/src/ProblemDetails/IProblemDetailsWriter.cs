@@ -13,7 +13,7 @@ public interface IProblemDetailsWriter
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    bool CanWrite(HttpContext context);
+    bool CanWrite(HttpContext context, EndpointMetadataCollection? additionalMetadata);
 
     /// <summary>
     /// 

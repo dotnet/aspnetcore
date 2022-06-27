@@ -3,15 +3,11 @@
 
 namespace Microsoft.AspNetCore.Http;
 
-using Microsoft.AspNetCore.Http.Metadata;
-
 /// <summary>
 /// 
 /// </summary>
 public interface IProblemDetailsService
 {
-    bool IsEnabled(ProblemTypes type);
-
     Task WriteAsync(
         HttpContext context,
         EndpointMetadataCollection? additionalMetadata = null,

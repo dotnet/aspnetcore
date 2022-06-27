@@ -20,16 +20,6 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
         _options = options.Value;
     }
 
-    public bool IsEnabled(ProblemTypes type)
-    {
-        if (_options.AllowedProblemTypes == ProblemTypes.Unspecified)
-        {
-            return false;
-        }
-
-        return _options.AllowedProblemTypes.HasFlag(type);
-    }
-
     public Task WriteAsync(
         HttpContext context,
         EndpointMetadataCollection? additionalMetadata = null,
@@ -40,61 +30,91 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
         string? instance = null,
         IDictionary<string, object?>? extensions = null)
     {
-        static ProblemTypes CalculateProblemType(
-            HttpContext context,
-            EndpointMetadataCollection? metadataCollection,
-            int statusCode)
+        if (_options.AllowedProblemTypes != ProblemDetailsTypes.None && _writers is { Length: > 0 })
         {
-            var problemMetadata = metadataCollection?.GetMetadata<IProblemMetadata>() ??
-                context.GetEndpoint()?.Metadata.GetMetadata<IProblemMetadata>();
+            var problemStatusCode = statusCode ?? context.Response.StatusCode;
+            var calculatedProblemType = CalculateProblemType(problemStatusCode, context.GetEndpoint()?.Metadata, additionalMetadata);
 
-            if (problemMetadata != null)
+            if ((_options.AllowedProblemTypes & calculatedProblemType) != ProblemDetailsTypes.None &&
+                GetWriter(context, additionalMetadata) is { } writer)
             {
-                var expectedProblemType = statusCode >= 500 ? ProblemTypes.Server : ProblemTypes.Client;
-
-                if (problemMetadata.StatusCode == statusCode)
-                {
-                    return problemMetadata.ProblemType;
-                }
-                else if (problemMetadata.StatusCode == null &&
-                    problemMetadata.ProblemType.HasFlag(expectedProblemType))
-                {
-                    return expectedProblemType;
-                }
+                return writer.WriteAsync(
+                    context,
+                    statusCode,
+                    title,
+                    type,
+                    detail,
+                    instance,
+                    extensions);
             }
-
-            return ProblemTypes.Unspecified;
-        }
-
-        var problemStatusCode = statusCode ?? context.Response.StatusCode;
-        var problemType = CalculateProblemType(context, additionalMetadata, statusCode: problemStatusCode);
-
-        if (IsEnabled(problemType) && GetWriter(context) is { } writer)
-        {
-            return writer.WriteAsync(
-                context,
-                statusCode,
-                title,
-                type,
-                detail,
-                instance,
-                extensions);
         }
 
         return Task.CompletedTask;
     }
 
     // Internal for testing
-    internal IProblemDetailsWriter? GetWriter(HttpContext context)
+    internal IProblemDetailsWriter? GetWriter(HttpContext context, EndpointMetadataCollection? additionalMetadata)
     {
         for (var i = 0; i < _writers.Length; i++)
         {
-            if (_writers[i].CanWrite(context))
+            if (_writers[i].CanWrite(context, additionalMetadata))
             {
                 return _writers[i];
             }
         }
 
         return null;
+    }
+
+    // internal for testing
+    internal static ProblemDetailsTypes CalculateProblemType(
+        int statusCode,
+        EndpointMetadataCollection? metadataCollection,
+        EndpointMetadataCollection? additionalMetadata)
+    {
+        if (statusCode < 400)
+        {
+            return ProblemDetailsTypes.None;
+        }
+
+        ProblemDetailsTypes? statusCodeProblemType = null;
+        ProblemDetailsTypes? generalProblemType = null;
+
+        void SetProblemType(IProblemDetailsMetadata metadata)
+        {
+            if (!metadata.StatusCode.HasValue)
+            {
+                generalProblemType = metadata.ProblemType;
+            }
+            else if (statusCode == metadata.StatusCode)
+            {
+                statusCodeProblemType = metadata.ProblemType;
+            }
+        }
+
+        if (metadataCollection?.GetOrderedMetadata<IProblemDetailsMetadata>() is { Count: > 0 } problemDetailsCollection)
+        {
+            for (var i = 0; i < problemDetailsCollection.Count; i++)
+            {
+                SetProblemType(problemDetailsCollection[i]);
+            }
+        }
+
+        if (additionalMetadata?.GetOrderedMetadata<IProblemDetailsMetadata>() is { Count: > 0 } additionalProblemDetailsCollection)
+        {
+            for (var i = 0; i < additionalProblemDetailsCollection.Count; i++)
+            {
+                SetProblemType(additionalProblemDetailsCollection[i]);
+            }
+        }
+
+        var problemTypeFromMetadata = statusCodeProblemType ?? generalProblemType ?? ProblemDetailsTypes.None;
+        var expectedProblemType = statusCode >= 500 ? ProblemDetailsTypes.Server : ProblemDetailsTypes.Client;
+
+        var problemType = problemTypeFromMetadata & expectedProblemType;
+        return problemType != ProblemDetailsTypes.None ?
+            problemType :
+            // We need to special case Routing, since it could generate any status code
+            problemTypeFromMetadata & ProblemDetailsTypes.Routing;
     }
 }

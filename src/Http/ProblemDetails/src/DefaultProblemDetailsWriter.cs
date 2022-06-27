@@ -16,7 +16,8 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         _options = options.Value;
     }
 
-    public bool CanWrite(HttpContext context) => true;
+    public bool CanWrite(HttpContext context, EndpointMetadataCollection? additionalMetadata)
+        => context.Response.StatusCode >= 400 && context.Response.StatusCode <= 599;
 
     public Task WriteAsync(
         HttpContext context,
@@ -27,10 +28,27 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         string? instance = null,
         IDictionary<string, object?>? extensions = null)
     {
-        var problemResult = TypedResults.Problem(detail, instance, statusCode, title, type, extensions);
-        _options.ConfigureDetails?.Invoke(context, problemResult.ProblemDetails);
+        var problemDetails = new ProblemDetails
+        {
+            Status = statusCode,
+            Title = title,
+            Type = type,
+            Detail = detail,
+            Instance = instance
+        };
 
-        return problemResult.ExecuteAsync(context);
+        if (extensions is not null)
+        {
+            foreach (var extension in extensions)
+            {
+                problemDetails.Extensions[extension.Key] = extension.Value;
+            }
+        }
+
+        ProblemDetailsDefaults.Apply(problemDetails, context.Response.StatusCode);
+        _options.ConfigureDetails?.Invoke(context, problemDetails);
+
+        return context.Response.WriteAsJsonAsync(problemDetails, typeof(ProblemDetails), ProblemDetailsJsonContext.Default, contentType: "application/problem+json");
     }
 
     [JsonSerializable(typeof(ProblemDetails))]
