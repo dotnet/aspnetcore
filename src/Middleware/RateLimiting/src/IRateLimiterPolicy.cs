@@ -14,11 +14,11 @@ public interface IRateLimiterPolicy<TPartitionKey>
     /// <summary>
     /// Gets the <see cref="Func{OnRejectedContext, CancellationToken, ValueTask}"/> that handles requests rejected by this middleware.
     /// </summary>
-    public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected { get; }
+    Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected { get; }
 
     /// <summary>
     /// Gets the <see cref="RateLimitPartition{TPartitionKey}"/> that applies to the given <see cref="HttpContext"/>.
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/> to get the partition for.</param>
-    public RateLimitPartition<TPartitionKey> GetPartition(HttpContext httpContext);
+    RateLimitPartition<TPartitionKey> GetPartition(HttpContext httpContext);
 }

@@ -11,14 +11,14 @@ internal class RateLimiterMetadata : IRateLimiterMetadata
     /// <summary>
     /// Creates a new instance of <see cref="RateLimiterMetadata"/> using the specified limiter.
     /// </summary>
-    /// <param name="name">The name of the limiter which needs to be applied.</param>
-    public RateLimiterMetadata(string name)
+    /// <param name="policyName">The name of the limiter which needs to be applied.</param>
+    public RateLimiterMetadata(string policyName)
     {
-        Name = name;
+        PolicyName = policyName;
     }
 
     /// <summary>
     /// The name of the limiter which needs to be applied.
     /// </summary>
-    public string Name { get; }
+    public string PolicyName { get; }
 }

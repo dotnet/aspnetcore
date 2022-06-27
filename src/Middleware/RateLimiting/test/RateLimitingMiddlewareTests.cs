@@ -26,20 +26,20 @@ public class RateLimitingMiddlewareTests : LoggedTest
             Mock.Of<IServiceProvider>()));
 
         Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        null,
-        options,
-        Mock.Of<IServiceProvider>()));
+            {
+                return Task.CompletedTask;
+            },
+            null,
+            options,
+            Mock.Of<IServiceProvider>()));
 
         Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        null));
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            null));
     }
 
     [Fact]
@@ -49,13 +49,13 @@ public class RateLimitingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.Value.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(true));
         var middleware = new RateLimitingMiddleware(c =>
-        {
-            flag = true;
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        Mock.Of<IServiceProvider>());
+            {
+                flag = true;
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
 
         await middleware.Invoke(new DefaultHttpContext());
         Assert.True(flag);
@@ -74,12 +74,12 @@ public class RateLimitingMiddlewareTests : LoggedTest
         };
 
         var middleware = new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        Mock.Of<IServiceProvider>());
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
 
         var context = new DefaultHttpContext();
         await middleware.Invoke(context).DefaultTimeout();
@@ -101,12 +101,12 @@ public class RateLimitingMiddlewareTests : LoggedTest
         };
 
         var middleware = new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        Mock.Of<IServiceProvider>());
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
 
         var context = new DefaultHttpContext();
         await middleware.Invoke(context).DefaultTimeout();
@@ -121,12 +121,12 @@ public class RateLimitingMiddlewareTests : LoggedTest
         options.Value.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(false));
 
         var middleware = new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        Mock.Of<IServiceProvider>());
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
 
         var context = new DefaultHttpContext();
         context.RequestAborted = new CancellationToken(true);
@@ -154,12 +154,12 @@ public class RateLimitingMiddlewareTests : LoggedTest
         };
 
         var middleware = new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        Mock.Of<IServiceProvider>());
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
 
         var context = new DefaultHttpContext();
         context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
@@ -183,12 +183,12 @@ public class RateLimitingMiddlewareTests : LoggedTest
         };
 
         var middleware = new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        Mock.Of<IServiceProvider>());
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
 
         var context = new DefaultHttpContext();
         context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
@@ -216,12 +216,12 @@ public class RateLimitingMiddlewareTests : LoggedTest
         };
 
         var middleware = new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        Mock.Of<IServiceProvider>());
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
 
         var context = new DefaultHttpContext();
         context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
@@ -249,12 +249,12 @@ public class RateLimitingMiddlewareTests : LoggedTest
         };
 
         var middleware = new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        Mock.Of<IServiceProvider>());
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
 
         var context = new DefaultHttpContext();
         context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
@@ -282,12 +282,12 @@ public class RateLimitingMiddlewareTests : LoggedTest
         };
 
         var middleware = new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        Mock.Of<IServiceProvider>());
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
 
         var context = new DefaultHttpContext();
         context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
@@ -315,12 +315,12 @@ public class RateLimitingMiddlewareTests : LoggedTest
         };
 
         var middleware = new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
-        new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
-        options,
-        Mock.Of<IServiceProvider>());
+            {
+                return Task.CompletedTask;
+            },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
 
         var context = new DefaultHttpContext();
         context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));

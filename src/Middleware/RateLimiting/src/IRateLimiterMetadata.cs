@@ -11,5 +11,5 @@ internal interface IRateLimiterMetadata
     /// <summary>
     /// The name of the limiter which needs to be applied.
     /// </summary>
-    string Name { get; }
+    string PolicyName { get; }
 }

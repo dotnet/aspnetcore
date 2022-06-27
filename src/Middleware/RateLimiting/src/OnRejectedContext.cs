@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.RateLimiting;
 
 /// <summary>
-/// Holds state needed for the OnRejected callback in the RateLimitingMiddleware
+/// Holds state needed for the OnRejected callback in the RateLimitingMiddleware.
 /// </summary>
 public sealed class OnRejectedContext
 {
@@ -17,7 +17,7 @@ public sealed class OnRejectedContext
     public required HttpContext HttpContext { get; init; }
 
     /// <summary>
-    /// Gets or sets the <see cref="RateLimitLease"/> that the OnRejected callback will have access to
+    /// Gets or sets the failed <see cref="RateLimitLease"/> that the OnRejected callback will have access to
     /// </summary>
     public required RateLimitLease Lease { get; init; }
 }
