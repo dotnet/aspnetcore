@@ -851,7 +851,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);
             }
 
-            if (HttpRequestHeaders.HeaderProtocol == WebTransportSession.WebTransportProtocolValue)
+            if (string.Equals(HttpRequestHeaders.HeaderProtocol, WebTransportSession.WebTransportProtocolValue, StringComparison.Ordinal))
             {
                 // indicate as webtransport request
                 _currentIHttpWebTransportFeature!.IsWebTransportRequest = true;
@@ -860,8 +860,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 // Also, should this be on a per webtransport session basis? If so, maybe I need a queue?
                 var supportedVersions = HttpRequestHeaders.Where((header) =>
                 {
-                    return header.Key.StartsWith(WebTransportSession.VersionHeaderPrefix, StringComparison.InvariantCulture)
-                            && header.Value == "1";
+                    return header.Key.StartsWith(WebTransportSession.VersionHeaderPrefix, StringComparison.Ordinal)
+                            && string.Equals(header.Value, "1", StringComparison.Ordinal);
                 }).Select((header) => header.Key);
 
                 if (supportedVersions.Any())
@@ -1211,14 +1211,14 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (HttpResponseHeaders)ResponseHeaders, false, false);
         await Output.FlushAsync(token);
 
-        _context.WebTransportSession = new WebTransportSession(_context.Connection!, this);
-
         // listener to abort if this connection is closed
         _context.StreamContext.ConnectionClosed.Register(state =>
         {
             var session = (WebTransportSession)state!;
             session.OnClientConnectionClosed();
         }, _context.WebTransportSession);
+
+        _context.WebTransportSession = _context.Connection!.OpenNewWebTransportSession(this);
 
         return _context.WebTransportSession;
     }

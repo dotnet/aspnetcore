@@ -11,7 +11,7 @@ internal interface IHttp3Stream
     /// <summary>
     /// The stream ID is set by QUIC.
     /// </summary>
-    public long StreamId { get; }
+    long StreamId { get; }
 
     /// <summary>
     /// Used to track the timeout in two situations:

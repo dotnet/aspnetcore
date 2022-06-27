@@ -22,10 +22,10 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     internal static readonly object StreamPersistentStateKey = new();
 
     // Internal for unit testing
-    internal readonly Dictionary<long, IHttp3Stream> _streams = new();
     internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
+    internal readonly Dictionary<long, IHttp3Stream> _streams = new();
 
-    internal readonly MultiplexedConnectionContext _multiplexedContext; // todo revert to private
+    internal readonly MultiplexedConnectionContext _multiplexedContext;
     internal readonly Http3PeerSettings _serverSettings = new();
     internal readonly Http3PeerSettings _clientSettings = new();
 
@@ -34,19 +34,21 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     // When this value is sent, 4 will be added. We want 0 to be sent for no requests,
     // so start highest opened request stream ID at -4.
     private const long DefaultHighestOpenedRequestStreamId = -4;
-    private long _highestOpenedRequestStreamId = DefaultHighestOpenedRequestStreamId;
+
     private readonly object _sync = new();
     private readonly HttpMultiplexedConnectionContext _context;
-    private bool _aborted;
     private readonly object _protocolSelectionLock = new();
+    private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
+    private readonly IProtocolErrorCodeFeature _errorCodeFeature;
+    private readonly Dictionary<long, WebTransportSession> _webtransportSessions = new();
+
+    private long _highestOpenedRequestStreamId = DefaultHighestOpenedRequestStreamId;
+    private bool _aborted;
     private int _gracefulCloseInitiator;
     private int _stoppedAcceptingStreams;
     private bool _gracefulCloseStarted;
     private int _activeRequestCount;
     private CancellationTokenSource _acceptStreamsCts = new();
-    private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
-    private readonly IProtocolErrorCodeFeature _errorCodeFeature;
-    private readonly Dictionary<long, WebTransportSession> _webtransportSessions = new();
 
     public Http3Connection(HttpMultiplexedConnectionContext context)
     {
@@ -304,9 +306,15 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 if (streamType == ((long)Http3StreamType.WebTransportUnidirectional))
                                 {
                                     var correspondingSession = await ReadNextStreamHeader(context, true);
+
+                                    if (!_webtransportSessions.ContainsKey(correspondingSession))
+                                    {
+                                        throw new Exception("Received a loose WebTransport stream");
+                                    }
+
+                                    context.WebTransportSession = _webtransportSessions[correspondingSession];
                                     var stream = await WebTransportStream.CreateWebTransportStream(context, WebTransportStreamType.Input);
                                     _webtransportSessions[correspondingSession].AddStream(stream);
-                                    context.WebTransportSession = _webtransportSessions[correspondingSession];
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
                                 {
@@ -343,14 +351,20 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                 // Check whether there is an existing HTTP/3 stream on the transport stream.
                                 // A stream will only be cached if the transport stream itself is reused.
                                 if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s))
-                                {
+                                { 
                                     if (streamType == ((long)Http3StreamType.WebTransportBidirectional))
                                     {
 
                                         var correspondingSession = await ReadNextStreamHeader(context, true);
+
+                                        if (!_webtransportSessions.ContainsKey(correspondingSession))
+                                        {
+                                            throw new Exception("Received a loose WebTransport stream");
+                                        }
+
+                                        context.WebTransportSession = _webtransportSessions[correspondingSession];
                                         var stream2 = await WebTransportStream.CreateWebTransportStream(context, WebTransportStreamType.Bidirectional);
                                         _webtransportSessions[correspondingSession].AddStream(stream2);
-                                        context.WebTransportSession = _webtransportSessions[correspondingSession];
 
                                     }
                                     else
@@ -754,6 +768,17 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         // Abort the connection using the error code the client used. For a graceful close, this should be H3_NO_ERROR.
         Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), (Http3ErrorCode)_errorCodeFeature.Error);
+    }
+
+    internal WebTransportSession OpenNewWebTransportSession(Http3Stream http3Stream)
+    {
+        if (_webtransportSessions.ContainsKey(http3Stream.StreamId))
+        {
+            throw new Exception("Attempting to open a new WebTransport session on a stream already associated with an existing WebTransport session.");
+        }
+        var session = new WebTransportSession(this, http3Stream);
+        _webtransportSessions[http3Stream.StreamId] = session;
+        return session;
     }
 
     private static class GracefulCloseInitiator

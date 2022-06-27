@@ -28,7 +28,7 @@ public class Startup
                 //var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
 
                 //// ACCEPT AN INCOMING STREAM
-                //var stream2 = await session.AcceptStreamAsync(CancellationToken.None);
+                var stream2 = await session.AcceptStreamAsync(CancellationToken.None);
 
                 //// WRITE TO A STREAM
                 //await Task.Delay(200);
@@ -36,9 +36,9 @@ public class Startup
                 //await stream.FlushAsync();
 
                 //// READ FROM A STREAM:
-                //var memory = new Memory<byte>(new byte[4096]);
-                //var test = await stream2.ReadAsync(memory);
-                //Console.WriteLine(System.Text.Encoding.Default.GetString(memory.ToArray()));
+                var memory = new Memory<byte>(new byte[4096]);
+                var test = await stream2.ReadAsync(memory);
+                Console.WriteLine(System.Text.Encoding.Default.GetString(memory.ToArray()));
             }
             else
             {
