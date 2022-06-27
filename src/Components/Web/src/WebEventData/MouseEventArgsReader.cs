@@ -25,8 +25,6 @@ internal static class MouseEventArgsReader
     private static readonly JsonEncodedText AltKey = JsonEncodedText.Encode("altKey");
     private static readonly JsonEncodedText MetaKey = JsonEncodedText.Encode("metaKey");
     private static readonly JsonEncodedText Type = JsonEncodedText.Encode("type");
-    private static readonly JsonEncodedText MovementX = JsonEncodedText.Encode("movementX");
-    private static readonly JsonEncodedText MovementY = JsonEncodedText.Encode("movementY");
 
     internal static MouseEventArgs Read(JsonElement jsonElement)
     {
@@ -103,14 +101,6 @@ internal static class MouseEventArgsReader
         else if (property.NameEquals(Type.EncodedUtf8Bytes))
         {
             eventArgs.Type = property.Value.GetString()!;
-        }
-        else if (property.NameEquals(MovementX.EncodedUtf8Bytes))
-        {
-            eventArgs.MovementX = property.Value.GetDouble()!;
-        }
-        else if (property.NameEquals(MovementY.EncodedUtf8Bytes))
-        {
-            eventArgs.MovementY = property.Value.GetDouble()!;
         }
         else
         {

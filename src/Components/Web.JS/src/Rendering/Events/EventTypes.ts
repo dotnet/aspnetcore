@@ -314,6 +314,8 @@ function parseMouseEvent(event: MouseEvent): MouseEventArgs {
     altKey: event.altKey,
     metaKey: event.metaKey,
     type: event.type,
+    region: event.region,
+    relatedTarget: event.relatedTarget,
   };
 }
 
@@ -432,6 +434,8 @@ interface MouseEventArgs {
   altKey: boolean;
   metaKey: boolean;
   type: string;
+  region: string | null;
+  relatedTarget: EventTarget | null;
 }
 
 interface PointerEventArgs extends MouseEventArgs {
