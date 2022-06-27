@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.RateLimiting;
-internal class PolicyTypeInfo
+internal sealed class PolicyTypeInfo
 {
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     public required Type PolicyType { get; init; }

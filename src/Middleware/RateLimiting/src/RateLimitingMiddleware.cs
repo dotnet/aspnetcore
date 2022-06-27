@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 internal sealed partial class RateLimitingMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly Func<OnRejectedContext, CancellationToken, ValueTask>? _onRejected;
+    private readonly Func<OnRejectedContext, CancellationToken, ValueTask>? _defaultOnRejected;
     private readonly ILogger _logger;
     private readonly PartitionedRateLimiter<HttpContext>? _globalLimiter;
     private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
@@ -30,7 +30,7 @@ internal sealed partial class RateLimitingMiddleware
     /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
     /// <param name="logger">The <see cref="ILogger"/> used for logging.</param>
     /// <param name="options">The options for the middleware.</param>
-    /// <param name="serviceProvider">The service provider for this middleware.</param>
+    /// <param name="serviceProvider">The service provider.</param>
     public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimiterOptions> options, IServiceProvider serviceProvider)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
@@ -39,7 +39,7 @@ internal sealed partial class RateLimitingMiddleware
 
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
-        _onRejected = options.Value.OnRejected;
+        _defaultOnRejected = options.Value.OnRejected;
         _rejectionStatusCode = options.Value.RejectionStatusCode;
         _policyMap = options.Value.PolicyMap;
 
@@ -75,34 +75,26 @@ internal sealed partial class RateLimitingMiddleware
         }
         else
         {
+            var thisRequestOnRejected = _defaultOnRejected;
             RateLimiterLog.RequestRejectedLimitsExceeded(_logger);
             // OnRejected "wins" over DefaultRejectionStatusCode - we set DefaultRejectionStatusCode first,
             // then call OnRejected in case it wants to do any further modification of the status code.
             context.Response.StatusCode = _rejectionStatusCode;
 
-            // If the global limiter rejected this request, use OnRejected from the options if it exists.
-            // Else the endpoint limiter rejected this request - use OnRejected from the endpoint policy if it exists,
-            // else OnRejected from the options if it exists.
-            if (leaseContext.Rejector.Equals(Rejector.Global))
-            {
-                if (_onRejected is not null)
-                {
-                    await _onRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease }, context.RequestAborted);
-                }
-            }
-            else
+            // If this request was rejected by the endpoint limiter, use its OnRejected if available. Else 
+            if (leaseContext.GlobalRejected == false)
             {
                 DefaultRateLimiterPolicy? policy;
-                var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.Name;
+                var policyName = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.PolicyName;
                 // Use custom policy OnRejected if available, else use OnRejected from the Options if available.
-                if (name is not null && _policyMap.TryGetValue(name, out policy) && policy.OnRejected is not null)
+                if (policyName is not null && _policyMap.TryGetValue(policyName, out policy) && policy.OnRejected is not null)
                 {
-                    await policy.OnRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease }, context.RequestAborted);
+                    thisRequestOnRejected = policy.OnRejected;
                 }
-                else if (_onRejected is not null)
-                {
-                    await _onRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease }, context.RequestAborted);
-                }
+            }
+            if (thisRequestOnRejected is not null)
+            {
+                await thisRequestOnRejected(new OnRejectedContext() { HttpContext = context, Lease = leaseContext.Lease }, context.RequestAborted);
             }
         }
     }
@@ -115,7 +107,7 @@ internal sealed partial class RateLimitingMiddleware
             return ValueTask.FromResult(leaseContext);
         }
 
-        return CombinedWaitASync(context, context.RequestAborted);
+        return CombinedWaitAsync(context, context.RequestAborted);
     }
 
     private LeaseContext CombinedAcquire(HttpContext context)
@@ -130,14 +122,14 @@ internal sealed partial class RateLimitingMiddleware
                 globalLease = _globalLimiter.Acquire(context);
                 if (!globalLease.IsAcquired)
                 {
-                    return new LeaseContext() { Rejector = Rejector.Global, Lease = globalLease };
+                    return new LeaseContext() { GlobalRejected = true, Lease = globalLease };
                 }
             }
             endpointLease = _endpointLimiter.Acquire(context);
             if (!endpointLease.IsAcquired)
             {
                 globalLease?.Dispose();
-                return new LeaseContext() { Rejector = Rejector.Endpoint, Lease = endpointLease };
+                return new LeaseContext() { GlobalRejected = false, Lease = endpointLease };
             }
         }
         catch (Exception)
@@ -150,7 +142,7 @@ internal sealed partial class RateLimitingMiddleware
         return new LeaseContext() { Lease = new DefaultCombinedLease(globalLease, endpointLease)};
     }
 
-    private async ValueTask<LeaseContext> CombinedWaitASync(HttpContext context, CancellationToken cancellationToken)
+    private async ValueTask<LeaseContext> CombinedWaitAsync(HttpContext context, CancellationToken cancellationToken)
     {
         RateLimitLease? globalLease = null;
         RateLimitLease? endpointLease = null;
@@ -162,14 +154,14 @@ internal sealed partial class RateLimitingMiddleware
                 globalLease = await _globalLimiter.WaitAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
                 if (!globalLease.IsAcquired)
                 {
-                    return new LeaseContext() { Rejector = Rejector.Global, Lease = globalLease };
+                    return new LeaseContext() { GlobalRejected = true, Lease = globalLease };
                 }
             }
             endpointLease = await _endpointLimiter.WaitAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (!endpointLease.IsAcquired)
             {
                 globalLease?.Dispose();
-                return new LeaseContext() { Rejector = Rejector.Endpoint, Lease = endpointLease };
+                return new LeaseContext() { GlobalRejected = false, Lease = endpointLease };
             }
         }
         catch (Exception)
@@ -189,13 +181,10 @@ internal sealed partial class RateLimitingMiddleware
         return PartitionedRateLimiter.Create<HttpContext, DefaultKeyType>(context =>
         {
             DefaultRateLimiterPolicy? policy;
-            var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.Name;
-            if (name is not null)
+            var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.PolicyName;
+            if (name is not null && _policyMap.TryGetValue(name, out policy))
             {
-                if (_policyMap.TryGetValue(name, out policy))
-                {
-                    return policy.GetPartition(context);
-                }
+                return policy.GetPartition(context);
             }
             return RateLimitPartition.CreateNoLimiter<DefaultKeyType>(_defaultPolicyKey);
         }, new DefaultKeyTypeEqualityComparer());
@@ -206,10 +195,4 @@ internal sealed partial class RateLimitingMiddleware
         [LoggerMessage(1, LogLevel.Debug, "Rate limits exceeded, rejecting this request.", EventName = "RequestRejectedLimitsExceeded")]
         internal static partial void RequestRejectedLimitsExceeded(ILogger logger);
     }
-}
-
-internal enum Rejector
-{
-    Global,
-    Endpoint
 }
