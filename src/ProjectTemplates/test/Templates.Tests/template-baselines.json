@@ -1753,7 +1753,7 @@
         "wwwroot/css/open-iconic/font/fonts/open-iconic.svg",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.ttf",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.woff",
-        "wwwroot/css/sample-data/weather.json"
+        "wwwroot/sample-data/weather.json"
       ]
     },
     "Individual": {
@@ -1789,7 +1789,7 @@
         "wwwroot/css/open-iconic/font/fonts/open-iconic.svg",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.ttf",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.woff",
-        "wwwroot/css/sample-data/weather.json"
+        "wwwroot/sample-data/weather.json"
       ]
     },
     "IndividualB2C": {
@@ -1825,7 +1825,7 @@
         "wwwroot/css/open-iconic/font/fonts/open-iconic.svg",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.ttf",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.woff",
-        "wwwroot/css/sample-data/weather.json"
+        "wwwroot/sample-data/weather.json"
       ]
     },
     "SingleOrg": {
@@ -1861,7 +1861,7 @@
         "wwwroot/css/open-iconic/font/fonts/open-iconic.svg",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.ttf",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.woff",
-        "wwwroot/css/sample-data/weather.json"
+        "wwwroot/sample-data/weather.json"
       ]
     },
     "Hosted": {
@@ -1880,7 +1880,7 @@
         "Client/Shared/NavMenu.razor",
         "Client/Shared/NavMenu.razor.css",
         "Client/Shared/SurveyPrompt.razor",
-        "Client/wwwroot/app.css",
+        "Client/wwwroot/css/app.css",
         "Client/wwwroot/favicon.png",
         "Client/wwwroot/icon-192.png",
         "Client/wwwroot/index.html",
@@ -1939,7 +1939,7 @@
         "wwwroot/css/open-iconic/font/fonts/open-iconic.svg",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.ttf",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.woff",
-        "wwwroot/css/sample-data/weather.json"
+        "wwwroot/sample-data/weather.json"
       ]
     },
     "PWAHosted": {
@@ -1958,7 +1958,7 @@
         "Client/Shared/NavMenu.razor",
         "Client/Shared/NavMenu.razor.css",
         "Client/Shared/SurveyPrompt.razor",
-        "Client/wwwroot/app.css",
+        "Client/wwwroot/css/app.css",
         "Client/wwwroot/favicon.png",
         "Client/wwwroot/icon-192.png",
         "Client/wwwroot/index.html",
@@ -2013,7 +2013,7 @@
         "wwwroot/css/open-iconic/font/fonts/open-iconic.svg",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.ttf",
         "wwwroot/css/open-iconic/font/fonts/open-iconic.woff",
-        "wwwroot/css/sample-data/weather.json"
+        "wwwroot/sample-data/weather.json"
       ]
     }
   },
