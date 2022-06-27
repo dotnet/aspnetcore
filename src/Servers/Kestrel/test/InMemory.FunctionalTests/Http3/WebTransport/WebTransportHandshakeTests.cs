@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
 
-namespace InMemory.FunctionalTests.Http3.WebTransport;
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class WebTransportHandshakeTests : Http3TestBase
 {
@@ -37,7 +37,8 @@ public class WebTransportHandshakeTests : Http3TestBase
 #pragma warning disable CA2252 // This API requires opting into preview features
             try
             {
-                _ = await webTransportFeature.AcceptAsync(CancellationToken.None).DefaultTimeout();
+                var session = await webTransportFeature.AcceptAsync(CancellationToken.None).DefaultTimeout(); // todo session is null here
+
                 appCompletedTcs.SetResult(success);
             }
             catch (TimeoutException)

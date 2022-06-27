@@ -37,14 +37,12 @@ internal class WebTransportSession : IWebTransportSession
 
     long IWebTransportSession.SessionId => _controlStream.StreamId;
 
-
     internal WebTransportSession(Http3Connection connection, Http3Stream controlStream)
     {
         _connection = connection;
         _controlStream = controlStream;
         _isClosing = false;
     }
-
 
     void IWebTransportSession.Abort()
     {
@@ -95,7 +93,7 @@ internal class WebTransportSession : IWebTransportSession
         _pendingStreams.Clear();
     }
 
-    async ValueTask<Stream> IWebTransportSession.OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
+    public async ValueTask<Stream> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
     {
         if (_isClosing)
         {
@@ -120,7 +118,7 @@ internal class WebTransportSession : IWebTransportSession
     }
 
     /// <summary>
-    /// Adds a new stream to the internal list of open streams.
+    /// Adds a new stream to the internal list of pending streams.
     /// </summary>
     /// <param name="stream">A reference to the new stream that is being added</param>
     internal void AddStream(WebTransportStream stream)

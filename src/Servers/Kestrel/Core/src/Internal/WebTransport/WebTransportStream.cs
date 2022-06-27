@@ -42,7 +42,7 @@ internal class WebTransportStream : Stream
 
     private WebTransportStream(Http3StreamContext context, WebTransportStreamType type)
     {
-        _canRead = _type != WebTransportStreamType.Output;
+        _canRead = type != WebTransportStreamType.Output;
         _type = type;
         _context = context;
         _streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();

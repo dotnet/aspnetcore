@@ -493,7 +493,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     Input.AdvanceTo(examined);
                 }
 
-
                 return value;
             }
         }

@@ -1208,17 +1208,19 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         // send version negotiation resulting version
         var version = matches.First()[WebTransportSession.SecPrefix.Length..];
         ResponseHeaders.TryAdd(WebTransportSession.VersionHeaderPrefix, version);
-        Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (Http.HttpResponseHeaders)ResponseHeaders, false, false);
+        Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (HttpResponseHeaders)ResponseHeaders, false, false);
         await Output.FlushAsync(token);
 
         // listener to abort if this connection is closed
-        _context!.StreamContext.ConnectionClosed.Register(state =>
+        _context.StreamContext.ConnectionClosed.Register(state =>
         {
             var session = (WebTransportSession)state!;
             session.OnClientConnectionClosed();
         }, _context.WebTransportSession!);
 
-        return _context!.WebTransportSession!;
+        //_context.WebTransportSession = new WebTransportSession(_context., this); TODO DO THIS
+
+        return _context.WebTransportSession!;
     }
 
     /// <summary>
