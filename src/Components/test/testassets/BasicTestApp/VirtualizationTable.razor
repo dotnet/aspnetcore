@@ -18,6 +18,11 @@
     </tbody>
 </table>
 
+<style>
+    /* Represents https://github.com/dotnet/aspnetcore/issues/37659 */
+    html, body { overflow-y: scroll }
+</style>
+
 @code {
     List<int> fixedItems = Enumerable.Range(0, 1000).ToList();
 }
