@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 #pragma warning disable CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'. Fixing this is too gnarly.
-internal partial class RequestStream : Stream
+internal sealed partial class RequestStream : Stream
 #pragma warning restore CA1844 // Provide memory-based overrides of async methods when subclassing 'Stream'
 {
     private const int MaxReadSize = 0x20000; // http.sys recommends we limit reads to 128k
@@ -100,11 +100,11 @@ internal partial class RequestStream : Stream
         {
             throw new ArgumentNullException(nameof(buffer));
         }
-        if (offset < 0 || offset > buffer.Length)
+        if ((uint)offset > (uint)buffer.Length)
         {
             throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
         }
-        if (size <= 0 || size > buffer.Length - offset)
+        if ((uint)size > (uint)(buffer.Length - offset))
         {
             throw new ArgumentOutOfRangeException(nameof(size), size, string.Empty);
         }
@@ -161,7 +161,14 @@ internal partial class RequestStream : Stream
 
                 dataRead += extraDataRead;
             }
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
+
+            // Zero-byte reads
+            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA && size == 0)
+            {
+                // extraDataRead returns 1 to let us know there's data available. Don't count it against the request body size yet.
+                dataRead = 0;
+            }
+            else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
             {
                 Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
                 Log.ErrorWhileRead(Logger, exception);
@@ -181,7 +188,8 @@ internal partial class RequestStream : Stream
 
     internal void UpdateAfterRead(uint statusCode, uint dataRead)
     {
-        if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF || dataRead == 0)
+        if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF
+            || statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA && dataRead == 0)
         {
             Dispose();
         }
@@ -242,7 +250,7 @@ internal partial class RequestStream : Stream
             cancellationRegistration = RequestContext.RegisterForCancellation(cancellationToken);
         }
 
-        asyncResult = new RequestStreamAsyncResult(this, null, null, buffer, offset, dataRead, cancellationRegistration);
+        asyncResult = new RequestStreamAsyncResult(this, null, null, buffer, offset, size, dataRead, cancellationRegistration);
         uint bytesReturned;
 
         try

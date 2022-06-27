@@ -23,7 +23,7 @@ and make pull-requests.
 * [Download our latest daily builds](./docs/DailyBuilds.md)
 * Follow along with the development of ASP.NET Core:
     * [Community Standup](https://live.asp.net): The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist.
-    * [Roadmap](https://github.com/dotnet/aspnetcore/issues/27883): The schedule and milestone themes for ASP.NET Core.
+    * [Roadmap](https://aka.ms/aspnet/roadmap): The schedule and milestone themes for ASP.NET Core.
 * [Build ASP.NET Core source code](./docs/BuildFromSource.md)
 * Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
@@ -37,7 +37,9 @@ These are some other repos for related projects:
 
 * [Documentation](https://github.com/aspnet/Docs) - documentation sources for https://docs.microsoft.com/aspnet/core/
 * [Entity Framework Core](https://github.com/dotnet/efcore) - data access technology
-* [Runtime](https://github.com/dotnet/runtime) - cross-platform runtime for cloud, mobile, desktop, and IoT apps.
+* [Runtime](https://github.com/dotnet/runtime) - cross-platform runtime for cloud, mobile, desktop, and IoT apps
+* [Razor Compiler](https://github.com/dotnet/razor-compiler) - the parser and the C# code generator for the Razor syntax
+* [Razor Tooling](https://github.com/dotnet/razor-tooling) - tools for working on Razor ASP.NET Core apps using [Visual Studio](https://visualstudio.com), [Visual Studio for Mac](https://visualstudio.microsoft.com/vs/mac/), and [Visual Studio Code](https://code.visualstudio.com/).
 
 ## Code of conduct
 

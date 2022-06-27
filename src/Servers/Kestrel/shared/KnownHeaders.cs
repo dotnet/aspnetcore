@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable CA1810 // Initialize all static fields inline. This is a code generator.
+
 using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http.HPack;
@@ -25,6 +27,7 @@ public class KnownHeaders
         HeaderNames.Connection,
         HeaderNames.Scheme,
         HeaderNames.Path,
+        HeaderNames.Protocol,
         HeaderNames.Method,
         HeaderNames.Authority,
         HeaderNames.Host,
@@ -43,7 +46,8 @@ public class KnownHeaders
         "Method", // :method
         "Path", // :path
         "Scheme", // :scheme
-        "Status" // :status
+        "Status", // :status
+        "Protocol" // :protocol
     };
 
     public static readonly string[] NonApiHeaders =
@@ -99,6 +103,7 @@ public class KnownHeaders
         };
         var requestHeadersExistence = new[]
         {
+            HeaderNames.Cookie,
             HeaderNames.Connection,
             HeaderNames.TransferEncoding,
         };
@@ -129,6 +134,7 @@ public class KnownHeaders
             HeaderNames.IfRange,
             HeaderNames.IfUnmodifiedSince,
             HeaderNames.MaxForwards,
+            HeaderNames.Protocol,
             HeaderNames.ProxyAuthorization,
             HeaderNames.Referer,
             HeaderNames.Range,
@@ -143,8 +149,8 @@ public class KnownHeaders
             HeaderNames.Baggage,
         })
         .Concat(corsRequestHeaders)
-        .OrderBy(header => header)
         .OrderBy(header => !requestPrimaryHeaders.Contains(header))
+        .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
             Name = header,
@@ -212,8 +218,8 @@ public class KnownHeaders
             HeaderNames.Trailer,
         })
         .Concat(corsResponseHeaders)
-        .OrderBy(header => header)
         .OrderBy(header => !responsePrimaryHeaders.Contains(header))
+        .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
             Name = header,
@@ -237,8 +243,8 @@ public class KnownHeaders
             HeaderNames.GrpcMessage,
             HeaderNames.GrpcStatus
         }
-        .OrderBy(header => header)
         .OrderBy(header => !responsePrimaryHeaders.Contains(header))
+        .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
             Name = header,
@@ -515,7 +521,7 @@ public class KnownHeaders
 
         }
 
-        private static string EqualityTerm(string name, int offset, int count, string type, string suffix)
+        private static string EqualityTerm(string name, int offset, int count, string suffix)
         {
             GetMaskAndComp(name, offset, count, out _, out var comp);
 
@@ -526,7 +532,7 @@ public class KnownHeaders
         {
             GetMaskAndComp(name, offset, count, out _, out _);
 
-            return $"({NameTerm(name, offset, count, type, suffix)} == {EqualityTerm(name, offset, count, type, suffix)})";
+            return $"({NameTerm(name, offset, count, type, suffix)} == {EqualityTerm(name, offset, count, suffix)})";
         }
 
         public string FirstNameIgnoreCaseSegment()
@@ -600,7 +606,7 @@ public class KnownHeaders
                     {
                         if (isFirst)
                         {
-                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 8, "ulong", "uL")})";
+                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 8, "uL")})";
                         }
                         else
                         {
@@ -613,7 +619,7 @@ public class KnownHeaders
                     {
                         if (isFirst)
                         {
-                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 4, "uint", "u")})";
+                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 4, "u")})";
                         }
                         else
                         {
@@ -625,7 +631,7 @@ public class KnownHeaders
                     {
                         if (isFirst)
                         {
-                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 2, "ushort", "u")})";
+                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 2, "u")})";
                         }
                         else
                         {
@@ -637,7 +643,7 @@ public class KnownHeaders
                     {
                         if (isFirst)
                         {
-                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 1, "byte", "u")})";
+                            result = $"({firstTermVar} == {EqualityTerm(Name, index, 1, "u")})";
                         }
                         else
                         {
@@ -1491,21 +1497,21 @@ $@"        private void Clear(long bitsToClear)
         return groupedHeaders;
     }
 
-    private class QPackGroup
+    private sealed class QPackGroup
     {
         public (int Index, System.Net.Http.QPack.HeaderField Field)[] QPackStaticTableFields { get; set; }
         public KnownHeader Header { get; set; }
         public string Name { get; set; }
     }
 
-    private class HPackGroup
+    private sealed class HPackGroup
     {
         public int[] HPackStaticTableIndexes { get; set; }
         public KnownHeader Header { get; set; }
         public string Name { get; set; }
     }
 
-    private class KnownHeaderComparer : IComparer<KnownHeader>
+    private sealed class KnownHeaderComparer : IComparer<KnownHeader>
     {
         public static readonly KnownHeaderComparer Instance = new KnownHeaderComparer();
 

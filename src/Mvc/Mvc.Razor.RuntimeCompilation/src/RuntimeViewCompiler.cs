@@ -19,7 +19,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
+#pragma warning disable CA1852 // Seal internal types
 internal partial class RuntimeViewCompiler : IViewCompiler
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly object _cacheLock = new object();
     private readonly Dictionary<string, CompiledViewDescriptor> _precompiledViews;
@@ -108,13 +110,13 @@ internal partial class RuntimeViewCompiler : IViewCompiler
 
         // Attempt to lookup the cache entry using the passed in path. This will succeed if the path is already
         // normalized and a cache entry exists.
-        if (_cache.TryGetValue(relativePath, out Task<CompiledViewDescriptor> cachedResult))
+        if (_cache.TryGetValue<Task<CompiledViewDescriptor>>(relativePath, out var cachedResult) && cachedResult is not null)
         {
             return cachedResult;
         }
 
         var normalizedPath = GetNormalizedPath(relativePath);
-        if (_cache.TryGetValue(normalizedPath, out cachedResult))
+        if (_cache.TryGetValue(normalizedPath, out cachedResult) && cachedResult is not null)
         {
             return cachedResult;
         }
@@ -136,7 +138,7 @@ internal partial class RuntimeViewCompiler : IViewCompiler
         lock (_cacheLock)
         {
             // Double-checked locking to handle a possible race.
-            if (_cache.TryGetValue(normalizedPath, out Task<CompiledViewDescriptor> result))
+            if (_cache.TryGetValue<Task<CompiledViewDescriptor>>(normalizedPath, out var result) && result is not null)
             {
                 return result;
             }
@@ -415,7 +417,7 @@ internal partial class RuntimeViewCompiler : IViewCompiler
         return normalizedPath;
     }
 
-    private class ViewCompilerWorkItem
+    private sealed class ViewCompilerWorkItem
     {
         public bool SupportsCompilation { get; set; } = default!;
 

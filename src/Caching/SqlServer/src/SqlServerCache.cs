@@ -70,29 +70,15 @@ public class SqlServerCache : IDistributedCache
         _deleteExpiredCachedItemsDelegate = DeleteExpiredCacheItems;
         _defaultSlidingExpiration = cacheOptions.DefaultSlidingExpiration;
 
-        // SqlClient library on Mono doesn't have support for DateTimeOffset and also
-        // it doesn't have support for apis like GetFieldValue, GetFieldValueAsync etc.
-        // So we detect the platform to perform things differently for Mono vs. non-Mono platforms.
-        if (PlatformHelper.IsMono)
-        {
-            _dbOperations = new MonoDatabaseOperations(
-                cacheOptions.ConnectionString,
-                cacheOptions.SchemaName,
-                cacheOptions.TableName,
-                _systemClock);
-        }
-        else
-        {
-            _dbOperations = new DatabaseOperations(
-                cacheOptions.ConnectionString,
-                cacheOptions.SchemaName,
-                cacheOptions.TableName,
-                _systemClock);
-        }
+        _dbOperations = new DatabaseOperations(
+            cacheOptions.ConnectionString,
+            cacheOptions.SchemaName,
+            cacheOptions.TableName,
+            _systemClock);
     }
 
     /// <inheritdoc />
-    public byte[] Get(string key)
+    public byte[]? Get(string key)
     {
         if (key == null)
         {
@@ -107,7 +93,7 @@ public class SqlServerCache : IDistributedCache
     }
 
     /// <inheritdoc />
-    public async Task<byte[]> GetAsync(string key, CancellationToken token = default(CancellationToken))
+    public async Task<byte[]?> GetAsync(string key, CancellationToken token = default(CancellationToken))
     {
         if (key == null)
         {

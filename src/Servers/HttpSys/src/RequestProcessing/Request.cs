@@ -14,7 +14,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal sealed class Request
+internal sealed partial class Request
 {
     private X509Certificate2? _clientCert;
     // TODO: https://github.com/aspnet/HttpSysServer/issues/231
@@ -115,8 +115,8 @@ internal sealed class Request
     internal ulong RawConnectionId { get; }
 
     // No ulongs in public APIs...
-    public long ConnectionId => (long)RawConnectionId;
-
+    public long ConnectionId => RawConnectionId != 0 ? (long)RawConnectionId : (long)UConnectionId;
+    
     internal ulong RequestId { get; }
 
     private SslStatus SslStatus { get; }
@@ -298,7 +298,8 @@ internal sealed class Request
         {
             Protocol |= SslProtocols.Ssl3;
         }
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or Prmember is obsolete
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         if ((Protocol & SslProtocols.Tls) != 0)
         {
             Protocol |= SslProtocols.Tls;
@@ -307,6 +308,7 @@ internal sealed class Request
         {
             Protocol |= SslProtocols.Tls11;
         }
+#pragma warning restore SYSLIB0039
         if ((Protocol & SslProtocols.Tls12) != 0)
         {
             Protocol |= SslProtocols.Tls12;
@@ -451,14 +453,9 @@ internal sealed class Request
         _nativeStream.SwitchToOpaqueMode();
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, Exception?> _errorInReadingCertificate =
-            LoggerMessage.Define(LogLevel.Debug, LoggerEventIds.ErrorInReadingCertificate, "An error occurred reading the client certificate.");
-
-        public static void ErrorInReadingCertificate(ILogger logger, Exception exception)
-        {
-            _errorInReadingCertificate(logger, exception);
-        }
+        [LoggerMessage(LoggerEventIds.ErrorInReadingCertificate, LogLevel.Debug, "An error occurred reading the client certificate.", EventName = "ErrorInReadingCertificate")]
+        public static partial void ErrorInReadingCertificate(ILogger logger, Exception exception);
     }
 }

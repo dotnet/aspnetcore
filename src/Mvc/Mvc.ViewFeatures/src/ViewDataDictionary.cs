@@ -378,7 +378,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// </summary>
     /// <param name="expression">Expression name, relative to the current model.</param>
     /// <param name="format">
-    /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+    /// The format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>).
     /// </param>
     /// <returns>
     /// Value of named <paramref name="expression"/> in this <see cref="ViewDataDictionary"/>, formatted using
@@ -399,7 +399,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// </summary>
     /// <param name="value">The value to format.</param>
     /// <param name="format">
-    /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+    /// The format string (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd.aspx"/>).
     /// </param>
     /// <returns>The formatted <see cref="string"/>.</returns>
     public static string? FormatValue(object? value, string? format)

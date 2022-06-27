@@ -409,7 +409,7 @@ public static class DataProtectionBuilderExtensions
     /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     /// <remarks>
-    /// See https://msdn.microsoft.com/en-us/library/windows/desktop/hh706794(v=vs.85).aspx
+    /// See <see href="https://msdn.microsoft.com/en-us/library/windows/desktop/hh706794(v=vs.85).aspx"/>
     /// for more information on DPAPI-NG. This API is only supported on Windows 8 / Windows Server 2012 and higher.
     /// </remarks>
     [SupportedOSPlatform("windows")]
@@ -434,8 +434,8 @@ public static class DataProtectionBuilderExtensions
     /// The default value of this parameter is <see cref="DpapiNGProtectionDescriptorFlags.None"/>.</param>
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     /// <remarks>
-    /// See https://msdn.microsoft.com/en-us/library/windows/desktop/hh769091(v=vs.85).aspx
-    /// and https://msdn.microsoft.com/en-us/library/windows/desktop/hh706800(v=vs.85).aspx
+    /// See <see href="https://msdn.microsoft.com/en-us/library/windows/desktop/hh769091(v=vs.85).aspx"/>
+    /// and <see href="https://msdn.microsoft.com/en-us/library/windows/desktop/hh706800(v=vs.85).aspx"/>
     /// for more information on valid values for the the <paramref name="protectionDescriptorRule"/>
     /// and <paramref name="flags"/> arguments.
     /// This API is only supported on Windows 8 / Windows Server 2012 and higher.

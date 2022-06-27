@@ -25,7 +25,7 @@ public class HttpValidationProblemDetails : ProblemDetails
     /// </summary>
     /// <param name="errors">The validation errors.</param>
     public HttpValidationProblemDetails(IDictionary<string, string[]> errors)
-        : this(new Dictionary<string, string[]>(errors, StringComparer.Ordinal))
+        : this(new Dictionary<string, string[]>(errors ?? throw new ArgumentNullException(nameof(errors)), StringComparer.Ordinal))
     {
     }
 

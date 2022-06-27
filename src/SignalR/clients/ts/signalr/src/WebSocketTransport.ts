@@ -52,7 +52,7 @@ export class WebSocketTransport implements ITransport {
             const cookies = this._httpClient.getCookieString(url);
             let opened = false;
 
-            if (Platform.isNode) {
+            if (Platform.isNode || Platform.isReactNative) {
                 const headers: {[k: string]: string} = {};
                 const [name, value] = getUserAgentHeader();
                 headers[name] = value;

@@ -3,20 +3,33 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class HubCallerClients : IHubCallerClients
+internal sealed class HubCallerClients : IHubCallerClients
 {
     private readonly string _connectionId;
     private readonly IHubClients _hubClients;
     private readonly string[] _currentConnectionId;
+    private readonly bool _parallelEnabled;
 
-    public HubCallerClients(IHubClients hubClients, string connectionId)
+    public HubCallerClients(IHubClients hubClients, string connectionId, bool parallelEnabled)
     {
         _connectionId = connectionId;
         _hubClients = hubClients;
         _currentConnectionId = new[] { _connectionId };
+        _parallelEnabled = parallelEnabled;
     }
 
-    public IClientProxy Caller => _hubClients.Client(_connectionId);
+    IClientProxy IHubCallerClients<IClientProxy>.Caller => Caller;
+    public ISingleClientProxy Caller
+    {
+        get
+        {
+            if (!_parallelEnabled)
+            {
+                return new NotParallelSingleClientProxy(_hubClients.Client(_connectionId));
+            }
+            return _hubClients.Client(_connectionId);
+        }
+    }
 
     public IClientProxy Others => _hubClients.AllExcept(_currentConnectionId);
 
@@ -27,8 +40,13 @@ internal class HubCallerClients : IHubCallerClients
         return _hubClients.AllExcept(excludedConnectionIds);
     }
 
-    public IClientProxy Client(string connectionId)
+    IClientProxy IHubClients<IClientProxy>.Client(string connectionId) => Client(connectionId);
+    public ISingleClientProxy Client(string connectionId)
     {
+        if (!_parallelEnabled)
+        {
+            return new NotParallelSingleClientProxy(_hubClients.Client(connectionId));
+        }
         return _hubClients.Client(connectionId);
     }
 
@@ -65,5 +83,25 @@ internal class HubCallerClients : IHubCallerClients
     public IClientProxy Users(IReadOnlyList<string> userIds)
     {
         return _hubClients.Users(userIds);
+    }
+
+    private sealed class NotParallelSingleClientProxy : ISingleClientProxy
+    {
+        private readonly ISingleClientProxy _proxy;
+
+        public NotParallelSingleClientProxy(ISingleClientProxy hubClients)
+        {
+            _proxy = hubClients;
+        }
+
+        public Task<T> InvokeCoreAsync<T>(string method, object?[] args, CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException("Client results inside a Hub method requires HubOptions.MaximumParallelInvocationsPerClient to be greater than 1.");
+        }
+
+        public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default)
+        {
+            return _proxy.SendCoreAsync(method, args, cancellationToken);
+        }
     }
 }

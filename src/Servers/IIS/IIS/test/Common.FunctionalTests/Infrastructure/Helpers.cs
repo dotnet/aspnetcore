@@ -1,19 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
+using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
@@ -29,18 +24,28 @@ public static class Helpers
 
     public static async Task AssertStarts(this IISDeploymentResult deploymentResult, string path = "/HelloWorld")
     {
-        var response = await deploymentResult.HttpClient.GetAsync(path);
-
+        // Sometimes the site is not ready, so retry until its actually started and ready
+        var response = await deploymentResult.HttpClient.RetryRequestAsync(path, r => r.IsSuccessStatusCode);
         var responseText = await response.Content.ReadAsStringAsync();
-
-        Assert.Equal("Hello World", responseText);
+        if (response.IsSuccessStatusCode)
+        {
+            Assert.Equal("Hello World", responseText);
+        }
+        else
+        {
+            throw new Exception($"Server not started successfully, recieved non success status code, responseText: {responseText}");
+        }
     }
 
     public static async Task StressLoad(HttpClient httpClient, string path, Action<HttpResponseMessage> action)
     {
         async Task RunRequests()
         {
-            var connection = new HttpClient() { BaseAddress = httpClient.BaseAddress };
+            var connection = new HttpClient()
+            {
+                BaseAddress = httpClient.BaseAddress,
+                Timeout = TimeSpan.FromSeconds(200),
+            };
 
             for (int j = 0; j < 10; j++)
             {

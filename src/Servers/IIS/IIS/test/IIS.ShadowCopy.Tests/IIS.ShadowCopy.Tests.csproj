@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>IIS.ShadowCopy.Tests</TestGroupName>
+    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <SkipTests Condition=" '$(SkipIISTests)' == 'true' ">true</SkipTests>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

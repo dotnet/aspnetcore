@@ -7,11 +7,10 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class PageActionInvokerCache
+internal sealed class PageActionInvokerCache
 {
     private readonly IPageFactoryProvider _pageFactoryProvider;
     private readonly IPageModelFactoryProvider _modelFactoryProvider;
@@ -20,7 +19,6 @@ internal class PageActionInvokerCache
     private readonly IFilterProvider[] _filterProviders;
     private readonly ParameterBinder _parameterBinder;
     private readonly IModelMetadataProvider _modelMetadataProvider;
-    private readonly MvcOptions _mvcOptions;
 
     public PageActionInvokerCache(
         IPageFactoryProvider pageFactoryProvider,
@@ -29,8 +27,7 @@ internal class PageActionInvokerCache
         IEnumerable<IFilterProvider> filterProviders,
         ParameterBinder parameterBinder,
         IModelMetadataProvider modelMetadataProvider,
-        IModelBinderFactory modelBinderFactory,
-        IOptions<MvcOptions> mvcOptions)
+        IModelBinderFactory modelBinderFactory)
     {
         _pageFactoryProvider = pageFactoryProvider;
         _modelFactoryProvider = modelFactoryProvider;
@@ -39,7 +36,6 @@ internal class PageActionInvokerCache
         _filterProviders = filterProviders.ToArray();
         _parameterBinder = parameterBinder;
         _modelMetadataProvider = modelMetadataProvider;
-        _mvcOptions = mvcOptions.Value;
     }
 
     public (PageActionInvokerCacheEntry cacheEntry, IFilterMetadata[] filters) GetCachedResult(ActionContext actionContext)
@@ -163,8 +159,7 @@ internal class PageActionInvokerCache
                 _modelMetadataProvider,
                 _modelBinderFactory,
                 actionDescriptor,
-                actionDescriptor.HandlerMethods[i],
-                _mvcOptions);
+                actionDescriptor.HandlerMethods[i]);
         }
 
         return results;

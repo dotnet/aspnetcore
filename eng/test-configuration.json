@@ -3,13 +3,12 @@
   "defaultOnFailure": "fail",
   "localRerunCount" : 3,
   "retryOnRules": [
-    {"testName": {"contains": "AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess"}},
-    {"testName": {"contains": "CheckFrebDisconnect"}},
-    {"testName": {"contains": "CheckStdoutWithLargeWrites"}},
-    {"testName": {"contains": "ServerShutsDownWhenMainExitsStress" }},
-    {"testName": {"contains": "AddressRegistrationTests" }},
+    {"testName": {"contains": "FlakyTestToEnsureRetryWorks" }},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
-    {"failureMessage": "network disconnected" }
+    {"testName": {"contains": "ReaderThrowsResetExceptionOnInvalidBody" }},
+    {"testAssembly": {"contains": "IIS"}},
+    {"failureMessage": {"contains":"(Site is started but no worker process found) (Site is started but no worker process found)"}},
+    {"failureMessage": {"contains": "network disconnected"}}
   ],
   "failOnRules": [
   ],

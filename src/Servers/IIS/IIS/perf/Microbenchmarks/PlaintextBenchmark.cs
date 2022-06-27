@@ -27,7 +27,8 @@ public class PlaintextBenchmark
         // Recreate client, TestServer.Client has additional logging that can hurt performance
         _client = new HttpClient()
         {
-            BaseAddress = _server.HttpClient.BaseAddress
+            BaseAddress = _server.HttpClient.BaseAddress,
+            Timeout = TimeSpan.FromSeconds(200),
         };
     }
 

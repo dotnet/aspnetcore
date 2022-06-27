@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
-internal partial class AsyncIOEngine : IAsyncIOEngine
+internal sealed partial class AsyncIOEngine : IAsyncIOEngine
 {
     private readonly IISHttpContext _context;
     private readonly NativeSafeHandle _handler;

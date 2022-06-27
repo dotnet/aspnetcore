@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class ControllerRequestDelegateFactory : IRequestDelegateFactory
+internal sealed class ControllerRequestDelegateFactory : IRequestDelegateFactory
 {
     private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
     private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;

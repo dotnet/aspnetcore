@@ -19,7 +19,7 @@ public interface IUserPhoneNumberStore<TUser> : IUserStore<TUser> where TUser : 
     /// <param name="phoneNumber">The telephone number to set.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    Task SetPhoneNumberAsync(TUser user, string phoneNumber, CancellationToken cancellationToken);
+    Task SetPhoneNumberAsync(TUser user, string? phoneNumber, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets the telephone number, if any, for the specified <paramref name="user"/>.
@@ -27,7 +27,7 @@ public interface IUserPhoneNumberStore<TUser> : IUserStore<TUser> where TUser : 
     /// <param name="user">The user whose telephone number should be retrieved.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the user's telephone number, if any.</returns>
-    Task<string> GetPhoneNumberAsync(TUser user, CancellationToken cancellationToken);
+    Task<string?> GetPhoneNumberAsync(TUser user, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets a flag indicating whether the specified <paramref name="user"/>'s telephone number has been confirmed.

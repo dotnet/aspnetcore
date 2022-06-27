@@ -18,7 +18,7 @@
   <Target Name="PrepareForBuild">
     <MakeDir Directories="$(IntermediateOutputPath)" />
 
-    <Error Text="Currently only linux-x64 is supported by Rpm installers." Condition=" '$(TargetRuntimeIdentifier)' != 'linux-x64' " />
+    <Error Text="Currently only linux-x64 and linux-arm64 are supported by Rpm installers." Condition=" '$(TargetRuntimeIdentifier)' != 'linux-x64' AND '$(TargetRuntimeIdentifier)' != 'linux-arm64'" />
 
     <Error Text="Missing required property: RpmPackageInstallRoot" Condition=" '$(RpmPackageInstallRoot)' == '' " />
     <Error Text="Missing required property: PackageContentRoot" Condition=" '$(PackageContentRoot)' == '' " />
@@ -37,6 +37,11 @@
   <Target Name="Pack" />
 
   <Target Name="RpmBuild" DependsOnTargets="$(RpmBuildDependsOn)">
+    <PropertyGroup>
+      <CblMariner1TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner1VersionSuffix)$(CblMarinerExtension)</CblMariner1TargetPath>
+      <CblMariner2TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner2VersionSuffix)$(CblMarinerExtension)</CblMariner2TargetPath>
+    </PropertyGroup>
+
     <!-- Create layout: Create changelog -->
     <PropertyGroup>
       <ChangeLogProps>DATE=$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))</ChangeLogProps>
@@ -45,16 +50,20 @@
       <ChangeLogProps>$(ChangeLogProps);PACKAGE_VERSION=$(PackageVersion)</ChangeLogProps>
       <ChangeLogProps>$(ChangeLogProps);PACKAGE_REVISION=$(PackageRevision)</ChangeLogProps>
 
+      <!--
+        RpmArch is used to match our naming conventions but
+        https://fedoraproject.org/wiki/Architectures#Primary_Architectures lists the canonical names `fpm` and
+        `rpmbuild` expect on the command line. Aliases like ARMv8, arm-64 and amd64 should also work.
+      -->
+      <CommandLineArch Condition=" '$(TargetArchitecture)' == 'x64' ">x86_64</CommandLineArch>
+      <CommandLineArch Condition=" '$(TargetArchitecture)' == 'arm64' ">aarch64</CommandLineArch>
+
       <GeneratedChangeLog>$(IntermediateOutputPath)changelog</GeneratedChangeLog>
     </PropertyGroup>
 
     <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)changelog.in" OutputPath="$(GeneratedChangeLog)" Properties="$(ChangeLogProps)" />
 
     <!-- Run fpm -->
-    <PropertyGroup>
-      <RpmArch Condition=" '$(TargetArchitecture)' == 'x64' ">amd64</RpmArch>
-    </PropertyGroup>
-
     <ItemGroup>
       <FpmArgs Include="--verbose" />
       <FpmArgs Include="--input-type=dir" />
@@ -63,7 +72,7 @@
       <FpmArgs Include="--package=$(TargetPath)" />
       <FpmArgs Include="--version=$(PackageVersion)" />
       <FpmArgs Include="--iteration=$(PackageRevision)" />
-      <FpmArgs Include="--architecture=$(RpmArch)" />
+      <FpmArgs Include="--architecture=$(CommandLineArch)" />
       <FpmArgs Include="--depends=&quot;%(RpmDependency.Identity) &gt;= %(RpmDependency.Version)&quot;" Condition=" '%(RpmDependency.Identity)' != '' "  />
       <FpmArgs Include="--rpm-changelog=&quot;$(GeneratedChangeLog)&quot;" />
       <FpmArgs Include="--rpm-summary=&quot;$(PackageSummary)&quot;" />
@@ -79,11 +88,19 @@
     <Exec Command="scl enable rh-ruby25 'fpm @(FpmArgs,' ')'" />
 
     <Copy SourceFiles="$(TargetPath)"
-          DestinationFiles="$(CblMarinerTargetPath)"
+          DestinationFiles="$(CblMariner1TargetPath)"
           OverwriteReadOnlyFiles="True"
           SkipUnchangedFiles="False"
           UseHardlinksIfPossible="False" />
 
-    <Message Text="$(TargetPath) -> $(CblMarinerTargetPath)" Importance="high" />
+    <Message Text="$(TargetPath) -> $(CblMariner1TargetPath)" Importance="high" />
+
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFiles="$(CblMariner2TargetPath)"
+          OverwriteReadOnlyFiles="True"
+          SkipUnchangedFiles="False"
+          UseHardlinksIfPossible="False" />
+
+    <Message Text="$(TargetPath) -> $(CblMariner2TargetPath)" Importance="high" />
   </Target>
 </Project>

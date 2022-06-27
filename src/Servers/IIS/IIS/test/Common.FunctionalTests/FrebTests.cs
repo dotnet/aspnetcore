@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipNonHelix("https://github.com/dotnet/aspnetcore/issues/25107")]
 public class FrebTests : IISFunctionalTestBase
 {
     public FrebTests(PublishedSitesFixture fixture) : base(fixture)
@@ -91,10 +90,7 @@ public class FrebTests : IISFunctionalTestBase
         AssertFrebLogs(result, new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "2"));
     }
 
-    // I think this test is flaky due to freb file not being created quickly enough.
-    // Adding extra logging, marking as flaky, and repeating should help
     [ConditionalFact]
-    [Repeat(10)]
     [RequiresIIS(IISCapability.FailedRequestTracingModule)]
     public async Task CheckFrebDisconnect()
     {

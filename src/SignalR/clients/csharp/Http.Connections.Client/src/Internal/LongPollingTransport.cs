@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal partial class LongPollingTransport : ITransport
+internal sealed partial class LongPollingTransport : ITransport
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;

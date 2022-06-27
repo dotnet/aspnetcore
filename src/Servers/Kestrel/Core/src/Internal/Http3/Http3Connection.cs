@@ -14,9 +14,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
+internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
 {
-    private static readonly object StreamPersistentStateKey = new object();
+    internal static readonly object StreamPersistentStateKey = new object();
 
     // Internal for unit testing
     internal readonly Dictionary<long, IHttp3Stream> _streams = new Dictionary<long, IHttp3Stream>();
@@ -56,6 +56,10 @@ internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
 
         _serverSettings.HeaderTableSize = (uint)httpLimits.Http3.HeaderTableSize;
         _serverSettings.MaxRequestHeaderFieldSectionSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
+        _serverSettings.EnableWebTransport = Convert.ToUInt32(context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
+        // technically these are 2 different settings so they should have separate values but the Chromium implementation requires
+        // them to both be 1 to useWebTransport.
+        _serverSettings.H3Datagram = Convert.ToUInt32(context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams);
     }
 
     private void UpdateHighestOpenedRequestStreamId(long streamId)
@@ -655,6 +659,12 @@ internal class Http3Connection : IHttp3StreamLifetimeHandler, IRequestProcessor
                 _clientSettings.MaxRequestHeaderFieldSectionSize = (uint)value;
                 break;
             case Http3SettingType.QPackBlockedStreams:
+                break;
+            case Http3SettingType.EnableWebTransport:
+                _clientSettings.EnableWebTransport = (uint)value;
+                break;
+            case Http3SettingType.H3Datagram:
+                _clientSettings.H3Datagram = (uint)value;
                 break;
             default:
                 throw new InvalidOperationException("Unexpected setting: " + type);

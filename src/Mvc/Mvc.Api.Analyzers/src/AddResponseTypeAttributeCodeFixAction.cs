@@ -170,7 +170,7 @@ internal sealed class AddResponseTypeAttributeCodeFixAction : CodeAction
     {
         var operation = (IMethodBodyBaseOperation)context.SemanticModel.GetOperation(context.MethodSyntax, context.CancellationToken);
 
-        if (!ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(context.SymbolCache, operation, context.CancellationToken, out var actualResponseMetadata))
+        if (!ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(context.SymbolCache, operation, out var actualResponseMetadata))
         {
             // If we cannot parse metadata correctly, don't offer fixes.
             return Array.Empty<(int, ITypeSymbol?)>();

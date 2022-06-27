@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 
 // Not used anywhere. Remove?
-internal class QuicConnectionFactory : IMultiplexedConnectionFactory
+internal sealed class QuicConnectionFactory : IMultiplexedConnectionFactory
 {
     private readonly QuicTransportContext _transportContext;
 
@@ -37,7 +37,11 @@ internal class QuicConnectionFactory : IMultiplexedConnectionFactory
         }
 
         var sslOptions = features?.Get<SslClientAuthenticationOptions>();
-        var connection = new QuicConnection(QuicImplementationProviders.MsQuic, (IPEndPoint)endPoint, sslOptions);
+        var connection = await QuicConnection.ConnectAsync(new QuicClientConnectionOptions()
+        {
+            RemoteEndPoint = endPoint,
+            ClientAuthenticationOptions = sslOptions
+        }, cancellationToken);
 
         await connection.ConnectAsync(cancellationToken);
         return new QuicConnectionContext(connection, _transportContext);

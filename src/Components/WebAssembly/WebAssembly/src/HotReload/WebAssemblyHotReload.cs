@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.HotReload;
@@ -44,7 +45,7 @@ public static class WebAssemblyHotReload
     [JSInvokable(nameof(ApplyHotReloadDelta))]
     public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes)
     {
-        var moduleId = Guid.Parse(moduleIdString);
+        var moduleId = Guid.Parse(moduleIdString, CultureInfo.InvariantCulture);
 
         _updateDeltas[0].ModuleId = moduleId;
         _updateDeltas[0].MetadataDelta = metadataDelta;

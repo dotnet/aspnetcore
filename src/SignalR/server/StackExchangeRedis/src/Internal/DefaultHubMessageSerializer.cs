@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class DefaultHubMessageSerializer
+internal sealed class DefaultHubMessageSerializer
 {
     private readonly List<IHubProtocol> _hubProtocols;
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
@@ -484,7 +485,8 @@ internal abstract class CertificateManager
                         char[] pem;
                         if (password != null)
                         {
-                            keyBytes = key.ExportEncryptedPkcs8PrivateKey(password, new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100000));
+                            // TODO: cleanup cast: https://github.com/dotnet/aspnetcore/issues/41455
+                            keyBytes = key.ExportEncryptedPkcs8PrivateKey((ReadOnlySpan<char>)password, new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100000));
                             pem = PemEncoding.Write("ENCRYPTED PRIVATE KEY", keyBytes);
                             pemEnvelope = Encoding.ASCII.GetBytes(pem);
                         }
@@ -493,11 +495,13 @@ internal abstract class CertificateManager
                             // Export the key first to an encrypted PEM to avoid issues with System.Security.Cryptography.Cng indicating that the operation is not supported.
                             // This is likely by design to avoid exporting the key by mistake.
                             // To bypass it, we export the certificate to pem temporarily and then we import it and export it as unprotected PEM.
-                            keyBytes = key.ExportEncryptedPkcs8PrivateKey("", new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 1));
+                            // TODO: cleanup cast: https://github.com/dotnet/aspnetcore/issues/41455
+                            keyBytes = key.ExportEncryptedPkcs8PrivateKey((ReadOnlySpan<char>)"", new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 1));
                             pem = PemEncoding.Write("ENCRYPTED PRIVATE KEY", keyBytes);
                             key.Dispose();
                             key = RSA.Create();
-                            key.ImportFromEncryptedPem(pem, "");
+                            // TODO: cleanup cast: https://github.com/dotnet/aspnetcore/issues/41455
+                            key.ImportFromEncryptedPem(pem, (ReadOnlySpan<char>)"");
                             Array.Clear(keyBytes, 0, keyBytes.Length);
                             Array.Clear(pem, 0, pem.Length);
                             keyBytes = key.ExportPkcs8PrivateKey();
@@ -783,9 +787,10 @@ internal abstract class CertificateManager
         $"{c.Thumbprint} - {c.Subject} - Valid from {c.NotBefore:u} to {c.NotAfter:u} - IsHttpsDevelopmentCertificate: {IsHttpsDevelopmentCertificate(c).ToString().ToLowerInvariant()} - IsExportable: {Instance.IsExportable(c).ToString().ToLowerInvariant()}";
 
     [EventSource(Name = "Dotnet-dev-certs")]
-    public class CertificateManagerEventSource : EventSource
+    public sealed class CertificateManagerEventSource : EventSource
     {
         [Event(1, Level = EventLevel.Verbose, Message = "Listing certificates from {0}\\{1}")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
         public void ListCertificatesStart(StoreLocation location, StoreName storeName) => WriteEvent(1, location, storeName);
 
         [Event(2, Level = EventLevel.Verbose, Message = "Found certificates: {0}")]
@@ -831,6 +836,7 @@ internal abstract class CertificateManager
         public void CreateDevelopmentCertificateError(string e) => WriteEvent(19, e);
 
         [Event(20, Level = EventLevel.Verbose, Message = "Saving certificate '{0}' to store {2}\\{1}.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
         public void SaveCertificateInStoreStart(string certificate, StoreName name, StoreLocation location) => WriteEvent(20, certificate, name, location);
 
         [Event(21, Level = EventLevel.Verbose, Message = "Finished saving certificate to the store.")]
@@ -966,11 +972,11 @@ internal abstract class CertificateManager
         internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, description);
     }
 
-    internal class UserCancelledTrustException : Exception
+    internal sealed class UserCancelledTrustException : Exception
     {
     }
 
-    internal struct CheckCertificateStateResult
+    internal readonly struct CheckCertificateStateResult
     {
         public bool Success { get; }
         public string? FailureMessage { get; }

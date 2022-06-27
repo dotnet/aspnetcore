@@ -23,7 +23,6 @@ public static class ActualApiResponseMetadataFactory
     internal static bool TryGetActualResponseMetadata(
         in ApiControllerSymbolCache symbolCache,
         IMethodBodyBaseOperation methodBody,
-        CancellationToken cancellationToken,
         out IList<ActualApiResponseMetadata> actualResponseMetadata)
     {
         var localActualResponseMetadata = new List<ActualApiResponseMetadata>();

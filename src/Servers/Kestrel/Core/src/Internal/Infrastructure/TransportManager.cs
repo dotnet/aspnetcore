@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-internal class TransportManager
+internal sealed class TransportManager
 {
     private readonly List<ActiveTransport> _transports = new List<ActiveTransport>();
 
@@ -129,7 +129,7 @@ internal class TransportManager
         }
     }
 
-    private class ActiveTransport : IAsyncDisposable
+    private sealed class ActiveTransport : IAsyncDisposable
     {
         public ActiveTransport(IConnectionListenerBase transport, Task acceptLoopTask, TransportConnectionManager transportConnectionManager, EndpointConfig? endpointConfig = null)
         {
@@ -157,7 +157,7 @@ internal class TransportManager
         }
     }
 
-    private class GenericConnectionListener : IConnectionListener<ConnectionContext>
+    private sealed class GenericConnectionListener : IConnectionListener<ConnectionContext>
     {
         private readonly IConnectionListener _connectionListener;
 
@@ -178,7 +178,7 @@ internal class TransportManager
             => _connectionListener.DisposeAsync();
     }
 
-    private class GenericMultiplexedConnectionListener : IConnectionListener<MultiplexedConnectionContext>
+    private sealed class GenericMultiplexedConnectionListener : IConnectionListener<MultiplexedConnectionContext>
     {
         private readonly IMultiplexedConnectionListener _multiplexedConnectionListener;
 

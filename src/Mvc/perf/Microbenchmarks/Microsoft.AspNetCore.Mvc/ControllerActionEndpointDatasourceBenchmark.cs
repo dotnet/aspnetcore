@@ -113,7 +113,7 @@ public class ControllerActionEndpointDataSourceBenchmark
         return dataSource;
     }
 
-    private class MockRoutePatternTransformer : RoutePatternTransformer
+    private sealed class MockRoutePatternTransformer : RoutePatternTransformer
     {
         public override RoutePattern SubstituteRequiredValues(RoutePattern original, object requiredValues)
         {
@@ -121,7 +121,7 @@ public class ControllerActionEndpointDataSourceBenchmark
         }
     }
 
-    private class MockActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
+    private sealed class MockActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
     {
         public MockActionDescriptorCollectionProvider(List<ActionDescriptor> actionDescriptors)
         {
@@ -131,7 +131,7 @@ public class ControllerActionEndpointDataSourceBenchmark
         public ActionDescriptorCollection ActionDescriptors { get; }
     }
 
-    private class MockParameterPolicyFactory : ParameterPolicyFactory
+    private sealed class MockParameterPolicyFactory : ParameterPolicyFactory
     {
         public override IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText)
         {

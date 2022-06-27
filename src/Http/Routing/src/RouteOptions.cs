@@ -86,6 +86,12 @@ public class RouteOptions
         }
     }
 
+    /// <summary>
+    /// <see cref="SetParameterPolicy{T}(string)"/> ensures that types are added to the constraint map in a trimmer safe way.
+    /// This API allows reading the map without encountering a trimmer warning within the framework.
+    /// </summary>
+    internal IDictionary<string, Type> TrimmerSafeConstraintMap => _constraintTypeMap;
+
     private static IDictionary<string, Type> GetDefaultConstraintMap()
     {
         var defaults = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
@@ -130,7 +136,7 @@ public class RouteOptions
     /// <param name="token">The route token used to apply the parameter policy.</param>
     public void SetParameterPolicy<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(string token) where T : IParameterPolicy
     {
-        ConstraintMap[token] = typeof(T);
+        _constraintTypeMap[token] = typeof(T);
     }
 
     /// <summary>
@@ -146,7 +152,7 @@ public class RouteOptions
             throw new InvalidOperationException($"{type} must implement {typeof(IParameterPolicy)}");
         }
 
-        ConstraintMap[token] = type;
+        _constraintTypeMap[token] = type;
     }
 
     private static void AddConstraint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TConstraint>(Dictionary<string, Type> constraintMap, string text) where TConstraint : IRouteConstraint

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -42,13 +43,18 @@ internal sealed class DeferredKey : KeyBase
 
         try
         {
-            return () => keyManager.DeserializeDescriptorFromKeyElement(encryptedKeyElement.ToXElement());
+            return GetLazyDescriptorDelegate;
         }
         finally
         {
             // It's important that the lambda above doesn't capture 'descriptorElement'. Clearing the reference here
             // helps us detect if we've done this by causing a null ref at runtime.
             keyElement = null!;
+        }
+
+        IAuthenticatedEncryptorDescriptor GetLazyDescriptorDelegate()
+        {
+            return keyManager.DeserializeDescriptorFromKeyElement(encryptedKeyElement.ToXElement());
         }
     }
 }

@@ -57,6 +57,11 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
             return true;
         }
 
+        if (Queues.Contains("All.Ubuntu") && targetQueue.StartsWith("ubuntu", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
         return Queues.ToLowerInvariant().Split(';').Contains(targetQueue);
     }
 

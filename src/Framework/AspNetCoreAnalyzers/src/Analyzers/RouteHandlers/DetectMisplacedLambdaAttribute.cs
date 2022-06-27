@@ -27,12 +27,12 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
         // () => Hello() has a single child which is a BlockOperation so we check to see if
         // expression associated with that operation is an invocation expression
-        if (lambda.Children.FirstOrDefault().Syntax is InvocationExpressionSyntax innerInvocation)
+        if (lambda.ChildOperations.FirstOrDefault().Syntax is InvocationExpressionSyntax innerInvocation)
         {
             targetInvocation = innerInvocation;
         }
 
-        if (lambda.Children.FirstOrDefault().Children.FirstOrDefault() is IReturnOperation returnOperation
+        if (lambda.ChildOperations.FirstOrDefault().ChildOperations.FirstOrDefault() is IReturnOperation returnOperation
             && returnOperation.ReturnedValue is IInvocationOperation returnedInvocation)
         {
             targetInvocation = (InvocationExpressionSyntax)returnedInvocation.Syntax;

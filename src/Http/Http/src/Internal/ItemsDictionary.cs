@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal class ItemsDictionary : IDictionary<object, object?>
+internal sealed class ItemsDictionary : IDictionary<object, object?>
 {
     private IDictionary<object, object?>? _items;
 
@@ -136,7 +136,7 @@ internal class ItemsDictionary : IDictionary<object, object?>
 
     IEnumerator IEnumerable.GetEnumerator() => _items?.GetEnumerator() ?? EmptyEnumerator.Instance;
 
-    private class EmptyEnumerator : IEnumerator<KeyValuePair<object, object?>>
+    private sealed class EmptyEnumerator : IEnumerator<KeyValuePair<object, object?>>
     {
         // In own class so only initalized if GetEnumerator is called on an empty ItemsDictionary
         public static readonly IEnumerator<KeyValuePair<object, object?>> Instance = new EmptyEnumerator();

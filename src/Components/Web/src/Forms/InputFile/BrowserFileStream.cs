@@ -76,7 +76,7 @@ internal sealed class BrowserFileStream : Stream
             return 0;
         }
 
-        var bytesRead = await CopyFileDataIntoBuffer(_position, buffer.Slice(0, maxBytesToRead), cancellationToken);
+        var bytesRead = await CopyFileDataIntoBuffer(buffer.Slice(0, maxBytesToRead), cancellationToken);
 
         _position += bytesRead;
 
@@ -98,7 +98,7 @@ internal sealed class BrowserFileStream : Stream
             cancellationToken: cancellationToken);
     }
 
-    private async ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, Memory<byte> destination, CancellationToken cancellationToken)
+    private async ValueTask<int> CopyFileDataIntoBuffer(Memory<byte> destination, CancellationToken cancellationToken)
     {
         var stream = await OpenReadStreamTask;
         _copyFileDataCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);

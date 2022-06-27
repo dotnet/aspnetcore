@@ -30,7 +30,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
-public class HubConnectionHandlerTests : VerifiableLoggedTest
+public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 {
     [Fact]
     [LogLevel(LogLevel.Trace)]
@@ -240,7 +240,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<IHubContext<SimpleVoidReturningTypedHub, IVoidReturningTypedHubClient>>());
-            Assert.Equal($"Cannot generate proxy implementation for '{typeof(IVoidReturningTypedHubClient).FullName}.{nameof(IVoidReturningTypedHubClient.Send)}'. All client proxy methods must return '{typeof(Task).FullName}'.", ex.Message);
+            Assert.Equal($"Cannot generate proxy implementation for '{typeof(IVoidReturningTypedHubClient).FullName}.{nameof(IVoidReturningTypedHubClient.Send)}'. All client proxy methods must return '{typeof(Task).FullName}' or 'System.Threading.Tasks.Task<T>'.", ex.Message);
         }
     }
 
@@ -2066,16 +2066,28 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ReceiveCorrectErrorFromStreamThrowing(bool detailedErrors)
+    [InlineData(nameof(StreamingHub.ExceptionAsyncEnumerable), "Exception: Exception from async enumerable")]
+    [InlineData(nameof(StreamingHub.ExceptionAsyncEnumerable), null)]
+    [InlineData(nameof(StreamingHub.ExceptionStream), "Exception: Exception from channel")]
+    [InlineData(nameof(StreamingHub.ExceptionStream), null)]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionStream), "ChannelClosedException: ChannelClosedException from channel")]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionStream), null)]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionInnerExceptionStream), "Exception: ChannelClosedException from channel")]
+    [InlineData(nameof(StreamingHub.ChannelClosedExceptionInnerExceptionStream), null)]
+    public async Task ReceiveCorrectErrorFromStreamThrowing(string streamMethod, string detailedError)
     {
-        using (StartVerifiableLog())
+        bool ExpectedErrors(WriteContext writeContext)
+        {
+            return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                   writeContext.EventId.Name == "FailedStreaming";
+        }
+
+        using (StartVerifiableLog(ExpectedErrors))
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
             builder.AddSignalR(options =>
             {
-                options.EnableDetailedErrors = detailedErrors;
+                options.EnableDetailedErrors = detailedError != null;
             }), LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
 
@@ -2085,14 +2097,14 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 await client.Connected.DefaultTimeout();
 
-                var messages = await client.StreamAsync(nameof(StreamingHub.ExceptionStream));
+                var messages = await client.StreamAsync(streamMethod);
 
                 Assert.Equal(1, messages.Count);
                 var completion = messages[0] as CompletionMessage;
                 Assert.NotNull(completion);
-                if (detailedErrors)
+                if (detailedError != null)
                 {
-                    Assert.Equal("An error occurred on the server while streaming results. Exception: Exception from channel", completion.Error);
+                    Assert.Equal($"An error occurred on the server while streaming results. {detailedError}", completion.Error);
                 }
                 else
                 {
@@ -3925,7 +3937,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
         }
 
         Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
-            w.EventId.Name == "UnexpectedStreamCompletion"));
+            w.EventId.Name == "UnexpectedCompletion"));
     }
 
     public static string CustomErrorMessage = "custom error for testing ::::)";
@@ -4695,7 +4707,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.DisableImplicitFromServiceParameters = true;
+                options.DisableImplicitFromServicesParameters = true;
             });
             provider.AddSingleton<Service1>();
         });
@@ -4738,10 +4750,10 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.DisableImplicitFromServiceParameters = true;
+                options.DisableImplicitFromServicesParameters = true;
             }).AddHubOptions<ServicesHub>(options =>
             {
-                options.DisableImplicitFromServiceParameters = false;
+                options.DisableImplicitFromServicesParameters = false;
             });
             provider.AddSingleton<Service1>();
         });
@@ -4763,7 +4775,7 @@ public class HubConnectionHandlerTests : VerifiableLoggedTest
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.DisableImplicitFromServiceParameters = true;
+                options.DisableImplicitFromServicesParameters = true;
             });
             provider.AddSingleton<Service1>();
             provider.AddSingleton<Service2>();

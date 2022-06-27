@@ -212,6 +212,15 @@ public class BadHttpRequestTests : LoggedTest
         }
     }
 
+    [Fact]
+    public Task BadRequestForAbsoluteFormTargetWithNonAsciiChars()
+    {
+        return TestBadRequest(
+            $"GET http://localhost/ÿÿÿ HTTP/1.1\r\n",
+            "400 Bad Request",
+            CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail("http://localhost/\\xFF\\xFF\\xFF"));
+    }
+
     private class BadRequestEventListener : IObserver<KeyValuePair<string, object>>, IDisposable
     {
         private IDisposable _subscription;

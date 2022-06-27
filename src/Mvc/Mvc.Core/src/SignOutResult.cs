@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// <summary>
 /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.SignOutAsync"/>.
 /// </summary>
-public class SignOutResult : ActionResult, IResult
+public partial class SignOutResult : ActionResult, IResult
 {
     /// <summary>
     /// Initializes a new instance of <see cref="SignOutResult"/> with the default sign out scheme.
@@ -114,8 +115,7 @@ public class SignOutResult : ActionResult, IResult
 
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger<SignOutResult>();
-
-        logger.SignOutResultExecuting(AuthenticationSchemes);
+        Log.SignOutResultExecuting(logger, AuthenticationSchemes);
 
         if (AuthenticationSchemes.Count == 0)
         {
@@ -128,5 +128,19 @@ public class SignOutResult : ActionResult, IResult
                 await httpContext.SignOutAsync(AuthenticationSchemes[i], Properties);
             }
         }
+    }
+
+    private static partial class Log
+    {
+        public static void SignOutResultExecuting(ILogger logger, IList<string> authenticationSchemes)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                SignOutResultExecuting(logger, authenticationSchemes.ToArray());
+            }
+        }
+
+        [LoggerMessage(1, LogLevel.Information, $"Executing {nameof(SignOutResult)} with authentication schemes ({{Schemes}}).", EventName = "SignOutResultExecuting", SkipEnabledCheck = true)]
+        private static partial void SignOutResultExecuting(ILogger logger, string[] schemes);
     }
 }

@@ -34,7 +34,7 @@ public class DefaultInlineConstraintResolver : IInlineConstraintResolver
             throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        _inlineConstraintMap = routeOptions.Value.ConstraintMap;
+        _inlineConstraintMap = routeOptions.Value.TrimmerSafeConstraintMap;
         _serviceProvider = serviceProvider;
     }
 

@@ -314,7 +314,6 @@ public class Http2TimeoutTests : Http2TestBase
 
         public async Task RunApp(HttpContext context)
         {
-            await context.Response.Body.FlushAsync();
 
             var buffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
             int received;

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
-internal class RemoteAddressSegment : PatternSegment
+internal sealed class RemoteAddressSegment : PatternSegment
 {
     public override string? Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
     {

@@ -16,6 +16,7 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
     private static readonly JsonEncodedText Detail = JsonEncodedText.Encode("detail");
     private static readonly JsonEncodedText Instance = JsonEncodedText.Encode("instance");
 
+    [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "Trimmer does not allow annotating overriden methods with annotations different from the ones in base type.")]
     public override ProblemDetails Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var problemDetails = new ProblemDetails();
@@ -38,6 +39,7 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         return problemDetails;
     }
 
+    [UnconditionalSuppressMessage("Trimmer", "IL2026", Justification = "Trimmer does not allow annotating overriden methods with annotations different from the ones in base type.")]
     public override void Write(Utf8JsonWriter writer, ProblemDetails value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
@@ -45,6 +47,7 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         writer.WriteEndObject();
     }
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     internal static void ReadValue(ref Utf8JsonReader reader, ProblemDetails value, JsonSerializerOptions options)
     {
         if (TryReadStringProperty(ref reader, Type, out var propertyValue))
@@ -96,6 +99,7 @@ internal sealed class ProblemDetailsJsonConverter : JsonConverter<ProblemDetails
         return true;
     }
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization of ProblemDetails.Extensions might require types that cannot be statically analyzed.")]
     internal static void WriteProblemDetails(Utf8JsonWriter writer, ProblemDetails value, JsonSerializerOptions options)
     {
         if (value.Type != null)

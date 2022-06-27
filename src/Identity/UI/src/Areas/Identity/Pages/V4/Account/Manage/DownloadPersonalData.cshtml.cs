@@ -29,7 +29,7 @@ public abstract class DownloadPersonalDataModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class DownloadPersonalDataModel<TUser> : DownloadPersonalDataModel where TUser : class
+internal sealed class DownloadPersonalDataModel<TUser> : DownloadPersonalDataModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly ILogger<DownloadPersonalDataModel> _logger;
@@ -58,7 +58,7 @@ internal class DownloadPersonalDataModel<TUser> : DownloadPersonalDataModel wher
         _logger.LogInformation(LoggerEventIds.PersonalDataRequested, "User asked for their personal data.");
 
         // Only include personal data for download
-        var personalData = new Dictionary<string, string>();
+        var personalData = new Dictionary<string, string?>();
         var personalDataProps = typeof(TUser).GetProperties().Where(
                         prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
         foreach (var p in personalDataProps)

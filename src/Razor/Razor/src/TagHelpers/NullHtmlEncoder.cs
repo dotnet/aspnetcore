@@ -60,6 +60,7 @@ public sealed class NullHtmlEncoder : HtmlEncoder
         output.Write(value, startIndex, characterCount);
     }
 
+    /// <inheritdoc />
     public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
     {
         if (output == null)

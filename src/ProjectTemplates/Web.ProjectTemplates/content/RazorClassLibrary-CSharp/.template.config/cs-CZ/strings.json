@@ -1,8 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Knihovna tříd Razor",
-    "description": "Projekt šablony pro vytvoření knihovny tříd Razor",
-    "parameter.SupportPagesAndViews.name": "_Stránky podpory a zobrazení"
-  }
-}

@@ -7,12 +7,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -127,6 +128,48 @@ public class Http3ConnectionTests : Http3TestBase
         Assert.Equal($"End", Encoding.ASCII.GetString(responseData.ToArray()));
 
         await requestStream.ExpectReceiveEndOfStream();
+    }
+
+    [Fact]
+    public async Task HEADERS_CookiesMergedIntoOne()
+    {
+        var requestHeaders = new[]
+        {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "a=0"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "b=1"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "c=2"),
+            };
+
+        var receivedHeaders = "";
+
+        await Http3Api.InitializeConnectionAsync(async context =>
+        {
+            var buffer = new byte[16 * 1024];
+            var received = 0;
+
+            // verify that the cookies are all merged into a single string
+            receivedHeaders = context.Request.Headers[HeaderNames.Cookie];
+
+            while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await context.Response.Body.WriteAsync(buffer, 0, received);
+            }
+        });
+
+        await Http3Api.CreateControlStream();
+        await Http3Api.GetInboundControlStream();
+        var requestStream = await Http3Api.CreateRequestStream();
+
+        await requestStream.SendHeadersAsync(requestHeaders, endStream: true);
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        await requestStream.ExpectReceiveEndOfStream();
+        await requestStream.OnDisposedTask.DefaultTimeout();
+
+        Assert.Equal("a=0; b=1; c=2", receivedHeaders);
     }
 
     [Theory]
@@ -370,6 +413,49 @@ public class Http3ConnectionTests : Http3TestBase
 
         Assert.Same(contentType1, contentType2);
         Assert.Same(authority1, authority2);
+    }
+
+    [Fact]
+    public async Task RequestHeaderStringReuse_MultipleStreams_KnownHeaderClearedIfNotReused()
+    {
+        const BindingFlags privateFlags = BindingFlags.NonPublic | BindingFlags.Instance;
+
+        KeyValuePair<string, string>[] requestHeaders1 = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+        };
+
+        // Note: No content-type
+        KeyValuePair<string, string>[] requestHeaders2 = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80")
+        };
+
+        await Http3Api.InitializeConnectionAsync(_echoApplication);
+
+        var streamContext1 = await MakeRequestAsync(0, requestHeaders1, sendData: true, waitForServerDispose: true);
+        var http3Stream1 = (Http3Stream)streamContext1.Features.Get<IPersistentStateFeature>().State[Http3Connection.StreamPersistentStateKey];
+
+        // Hacky but required because header references is private.
+        var headerReferences1 = typeof(HttpRequestHeaders).GetField("_headers", privateFlags).GetValue(http3Stream1.RequestHeaders);
+        var contentTypeValue1 = (StringValues)headerReferences1.GetType().GetField("_ContentType").GetValue(headerReferences1);
+
+        var streamContext2 = await MakeRequestAsync(1, requestHeaders2, sendData: true, waitForServerDispose: true);
+        var http3Stream2 = (Http3Stream)streamContext2.Features.Get<IPersistentStateFeature>().State[Http3Connection.StreamPersistentStateKey];
+
+        // Hacky but required because header references is private.
+        var headerReferences2 = typeof(HttpRequestHeaders).GetField("_headers", privateFlags).GetValue(http3Stream2.RequestHeaders);
+        var contentTypeValue2 = (StringValues)headerReferences1.GetType().GetField("_ContentType").GetValue(headerReferences2);
+
+        Assert.Equal("application/json", contentTypeValue1);
+        Assert.Equal(StringValues.Empty, contentTypeValue2);
     }
 
     [Theory]

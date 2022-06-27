@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 /// </summary>
 /// <remarks>
 /// These values correspond to the 'dwFlags' parameter on NCryptCreateProtectionDescriptor.
-/// See https://msdn.microsoft.com/en-us/library/windows/desktop/hh706800(v=vs.85).aspx for more information.
+/// See <see href="https://msdn.microsoft.com/en-us/library/windows/desktop/hh706800(v=vs.85).aspx"/> for more information.
 /// </remarks>
 [Flags]
 public enum DpapiNGProtectionDescriptorFlags

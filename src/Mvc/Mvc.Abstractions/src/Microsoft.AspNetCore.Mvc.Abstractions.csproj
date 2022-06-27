@@ -13,6 +13,8 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
+    <Compile Include="$(SharedSourceRoot)\ParameterBindingMethodCache.cs" Link="ModelBinding\ParameterBindingMethodCache.cs" />
+    <Compile Include="$(SharedSourceRoot)\TypeNameHelper\TypeNameHelper.cs" Link="ModelBinding\TypeNameHelper.cs" />
   </ItemGroup>
 
   <ItemGroup>

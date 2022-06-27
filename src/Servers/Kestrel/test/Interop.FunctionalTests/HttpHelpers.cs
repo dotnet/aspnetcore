@@ -81,7 +81,7 @@ internal static class HttpHelpers
                 }
                 else
                 {
-                    o.ShutdownTimeout = TimeSpan.FromSeconds(1);
+                    o.ShutdownTimeout = TimeSpan.FromSeconds(5);
                 }
             });
     }

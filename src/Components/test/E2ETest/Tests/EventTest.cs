@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.Extensions;
+using OpenQA.Selenium.Support.UI;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -79,6 +81,27 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         actions.Perform();
         Browser.Equal("mouseover,mouseout,", () => output.Text);
+    }
+
+    [Fact]
+    public void MouseEnterAndMouseLeave_CanTrigger()
+    {
+        Browser.MountTestComponent<MouseEventComponent>();
+
+        var input = Browser.Exists(By.Id("mouseenter_input"));
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        // Mouse enter the button and then mouse leave
+        Browser.ExecuteJavaScript($@"
+            var mouseEnterElement = document.getElementById('mouseenter_input');
+            var mouseEnterEvent = new MouseEvent('mouseenter');
+            var mouseLeaveEvent = new MouseEvent('mouseleave');
+            mouseEnterElement.dispatchEvent(mouseEnterEvent);
+            mouseEnterElement.dispatchEvent(mouseLeaveEvent);");
+
+        Browser.Equal("mouseenter,mouseleave,", () => output.Text);
     }
 
     [Fact]

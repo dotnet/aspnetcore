@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Rewrite.UrlActions;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class CookieActionFactory
+internal sealed class CookieActionFactory
 {
     /// <summary>
     ///  Creates a <see cref="ChangeCookieAction" /> <see href="https://httpd.apache.org/docs/current/rewrite/flags.html#flag_co" /> for details.

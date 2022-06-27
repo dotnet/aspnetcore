@@ -35,7 +35,7 @@ public class PostConfigureNegotiateOptions : IPostConfigureOptions<NegotiateOpti
     /// </summary>
     /// <param name="name">The name of the options instance being configured.</param>
     /// <param name="options">The options instance to configure.</param>
-    public void PostConfigure(string name, NegotiateOptions options)
+    public void PostConfigure(string? name, NegotiateOptions options)
     {
         // If the server supports integrated authentication...
         if (_serverAuth != null)

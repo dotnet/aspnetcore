@@ -7,70 +7,30 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal partial class HttpSysListener
 {
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, Exception?> _listenerDisposeError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.ListenerDisposeError, "Dispose");
+        [LoggerMessage(LoggerEventIds.ListenerDisposeError, LogLevel.Error, "Dispose", EventName = "ListenerDisposeError")]
+        public static partial void ListenerDisposeError(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _listenerDisposing =
-            LoggerMessage.Define(LogLevel.Trace, LoggerEventIds.ListenerDisposing, "Disposing the listener.");
+        [LoggerMessage(LoggerEventIds.ListenerDisposing, LogLevel.Trace, "Disposing the listener.", EventName = "ListenerDisposing")]
+        public static partial void ListenerDisposing(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _httpSysListenerCtorError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.HttpSysListenerCtorError, ".Ctor");
+        [LoggerMessage(LoggerEventIds.HttpSysListenerCtorError, LogLevel.Error, ".Ctor", EventName = "HttpSysListenerCtorError")]
+        public static partial void HttpSysListenerCtorError(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _listenerStartError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.ListenerStartError, "Start");
+        [LoggerMessage(LoggerEventIds.ListenerStartError, LogLevel.Error, "Start", EventName = "ListenerStartError")]
+        public static partial void ListenerStartError(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _listenerStarting =
-            LoggerMessage.Define(LogLevel.Trace, LoggerEventIds.ListenerStarting, "Starting the listener.");
+        [LoggerMessage(LoggerEventIds.ListenerStarting, LogLevel.Trace, "Starting the listener.", EventName = "ListenerStarting")]
+        public static partial void ListenerStarting(ILogger logger);
 
-        private static readonly Action<ILogger, Exception?> _listenerStopError =
-            LoggerMessage.Define(LogLevel.Error, LoggerEventIds.ListenerStopError, "Stop");
+        [LoggerMessage(LoggerEventIds.ListenerStopError, LogLevel.Error, "Stop", EventName = "ListenerStopError")]
+        public static partial void ListenerStopError(ILogger logger, Exception exception);
 
-        private static readonly Action<ILogger, Exception?> _listenerStopping =
-            LoggerMessage.Define(LogLevel.Trace, LoggerEventIds.ListenerStopping, "Stopping the listener.");
+        [LoggerMessage(LoggerEventIds.ListenerStopping, LogLevel.Trace, "Stopping the listener.", EventName = "ListenerStopping")]
+        public static partial void ListenerStopping(ILogger logger);
 
-        private static readonly Action<ILogger, ulong, Exception?> _requestValidationFailed =
-            LoggerMessage.Define<ulong>(LogLevel.Error, LoggerEventIds.RequestValidationFailed, "Error validating request {RequestId}");
-
-        public static void ListenerDisposeError(ILogger logger, Exception exception)
-        {
-            _listenerDisposeError(logger, exception);
-        }
-
-        public static void ListenerDisposing(ILogger logger)
-        {
-            _listenerDisposing(logger, null);
-        }
-
-        public static void HttpSysListenerCtorError(ILogger logger, Exception exception)
-        {
-            _httpSysListenerCtorError(logger, exception);
-        }
-
-        public static void ListenerStartError(ILogger logger, Exception exception)
-        {
-            _listenerStartError(logger, exception);
-        }
-
-        public static void ListenerStarting(ILogger logger)
-        {
-            _listenerStarting(logger, null);
-        }
-
-        public static void ListenerStopError(ILogger logger, Exception exception)
-        {
-            _listenerStopError(logger, exception);
-        }
-
-        public static void ListenerStopping(ILogger logger)
-        {
-            _listenerStopping(logger, null);
-        }
-
-        public static void RequestValidationFailed(ILogger logger, Exception exception, ulong requestId)
-        {
-            _requestValidationFailed(logger, requestId, exception);
-        }
+        [LoggerMessage(LoggerEventIds.RequestValidationFailed, LogLevel.Error, "Error validating request {RequestId}", EventName = "RequestValidationFailed")]
+        public static partial void RequestValidationFailed(ILogger logger, Exception exception, ulong requestId);
     }
 }

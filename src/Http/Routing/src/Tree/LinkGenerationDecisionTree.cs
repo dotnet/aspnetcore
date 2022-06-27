@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing.Tree;
 
 // A decision tree that matches link generation entries based on route data.
 [DebuggerDisplay("{DebuggerDisplayString,nq}")]
-internal class LinkGenerationDecisionTree
+internal sealed class LinkGenerationDecisionTree
 {
     // Fallback value for cases where the ambient values weren't provided.
     //
@@ -71,7 +71,7 @@ internal class LinkGenerationDecisionTree
         {
             var results = new List<OutboundMatchResult>();
             Walk(results, values, ambientValues ?? EmptyAmbientValues, _root, isFallbackPath: false);
-            ProcessConventionalEntries(results, values, ambientValues ?? EmptyAmbientValues);
+            ProcessConventionalEntries(results);
             results.Sort(OutboundMatchResultComparer.Instance);
             return results;
         }
@@ -159,10 +159,7 @@ internal class LinkGenerationDecisionTree
         }
     }
 
-    private void ProcessConventionalEntries(
-        List<OutboundMatchResult> results,
-        RouteValueDictionary values,
-        RouteValueDictionary ambientvalues)
+    private void ProcessConventionalEntries(List<OutboundMatchResult> results)
     {
         for (var i = 0; i < _conventionalEntries.Count; i++)
         {
@@ -170,7 +167,7 @@ internal class LinkGenerationDecisionTree
         }
     }
 
-    private class OutboundMatchClassifier : IClassifier<OutboundMatch>
+    private sealed class OutboundMatchClassifier : IClassifier<OutboundMatch>
     {
         public IEqualityComparer<object> ValueComparer => RouteValueEqualityComparer.Default;
 
@@ -186,7 +183,7 @@ internal class LinkGenerationDecisionTree
         }
     }
 
-    private class OutboundMatchResultComparer : IComparer<OutboundMatchResult>
+    private sealed class OutboundMatchResultComparer : IComparer<OutboundMatchResult>
     {
         public static readonly OutboundMatchResultComparer Instance = new OutboundMatchResultComparer();
 

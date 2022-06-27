@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HttpOverrides;
 
-internal class CertificateForwardingFeature : ITlsConnectionFeature
+internal sealed class CertificateForwardingFeature : ITlsConnectionFeature
 {
     private readonly ILogger _logger;
     private readonly StringValues _header;

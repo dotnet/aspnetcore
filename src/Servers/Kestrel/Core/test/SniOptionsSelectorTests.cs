@@ -187,6 +187,91 @@ public class SniOptionsSelectorTests
     }
 
     [Fact]
+    public void MultipleWildcardPrefixServerNamesOfSameLengthAreAllowed()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
+            {
+                {
+                    "*.a.example.org",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "a"
+                        }
+                    }
+                },
+                {
+                    "*.b.example.org",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "b"
+                        }
+                    }
+                }
+            };
+
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+
+        var sniOptionsSelector = new SniOptionsSelector(
+            "TestEndpointName",
+            sniDictionary,
+            mockCertificateConfigLoader,
+            fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+            fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+            logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+
+        var (aSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "c.a.example.org");
+        Assert.Equal("a", pathDictionary[aSubdomainOptions.ServerCertificate]);
+
+        var (bSubdomainOptions, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "c.b.example.org");
+        Assert.Equal("b", pathDictionary[bSubdomainOptions.ServerCertificate]);
+    }
+
+    [Fact]
+    public void DuplicateWildcardPrefixServerNamesThrowsArgumentException()
+    {
+        var sniDictionary = new Dictionary<string, SniConfig>
+            {
+                {
+                    "*.example.org",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "a"
+                        }
+                    }
+                },
+                {
+                    "*.EXAMPLE.org",
+                    new SniConfig
+                    {
+                        Certificate = new CertificateConfig
+                        {
+                            Path = "b"
+                        }
+                    }
+                }
+            };
+
+        var mockCertificateConfigLoader = new MockCertificateConfigLoader();
+        var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
+
+        var exception = Assert.Throws<ArgumentException>(() => new SniOptionsSelector(
+             "TestEndpointName",
+             sniDictionary,
+             mockCertificateConfigLoader,
+             fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
+             fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
+             logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>()));
+        Assert.Equal("An item with the same key has already been added. Key: .EXAMPLE.org (Parameter 'key')", exception.Message);
+    }
+
+    [Fact]
     public void GetOptionsThrowsAnAuthenticationExceptionIfThereIsNoMatchingSniSection()
     {
         var sniOptionsSelector = new SniOptionsSelector(
@@ -532,7 +617,9 @@ public class SniOptionsSelectorTests
                     "www.example.org",
                     new SniConfig
                     {
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
                         SslProtocols = SslProtocols.Tls13 | SslProtocols.Tls11,
+#pragma warning restore SYSLIB0039
                         Certificate = new CertificateConfig()
                     }
                 }
@@ -550,7 +637,9 @@ public class SniOptionsSelectorTests
             logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
         var (options, _) = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         Assert.Equal(SslProtocols.Tls13 | SslProtocols.Tls11, options.EnabledSslProtocols);
+#pragma warning restore SYSLIB0039
     }
 
     [Fact]
@@ -690,9 +779,13 @@ public class SniOptionsSelectorTests
             // Defaults to false
             ClientCertificateRequired = true,
             // Defaults to SslProtocols.None
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
             EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls11,
+#pragma warning restore SYSLIB0039
+#pragma warning disable SYSLIB0040 // EncryptionPolicy.NoEncryption is obsolete
             // Defaults to EncryptionPolicy.RequireEncryption
             EncryptionPolicy = EncryptionPolicy.NoEncryption,
+#pragma warning restore SYSLIB0040
             // Defaults to null
             RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
             // Defaults to null

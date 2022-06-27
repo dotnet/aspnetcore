@@ -9,7 +9,7 @@ internal static class Requires
     {
         if (arg == null)
         {
-            throw new ArgumentNullException(nameof(paramName));
+            throw new ArgumentNullException(paramName);
         }
     }
 

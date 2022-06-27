@@ -67,4 +67,26 @@ public class EndpointMetadataCollectionTests
         Assert.Same(ordered1, ordered2);
         Assert.Equal(new string[] { "1", "2" }, ordered1);
     }
+
+    [Fact]
+    public void GetRequiredMetadata_CanReturnMetadata()
+    {
+        // Arrange
+        var metadata = new EndpointMetadataCollection(1, "2");
+
+        // Act
+        var requiredMetadata = metadata.GetRequiredMetadata<string>();
+
+        Assert.Equal("2", requiredMetadata);
+    }
+
+    [Fact]
+    public void GetRequiredMetadata_ThrowsWhenMetadataNotFound()
+    {
+        // Arrange
+        var metadata = new EndpointMetadataCollection(1, 2);
+
+        // Act
+        Assert.Throws<InvalidOperationException>(() => metadata.GetRequiredMetadata<string>());
+    }
 }

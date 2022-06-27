@@ -19,12 +19,11 @@ First, please describe the purpose and value of the new API here.
 <!--
 Please provide the specific public API signature diff that you are proposing. For example:
 ```diff
-namespace Microsoft.AspNetCore.Http
+namespace Microsoft.AspNetCore.Http;
+
+public static class HttpResponseWritingExtensions
 {
-    public static class HttpResponseWritingExtensions
-    {
-+       public Task WriteAsync(this HttpResponse response, StringBuilder builder);
-    }
++    public Task WriteAsync(this HttpResponse response, StringBuilder builder);
 }
 ```
 You may find the [Framework Design Guidelines](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/framework-design-guidelines-digest.md) helpful.
@@ -36,7 +35,7 @@ You may find the [Framework Design Guidelines](https://github.com/dotnet/runtime
 Please provide code examples that highlight how the proposed API additions are meant to be consumed.
 This will help suggest whether the API has the right shape to be functional, performant and useable.
 You can use code blocks like this:
-``` C#
+```csharp
 // some lines of code here
 ```
 -->

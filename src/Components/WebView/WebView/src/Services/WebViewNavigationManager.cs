@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.WebView.Services;
 
-internal class WebViewNavigationManager : NavigationManager
+internal sealed class WebViewNavigationManager : NavigationManager
 {
     private IpcSender _ipcSender;
 

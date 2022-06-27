@@ -80,7 +80,7 @@ public class UserClaimsPrincipalFactory<TUser> : IUserClaimsPrincipalFactory<TUs
             Options.ClaimsIdentity.UserNameClaimType,
             Options.ClaimsIdentity.RoleClaimType);
         id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));
-        id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, userName));
+        id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, userName!));
         if (UserManager.SupportsUserEmail)
         {
             var email = await UserManager.GetEmailAsync(user).ConfigureAwait(false);

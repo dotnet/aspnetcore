@@ -14,7 +14,7 @@ public class MsalCacheOptions
     /// <remarks>
     /// Valid values are <c>sessionStorage</c> and <c>localStorage</c>.
     /// </remarks>
-    public string CacheLocation { get; set; }
+    public string? CacheLocation { get; set; }
 
     /// <summary>
     /// Gets or sets whether to store the authentication state in a cookie.

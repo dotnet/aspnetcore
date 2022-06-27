@@ -45,7 +45,15 @@
         <button @onclick="async () => await inputCheckboxReference.Element.Value.FocusAsync()">Focus</button>
     </p>
 
-    
+    <p class="select-bool-values input-group">
+        T/F: 77 + 33 = 100<br>
+        <InputRadioGroup @bind-Value="person.IsSelectMathStatementTrue">
+            <InputRadio Value="true" @ref="inputRadioReference" class="input-control" />true<br>
+            <InputRadio Value="false" />false<br>
+        </InputRadioGroup>
+        <button @onclick="async () => await inputRadioReference.Element.Value.FocusAsync()">Focus</button>
+    </p>
+
 </EditForm>
 
 @code {
@@ -55,6 +63,7 @@
     InputDate<DateTime> inputDateReference;
     InputSelect<TicketClass> inputSelectReference;
     InputCheckbox inputCheckboxReference;
+    InputRadio<bool> inputRadioReference;
     InputFile inputFile;
 
     Person person = new Person();
@@ -74,6 +83,8 @@
         public DateTime RenewalDate { get; set; } = DateTime.Now;
 
         public bool AcceptsTerms { get; set; }
+
+        public bool IsSelectMathStatementTrue { get; set; }
 
         public string Description { get; set; }
 

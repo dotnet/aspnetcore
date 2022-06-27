@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.JSInterop;
@@ -25,6 +26,7 @@ public static class ComponentsWebViewServiceCollectionExtensions
         services.TryAddScoped<IJSRuntime, WebViewJSRuntime>();
         services.TryAddScoped<INavigationInterception, WebViewNavigationInterception>();
         services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
+        services.TryAddScoped<IErrorBoundaryLogger, WebViewErrorBoundaryLogger>();
         return services;
     }
 }

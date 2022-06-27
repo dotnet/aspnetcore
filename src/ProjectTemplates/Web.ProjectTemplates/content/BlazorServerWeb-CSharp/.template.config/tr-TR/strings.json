@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Blazor Server Uygulaması",
-    "description": "Bir ASP.NET Core uygulaması içinde sunucu tarafında çalışan ve bir SignalR bağlantısı üzerinden kullanıcı etkileşimlerini işleyen bir Blazor Server uygulaması oluşturmaya yönelik proje şablonu. Bu şablon, zengin dinamik kullanıcı arabirimlerine (UI) sahip web uygulamaları için kullanılabilir."
-  }
-}

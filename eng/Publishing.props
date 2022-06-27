@@ -61,22 +61,31 @@
       <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true'" />
 
       <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
 
-      <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)">
-        <IsShipping>true</IsShipping>
+      <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)" Condition="! $([System.String]::Copy('%(Filename)').ToLower().Contains('internal'))">
+        <ManifestArtifactData>NonShipping=false</ManifestArtifactData>
+        <PublishFlatContainer>true</PublishFlatContainer>
+        <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
+      </ItemsToPushToBlobFeed>
+
+      <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)" Condition="$([System.String]::Copy('%(Filename)').ToLower().Contains('internal'))">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="$(ProductVersionFileLocation)" Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(ProductVersionFileName)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="$(RepoProductVersionFileLocation)" Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(RepoProductVersionFileName)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
@@ -88,10 +97,11 @@
     Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
     <!--
       This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
-      and npm project. We use Microsoft.AspNetCore.App.Runtime.csproj because it is shipping (we need a stable
-      version string to use for productVersion.txt).
+      and npm project. We use Microsoft.JSInterop.JS.npmproj because it is shipping (we need a stable
+      version string to use for productVersion.txt), and because it won't break when the SDK requires a newer
+      desktop MSBuild than exists on the build machine.
     -->
-    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+    <MSBuild Projects="$(RepoRoot)src\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.npmproj"
         Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />

@@ -112,6 +112,7 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.DelayCertificate)]
     [MsQuicSupported]
     [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41131")]
     public async Task ClientCertificate_NoOrDelayed_Available_Ignored(ClientCertificateMode mode)
     {
         var builder = CreateHostBuilder(async context =>
@@ -195,17 +196,16 @@ public class Http3TlsTests : LoggedTest
 
         if (!serverAllowInvalid)
         {
-            // In .NET 6 there is a race condition between throwing HttpRequestException and QuicException.
-            // Unable to test the exact error.
-            var ex = await Assert.ThrowsAnyAsync<Exception>(() => sendTask).DefaultTimeout();
+            var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => sendTask).DefaultTimeout();
             Logger.LogInformation(ex, "SendAsync successfully threw error.");
         }
         else
         {
-            // Because we can't verify the exact error reason, check that the cert is the cause be successfully
+            // Because we can't verify the exact error reason, check that the cert is the cause by successfully
             // making a call when invalid certs are allowed.
-            var response = await sendTask.DefaultTimeout();
+            using var response = await sendTask.DefaultTimeout();
             response.EnsureSuccessStatusCode();
+            Assert.Equal("True", await response.Content.ReadAsStringAsync().DefaultTimeout());
         }
 
         await host.StopAsync().DefaultTimeout();
@@ -214,6 +214,7 @@ public class Http3TlsTests : LoggedTest
     [ConditionalFact]
     [MsQuicSupported]
     [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42388")]
     public async Task ClientCertificate_Allow_NotAvailable_Optional()
     {
         var builder = CreateHostBuilder(async context =>
@@ -243,16 +244,16 @@ public class Http3TlsTests : LoggedTest
         request.Version = HttpVersion.Version30;
         request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-        // https://github.com/dotnet/runtime/issues/57308, optional client certs aren't supported.
-        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.SendAsync(request, CancellationToken.None).DefaultTimeout());
-        Assert.StartsWith("Connection has been shutdown by transport.", ex.Message);
+        var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal("False", await response.Content.ReadAsStringAsync());
 
         await host.StopAsync().DefaultTimeout();
     }
 
     [ConditionalFact]
     [MsQuicSupported]
-    public async Task OnAuthentice_Available_Throws()
+    public async Task OnAuthenticate_Available_Throws()
     {
         var builder = CreateHostBuilder(async context =>
         {

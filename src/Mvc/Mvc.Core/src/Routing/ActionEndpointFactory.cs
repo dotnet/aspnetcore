@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class ActionEndpointFactory
+internal sealed class ActionEndpointFactory
 {
     private readonly RoutePatternTransformer _routePatternTransformer;
     private readonly RequestDelegate _requestDelegate;
@@ -455,7 +455,7 @@ internal class ActionEndpointFactory
         };
     }
 
-    private class InertEndpointBuilder : EndpointBuilder
+    private sealed class InertEndpointBuilder : EndpointBuilder
     {
         public override Endpoint Build()
         {

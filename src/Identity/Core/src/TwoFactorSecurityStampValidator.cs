@@ -30,7 +30,7 @@ public class TwoFactorSecurityStampValidator<TUser> : SecurityStampValidator<TUs
     /// </summary>
     /// <param name="principal">The principal to verify.</param>
     /// <returns>The verified user or null if verification fails.</returns>
-    protected override Task<TUser> VerifySecurityStamp(ClaimsPrincipal principal)
+    protected override Task<TUser?> VerifySecurityStamp(ClaimsPrincipal? principal)
         => SignInManager.ValidateTwoFactorSecurityStampAsync(principal);
 
     /// <summary>

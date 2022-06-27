@@ -81,5 +81,5 @@ public class HubOptions
     /// <remarks>
     /// False by default. Hub method arguments will be resolved from a DI container if possible.
     /// </remarks>
-    public bool DisableImplicitFromServiceParameters { get; set; }
+    public bool DisableImplicitFromServicesParameters { get; set; }
 }

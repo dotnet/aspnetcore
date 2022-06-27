@@ -394,6 +394,7 @@ public class TagHelperOutput : IHtmlContentContainer
         Attributes.Clear();
     }
 
+    /// <inheritdoc />
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
         if (writer == null)

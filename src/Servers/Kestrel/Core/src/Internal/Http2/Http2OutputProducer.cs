@@ -4,66 +4,61 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IValueTaskSource<FlushResult>, IDisposable
+internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IDisposable
 {
     private int StreamId => _stream.StreamId;
     private readonly Http2FrameWriter _frameWriter;
     private readonly TimingPipeFlusher _flusher;
     private readonly KestrelTrace _log;
 
-    // This should only be accessed via the FrameWriter. The connection-level output flow control is protected by the
-    // FrameWriter's connection-level write lock.
-    private readonly StreamOutputFlowControl _flowControl;
     private readonly MemoryPool<byte> _memoryPool;
     private readonly Http2Stream _stream;
     private readonly object _dataWriterLock = new object();
     private readonly Pipe _pipe;
     private readonly ConcurrentPipeWriter _pipeWriter;
     private readonly PipeReader _pipeReader;
-    private readonly ManualResetValueTaskSource<object?> _resetAwaitable = new ManualResetValueTaskSource<object?>();
     private IMemoryOwner<byte>? _fakeMemoryOwner;
     private byte[]? _fakeMemory;
     private bool _startedWritingDataFrames;
-    private bool _streamCompleted;
+    private bool _completeScheduled;
     private bool _suffixSent;
-    private bool _streamEnded;
+    private bool _appCompletedWithNoResponseBodyOrTrailers;
     private bool _writerComplete;
+    private bool _isScheduled;
 
     // Internal for testing
-    internal Task _dataWriteProcessingTask;
     internal bool _disposed;
 
-    /// <summary>The core logic for the IValueTaskSource implementation.</summary>
-    private ManualResetValueTaskSourceCore<FlushResult> _responseCompleteTaskSource = new ManualResetValueTaskSourceCore<FlushResult> { RunContinuationsAsynchronously = true }; // mutable struct, do not make this readonly
+    private long _unconsumedBytes;
+    private long _streamWindow;
 
-    // This object is itself usable as a backing source for ValueTask.  Since there's only ever one awaiter
-    // for this object's state transitions at a time, we allow the object to be awaited directly. All functionality
-    // associated with the implementation is just delegated to the ManualResetValueTaskSourceCore.
-    private ValueTask<FlushResult> GetWaiterTask() => new ValueTask<FlushResult>(this, _responseCompleteTaskSource.Version);
-    ValueTaskSourceStatus IValueTaskSource<FlushResult>.GetStatus(short token) => _responseCompleteTaskSource.GetStatus(token);
-    void IValueTaskSource<FlushResult>.OnCompleted(Action<object?> continuation, object? state, short token, ValueTaskSourceOnCompletedFlags flags) => _responseCompleteTaskSource.OnCompleted(continuation, state, token, flags);
-    FlushResult IValueTaskSource<FlushResult>.GetResult(short token) => _responseCompleteTaskSource.GetResult(token);
+    // For scheduling changes that don't affect the number of bytes written to the pipe, we need another state.
+    private State _unobservedState;
 
-    public Http2OutputProducer(Http2Stream stream, Http2StreamContext context, StreamOutputFlowControl flowControl)
+    // This reflects the current state of the output, the current state becomes the unobserved state after it has been observed.
+    private State _currentState;
+    private bool _completedResponse;
+    private bool _requestProcessingComplete;
+    private bool _waitingForWindowUpdates;
+    private Http2ErrorCode? _resetErrorCode;
+
+    public Http2OutputProducer(Http2Stream stream, Http2StreamContext context)
     {
         _stream = stream;
         _frameWriter = context.FrameWriter;
-        _flowControl = flowControl;
         _memoryPool = context.MemoryPool;
         _log = context.ServiceContext.Log;
+        var scheduleInline = context.ServiceContext.Scheduler == PipeScheduler.Inline;
 
-        _pipe = CreateDataPipe(_memoryPool);
+        _pipe = CreateDataPipe(_memoryPool, scheduleInline);
 
         _pipeWriter = new ConcurrentPipeWriter(_pipe.Writer, _memoryPool, _dataWriterLock);
         _pipeReader = _pipe.Reader;
@@ -72,29 +67,134 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         // The minimum output data rate is enforced at the connection level by Http2FrameWriter.
         _flusher = new TimingPipeFlusher(timeoutControl: null, _log);
         _flusher.Initialize(_pipeWriter);
-
-        _dataWriteProcessingTask = ProcessDataWrites();
+        _streamWindow = context.ClientPeerSettings.InitialWindowSize;
     }
 
-    public void StreamReset()
-    {
-        // Data background task must still be running.
-        Debug.Assert(!_dataWriteProcessingTask.IsCompleted);
-        // Response should have been completed.
-        Debug.Assert(_responseCompleteTaskSource.GetStatus(_responseCompleteTaskSource.Version) == ValueTaskSourceStatus.Succeeded);
+    public Http2Stream Stream => _stream;
+    public PipeReader PipeReader => _pipeReader;
 
-        _streamEnded = false;
+    public bool IsTimingWrite { get; set; }
+
+    public bool AppCompletedWithNoResponseBodyOrTrailers => _appCompletedWithNoResponseBodyOrTrailers;
+
+    public bool CompletedResponse
+    {
+        get
+        {
+            lock (_dataWriterLock)
+            {
+                return _completedResponse;
+            }
+        }
+    }
+
+    // Useful for debugging the scheduling state in the debugger
+    internal (int, long, State, State, long) SchedulingState => (Stream.StreamId, _unconsumedBytes, _unobservedState, _currentState, _streamWindow);
+
+    public State UnobservedState
+    {
+        get
+        {
+            lock (_dataWriterLock)
+            {
+                return _unobservedState;
+            }
+        }
+    }
+
+    public State CurrentState
+    {
+        get
+        {
+            lock (_dataWriterLock)
+            {
+                return _currentState;
+            }
+        }
+    }
+
+    // Added bytes to the queue.
+    // Returns a bool that represents whether we should schedule this producer to write
+    // the enqueued bytes
+    private void EnqueueDataWrite(long bytes)
+    {
+        lock (_dataWriterLock)
+        {
+            _unconsumedBytes += bytes;
+        }
+    }
+
+    // Determines if we should schedule this producer to observe
+    // any state changes made.
+    private void EnqueueStateUpdate(State state)
+    {
+        lock (_dataWriterLock)
+        {
+            _unobservedState |= state;
+        }
+    }
+
+    public void SetWaitingForWindowUpdates()
+    {
+        lock (_dataWriterLock)
+        {
+            _waitingForWindowUpdates = true;
+        }
+    }
+
+    // Removes consumed bytes from the queue.
+    // Returns a bool that represents whether we should schedule this producer to write
+    // the remaining bytes.
+    internal (bool hasMoreData, bool reschedule, State currentState, bool waitingForWindowUpdates) ObserveDataAndState(long bytes, State state)
+    {
+        lock (_dataWriterLock)
+        {
+            _isScheduled = false;
+            _unobservedState &= ~state;
+            _currentState |= state;
+            _unconsumedBytes -= bytes;
+            return (_unconsumedBytes > 0, _unobservedState != State.None, _currentState, _waitingForWindowUpdates);
+        }
+    }
+
+    internal long CheckStreamWindow(long bytes)
+    {
+        lock (_dataWriterLock)
+        {
+            return Math.Min(bytes, _streamWindow);
+        }
+    }
+
+    internal void ConsumeStreamWindow(long bytes)
+    {
+        lock (_dataWriterLock)
+        {
+            _streamWindow -= bytes;
+        }
+    }
+
+    public void StreamReset(uint initialWindowSize)
+    {
+        // Response should have been completed.
+        Debug.Assert(_completedResponse);
+
+        _appCompletedWithNoResponseBodyOrTrailers = false;
         _suffixSent = false;
         _startedWritingDataFrames = false;
-        _streamCompleted = false;
+        _completeScheduled = false;
         _writerComplete = false;
-
         _pipe.Reset();
         _pipeWriter.Reset();
-        _responseCompleteTaskSource.Reset();
 
-        // Trigger the data process task to resume
-        _resetAwaitable.SetResult(null);
+        _streamWindow = initialWindowSize;
+        _unconsumedBytes = 0;
+        _unobservedState = State.None;
+        _currentState = State.None;
+        _completedResponse = false;
+        _requestProcessingComplete = false;
+        _waitingForWindowUpdates = false;
+        _resetErrorCode = null;
+        IsTimingWrite = false;
     }
 
     public void Complete()
@@ -110,8 +210,20 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             Stop();
 
-            // Make sure the writing side is completed.
-            _pipeWriter.Complete();
+            if (!_completeScheduled)
+            {
+                EnqueueStateUpdate(State.Completed);
+
+                // Make sure the writing side is completed.
+                _pipeWriter.Complete();
+
+                Schedule();
+            }
+            else
+            {
+                // Make sure the writing side is completed.
+                _pipeWriter.Complete();
+            }
 
             if (_fakeMemoryOwner != null)
             {
@@ -136,7 +248,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
     void IHttpOutputAborter.OnInputOrOutputCompleted()
     {
-        _stream.ResetAndAbort(new ConnectionAbortedException($"{nameof(Http2OutputProducer)}.{nameof(ProcessDataWrites)} has completed."), Http2ErrorCode.INTERNAL_ERROR);
+        _stream.ResetAndAbort(new ConnectionAbortedException($"{nameof(Http2OutputProducer)} has completed."), Http2ErrorCode.INTERNAL_ERROR);
     }
 
     public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken)
@@ -150,24 +262,78 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         {
             ThrowIfSuffixSentOrCompleted();
 
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             if (_startedWritingDataFrames)
             {
                 // If there's already been response data written to the stream, just wait for that. Any header
                 // should be in front of the data frames in the connection pipe. Trailers could change things.
-                return _flusher.FlushAsync(this, cancellationToken);
+                var task = _flusher.FlushAsync(this, cancellationToken);
+
+                Schedule();
+
+                return task;
             }
             else
             {
-                // Flushing the connection pipe ensures headers already in the pipe are flushed even if no data
-                // frames have been written.
-                return _frameWriter.FlushAsync(this, cancellationToken);
+                Schedule();
+
+                return default;
             }
         }
+    }
+
+    public void Schedule()
+    {
+        lock (_dataWriterLock)
+        {
+            // Lock here
+            if (_isScheduled)
+            {
+                return;
+            }
+
+            _isScheduled = true;
+        }
+
+        _frameWriter.Schedule(this);
+    }
+
+    public bool TryScheduleNextWriteIfStreamWindowHasSpace()
+    {
+        lock (_dataWriterLock)
+        {
+            Debug.Assert(_unconsumedBytes > 0);
+
+            // Check the stream window under the lock so that we don't miss window updates
+            if (_streamWindow > 0)
+            {
+                Schedule();
+
+                return true;
+            }
+
+            _waitingForWindowUpdates = true;
+        }
+        return false;
+    }
+
+    public void ScheduleResumeFromWindowUpdate()
+    {
+        if (_completedResponse)
+        {
+            return;
+        }
+
+        lock (_dataWriterLock)
+        {
+            _waitingForWindowUpdates = false;
+        }
+
+        Schedule();
     }
 
     public ValueTask<FlushResult> Write100ContinueAsync()
@@ -176,7 +342,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         {
             ThrowIfSuffixSentOrCompleted();
 
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return default;
             }
@@ -191,7 +357,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         {
             // The HPACK header compressor is stateful, if we compress headers for an aborted stream we must send them.
             // Optimize for not compressing or sending them.
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return;
             }
@@ -203,20 +369,12 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             // The headers will be the final frame if:
             // 1. There is no content
             // 2. There is no trailing HEADERS frame.
-            Http2HeadersFrameFlags http2HeadersFrame;
-
             if (appCompleted && !_startedWritingDataFrames && (_stream.ResponseTrailers == null || _stream.ResponseTrailers.Count == 0))
             {
-                _streamEnded = true;
-                _stream.DecrementActiveClientStreamCount();
-                http2HeadersFrame = Http2HeadersFrameFlags.END_STREAM;
-            }
-            else
-            {
-                http2HeadersFrame = Http2HeadersFrameFlags.NONE;
+                _appCompletedWithNoResponseBodyOrTrailers = true;
             }
 
-            _frameWriter.WriteResponseHeaders(StreamId, statusCode, http2HeadersFrame, responseHeaders);
+            EnqueueStateUpdate(State.FlushHeaders);
         }
     }
 
@@ -233,7 +391,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             // This length check is important because we don't want to set _startedWritingDataFrames unless a data
             // frame will actually be written causing the headers to be flushed.
-            if (_streamCompleted || data.Length == 0)
+            if (_completeScheduled || data.Length == 0)
             {
                 return Task.CompletedTask;
             }
@@ -241,7 +399,14 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             _startedWritingDataFrames = true;
 
             _pipeWriter.Write(data);
-            return _flusher.FlushAsync(this, cancellationToken).GetAsTask();
+
+            EnqueueDataWrite(data.Length);
+
+            var task = _flusher.FlushAsync(this, cancellationToken).GetAsTask();
+
+            Schedule();
+
+            return task;
         }
     }
 
@@ -249,16 +414,21 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     {
         lock (_dataWriterLock)
         {
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
-                return GetWaiterTask();
+                return ValueTask.FromResult<FlushResult>(default);
             }
 
-            _streamCompleted = true;
+            _completeScheduled = true;
             _suffixSent = true;
 
+            EnqueueStateUpdate(State.Completed);
+
             _pipeWriter.Complete();
-            return GetWaiterTask();
+
+            Schedule();
+
+            return ValueTask.FromResult<FlushResult>(default);
         }
     }
 
@@ -266,8 +436,15 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     {
         lock (_dataWriterLock)
         {
-            // Always send the reset even if the response body is _completed. The request body may not have completed yet.
+            // Stop() always schedules a completion if one wasn't scheduled already.
             Stop();
+            // We queued the stream to complete but didn't complete the response yet
+            if (!_completedResponse)
+            {
+                // Set the error so that we can write the RST when the response completes.
+                _resetErrorCode = error;
+                return default;
+            }
 
             return _frameWriter.WriteRstStreamAsync(StreamId, error);
         }
@@ -279,7 +456,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         {
             ThrowIfSuffixSentOrCompleted();
 
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return;
             }
@@ -287,6 +464,8 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             _startedWritingDataFrames = true;
 
             _pipeWriter.Advance(bytes);
+
+            EnqueueDataWrite(bytes);
         }
     }
 
@@ -296,7 +475,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         {
             ThrowIfSuffixSentOrCompleted();
 
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return GetFakeMemory(sizeHint).Span;
             }
@@ -311,7 +490,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         {
             ThrowIfSuffixSentOrCompleted();
 
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return GetFakeMemory(sizeHint);
             }
@@ -324,7 +503,7 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     {
         lock (_dataWriterLock)
         {
-            if (_streamCompleted)
+            if (_completeScheduled)
             {
                 return;
             }
@@ -346,15 +525,21 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
 
             // This length check is important because we don't want to set _startedWritingDataFrames unless a data
             // frame will actually be written causing the headers to be flushed.
-            if (_streamCompleted || data.Length == 0)
+            if (_completeScheduled || data.Length == 0)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             _startedWritingDataFrames = true;
 
             _pipeWriter.Write(data);
-            return _flusher.FlushAsync(this, cancellationToken);
+
+            EnqueueDataWrite(data.Length);
+            var task = _flusher.FlushAsync(this, cancellationToken);
+
+            Schedule();
+
+            return task;
         }
     }
 
@@ -382,16 +567,20 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     {
         lock (_dataWriterLock)
         {
-            if (_streamCompleted)
+            _waitingForWindowUpdates = false;
+
+            if (_completeScheduled && _completedResponse)
             {
+                // We can overschedule as long as we haven't yet completed the response. This is important because
+                // we may need to abort the stream if it's waiting for a window update.
                 return;
             }
 
-            _streamCompleted = true;
+            _completeScheduled = true;
 
-            _pipeReader.CancelPendingRead();
+            EnqueueStateUpdate(State.Aborted);
 
-            _frameWriter.AbortPendingStreamDataWrites(_flowControl);
+            Schedule();
         }
     }
 
@@ -399,93 +588,52 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
     {
     }
 
-    private async Task ProcessDataWrites()
+    internal void OnRequestProcessingEnded()
     {
-        // ProcessDataWrites runs for the lifetime of the Http2OutputProducer, and is designed to be reused by multiple streams.
-        // When Http2OutputProducer is no longer used (e.g. a stream is aborted and will no longer be used, or the connection is closed)
-        // it should be disposed so ProcessDataWrites exits. Not disposing won't cause a memory leak in release builds, but in debug
-        // builds active tasks are rooted on Task.s_currentActiveTasks. Dispose could be removed in the future when active tasks are
-        // tracked by a weak reference. See https://github.com/dotnet/runtime/issues/26565
-        do
+        lock (_dataWriterLock)
         {
-            FlushResult flushResult = default;
-            ReadResult readResult = default;
-            try
+            if (_requestProcessingComplete)
             {
-                do
-                {
-                    var firstWrite = true;
-
-                    readResult = await _pipeReader.ReadAsync();
-
-                    if (readResult.IsCanceled)
-                    {
-                        // Response body is aborted, break and complete reader.
-                        break;
-                    }
-                    else if (readResult.IsCompleted && _stream.ResponseTrailers?.Count > 0)
-                    {
-                        // Output is ending and there are trailers to write
-                        // Write any remaining content then write trailers
-
-                        _stream.ResponseTrailers.SetReadOnly();
-                        _stream.DecrementActiveClientStreamCount();
-
-                        if (readResult.Buffer.Length > 0)
-                        {
-                            // It is faster to write data and trailers together. Locking once reduces lock contention.
-                            flushResult = await _frameWriter.WriteDataAndTrailersAsync(StreamId, _flowControl, readResult.Buffer, firstWrite, _stream.ResponseTrailers);
-                        }
-                        else
-                        {
-                            flushResult = await _frameWriter.WriteResponseTrailersAsync(StreamId, _stream.ResponseTrailers);
-                        }
-                    }
-                    else if (readResult.IsCompleted && _streamEnded)
-                    {
-                        if (readResult.Buffer.Length != 0)
-                        {
-                            ThrowUnexpectedState();
-                        }
-
-                        // Headers have already been written and there is no other content to write
-                        flushResult = await _frameWriter.FlushAsync(outputAborter: null, cancellationToken: default);
-                    }
-                    else
-                    {
-                        var endStream = readResult.IsCompleted;
-
-                        if (endStream)
-                        {
-                            _stream.DecrementActiveClientStreamCount();
-                        }
-
-                        flushResult = await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream, firstWrite, forceFlush: true);
-                    }
-
-                    firstWrite = false;
-                    _pipeReader.AdvanceTo(readResult.Buffer.End);
-                } while (!readResult.IsCompleted);
-            }
-            catch (Exception ex)
-            {
-                _log.LogCritical(ex, nameof(Http2OutputProducer) + "." + nameof(ProcessDataWrites) + " observed an unexpected exception.");
+                // Noop, we're done
+                return;
             }
 
-            await _pipeReader.CompleteAsync();
+            _requestProcessingComplete = true;
 
-            // Signal via WriteStreamSuffixAsync to the stream that output has finished.
-            // Stream state will move to RequestProcessingStatus.ResponseCompleted
-            _responseCompleteTaskSource.SetResult(flushResult);
+            if (_completedResponse)
+            {
+                Stream.CompleteStream(errored: false);
+            }
+        }
+    }
 
-            // Wait here for the stream to be reset or disposed.
-            await new ValueTask(_resetAwaitable, _resetAwaitable.Version);
-            _resetAwaitable.Reset();
-        } while (!_disposed);
-
-        static void ThrowUnexpectedState()
+    internal ValueTask<FlushResult> CompleteResponseAsync()
+    {
+        lock (_dataWriterLock)
         {
-            throw new InvalidOperationException(nameof(Http2OutputProducer) + "." + nameof(ProcessDataWrites) + " observed an unexpected state where the streams output ended with data still remaining in the pipe.");
+            if (_completedResponse)
+            {
+                // This should never be called twice
+                return default;
+            }
+
+            _completedResponse = true;
+
+            ValueTask<FlushResult> task = default;
+
+            if (_resetErrorCode is { } error)
+            {
+                // If we have an error code to write, write it now that we're done with the response.
+                // Always send the reset even if the response body is completed. The request body may not have completed yet.
+                task = _frameWriter.WriteRstStreamAsync(StreamId, error);
+            }
+
+            if (_requestProcessingComplete)
+            {
+                Stream.CompleteStream(errored: false);
+            }
+
+            return task;
         }
     }
 
@@ -533,6 +681,40 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         }
     }
 
+    public bool TryUpdateStreamWindow(int bytes)
+    {
+        var schedule = false;
+
+        lock (_dataWriterLock)
+        {
+            var maxUpdate = Http2PeerSettings.MaxWindowSize - _streamWindow;
+
+            if (bytes > maxUpdate)
+            {
+                return false;
+            }
+
+            schedule = UpdateStreamWindow(bytes);
+        }
+
+        if (schedule)
+        {
+            ScheduleResumeFromWindowUpdate();
+        }
+
+        return true;
+
+        // Adds more bytes to the stream's window
+        // Returns a bool that represents whether we should schedule this producer to write
+        // the remaining bytes.
+        bool UpdateStreamWindow(long bytes)
+        {
+            var wasDepleted = _streamWindow <= 0;
+            _streamWindow += bytes;
+            return wasDepleted && _streamWindow > 0 && _unconsumedBytes > 0;
+        }
+    }
+
     [StackTraceHidden]
     private void ThrowIfSuffixSentOrCompleted()
     {
@@ -559,14 +741,17 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
         throw new InvalidOperationException("Cannot write to response after the request has completed.");
     }
 
-    private static Pipe CreateDataPipe(MemoryPool<byte> pool)
+    private static Pipe CreateDataPipe(MemoryPool<byte> pool, bool scheduleInline)
         => new Pipe(new PipeOptions
         (
             pool: pool,
             readerScheduler: PipeScheduler.Inline,
             writerScheduler: PipeScheduler.ThreadPool,
-            pauseWriterThreshold: 1,
-            resumeWriterThreshold: 1,
+            // The unit tests rely on inline scheduling and the ability to control individual writes
+            // and assert individual frames. Setting the thresholds to 1 avoids frames being coaleased together
+            // and allows the test to assert them individually.
+            pauseWriterThreshold: scheduleInline ? 1 : 4096,
+            resumeWriterThreshold: scheduleInline ? 1 : 2048,
             useSynchronizationContext: false,
             minimumSegmentSize: pool.GetMinimumSegmentSize()
         ));
@@ -578,8 +763,14 @@ internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IV
             return;
         }
         _disposed = true;
+    }
 
-        // Set awaitable after disposed is true to ensure ProcessDataWrites exits successfully.
-        _resetAwaitable.SetResult(null);
+    [Flags]
+    public enum State
+    {
+        None = 0,
+        FlushHeaders = 1,
+        Aborted = 2,
+        Completed = 4
     }
 }

@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class HubClients<THub> : IHubClients where THub : Hub
+internal sealed class HubClients<THub> : IHubClients where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
 
@@ -20,7 +20,8 @@ internal class HubClients<THub> : IHubClients where THub : Hub
         return new AllClientsExceptProxy<THub>(_lifetimeManager, excludedConnectionIds);
     }
 
-    public IClientProxy Client(string connectionId)
+    IClientProxy IHubClients<IClientProxy>.Client(string connectionId) => Client(connectionId);
+    public ISingleClientProxy Client(string connectionId)
     {
         return new SingleClientProxy<THub>(_lifetimeManager, connectionId);
     }

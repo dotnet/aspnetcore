@@ -82,6 +82,11 @@ parameters:
     default:
     - Validate
 
+  # Optional: Call asset publishing rather than running in a separate stage
+  - name: publishAssetsImmediately
+    type: boolean
+    default: false
+
 stages:
 - ${{ if or(eq( parameters.enableNugetValidation, 'true'), eq(parameters.enableSigningValidation, 'true'), eq(parameters.enableSourceLinkValidation, 'true'), eq(parameters.SDLValidationParameters.enable, 'true')) }}:
   - stage: Validate
@@ -99,7 +104,7 @@ stages:
           name: VSEngSS-MicroBuild2022-1ES
           demands: Cmd
         # If it's not devdiv, it's dnceng
-        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+        ${{ else }}:
           name: NetCore1ESPool-Internal
           demands: ImageOverride -equals Build.Server.Amd64.VS2019
 
@@ -136,7 +141,7 @@ stages:
           name: VSEngSS-MicroBuild2022-1ES
           demands: Cmd
         # If it's not devdiv, it's dnceng
-        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+        ${{ else }}:
           name: NetCore1ESPool-Internal
           demands: ImageOverride -equals Build.Server.Amd64.VS2019
       steps:
@@ -196,7 +201,7 @@ stages:
           name: VSEngSS-MicroBuild2022-1ES
           demands: Cmd
         # If it's not devdiv, it's dnceng
-        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+        ${{ else }}:
           name: NetCore1ESPool-Internal
           demands: ImageOverride -equals Build.Server.Amd64.VS2019
       steps:
@@ -235,43 +240,44 @@ stages:
         artifactNames: ${{ parameters.SDLValidationParameters.artifactNames }}
         downloadArtifacts: ${{ parameters.SDLValidationParameters.downloadArtifacts }}
 
-- stage: publish_using_darc
-  ${{ if or(eq(parameters.enableNugetValidation, 'true'), eq(parameters.enableSigningValidation, 'true'), eq(parameters.enableSourceLinkValidation, 'true'), eq(parameters.SDLValidationParameters.enable, 'true')) }}:
-    dependsOn: ${{ parameters.publishDependsOn }}
-  ${{ if and(ne(parameters.enableNugetValidation, 'true'), ne(parameters.enableSigningValidation, 'true'), ne(parameters.enableSourceLinkValidation, 'true'), ne(parameters.SDLValidationParameters.enable, 'true')) }}:
-    dependsOn: ${{ parameters.validateDependsOn }}
-  displayName: Publish using Darc
-  variables:
-    - template: common-variables.yml
-  jobs:
-  - job:
-    displayName: Publish Using Darc
-    timeoutInMinutes: 120
-    pool:
-      # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+- ${{ if ne(parameters.publishAssetsImmediately, 'true') }}:
+  - stage: publish_using_darc
+    ${{ if or(eq(parameters.enableNugetValidation, 'true'), eq(parameters.enableSigningValidation, 'true'), eq(parameters.enableSourceLinkValidation, 'true'), eq(parameters.SDLValidationParameters.enable, 'true')) }}:
+      dependsOn: ${{ parameters.publishDependsOn }}
+    ${{ else }}:
+      dependsOn: ${{ parameters.validateDependsOn }}
+    displayName: Publish using Darc
+    variables:
+      - template: common-variables.yml
+    jobs:
+    - job:
+      displayName: Publish Using Darc
+      timeoutInMinutes: 120
+      pool:
+        # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
           name: VSEngSS-MicroBuild2022-1ES
           demands: Cmd
         # If it's not devdiv, it's dnceng
-        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+        ${{ else }}:
           name: NetCore1ESPool-Internal
           demands: ImageOverride -equals Build.Server.Amd64.VS2019
-    steps:
-      - template: setup-maestro-vars.yml
-        parameters:
-          BARBuildId: ${{ parameters.BARBuildId }}
-          PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
+      steps:
+        - template: setup-maestro-vars.yml
+          parameters:
+            BARBuildId: ${{ parameters.BARBuildId }}
+            PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
 
-      - task: NuGetAuthenticate@0
+        - task: NuGetAuthenticate@0
 
-      - task: PowerShell@2
-        displayName: Publish Using Darc
-        inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
-          arguments: -BuildId $(BARBuildId) 
-            -PublishingInfraVersion ${{ parameters.publishingInfraVersion }}
-            -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
-            -MaestroToken '$(MaestroApiAccessToken)'
-            -WaitPublishingFinish true
-            -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
-            -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
+        - task: PowerShell@2
+          displayName: Publish Using Darc
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
+            arguments: -BuildId $(BARBuildId) 
+              -PublishingInfraVersion ${{ parameters.publishingInfraVersion }}
+              -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
+              -MaestroToken '$(MaestroApiAccessToken)'
+              -WaitPublishingFinish true
+              -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
+              -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'

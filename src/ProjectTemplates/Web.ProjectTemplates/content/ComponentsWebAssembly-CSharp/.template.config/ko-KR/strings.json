@@ -1,9 +1,0 @@
-{
-  "version": "1.0.0.0",
-  "strings": {
-    "name": "Blazor WebAssembly 앱",
-    "description": "WebAssembly에서 실행되고 ASP.NET Core 앱에서 선택적으로 호스트되는 Blazor 앱을 만들기 위한 프로젝트 템플릿입니다. 이 템플릿은 다양한 동적 UI(사용자 인터페이스)를 포함하는 웹앱에 사용할 수 있습니다.",
-    "parameter.Hosted.name": "ASP.NET Core 호스팅(_H)",
-    "parameter.PWA.name": "프로그레시브 웹 애플리케이션(_P)"
-  }
-}

@@ -44,6 +44,7 @@ The previous versions of Identity for MVC5 and lower, previously available on Co
 * ASP.NET Identity MongoDB Providers:
   * [By Tugberk Ugurlu](https://github.com/tugberkugurlu/AspNetCore.Identity.MongoDB)
   * [By Alexandre Spieser](https://github.com/alexandre-spieser/AspNetCore.Identity.MongoDbCore)
+  * [By Deveel](https://github.com/deveel/deveel.identity.mongodb)
 * [ASP.NET Identity LinqToDB Provider](https://github.com/ili/LinqToDB.Identity)
 * ASP.NET Identity DynamoDB Providers:
   * [By Vasyl Solovei](https://github.com/miltador/AspNetCore.Identity.DynamoDB)

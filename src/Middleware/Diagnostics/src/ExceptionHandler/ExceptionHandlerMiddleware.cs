@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -135,9 +136,10 @@ public class ExceptionHandlerMiddleware
             // If the response has already started, assume exception handler was successful.
             if (context.Response.HasStarted || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {
-                if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
+                const string eventName = "Microsoft.AspNetCore.Diagnostics.HandledException";
+                if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(eventName))
                 {
-                    _diagnosticListener.Write("Microsoft.AspNetCore.Diagnostics.HandledException", new { httpContext = context, exception = edi.SourceException });
+                    WriteDiagnosticEvent(_diagnosticListener, eventName, new { httpContext = context, exception = edi.SourceException });
                 }
 
                 return;
@@ -158,6 +160,11 @@ public class ExceptionHandlerMiddleware
         }
 
         edi.Throw(); // Re-throw wrapped exception or the original if we couldn't handle it
+
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+            Justification = "The values being passed into Write have the commonly used properties being preserved with DynamicDependency.")]
+        static void WriteDiagnosticEvent<TValue>(DiagnosticSource diagnosticSource, string name, TValue value)
+            => diagnosticSource.Write(name, value);
     }
 
     private static void ClearHttpContext(HttpContext context)

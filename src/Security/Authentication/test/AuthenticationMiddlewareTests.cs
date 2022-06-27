@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -151,6 +152,25 @@ public class AuthenticationMiddlewareTests
         Assert.Same(context.User, newTicket.Principal);
     }
 
+    [Fact]
+    public async Task WebApplicationBuilder_RegistersAuthenticationMiddlewares()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Authentication.AddJwtBearer();
+        await using var app = builder.Build();
+
+        var webAppAuthBuilder = Assert.IsType<WebApplicationAuthenticationBuilder>(builder.Authentication);
+        Assert.True(webAppAuthBuilder.IsAuthenticationConfigured);
+
+        // Authentication middleware isn't registered until application
+        // is built on startup
+        Assert.False(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+
+        await app.StartAsync();
+
+        Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+    }
+
     private HttpContext GetHttpContext(
         Action<IServiceCollection> registerServices = null,
         IAuthenticationService authenticationService = null)
@@ -164,6 +184,7 @@ public class AuthenticationMiddlewareTests
         serviceCollection.AddOptions();
         serviceCollection.AddLogging();
         serviceCollection.AddAuthentication();
+        serviceCollection.AddSingleton<IConfiguration>(new ConfigurationManager());
         registerServices?.Invoke(serviceCollection);
 
         var serviceProvider = serviceCollection.BuildServiceProvider();

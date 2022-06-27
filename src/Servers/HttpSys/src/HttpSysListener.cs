@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 /// <summary>
 /// An HTTP server wrapping the Http.Sys APIs that accepts requests.
 /// </summary>
-internal partial class HttpSysListener : IDisposable
+internal sealed partial class HttpSysListener : IDisposable
 {
     // Win8# 559317 fixed a bug in Http.sys's HttpReceiveClientCertificate method.
     // Without this fix IOCP callbacks were not being called although ERROR_IO_PENDING was
@@ -77,9 +77,9 @@ internal partial class HttpSysListener : IDisposable
         {
             _serverSession = new ServerSession();
 
-            _urlGroup = new UrlGroup(_serverSession, Logger);
+            _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode, Logger);
 
-            _requestQueue = new RequestQueue(_urlGroup, options.RequestQueueName, options.RequestQueueMode, Logger);
+            _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
 
             _disconnectListener = new DisconnectListener(_requestQueue, Logger);
         }
@@ -147,12 +147,12 @@ internal partial class HttpSysListener : IDisposable
                     return;
                 }
 
-                // If this instance created the queue then configure it.
-                if (_requestQueue.Created)
+                // Always configure the UrlGroup if the intent was to create, only configure the queue if we actually created it
+                if (Options.RequestQueueMode == RequestQueueMode.Create || Options.RequestQueueMode == RequestQueueMode.CreateOrAttach)
                 {
-                    Options.Apply(UrlGroup, RequestQueue);
+                    Options.Apply(UrlGroup, _requestQueue.Created ? RequestQueue : null);
 
-                    _requestQueue.AttachToUrlGroup();
+                    UrlGroup.AttachToQueue();
 
                     // All resources are set up correctly. Now add all prefixes.
                     try
@@ -162,7 +162,7 @@ internal partial class HttpSysListener : IDisposable
                     catch (HttpSysException)
                     {
                         // If an error occurred while adding prefixes, free all resources allocated by previous steps.
-                        _requestQueue.DetachFromUrlGroup();
+                        UrlGroup.DetachFromQueue();
                         throw;
                     }
                 }
@@ -194,11 +194,11 @@ internal partial class HttpSysListener : IDisposable
 
                 Log.ListenerStopping(Logger);
 
-                // If this instance created the queue then remove the URL prefixes before shutting down.
-                if (_requestQueue.Created)
+                // If this instance registered URL prefixes then remove them before shutting down.
+                if (Options.RequestQueueMode == RequestQueueMode.Create || Options.RequestQueueMode == RequestQueueMode.CreateOrAttach)
                 {
                     Options.UrlPrefixes.UnregisterAllPrefixes();
-                    _requestQueue.DetachFromUrlGroup();
+                    UrlGroup.DetachFromQueue();
                 }
 
                 _state = State.Stopped;

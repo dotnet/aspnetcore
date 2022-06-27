@@ -11,6 +11,8 @@
   "symbols/Framework/choices/net7.0/description": "Target net7.0",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "symbols/NoHttps/description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth.",
+  "symbols/UseProgramMain/displayName": "Use a Program class with a Main method",
+  "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
 }

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 /// <summary>
 /// A factory for QUIC based connections.
 /// </summary>
-internal class QuicTransportFactory : IMultiplexedConnectionListenerFactory
+internal sealed class QuicTransportFactory : IMultiplexedConnectionListenerFactory
 {
     private readonly ILogger _log;
     private readonly QuicTransportOptions _options;
@@ -43,7 +43,7 @@ internal class QuicTransportFactory : IMultiplexedConnectionListenerFactory
     /// <param name="features">Additional features to be used to create the listener.</param>
     /// <param name="cancellationToken">To cancel the </param>
     /// <returns>A </returns>
-    public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)
+    public async ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection? features = null, CancellationToken cancellationToken = default)
     {
         if (endpoint == null)
         {
@@ -66,6 +66,8 @@ internal class QuicTransportFactory : IMultiplexedConnectionListenerFactory
         }
 
         var transport = new QuicConnectionListener(_options, _log, endpoint, sslServerAuthenticationOptions);
-        return new ValueTask<IMultiplexedConnectionListener>(transport);
+        await transport.CreateListenerAsync();
+
+        return transport;
     }
 }

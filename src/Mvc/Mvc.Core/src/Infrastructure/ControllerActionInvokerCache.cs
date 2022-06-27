@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ControllerActionInvokerCache
+internal sealed class ControllerActionInvokerCache
 {
     private readonly ParameterBinder _parameterBinder;
     private readonly IModelBinderFactory _modelBinderFactory;

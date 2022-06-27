@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
@@ -106,6 +107,12 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
             message += Environment.NewLine + parameters;
             throw new InvalidOperationException(message);
         }
+        else if (fromBodyParameters.Count == 1 &&
+                  fromBodyParameters[0].BindingInfo!.EmptyBodyBehavior == EmptyBodyBehavior.Default &&
+                  IsOptionalParameter(fromBodyParameters[0]))
+        {
+            fromBodyParameters[0].BindingInfo!.EmptyBodyBehavior = EmptyBodyBehavior.Allow;
+        }
     }
 
     // Internal for unit testing.
@@ -154,5 +161,26 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
 
         return metadata.IsComplexType;
+    }
+
+    private bool IsOptionalParameter(ParameterModel parameter)
+    {
+        if (parameter.ParameterInfo.HasDefaultValue)
+        {
+            return true;
+        }
+
+        if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider)
+        {
+            var metadata = modelMetadataProvider.GetMetadataForParameter(parameter.ParameterInfo);
+            return metadata.NullabilityState == NullabilityState.Nullable || metadata.IsNullableValueType;
+        }
+        else
+        {
+            // Cannot be determine if the parameter is optional since the provider
+            // does not provides an option to getMetadata from the parameter info
+            // so, we will NOT treat the parameter as optional.
+            return false;
+        }
     }
 }

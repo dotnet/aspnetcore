@@ -9,7 +9,7 @@ using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
-internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
+internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
 {
     private const string _loglevelPadding = ": ";
     private static readonly string _messagePadding = new(' ', GetLogLevelString(LogLevel.Information).Length + _loglevelPadding.Length);
@@ -30,7 +30,7 @@ internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
         _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
     }
 
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
         return NoOpDisposable.Instance;
     }
@@ -158,7 +158,7 @@ internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
         }
     }
 
-    private class NoOpDisposable : IDisposable
+    private sealed class NoOpDisposable : IDisposable
     {
         public static NoOpDisposable Instance = new NoOpDisposable();
 

@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -418,6 +417,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
     [Theory]
     [MemberData(nameof(ConnectionMiddlewareData))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41850")]
     public async Task ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug(ListenOptions listenOptions)
     {
         // Attempt multiple connections to be extra sure the resets are consistently logged appropriately.

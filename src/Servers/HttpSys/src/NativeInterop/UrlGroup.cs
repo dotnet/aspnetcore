@@ -8,8 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal partial class UrlGroup : IDisposable
+internal sealed partial class UrlGroup : IDisposable
 {
+    private static readonly int BindingInfoSize =
+        Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
     private static readonly int QosInfoSize =
         Marshal.SizeOf<HttpApiTypes.HTTP_QOS_SETTING_INFO>();
     private static readonly int RequestPropertyInfoSize =
@@ -18,36 +20,20 @@ internal partial class UrlGroup : IDisposable
     private readonly ILogger _logger;
 
     private readonly ServerSession? _serverSession;
+    private readonly RequestQueue _requestQueue;
     private bool _disposed;
     private readonly bool _created;
 
-    internal unsafe UrlGroup(ServerSession serverSession, ILogger logger)
+    internal unsafe UrlGroup(ServerSession serverSession, RequestQueue requestQueue, ILogger logger)
     {
         _serverSession = serverSession;
+        _requestQueue = requestQueue;
         _logger = logger;
 
         ulong urlGroupId = 0;
         _created = true;
         var statusCode = HttpApi.HttpCreateUrlGroup(
             _serverSession.Id.DangerousGetServerSessionId(), &urlGroupId, 0);
-
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
-        {
-            throw new HttpSysException((int)statusCode);
-        }
-
-        Debug.Assert(urlGroupId != 0, "Invalid id returned by HttpCreateUrlGroup");
-        Id = urlGroupId;
-    }
-
-    internal unsafe UrlGroup(RequestQueue requestQueue, UrlPrefix url, ILogger logger)
-    {
-        _logger = logger;
-
-        ulong urlGroupId = 0;
-        _created = false;
-        var statusCode = HttpApi.HttpFindUrlGroupId(
-            url.FullPrefix, requestQueue.Handle, &urlGroupId);
 
         if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
         {
@@ -109,6 +95,41 @@ internal partial class UrlGroup : IDisposable
         }
     }
 
+    internal unsafe void AttachToQueue()
+    {
+        CheckDisposed();
+        // Set the association between request queue and url group. After this, requests for registered urls will
+        // get delivered to this request queue.
+
+        var info = new HttpApiTypes.HTTP_BINDING_INFO();
+        info.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
+        info.RequestQueueHandle = _requestQueue.Handle.DangerousGetHandle();
+
+        var infoptr = new IntPtr(&info);
+
+        SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
+            infoptr, (uint)BindingInfoSize);
+    }
+
+    internal unsafe void DetachFromQueue()
+    {
+        CheckDisposed();
+        // Break the association between request queue and url group. After this, requests for registered urls
+        // will get 503s.
+        // Note that this method may be called multiple times (Stop() and then Abort()). This
+        // is fine since http.sys allows to set HttpServerBindingProperty multiple times for valid
+        // Url groups.
+
+        var info = new HttpApiTypes.HTTP_BINDING_INFO();
+        info.Flags = HttpApiTypes.HTTP_FLAGS.NONE;
+        info.RequestQueueHandle = IntPtr.Zero;
+
+        var infoptr = new IntPtr(&info);
+
+        SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
+            infoptr, (uint)BindingInfoSize, throwOnError: false);
+    }
+
     internal void RegisterPrefix(string uriPrefix, int contextId)
     {
         Log.RegisteringPrefix(_logger, uriPrefix);
@@ -119,6 +140,22 @@ internal partial class UrlGroup : IDisposable
         {
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
             {
+                // If we didn't create the queue and the uriPrefix already exists, confirm it exists for the
+                // queue we attached to, if so we are all good, otherwise throw an already registered error.
+                if (!_requestQueue.Created)
+                {
+                    unsafe
+                    {
+                        ulong urlGroupId;
+                        var findUrlStatusCode = HttpApi.HttpFindUrlGroupId(uriPrefix, _requestQueue.Handle, &urlGroupId);
+                        if (findUrlStatusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+                        {
+                            // Already registered for the desired queue, all good
+                            return;
+                        }
+                    }
+                }
+
                 throw new HttpSysException((int)statusCode, Resources.FormatException_PrefixAlreadyRegistered(uriPrefix));
             }
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED)
@@ -129,18 +166,12 @@ internal partial class UrlGroup : IDisposable
         }
     }
 
-    internal bool UnregisterPrefix(string uriPrefix)
+    internal void UnregisterPrefix(string uriPrefix)
     {
         Log.UnregisteringPrefix(_logger, uriPrefix);
         CheckDisposed();
 
-        var statusCode = HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
-
-        if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_NOT_FOUND)
-        {
-            return false;
-        }
-        return true;
+        HttpApi.HttpRemoveUrlFromUrlGroup(Id, uriPrefix, 0);
     }
 
     public void Dispose()

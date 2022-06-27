@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 
-internal class HttpsConnectionMiddleware
+internal sealed class HttpsConnectionMiddleware
 {
     private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
 
@@ -513,7 +513,7 @@ internal class HttpsConnectionMiddleware
         var sslServerAuthenticationOptions = new SslServerAuthenticationOptions
         {
             ServerCertificate = httpsOptions.ServerCertificate,
-            ApplicationProtocols = new List<SslApplicationProtocol>() { SslApplicationProtocol.Http3, new SslApplicationProtocol("h3-29") },
+            ApplicationProtocols = new List<SslApplicationProtocol>() { SslApplicationProtocol.Http3 },
             CertificateRevocationCheckMode = httpsOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
         };
 

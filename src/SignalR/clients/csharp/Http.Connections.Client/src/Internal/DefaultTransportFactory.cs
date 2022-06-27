@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal class DefaultTransportFactory : ITransportFactory
+internal sealed partial class DefaultTransportFactory : ITransportFactory
 {
     private readonly HttpClient? _httpClient;
     private readonly HttpConnectionOptions _httpConnectionOptions;
@@ -61,14 +61,9 @@ internal class DefaultTransportFactory : ITransportFactory
         throw new InvalidOperationException("No requested transports available on the server.");
     }
 
-    private static class Log
+    private static partial class Log
     {
-        private static readonly Action<ILogger, HttpTransportType, Exception> _transportNotSupported =
-            LoggerMessage.Define<HttpTransportType>(LogLevel.Debug, new EventId(1, "TransportNotSupported"), "Transport '{TransportType}' is not supported.");
-
-        public static void TransportNotSupported(ILogger logger, HttpTransportType transportType, Exception ex)
-        {
-            _transportNotSupported(logger, transportType, ex);
-        }
+        [LoggerMessage(1, LogLevel.Debug, "Transport '{TransportType}' is not supported.", EventName = "TransportNotSupported")]
+        public static partial void TransportNotSupported(ILogger logger, HttpTransportType transportType, Exception ex);
     }
 }

@@ -439,13 +439,7 @@ internal partial class IISHttpContext : IFeatureCollection,
 
     internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
     {
-        // Check version is above 2.
-        if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
-        {
-            return this;
-        }
-
-        return null;
+        return AdvancedHttp2FeaturesSupported() ? this : null;
     }
 
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
@@ -458,13 +452,7 @@ internal partial class IISHttpContext : IFeatureCollection,
 
     internal IHttpResetFeature? GetResetFeature()
     {
-        // Check version is above 2.
-        if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_requestNativeHandle))
-        {
-            return this;
-        }
-
-        return null;
+        return AdvancedHttp2FeaturesSupported() ? this : null;
     }
 
     void IHttpResetFeature.Reset(int errorCode)

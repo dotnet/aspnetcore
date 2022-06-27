@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// added to all types and actions annotated with <see cref="ApiControllerAttribute"/>.
 /// See <see cref="ApiBehaviorOptions"/> for ways to configure this filter.
 /// </summary>
-public class ModelStateInvalidFilter : IActionFilter, IOrderedFilter
+public partial class ModelStateInvalidFilter : IActionFilter, IOrderedFilter
 {
     internal const int FilterOrder = -2000;
 
@@ -75,8 +75,14 @@ public class ModelStateInvalidFilter : IActionFilter, IOrderedFilter
     {
         if (context.Result == null && !context.ModelState.IsValid)
         {
-            _logger.ModelStateInvalidFilterExecuting();
+            Log.ModelStateInvalidFilterExecuting(_logger);
             context.Result = _apiBehaviorOptions.InvalidModelStateResponseFactory(context);
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "The request has model state errors, returning an error response.", EventName = "ModelStateInvalidFilterExecuting")]
+        public static partial void ModelStateInvalidFilterExecuting(ILogger logger);
     }
 }

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 /// <summary>
 /// Functional test to verify the error reporting of Razor compilation by diagnostic middleware.
 /// </summary>
-public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>>, IDisposable
+public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>>
 {
     private static readonly string PreserveCompilationContextMessage = HtmlEncoder.Default.Encode(
         "One or more compilation references may be missing. " +
@@ -182,10 +182,5 @@ public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWe
         Assert.Contains(aggregateException, content);
         Assert.Contains(nullReferenceException, content);
         Assert.Contains(indexOutOfRangeException, content);
-    }
-
-    public void Dispose()
-    {
-        _assemblyTestLog.Dispose();
     }
 }

@@ -5,103 +5,35 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
-internal static class AntiforgeryLoggerExtensions
+internal static partial class AntiforgeryLoggerExtensions
 {
-    private static readonly Action<ILogger, Exception?> _failedToDeserialzeTokens;
-    private static readonly Action<ILogger, string, Exception?> _validationFailed;
-    private static readonly Action<ILogger, Exception?> _validated;
-    private static readonly Action<ILogger, string?, Exception?> _missingCookieToken;
-    private static readonly Action<ILogger, string, string?, Exception?> _missingRequestToken;
-    private static readonly Action<ILogger, Exception?> _newCookieToken;
-    private static readonly Action<ILogger, Exception?> _reusedCookieToken;
-    private static readonly Action<ILogger, Exception?> _tokenDeserializeException;
-    private static readonly Action<ILogger, Exception?> _responseCacheHeadersOverridenToNoCache;
+    [LoggerMessage(1, LogLevel.Warning, "Antiforgery validation failed with message '{Message}'.", EventName = "ValidationFailed")]
+    public static partial void ValidationFailed(this ILogger logger, string message);
 
-    static AntiforgeryLoggerExtensions()
-    {
-        _validationFailed = LoggerMessage.Define<string>(
-            LogLevel.Warning,
-            new EventId(1, "ValidationFailed"),
-            "Antiforgery validation failed with message '{Message}'.");
-        _validated = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(2, "Validated"),
-            "Antiforgery successfully validated a request.");
-        _missingCookieToken = LoggerMessage.Define<string?>(
-            LogLevel.Warning,
-            new EventId(3, "MissingCookieToken"),
-            "The required antiforgery cookie '{CookieName}' is not present.");
-        _missingRequestToken = LoggerMessage.Define<string, string?>(
-            LogLevel.Warning,
-            new EventId(4, "MissingRequestToken"),
-            "The required antiforgery request token was not provided in either form field '{FormFieldName}' "
-                + "or header '{HeaderName}'.");
-        _newCookieToken = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(5, "NewCookieToken"),
-            "A new antiforgery cookie token was created.");
-        _reusedCookieToken = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(6, "ReusedCookieToken"),
-            "An antiforgery cookie token was reused.");
-        _tokenDeserializeException = LoggerMessage.Define(
-            LogLevel.Error,
-            new EventId(7, "TokenDeserializeException"),
-            "An exception was thrown while deserializing the token.");
-        _responseCacheHeadersOverridenToNoCache = LoggerMessage.Define(
-            LogLevel.Warning,
-            new EventId(8, "ResponseCacheHeadersOverridenToNoCache"),
-            "The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and " +
+    [LoggerMessage(2, LogLevel.Debug, "Antiforgery successfully validated a request.", EventName = "Validated")]
+    public static partial void ValidatedAntiforgeryToken(this ILogger logger);
+
+    [LoggerMessage(3, LogLevel.Warning, "The required antiforgery cookie '{CookieName}' is not present.", EventName = "MissingCookieToken")]
+    public static partial void MissingCookieToken(this ILogger logger, string? cookieName);
+
+    [LoggerMessage(4, LogLevel.Warning, "The required antiforgery request token was not provided in either form field '{FormFieldName}' "
+                + "or header '{HeaderName}'.", EventName = "MissingRequestToken")]
+    public static partial void MissingRequestToken(this ILogger logger, string formFieldName, string? headerName);
+
+    [LoggerMessage(5, LogLevel.Debug, "A new antiforgery cookie token was created.", EventName = "NewCookieToken")]
+    public static partial void NewCookieToken(this ILogger logger);
+
+    [LoggerMessage(6, LogLevel.Debug, "An antiforgery cookie token was reused.", EventName = "ReusedCookieToken")]
+    public static partial void ReusedCookieToken(this ILogger logger);
+
+    [LoggerMessage(7, LogLevel.Error, "An exception was thrown while deserializing the token.", EventName = "TokenDeserializeException")]
+    public static partial void TokenDeserializeException(this ILogger logger, Exception exception);
+
+    [LoggerMessage(8, LogLevel.Warning, "The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and " +
             "'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery " +
-            "should not be cached.");
-        _failedToDeserialzeTokens = LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(9, "FailedToDeserialzeTokens"),
-            "Failed to deserialize antiforgery tokens.");
-    }
+            "should not be cached.", EventName = "ResponseCacheHeadersOverridenToNoCache")]
+    public static partial void ResponseCacheHeadersOverridenToNoCache(this ILogger logger);
 
-    public static void ValidationFailed(this ILogger logger, string message)
-    {
-        _validationFailed(logger, message, null);
-    }
-
-    public static void ValidatedAntiforgeryToken(this ILogger logger)
-    {
-        _validated(logger, null);
-    }
-
-    public static void MissingCookieToken(this ILogger logger, string? cookieName)
-    {
-        _missingCookieToken(logger, cookieName, null);
-    }
-
-    public static void MissingRequestToken(this ILogger logger, string formFieldName, string? headerName)
-    {
-        _missingRequestToken(logger, formFieldName, headerName, null);
-    }
-
-    public static void NewCookieToken(this ILogger logger)
-    {
-        _newCookieToken(logger, null);
-    }
-
-    public static void ReusedCookieToken(this ILogger logger)
-    {
-        _reusedCookieToken(logger, null);
-    }
-
-    public static void TokenDeserializeException(this ILogger logger, Exception exception)
-    {
-        _tokenDeserializeException(logger, exception);
-    }
-
-    public static void ResponseCacheHeadersOverridenToNoCache(this ILogger logger)
-    {
-        _responseCacheHeadersOverridenToNoCache(logger, null);
-    }
-
-    public static void FailedToDeserialzeTokens(this ILogger logger, Exception exception)
-    {
-        _failedToDeserialzeTokens(logger, exception);
-    }
+    [LoggerMessage(9, LogLevel.Debug, "Failed to deserialize antiforgery tokens.", EventName = "FailedToDeserialzeTokens")]
+    public static partial void FailedToDeserialzeTokens(this ILogger logger, Exception exception);
 }

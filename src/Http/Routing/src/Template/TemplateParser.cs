@@ -19,7 +19,7 @@ public static class TemplateParser
     {
         if (routeTemplate == null)
         {
-            throw new ArgumentNullException(routeTemplate);
+            throw new ArgumentNullException(nameof(routeTemplate));
         }
 
         try

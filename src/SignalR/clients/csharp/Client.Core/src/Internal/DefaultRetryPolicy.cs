@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Internal;
 
-internal class DefaultRetryPolicy : IRetryPolicy
+internal sealed class DefaultRetryPolicy : IRetryPolicy
 {
     internal static TimeSpan?[] DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = new TimeSpan?[]
     {

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class WebHostUtilities
+internal sealed class WebHostUtilities
 {
     public static bool ParseBool(string? value)
     {

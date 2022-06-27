@@ -49,7 +49,7 @@ public class DefaultHttpContextFactory : IHttpContextFactory
         }
 
         var httpContext = new DefaultHttpContext(featureCollection);
-        Initialize(httpContext);
+        Initialize(httpContext, featureCollection);
         return httpContext;
     }
 
@@ -61,12 +61,6 @@ public class DefaultHttpContextFactory : IHttpContextFactory
 
         httpContext.Initialize(featureCollection);
 
-        Initialize(httpContext);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private DefaultHttpContext Initialize(DefaultHttpContext httpContext)
-    {
         if (_httpContextAccessor != null)
         {
             _httpContextAccessor.HttpContext = httpContext;
@@ -74,8 +68,6 @@ public class DefaultHttpContextFactory : IHttpContextFactory
 
         httpContext.FormOptions = _formOptions;
         httpContext.ServiceScopeFactory = _serviceScopeFactory;
-
-        return httpContext;
     }
 
     /// <summary>

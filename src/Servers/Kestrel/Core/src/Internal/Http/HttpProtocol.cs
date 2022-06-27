@@ -127,10 +127,14 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
     public bool IsUpgradableRequest { get; private set; }
     public bool IsUpgraded { get; set; }
+    public bool IsExtendedConnectRequest { get; set; }
+    public bool IsExtendedConnectAccepted { get; set; }
     public IPAddress? RemoteIpAddress { get; set; }
     public int RemotePort { get; set; }
     public IPAddress? LocalIpAddress { get; set; }
     public int LocalPort { get; set; }
+    // https://datatracker.ietf.org/doc/html/rfc8441 ":protocol"
+    public string? ConnectProtocol { get; set; }
     public string? Scheme { get; set; }
     public HttpMethod Method { get; set; }
     public string MethodText => ((IHttpRequestFeature)this).Method;
@@ -355,6 +359,9 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         _httpProtocol = null;
         _statusCode = StatusCodes.Status200OK;
         _reasonPhrase = null;
+        IsUpgraded = false;
+        IsExtendedConnectRequest = false;
+        IsExtendedConnectAccepted = false;
 
         var remoteEndPoint = RemoteEndPoint;
         RemoteIpAddress = remoteEndPoint?.Address;
@@ -1343,10 +1350,17 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         const string badRequestEventName = "Microsoft.AspNetCore.Server.Kestrel.BadRequest";
         if (ServiceContext.DiagnosticSource?.IsEnabled(badRequestEventName) == true)
         {
-            ServiceContext.DiagnosticSource.Write(badRequestEventName, this);
+            WriteDiagnosticEvent(ServiceContext.DiagnosticSource, badRequestEventName, this);
         }
 
         _keepAlive = false;
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern",
+        Justification = "The values being passed into Write are being consumed by the application already.")]
+    private static void WriteDiagnosticEvent(DiagnosticSource diagnosticSource, string name, HttpProtocol value)
+    {
+        diagnosticSource.Write(name, value);
     }
 
     public void ReportApplicationError(Exception? ex)

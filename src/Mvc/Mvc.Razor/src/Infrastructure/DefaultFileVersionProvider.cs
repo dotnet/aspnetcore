@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 /// <summary>
 /// Provides version hash for a specified file.
 /// </summary>
-internal class DefaultFileVersionProvider : IFileVersionProvider
+internal sealed class DefaultFileVersionProvider : IFileVersionProvider
 {
     private const string VersionKey = "v";
 
@@ -61,7 +61,7 @@ internal class DefaultFileVersionProvider : IFileVersionProvider
             return path;
         }
 
-        if (Cache.TryGetValue(path, out string value))
+        if (Cache.TryGetValue<string>(path, out var value) && value is not null)
         {
             return value;
         }
@@ -90,7 +90,7 @@ internal class DefaultFileVersionProvider : IFileVersionProvider
         }
 
         cacheEntryOptions.SetSize(value.Length * sizeof(char));
-        value = Cache.Set(path, value, cacheEntryOptions);
+        Cache.Set(path, value, cacheEntryOptions);
         return value;
     }
 

@@ -70,7 +70,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _hubOptions.MaximumParallelInvocationsPerClient;
-            disableImplicitFromServiceParameters = _hubOptions.DisableImplicitFromServiceParameters;
+            disableImplicitFromServiceParameters = _hubOptions.DisableImplicitFromServicesParameters;
 
             if (_hubOptions.HubFilters != null)
             {
@@ -82,7 +82,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
             _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _globalHubOptions.MaximumParallelInvocationsPerClient;
-            disableImplicitFromServiceParameters = _globalHubOptions.DisableImplicitFromServiceParameters;
+            disableImplicitFromServiceParameters = _globalHubOptions.DisableImplicitFromServicesParameters;
 
             if (_globalHubOptions.HubFilters != null)
             {
@@ -96,7 +96,8 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors,
             disableImplicitFromServiceParameters,
             new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
-            hubFilters);
+            hubFilters,
+            lifetimeManager);
     }
 
     /// <inheritdoc />
@@ -240,7 +241,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
         var protocol = connection.Protocol;
         connection.BeginClientTimeout();
 
-        var binder = new HubConnectionBinder<THub>(_dispatcher, connection);
+        var binder = new HubConnectionBinder<THub>(_dispatcher, _lifetimeManager, connection);
 
         while (true)
         {

@@ -117,7 +117,7 @@ public class WebSocketClient
         return Convert.ToBase64String(data);
     }
 
-    private class WebSocketFeature : IHttpWebSocketFeature
+    private sealed class WebSocketFeature : IHttpWebSocketFeature
     {
         private readonly HttpContext _httpContext;
 

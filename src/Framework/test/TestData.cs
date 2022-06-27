@@ -73,8 +73,10 @@ public static class TestData
                 "Microsoft.AspNetCore.Mvc.RazorPages",
                 "Microsoft.AspNetCore.Mvc.TagHelpers",
                 "Microsoft.AspNetCore.Mvc.ViewFeatures",
+                "Microsoft.AspNetCore.OutputCaching",
                 "Microsoft.AspNetCore.Razor",
                 "Microsoft.AspNetCore.Razor.Runtime",
+                "Microsoft.AspNetCore.RequestDecompression",
                 "Microsoft.AspNetCore.ResponseCaching",
                 "Microsoft.AspNetCore.ResponseCaching.Abstractions",
                 "Microsoft.AspNetCore.ResponseCompression",
@@ -208,8 +210,10 @@ public static class TestData
                 { "Microsoft.AspNetCore.Mvc.RazorPages", "7.0.0.0" },
                 { "Microsoft.AspNetCore.Mvc.TagHelpers", "7.0.0.0" },
                 { "Microsoft.AspNetCore.Mvc.ViewFeatures", "7.0.0.0" },
+                { "Microsoft.AspNetCore.OutputCaching", "7.0.0.0" },
                 { "Microsoft.AspNetCore.Razor", "7.0.0.0" },
                 { "Microsoft.AspNetCore.Razor.Runtime", "7.0.0.0" },
+                { "Microsoft.AspNetCore.RequestDecompression", "7.0.0.0" },
                 { "Microsoft.AspNetCore.ResponseCaching", "7.0.0.0" },
                 { "Microsoft.AspNetCore.ResponseCaching.Abstractions", "7.0.0.0" },
                 { "Microsoft.AspNetCore.ResponseCompression", "7.0.0.0" },
@@ -310,8 +314,10 @@ public static class TestData
 
     public static string GetAspNetCoreTargetingPackDependencies() => GetTestDataValue("AspNetCoreTargetingPackDependencies");
 
+    public static string GetPackagesFolder() => GetTestDataValue("PackagesFolder");
+
     public static bool VerifyAncmBinary() => string.Equals(GetTestDataValue("VerifyAncmBinary"), "true", StringComparison.OrdinalIgnoreCase);
 
-    public static string GetTestDataValue(string key)
+    private static string GetTestDataValue(string key)
          => typeof(TestData).Assembly.GetCustomAttributes<TestDataAttribute>().Single(d => d.Key == key).Value;
 }

@@ -31,7 +31,7 @@ public class WebSocketsTests
     [ConditionalFact]
     public async Task RequestWithBody_NotUpgradable()
     {
-        using var client = new HttpClient();
+        using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(200) };
         using var response = await client.PostAsync(_requestUri + "WebSocketNotUpgradable", new StringContent("Hello World"));
         response.EnsureSuccessStatusCode();
     }
@@ -39,7 +39,7 @@ public class WebSocketsTests
     [ConditionalFact]
     public async Task RequestWithoutBody_Upgradable()
     {
-        using var client = new HttpClient();
+        using var client = new HttpClient() { Timeout = TimeSpan.FromSeconds(200) };
         // POST with Content-Length: 0 counts as not having a body.
         using var response = await client.PostAsync(_requestUri + "WebSocketUpgradable", new StringContent(""));
         response.EnsureSuccessStatusCode();

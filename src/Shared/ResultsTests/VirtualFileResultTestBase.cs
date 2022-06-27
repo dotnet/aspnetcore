@@ -522,7 +522,7 @@ public abstract class VirtualFileResultTestBase
         return fileProvider.Object;
     }
 
-    private class TestSendFileFeature : IHttpResponseBodyFeature
+    private sealed class TestSendFileFeature : IHttpResponseBodyFeature
     {
         public string Name { get; set; }
         public long Offset { get; set; }

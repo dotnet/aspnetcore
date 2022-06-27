@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Diagnostics.RazorViews;
 /// <summary>
 /// Holds data to be displayed on the error page.
 /// </summary>
-internal class ErrorPageModel
+internal sealed class ErrorPageModel
 {
     /// <summary>
     /// Options for what output to display.

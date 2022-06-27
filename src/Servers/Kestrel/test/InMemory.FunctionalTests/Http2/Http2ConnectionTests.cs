@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Net.Security;
+using System.Reflection;
 using System.Security.Authentication;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -207,6 +209,73 @@ public class Http2ConnectionTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
 
+    [Fact]
+    public async Task RequestHeaderStringReuse_MultipleStreams_KnownHeaderClearedIfNotReused()
+    {
+        const BindingFlags privateFlags = BindingFlags.NonPublic | BindingFlags.Instance;
+
+        IEnumerable<KeyValuePair<string, string>> requestHeaders1 = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(HeaderNames.ContentType, "application/json")
+        };
+
+        // Note: No content-type
+        IEnumerable<KeyValuePair<string, string>> requestHeaders2 = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/hello"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80")
+        };
+
+        await InitializeConnectionAsync(_noopApplication);
+
+        await StartStreamAsync(1, requestHeaders1, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        // TriggerTick will trigger the stream to be returned to the pool so we can assert it
+        TriggerTick();
+
+        // Stream has been returned to the pool
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out var stream1));
+
+        // Hacky but required because header references is private.
+        var headerReferences1 = typeof(HttpRequestHeaders).GetField("_headers", privateFlags).GetValue(stream1.RequestHeaders);
+        var contentTypeValue1 = (StringValues)headerReferences1.GetType().GetField("_ContentType").GetValue(headerReferences1);
+
+        await StartStreamAsync(3, requestHeaders2, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 6,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 3);
+
+        // TriggerTick will trigger the stream to be returned to the pool so we can assert it
+        TriggerTick();
+
+        // Stream has been returned to the pool
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out var stream2));
+
+        // Hacky but required because header references is private.
+        var headerReferences2 = typeof(HttpRequestHeaders).GetField("_headers", privateFlags).GetValue(stream2.RequestHeaders);
+        var contentTypeValue2 = (StringValues)headerReferences2.GetType().GetField("_ContentType").GetValue(headerReferences2);
+
+        Assert.Equal("application/json", contentTypeValue1);
+        Assert.Equal(StringValues.Empty, contentTypeValue2);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+    }
+
     private class ResponseTrailersWrapper : IHeaderDictionary
     {
         readonly IHeaderDictionary _innerHeaders;
@@ -355,9 +424,6 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-        var output = (Http2OutputProducer)stream.Output;
-        await output._dataWriteProcessingTask.DefaultTimeout();
     }
 
     [Fact]
@@ -485,6 +551,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40626")]
     public async Task StreamPool_StreamIsInvalidState_DontReturnedToPool()
     {
         // Add (or don't add) stream to Http2Connection._completedStreams inline with SetResult().
@@ -503,12 +570,14 @@ public class Http2ConnectionTests : Http2TestBase
         var stream = _connection._streams[1];
         serverTcs.SetResult();
 
+        // Wait for the stream to be completed
+        await WaitForStreamAsync(stream.StreamId).DefaultTimeout();
+
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
 
         var output = (Http2OutputProducer)stream.Output;
         Assert.True(output._disposed);
-        await output._dataWriteProcessingTask.DefaultTimeout();
 
         // Stream is not returned to the pool
         Assert.Equal(0, _connection.StreamPool.Count);
@@ -641,7 +710,7 @@ public class Http2ConnectionTests : Http2TestBase
         var length = Http2PeerSettings.MinAllowedMaxFrameSize + 10;
         _serviceContext.ServerOptions.Limits.Http2.MaxFrameSize = length;
 
-        await InitializeConnectionAsync(_echoApplication, expectedSettingsCount: 4);
+        await InitializeConnectionAsync(_echoApplication, expectedSettingsCount: 5);
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
         await SendDataAsync(1, new byte[length], endStream: true);
@@ -1869,6 +1938,58 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    public async Task StreamWindow_BiggerThan_ConnectionWindow()
+    {
+        // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
+        _clientSettings.InitialWindowSize = 16384 * 5;
+
+        await InitializeConnectionAsync(async context =>
+        {
+            var data = new byte[16384 * 4];
+            data.AsSpan().Fill(1);
+            await context.Response.Body.WriteAsync(data);
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+            withStreamId: 1).DefaultTimeout();
+
+        for (int i = 0; i < 3; i++)
+        {
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)(Http2DataFrameFlags.NONE),
+                withStreamId: 1).DefaultTimeout();
+        }
+
+        // Now we've consumed the entire connection window, and there's one more frame to write
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 16383,
+            withFlags: (byte)(Http2DataFrameFlags.NONE),
+            withStreamId: 1).DefaultTimeout();
+
+        // Send more than enough bytes for the window update
+        await SendWindowUpdateAsync(0, 1);
+
+        // Expect the last frame
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 1,
+            withFlags: (byte)(Http2DataFrameFlags.NONE),
+            withStreamId: 1).DefaultTimeout();
+
+        // 0 length end of stream frame
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 0,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
     public async Task HEADERS_Received_Decoded()
     {
         await InitializeConnectionAsync(_readHeadersApplication);
@@ -2074,7 +2195,7 @@ public class Http2ConnectionTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.HeaderTableSize = 0;
 
-        await InitializeConnectionAsync(_noopApplication, expectedSettingsCount: 4);
+        await InitializeConnectionAsync(_noopApplication, expectedSettingsCount: 5);
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
@@ -2721,6 +2842,33 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    public async Task HEADERS_CookiesMergedIntoOne()
+    {
+        var headers = new[]
+        {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "a=0"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "b=1"),
+                new KeyValuePair<string, string>(HeaderNames.Cookie, "c=2"),
+            };
+
+        await InitializeConnectionAsync(_readHeadersApplication);
+
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, headers);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        Assert.Equal("a=0; b=1; c=2", _receivedHeaders[HeaderNames.Cookie]);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
     public async Task PRIORITY_Received_StreamIdZero_ConnectionError()
     {
         await InitializeConnectionAsync(_noopApplication);
@@ -3212,13 +3360,13 @@ public class Http2ConnectionTests : Http2TestBase
         await SendSettingsAsync();
 
         var frame = await ExpectAsync(Http2FrameType.SETTINGS,
-            withLength: Http2FrameReader.SettingSize * 3,
+            withLength: Http2FrameReader.SettingSize * 4,
             withFlags: 0,
             withStreamId: 0);
 
         // Only non protocol defaults are sent
         var settings = Http2FrameReader.ReadSettings(frame.PayloadSequence);
-        Assert.Equal(3, settings.Count);
+        Assert.Equal(4, settings.Count);
 
         var setting = settings[0];
         Assert.Equal(Http2SettingsParameter.SETTINGS_MAX_CONCURRENT_STREAMS, setting.Parameter);
@@ -3231,6 +3379,10 @@ public class Http2ConnectionTests : Http2TestBase
         setting = settings[2];
         Assert.Equal(Http2SettingsParameter.SETTINGS_MAX_HEADER_LIST_SIZE, setting.Parameter);
         Assert.Equal(32 * 1024u, setting.Value);
+
+        setting = settings[3];
+        Assert.Equal(Http2SettingsParameter.SETTINGS_ENABLE_CONNECT_PROTOCOL, setting.Parameter);
+        Assert.Equal(1u, setting.Value);
 
         var update = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
             withLength: 4,
@@ -3263,13 +3415,13 @@ public class Http2ConnectionTests : Http2TestBase
         await SendSettingsAsync();
 
         var frame = await ExpectAsync(Http2FrameType.SETTINGS,
-            withLength: Http2FrameReader.SettingSize * 4,
+            withLength: Http2FrameReader.SettingSize * 5,
             withFlags: 0,
             withStreamId: 0);
 
         // Only non protocol defaults are sent
         var settings = Http2FrameReader.ReadSettings(frame.PayloadSequence);
-        Assert.Equal(4, settings.Count);
+        Assert.Equal(5, settings.Count);
 
         var setting = settings[0];
         Assert.Equal(Http2SettingsParameter.SETTINGS_HEADER_TABLE_SIZE, setting.Parameter);
@@ -3286,6 +3438,10 @@ public class Http2ConnectionTests : Http2TestBase
         setting = settings[3];
         Assert.Equal(Http2SettingsParameter.SETTINGS_MAX_HEADER_LIST_SIZE, setting.Parameter);
         Assert.Equal(4 * 1024u, setting.Value);
+
+        setting = settings[4];
+        Assert.Equal(Http2SettingsParameter.SETTINGS_ENABLE_CONNECT_PROTOCOL, setting.Parameter);
+        Assert.Equal(1u, setting.Value);
 
         var update = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
             withLength: 4,
@@ -3459,7 +3615,7 @@ public class Http2ConnectionTests : Http2TestBase
             context.Response.Headers["A"] = new string('a', headerValueLength);
             context.Response.Headers["B"] = new string('b', headerValueLength);
             return context.Response.Body.WriteAsync(new byte[payloadLength], 0, payloadLength);
-        }, expectedSettingsCount: 4);
+        }, expectedSettingsCount: 5);
 
         // Update client settings
         _clientSettings.MaxFrameSize = (uint)payloadLength;
@@ -3508,7 +3664,7 @@ public class Http2ConnectionTests : Http2TestBase
         await InitializeConnectionAsync(context =>
         {
             return context.Response.Body.WriteAsync(new byte[clientMaxFrame], 0, clientMaxFrame);
-        }, expectedSettingsCount: 4);
+        }, expectedSettingsCount: 5);
 
         // Start request
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
@@ -3567,7 +3723,7 @@ public class Http2ConnectionTests : Http2TestBase
     {
         _serviceContext.ServerOptions.Limits.Http2.HeaderTableSize = 40000;
 
-        await InitializeConnectionAsync(_noopApplication, expectedSettingsCount: 4);
+        await InitializeConnectionAsync(_noopApplication, expectedSettingsCount: 5);
 
         // Update client settings
         _clientSettings.HeaderTableSize = 65536; // Chrome's default, larger than the 4kb spec default
@@ -3696,7 +3852,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39520")]
     public async Task GOAWAY_Received_SetsConnectionStateToClosingAndWaitForAllStreamsToComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -3736,6 +3891,7 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
 
+        TriggerTick();
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         await _closedStateReached.Task.DefaultTimeout();
     }
@@ -4100,7 +4256,7 @@ public class Http2ConnectionTests : Http2TestBase
                 for (var i = 0; i < expectedFullFrameCountBeforeBackpressure; i++)
                 {
                     await expectingDataSem.WaitAsync();
-                    Assert.True(context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length).IsCompleted);
+                    await context.Response.Body.WriteAsync(_maxData, 0, _maxData.Length);
                 }
 
                 await expectingDataSem.WaitAsync();
@@ -4627,7 +4783,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39492")]
     public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -4653,12 +4808,13 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 1);
 
+        TriggerTick();
         await _closedStateReached.Task.DefaultTimeout();
         VerifyGoAway(await ReceiveFrameAsync(), 1, Http2ErrorCode.NO_ERROR);
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/39479")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41172")]
     public async Task AcceptNewStreamsDuringClosingConnection()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -4673,7 +4829,7 @@ public class Http2ConnectionTests : Http2TestBase
         await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
         await SendDataAsync(1, _helloBytes, true);
-        var f = await ExpectAsync(Http2FrameType.HEADERS,
+        await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 32,
             withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
             withStreamId: 1);
@@ -4699,6 +4855,8 @@ public class Http2ConnectionTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,
             withStreamId: 3);
 
+        TriggerTick();
+
         await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
 
@@ -4723,14 +4881,14 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    public void IOExceptionDuringFrameProcessingIsNotLoggedHigherThanDebug()
+    public async Task IOExceptionDuringFrameProcessingIsNotLoggedHigherThanDebug()
     {
         CreateConnection();
 
         var ioException = new IOException();
         _pair.Application.Output.Complete(ioException);
 
-        Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
+        await _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).DefaultTimeout();
 
         Assert.All(LogMessages, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
 
@@ -4741,14 +4899,14 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    public void UnexpectedExceptionDuringFrameProcessingLoggedAWarning()
+    public async Task UnexpectedExceptionDuringFrameProcessingLoggedAWarning()
     {
         CreateConnection();
 
         var exception = new Exception();
         _pair.Application.Output.Complete(exception);
 
-        Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
+        await _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).DefaultTimeout();
 
         var logMessage = LogMessages.Single(m => m.LogLevel >= LogLevel.Information);
 
@@ -4941,7 +5099,7 @@ public class Http2ConnectionTests : Http2TestBase
         await StartStreamAsync(1, headers, endStream: false);
 
         await ExpectAsync(Http2FrameType.SETTINGS,
-            withLength: 3 * Http2FrameReader.SettingSize,
+            withLength: 4 * Http2FrameReader.SettingSize,
             withFlags: 0,
             withStreamId: 0);
 
@@ -5029,7 +5187,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(7, new byte[100], endStream: false);
 
         await ExpectAsync(Http2FrameType.SETTINGS,
-            withLength: 3 * Http2FrameReader.SettingSize,
+            withLength: 4 * Http2FrameReader.SettingSize,
             withFlags: 0,
             withStreamId: 0);
 
@@ -5224,7 +5382,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendAsync(Http2Connection.ClientPreface);
 
         await ExpectAsync(Http2FrameType.SETTINGS,
-            withLength: 3 * Http2FrameReader.SettingSize,
+            withLength: 4 * Http2FrameReader.SettingSize,
             withFlags: 0,
             withStreamId: 0);
 

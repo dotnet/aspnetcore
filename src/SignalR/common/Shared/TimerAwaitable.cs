@@ -9,7 +9,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Internal;
 
-internal class TimerAwaitable : IDisposable, ICriticalNotifyCompletion
+internal sealed class TimerAwaitable : IDisposable, ICriticalNotifyCompletion
 {
     private Timer? _timer;
     private Action? _callback;

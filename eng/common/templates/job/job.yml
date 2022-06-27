@@ -31,6 +31,10 @@ parameters:
   name: ''
   preSteps: []
   runAsPublic: false
+# Sbom related params
+  enableSbom: true
+  PackageVersion: 7.0.0
+  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
 
 jobs:
 - job: ${{ parameters.name }}
@@ -248,3 +252,10 @@ jobs:
         ArtifactName: AssetManifests
       continueOnError: ${{ parameters.continueOnError }}
       condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
+
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
+    - template: /eng/common/templates/steps/generate-sbom.yml
+      parameters:
+        PackageVersion: ${{ parameters.packageVersion}}
+        BuildDropPath: ${{ parameters.buildDropPath }}
+

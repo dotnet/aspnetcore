@@ -121,7 +121,7 @@ public sealed class ManagedAuthenticatedEncryptorFactory : IAuthenticatedEncrypt
             Func<T> Creator { get; }
         }
 
-        private class AlgorithmActivatorCore<T> : IActivator<T> where T : new()
+        private sealed class AlgorithmActivatorCore<T> : IActivator<T> where T : new()
         {
             public Func<T> Creator { get; } = Activator.CreateInstance<T>;
         }

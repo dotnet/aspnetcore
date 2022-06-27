@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { AbortError } from "../src/Errors";
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
 import { HubMessage, IHubProtocol, MessageType } from "../src/IHubProtocol";
@@ -391,7 +392,10 @@ describe("HubConnection", () => {
                     await connection.stop();
                     try {
                         await startPromise;
-                    } catch { }
+                    } catch (e) {
+                        expect(e).toBeInstanceOf(AbortError);
+                        expect((e as AbortError).message).toBe("The underlying connection was closed before the hub handshake could complete.");
+                    }
                 } finally {
                     await hubConnection.stop();
                 }
@@ -646,7 +650,8 @@ describe("HubConnection", () => {
                         type: MessageType.Invocation,
                     });
 
-                    expect(warnings).toEqual(["No client method with the name 'message' found."]);
+                    expect(warnings).toEqual(["No client method with the name 'message' found.",
+                        "No result given for 'message' method and invocation ID '0'."]);
                 } finally {
                     await hubConnection.stop();
                 }
@@ -661,8 +666,12 @@ describe("HubConnection", () => {
                     await hubConnection.start();
 
                     let count = 0;
+                    const p = new PromiseSource<void>();
                     const handler = () => { count++; };
-                    const secondHandler = () => { count++; };
+                    const secondHandler = () => {
+                        count++;
+                        p.resolve();
+                    };
                     hubConnection.on("inc", handler);
                     hubConnection.on("inc", secondHandler);
 
@@ -673,6 +682,7 @@ describe("HubConnection", () => {
                         type: MessageType.Invocation,
                     });
 
+                    await p;
                     hubConnection.off("inc");
 
                     connection.receive({
@@ -697,8 +707,12 @@ describe("HubConnection", () => {
                     await hubConnection.start();
 
                     let count = 0;
+                    let p = new PromiseSource<void>();
                     const handler = () => { count++; };
-                    const secondHandler = () => { count++; };
+                    const secondHandler = () => {
+                        count++;
+                        p.resolve();
+                    };
                     hubConnection.on("inc", handler);
                     hubConnection.on("inc", secondHandler);
 
@@ -709,6 +723,8 @@ describe("HubConnection", () => {
                         type: MessageType.Invocation,
                     });
 
+                    await p;
+                    p = new PromiseSource<void>();
                     hubConnection.off("inc", handler);
 
                     connection.receive({
@@ -717,6 +733,8 @@ describe("HubConnection", () => {
                         target: "inc",
                         type: MessageType.Invocation,
                     });
+
+                    await p;
 
                     expect(count).toBe(3);
                 } finally {
@@ -751,7 +769,7 @@ describe("HubConnection", () => {
             });
         });
 
-        it("callback invoked when servers invokes a method on the client", async () => {
+        it("callback invoked when server invokes a method on the client", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
@@ -759,7 +777,11 @@ describe("HubConnection", () => {
                     await hubConnection.start();
 
                     let value = "";
-                    hubConnection.on("message", (v) => value = v);
+                    const p = new PromiseSource<void>();
+                    hubConnection.on("message", (v) => {
+                        value = v;
+                        p.resolve();
+                    });
 
                     connection.receive({
                         arguments: ["test"],
@@ -768,6 +790,7 @@ describe("HubConnection", () => {
                         type: MessageType.Invocation,
                     });
 
+                    await p;
                     expect(value).toBe("test");
                 } finally {
                     await hubConnection.stop();
@@ -800,6 +823,26 @@ describe("HubConnection", () => {
                 }
             },
             "Server returned handshake error: Error!");
+        });
+
+        it("connection stopped before handshake completes",async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection(false);
+                const hubConnection = createHubConnection(connection, logger);
+
+                let startCompleted = false;
+                const startPromise = hubConnection.start().then(() => startCompleted = true);
+                expect(startCompleted).toBe(false);
+
+                await hubConnection.stop()
+
+                try {
+                    await startPromise
+                } catch (e) {
+                    expect(e).toBeInstanceOf(AbortError);
+                    expect((e as AbortError).message).toBe("The connection was stopped before the hub handshake could complete.");
+                }
+            }, "The connection was stopped before the hub handshake could complete.");
         });
 
         it("stop on close message", async () => {
@@ -866,8 +909,12 @@ describe("HubConnection", () => {
 
                     let numInvocations1 = 0;
                     let numInvocations2 = 0;
+                    const p = new PromiseSource<void>();
                     hubConnection.on("message", () => numInvocations1++);
-                    hubConnection.on("message", () => numInvocations2++);
+                    hubConnection.on("message", () => {
+                        numInvocations2++;
+                        p.resolve();
+                    });
 
                     connection.receive({
                         arguments: [],
@@ -876,6 +923,7 @@ describe("HubConnection", () => {
                         type: MessageType.Invocation,
                     });
 
+                    await p;
                     expect(numInvocations1).toBe(1);
                     expect(numInvocations2).toBe(1);
                 } finally {
@@ -933,7 +981,11 @@ describe("HubConnection", () => {
                         hubConnection.off(eventToTrack, callback1);
                         numInvocations1++;
                     }
-                    const callback2 = () => numInvocations2++;
+                    let p = new PromiseSource<void>();
+                    const callback2 = () => {
+                        numInvocations2++;
+                        p.resolve();
+                    };
 
                     hubConnection.on(eventToTrack, callback1);
                     hubConnection.on(eventToTrack, callback2);
@@ -945,6 +997,8 @@ describe("HubConnection", () => {
                         type: MessageType.Invocation,
                     });
 
+                    await p;
+                    p = new PromiseSource<void>();
                     expect(numInvocations1).toBe(1);
                     expect(numInvocations2).toBe(1);
 
@@ -955,6 +1009,7 @@ describe("HubConnection", () => {
                         type: MessageType.Invocation,
                     });
 
+                    await p;
                     expect(numInvocations1).toBe(1);
                     expect(numInvocations2).toBe(2);
                 }
@@ -1011,7 +1066,8 @@ describe("HubConnection", () => {
                         type: MessageType.Invocation,
                     });
 
-                    expect(warnings).toEqual(["No client method with the name 'message' found."]);
+                    expect(warnings).toEqual(["No client method with the name 'message' found.",
+                        "No result given for 'message' method and invocation ID '0'."]);
 
                     hubConnection.off(null!, undefined!);
                     hubConnection.off(undefined!, null!);
@@ -1023,6 +1079,318 @@ describe("HubConnection", () => {
                     await hubConnection.stop();
                 }
             });
+        });
+
+        it("can return result from callback", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.on("message", () => 10);
+
+                    connection.receive({
+                        arguments: [],
+                        invocationId: "1",
+                        nonblocking: true,
+                        target: "message",
+                        type: MessageType.Invocation,
+                    });
+
+                    // nothing to wait on and the code is all synchronous, but because of how JS and async works we need to trigger
+                    // async here to guarantee the sent message is written
+                    await delayUntil(1);
+
+                    expect(connection.parsedSentData.length).toEqual(2);
+                    expect(connection.parsedSentData[1].type).toEqual(3);
+                    expect(connection.parsedSentData[1].result).toEqual(10);
+                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("can return null result from callback", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.on("message", () => null);
+
+                    connection.receive({
+                        arguments: [],
+                        invocationId: "1",
+                        nonblocking: true,
+                        target: "message",
+                        type: MessageType.Invocation,
+                    });
+
+                    // nothing to wait on and the code is all synchronous, but because of how JS and async works we need to trigger
+                    // async here to guarantee the sent message is written
+                    await delayUntil(1);
+
+                    expect(connection.parsedSentData.length).toEqual(2);
+                    expect(connection.parsedSentData[1].type).toEqual(3);
+                    expect(connection.parsedSentData[1].result).toBeNull();
+                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("can return task result from callback", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    const p = new PromiseSource<number>();
+                    hubConnection.on("message", () => p);
+
+                    connection.receive({
+                        arguments: [],
+                        invocationId: "1",
+                        nonblocking: true,
+                        target: "message",
+                        type: MessageType.Invocation,
+                    });
+                    p.resolve(13);
+
+                    // nothing to wait on and the code is all synchronous, but because of how JS and async works we need to trigger
+                    // async here to guarantee the sent message is written
+                    await delayUntil(1);
+
+                    expect(connection.parsedSentData.length).toEqual(2);
+                    expect(connection.parsedSentData[1].type).toEqual(3);
+                    expect(connection.parsedSentData[1].result).toEqual(13);
+                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("can throw from callback when expecting result", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.on("message", () => { throw new Error("from callback"); });
+
+                    connection.receive({
+                        arguments: [],
+                        invocationId: "1",
+                        nonblocking: true,
+                        target: "message",
+                        type: MessageType.Invocation,
+                    });
+
+                    // nothing to wait on and the code is all synchronous, but because of how JS and async works we need to trigger
+                    // async here to guarantee the sent message is written
+                    await delayUntil(1);
+
+                    expect(connection.parsedSentData.length).toEqual(2);
+                    expect(connection.parsedSentData[1].type).toEqual(3);
+                    expect(connection.parsedSentData[1].error).toEqual("Error: from callback");
+                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, "A callback for the method 'message' threw error 'Error: from callback'.");
+        });
+
+        it("multiple results sends error", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.on("message", () => 3);
+                    hubConnection.on("message", () => 4);
+
+                    connection.receive({
+                        arguments: [],
+                        invocationId: "1",
+                        nonblocking: true,
+                        target: "message",
+                        type: MessageType.Invocation,
+                    });
+
+                    // nothing to wait on and the code is all synchronous, but because of how JS and async works we need to trigger
+                    // async here to guarantee the sent message is written
+                    await delayUntil(1);
+
+                    expect(connection.parsedSentData.length).toEqual(2);
+                    expect(connection.parsedSentData[1].type).toEqual(3);
+                    expect(connection.parsedSentData[1].error).toEqual('Client provided multiple results.');
+                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, "Multiple results provided for 'message'. Sending error to server.");
+        });
+
+        it("multiple result handlers error from last one sent", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.on("message", () => 3);
+                    hubConnection.on("message", () => { throw new Error("from callback"); });
+
+                    connection.receive({
+                        arguments: [],
+                        invocationId: "1",
+                        nonblocking: true,
+                        target: "message",
+                        type: MessageType.Invocation,
+                    });
+
+                    // nothing to wait on and the code is all synchronous, but because of how JS and async works we need to trigger
+                    // async here to guarantee the sent message is written
+                    await delayUntil(1);
+
+                    expect(connection.parsedSentData.length).toEqual(2);
+                    expect(connection.parsedSentData[1].type).toEqual(3);
+                    expect(connection.parsedSentData[1].error).toEqual("Error: from callback");
+                    expect(connection.parsedSentData[1].result).toBeUndefined();
+                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, "A callback for the method 'message' threw error 'Error: from callback'.");
+        });
+
+        it("multiple result handlers ignore error if last one has result", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.on("message", () => { throw new Error("from callback"); });
+                    hubConnection.on("message", () => 3);
+
+                    connection.receive({
+                        arguments: [],
+                        invocationId: "1",
+                        nonblocking: true,
+                        target: "message",
+                        type: MessageType.Invocation,
+                    });
+
+                    // nothing to wait on and the code is all synchronous, but because of how JS and async works we need to trigger
+                    // async here to guarantee the sent message is written
+                    await delayUntil(1);
+
+                    expect(connection.parsedSentData.length).toEqual(2);
+                    expect(connection.parsedSentData[1].type).toEqual(3);
+                    expect(connection.parsedSentData[1].result).toEqual(3);
+                    expect(connection.parsedSentData[1].error).toBeUndefined();
+                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, "A callback for the method 'message' threw error 'Error: from callback'.");
+        });
+
+        it("sends completion error if return result expected but not returned", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.on("message", () => {});
+
+                    connection.receive({
+                        arguments: [],
+                        invocationId: "1",
+                        nonblocking: true,
+                        target: "message",
+                        type: MessageType.Invocation,
+                    });
+
+                    // nothing to wait on and the code is all synchronous, but because of how JS and async works we need to trigger
+                    // async here to guarantee the sent message is written
+                    await delayUntil(1);
+
+                    expect(connection.parsedSentData.length).toEqual(2);
+                    expect(connection.parsedSentData[1].type).toEqual(3);
+                    expect(connection.parsedSentData[1].error).toEqual("Client didn't provide a result.");
+                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("sends completion error if return result expected but no handlers", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    connection.receive({
+                        arguments: [],
+                        invocationId: "1",
+                        nonblocking: true,
+                        target: "message",
+                        type: MessageType.Invocation,
+                    });
+
+                    // nothing to wait on and the code is all synchronous, but because of how JS and async works we need to trigger
+                    // async here to guarantee the sent message is written
+                    await delayUntil(1);
+
+                    expect(connection.parsedSentData.length).toEqual(2);
+                    expect(connection.parsedSentData[1].type).toEqual(3);
+                    expect(connection.parsedSentData[1].error).toEqual("Client didn't provide a result.");
+                    expect(connection.parsedSentData[1].invocationId).toEqual("1");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("logs error if return result not expected", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    hubConnection.on("message", () => 13);
+
+                    connection.receive({
+                        arguments: [],
+                        invocationId: undefined,
+                        nonblocking: true,
+                        target: "message",
+                        type: MessageType.Invocation,
+                    });
+
+                    // nothing to wait on and the code is all synchronous, but because of how JS and async works we need to trigger
+                    // async here to guarantee the sent message is written
+                    await delayUntil(1);
+
+                    expect(connection.parsedSentData.length).toEqual(1);
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, "Result given for 'message' method but server is not expecting a result.");
         });
     });
 

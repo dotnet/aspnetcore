@@ -39,7 +39,7 @@ public class IdentityBuilder
     /// <value>
     /// The <see cref="Type"/> used for users.
     /// </value>
-    public Type UserType { get; private set; }
+    public Type UserType { get; }
 
     /// <summary>
     /// Gets the <see cref="Type"/> used for roles.
@@ -47,7 +47,7 @@ public class IdentityBuilder
     /// <value>
     /// The <see cref="Type"/> used for roles.
     /// </value>
-    public Type RoleType { get; private set; }
+    public Type? RoleType { get; private set; }
 
     /// <summary>
     /// Gets the <see cref="IServiceCollection"/> services are attached to.
@@ -55,7 +55,7 @@ public class IdentityBuilder
     /// <value>
     /// The <see cref="IServiceCollection"/> services are attached to.
     /// </value>
-    public IServiceCollection Services { get; private set; }
+    public IServiceCollection Services { get; }
 
     private IdentityBuilder AddScoped(Type serviceType, Type concreteType)
     {

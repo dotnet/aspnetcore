@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal partial class ServerSentEventsTransport : ITransport
+internal sealed partial class ServerSentEventsTransport : ITransport
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;

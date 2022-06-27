@@ -356,7 +356,7 @@ public class Http2Tests
     {
         var handler = new HttpClientHandler();
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        using HttpClient client = new HttpClient(handler);
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(200) };
         client.DefaultRequestVersion = HttpVersion.Version11;
         var response = await client.GetStringAsync(Fixture.Client.BaseAddress + "Reset_Http1_NotSupported");
         Assert.Equal("Hello World", response);
@@ -370,7 +370,7 @@ public class Http2Tests
     {
         var handler = new HttpClientHandler();
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        using HttpClient client = new HttpClient(handler);
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(200) };
         client.DefaultRequestVersion = HttpVersion.Version20;
         var response = await client.GetStringAsync(Fixture.Client.BaseAddress + "Reset_PriorOSVersions_NotSupported");
         Assert.Equal("Hello World", response);
@@ -390,7 +390,7 @@ public class Http2Tests
         var handler = new HttpClientHandler();
         handler.MaxResponseHeadersLength = 128;
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        using var client = new HttpClient(handler);
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(200) };
         client.DefaultRequestVersion = http2 ? HttpVersion.Version20 : HttpVersion.Version11;
         return await client.GetAsync(uri);
     }

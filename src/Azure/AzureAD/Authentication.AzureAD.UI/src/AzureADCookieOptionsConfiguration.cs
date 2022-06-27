@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Authentication.AzureAD.UI;
 
 [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
-internal class AzureADCookieOptionsConfiguration : IConfigureNamedOptions<CookieAuthenticationOptions>
+internal sealed class AzureADCookieOptionsConfiguration : IConfigureNamedOptions<CookieAuthenticationOptions>
 {
     private readonly IOptions<AzureADSchemeOptions> _schemeOptions;
     private readonly IOptionsMonitor<AzureADOptions> _AzureADOptions;

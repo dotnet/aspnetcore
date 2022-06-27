@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing;
 
-internal class DefaultEndpointConventionBuilder : IEndpointConventionBuilder
+internal sealed class DefaultEndpointConventionBuilder : IEndpointConventionBuilder
 {
     internal EndpointBuilder EndpointBuilder { get; }
 
@@ -24,7 +24,7 @@ internal class DefaultEndpointConventionBuilder : IEndpointConventionBuilder
 
         if (conventions is null)
         {
-            throw new InvalidOperationException("Conventions cannot be added after building the endpoint");
+            throw new InvalidOperationException(Resources.RouteEndpointDataSource_ConventionsCannotBeModifiedAfterBuild);
         }
 
         conventions.Add(convention);

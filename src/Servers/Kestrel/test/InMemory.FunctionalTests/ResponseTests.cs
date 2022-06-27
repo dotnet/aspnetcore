@@ -205,6 +205,70 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task BodyWriterWriteAsync_OnAbortedRequest_ReturnsResultWithIsCompletedTrue()
+    {
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var server = new TestServer(async context =>
+        {
+            try
+            {
+                context.Abort();
+                var payload = Encoding.ASCII.GetBytes("hello world");
+                var result = await context.Response.BodyWriter.WriteAsync(payload);
+                Assert.True(result.IsCompleted);
+
+                appTcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                appTcs.SetException(ex);
+            }
+        });
+        using var connection = server.CreateConnection();
+        await connection.Send(
+            "GET / HTTP/1.1",
+            "Host:",
+            "",
+            "");
+
+        await appTcs.Task;
+    }
+
+    [Fact]
+    public async Task BodyWriterWriteAsync_OnCanceledPendingFlush_ReturnsResultWithIsCanceled()
+    {
+        await using var server = new TestServer(async context =>
+        {
+            context.Response.BodyWriter.CancelPendingFlush();
+            var payload = Encoding.ASCII.GetBytes("hello,");
+            var cancelledResult = await context.Response.BodyWriter.WriteAsync(payload);
+            Assert.True(cancelledResult.IsCanceled);
+
+            var secondPayload = Encoding.ASCII.GetBytes(" world");
+            var goodResult = await context.Response.BodyWriter.WriteAsync(secondPayload);
+            Assert.False(goodResult.IsCanceled);
+        });
+        using var connection = server.CreateConnection();
+        await connection.Send(
+            "GET / HTTP/1.1",
+            "Host:",
+            "",
+            "");
+
+        await connection.Receive($"HTTP/1.1 200 OK",
+            $"Date: {server.Context.DateHeaderValue}",
+            "Transfer-Encoding: chunked",
+            "",
+            "6",
+            "hello,"
+            );
+        await connection.Receive("",
+            "6",
+            " world"
+            );
+    }
+
+    [Fact]
     public Task ResponseStatusCodeSetBeforeHttpContextDisposeAppException()
     {
         return ResponseStatusCodeSetBeforeHttpContextDispose(

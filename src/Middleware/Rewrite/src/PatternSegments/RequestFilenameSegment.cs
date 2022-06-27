@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
-internal class RequestFileNameSegment : PatternSegment
+internal sealed class RequestFileNameSegment : PatternSegment
 {
     public override string? Evaluate(RewriteContext context, BackReferenceCollection? ruleBackReferences, BackReferenceCollection? conditionBackReferences)
     {

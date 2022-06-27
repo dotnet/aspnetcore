@@ -51,6 +51,24 @@ public class RegistryPolicyResolverTests
 
     [ConditionalFact]
     [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
+    public void ResolvePolicy_MissingKeyEscrowSinks()
+    {
+        // Arrange
+        var typeName = typeof(MyKeyEscrowSink1).AssemblyQualifiedName.Replace("MyKeyEscrowSink1", "MyKeyEscrowSinkDontExist");
+        var registryEntries = new Dictionary<string, object>()
+        {
+            ["KeyEscrowSinks"] = typeName
+        };
+
+        // Act
+        var ex = ExceptionAssert.Throws<InvalidOperationException>(() => RunTestWithRegValues(registryEntries));
+
+        // Assert
+        Assert.Equal($"Unable to load type '{typeName}'. If the app is published with trimming then this type may have been trimmed. Ensure the type's assembly is excluded from trimming.", ex.Message);
+    }
+
+    [ConditionalFact]
+    [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
     public void ResolvePolicy_DefaultKeyLifetime()
     {
         // Arrange

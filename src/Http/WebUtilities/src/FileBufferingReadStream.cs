@@ -313,7 +313,8 @@ public class FileBufferingReadStream : Stream
         {
             _buffer.Write(buffer.Slice(0, read));
         }
-        else
+        // Allow zero-byte reads
+        else if (buffer.Length > 0)
         {
             _completelyBuffered = true;
         }
@@ -388,7 +389,8 @@ public class FileBufferingReadStream : Stream
         {
             await _buffer.WriteAsync(buffer.Slice(0, read), cancellationToken);
         }
-        else
+        // Allow zero-byte reads
+        else if (buffer.Length > 0)
         {
             _completelyBuffered = true;
         }

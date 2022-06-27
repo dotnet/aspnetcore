@@ -236,6 +236,7 @@ if [ "$build_all" = true ]; then
 fi
 
 if [ ! -z "$build_projects" ]; then
+    [[ "$build_projects" == /* ]] || build_projects="$DIR/$build_projects"
     msbuild_args[${#msbuild_args[*]}]="-p:ProjectToBuild=$build_projects"
 elif [ "$build_all" != true ] && [ -z "$build_managed$build_nodejs$build_java$build_native$build_installers" ]; then
     # This goal of this is to pick a sensible default for `build.sh` with zero arguments.

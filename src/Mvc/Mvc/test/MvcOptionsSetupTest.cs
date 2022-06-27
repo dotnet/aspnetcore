@@ -52,6 +52,7 @@ public class MvcOptionsSetupTest
             binder => Assert.IsType<FloatingPointTypeModelBinderProvider>(binder),
             binder => Assert.IsType<EnumTypeModelBinderProvider>(binder),
             binder => Assert.IsType<DateTimeModelBinderProvider>(binder),
+            binder => Assert.IsType<TryParseModelBinderProvider>(binder),
             binder => Assert.IsType<SimpleTypeModelBinderProvider>(binder),
             binder => Assert.IsType<CancellationTokenModelBinderProvider>(binder),
             binder => Assert.IsType<ByteArrayModelBinderProvider>(binder),

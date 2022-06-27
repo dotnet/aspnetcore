@@ -638,6 +638,7 @@ public class HttpsTests : LoggedTest
         var loggerProvider = new HandshakeErrorLoggerProvider();
         LoggerFactory.AddProvider(loggerProvider);
 
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
         await using (var server = new TestServer(context => Task.CompletedTask,
             new TestServiceContext(LoggerFactory),
             listenOptions =>
@@ -658,6 +659,7 @@ public class HttpsTests : LoggedTest
                         checkCertificateRevocation: false));
             }
         }
+#pragma warning restore SYSLIB0039
 
         await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
         Assert.Equal(1, loggerProvider.FilterLogger.LastEventId);
