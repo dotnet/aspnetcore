@@ -504,7 +504,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 // if it is a webtransport stream we throw away the headers so we can 
                 if (persist || value == (long)Http3StreamType.WebTransportBidirectional || value == (long)Http3StreamType.WebTransportUnidirectional)
                 {
-                    Input.AdvanceTo(examined);
+                    Input.AdvanceTo(consumed, examined);
                 }
 
                 return value;
