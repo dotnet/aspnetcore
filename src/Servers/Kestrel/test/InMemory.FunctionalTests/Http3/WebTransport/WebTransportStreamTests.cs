@@ -25,7 +25,7 @@ public class WebTransportStreamTests : Http3TestBase
     [InlineData(WebTransportStreamType.Bidirectional, true, true)]
     [InlineData(WebTransportStreamType.Input, true, false)]
     [InlineData(WebTransportStreamType.Output, false, true)]
-    public async Task WebTransportStream_StreamTypesAreDefinedCorrectly(WebTransportStreamType type, bool canRead, bool canWrite)
+    private async Task WebTransportStream_StreamTypesAreDefinedCorrectly(WebTransportStreamType type, bool canRead, bool canWrite)
     {
         var stream = await WebTransportTestUtilities.CreateStream(type);
 
@@ -40,7 +40,7 @@ public class WebTransportStreamTests : Http3TestBase
     }
 
     [Fact]
-    public async Task WebTransportStream_WritingFlushingReadingWorks()
+    private async Task WebTransportStream_WritingFlushingReadingWorks()
     {
         var memory = new Memory<byte>(new byte[5]);
 
