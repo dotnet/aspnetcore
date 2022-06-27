@@ -44,8 +44,8 @@ public class WebTransportSessionTests : Http3TestBase
         var session = await WebTransportTestUtilities.GenerateSession(Http3Api);
 
         // pretend that we received 2 new stream requests from a client
-        session.AddStream(await WebTransportTestUtilities.CreateStream(WebTransportStreamType.Bidirectional));
-        session.AddStream(await WebTransportTestUtilities.CreateStream(WebTransportStreamType.Input));
+        session.AddStream(WebTransportTestUtilities.CreateStream(WebTransportStreamType.Bidirectional));
+        session.AddStream(WebTransportTestUtilities.CreateStream(WebTransportStreamType.Input));
 
         //// verify that we accepted a bidirectional stream
         var stream = await session.AcceptStreamAsync(CancellationToken.None);
@@ -69,7 +69,7 @@ public class WebTransportSessionTests : Http3TestBase
         await Assert.ThrowsAsync<Exception>(async () => await session.AcceptStreamAsync(CancellationToken.None));
         await Assert.ThrowsAsync<Exception>(async () => await session.OpenUnidirectionalStreamAsync(CancellationToken.None));
 
-        var stream = await WebTransportTestUtilities.CreateStream(WebTransportStreamType.Bidirectional);
+        var stream = WebTransportTestUtilities.CreateStream(WebTransportStreamType.Bidirectional);
         Assert.Throws<Exception>(() => session.AddStream(stream));
     }
 }

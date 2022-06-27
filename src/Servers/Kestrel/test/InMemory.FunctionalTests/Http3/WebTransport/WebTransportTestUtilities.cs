@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
@@ -77,7 +74,7 @@ internal class WebTransportTestUtilities
         return (WebTransportSession)await appCompletedTcs.Task;
     }
 
-    public static async ValueTask<WebTransportStream> CreateStream(WebTransportStreamType type, Memory<byte>? memory = null)
+    public static WebTransportStream CreateStream(WebTransportStreamType type, Memory<byte>? memory = null)
     {
         var features = new FeatureCollection();
         features[typeof(IStreamIdFeature)] = new StreamId(streamCounter++);
@@ -150,7 +147,7 @@ internal class WebTransportTestUtilities
             return new ValueTask<FlushResult>();
         }
 
-        public Task CompleteAsync(Exception? exception)
+        public Task CompleteAsync(Exception exception)
         {
             // no-op
             return Task.CompletedTask;
