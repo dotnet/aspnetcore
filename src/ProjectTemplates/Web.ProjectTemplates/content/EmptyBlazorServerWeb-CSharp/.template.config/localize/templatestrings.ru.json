@@ -7,6 +7,7 @@
   "symbols/kestrelHttpsPort/description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used.",
   "symbols/iisHttpPort/description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json.",
   "symbols/iisHttpsPort/description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used.",
+  "symbols/HasHttpProfile/description": "Always have HTTP profile.",
   "symbols/NoHttps/description": "Whether to turn off HTTPS.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net7.0/description": "Target net7.0",
