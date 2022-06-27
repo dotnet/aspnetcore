@@ -1,3 +1,10 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.set -> void
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.get -> double
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.set -> void
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.get -> double
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.set -> void
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.Region.get -> string!
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.Region.set -> void
+

@@ -29,6 +29,9 @@ public class MouseEventArgsReaderTest
             ScreenY = 4.4,
             ShiftKey = false,
             Type = "type",
+            MovementX = 0.1,
+            MovementY = 4.4,
+            Region = "region",
         };
         var jsonElement = GetJsonElement(args);
 
@@ -57,6 +60,9 @@ public class MouseEventArgsReaderTest
         Assert.Equal(expected.ScreenY, actual.ScreenY);
         Assert.Equal(expected.ShiftKey, actual.ShiftKey);
         Assert.Equal(expected.Type, actual.Type);
+        Assert.Equal(expected.MovementX, actual.MovementX);
+        Assert.Equal(expected.MovementY, actual.MovementY);
+        Assert.Equal(expected.Region, actual.Region);
     }
 
     private static JsonElement GetJsonElement<T>(T args)
