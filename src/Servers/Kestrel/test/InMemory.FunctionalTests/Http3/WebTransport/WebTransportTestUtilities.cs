@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 internal class WebTransportTestUtilities
 {
+    private static int streamCounter;
+
     public static async ValueTask<WebTransportSession> GenerateSession(Http3InMemory inMemory)
     {
         var appCompletedTcs = new TaskCompletionSource<IWebTransportSession>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -78,7 +80,7 @@ internal class WebTransportTestUtilities
     public static async ValueTask<WebTransportStream> CreateStream(WebTransportStreamType type, Memory<byte>? memory = null)
     {
         var features = new FeatureCollection();
-        features[typeof(IStreamIdFeature)] = new StreamId();
+        features[typeof(IStreamIdFeature)] = new StreamId(streamCounter++);
         features[typeof(IProtocolErrorCodeFeature)] = new ErrorCode();
 
         var writer = new HttpResponsePipeWriter(new StreamWriterControl(memory));
@@ -86,9 +88,16 @@ internal class WebTransportTestUtilities
         var transport = new DuplexPipe(new StreamReader(memory), writer);
         return await WebTransportStream.CreateWebTransportStream(TestContextFactory.CreateHttp3StreamContext("id", null, new TestServiceContext(), features, null, null, null, transport), type);
     }
+
     class StreamId : IStreamIdFeature
     {
-        long IStreamIdFeature.StreamId => 1;
+        private readonly int _id;
+        long IStreamIdFeature.StreamId => _id;
+
+        public StreamId(int id = 1)
+        {
+            _id = id;
+        }
     }
 
     class ErrorCode : IProtocolErrorCodeFeature

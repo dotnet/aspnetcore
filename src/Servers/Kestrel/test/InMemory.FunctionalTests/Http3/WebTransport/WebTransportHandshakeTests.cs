@@ -39,6 +39,8 @@ public class WebTransportHandshakeTests : Http3TestBase
             {
                 var session = await webTransportFeature.AcceptAsync(CancellationToken.None).DefaultTimeout(); // todo session is null here
 
+                success &= session is not null;
+
                 appCompletedTcs.SetResult(success);
             }
             catch (TimeoutException)

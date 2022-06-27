@@ -13,6 +13,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal sealed class Http3StreamContext : HttpConnectionContext
 {
     public Http3StreamContext(
+           string connectionId,
+           HttpProtocols protocols,
+           AltSvcHeader? altSvcHeader,
+           BaseConnectionContext connectionContext,
+           ServiceContext serviceContext,
+           IFeatureCollection connectionFeatures,
+           MemoryPool<byte> memoryPool,
+           IPEndPoint? localEndPoint,
+           IPEndPoint? remoteEndPoint,
+           IHttp3StreamLifetimeHandler streamLifetimeHandler,
+           ConnectionContext streamContext,
+           Http3PeerSettings clientPeerSettings,
+           Http3PeerSettings serverPeerSettings) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+    {
+        StreamLifetimeHandler = streamLifetimeHandler;
+        StreamContext = streamContext;
+        ClientPeerSettings = clientPeerSettings;
+        ServerPeerSettings = serverPeerSettings;
+    }
+
+    public Http3StreamContext(
         string connectionId,
         HttpProtocols protocols,
         AltSvcHeader? altSvcHeader,
@@ -22,15 +43,14 @@ internal sealed class Http3StreamContext : HttpConnectionContext
         MemoryPool<byte> memoryPool,
         IPEndPoint? localEndPoint,
         IPEndPoint? remoteEndPoint,
-        IHttp3StreamLifetimeHandler streamLifetimeHandler,
         ConnectionContext streamContext,
-        Http3PeerSettings clientPeerSettings,
-        Http3PeerSettings serverPeerSettings) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+        Http3Connection connection) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
     {
-        StreamLifetimeHandler = streamLifetimeHandler;
+        StreamLifetimeHandler = connection._streamLifetimeHandler;
         StreamContext = streamContext;
-        ClientPeerSettings = clientPeerSettings;
-        ServerPeerSettings = serverPeerSettings;
+        ClientPeerSettings = connection._clientSettings;
+        ServerPeerSettings = connection._serverSettings;
+        Connection = connection;
     }
 
     public IHttp3StreamLifetimeHandler StreamLifetimeHandler { get; }
@@ -38,4 +58,5 @@ internal sealed class Http3StreamContext : HttpConnectionContext
     public Http3PeerSettings ClientPeerSettings { get; }
     public Http3PeerSettings ServerPeerSettings { get; }
     public WebTransportSession? WebTransportSession { get; set; }
+    public Http3Connection? Connection { get; }
 }

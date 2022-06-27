@@ -26,6 +26,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
 
     internal readonly MultiplexedConnectionContext _multiplexedContext; // todo revert to private
+    internal readonly Http3PeerSettings _serverSettings = new();
+    internal readonly Http3PeerSettings _clientSettings = new();
 
     // The highest opened request stream ID is sent with GOAWAY. The GOAWAY
     // value will signal to the peer to discard all requests with that value or greater.
@@ -42,8 +44,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private bool _gracefulCloseStarted;
     private int _activeRequestCount;
     private CancellationTokenSource _acceptStreamsCts = new();
-    private readonly Http3PeerSettings _serverSettings = new();
-    private readonly Http3PeerSettings _clientSettings = new();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new();
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
     private readonly Dictionary<long, WebTransportSession> _webtransportSessions = new();
@@ -534,10 +534,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             _context.MemoryPool,
             streamContext.LocalEndPoint as IPEndPoint,
             streamContext.RemoteEndPoint as IPEndPoint,
-            _streamLifetimeHandler,
             streamContext,
-            _clientSettings,
-            _serverSettings)
+            this)
         {
             TimeoutControl = _context.TimeoutControl,
             Transport = streamContext.Transport

@@ -1211,16 +1211,16 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (HttpResponseHeaders)ResponseHeaders, false, false);
         await Output.FlushAsync(token);
 
+        _context.WebTransportSession = new WebTransportSession(_context.Connection!, this);
+
         // listener to abort if this connection is closed
         _context.StreamContext.ConnectionClosed.Register(state =>
         {
             var session = (WebTransportSession)state!;
             session.OnClientConnectionClosed();
-        }, _context.WebTransportSession!);
+        }, _context.WebTransportSession);
 
-        //_context.WebTransportSession = new WebTransportSession(_context., this); TODO DO THIS
-
-        return _context.WebTransportSession!;
+        return _context.WebTransportSession;
     }
 
     /// <summary>
