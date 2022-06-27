@@ -292,6 +292,10 @@ Microsoft.AspNetCore.Components.Web.MouseEventArgs.ShiftKey.get -> bool
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.ShiftKey.set -> void
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.Type.get -> string!
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.Type.set -> void
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.get -> double
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.set -> void
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.get -> double
+Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.set -> void
 Microsoft.AspNetCore.Components.Web.PageTitle
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.PageTitle.ChildContent.set -> void
