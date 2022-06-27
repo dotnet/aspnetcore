@@ -330,6 +330,50 @@ public class RateLimitingMiddlewareTests : LoggedTest
         Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
     }
 
+    [Fact]
+    public async Task EndpointLimiterRejects_EndpointOnRejectedFires_WithIRateLimiterPolicy()
+    {
+        var globalOnRejectedInvoked = false;
+        var options = CreateOptionsAccessor();
+        var name = "myEndpoint";
+        // This is the policy that should get used
+        options.Value.AddPolicy<string, TestRateLimiterPolicy>(name);
+        // This OnRejected should be ignored in favor of the one on the policy
+        options.Value.OnRejected = (context, token) =>
+        {
+            globalOnRejectedInvoked = true;
+            context.HttpContext.Response.StatusCode = 429;
+            return ValueTask.CompletedTask;
+        };
+
+        // Configure the service provider with the args to the TestRateLimiterPolicy ctor
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        mockServiceProvider
+            .Setup(sp => sp.GetService(typeof(string)))
+            .Returns("myKey");
+        mockServiceProvider
+            .Setup(sp => sp.GetService(typeof(int)))
+            .Returns(404);
+        mockServiceProvider
+            .Setup(sp => sp.GetService(typeof(bool)))
+            .Returns(false);
+
+        var middleware = new RateLimitingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            mockServiceProvider.Object);
+
+        var context = new DefaultHttpContext();
+        context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.False(globalOnRejectedInvoked);
+
+        Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
+    }
+
     private IOptions<RateLimiterOptions> CreateOptionsAccessor() => Options.Create(new RateLimiterOptions());
 
 }
