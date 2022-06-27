@@ -191,8 +191,7 @@ internal static class TestContextFactory
             streamLifetimeHandler: streamLifetimeHandler,
             streamContext: new DefaultConnectionContext(),
             clientPeerSettings: new Http3PeerSettings(),
-            serverPeerSettings: null,
-            webTransportSession: null
+            serverPeerSettings: null
         );
         context.TimeoutControl = timeoutControl;
         context.Transport = transport;
