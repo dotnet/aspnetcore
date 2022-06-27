@@ -86,7 +86,7 @@ internal class WebTransportTestUtilities
         var writer = new HttpResponsePipeWriter(new StreamWriterControl(memory));
         writer.StartAcceptingWrites();
         var transport = new DuplexPipe(new StreamReader(memory), writer);
-        return await WebTransportStream.CreateWebTransportStream(TestContextFactory.CreateHttp3StreamContext("id", null, new TestServiceContext(), features, null, null, null, transport), type);
+        return new WebTransportStream(TestContextFactory.CreateHttp3StreamContext("id", null, new TestServiceContext(), features, null, null, null, transport), type);
     }
 
     class StreamId : IStreamIdFeature

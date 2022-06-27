@@ -313,7 +313,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                     }
 
                                     context.WebTransportSession = _webtransportSessions[correspondingSession];
-                                    var stream = await WebTransportStream.CreateWebTransportStream(context, WebTransportStreamType.Input);
+                                    var stream = new WebTransportStream(context, WebTransportStreamType.Input);
                                     _webtransportSessions[correspondingSession].AddStream(stream);
                                 }
                                 else // control, push, Qpack encoder, or Qpack decoder streams
@@ -363,7 +363,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                                         }
 
                                         context.WebTransportSession = _webtransportSessions[correspondingSession];
-                                        var stream2 = await WebTransportStream.CreateWebTransportStream(context, WebTransportStreamType.Bidirectional);
+                                        var stream2 = new WebTransportStream(context, WebTransportStreamType.Bidirectional);
                                         _webtransportSessions[correspondingSession].AddStream(stream2);
 
                                     }

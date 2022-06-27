@@ -40,7 +40,7 @@ internal class WebTransportStream : Stream
     /// </summary>
     public long StreamId => _streamIdFeature.StreamId;
 
-    private WebTransportStream(Http3StreamContext context, WebTransportStreamType type)
+    internal WebTransportStream(Http3StreamContext context, WebTransportStreamType type)
     {
         _canRead = type != WebTransportStreamType.Output;
         _type = type;
@@ -56,21 +56,6 @@ internal class WebTransportStream : Stream
             var stream = (WebTransportStream)state!;
             stream._context.WebTransportSession?.TryRemoveStream(stream._streamIdFeature.StreamId);
         }, this);
-    }
-
-    internal static async ValueTask<WebTransportStream> CreateWebTransportStream(Http3StreamContext context, WebTransportStreamType type)
-    {
-        var stream = new WebTransportStream(context, type);
-
-        // todo either remove if I implement this as part of connection class or uncomment
-        //if (stream.CanRead)
-        //{
-        //    // skip the first 3 bytes which correspond the the strem header
-        //    // as the application does not need to see them
-        //    _ = await stream.ReadAsyncInternal(new Memory<byte>(new byte[3]), 0, 3, CancellationToken.None);
-        //}
-
-        return stream;
     }
 
     private async Task<int> ReadAsyncInternal(Memory<byte> destination, int offset, int count, CancellationToken cancellationToken)
