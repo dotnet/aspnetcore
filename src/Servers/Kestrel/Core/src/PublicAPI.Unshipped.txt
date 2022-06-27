@@ -7,7 +7,3 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.Abort() -
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.SessionId.get -> long
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Bidirectional = 0 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Input = 1 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType.Output = 2 -> Microsoft.AspNetCore.Server.Kestrel.Core.Features.WebTransportStreamType

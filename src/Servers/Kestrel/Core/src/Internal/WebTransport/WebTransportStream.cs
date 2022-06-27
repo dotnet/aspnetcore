@@ -36,6 +36,21 @@ internal class WebTransportStream : Stream
     internal KestrelTrace Log => _context.ServiceContext.Log;
 
     /// <summary>
+    /// True if data can be read from this stream. False otherwise.
+    /// </summary>
+    public override bool CanRead => _canRead && !_isClosed;
+
+    /// <summary>
+    /// Seeking is not supported by WebTransport.
+    /// </summary>
+    public override bool CanSeek => false;
+
+    /// <summary>
+    /// True if data can be written from this stream. False otherwise.
+    /// </summary>
+    public override bool CanWrite => _type != WebTransportStreamType.Input && !_isClosed;
+
+    /// <summary>
     /// The unique identifier of the stream.
     /// </summary>
     public long StreamId => _streamIdFeature.StreamId;
@@ -157,21 +172,6 @@ internal class WebTransportStream : Stream
             Output.Complete();
         }
     }
-
-    /// <summary>
-    /// True if data can be read from this stream. False otherwise.
-    /// </summary>
-    public override bool CanRead => _canRead && !_isClosed;
-
-    /// <summary>
-    /// Seeking is not supported by WebTransport.
-    /// </summary>
-    public override bool CanSeek => false;
-
-    /// <summary>
-    /// True if data can be written from this stream. False otherwise.
-    /// </summary>
-    public override bool CanWrite => _type != WebTransportStreamType.Input && !_isClosed;
 
     /// <summary>
     /// Flushes the Output pipe.

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 /// <summary>
 /// Represents the different types of WebTransport streams.
 /// </summary>
-public enum WebTransportStreamType
+internal enum WebTransportStreamType
 {
     /// <summary>
     /// Represents a bidirectional WebTransport stream.
