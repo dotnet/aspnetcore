@@ -3,7 +3,6 @@
 
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -44,15 +43,10 @@ internal sealed partial class RateLimitingMiddleware
         _policyMap = options.Value.PolicyMap;
 
         // Use reflection to activate policies passed to AddPolicy<TPartitionKey, TPolicy>
-        var convertPolicyObject = typeof(RateLimiterOptions).GetMethod("ConvertPolicyObject");
 
-        foreach (var policyTypeInfo in options.Value.UnactivatedPolicyMap)
+        foreach (var unactivatedPolicy in options.Value.UnactivatedPolicyMap)
         {
-            var genericConvertPolicyObject = convertPolicyObject!.MakeGenericMethod(policyTypeInfo.Value.PartitionKeyType);
-            var instance = ActivatorUtilities.CreateInstance(_serviceProvider, policyTypeInfo.Value.PolicyType);
-            var obj = genericConvertPolicyObject.Invoke(new RateLimiterOptions(), new object[] { instance });
-            var partitioner = (Func<HttpContext, RateLimitPartition<DefaultKeyType>>)obj!;
-            _policyMap.Add(policyTypeInfo.Key, new DefaultRateLimiterPolicy(partitioner, ((IRateLimiterPolicy<object>)instance).OnRejected));
+            _policyMap.Add(unactivatedPolicy.Key, unactivatedPolicy.Value(_serviceProvider));
         }    
 
         _globalLimiter = options.Value.GlobalLimiter;

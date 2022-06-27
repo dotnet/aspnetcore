@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.RateLimiting;
 
@@ -15,8 +16,8 @@ public sealed class RateLimiterOptions
     internal IDictionary<string, DefaultRateLimiterPolicy> PolicyMap { get; }
         = new Dictionary<string, DefaultRateLimiterPolicy>(StringComparer.Ordinal);
 
-    internal IDictionary<string, PolicyTypeInfo> UnactivatedPolicyMap { get; }
-        = new Dictionary<string, PolicyTypeInfo> (StringComparer.Ordinal);
+    internal IDictionary<string, Func<IServiceProvider, DefaultRateLimiterPolicy>> UnactivatedPolicyMap { get; }
+        = new Dictionary<string, Func<IServiceProvider, DefaultRateLimiterPolicy>>(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets or sets the global <see cref="PartitionedRateLimiter{HttpContext}"/> that will be applied on all requests.
@@ -72,7 +73,13 @@ public sealed class RateLimiterOptions
             throw new ArgumentException($"There already exists a policy with the name {policyName}");
         }
 
-        UnactivatedPolicyMap.Add(policyName, new PolicyTypeInfo { PolicyType = typeof(TPolicy), PartitionKeyType = typeof(TPartitionKey) });
+        Func <IServiceProvider, DefaultRateLimiterPolicy> policyFunc = serviceProvider =>
+        {
+            var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance<TPolicy>(serviceProvider);
+            return new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(instance.GetPartition), instance.OnRejected);
+        };
+
+        UnactivatedPolicyMap.Add(policyName, policyFunc);
 
         return this;
     }
@@ -121,14 +128,5 @@ public sealed class RateLimiterOptions
             RateLimitPartition<TPartitionKey> partition = partitioner(context);
             return new RateLimitPartition<DefaultKeyType>(new DefaultKeyType<TPartitionKey>(partition.PartitionKey), key => partition.Factory(partition.PartitionKey));
         });
-    }
-
-    internal static Func<HttpContext, RateLimitPartition<DefaultKeyType>> ConvertPolicyObject<TPartitionKey>(object policy)
-    {
-        if (!(policy is IRateLimiterPolicy<TPartitionKey>))
-        {
-            throw new ArgumentException("Invalid policy passed");
-        }
-        return ConvertPartitioner<TPartitionKey>(((IRateLimiterPolicy<TPartitionKey>)policy).GetPartition);
     }
 }
