@@ -13,7 +13,7 @@ public class ProblemDetailsOptions
     /// <summary>
     /// 
     /// </summary>
-    public ProblemTypes AllowedProblemTypes { get; set; } = ProblemTypes.All;
+    public ProblemDetailsTypes AllowedProblemTypes { get; set; } = ProblemDetailsTypes.All;
 
     /// <summary>
     /// 

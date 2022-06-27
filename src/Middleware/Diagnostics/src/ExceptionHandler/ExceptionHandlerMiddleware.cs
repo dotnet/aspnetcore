@@ -34,13 +34,29 @@ public class ExceptionHandlerMiddleware
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <param name="options">The options for configuring the middleware.</param>
     /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
+    public ExceptionHandlerMiddleware(
+        RequestDelegate next,
+        ILoggerFactory loggerFactory,
+        IOptions<ExceptionHandlerOptions> options,
+        DiagnosticListener diagnosticListener)
+        : this(next, loggerFactory, options, diagnosticListener, problemDetailsService: null)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
+    /// </summary>
+    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+    /// <param name="options">The options for configuring the middleware.</param>
+    /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
     /// <param name="problemDetailsService">The <see cref="IProblemDetailsService"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public ExceptionHandlerMiddleware(
         RequestDelegate next,
         ILoggerFactory loggerFactory,
         IOptions<ExceptionHandlerOptions> options,
         DiagnosticListener diagnosticListener,
-        IProblemDetailsService? problemDetailsService = null)
+        IProblemDetailsService? problemDetailsService)
     {
         _next = next;
         _options = options.Value;
@@ -53,8 +69,7 @@ public class ExceptionHandlerMiddleware
         {
             if (_options.ExceptionHandlingPath == null)
             {
-                if (problemDetailsService == null ||
-                    problemDetailsService.IsEnabled(ProblemTypes.Server) == false)
+                if (problemDetailsService == null)
                 {
                     throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
                 }

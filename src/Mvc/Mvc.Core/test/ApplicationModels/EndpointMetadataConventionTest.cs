@@ -5,6 +5,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -13,7 +14,25 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 public class EndpointMetadataConventionTest
 {
     [Fact]
-    public void Apply_DefaultErrorTypeMetadata()
+    public void Apply_DefaultErrorTypeMetadata_WhenIProblemDetailsServiceRegistered()
+    {
+        // Arrange        
+        var action = GetActionModel(typeof(TestController), nameof(TestController.MultipleSelectorsActionWithMetadataInActionResult));
+        var errorType = typeof(ProblemDetails);
+        var convention = GetConvention(services: CreateServicesWithProblemDetatils(), errorType: errorType);
+
+        //Act
+        convention.Apply(action);
+
+        // Assert
+        foreach (var selector in action.Selectors)
+        {
+            Assert.Contains(selector.EndpointMetadata, m => m is IProblemDetailsMetadata attribute && attribute.ProblemType == ProblemDetailsTypes.All);
+        }
+    }
+
+    [Fact]
+    public void Apply_SkipDefaultErrorTypeMetadata_WhenIProblemDetailsServiceNotRegistered()
     {
         // Arrange
         var action = GetActionModel(typeof(TestController), nameof(TestController.MultipleSelectorsActionWithMetadataInActionResult));
@@ -26,7 +45,7 @@ public class EndpointMetadataConventionTest
         // Assert
         foreach (var selector in action.Selectors)
         {
-            Assert.Contains(selector.EndpointMetadata, m => m is ProducesErrorResponseTypeAttribute attribute && attribute.Type == errorType);
+            Assert.DoesNotContain(selector.EndpointMetadata, m => m is IProblemDetailsMetadata);
         }
     }
 
@@ -44,7 +63,7 @@ public class EndpointMetadataConventionTest
         // Assert
         foreach (var selector in action.Selectors)
         {
-            Assert.DoesNotContain(selector.EndpointMetadata, m => m is ProducesErrorResponseTypeAttribute);
+            Assert.DoesNotContain(selector.EndpointMetadata, m => m is IProblemDetailsMetadata);
         }
     }
 
@@ -245,6 +264,13 @@ public class EndpointMetadataConventionTest
         var context = GetContext(controllerType);
         var controller = Assert.Single(context.Result.Controllers);
         return Assert.Single(controller.Actions, m => m.ActionName == actionName);
+    }
+
+    private static IServiceProvider CreateServicesWithProblemDetatils()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(Mock.Of<IProblemDetailsService>());
+        return services.BuildServiceProvider();
     }
 
     private class TestController
