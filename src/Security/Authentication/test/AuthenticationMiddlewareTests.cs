@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Microsoft.AspNetCore.Authentication;
@@ -156,6 +157,11 @@ public class AuthenticationMiddlewareTests
     public async Task WebApplicationBuilder_RegistersAuthenticationMiddlewares()
     {
         var builder = WebApplication.CreateBuilder();
+        builder.Configuration.AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ClaimsIssuer", "SomeIssuer"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:Audiences:0", "https://localhost:5001")
+        });
         builder.Authentication.AddJwtBearer();
         await using var app = builder.Build();
 
@@ -169,6 +175,9 @@ public class AuthenticationMiddlewareTests
         await app.StartAsync();
 
         Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+
+        var options = app.Services.GetService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Equal(new[] { "SomeIssuer" }, options.TokenValidationParameters.ValidIssuers);
     }
 
     private HttpContext GetHttpContext(
