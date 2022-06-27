@@ -205,8 +205,7 @@ public class StaticFileMiddlewareTests
                 app.UseRouting();
                 app.Use((ctx, next) =>
                 {
-                    ctx.Features.Set<IEndpointFeature>(new EndpointFeature());
-                    ctx.Features.Get<IEndpointFeature>().Endpoint = new Endpoint(requestDelegate: null, new EndpointMetadataCollection(), "NullRequestDelegateEndpoint");
+                    ctx.SetEndpoint(new Endpoint(requestDelegate: null, new EndpointMetadataCollection(), "NullRequestDelegateEndpoint"));
                     return next();
                 });
                 app.UseStaticFiles(new StaticFileOptions
@@ -254,8 +253,7 @@ public class StaticFileMiddlewareTests
                 app.UseRouting();
                 app.Use((ctx, next) =>
                 {
-                    ctx.Features.Set<IEndpointFeature>(new EndpointFeature());
-                    ctx.Features.Get<IEndpointFeature>().Endpoint = new Endpoint(handler, new EndpointMetadataCollection(), "RequestDelegateEndpoint");
+                    ctx.SetEndpoint(new Endpoint(handler, new EndpointMetadataCollection(), "RequestDelegateEndpoint"));
                     return next();
                 });
                 app.UseStaticFiles(new StaticFileOptions
@@ -372,9 +370,4 @@ public class StaticFileMiddlewareTests
             new[] {"/somedir", @"SubFolder", "/somedir/ranges.txt"},
             new[] {"", @"SubFolder", "/Empty.txt"}
         };
-
-    private sealed class EndpointFeature : IEndpointFeature
-    {
-        public Endpoint Endpoint { get; set; }
-    }
 }
