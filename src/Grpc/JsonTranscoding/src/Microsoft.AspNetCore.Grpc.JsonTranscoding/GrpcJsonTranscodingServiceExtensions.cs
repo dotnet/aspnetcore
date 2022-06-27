@@ -17,34 +17,34 @@ public static class GrpcJsonTranscodingServiceExtensions
     /// <summary>
     /// Adds gRPC JSON transcoding services to the specified <see cref="IGrpcServerBuilder" />.
     /// </summary>
-    /// <param name="grpcBuilder">The <see cref="IGrpcServerBuilder"/>.</param>
+    /// <param name="builder">The <see cref="IGrpcServerBuilder"/>.</param>
     /// <returns>The same instance of the <see cref="IGrpcServerBuilder"/> for chaining.</returns>
-    public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder grpcBuilder)
+    public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder builder)
     {
-        if (grpcBuilder == null)
+        if (builder == null)
         {
-            throw new ArgumentNullException(nameof(grpcBuilder));
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        grpcBuilder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
 
-        return grpcBuilder;
+        return builder;
     }
 
     /// <summary>
     /// Adds gRPC JSON transcoding services to the specified <see cref="IGrpcServerBuilder" />.
     /// </summary>
-    /// <param name="grpcBuilder">The <see cref="IGrpcServerBuilder"/>.</param>
+    /// <param name="builder">The <see cref="IGrpcServerBuilder"/>.</param>
     /// <param name="configureOptions">An <see cref="Action{GrpcJsonTranscodingOptions}"/> to configure the provided <see cref="GrpcJsonTranscodingOptions"/>.</param>
     /// <returns>The same instance of the <see cref="IGrpcServerBuilder"/> for chaining.</returns>
-    public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder grpcBuilder, Action<GrpcJsonTranscodingOptions> configureOptions)
+    public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder builder, Action<GrpcJsonTranscodingOptions> configureOptions)
     {
-        if (grpcBuilder == null)
+        if (builder == null)
         {
-            throw new ArgumentNullException(nameof(grpcBuilder));
+            throw new ArgumentNullException(nameof(builder));
         }
 
-        grpcBuilder.Services.Configure(configureOptions);
-        return grpcBuilder.AddJsonTranscoding();
+        builder.Services.Configure(configureOptions);
+        return builder.AddJsonTranscoding();
     }
 }

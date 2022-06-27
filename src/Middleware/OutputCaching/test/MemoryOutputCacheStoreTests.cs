@@ -16,7 +16,7 @@ public class MemoryOutputCacheStoreTests
     public async Task StoreAndGetValue_Succeeds()
     {
         var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions()));
-        var value = "abc"u8;
+        var value = "abc"u8.ToArray();
         var key = "abc";
 
         await store.SetAsync(key, value, null, TimeSpan.FromMinutes(1), default);
@@ -31,7 +31,7 @@ public class MemoryOutputCacheStoreTests
     {
         var testClock = new TestMemoryOptionsClock { UtcNow = DateTimeOffset.UtcNow };
         var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions { Clock = testClock }));
-        var value = "abc"u8;
+        var value = "abc"u8.ToArray();
         var key = "abc";
 
         await store.SetAsync(key, value, null, TimeSpan.FromMilliseconds(5), default);
@@ -46,7 +46,7 @@ public class MemoryOutputCacheStoreTests
     public async Task StoreNullKey_ThrowsException()
     {
         var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions()));
-        var value = "abc"u8;
+        var value = "abc"u8.ToArray();
         string key = null;
 
         _ = await Assert.ThrowsAsync<ArgumentNullException>("key", () => store.SetAsync(key, value, null, TimeSpan.FromMilliseconds(5), default).AsTask());
@@ -67,7 +67,7 @@ public class MemoryOutputCacheStoreTests
     {
         var testClock = new TestMemoryOptionsClock { UtcNow = DateTimeOffset.UtcNow };
         var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions { Clock = testClock }));
-        var value = "abc"u8;
+        var value = "abc"u8.ToArray();
         var key = "abc";
         var tags = new string[] { "tag1" };
 
@@ -83,7 +83,7 @@ public class MemoryOutputCacheStoreTests
     {
         var testClock = new TestMemoryOptionsClock { UtcNow = DateTimeOffset.UtcNow };
         var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions { Clock = testClock }));
-        var value = "abc"u8;
+        var value = "abc"u8.ToArray();
         var key1 = "abc";
         var key2 = "def";
         var tags = new string[] { "tag1" };
@@ -103,7 +103,7 @@ public class MemoryOutputCacheStoreTests
     {
         var testClock = new TestMemoryOptionsClock { UtcNow = DateTimeOffset.UtcNow };
         var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions { Clock = testClock }));
-        var value = "abc"u8;
+        var value = "abc"u8.ToArray();
         var key = "abc";
         var tags = new string[] { "tag1", "tag2" };
 
@@ -119,7 +119,7 @@ public class MemoryOutputCacheStoreTests
     {
         var testClock = new TestMemoryOptionsClock { UtcNow = DateTimeOffset.UtcNow };
         var store = new MemoryOutputCacheStore(new MemoryCache(new MemoryCacheOptions { Clock = testClock }));
-        var value = "abc"u8;
+        var value = "abc"u8.ToArray();
         var key1 = "abc";
         var key2 = "def";
         var tags1 = new string[] { "tag1", "tag2" };
