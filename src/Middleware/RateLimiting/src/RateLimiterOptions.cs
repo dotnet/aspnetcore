@@ -75,7 +75,7 @@ public sealed class RateLimiterOptions
 
         Func <IServiceProvider, DefaultRateLimiterPolicy> policyFunc = serviceProvider =>
         {
-            var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance<TPolicy>(serviceProvider);
+            var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance(serviceProvider, typeof(TPolicy));
             return new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(instance.GetPartition), instance.OnRejected);
         };
 
