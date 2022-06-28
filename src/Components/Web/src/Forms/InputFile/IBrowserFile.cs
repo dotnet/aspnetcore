@@ -32,6 +32,11 @@ public interface IBrowserFile
     string ContentType { get; }
 
     /// <summary>
+    /// Gets the Id of the file as specified by the browser.
+    /// </summary>
+    int Id { get; }
+
+    /// <summary>
     /// Opens the stream for reading the uploaded file.
     /// </summary>
     /// <param name="maxAllowedSize">
