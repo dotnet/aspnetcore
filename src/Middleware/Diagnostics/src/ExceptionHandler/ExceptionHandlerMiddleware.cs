@@ -164,10 +164,11 @@ public class ExceptionHandlerMiddleware
             }
             else
             {
-                await _problemDetailsService!.WriteAsync(
-                    context,
-                    exceptionHandlerFeature.Endpoint?.Metadata,
-                    statusCode: DefaultStatusCode);
+                await _problemDetailsService!.WriteAsync(new ProblemDetailsContext(context)
+                {
+                    AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
+                    ProblemDetails = new ProblemDetails() { Status = DefaultStatusCode }
+                });
             }
 
             // If the response has already started, assume exception handler was successful.

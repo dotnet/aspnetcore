@@ -4,17 +4,19 @@
 namespace Microsoft.AspNetCore.Http.Metadata;
 
 /// <summary>
-/// 
+/// Defines a contract used to specify metadata,in <see cref="Endpoint.Metadata"/>,
+/// for configure <see cref=" Mvc.ProblemDetails"/> generation.
 /// </summary>
 public interface IProblemDetailsMetadata
 {
     /// <summary>
-    /// 
+    /// Gets the HTTP status code of the response.
     /// </summary>
     public int? StatusCode { get; }
 
     /// <summary>
-    /// 
+    /// Gets the Problem Details Types
+    /// associated to the <see cref="StatusCode"/>.
     /// </summary>
     public ProblemDetailsTypes ProblemType { get; }
 }

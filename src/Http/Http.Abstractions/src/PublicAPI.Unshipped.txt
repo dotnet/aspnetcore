@@ -14,19 +14,33 @@ Microsoft.AspNetCore.Http.HttpValidationProblemDetails
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
-Microsoft.AspNetCore.Http.IProblemDetailsService
-Microsoft.AspNetCore.Http.IProblemDetailsService.IsEnabled(int statusCode, bool isRouting = false) -> bool
-Microsoft.AspNetCore.Http.IProblemDetailsService.WriteAsync(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.EndpointMetadataCollection? currentMetadata = null, bool isRouting = false, int? statusCode = null, string? title = null, string? type = null, string? detail = null, string? instance = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Http.IProblemDetailsWriter
-Microsoft.AspNetCore.Http.IProblemDetailsWriter.CanWrite(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Http.EndpointMetadataCollection? metadata, bool isRouting) -> bool
-Microsoft.AspNetCore.Http.IProblemDetailsWriter.WriteAsync(Microsoft.AspNetCore.Http.HttpContext! context, int? statusCode = null, string? title = null, string? type = null, string? detail = null, string? instance = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>
 Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>.BindAsync(Microsoft.AspNetCore.Http.HttpContext! context, System.Reflection.ParameterInfo! parameter) -> System.Threading.Tasks.ValueTask<TSelf?>
+Microsoft.AspNetCore.Http.IProblemDetailsService
+Microsoft.AspNetCore.Http.IProblemDetailsService.WriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Http.IProblemDetailsWriter
+Microsoft.AspNetCore.Http.IProblemDetailsWriter.WriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Http.IRouteHandlerFilter.InvokeAsync(Microsoft.AspNetCore.Http.RouteHandlerInvocationContext! context, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate! next) -> System.Threading.Tasks.ValueTask<object?>
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
+Microsoft.AspNetCore.Http.Metadata.IProblemDetailsMetadata
+Microsoft.AspNetCore.Http.Metadata.IProblemDetailsMetadata.ProblemType.get -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.Metadata.IProblemDetailsMetadata.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata.MaxRequestBodySize.get -> long?
+Microsoft.AspNetCore.Http.ProblemDetailsContext
+Microsoft.AspNetCore.Http.ProblemDetailsContext.AdditionalMetadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection?
+Microsoft.AspNetCore.Http.ProblemDetailsContext.AdditionalMetadata.init -> void
+Microsoft.AspNetCore.Http.ProblemDetailsContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.get -> Microsoft.AspNetCore.Mvc.ProblemDetails?
+Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.init -> void
+Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetailsContext(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
+Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.ProblemDetailsTypes.All = Microsoft.AspNetCore.Http.ProblemDetailsTypes.Server | Microsoft.AspNetCore.Http.ProblemDetailsTypes.Routing | Microsoft.AspNetCore.Http.ProblemDetailsTypes.Client -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.ProblemDetailsTypes.Client = 4 -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.ProblemDetailsTypes.None = 0 -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.ProblemDetailsTypes.Routing = 2 -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.ProblemDetailsTypes.Server = 1 -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
 Microsoft.AspNetCore.Http.RouteHandlerContext
 Microsoft.AspNetCore.Http.RouteHandlerContext.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Http.RouteHandlerContext.EndpointMetadata.get -> System.Collections.Generic.IList<object!>!

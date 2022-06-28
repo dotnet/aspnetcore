@@ -32,7 +32,7 @@ public static class ProblemDetailsServiceCollectionExtensions
     /// Adds services required for creation of <see cref="ProblemDetails"/> for failed requests.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="configureOptions">The routing options to configure the middleware with.</param>
+    /// <param name="configureOptions">The <see cref="ProblemDetailsOptions"/> to configure the services with.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddProblemDetails(
         this IServiceCollection services,

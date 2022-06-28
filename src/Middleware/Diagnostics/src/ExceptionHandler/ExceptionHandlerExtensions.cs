@@ -104,6 +104,8 @@ public static class ExceptionHandlerExtensions
     private static IApplicationBuilder SetExceptionHandlerMiddleware(IApplicationBuilder app, IOptions<ExceptionHandlerOptions>? options)
     {
         const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+        var problemDetailsService = app.ApplicationServices.GetService<IProblemDetailsService>();
+
         // Only use this path if there's a global router (in the 'WebApplication' case).
         if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
@@ -131,16 +133,19 @@ public static class ExceptionHandlerExtensions
                     options.Value.ExceptionHandler = builder.Build();
                 }
 
-                var problemDetailsProvider = app.ApplicationServices.GetService<IProblemDetailsService>();
-                return new ExceptionHandlerMiddleware(next, loggerFactory, options, diagnosticListener, problemDetailsProvider).Invoke;
+                return new ExceptionHandlerMiddleware(next, loggerFactory, options, diagnosticListener, problemDetailsService).Invoke;
             });
         }
 
         if (options is null)
         {
-            return app.UseMiddleware<ExceptionHandlerMiddleware>();
+            return problemDetailsService is null ?
+                app.UseMiddleware<ExceptionHandlerMiddleware>() :
+                app.UseMiddleware<ExceptionHandlerMiddleware>(problemDetailsService);
         }
 
-        return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
+        return problemDetailsService is null ?
+            app.UseMiddleware<ExceptionHandlerMiddleware>(options) :
+            app.UseMiddleware<ExceptionHandlerMiddleware>(options, problemDetailsService);
     }
 }

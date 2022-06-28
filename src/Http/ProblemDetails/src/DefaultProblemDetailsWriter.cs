@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -16,42 +15,12 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         _options = options.Value;
     }
 
-    public bool CanWrite(HttpContext context, EndpointMetadataCollection? additionalMetadata)
-        => context.Response.StatusCode >= 400 && context.Response.StatusCode <= 599;
-
-    public Task WriteAsync(
-        HttpContext context,
-        int? statusCode = null,
-        string? title = null,
-        string? type = null,
-        string? detail = null,
-        string? instance = null,
-        IDictionary<string, object?>? extensions = null)
+    public async ValueTask<bool> WriteAsync(ProblemDetailsContext context)
     {
-        var problemDetails = new ProblemDetails
-        {
-            Status = statusCode,
-            Title = title,
-            Type = type,
-            Detail = detail,
-            Instance = instance
-        };
+        var problemResult = TypedResults.Problem(context.ProblemDetails ?? new ProblemDetails());
+        _options.ConfigureDetails?.Invoke(context.HttpContext, problemResult.ProblemDetails);
 
-        if (extensions is not null)
-        {
-            foreach (var extension in extensions)
-            {
-                problemDetails.Extensions[extension.Key] = extension.Value;
-            }
-        }
-
-        ProblemDetailsDefaults.Apply(problemDetails, context.Response.StatusCode);
-        _options.ConfigureDetails?.Invoke(context, problemDetails);
-
-        return context.Response.WriteAsJsonAsync(problemDetails, typeof(ProblemDetails), ProblemDetailsJsonContext.Default, contentType: "application/problem+json");
+        await problemResult.ExecuteAsync(context.HttpContext);
+        return context.HttpContext.Response.HasStarted;
     }
-
-    [JsonSerializable(typeof(ProblemDetails))]
-    internal sealed partial class ProblemDetailsJsonContext : JsonSerializerContext
-    { }
 }

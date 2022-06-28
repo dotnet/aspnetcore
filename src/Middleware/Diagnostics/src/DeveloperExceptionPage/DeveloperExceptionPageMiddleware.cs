@@ -44,6 +44,26 @@ public class DeveloperExceptionPageMiddleware
     /// <param name="hostingEnvironment"></param>
     /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/> used for writing diagnostic messages.</param>
     /// <param name="filters">The list of registered <see cref="IDeveloperPageExceptionFilter"/>.</param>
+    public DeveloperExceptionPageMiddleware(
+        RequestDelegate next,
+        IOptions<DeveloperExceptionPageOptions> options,
+        ILoggerFactory loggerFactory,
+        IWebHostEnvironment hostingEnvironment,
+        DiagnosticSource diagnosticSource,
+        IEnumerable<IDeveloperPageExceptionFilter> filters)
+        : this(next, options, loggerFactory, hostingEnvironment, diagnosticSource, filters, problemDetailsService: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
+    /// </summary>
+    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+    /// <param name="options">The options for configuring the middleware.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+    /// <param name="hostingEnvironment"></param>
+    /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/> used for writing diagnostic messages.</param>
+    /// <param name="filters">The list of registered <see cref="IDeveloperPageExceptionFilter"/>.</param>
     /// <param name="problemDetailsService">The <see cref="IProblemDetailsService"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public DeveloperExceptionPageMiddleware(
         RequestDelegate next,
@@ -52,7 +72,7 @@ public class DeveloperExceptionPageMiddleware
         IWebHostEnvironment hostingEnvironment,
         DiagnosticSource diagnosticSource,
         IEnumerable<IDeveloperPageExceptionFilter> filters,
-        IProblemDetailsService? problemDetailsService = null)
+        IProblemDetailsService? problemDetailsService)
     {
         if (next == null)
         {
@@ -171,25 +191,24 @@ public class DeveloperExceptionPageMiddleware
 
         if (_problemDetailsService != null)
         {
-            var exceptionExtensions = new Dictionary<string, object?>
+            var problemDetails = new ProblemDetails
             {
-                {
-                    "exception",
-                    new
-                    {
-                        Headers = httpContext.Request.Headers,
-                        Error = errorContext.Exception.ToString(),
-                        Path = httpContext.Request.Path,
-                        Endpoint = httpContext.GetEndpoint()?.ToString(),
-                        RouteValues = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues,
-                    }
-                }
+                Status = httpContext.Response.StatusCode
             };
 
-            await _problemDetailsService.WriteAsync(
-                httpContext,
-                extensions: exceptionExtensions,
-                statusCode: httpContext.Response.StatusCode);
+            problemDetails.Extensions["exception"] = new
+            {
+                Headers = httpContext.Request.Headers,
+                Error = errorContext.Exception.ToString(),
+                Path = httpContext.Request.Path,
+                Endpoint = httpContext.GetEndpoint()?.ToString(),
+                RouteValues = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues,
+            };
+
+            await _problemDetailsService.WriteAsync(new ProblemDetailsContext(httpContext)
+            {
+                ProblemDetails = problemDetails
+            });
         }
 
         // If the response has not started, assume the problem details was not written.

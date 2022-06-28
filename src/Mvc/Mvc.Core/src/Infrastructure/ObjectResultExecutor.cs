@@ -121,9 +121,10 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
 
             if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
             {
-                return problemDetailsService.WriteAsync(
-                    context.HttpContext,
-                    statusCode: statusCode);
+                return problemDetailsService.WriteAsync(new ProblemDetailsContext(context.HttpContext)
+                {
+                    ProblemDetails = new ProblemDetails { Status = statusCode }
+                }).AsTask();
             }
 
             return Task.CompletedTask;

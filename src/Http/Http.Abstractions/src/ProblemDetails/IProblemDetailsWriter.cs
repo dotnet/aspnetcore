@@ -4,34 +4,15 @@
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// 
+/// Defines a type that write a <see cref="Mvc.ProblemDetails"/>
+/// payload to the current <see cref="HttpContext.Response"/>.
 /// </summary>
 public interface IProblemDetailsWriter
 {
     /// <summary>
-    /// 
+    /// Write a <see cref="Mvc.ProblemDetails"/> response to the current context
     /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    bool CanWrite(HttpContext context, EndpointMetadataCollection? additionalMetadata);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="statusCode"></param>
-    /// <param name="title"></param>
-    /// <param name="type"></param>
-    /// <param name="detail"></param>
-    /// <param name="instance"></param>
-    /// <param name="extensions"></param>
-    /// <returns></returns>
-    Task WriteAsync(
-        HttpContext context,
-        int? statusCode,
-        string? title,
-        string? type,
-        string? detail,
-        string? instance,
-        IDictionary<string, object?>? extensions);
+    /// <param name="context">The <see cref="ProblemDetailsContext"/> associated with the current request/response.</param>
+    /// <returns>Flag that indicates if the response was started.</returns>
+    ValueTask<bool> WriteAsync(ProblemDetailsContext context);
 }
