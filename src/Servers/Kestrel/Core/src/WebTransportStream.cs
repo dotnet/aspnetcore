@@ -11,8 +11,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
+namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 
 /// <summary>
 /// Represents a base WebTransport stream. Do not use directly as it does not
@@ -143,10 +144,19 @@ public class WebTransportStream : Stream
     /// <summary>
     /// Hard abort the stream and cancel data transmission.
     /// </summary>
-    /// <param name="abortReason"></param>
-    public void Abort(ConnectionAbortedException abortReason)
+    /// <param name="errorCode"> the error code to pass into the logs</param>
+    public void Abort(int errorCode = (int)Http3ErrorCode.NoError)
     {
-        AbortCore(abortReason, Http3ErrorCode.InternalError);
+        Http3ErrorCode code;
+        try
+        {
+            code = (Http3ErrorCode)errorCode;
+        }
+        catch (Exception)
+        {
+            code = Http3ErrorCode.InternalError;
+        }
+        AbortCore(new(), code);
     }
 
     /// <summary>
