@@ -21,6 +21,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.DoNotUseConfigureWebHostWithConfigureHostBuilder,
         DiagnosticDescriptors.DoNotUseConfigureWithConfigureWebHostBuilder,
         DiagnosticDescriptors.DoNotUseUseStartupWithConfigureWebHostBuilder,
+        DiagnosticDescriptors.DoNotUseHostConfigureLogging
     });
 
     public override void Initialize(AnalysisContext context)
@@ -43,6 +44,11 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
             {
                 wellKnownTypes.HostingAbstractionsWebHostBuilderExtensions,
                 wellKnownTypes.WebHostBuilderExtensions,
+            };
+            INamedTypeSymbol[] configureLoggingTypes =
+            {
+                wellKnownTypes.HostingHostBuilderExtensions,
+                wellKnownTypes.WebHostBuilderExtensions
             };
 
             compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
@@ -98,6 +104,38 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                             invocation));
                 }
 
+                //var builder = WebApplication.CreateBuilder(args);
+                //builder.Host.ConfigureLogging(x => {})
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureHostBuilder,
+                        "ConfigureLogging",
+                        configureLoggingTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DoNotUseHostConfigureLogging,
+                            invocation));
+                }
+
+                //var builder = WebApplication.CreateBuilder(args);
+                //builder.WebHost.ConfigureLogging(x => {})
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureWebHostBuilder,
+                        "ConfigureLogging",
+                        configureLoggingTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DoNotUseHostConfigureLogging,
+                            invocation));
+                }
+
                 static Diagnostic CreateDiagnostic(DiagnosticDescriptor descriptor, IInvocationOperation operation)
                 {
                     // Take the location for the whole invocation operation as a starting point.
@@ -147,7 +185,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         location = Location.Create(operation.Syntax.SyntaxTree, targetSpan);
                     }
 
-                    return Diagnostic.Create(descriptor, location);
+                    return Diagnostic.Create(descriptor, location, methodName);
                 }
 
             }, OperationKind.Invocation);
