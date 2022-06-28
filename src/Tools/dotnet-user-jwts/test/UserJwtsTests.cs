@@ -138,7 +138,6 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     public void List_ReturnsIdForGeneratedToken()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
-        var appSettingsPath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--scheme", "MyCustomScheme" });
@@ -168,6 +167,31 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.True(appSettingsFile.TryGetPropertyValue("Authentication", out var authentication));
         Assert.Null(authentication["Schemes"]["Bearer"]);
         Assert.NotNull(authentication["Schemes"]["Scheme2"]);
+        Assert.Null(authentication["DefaultScheme"]);
+    }
+
+    [Fact]
+    public async Task Remove_DoesNotUnsetDefaultSchemeIfNoMatch()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var appSettingsPath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project });
+        _console.ClearOutput();
+        app.Run(new[] { "create", "--project", project, "--scheme", "Scheme2" });
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+
+        app.Run(new[] { "remove", id, "--project", project });
+
+        using FileStream openStream = File.OpenRead(appSettingsPath);
+        var appSettingsFile = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
+
+        Assert.True(appSettingsFile.TryGetPropertyValue("Authentication", out var authentication));
+        Assert.NotNull(authentication["Schemes"]["Bearer"]);
+        Assert.Null(authentication["Schemes"]["Scheme2"]);
+        Assert.NotNull(authentication["DefaultScheme"]); // We haven't removed the Bearer scheme so it's still the default
     }
 
     [Fact]
@@ -190,6 +214,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.True(appSettingsFile.TryGetPropertyValue("Authentication", out var authentication));
         Assert.Null(authentication["Schemes"]["Bearer"]);
         Assert.Null(authentication["Schemes"]["Scheme2"]);
+        Assert.Null(authentication["DefaultScheme"]);
     }
 
     [Fact]
