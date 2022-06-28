@@ -1734,7 +1734,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-jwts", "src\Too
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-user-jwts", "dotnet-user-jwts", "{AB4B9E75-719C-4589-B852-20FBFD727730}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalJwtBearerSample", "src\Security\Authentication\JwtBearer\samples\MinimalJwtBearerSample\MinimalJwtBearerSample.csproj", "{7F079E92-32D5-4257-B95B-CFFB0D49C160}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalJwtBearerSample", "src\Security\Authentication\JwtBearer\samples\MinimalJwtBearerSample\MinimalJwtBearerSample.csproj", "{7F079E92-32D5-4257-B95B-CFFB0D49C160}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-jwts.Tests", "src\Tools\dotnet-user-jwts\test\dotnet-user-jwts.Tests.csproj", "{89896261-C5DD-4901-BCA7-7A5F718BC008}"
 EndProject
@@ -1751,6 +1751,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.Tests", "src\ProjectTemplates\test\Templates.Blazor.Tests\Templates.Blazor.Tests.csproj", "{281BF9DB-7B8A-446B-9611-10A60903F125}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stress", "stress", "{A5946454-4788-4871-8F23-A9471D55F115}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RateLimitingSample", "src\Middleware\RateLimiting\samples\RateLimitingSample\RateLimitingSample.csproj", "{D0548255-1BF3-4FEC-9456-68DE95BC3409}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10481,6 +10483,22 @@ Global
 		{281BF9DB-7B8A-446B-9611-10A60903F125}.Release|x64.Build.0 = Release|Any CPU
 		{281BF9DB-7B8A-446B-9611-10A60903F125}.Release|x86.ActiveCfg = Release|Any CPU
 		{281BF9DB-7B8A-446B-9611-10A60903F125}.Release|x86.Build.0 = Release|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Debug|arm64.Build.0 = Debug|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Debug|x64.Build.0 = Debug|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Debug|x86.Build.0 = Debug|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Release|arm64.ActiveCfg = Release|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Release|arm64.Build.0 = Release|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Release|x64.ActiveCfg = Release|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Release|x64.Build.0 = Release|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Release|x86.ActiveCfg = Release|Any CPU
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11346,6 +11364,7 @@ Global
 		{AA7445F5-BD28-400C-8507-E2E0D3CF7D7E} = {08D53E58-4AAE-40C4-8497-63EC8664F304}
 		{281BF9DB-7B8A-446B-9611-10A60903F125} = {08D53E58-4AAE-40C4-8497-63EC8664F304}
 		{A5946454-4788-4871-8F23-A9471D55F115} = {4FDDC525-4E60-4CAF-83A3-261C5B43721F}
+		{D0548255-1BF3-4FEC-9456-68DE95BC3409} = {1D865E78-7A66-4CA9-92EE-2B350E45281F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
