@@ -9,7 +9,7 @@ virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddFallbackPolic
 virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddFallbackPolicy(string! name, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!>! configurePolicy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddPolicy(string! name, Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.AddPolicy(string! name, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder!>! configurePolicy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
+virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.InvokeHandlersAfterFailure(bool invoke) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.SetDefaultPolicy(Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
 virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.SetFallbackPolicy(Microsoft.AspNetCore.Authorization.AuthorizationPolicy? policy) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
-virtual Microsoft.AspNetCore.Authorization.AuthorizationBuilder.SetInvokeHandlersAfterFailure(bool invoke) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!

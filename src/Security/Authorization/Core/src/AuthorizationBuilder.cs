@@ -29,7 +29,7 @@ public class AuthorizationBuilder
     /// Defaults to true.
     /// </summary>
     /// <returns>The builder.</returns>
-    public virtual AuthorizationBuilder SetInvokeHandlersAfterFailure(bool invoke)
+    public virtual AuthorizationBuilder InvokeHandlersAfterFailure(bool invoke)
     {
         Services.Configure<AuthorizationOptions>(o => o.InvokeHandlersAfterFailure = invoke);
         return this;
