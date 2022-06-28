@@ -1,6 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Http.ProblemDetailsOptions
-Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedProblemTypes.get -> Microsoft.AspNetCore.Http.ProblemTypes
+Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedProblemTypes.get -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.AllowedProblemTypes.set -> void
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.ConfigureDetails.get -> System.Action<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Mvc.ProblemDetails!>?
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.ConfigureDetails.set -> void

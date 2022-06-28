@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -26,7 +28,7 @@ public static class DeveloperExceptionPageExtensions
             throw new ArgumentNullException(nameof(app));
         }
 
-        return app.UseMiddleware<DeveloperExceptionPageMiddleware>();
+        return SetMiddleware(app);
     }
 
     /// <summary>
@@ -52,6 +54,25 @@ public static class DeveloperExceptionPageExtensions
             throw new ArgumentNullException(nameof(options));
         }
 
-        return app.UseMiddleware<DeveloperExceptionPageMiddleware>(Options.Create(options));
+        return SetMiddleware(app, options);
+    }
+
+    private static IApplicationBuilder SetMiddleware(
+        IApplicationBuilder app,
+        DeveloperExceptionPageOptions? options = null)
+    {
+        var problemDetailsService = app.ApplicationServices.GetService<IProblemDetailsService>();
+
+        if (options is null)
+        {
+            return problemDetailsService is null ?
+                app.UseMiddleware<DeveloperExceptionPageMiddleware>() :
+                app.UseMiddleware<DeveloperExceptionPageMiddleware>(problemDetailsService);
+        }
+
+        return problemDetailsService is null ?
+            app.UseMiddleware<DeveloperExceptionPageMiddleware>(Options.Create(options)) :
+            app.UseMiddleware<DeveloperExceptionPageMiddleware>(Options.Create(options), problemDetailsService);
+
     }
 }

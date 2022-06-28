@@ -40,6 +40,9 @@ Microsoft.AspNetCore.Http.IValueHttpResult<TValue>
 Microsoft.AspNetCore.Http.IValueHttpResult<TValue>.Value.get -> TValue?
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
+Microsoft.AspNetCore.Http.Metadata.IProblemDetailsMetadata
+Microsoft.AspNetCore.Http.Metadata.IProblemDetailsMetadata.ProblemType.get -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.Metadata.IProblemDetailsMetadata.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata.MaxRequestBodySize.get -> long?
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(Microsoft.AspNetCore.Routing.RouteValueDictionary? dictionary) -> void

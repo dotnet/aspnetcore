@@ -27,34 +27,36 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
         _problemDetailsFactory = problemDetailsFactory;
     }
 
-    public bool CanWrite(HttpContext context, EndpointMetadataCollection? additionalMetadata)
+    public async ValueTask<bool> WriteAsync(ProblemDetailsContext context)
     {
-        var apiControllerAttribute = additionalMetadata?.GetMetadata<IApiBehaviorMetadata>() ??
-            context.GetEndpoint()?.Metadata.GetMetadata<IApiBehaviorMetadata>();
-        return apiControllerAttribute != null;
-    }
+        var apiControllerAttribute = context.AdditionalMetadata?.GetMetadata<IApiBehaviorMetadata>() ??
+            context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IApiBehaviorMetadata>();
 
-    public Task WriteAsync(
-        HttpContext context,
-        int? statusCode = null,
-        string? title = null,
-        string? type = null,
-        string? detail = null,
-        string? instance = null,
-        IDictionary<string, object?>? extensions = null)
-    {
-        var problemDetails = _problemDetailsFactory.CreateProblemDetails(context, statusCode ?? context.Response.StatusCode, title, type, detail, instance);
-
-        if (extensions is not null)
+        if (apiControllerAttribute is null)
         {
-            foreach (var extension in extensions)
+            return false;
+        }
+
+        // Recreating the problem details to get all customizations
+        // from the factory
+        var problemDetails = _problemDetailsFactory.CreateProblemDetails(
+            context.HttpContext,
+            context.ProblemDetails?.Status ?? context.HttpContext.Response.StatusCode,
+            context.ProblemDetails?.Title,
+            context.ProblemDetails?.Type,
+            context.ProblemDetails?.Detail,
+            context.ProblemDetails?.Instance);
+
+        if (context.ProblemDetails?.Extensions is not null)
+        {
+            foreach (var extension in context.ProblemDetails.Extensions)
             {
                 problemDetails.Extensions[extension.Key] = extension.Value;
             }
         }
 
         var formatterContext = new OutputFormatterWriteContext(
-            context,
+            context.HttpContext,
             _writerFactory.CreateWriter,
             typeof(ProblemDetails),
             problemDetails);
@@ -66,10 +68,13 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
 
         if (selectedFormatter == null)
         {
-            return Results.Problem(problemDetails)
-                .ExecuteAsync(context);
+            await Results.Problem(problemDetails)
+                .ExecuteAsync(context.HttpContext);
+
+            return context.HttpContext.Response.HasStarted;
         }
 
-        return selectedFormatter.WriteAsync(formatterContext);
+        await selectedFormatter.WriteAsync(formatterContext);
+        return context.HttpContext.Response.HasStarted;
     }
 }

@@ -16,7 +16,7 @@ public class EndpointMetadataConventionTest
     [Fact]
     public void Apply_DefaultErrorTypeMetadata_WhenIProblemDetailsServiceRegistered()
     {
-        // Arrange        
+        // Arrange
         var action = GetActionModel(typeof(TestController), nameof(TestController.MultipleSelectorsActionWithMetadataInActionResult));
         var errorType = typeof(ProblemDetails);
         var convention = GetConvention(services: CreateServicesWithProblemDetatils(), errorType: errorType);

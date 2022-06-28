@@ -1,105 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Tests;
-
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
+namespace Microsoft.AspNetCore.Http.Tests;
 
 public class DefaultProblemDetailsWriterTest
 {
-    [Theory]
-    [InlineData(100)]
-    [InlineData(200)]
-    [InlineData(300)]
-    [InlineData(399)]
-    public void CanWrite_IsFalse_ForSuccessStatus(int statusCode)
-    {
-        // Arrange
-        var writer = GetWriter();
-        var context = new DefaultHttpContext()
-        {
-            Response = { StatusCode = statusCode },
-        };
-
-        // Act
-        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
-
-        // Assert
-        Assert.False(canWrite);
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(99)]
-    [InlineData(600)]
-    [InlineData(700)]
-    public void CanWrite_IsFalse_ForUnknownStatus(int statusCode)
-    {
-        // Arrange
-        var writer = GetWriter();
-        var context = new DefaultHttpContext()
-        {
-            Response = { StatusCode = statusCode },
-        };
-
-        // Act
-        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
-
-        // Assert
-        Assert.False(canWrite);
-    }
-
-    [Theory]
-    [InlineData(400)]
-    [InlineData(499)]
-    public void CanWrite_IsTrue_ForClientErrors(int statusCode)
-    {
-        // Arrange
-        var writer = GetWriter();
-        var context = new DefaultHttpContext()
-        {
-            Response = { StatusCode = statusCode },
-        };
-
-        // Act
-        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
-
-        // Assert
-        Assert.True(canWrite);
-    }
-
-    [Theory]
-    [InlineData(500)]
-    [InlineData(599)]
-    public void CanWrite_IsTrue_ForServerErrors(int statusCode)
-    {
-        // Arrange
-        var writer = GetWriter();
-        var context = new DefaultHttpContext()
-        {
-            Response = { StatusCode = statusCode },
-        };
-
-        // Act
-        var canWrite = writer.CanWrite(context, EndpointMetadataCollection.Empty);
-
-        // Assert
-        Assert.True(canWrite);
-    }
-
     [Fact]
     public async Task WriteAsync_Works()
     {
         // Arrange
         var writer = GetWriter();
         var stream = new MemoryStream();
-        var context = new DefaultHttpContext()
-        {
-            Response = { Body = stream },
-        };
+        var context = CreateContext(stream);
         var expectedProblem = new ProblemDetails()
         {
             Detail = "Custom Bad Request",
@@ -108,15 +27,13 @@ public class DefaultProblemDetailsWriterTest
             Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1-custom",
             Title = "Custom Bad Request",
         };
+        var problemDetailsContext = new ProblemDetailsContext(context)
+        {
+            ProblemDetails = expectedProblem
+        };
 
         //Act
-        await writer.WriteAsync(
-            context,
-            statusCode: expectedProblem.Status,
-            title: expectedProblem.Title,
-            type: expectedProblem.Type,
-            detail: expectedProblem.Detail,
-            instance: expectedProblem.Instance);
+        await writer.WriteAsync(problemDetailsContext);
 
         //Assert
         stream.Position = 0;
@@ -135,19 +52,18 @@ public class DefaultProblemDetailsWriterTest
         // Arrange
         var writer = GetWriter();
         var stream = new MemoryStream();
-        var context = new DefaultHttpContext()
+        var context = CreateContext(stream);
+        var expectedProblem = new ProblemDetails();
+        expectedProblem.Extensions["Extension1"] = "Extension1-Value";
+        expectedProblem.Extensions["Extension2"] = "Extension2-Value";
+
+        var problemDetailsContext = new ProblemDetailsContext(context)
         {
-            Response = { Body = stream },
+            ProblemDetails = expectedProblem
         };
 
         //Act
-        await writer.WriteAsync(
-            context,
-            extensions: new Dictionary<string, object>
-            {
-                ["Extension1"] = "Extension1-Value",
-                ["Extension2"] = "Extension2-Value",
-            });
+        await writer.WriteAsync(problemDetailsContext);
 
         //Assert
         stream.Position = 0;
@@ -172,13 +88,10 @@ public class DefaultProblemDetailsWriterTest
         // Arrange
         var writer = GetWriter();
         var stream = new MemoryStream();
-        var context = new DefaultHttpContext()
-        {
-            Response = { Body = stream, StatusCode = StatusCodes.Status500InternalServerError },
-        };
+        var context = CreateContext(stream, StatusCodes.Status500InternalServerError);
 
         //Act
-        await writer.WriteAsync(context);
+        await writer.WriteAsync(new ProblemDetailsContext(context));
 
         //Assert
         stream.Position = 0;
@@ -204,13 +117,13 @@ public class DefaultProblemDetailsWriterTest
         };
         var writer = GetWriter(options);
         var stream = new MemoryStream();
-        var context = new DefaultHttpContext()
-        {
-            Response = { Body = stream, StatusCode = StatusCodes.Status500InternalServerError },
-        };
+        var context = CreateContext(stream, StatusCodes.Status500InternalServerError);
 
         //Act
-        await writer.WriteAsync(context, statusCode: StatusCodes.Status400BadRequest);
+        await writer.WriteAsync(new ProblemDetailsContext(context)
+        {
+            ProblemDetails = new() { Status = StatusCodes.Status400BadRequest }
+        });
 
         //Assert
         stream.Position = 0;
@@ -228,13 +141,13 @@ public class DefaultProblemDetailsWriterTest
         // Arrange
         var writer = GetWriter();
         var stream = new MemoryStream();
-        var context = new DefaultHttpContext()
-        {
-            Response = { Body = stream, StatusCode = StatusCodes.Status500InternalServerError },
-        };
+        var context = CreateContext(stream, StatusCodes.Status500InternalServerError);
 
         //Act
-        await writer.WriteAsync(context, statusCode: StatusCodes.Status400BadRequest);
+        await writer.WriteAsync(new ProblemDetailsContext(context)
+        {
+            ProblemDetails = new() { Status = StatusCodes.Status400BadRequest }
+        });
 
         //Assert
         stream.Position = 0;
@@ -243,6 +156,24 @@ public class DefaultProblemDetailsWriterTest
         Assert.Equal(StatusCodes.Status400BadRequest, problemDetails.Status);
         Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
         Assert.Equal("Bad Request", problemDetails.Title);
+    }
+
+    private HttpContext CreateContext(Stream body, int statusCode = StatusCodes.Status400BadRequest)
+    {
+        return new DefaultHttpContext()
+        {
+            Response = { Body = body, StatusCode = statusCode },
+            RequestServices = CreateServices(),
+        };
+    }
+
+    private static IServiceProvider CreateServices()
+    {
+        var services = new ServiceCollection();
+        services.AddTransient(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+
+        return services.BuildServiceProvider();
     }
 
     private static DefaultProblemDetailsWriter GetWriter(ProblemDetailsOptions options = null)

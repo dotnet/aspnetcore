@@ -20,50 +20,25 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
         _options = options.Value;
     }
 
-    public Task WriteAsync(
-        HttpContext context,
-        EndpointMetadataCollection? additionalMetadata = null,
-        int? statusCode = null,
-        string? title = null,
-        string? type = null,
-        string? detail = null,
-        string? instance = null,
-        IDictionary<string, object?>? extensions = null)
+    public async ValueTask WriteAsync(ProblemDetailsContext context)
     {
         if (_options.AllowedProblemTypes != ProblemDetailsTypes.None && _writers is { Length: > 0 })
         {
-            var problemStatusCode = statusCode ?? context.Response.StatusCode;
-            var calculatedProblemType = CalculateProblemType(problemStatusCode, context.GetEndpoint()?.Metadata, additionalMetadata);
+            var problemStatusCode = context.ProblemDetails?.Status ?? context.HttpContext.Response.StatusCode;
+            var calculatedProblemType = CalculateProblemType(problemStatusCode, context.HttpContext.GetEndpoint()?.Metadata, context.AdditionalMetadata);
 
-            if ((_options.AllowedProblemTypes & calculatedProblemType) != ProblemDetailsTypes.None &&
-                GetWriter(context, additionalMetadata) is { } writer)
+            if ((_options.AllowedProblemTypes & calculatedProblemType) != ProblemDetailsTypes.None)
             {
-                return writer.WriteAsync(
-                    context,
-                    statusCode,
-                    title,
-                    type,
-                    detail,
-                    instance,
-                    extensions);
+                var counter = 0;
+                var responseHasStarted = context.HttpContext.Response.HasStarted;
+
+                while (counter < _writers.Length && !responseHasStarted)
+                {
+                    responseHasStarted = await _writers[counter].WriteAsync(context);
+                    counter++;
+                }
             }
         }
-
-        return Task.CompletedTask;
-    }
-
-    // Internal for testing
-    internal IProblemDetailsWriter? GetWriter(HttpContext context, EndpointMetadataCollection? additionalMetadata)
-    {
-        for (var i = 0; i < _writers.Length; i++)
-        {
-            if (_writers[i].CanWrite(context, additionalMetadata))
-            {
-                return _writers[i];
-            }
-        }
-
-        return null;
     }
 
     // internal for testing
