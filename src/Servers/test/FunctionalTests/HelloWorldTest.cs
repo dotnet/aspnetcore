@@ -119,6 +119,7 @@ public class HelloWorldTests : LoggedTest
 
     [ConditionalTheory]
     [MemberData(nameof(SelfHostTestVariants))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42380")]
     public async Task ApplicationException(TestVariant variant)
     {
         var testName = $"ApplicationException_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";

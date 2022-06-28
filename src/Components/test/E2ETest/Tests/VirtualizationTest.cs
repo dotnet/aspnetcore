@@ -239,6 +239,30 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void CanRenderHtmlTable()
+    {
+        Browser.MountTestComponent<VirtualizationTable>();
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
+        var topSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :first-child"));
+        var bottomSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :last-child"));
+
+        // We can override the tag name of the spacer
+        Assert.Equal("tr", topSpacer.TagName.ToLowerInvariant());
+        Assert.Equal("tr", bottomSpacer.TagName.ToLowerInvariant());
+        Assert.Contains(expectedInitialSpacerStyle, topSpacer.GetAttribute("style"));
+
+        // Check scrolling document element works
+        Browser.DoesNotExist(By.Id("row-999"));
+        Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
+        var lastElement = Browser.Exists(By.Id("row-999"));
+        Browser.True(() => lastElement.Displayed);
+
+        // Validate that the top spacer has expanded, and bottom one has collapsed
+        Browser.False(() => topSpacer.GetAttribute("style").Contains(expectedInitialSpacerStyle));
+        Assert.Contains(expectedInitialSpacerStyle, bottomSpacer.GetAttribute("style"));
+    }
+
+    [Fact]
     public void CanMutateDataInPlace_Sync()
     {
         Browser.MountTestComponent<VirtualizationDataChanges>();

@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Authentication;
 public class AuthenticationService : IAuthenticationService
 {
     private HashSet<ClaimsPrincipal>? _transformCache;
+    private const string defaultSchemesOptionsMsg = "The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions) or by setting the Authentication:DefaultScheme property in configuration.";
 
     /// <summary>
     /// Constructor.
@@ -64,7 +65,7 @@ public class AuthenticationService : IAuthenticationService
             scheme = defaultScheme?.Name;
             if (scheme == null)
             {
-                throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
+                throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found. {defaultSchemesOptionsMsg}");
             }
         }
 
@@ -112,7 +113,7 @@ public class AuthenticationService : IAuthenticationService
             scheme = defaultChallengeScheme?.Name;
             if (scheme == null)
             {
-                throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
+                throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found. {defaultSchemesOptionsMsg}");
             }
         }
 
@@ -140,7 +141,7 @@ public class AuthenticationService : IAuthenticationService
             scheme = defaultForbidScheme?.Name;
             if (scheme == null)
             {
-                throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultForbidScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
+                throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultForbidScheme found. {defaultSchemesOptionsMsg}");
             }
         }
 
@@ -186,7 +187,7 @@ public class AuthenticationService : IAuthenticationService
             scheme = defaultScheme?.Name;
             if (scheme == null)
             {
-                throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignInScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
+                throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignInScheme found. {defaultSchemesOptionsMsg}");
             }
         }
 
@@ -220,7 +221,7 @@ public class AuthenticationService : IAuthenticationService
             scheme = defaultScheme?.Name;
             if (scheme == null)
             {
-                throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignOutScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
+                throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignOutScheme found. {defaultSchemesOptionsMsg}");
             }
         }
 
