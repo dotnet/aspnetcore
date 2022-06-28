@@ -12,8 +12,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 internal sealed class HttpMultiplexedConnectionContext : BaseHttpConnectionContext
 {
-    internal IHttp3StreamLifetimeHandler _streamLifetimeHandler;
-
     public HttpMultiplexedConnectionContext(
         string connectionId,
         HttpProtocols protocols,

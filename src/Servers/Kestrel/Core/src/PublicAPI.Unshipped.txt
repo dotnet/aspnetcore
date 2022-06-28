@@ -3,9 +3,9 @@ Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature
 Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature.AcceptAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession!>
 Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature.IsWebTransportRequest.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.Abort() -> void
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.Abort(int errorCode = 256) -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream!>
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream!>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.SessionId.get -> long
 Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream
 Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void

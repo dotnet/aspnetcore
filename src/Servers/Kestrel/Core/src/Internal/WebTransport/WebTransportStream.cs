@@ -183,6 +183,11 @@ public class WebTransportStream : Stream
             throw new NotSupportedException();
         }
 
+        if (!_context.ServiceContext.ServerOptions.AllowSynchronousIO)
+        {
+            throw new InvalidOperationException(CoreStrings.SynchronousWritesDisallowed);
+        }
+
         FlushAsync(default).GetAwaiter().GetResult();
     }
 
@@ -216,6 +221,11 @@ public class WebTransportStream : Stream
             throw new NotSupportedException();
         }
 
+        if (!_context.ServiceContext.ServerOptions.AllowSynchronousIO)
+        {
+            throw new InvalidOperationException(CoreStrings.SynchronousReadsDisallowed);
+        }
+
         return ReadAsyncInternal(new(buffer), offset, count, CancellationToken.None).GetAwaiter().GetResult();
     }
 
@@ -231,6 +241,11 @@ public class WebTransportStream : Stream
         if (!CanWrite)
         {
             throw new NotSupportedException();
+        }
+
+        if (!_context.ServiceContext.ServerOptions.AllowSynchronousIO)
+        {
+            throw new InvalidOperationException(CoreStrings.SynchronousWritesDisallowed);
         }
 
         WriteAsync(buffer, offset, count, default).GetAwaiter().GetResult();

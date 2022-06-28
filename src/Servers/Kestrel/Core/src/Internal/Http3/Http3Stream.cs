@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.QPack;
@@ -55,7 +54,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
-    private IEnumerable<string>? _webTransportVersions;
+    private List<string>? _webTransportVersions;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
     private readonly object _completionLock = new();
@@ -861,18 +860,17 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 // indicate as webtransport request
                 _currentIHttpWebTransportFeature!.IsWebTransportRequest = true;
 
-                // TODO do as we go along and store as list in WebTransportSession or is that a memory issue?
-                // Also, should this be on a per webtransport session basis? If so, maybe I need a queue?
-                var supportedVersions = HttpRequestHeaders.Where((header) =>
+                _webTransportVersions = new List<string>(HttpRequestHeaders.Count);
+                var index = 0;
+                foreach (var header in HttpRequestHeaders)
                 {
-                    return header.Key.StartsWith(WebTransportSession.VersionHeaderPrefix, StringComparison.Ordinal)
-                            && string.Equals(header.Value, "1", StringComparison.Ordinal);
-                }).Select((header) => header.Key);
-
-                if (supportedVersions.Any())
-                {
-                    _webTransportVersions = supportedVersions;
+                    if (header.Key.StartsWith(WebTransportSession.VersionHeaderPrefix, StringComparison.Ordinal)
+                            && string.Equals(header.Value, "1", StringComparison.Ordinal))
+                    {
+                        _webTransportVersions[index++] = header.Key;
+                    }
                 }
+                _webTransportVersions.TrimExcess();
             }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
@@ -1191,8 +1189,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     public override async ValueTask<IWebTransportSession> AcceptAsync(CancellationToken token)
     {
         // check if WebTransport was enabled
-        AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var _webtransportEnabled);
-        if (!_webtransportEnabled)
+        if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
         {
             throw new Exception("WebTransport is disabled. Please enable it before starting a session.");
         }
@@ -1203,15 +1200,24 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             throw new Exception("Failed to negotiate a common WebTransport version with client.");
         }
 
-        var matches = _webTransportVersions!.Intersect(WebTransportSession.SuppportedWebTransportVersions);
+        string? version = null;
+        foreach (var versionSupportedByKestrel in WebTransportSession.SuppportedWebTransportVersions)
+        {
+            foreach (var versionSupportedByClient in _webTransportVersions)
+            {
+                if (string.Equals(versionSupportedByKestrel, versionSupportedByClient, StringComparison.Ordinal))
+                {
+                    version = versionSupportedByKestrel[WebTransportSession.SecPrefix.Length..];
+                }
+            }
+        }
 
-        if (!matches.Any())
+        if (version is null)
         {
             throw new Exception("Failed to negotiate a common WebTransport version with client.");
         }
 
         // send version negotiation resulting version
-        var version = matches.First()[WebTransportSession.SecPrefix.Length..];
         ResponseHeaders.TryAdd(WebTransportSession.VersionHeaderPrefix, version);
         Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (HttpResponseHeaders)ResponseHeaders, false, false);
         await Output.FlushAsync(token);
@@ -1235,7 +1241,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     public void Abort()
     {
-        Abort(new(), Http3ErrorCode.NoError);
+        Abort(new(), Http3ErrorCode.RequestCancelled);
     }
 
     protected enum RequestHeaderParsingState

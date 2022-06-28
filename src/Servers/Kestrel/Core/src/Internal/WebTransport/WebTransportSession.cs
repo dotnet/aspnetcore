@@ -24,7 +24,7 @@ internal class WebTransportSession : IWebTransportSession
     private readonly Http3Stream _connectStream = default!;
     private bool _isClosing;
 
-    private static readonly ReadOnlyMemory<byte> _outputStreamHeader = new(new byte[] {
+    private static readonly ReadOnlyMemory<byte> OutputStreamHeader = new(new byte[] {
             0x40 /*quic variable-length integer length*/,
             (byte)Http3StreamType.WebTransportUnidirectional,
             0x00 /*body*/});
@@ -50,9 +50,18 @@ internal class WebTransportSession : IWebTransportSession
         _pendingStreams = Channel.CreateBounded<WebTransportStream>(100); // todo what should the capacity be?
     }
 
-    void IWebTransportSession.Abort()
+    void IWebTransportSession.Abort(int errorCode)
     {
-        Abort(new(), Http3ErrorCode.NoError);
+        Http3ErrorCode code;
+        try
+        {
+            code = (Http3ErrorCode)errorCode;
+        }
+        catch (Exception)
+        {
+            code = Http3ErrorCode.InternalError;
+        }
+        Abort(new(), code);
     }
 
     internal void OnClientConnectionClosed()
@@ -105,7 +114,7 @@ internal class WebTransportSession : IWebTransportSession
         _pendingStreams.Writer.Complete();
     }
 
-    public async ValueTask<Stream> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
+    public async ValueTask<WebTransportStream> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
     {
         if (_isClosing)
         {
@@ -120,7 +129,7 @@ internal class WebTransportSession : IWebTransportSession
 
         // send the stream header
         // https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-unidirectional-streams
-        await stream.WriteAsync(_outputStreamHeader, cancellationToken);
+        await stream.WriteAsync(OutputStreamHeader, cancellationToken);
         await stream.FlushAsync(cancellationToken);
 
         return stream;
@@ -148,7 +157,7 @@ internal class WebTransportSession : IWebTransportSession
     /// </summary>
     /// <param name="cancellationToken">The cancellation token to abort waiting for a stream</param>
     /// <returns>An instance of WebTransportStream that corresponds to the new stream to accept</returns>
-    public async ValueTask<Stream> AcceptStreamAsync(CancellationToken cancellationToken)
+    public async ValueTask<WebTransportStream> AcceptStreamAsync(CancellationToken cancellationToken)
     {
         if (_isClosing)
         {
