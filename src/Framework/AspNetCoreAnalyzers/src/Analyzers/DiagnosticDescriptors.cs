@@ -82,7 +82,7 @@ internal static class DiagnosticDescriptors
 
     internal static readonly DiagnosticDescriptor DoNotUseHostConfigureLogging = new(
         "ASP0011",
-        "Suggest using builder.Logging over Host.ConfigureLogging or WebHost.ConfigureLoggin",
+        "Suggest using builder.Logging over Host.ConfigureLogging or WebHost.ConfigureLogging",
         "Suggest using builder.Logging instead of {0}",
         "Usage",
         DiagnosticSeverity.Warning,
