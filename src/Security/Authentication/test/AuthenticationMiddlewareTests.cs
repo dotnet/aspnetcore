@@ -178,6 +178,7 @@ public class AuthenticationMiddlewareTests
 
         var options = app.Services.GetService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
         Assert.Equal(new[] { "SomeIssuer" }, options.TokenValidationParameters.ValidIssuers);
+        Assert.Equal(new[] { "https://localhost:5001" }, options.TokenValidationParameters.ValidAudiences);
     }
 
     private HttpContext GetHttpContext(
