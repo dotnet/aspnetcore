@@ -609,7 +609,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="_CreateInternalSharedFxArchive"
           Inputs="@(SharedFxContent)"
           Outputs="$(InternalArchiveOutputPath)">
-    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(InternalArchiveOutputPath)" />
     <ZipDirectory
       SourceDirectory="$(SharedFrameworkLayoutRoot)"
       DestinationFile="$(InternalArchiveOutputPath)"
@@ -619,6 +618,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Command="tar -czf $(InternalArchiveOutputPath) ."
       WorkingDirectory="$(SharedFrameworkLayoutRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
+    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(InternalArchiveOutputPath)" />
   </Target>
 
   <Target Name="_CreateRedistCompositeArchive"
