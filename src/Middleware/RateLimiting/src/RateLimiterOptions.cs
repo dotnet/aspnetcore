@@ -64,8 +64,6 @@ public sealed class RateLimiterOptions
     /// Adds a new rate limiting policy with the given policyName.
     /// </summary>
     /// <param name="policyName">The name to be associated with the given TPolicy.</param>
-    [UnconditionalSuppressMessage("Trimmer", "IL2087",
-        Justification = "On Unix, the TrimAnalyzer can't tell that the TPolicy in the policyFunc is the same as the annotated one in the method declaration.")]
     public RateLimiterOptions AddPolicy<TPartitionKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPolicy>(string policyName) where TPolicy : IRateLimiterPolicy<TPartitionKey>
     {
         ArgumentNullException.ThrowIfNull(policyName);
@@ -75,9 +73,10 @@ public sealed class RateLimiterOptions
             throw new ArgumentException($"There already exists a policy with the name {policyName}");
         }
 
+        var policyType = new PolicyTypeState(typeof(TPolicy));
         Func <IServiceProvider, DefaultRateLimiterPolicy> policyFunc = serviceProvider =>
         {
-            var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance<TPolicy>(serviceProvider);
+            var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance(serviceProvider, policyType.PolicyType);
             return new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(instance.GetPartition), instance.OnRejected);
         };
 
@@ -130,5 +129,17 @@ public sealed class RateLimiterOptions
             RateLimitPartition<TPartitionKey> partition = partitioner(context);
             return new RateLimitPartition<DefaultKeyType>(new DefaultKeyType<TPartitionKey>(partition.PartitionKey), key => partition.Factory(partition.PartitionKey));
         });
+    }
+
+    // Workaround for linker bug: https://github.com/dotnet/linker/issues/1981
+    private readonly struct PolicyTypeState
+    {
+        public PolicyTypeState([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type policyType)
+        {
+            PolicyType = policyType;
+        }
+
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+        public Type PolicyType { get; }
     }
 }
