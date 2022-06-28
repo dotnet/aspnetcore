@@ -179,6 +179,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
     <RedistArchiveOutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</RedistArchiveOutputFileName>
     <RedistArchiveOutputPath>$(InstallersOutputPath)$(RedistArchiveOutputFileName)</RedistArchiveOutputPath>
+    <CompositeArchiveOutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)-composite$(ArchiveExtension)</CompositeArchiveOutputFileName>
+    <CompositeArchiveOutputPath>$(InstallersOutputPath)$(CompositeArchiveOutputFileName)</CompositeArchiveOutputPath>
   </PropertyGroup>
 
   <!-- Target chain -->
@@ -206,6 +208,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _BatchCopyToRedistLayout;
       _CreateInternalSharedFxArchive;
       _CreateRedistSharedFxArchive;
+      _CreateRedistCompositeArchive;
     </CoreBuildDependsOn>
     <!-- If Build won't run in the GenerateNuspec context, need to update Content, None and _PackageFiles. -->
     <GenerateNuspecDependsOn Condition=" '$(NoBuild)' == 'true' AND '$(GeneratePackageOnBuild)' != 'true' ">
@@ -600,7 +603,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
-    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(LocalInstallationOutputPath)" />
+    <Message Importance="High" Text="MESSAGEY (_INSTALLFRAMEWORKINTOLOCALDOTNET)- $(MSbuildProjectFile) -> $(LocalInstallationOutputPath)" />
   </Target>
 
   <Target Name="_CreateInternalSharedFxArchive"
@@ -615,7 +618,21 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Command="tar -czf $(InternalArchiveOutputPath) ."
       WorkingDirectory="$(SharedFrameworkLayoutRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
-    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(InternalArchiveOutputPath)" />
+  </Target>
+
+  <Target Name="_CreateRedistCompositeArchive"
+          Inputs="$(CompositeTargetDir)"
+          Outputs="$(CompositeArchiveOutputPath)">
+    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(CompositeArchiveOutputPath)" />
+    <ZipDirectory
+      SourceDirectory="$(CompositeTargetDir)"
+      DestinationFile="$(CompositeArchiveOutputPath)"
+      Overwrite="true"
+      Condition="'$(ArchiveExtension)' == '.zip'" />
+    <Exec
+      Command="tar -czf $(CompositeArchiveOutputPath)"
+      WorkingDirectory="$(CompositeTargetDir)"
+      Condition="'$(ArchiveExtension)' == '.tar.gz'" />
   </Target>
 
   <!-- Redist tarball including the dotnet-runtime is not needed in source build -->
