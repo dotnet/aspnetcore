@@ -2562,7 +2562,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0-preview6"
+              "milestoneName": "7.0-preview7"
             }
           }
         ],

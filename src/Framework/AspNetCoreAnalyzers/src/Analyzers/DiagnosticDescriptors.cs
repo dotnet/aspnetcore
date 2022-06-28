@@ -80,6 +80,15 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
 
+    internal static readonly DiagnosticDescriptor DoNotUseHostConfigureLogging = new(
+        "ASP0011",
+        "Suggest using builder.Logging over Host.ConfigureLogging or WebHost.ConfigureLogging",
+        "Suggest using builder.Logging instead of {0}",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+  
     internal static readonly DiagnosticDescriptor DisallowConfigureAppConfigureHostBuilder = new(
         "ASP0013",
         "Suggest using WebApplicationBuilder.Configuration over Configure methods",
@@ -88,5 +97,4 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
-
 }

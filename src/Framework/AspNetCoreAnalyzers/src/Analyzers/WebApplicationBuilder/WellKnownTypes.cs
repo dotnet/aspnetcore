@@ -55,7 +55,7 @@ internal sealed class WellKnownTypes
             GenericHostWebHostBuilderExtensions = genericHostWebHostBuilderExtensions,
             HostingAbstractionsWebHostBuilderExtensions = hostingAbstractionsWebHostBuilderExtensions,
             WebHostBuilderExtensions = webHostBuilderExtensions,
-            HostingHostBuilderExtensions = hostingHostBuilderExtensions,
+            HostingHostBuilderExtensions = hostingHostBuilderExtensions
         };
 
         return true;

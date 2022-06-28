@@ -25,16 +25,16 @@ public class UserJwtsTestFixture : IDisposable
 
     private const string LaunchSettingsTemplate = @"
 {
+  ""iisSettings"": {
+    ""windowsAuthentication"": false,
+    ""anonymousAuthentication"": true,
+    ""iisExpress"": {
+      ""applicationUrl"": ""http://localhost:23528"",
+      ""sslPort"": 44395
+    }
+  },
   ""profiles"": {
-    ""iisSettings"": {
-        ""windowsAuthentication"": false,
-        ""anonymousAuthentication"": true,
-        ""iisExpress"": {
-            ""applicationUrl"": ""http://localhost:23528"",
-            ""sslPort"": 44395
-        }
-    },
-    ""HttpApiSampleApp"": {
+    ""HttpWebApp"": {
       ""commandName"": ""Project"",
       ""dotnetRunMessages"": true,
       ""launchBrowser"": true,
@@ -42,11 +42,27 @@ public class UserJwtsTestFixture : IDisposable
       ""environmentVariables"": {
         ""ASPNETCORE_ENVIRONMENT"": ""Development""
       }
+    },
+    ""HttpsOnly"": {
+      ""commandName"": ""Project"",
+      ""dotnetRunMessages"": true,
+      ""launchBrowser"": true,
+      ""applicationUrl"": ""https://localhost:5001"",
+      ""environmentVariables"": {
+        ""ASPNETCORE_ENVIRONMENT"": ""Development""
+      }
+    },
+    ""IIS Express"": {
+      ""commandName"": ""IISExpress"",
+      ""launchBrowser"": true,
+      ""environmentVariables"": {
+        ""ASPNETCORE_ENVIRONMENT"": ""Development""
+      }
     }
   }
 }";
 
-    public string CreateProject(bool hasSecret = true)
+    public string CreateProject(bool hasSecret = true, string appSettingsContent = "{}")
     {
         var projectPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
         Directory.CreateDirectory(Path.Combine(projectPath.FullName, "Properties"));
@@ -65,7 +81,7 @@ public class UserJwtsTestFixture : IDisposable
 
         File.WriteAllText(
             Path.Combine(projectPath.FullName, "appsettings.Development.json"),
-            "{}");
+            appSettingsContent);
 
         if (hasSecret)
         {

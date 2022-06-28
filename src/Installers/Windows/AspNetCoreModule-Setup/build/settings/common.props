@@ -14,8 +14,6 @@
   <!-- General properties -->
 
   <PropertyGroup>
-    <IisOobWinSdkVersion Condition="'$(IisOobWinSdkVersion)' == ''">10.0.18362.0</IisOobWinSdkVersion>
-    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">$(IisOobWinSdkVersion)</WindowsTargetPlatformVersion>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
 

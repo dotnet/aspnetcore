@@ -96,6 +96,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public int OverscanCount { get; set; } = 3;
 
     /// <summary>
+    /// Gets or sets the tag name of the HTML element that will be used as the virtualization spacer.
+    /// One such element will be rendered before the visible items, and one more after them, using
+    /// an explicit "height" style to control the scroll range.
+    ///
+    /// The default value is "div". If you are placing the <see cref="Virtualize{TItem}"/> instance inside
+    /// an element that requires a specific child tag name, consider setting that here. For example when
+    /// rendering inside a "tbody", consider setting <see cref="SpacerElement"/> to the value "tr".
+    /// </summary>
+    [Parameter]
+    public string SpacerElement { get; set; } = "div";
+
+    /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
     /// This is useful if external data may have changed. There is no need to call this
     /// when using <see cref="Items"/>.
@@ -178,7 +190,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             throw oldRefreshException;
         }
 
-        builder.OpenElement(0, "div");
+        builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
         builder.AddElementReferenceCapture(2, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
@@ -235,7 +247,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
-        builder.OpenElement(6, "div");
+        builder.OpenElement(6, SpacerElement);
         builder.AddAttribute(7, "style", GetSpacerStyle(itemsAfter));
         builder.AddElementReferenceCapture(8, elementReference => _spacerAfter = elementReference);
 

@@ -65,7 +65,7 @@ public class JSComponentInterop
     /// </summary>
     protected internal virtual int AddRootComponent(string identifier, string domElementSelector)
     {
-        if (!Configuration.JSComponentTypesByIdentifier.TryGetValue(identifier, out var componentType))
+        if (!Configuration.TryGetComponentType(identifier, out var componentType))
         {
             throw new ArgumentException($"There is no registered JS component with identifier '{identifier}'.");
         }
