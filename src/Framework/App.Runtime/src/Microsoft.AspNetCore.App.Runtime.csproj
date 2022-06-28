@@ -603,12 +603,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
-    <Message Importance="High" Text="MESSAGEY (_INSTALLFRAMEWORKINTOLOCALDOTNET)- $(MSbuildProjectFile) -> $(LocalInstallationOutputPath)" />
+    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(LocalInstallationOutputPath)" />
   </Target>
 
   <Target Name="_CreateInternalSharedFxArchive"
           Inputs="@(SharedFxContent)"
           Outputs="$(InternalArchiveOutputPath)">
+    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(InternalArchiveOutputPath)" />
     <ZipDirectory
       SourceDirectory="$(SharedFrameworkLayoutRoot)"
       DestinationFile="$(InternalArchiveOutputPath)"
