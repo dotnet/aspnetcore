@@ -5,6 +5,3 @@ Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.get -> double
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.set -> void
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.get -> double
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.set -> void
-Microsoft.AspNetCore.Components.Web.MouseEventArgs.Region.get -> string!
-Microsoft.AspNetCore.Components.Web.MouseEventArgs.Region.set -> void
-

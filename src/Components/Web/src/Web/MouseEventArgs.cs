@@ -108,9 +108,4 @@ public class MouseEventArgs : EventArgs
     /// The Y coordinate of the mouse pointer relative to the position of the last mousemove event.
     /// </summary>
     public double MovementY { get; set; }
-
-    /// <summary>
-    /// Returns null or the id of the hit region affected by the event.
-    /// </summary>
-    public string Region { get; set; } = default!;
 }
