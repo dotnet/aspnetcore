@@ -169,6 +169,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 abortReason = new ConnectionAbortedException(exception.Message, exception);
             }
 
+            if (_context.WebTransportSession is not null)
+            {
+                _context.WebTransportSession.Abort(abortReason, errorCode);
+            }
+
             Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
 
             // Call _http3Output.Stop() prior to poisoning the request body stream or pipe to
@@ -1211,14 +1216,14 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (HttpResponseHeaders)ResponseHeaders, false, false);
         await Output.FlushAsync(token);
 
+        _context.WebTransportSession = _context.Connection!.OpenNewWebTransportSession(this);
+
         // listener to abort if this connection is closed
         _context.StreamContext.ConnectionClosed.Register(state =>
         {
             var session = (WebTransportSession)state!;
             session.OnClientConnectionClosed();
         }, _context.WebTransportSession);
-
-        _context.WebTransportSession = _context.Connection!.OpenNewWebTransportSession(this);
 
         return _context.WebTransportSession;
     }

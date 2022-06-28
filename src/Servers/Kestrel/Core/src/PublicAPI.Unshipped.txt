@@ -7,3 +7,21 @@ Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.Abort() -
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.SessionId.get -> long
+Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream
+Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException! abortReason) -> void
+Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.StreamId.get -> long
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.CanRead.get -> bool
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.CanSeek.get -> bool
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.CanWrite.get -> bool
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.Close() -> void
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.Flush() -> void
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.FlushAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.Length.get -> long
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.Position.get -> long
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.Position.set -> void
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.Read(byte[]! buffer, int offset, int count) -> int
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.SetLength(long value) -> void
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.Write(byte[]! buffer, int offset, int count) -> void
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.WriteAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport.WebTransportStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask

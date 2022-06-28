@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 /// Represents a base WebTransport stream. Do not use directly as it does not
 /// contain logic for handling data.
 /// </summary>
-internal class WebTransportStream : Stream
+public class WebTransportStream : Stream
 {
     private bool _canRead;
     private bool _isClosed;
@@ -28,7 +28,7 @@ internal class WebTransportStream : Stream
 
     internal readonly Http3StreamContext _context;
     internal readonly IStreamIdFeature _streamIdFeature = default!;
-    //internal readonly IStreamAbortFeature _streamAbortFeature = default!;
+    internal readonly IStreamAbortFeature _streamAbortFeature = default!;
     internal readonly IProtocolErrorCodeFeature _errorCodeFeature = default!;
     internal readonly WebTransportStreamType _type;
 
@@ -60,7 +60,7 @@ internal class WebTransportStream : Stream
         _type = type;
         _context = context;
         _streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
-        //_streamAbortFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamAbortFeature>();
+        _streamAbortFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamAbortFeature>();
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
 
         // will not trigger if closed only of of the directions of a stream. Stream must be fully
@@ -129,13 +129,13 @@ internal class WebTransportStream : Stream
 
         if (CanRead)
         {
-            //_streamAbortFeature.AbortRead((long)errorCode, abortReason);
+            _streamAbortFeature.AbortRead((long)errorCode, abortReason);
             Input.Complete(abortReason);
         }
 
         if (CanWrite)
         {
-            //_streamAbortFeature.AbortWrite((long)errorCode, abortReason);
+            _streamAbortFeature.AbortWrite((long)errorCode, abortReason);
             Output.Complete(abortReason);
         }
     }
@@ -219,6 +219,13 @@ internal class WebTransportStream : Stream
         return ReadAsyncInternal(new(buffer), offset, count, CancellationToken.None).GetAwaiter().GetResult();
     }
 
+    /// <summary>
+    /// Writes data from the buffer to the stream.
+    /// </summary>
+    /// <param name="buffer">Data to write.</param>
+    /// <param name="offset">offset from which to start reading in data ion the buffer.</param>
+    /// <param name="count">number of bytes to write from the buffer.</param>
+    /// <exception cref="NotSupportedException">Not supported on readonly streams.</exception>
     public override void Write(byte[] buffer, int offset, int count)
     {
         if (!CanWrite)
@@ -229,6 +236,15 @@ internal class WebTransportStream : Stream
         WriteAsync(buffer, offset, count, default).GetAwaiter().GetResult();
     }
 
+    /// <summary>
+    /// Writes data from the buffer to the stream.
+    /// </summary>
+    /// <param name="buffer">Data to write.</param>
+    /// <param name="offset">offset from which to start reading in data ion the buffer.</param>
+    /// <param name="count">number of bytes to write from the buffer.</param>
+    /// <param name="cancellationToken">THe cancellation token for this operation.</param>
+    /// <returns>An awaitable task that completes when the write is done.</returns>
+    /// <exception cref="NotSupportedException">Not supported on readonly streams.</exception>
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         if (!CanWrite)
@@ -239,6 +255,13 @@ internal class WebTransportStream : Stream
         return Output.WriteAsync(new Memory<byte>(buffer, offset, count), cancellationToken).GetAsTask();
     }
 
+    /// <summary>
+    /// Writes data from the buffer to the stream.
+    /// </summary>
+    /// <param name="buffer">Data to write.</param>
+    /// <param name="cancellationToken">THe cancellation token for this operation.</param>
+    /// <returns>An awaitable task that completes when the write is done.</returns>
+    /// <exception cref="NotSupportedException">Not supported on readonly streams.</exception>
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
     {
         if (!CanWrite)

@@ -30,15 +30,17 @@ public class Startup
                 //// ACCEPT AN INCOMING STREAM
                 var stream2 = await session.AcceptStreamAsync(CancellationToken.None);
 
+                context.Abort();
+
                 //// WRITE TO A STREAM
                 //await Task.Delay(200);
                 //await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
                 //await stream.FlushAsync();
 
                 //// READ FROM A STREAM:
-                var memory = new Memory<byte>(new byte[4096]);
-                var test = await stream2.ReadAsync(memory);
-                Console.WriteLine(System.Text.Encoding.Default.GetString(memory.ToArray()));
+                //var memory = new Memory<byte>(new byte[4096]);
+                //var test = await stream2.ReadAsync(memory);
+                //Console.WriteLine(System.Text.Encoding.Default.GetString(memory.ToArray()));
             }
             else
             {

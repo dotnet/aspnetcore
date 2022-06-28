@@ -155,6 +155,18 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             _aborted = true;
         }
 
+        foreach (var session in _webtransportSessions)
+        {
+            if (ex.InnerException is not null)
+            {
+                session.Value.Abort(new ConnectionAbortedException(ex.Message, ex.InnerException), errorCode);
+            }
+            else
+            {
+                session.Value.Abort(new ConnectionAbortedException(ex.Message), errorCode);
+            }
+        }
+
         if (!previousState)
         {
             _errorCodeFeature.Error = (long)errorCode;

@@ -90,9 +90,15 @@ internal class WebTransportSession : IWebTransportSession
             _connectStream.Abort(exception, error);
             foreach (var stream in _openStreams)
             {
-                stream.Value.Abort(new ConnectionAbortedException(exception.Message, exception.InnerException));
+                if (exception.InnerException is not null)
+                {
+                    stream.Value.Abort(new ConnectionAbortedException(exception.Message, exception.InnerException));
+                }
+                else
+                {
+                    stream.Value.Abort(new ConnectionAbortedException(exception.Message));
+                }
             }
-
         }
 
         _openStreams.Clear();
