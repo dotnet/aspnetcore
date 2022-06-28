@@ -64,6 +64,8 @@ public sealed class RateLimiterOptions
     /// Adds a new rate limiting policy with the given policyName.
     /// </summary>
     /// <param name="policyName">The name to be associated with the given TPolicy.</param>
+    [UnconditionalSuppressMessage("Trimmer", "IL2087",
+        Justification = "On Unix, the TrimAnalyzer can't tell that the TPolicy in the policyFunc is the same as the annotated one in the method declaration.")]
     public RateLimiterOptions AddPolicy<TPartitionKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPolicy>(string policyName) where TPolicy : IRateLimiterPolicy<TPartitionKey>
     {
         ArgumentNullException.ThrowIfNull(policyName);
@@ -75,7 +77,7 @@ public sealed class RateLimiterOptions
 
         Func <IServiceProvider, DefaultRateLimiterPolicy> policyFunc = serviceProvider =>
         {
-            var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance(serviceProvider, typeof(TPolicy));
+            var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance<TPolicy>(serviceProvider);
             return new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(instance.GetPartition), instance.OnRejected);
         };
 
