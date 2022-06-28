@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 

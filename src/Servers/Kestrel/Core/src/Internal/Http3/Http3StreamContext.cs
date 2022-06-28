@@ -13,27 +13,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal sealed class Http3StreamContext : HttpConnectionContext
 {
     public Http3StreamContext(
-           string connectionId,
-           HttpProtocols protocols,
-           AltSvcHeader? altSvcHeader,
-           BaseConnectionContext connectionContext,
-           ServiceContext serviceContext,
-           IFeatureCollection connectionFeatures,
-           MemoryPool<byte> memoryPool,
-           IPEndPoint? localEndPoint,
-           IPEndPoint? remoteEndPoint,
-           IHttp3StreamLifetimeHandler streamLifetimeHandler,
-           ConnectionContext streamContext,
-           Http3PeerSettings clientPeerSettings,
-           Http3PeerSettings serverPeerSettings) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
-    {
-        StreamLifetimeHandler = streamLifetimeHandler;
-        StreamContext = streamContext;
-        ClientPeerSettings = clientPeerSettings;
-        ServerPeerSettings = serverPeerSettings;
-    }
-
-    public Http3StreamContext(
         string connectionId,
         HttpProtocols protocols,
         AltSvcHeader? altSvcHeader,
@@ -58,5 +37,5 @@ internal sealed class Http3StreamContext : HttpConnectionContext
     public Http3PeerSettings ClientPeerSettings { get; }
     public Http3PeerSettings ServerPeerSettings { get; }
     public WebTransportSession? WebTransportSession { get; set; }
-    public Http3Connection? Connection { get; }
+    public Http3Connection Connection { get; }
 }

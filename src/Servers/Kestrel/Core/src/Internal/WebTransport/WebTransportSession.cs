@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Net.Http;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -17,12 +18,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 /// </summary>
 internal class WebTransportSession : IWebTransportSession
 {
-    private readonly Dictionary<long, WebTransportStream> _openStreams = new();
-    private readonly ConcurrentQueue<WebTransportStream> _pendingStreams = new();
-    private readonly SemaphoreSlim _pendingAcceptStreamRequests = new(0);
+    private readonly ConcurrentDictionary<long, WebTransportStream> _openStreams = new();
+    private readonly Channel<WebTransportStream> _pendingStreams;
     private readonly Http3Connection _connection;
-    private readonly Http3Stream _controlStream = default!;
+    private readonly Http3Stream _connectStream = default!;
     private bool _isClosing;
+
+    private static readonly ReadOnlyMemory<byte> _outputStreamHeader = new(new byte[] {
+            0x40 /*quic variable-length integer length*/,
+            (byte)Http3StreamType.WebTransportUnidirectional,
+            0x00 /*body*/});
 
     internal static string WebTransportProtocolValue => "webtransport";
     internal static string SecPrefix => "sec-webtransport-http3-";
@@ -35,13 +40,14 @@ internal class WebTransportSession : IWebTransportSession
         $"{VersionHeaderPrefix}02"
     };
 
-    long IWebTransportSession.SessionId => _controlStream.StreamId;
+    long IWebTransportSession.SessionId => _connectStream.StreamId;
 
-    internal WebTransportSession(Http3Connection connection, Http3Stream controlStream)
+    internal WebTransportSession(Http3Connection connection, Http3Stream connectStream)
     {
         _connection = connection;
-        _controlStream = controlStream;
+        _connectStream = connectStream;
         _isClosing = false;
+        _pendingStreams = Channel.CreateBounded<WebTransportStream>(100); // todo what should the capacity be?
     }
 
     void IWebTransportSession.Abort()
@@ -65,10 +71,10 @@ internal class WebTransportSession : IWebTransportSession
                 stream.Value.Close();
             }
 
-            _openStreams.Clear();
         }
 
-        _pendingStreams.Clear();
+        _openStreams.Clear();
+        _pendingStreams.Writer.Complete();
     }
 
     internal void Abort(ConnectionAbortedException exception, Http3ErrorCode error)
@@ -81,23 +87,23 @@ internal class WebTransportSession : IWebTransportSession
         _isClosing = true;
         lock (_openStreams)
         {
-            _controlStream.Abort(exception, error);
+            _connectStream.Abort(exception, error);
             foreach (var stream in _openStreams)
             {
-                stream.Value.Abort(exception);
+                stream.Value.Abort(new ConnectionAbortedException(exception.Message, exception.InnerException));
             }
 
-            _openStreams.Clear();
         }
 
-        _pendingStreams.Clear();
+        _openStreams.Clear();
+        _pendingStreams.Writer.Complete();
     }
 
     public async ValueTask<Stream> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
     {
         if (_isClosing)
         {
-            throw new Exception("WebTransport is closing the session");
+            throw new ObjectDisposedException("WebTransport is closing the session");
         }
         // create the stream
         var features = new FeatureCollection();
@@ -108,10 +114,7 @@ internal class WebTransportSession : IWebTransportSession
 
         // send the stream header
         // https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-unidirectional-streams
-        await stream.WriteAsync(new ReadOnlyMemory<byte>(new byte[] {
-            0x40 /*quic variable-length integer length*/,
-            (byte)Http3StreamType.WebTransportUnidirectional,
-            0x00 /*body*/}), cancellationToken);
+        await stream.WriteAsync(_outputStreamHeader, cancellationToken);
         await stream.FlushAsync(cancellationToken);
 
         return stream;
@@ -125,13 +128,12 @@ internal class WebTransportSession : IWebTransportSession
     {
         if (_isClosing)
         {
-            throw new Exception("WebTransport is closing the session");
+            throw new ObjectDisposedException("WebTransport is closing the session");
         }
 
-        lock (_pendingStreams)
+        if (!_pendingStreams.Writer.TryWrite(stream))
         {
-            _pendingStreams.Enqueue(stream);
-            _pendingAcceptStreamRequests.Release();
+            throw new Exception("Failed to add incoming stream to pending queue");
         }
     }
 
@@ -144,17 +146,16 @@ internal class WebTransportSession : IWebTransportSession
     {
         if (_isClosing)
         {
-            throw new Exception("WebTransport is closing the session");
+            throw new ObjectDisposedException("WebTransport is closing the session");
         }
 
-        await _pendingAcceptStreamRequests.WaitAsync(cancellationToken);
+        var stream = await _pendingStreams.Reader.ReadAsync(cancellationToken);
 
-        var success = _pendingStreams.TryDequeue(out var stream);
-        if (!success)
+        var success2 = _openStreams.TryAdd(stream!.StreamId, stream);
+        if (!success2)
         {
-            throw new Exception("Failed to accept the next stream in the queue");
+            throw new Exception("A stream with this id is already open");
         }
-        _openStreams.Add(stream!.StreamId, stream);
 
         return stream!;
     }
@@ -166,9 +167,13 @@ internal class WebTransportSession : IWebTransportSession
     /// <returns>True is the process succeeded. False otherwise</returns>
     internal bool TryRemoveStream(long streamId)
     {
-        lock (_openStreams)
+        var success = _openStreams.Remove(streamId, out var stream);
+
+        if (stream is not null && (stream.CanRead || stream.CanWrite))
         {
-            return _openStreams.Remove(streamId);
+            stream.Close();
         }
+
+        return success;
     }
 }

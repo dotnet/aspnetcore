@@ -1,21 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.Net.Http.Headers;
-using System;
-using System.Buffers;
-using System.IO.Pipelines;
-using System.IO;
-using System.Net;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
