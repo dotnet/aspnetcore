@@ -126,8 +126,8 @@ public class DefaultAuthorizationServiceTests
             services.AddSingleton<IAuthorizationHandler>(handler1);
             services.AddSingleton<IAuthorizationHandler>(handler2);
             services.AddAuthorizationBuilder()
-            .AddPolicy("Custom", policy => policy.Requirements.Add(new CustomRequirement()))
-            .SetInvokeHandlersAfterFailure(invokeAllHandlers);
+                .AddPolicy("Custom", policy => policy.Requirements.Add(new CustomRequirement()))
+                .InvokeHandlersAfterFailure(invokeAllHandlers);
         });
 
         // Act
