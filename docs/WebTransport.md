@@ -12,7 +12,7 @@ The Chromium project has implemented a WebTransport client and can be accessed v
 
 # Overview of the Kestrel WebTransport API
 ## Setting up a connection
-To setup a WebTransport connection, you will first you wil need to configure a host upon which you open a port. A very minimal example is shown below:
+To setup a WebTransport connection, you will first need to configure a host upon which you open a port. A very minimal example is shown below:
 ```C#
 public class Program
 {
@@ -70,13 +70,13 @@ public class Startup
 The `Configure` method is the main entry-point of your application logic. The `app.Use` block is triggered every time there is a connection request. Once the request is a WebTransport request (which is defined by getting the `IHttpWebTransportFeature` feature and then checking the `IsWebTransportRequest` property), you will be able to accept WebTransport sessions and interact with the client.
 
 ## Available WebTransport Features in Kestrel
-This section highlights some of the most significant features of WebTransport that KEstrel implements. This is not an exhaustive list.
+This section highlights some of the most significant features of WebTransport that Kestrel implements. This is not an exhaustive list.
 
 - Accept a WebTransport Session
 ```C#
 var session = await feature.AcceptAsync(CancellationToken token);
 ```
-This will await for the next incoming WebTransport session and return an instance of `IWebTransportSession` when a connection is completed. A session must be created prior to any streams being created or any data is sent. Note that only clients can initiate a session, thus the server passively waits until one is received and cannot initiate it's own session. The cancellation token can be used to stop the operation.
+This will await for the next incoming WebTransport session and return an instance of `IWebTransportSession` when a connection is completed. A session must be created prior to any streams being created or any data is sent. Note that only clients can initiate a session, thus the server passively waits until one is received and cannot initiate its own session. The cancellation token can be used to stop the operation.
 
 - Accepting a WebTransport stream
 ```C#
