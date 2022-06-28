@@ -128,6 +128,7 @@ public class ApplicationBuilder : IApplicationBuilder
                     $"routing.";
                 throw new InvalidOperationException(message);
             }
+
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             return Task.CompletedTask;
         };
