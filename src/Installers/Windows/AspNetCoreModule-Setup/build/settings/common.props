@@ -14,9 +14,6 @@
   <!-- General properties -->
 
   <PropertyGroup>
-    <!-- If the following line is updated ensure that the /eng/scripts/vs.17.*.json files are updated to include the same version component too. -->
-    <IisOobWinSdkVersion Condition="'$(IisOobWinSdkVersion)' == ''">10.0.18362.0</IisOobWinSdkVersion>
-    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">$(IisOobWinSdkVersion)</WindowsTargetPlatformVersion>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
 
