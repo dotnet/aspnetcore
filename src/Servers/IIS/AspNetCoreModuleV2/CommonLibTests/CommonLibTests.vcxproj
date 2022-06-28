@@ -40,6 +40,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1eac8125-1765-4e2d-8cbe-56dc98a1c8c1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <!-- If the following line is updated ensure that the /eng/scripts/vs.17.*.json files are updated to include the same version component too. -->
     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.19041.0</WindowsTargetPlatformVersion>
     <PlatformToolsetVersion Condition=" '$(PlatformToolsetVersion)' == '' ">v143</PlatformToolsetVersion>
     <ConfigurationType>Application</ConfigurationType>

@@ -66,7 +66,7 @@ public class StaticFileMiddleware
     /// <returns></returns>
     public Task Invoke(HttpContext context)
     {
-        if (!ValidateNoEndpoint(context))
+        if (!ValidateNoEndpointDelegate(context))
         {
             _logger.EndpointMatched();
         }
@@ -91,8 +91,8 @@ public class StaticFileMiddleware
         return _next(context);
     }
 
-    // Return true because we only want to run if there is no endpoint.
-    private static bool ValidateNoEndpoint(HttpContext context) => context.GetEndpoint() == null;
+    // Return true because we only want to run if there is no endpoint delegate.
+    private static bool ValidateNoEndpointDelegate(HttpContext context) => context.GetEndpoint()?.RequestDelegate is null;
 
     private static bool ValidateMethod(HttpContext context)
     {
