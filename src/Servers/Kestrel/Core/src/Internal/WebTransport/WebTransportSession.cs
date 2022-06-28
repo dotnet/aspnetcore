@@ -47,7 +47,8 @@ internal class WebTransportSession : IWebTransportSession
         _connection = connection;
         _connectStream = connectStream;
         _isClosing = false;
-        _pendingStreams = Channel.CreateBounded<WebTransportStream>(100); // todo what should the capacity be?
+        // unbounded as limits to number of streams is enforced elsewhere
+        _pendingStreams = Channel.CreateUnbounded<WebTransportStream>();
     }
 
     void IWebTransportSession.Abort(int errorCode)
