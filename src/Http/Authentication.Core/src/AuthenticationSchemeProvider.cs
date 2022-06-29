@@ -47,17 +47,23 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
 
     private readonly IDictionary<string, AuthenticationScheme> _schemes;
     private readonly List<AuthenticationScheme> _requestHandlers;
-    private static readonly Task<AuthenticationScheme?> _nullScheme = Task.FromResult<AuthenticationScheme?>(null);
-    private Task<AuthenticationScheme?> _autoDefaultScheme = _nullScheme;
-
     // Used as a safe return value for enumeration apis
     private IEnumerable<AuthenticationScheme> _schemesCopy = Array.Empty<AuthenticationScheme>();
     private IEnumerable<AuthenticationScheme> _requestHandlersCopy = Array.Empty<AuthenticationScheme>();
 
     private Task<AuthenticationScheme?> GetDefaultSchemeAsync()
-        => _options.DefaultScheme != null
-        ? GetSchemeAsync(_options.DefaultScheme)
-        : _autoDefaultScheme;
+    {
+        if (_options.DefaultScheme != null)
+        {
+            return GetSchemeAsync(_options.DefaultScheme);
+        }
+        // If no default scheme is specified, and we only have a single scheme, use that
+        if (!_options.DisableAutoDefaultScheme && _schemes.Count == 1)
+        {
+            return GetSchemeAsync(_schemes.First().Key);
+        }
+        return Task.FromResult<AuthenticationScheme?>(null);
+    }
 
     /// <summary>
     /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
@@ -153,8 +159,6 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
             }
             _schemes[scheme.Name] = scheme;
             _schemesCopy = _schemes.Values.ToArray();
-            CheckAutoDefaultScheme();
-
             return true;
         }
     }
@@ -199,7 +203,6 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
                 }
                 _schemes.Remove(name);
                 _schemesCopy = _schemes.Values.ToArray();
-                CheckAutoDefaultScheme();
             }
         }
     }
@@ -207,19 +210,4 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
     /// <inheritdoc />
     public virtual Task<IEnumerable<AuthenticationScheme>> GetAllSchemesAsync()
         => Task.FromResult(_schemesCopy);
-
-    private void CheckAutoDefaultScheme()
-    {
-        if (!_options.DisableAutoDefaultScheme)
-        {
-            if (_schemes.Count == 1)
-            {
-                _autoDefaultScheme = Task.FromResult<AuthenticationScheme?>(_schemesCopy.First());
-            }
-            else
-            {
-                _autoDefaultScheme = _nullScheme;
-            }
-        }
-    }
 }
