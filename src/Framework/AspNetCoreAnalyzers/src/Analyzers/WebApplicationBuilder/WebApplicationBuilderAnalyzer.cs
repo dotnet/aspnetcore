@@ -145,8 +145,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         targetMethod,
                         wellKnownTypes.ConfigureHostBuilder,
                         "ConfigureServices",
-                        configureServicesTypes
-                        ))
+                        configureServicesTypes))
                 {
                     operationAnalysisContext.ReportDiagnostic(
                         CreateDiagnostic(
@@ -162,8 +161,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         targetMethod,
                         wellKnownTypes.ConfigureWebHostBuilder,
                         "ConfigureServices",
-                        configureServicesTypes
-                        ))
+                        configureServicesTypes))
                 {
                     operationAnalysisContext.ReportDiagnostic(
                         CreateDiagnostic(
