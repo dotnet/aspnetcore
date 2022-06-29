@@ -32,7 +32,7 @@ Microsoft.AspNetCore.Http.ProblemDetailsContext
 Microsoft.AspNetCore.Http.ProblemDetailsContext.AdditionalMetadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection?
 Microsoft.AspNetCore.Http.ProblemDetailsContext.AdditionalMetadata.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
-Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.get -> Microsoft.AspNetCore.Mvc.ProblemDetails?
+Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.get -> Microsoft.AspNetCore.Mvc.ProblemDetails!
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetailsContext(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
 Microsoft.AspNetCore.Http.ProblemDetailsTypes

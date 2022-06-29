@@ -41,11 +41,11 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
         // from the factory
         var problemDetails = _problemDetailsFactory.CreateProblemDetails(
             context.HttpContext,
-            context.ProblemDetails?.Status ?? context.HttpContext.Response.StatusCode,
-            context.ProblemDetails?.Title,
-            context.ProblemDetails?.Type,
-            context.ProblemDetails?.Detail,
-            context.ProblemDetails?.Instance);
+            context.ProblemDetails.Status ?? context.HttpContext.Response.StatusCode,
+            context.ProblemDetails.Title,
+            context.ProblemDetails.Type,
+            context.ProblemDetails.Detail,
+            context.ProblemDetails.Instance);
 
         if (context.ProblemDetails?.Extensions is not null)
         {
@@ -68,9 +68,6 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
 
         if (selectedFormatter == null)
         {
-            await Results.Problem(problemDetails)
-                .ExecuteAsync(context.HttpContext);
-
             return context.HttpContext.Response.HasStarted;
         }
 
