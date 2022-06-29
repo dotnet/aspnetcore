@@ -35,6 +35,7 @@
       "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
       "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
       "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
+      "src\\Http\\ProblemDetails\\src\\Microsoft.AspNetCore.Http.ProblemDetails.csproj",
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
