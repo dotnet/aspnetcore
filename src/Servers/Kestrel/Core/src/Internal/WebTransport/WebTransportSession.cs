@@ -102,11 +102,11 @@ internal class WebTransportSession : IWebTransportSession
             {
                 if (exception.InnerException is not null)
                 {
-                    stream.Value.Abort(new ConnectionAbortedException(exception.Message, exception.InnerException));
+                    stream.Value.AbortCore(new ConnectionAbortedException(exception.Message, exception.InnerException), error);
                 }
                 else
                 {
-                    stream.Value.Abort(new ConnectionAbortedException(exception.Message));
+                    stream.Value.AbortCore(new ConnectionAbortedException(exception.Message), error);
                 }
             }
         }
