@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 internal sealed class MacOSCertificateManager : CertificateManager
 {
     private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
-    private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";
+    private static readonly string MacOSUserKeyChain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
     private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
     private const string MacOSFindCertificateCommandLine = "security";
     private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
@@ -91,7 +91,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
 
     internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
     {
-        var sentinelPath = Path.Combine(Environment.GetEnvironmentVariable("HOME")!, ".dotnet", $"certificates.{candidate.GetCertHashString(HashAlgorithmName.SHA256)}.sentinel");
+        var sentinelPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dotnet", $"certificates.{candidate.GetCertHashString(HashAlgorithmName.SHA256)}.sentinel");
         if (!interactive && !File.Exists(sentinelPath))
         {
             return new CheckCertificateStateResult(false, KeyNotAccessibleWithoutUserInteraction);

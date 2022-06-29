@@ -173,7 +173,8 @@ public class JsonTranscodingServiceMethodProviderTests
         // Assert
         Assert.Equal("Error binding gRPC service 'JsonTranscodingInvalidPatternGreeterService'.", ex.Message);
         Assert.Equal("Error binding BadPattern on JsonTranscodingInvalidPatternGreeterService to HTTP API.", ex.InnerException!.InnerException!.Message);
-        Assert.Equal("Path template 'v1/greeter/{name}' must start with a '/'.", ex.InnerException!.InnerException!.InnerException!.Message);
+        Assert.Equal("Error parsing path template 'v1/greeter/{name}'.", ex.InnerException!.InnerException!.InnerException!.Message);
+        Assert.Equal("Path template must start with a '/'.", ex.InnerException!.InnerException!.InnerException!.InnerException!.Message);
     }
 
     private static RouteEndpoint FindGrpcEndpoint(IReadOnlyList<Endpoint> endpoints, string methodName)
