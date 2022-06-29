@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 /// </summary>
 public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
 {
+    private static readonly EndpointMetadataCollection Http405EndpointMetadata = new(new RoutingProblemMetadata(StatusCodes.Status405MethodNotAllowed));
+
     // Used in tests
     internal static readonly string PreflightHttpMethod = HttpMethods.Options;
 
@@ -411,7 +413,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
                 context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 return Task.CompletedTask;
             },
-            new EndpointMetadataCollection(new RoutingProblemMetadata(StatusCodes.Status405MethodNotAllowed)),
+            Http405EndpointMetadata,
             Http405EndpointDisplayName);
     }
 
