@@ -33,12 +33,12 @@ public class WebTransportSessionTests : Http3TestBase
         session.AddStream(WebTransportTestUtilities.CreateStream(WebTransportStreamType.Bidirectional));
         session.AddStream(WebTransportTestUtilities.CreateStream(WebTransportStreamType.Input));
 
-        //// verify that we accepted a bidirectional stream
+        // verify that we accepted a bidirectional stream
         var stream = await session.AcceptStreamAsync(CancellationToken.None);
         Assert.True(stream.CanWrite);
         Assert.True(stream.CanRead);
 
-        //// verify that we accepted a unidirectional stream
+        // verify that we accepted a unidirectional stream
         var stream2 = await session.AcceptStreamAsync(CancellationToken.None);
         Assert.False(stream2.CanWrite);
         Assert.True(stream2.CanRead);

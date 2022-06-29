@@ -180,7 +180,7 @@ public class WebTransportStream : Stream
     /// <param name="buffer">The buffer to read the data into.</param>
     /// <param name="offset">The starting index of the buffer to store data into.</param>
     /// <param name="count">The ending index of the buffer to store data into.</param>
-    /// <returns></returns>
+    /// <returns>the number of bytes read</returns>
     /// <exception cref="NotSupportedException">If this stream is non-readable</exception>
     public override int Read(byte[] buffer, int offset, int count)
     {
@@ -200,9 +200,9 @@ public class WebTransportStream : Stream
     /// <summary>
     /// Read data from the input pipe.
     /// </summary>
-    /// <param name="buffer">buffer to read the data into</param>
-    /// <param name="offset">starting indec in the buffer to start reading into</param>
-    /// <param name="count">number of bytes to read</param>
+    /// <param name="buffer">buffer to read the data into.</param>
+    /// <param name="offset">starting indec in the buffer to start reading into.</param>
+    /// <param name="count">number of bytes to read.</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -321,13 +321,11 @@ public class WebTransportStream : Stream
     /// WebTransport streams don't have a fixed length.
     /// So this field should not be used.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public override long Length => throw new NotSupportedException();
 
     /// <summary>
-    /// WebTransport streams can't seek. So this field should not be used
+    /// WebTransport streams can't seek. So this field should not be used.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public override long Position
     {
         get => throw new NotSupportedException();
@@ -335,18 +333,16 @@ public class WebTransportStream : Stream
     }
 
     /// <summary>
-    /// Don't use. Seeking is not supported
+    /// Don't use. Seeking is not supported.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public override long Seek(long offset, SeekOrigin origin)
     {
         throw new NotSupportedException();
     }
 
     /// <summary>
-    /// Don't use. Length is not defined
+    /// Don't use. Length is not defined.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public override void SetLength(long value)
     {
         throw new NotSupportedException();

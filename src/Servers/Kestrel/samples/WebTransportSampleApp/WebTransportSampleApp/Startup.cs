@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace WebTransportSample;
@@ -22,9 +21,7 @@ public class Startup
             var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
             if (feature.IsWebTransportRequest)
             {
-#pragma warning disable CA2252 // This API requires opting into preview features
                 var session = await feature.AcceptAsync(CancellationToken.None);
-#pragma warning restore CA2252 // This API requires opting into preview features
 
                 //// OPEN A NEW UNIDIRECTIONAL OUTPUT STREAM
                 //var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);

@@ -120,3 +120,73 @@ Aborting a WebTransport session will result in severing the connection with the 
 stream.Abort(int errorCode = 256);
 ```
 Aborting a WebTransport stream will result in abruptly stopping all data transmission and prevent further communication over this stream. The default value (256) represents no error.
+
+## Examples
+
+### Example 1
+This example waits for a bidirectional stream. Once it receives one, it will read the data from it, reverse it and then write it back to the stream.
+```C#
+public void Configure(IApplicationBuilder app)
+    {
+        var memory = new Memory<byte>(new byte[4096]);
+
+        app.Use(async (context, next) =>
+        {
+            var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
+            if (feature.IsWebTransportRequest)
+            {
+                // accept a new session
+                var session = await feature.AcceptAsync(CancellationToken.None);
+
+                WebTransportStream stream;
+                do
+                {
+                    // wait until we get a bidirectional stream
+                    stream = await session.AcceptStreamAsync(CancellationToken.None);
+                } while (stream.CanRead && stream.CanWrite);
+
+                // read some data from the stream
+                var length = await stream.ReadAsync(memory, CancellationToken.None);
+
+                // do some operations on the contents of the data
+                memory.Span.Reverse();
+
+                // write back the data to the stream
+                await stream.WriteAsync(memory, CancellationToken.None);
+                await stream.FlushAsync(CancellationToken.None);
+            }
+            else
+            {
+                await next(context);
+            }
+        });
+    }
+```
+
+### Example 2
+This example opens a new stream from the server side and then sends data.
+```C#
+public void Configure(IApplicationBuilder app)
+    {
+        app.Use(async (context, next) =>
+        {
+            var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
+            if (feature.IsWebTransportRequest)
+            {
+                // accept a new session
+                var session = await feature.AcceptAsync(CancellationToken.None);
+
+                // open a new stream from the server to the client
+                var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
+
+                // write data to the stream
+                await stream.WriteAsync(new Memory<byte>(new byte[] { 65, 66, 67, 68, 69 }), CancellationToken.None);
+                await stream.FlushAsync(CancellationToken.None);
+            }
+            else
+            {
+                await next(context);
+            }
+        });
+    }
+```
