@@ -21,8 +21,8 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.DoNotUseConfigureWebHostWithConfigureHostBuilder,
         DiagnosticDescriptors.DoNotUseConfigureWithConfigureWebHostBuilder,
         DiagnosticDescriptors.DoNotUseUseStartupWithConfigureWebHostBuilder,
+        DiagnosticDescriptors.DoNotUseHostConfigureLogging,
         DiagnosticDescriptors.DoNotUseHostConfigureServices
-        DiagnosticDescriptors.DoNotUseHostConfigureLogging
     });
 
     public override void Initialize(AnalysisContext context)
