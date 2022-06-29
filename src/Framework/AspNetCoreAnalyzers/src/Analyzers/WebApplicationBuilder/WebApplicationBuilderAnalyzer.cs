@@ -51,6 +51,11 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                 wellKnownTypes.HostingHostBuilderExtensions,
                 wellKnownTypes.WebHostBuilderExtensions
             };
+            INamedTypeSymbol[] configureServicesTypes =
+            {
+                wellKnownTypes.HostingHostBuilderExtensions,
+                wellKnownTypes.ConfigureWebHostBuilder
+            };
 
             compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
             {
