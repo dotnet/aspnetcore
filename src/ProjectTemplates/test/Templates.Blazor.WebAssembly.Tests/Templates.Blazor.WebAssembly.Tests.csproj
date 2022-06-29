@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <TestGroupName>ProjectTemplates.Blazor.Tests</TestGroupName>
+    <TestGroupName>ProjectTemplates.Blazor.WebAssembly.Tests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
