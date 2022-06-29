@@ -29,7 +29,7 @@ public sealed class NotFound<TValue> : IResult, IEndpointMetadataProvider, IStat
     /// </summary>
     public TValue? Value { get; internal init; }
 
-    object? IValueHttpResult.RawValue => Value;
+    object? IValueHttpResult.Value => Value;
 
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status404NotFound"/>

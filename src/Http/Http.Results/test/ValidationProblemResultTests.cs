@@ -111,8 +111,8 @@ public class ValidationProblemResultTests
         var result = new ValidationProblem(value) as IValueHttpResult;
 
         // Assert
-        Assert.IsType<HttpValidationProblemDetails>(result.RawValue);
-        Assert.Equal(value, result.RawValue);
+        Assert.IsType<HttpValidationProblemDetails>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     [Fact]

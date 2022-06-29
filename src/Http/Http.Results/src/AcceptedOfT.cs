@@ -58,7 +58,7 @@ public sealed class Accepted<TValue> : IResult, IEndpointMetadataProvider, IStat
     /// </summary>
     public TValue? Value { get; }
 
-    object? IValueHttpResult.RawValue => Value;
+    object? IValueHttpResult.Value => Value;
 
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status202Accepted"/>

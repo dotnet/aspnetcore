@@ -30,7 +30,7 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, ISta
     /// </summary>
     public HttpValidationProblemDetails ProblemDetails { get; }
 
-    object? IValueHttpResult.RawValue => ProblemDetails;
+    object? IValueHttpResult.Value => ProblemDetails;
 
     HttpValidationProblemDetails? IValueHttpResult<HttpValidationProblemDetails>.Value => ProblemDetails;
 

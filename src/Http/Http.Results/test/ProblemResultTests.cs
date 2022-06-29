@@ -162,8 +162,8 @@ public class ProblemResultTests
         var result = new ProblemHttpResult(value) as IValueHttpResult;
 
         // Assert
-        Assert.IsType<ProblemDetails>(result.RawValue);
-        Assert.Equal(value, result.RawValue);
+        Assert.IsType<ProblemDetails>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     [Fact]

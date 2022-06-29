@@ -275,8 +275,8 @@ public class JsonResultTests
             null) as IValueHttpResult;
 
         // Assert
-        Assert.IsType<string>(result.RawValue);
-        Assert.Equal(value, result.RawValue);
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     [Fact]

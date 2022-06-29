@@ -111,8 +111,8 @@ public class AcceptedOfTResultTests
         var result = new Accepted<string>("location", value) as IValueHttpResult;
 
         // Assert
-        Assert.IsType<string>(result.RawValue);
-        Assert.Equal(value, result.RawValue);
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
     }
 
     [Fact]

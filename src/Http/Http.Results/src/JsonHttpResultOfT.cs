@@ -66,7 +66,7 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
     /// </summary>
     public TValue? Value { get; }
 
-    object? IValueHttpResult.RawValue => Value;
+    object? IValueHttpResult.Value => Value;
 
     /// <summary>
     /// Gets the value for the <c>Content-Type</c> header.

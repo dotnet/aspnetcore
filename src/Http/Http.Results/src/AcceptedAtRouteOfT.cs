@@ -50,7 +50,7 @@ public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
     /// </summary>
     public TValue? Value { get; }
 
-    object? IValueHttpResult.RawValue => Value;
+    object? IValueHttpResult.Value => Value;
 
     /// <summary>
     /// Gets the name of the route to use for generating the URL.

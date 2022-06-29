@@ -29,7 +29,7 @@ public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContent
     /// </summary>
     public ProblemDetails ProblemDetails { get; }
 
-    object? IValueHttpResult.RawValue => ProblemDetails;
+    object? IValueHttpResult.Value => ProblemDetails;
 
     ProblemDetails? IValueHttpResult<ProblemDetails>.Value => ProblemDetails;
 

@@ -5,14 +5,14 @@ namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Defines a contract that represents the result of an HTTP endpoint
-/// that contains an object <see cref="RawValue"/>.
+/// that contains an object <see cref="Value"/>.
 /// </summary>
 public interface IValueHttpResult
 {
     /// <summary>
     /// Gets the object result.
     /// </summary>
-    object? RawValue { get; }
+    object? Value { get; }
 }
 
 /// <summary>

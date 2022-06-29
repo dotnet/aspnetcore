@@ -58,7 +58,7 @@ public sealed class Created<TValue> : IResult, IEndpointMetadataProvider, IStatu
     /// </summary>
     public TValue? Value { get; }
 
-    object? IValueHttpResult.RawValue => Value;
+    object? IValueHttpResult.Value => Value;
 
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status201Created"/>
