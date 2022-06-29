@@ -9,7 +9,7 @@ public class WebTransportSessionTests : Http3TestBase
 {
     public WebTransportSessionTests() : base()
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", true);
+        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
     }
 
     [Fact]
