@@ -75,7 +75,7 @@ public class WebTransportHandshakeTests : Http3TestBase
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
             new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
-            new KeyValuePair<string, string>(WebTransportSession.SuppportedWebTransportVersions.First(), "1")
+            new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
         };
 
         await requestStream.SendHeadersAsync(headersConnectFrame);
@@ -113,7 +113,7 @@ public class WebTransportHandshakeTests : Http3TestBase
         nameof(HeaderNames.Scheme), "http",
         nameof(HeaderNames.Path), "/",
         nameof(HeaderNames.Origin), "server.example.com")]  // no authority
-    public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, string targetErrorMessage, params string[] headers) // todo replace the "" with CoreStrings.... then push (maybe also update the waitforstreamerror function) and resolve stephen's comment
+    public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, string targetErrorMessage, params string[] headers)
     {
         _serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
 

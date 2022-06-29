@@ -20,6 +20,8 @@ override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Length.get 
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Position.get -> long
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Position.set -> void
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Read(byte[]! buffer, int offset, int count) -> int
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.ReadAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<int>
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.SetLength(long value) -> void
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Write(byte[]! buffer, int offset, int count) -> void

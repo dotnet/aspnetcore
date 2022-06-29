@@ -73,48 +73,6 @@ public class WebTransportStream : Stream
         }, this);
     }
 
-    private async Task<int> ReadAsyncInternal(Memory<byte> destination, int offset, int count, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var result = await Input.ReadAsync(cancellationToken);
-
-            if (result.IsCanceled)
-            {
-                throw new OperationCanceledException("The read was canceled");
-            }
-
-            var buffer = result.Buffer;
-            var length = buffer.Length;
-
-            var consumed = buffer.End;
-
-            if (length != 0)
-            {
-                var actual = (int)Math.Min(length, Math.Min(destination.Length, count));
-
-                var slice = actual == length ? buffer : buffer.Slice(0, actual);
-                consumed = slice.End;
-                slice.CopyTo(destination[offset..].Span);
-
-                Input.AdvanceTo(consumed);
-
-                return actual;
-            }
-            else
-            {
-                Input.AdvanceTo(consumed);
-                _canRead = false;
-                return 0;
-            }
-        }
-        catch (Exception)
-        {
-            _canRead = false;
-            return 0;
-        }
-    }
-
     internal virtual void AbortCore(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
     {
         if (_isClosed)
@@ -223,7 +181,7 @@ public class WebTransportStream : Stream
     /// <param name="offset">The starting index of the buffer to store data into.</param>
     /// <param name="count">The ending index of the buffer to store data into.</param>
     /// <returns></returns>
-    /// <exception cref="NotSupportedException"></exception>
+    /// <exception cref="NotSupportedException">If this stream is non-readable</exception>
     public override int Read(byte[] buffer, int offset, int count)
     {
         if (!CanRead)
@@ -236,7 +194,68 @@ public class WebTransportStream : Stream
             throw new InvalidOperationException(CoreStrings.SynchronousReadsDisallowed);
         }
 
-        return ReadAsyncInternal(new(buffer), offset, count, CancellationToken.None).GetAwaiter().GetResult();
+        return ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Read data from the input pipe.
+    /// </summary>
+    /// <param name="buffer">buffer to read the data into</param>
+    /// <param name="offset">starting indec in the buffer to start reading into</param>
+    /// <param name="count">number of bytes to read</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
+        return await ReadAsync(buffer.AsMemory<byte>(offset, count), cancellationToken);
+    }
+
+    /// <summary>
+    /// Read data from the input pipe.
+    /// </summary>
+    /// <param name="buffer">buffer to read the data into.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The amounts of bytes read.</returns>
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await Input.ReadAsync(cancellationToken);
+
+            if (result.IsCanceled)
+            {
+                throw new OperationCanceledException("The read was canceled");
+            }
+
+            var resultBuffer = result.Buffer;
+            var length = resultBuffer.Length;
+
+            var consumed = resultBuffer.End;
+
+            if (length != 0)
+            {
+                var actual = (int)Math.Min(length, buffer.Length);
+
+                var slice = actual == length ? resultBuffer : resultBuffer.Slice(0, actual);
+                consumed = slice.End;
+                slice.CopyTo(buffer.Span);
+
+                Input.AdvanceTo(consumed);
+
+                return actual;
+            }
+            else
+            {
+                Input.AdvanceTo(consumed);
+                _canRead = false;
+                return 0;
+            }
+        }
+        catch (Exception)
+        {
+            _canRead = false;
+            return 0;
+        }
     }
 
     /// <summary>

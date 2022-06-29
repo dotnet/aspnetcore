@@ -54,7 +54,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
-    private List<string>? _webTransportVersions;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
     private readonly object _completionLock = new();
@@ -857,20 +856,15 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             if (string.Equals(HttpRequestHeaders.HeaderProtocol, WebTransportSession.WebTransportProtocolValue, StringComparison.Ordinal))
             {
-                // indicate as webtransport request
-                _currentIHttpWebTransportFeature!.IsWebTransportRequest = true;
-
-                _webTransportVersions = new List<string>(HttpRequestHeaders.Count);
-                var index = 0;
+                // if the client supports the same version of WebTransport as Kestrel, make this a WebTransport request
                 foreach (var header in HttpRequestHeaders)
                 {
-                    if (header.Key.StartsWith(WebTransportSession.VersionHeaderPrefix, StringComparison.Ordinal)
+                    if (string.Equals(header.Key, WebTransportSession.CurrentSuppportedVersion, StringComparison.Ordinal)
                             && string.Equals(header.Value, "1", StringComparison.Ordinal))
                     {
-                        _webTransportVersions[index++] = header.Key;
+                        _currentIHttpWebTransportFeature!.IsWebTransportRequest = true;
                     }
                 }
-                _webTransportVersions.TrimExcess();
             }
         }
         else if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
@@ -1195,27 +1189,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         // version negotiation
-        if (_webTransportVersions is null)
+        if (!_currentIHttpWebTransportFeature!.IsWebTransportRequest)
         {
-            throw new Exception("Failed to negotiate a common WebTransport version with client.");
+            throw new Exception($"Failed to negotiate a common WebTransport version with client. Kestrel only supports ${WebTransportSession.CurrentSuppportedVersion}.");
         }
 
-        string? version = null;
-        foreach (var versionSupportedByKestrel in WebTransportSession.SuppportedWebTransportVersions)
-        {
-            foreach (var versionSupportedByClient in _webTransportVersions)
-            {
-                if (string.Equals(versionSupportedByKestrel, versionSupportedByClient, StringComparison.Ordinal))
-                {
-                    version = versionSupportedByKestrel[WebTransportSession.SecPrefix.Length..];
-                }
-            }
-        }
-
-        if (version is null)
-        {
-            throw new Exception("Failed to negotiate a common WebTransport version with client.");
-        }
+        var version = WebTransportSession.CurrentSuppportedVersion[WebTransportSession.SecPrefix.Length..];
 
         // send version negotiation resulting version
         ResponseHeaders.TryAdd(WebTransportSession.VersionHeaderPrefix, version);

@@ -39,7 +39,7 @@ public class Startup
 
                 //// READ FROM A STREAM:
                 var memory = new Memory<byte>(new byte[4096]);
-                var test = await stream2.ReadAsync(memory);
+                var test = await stream2.ReadAsync(memory, CancellationToken.None);
                 Console.WriteLine(System.Text.Encoding.Default.GetString(memory.ToArray()));
             }
             else

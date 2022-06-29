@@ -32,13 +32,7 @@ internal class WebTransportSession : IWebTransportSession
     internal static string WebTransportProtocolValue => "webtransport";
     internal static string SecPrefix => "sec-webtransport-http3-";
     internal static string VersionHeaderPrefix => $"{SecPrefix}draft";
-
-    // Order is important as we choose the first supported
-    // version (preferenc dereases as index increases)
-    internal static readonly IEnumerable<string> SuppportedWebTransportVersions = new string[]
-    {
-        $"{VersionHeaderPrefix}02"
-    };
+    internal static string CurrentSuppportedVersion => $"{VersionHeaderPrefix}02";
 
     long IWebTransportSession.SessionId => _connectStream.StreamId;
 

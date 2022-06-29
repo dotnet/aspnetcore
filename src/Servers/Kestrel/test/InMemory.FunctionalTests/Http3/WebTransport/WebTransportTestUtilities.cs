@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
+using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -63,11 +64,11 @@ internal class WebTransportTestUtilities
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
             new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
-            new KeyValuePair<string, string>(WebTransportSession.SuppportedWebTransportVersions.First(), "1")
+            new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
         };
 
         await requestStream.SendHeadersAsync(headersConnectFrame);
-        var response2 = await requestStream.ExpectHeadersAsync();
+        //_ = await requestStream.ExpectHeadersAsync();
 
         return (WebTransportSession)await appCompletedTcs.Task;
     }
@@ -76,7 +77,8 @@ internal class WebTransportTestUtilities
     {
         var features = new FeatureCollection();
         features[typeof(IStreamIdFeature)] = new StreamId(streamCounter++);
-        features[typeof(IProtocolErrorCodeFeature)] = new ErrorCode();
+        features[typeof(IProtocolErrorCodeFeature)] = Mock.Of<IProtocolErrorCodeFeature>();
+        features[typeof(IStreamAbortFeature)] = Mock.Of<IStreamAbortFeature>();
 
         var writer = new HttpResponsePipeWriter(new StreamWriterControl(memory));
         writer.StartAcceptingWrites();
@@ -93,11 +95,6 @@ internal class WebTransportTestUtilities
         {
             _id = id;
         }
-    }
-
-    class ErrorCode : IProtocolErrorCodeFeature
-    {
-        long IProtocolErrorCodeFeature.Error { get; set; }
     }
 
     class StreamWriterControl : IHttpResponseControl
