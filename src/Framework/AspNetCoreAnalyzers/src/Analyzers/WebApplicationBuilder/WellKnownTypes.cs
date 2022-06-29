@@ -42,6 +42,12 @@ internal sealed class WellKnownTypes
             return false;
         }
 
+        const string HostingHostBuilderExtensions = "Microsoft.Extensions.Hosting.HostingHostBuilderExtensions";
+        if (compilation.GetTypeByMetadataName(HostingHostBuilderExtensions) is not { } hostingHostBuilderExtensions)
+        {
+            return false;
+        }
+
         wellKnownTypes = new WellKnownTypes
         {
             ConfigureHostBuilder = configureHostBuilder,
@@ -49,6 +55,7 @@ internal sealed class WellKnownTypes
             GenericHostWebHostBuilderExtensions = genericHostWebHostBuilderExtensions,
             HostingAbstractionsWebHostBuilderExtensions = hostingAbstractionsWebHostBuilderExtensions,
             WebHostBuilderExtensions = webHostBuilderExtensions,
+            HostingHostBuilderExtensions = hostingHostBuilderExtensions
         };
 
         return true;
@@ -59,4 +66,5 @@ internal sealed class WellKnownTypes
     public INamedTypeSymbol GenericHostWebHostBuilderExtensions { get; private init; }
     public INamedTypeSymbol HostingAbstractionsWebHostBuilderExtensions { get; private init; }
     public INamedTypeSymbol WebHostBuilderExtensions { get; private init; }
+    public INamedTypeSymbol HostingHostBuilderExtensions { get; private init; }
 }

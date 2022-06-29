@@ -148,6 +148,42 @@ public class W3CLoggingMiddlewareTests
     }
 
     [Fact]
+    public async Task LogsAdditionalRequestHeaders_WithNoOtherOptions()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.AdditionalRequestHeaders.Add("x-forwarded-for");
+        options.CurrentValue.LoggingFields = W3CLoggingFields.None;
+
+        var logger = Helpers.CreateTestW3CLogger(options);
+
+        var middleware = new W3CLoggingMiddleware(
+            c =>
+            {
+                c.Response.StatusCode = 200;
+                return Task.CompletedTask;
+            },
+            options,
+            logger);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Protocol = "HTTP/1.0";
+        httpContext.Request.Headers["Cookie"] = "Snickerdoodle";
+        httpContext.Request.Headers["x-forwarded-for"] = "1.3.3.7, 2001:db8:85a3:8d3:1319:8a2e:370:7348";
+        httpContext.Response.StatusCode = 200;
+
+        var now = DateTime.UtcNow;
+        await middleware.Invoke(httpContext);
+        await logger.Processor.WaitForWrites(4).DefaultTimeout();
+
+        var lines = logger.Processor.Lines;
+        Assert.Equal("#Version: 1.0", lines[0]);
+
+        Assert.StartsWith("#Start-Date: ", lines[1]);
+        Assert.Equal("#Fields: cs(x-forwarded-for)", lines[2]);
+        Assert.Equal("1.3.3.7,+2001:db8:85a3:8d3:1319:8a2e:370:7348", lines[3]);
+    }
+
+    [Fact]
     public async Task OmitsDuplicateAdditionalRequestHeaders()
     {
         var options = CreateOptionsAccessor();

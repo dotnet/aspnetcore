@@ -88,6 +88,7 @@ internal static class RouteTableFactory
         return Create(templatesByHandler);
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "Application code does not get trimmed, and the framework does not define routable components.")]
     internal static RouteTable Create(Dictionary<Type, string[]> templatesByHandler)
     {
         var routes = new List<RouteEntry>();

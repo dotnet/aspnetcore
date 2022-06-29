@@ -1748,13 +1748,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestInfrastructure", "TestI
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Mvc.Tests", "src\ProjectTemplates\test\Templates.Mvc.Tests\Templates.Mvc.Tests.csproj", "{AA7445F5-BD28-400C-8507-E2E0D3CF7D7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.Tests", "src\ProjectTemplates\test\Templates.Blazor.Tests\Templates.Blazor.Tests.csproj", "{281BF9DB-7B8A-446B-9611-10A60903F125}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.Server.Tests", "src\ProjectTemplates\test\Templates.Blazor.Server.Tests\Templates.Blazor.Server.Tests.csproj", "{281BF9DB-7B8A-446B-9611-10A60903F125}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stress", "stress", "{A5946454-4788-4871-8F23-A9471D55F115}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.CustomElements", "src\Components\CustomElements\src\Microsoft.AspNetCore.Components.CustomElements.csproj", "{76C3E22D-092B-4E8A-81F0-DCF071BFF4CD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomElements", "CustomElements", "{0BB58FB6-8B66-4C6D-BA8A-DF3AFAF9AB8F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.WebAssembly.Tests", "src\ProjectTemplates\test\Templates.Blazor.WebAssembly.Tests\Templates.Blazor.WebAssembly.Tests.csproj", "{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10501,6 +10503,22 @@ Global
 		{76C3E22D-092B-4E8A-81F0-DCF071BFF4CD}.Release|x64.Build.0 = Release|Any CPU
 		{76C3E22D-092B-4E8A-81F0-DCF071BFF4CD}.Release|x86.ActiveCfg = Release|Any CPU
 		{76C3E22D-092B-4E8A-81F0-DCF071BFF4CD}.Release|x86.Build.0 = Release|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Debug|arm64.Build.0 = Debug|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Debug|x64.Build.0 = Debug|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Debug|x86.Build.0 = Debug|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|arm64.ActiveCfg = Release|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|arm64.Build.0 = Release|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|x64.ActiveCfg = Release|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|x64.Build.0 = Release|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|x86.ActiveCfg = Release|Any CPU
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11368,6 +11386,7 @@ Global
 		{A5946454-4788-4871-8F23-A9471D55F115} = {4FDDC525-4E60-4CAF-83A3-261C5B43721F}
 		{76C3E22D-092B-4E8A-81F0-DCF071BFF4CD} = {0BB58FB6-8B66-4C6D-BA8A-DF3AFAF9AB8F}
 		{0BB58FB6-8B66-4C6D-BA8A-DF3AFAF9AB8F} = {60D51C98-2CC0-40DF-B338-44154EFEE2FF}
+		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9} = {08D53E58-4AAE-40C4-8497-63EC8664F304}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
