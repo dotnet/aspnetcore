@@ -41,7 +41,7 @@ public sealed class RateLimiterOptions
     public int RejectionStatusCode { get; set; } = StatusCodes.Status503ServiceUnavailable;
 
     /// <summary>
-    /// Adds a new rate limiting policy with the given policyName.
+    /// Adds a new rate limiting policy with the given <paramref name="policyName"/>
     /// </summary>
     /// <param name="policyName">The name to be associated with the given <see cref="RateLimiter"/>.</param>
     /// <param name="partitioner">Method called every time an Acquire or WaitAsync call is made to figure out what rate limiter to apply to the request.</param>
@@ -74,7 +74,7 @@ public sealed class RateLimiterOptions
         }
 
         var policyType = new PolicyTypeState(typeof(TPolicy));
-        Func <IServiceProvider, DefaultRateLimiterPolicy> policyFunc = serviceProvider =>
+        Func<IServiceProvider, DefaultRateLimiterPolicy> policyFunc = serviceProvider =>
         {
             var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance(serviceProvider, policyType.PolicyType);
             return new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(instance.GetPartition), instance.OnRejected);

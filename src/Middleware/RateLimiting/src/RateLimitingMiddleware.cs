@@ -32,18 +32,17 @@ internal sealed partial class RateLimitingMiddleware
     /// <param name="serviceProvider">The service provider.</param>
     public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimiterOptions> options, IServiceProvider serviceProvider)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
+        _next = next;
+        _logger = logger;
         _defaultOnRejected = options.Value.OnRejected;
         _rejectionStatusCode = options.Value.RejectionStatusCode;
         _policyMap = options.Value.PolicyMap;
 
-        // Use reflection to activate policies passed to AddPolicy<TPartitionKey, TPolicy>
-
+        // Activate policies passed to AddPolicy<TPartitionKey, TPolicy>
         foreach (var unactivatedPolicy in options.Value.UnactivatedPolicyMap)
         {
             _policyMap.Add(unactivatedPolicy.Key, unactivatedPolicy.Value(serviceProvider));

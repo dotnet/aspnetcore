@@ -18,15 +18,9 @@ public static class RateLimiterEndpointConventionBuilderExtensions
     /// <returns>The original convention builder parameter.</returns>
     public static TBuilder RequireRateLimiting<TBuilder>(this TBuilder builder, string policyName) where TBuilder : IEndpointConventionBuilder
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (policyName == null)
-        {
-            throw new ArgumentNullException(nameof(policyName));
-        }
+        ArgumentNullException.ThrowIfNull(policyName);
 
         builder.Add(endpointBuilder =>
         {
