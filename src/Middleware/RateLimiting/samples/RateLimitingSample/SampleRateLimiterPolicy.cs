@@ -1,0 +1,31 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+
+namespace RateLimitingSample;
+
+public class SampleRateLimiterPolicy : IRateLimiterPolicy<string>
+{
+    private Func<OnRejectedContext, CancellationToken, ValueTask>? _onRejected;
+    private string _partitionKey;
+
+    public SampleRateLimiterPolicy(string partitionKey)
+    {
+        _partitionKey = partitionKey;
+        _onRejected = (context, token) =>
+        {
+            context.HttpContext.Response.StatusCode = 429;
+            return ValueTask.CompletedTask;
+        };
+    }
+
+    public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected { get => _onRejected; }
+
+    // Use a sliding window limiter allowing 1 request every 10 seconds
+    public RateLimitPartition<string> GetPartition(HttpContext httpContext)
+    {
+        return RateLimitPartition.CreateSlidingWindowLimiter<string>(_partitionKey, key => new SlidingWindowRateLimiterOptions(1, QueueProcessingOrder.OldestFirst, 1, TimeSpan.FromSeconds(5), 1));
+    }
+}

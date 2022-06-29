@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.RateLimiting;
 
-internal sealed class DefaultKeyType<TKey>: DefaultKeyType
+internal sealed class DefaultKeyType<TKey> : DefaultKeyType
 {
     private readonly TKey _key;
 

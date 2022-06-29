@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 internal interface IRateLimiterMetadata
 {
     /// <summary>
-    /// The name of the limiter which needs to be applied.
+    /// The name of the policy which needs to be applied.
     /// </summary>
     string PolicyName { get; }
 }

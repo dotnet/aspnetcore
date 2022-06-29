@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,6 @@ internal sealed partial class RateLimitingMiddleware
     private readonly int _rejectionStatusCode;
     private readonly IDictionary<string, DefaultRateLimiterPolicy> _policyMap;
     private readonly DefaultKeyType _defaultPolicyKey = new DefaultKeyType<PolicyNameKey>(new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
-    private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
     /// Creates a new <see cref="RateLimitingMiddleware"/>.
@@ -36,7 +36,7 @@ internal sealed partial class RateLimitingMiddleware
 
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         _defaultOnRejected = options.Value.OnRejected;
         _rejectionStatusCode = options.Value.RejectionStatusCode;
@@ -46,7 +46,7 @@ internal sealed partial class RateLimitingMiddleware
 
         foreach (var unactivatedPolicy in options.Value.UnactivatedPolicyMap)
         {
-            _policyMap.Add(unactivatedPolicy.Key, unactivatedPolicy.Value(_serviceProvider));
+            _policyMap.Add(unactivatedPolicy.Key, unactivatedPolicy.Value(serviceProvider));
         }    
 
         _globalLimiter = options.Value.GlobalLimiter;
@@ -145,13 +145,13 @@ internal sealed partial class RateLimitingMiddleware
         {
             if (_globalLimiter is not null)
             {
-                globalLease = await _globalLimiter.WaitAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                globalLease = await _globalLimiter.WaitAsync(context, cancellationToken: cancellationToken);
                 if (!globalLease.IsAcquired)
                 {
                     return new LeaseContext() { GlobalRejected = true, Lease = globalLease };
                 }
             }
-            endpointLease = await _endpointLimiter.WaitAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+            endpointLease = await _endpointLimiter.WaitAsync(context, cancellationToken: cancellationToken);
             if (!endpointLease.IsAcquired)
             {
                 globalLease?.Dispose();
@@ -174,9 +174,8 @@ internal sealed partial class RateLimitingMiddleware
         // If we have a policy for this endpoint, use its partitioner. Else use a NoLimiter.
         return PartitionedRateLimiter.Create<HttpContext, DefaultKeyType>(context =>
         {
-            DefaultRateLimiterPolicy? policy;
             var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.PolicyName;
-            if (name is not null && _policyMap.TryGetValue(name, out policy))
+            if (name is not null && _policyMap.TryGetValue(name, out var policy))
             {
                 return policy.GetPartition(context);
             }

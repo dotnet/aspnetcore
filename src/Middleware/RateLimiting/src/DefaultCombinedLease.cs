@@ -28,12 +28,12 @@ internal sealed class DefaultCombinedLease : RateLimitLease
                 _metadataNames = new HashSet<string>();
                 if (_globalLease is not null)
                 {
-                    foreach (string metadataName in _globalLease.MetadataNames)
+                    foreach (var metadataName in _globalLease.MetadataNames)
                     {
                         _metadataNames.Add(metadataName);
                     }
                 }
-                foreach (string metadataName in _endpointLease.MetadataNames)
+                foreach (var metadataName in _endpointLease.MetadataNames)
                 {
                     _metadataNames.Add(metadataName);
                 }
@@ -92,7 +92,14 @@ internal sealed class DefaultCombinedLease : RateLimitLease
 
         if (exceptions is not null)
         {
-            throw new AggregateException(exceptions);
+            if (exceptions.Count == 1)
+            {
+                throw exceptions[0];
+            }
+            else
+            {
+                throw new AggregateException(exceptions);
+            }
         }
     }
 }
