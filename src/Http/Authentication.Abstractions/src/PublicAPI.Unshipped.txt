@@ -1,3 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DisableAutoDefaultScheme.get -> bool
+Microsoft.AspNetCore.Authentication.AuthenticationOptions.DisableAutoDefaultScheme.set -> void
 Microsoft.AspNetCore.Authentication.IAuthenticationConfigurationProvider
 Microsoft.AspNetCore.Authentication.IAuthenticationConfigurationProvider.AuthenticationConfiguration.get -> Microsoft.Extensions.Configuration.IConfiguration!
+

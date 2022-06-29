@@ -12,10 +12,11 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test;
 public class AuthenticationSchemeProviderTests
 {
     [Fact]
-    public async Task NoDefaultsByDefault()
+    public async Task NoDefaultsWithoutAutoDefaultScheme()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
         {
+            o.DisableAutoDefaultScheme = true;
             o.AddScheme<SignInHandler>("B", "whatever");
         }).BuildServiceProvider();
 
@@ -28,11 +29,45 @@ public class AuthenticationSchemeProviderTests
     }
 
     [Fact]
+    public async Task NoDefaultsWithMoreSchemes()
+    {
+        var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+        {
+            o.AddScheme<SignInHandler>("A", "whatever");
+            o.AddScheme<SignInHandler>("B", "whatever");
+        }).BuildServiceProvider();
+
+        var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
+        Assert.Null(await provider.GetDefaultForbidSchemeAsync());
+        Assert.Null(await provider.GetDefaultAuthenticateSchemeAsync());
+        Assert.Null(await provider.GetDefaultChallengeSchemeAsync());
+        Assert.Null(await provider.GetDefaultSignInSchemeAsync());
+        Assert.Null(await provider.GetDefaultSignOutSchemeAsync());
+    }
+
+    [Fact]
+    public async Task DefaultSchemesUsesSingleScheme()
+    {
+        var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+        {
+            o.AddScheme<SignInHandler>("B", "whatever");
+        }).BuildServiceProvider();
+
+        var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
+        Assert.Equal("B", (await provider.GetDefaultForbidSchemeAsync())!.Name);
+        Assert.Equal("B", (await provider.GetDefaultAuthenticateSchemeAsync())!.Name);
+        Assert.Equal("B", (await provider.GetDefaultChallengeSchemeAsync())!.Name);
+        Assert.Equal("B", (await provider.GetDefaultSignInSchemeAsync())!.Name);
+        Assert.Equal("B", (await provider.GetDefaultSignOutSchemeAsync())!.Name);
+    }
+
+    [Fact]
     public async Task DefaultSchemesFallbackToDefaultScheme()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
         {
             o.DefaultScheme = "B";
+            o.AddScheme<SignInHandler>("A", "whatever");
             o.AddScheme<SignInHandler>("B", "whatever");
         }).BuildServiceProvider();
 
