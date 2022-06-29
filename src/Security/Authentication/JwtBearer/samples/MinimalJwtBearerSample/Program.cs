@@ -8,9 +8,10 @@ using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Authentication.AddJwtBearer();
-builder.Authentication.AddJwtBearer("ClaimedDetails");
-builder.Authentication.AddJwtBearer("InvalidScheme");
+builder.AddAuthentication()
+    .AddJwtBearer()
+    .AddJwtBearer("ClaimedDetails")
+    .AddJwtBearer("InvalidScheme");
 
 builder.Services.AddAuthorization(options =>
     options.AddPolicy("is_admin", policy =>
