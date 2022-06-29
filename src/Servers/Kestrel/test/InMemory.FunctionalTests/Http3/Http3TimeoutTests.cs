@@ -58,10 +58,10 @@ public class Http3TimeoutTests : Http3TestBase
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             };
 
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication).DefaultTimeout();
@@ -98,10 +98,10 @@ public class Http3TimeoutTests : Http3TestBase
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             };
 
         await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
@@ -135,10 +135,10 @@ public class Http3TimeoutTests : Http3TestBase
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             };
 
         await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
@@ -169,10 +169,10 @@ public class Http3TimeoutTests : Http3TestBase
 
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "Custom"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "Custom"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             };
 
         await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
@@ -254,10 +254,10 @@ public class Http3TimeoutTests : Http3TestBase
 
         await requestStream.SendHeadersAsync(new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
             }, endStream: true);
 
         await requestStream.OnDisposingTask.DefaultTimeout();

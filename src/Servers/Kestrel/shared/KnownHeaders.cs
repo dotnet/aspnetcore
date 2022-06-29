@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http.HPack;
 using System.Net.Http.QPack;
 using System.Reflection;
@@ -33,26 +34,30 @@ public class KnownHeaders
         HeaderNames.Host,
     };
 
-    public static readonly string[] DefinedHeaderNames = typeof(HeaderNames).GetFields(BindingFlags.Static | BindingFlags.Public).Select(h => h.Name).ToArray();
+    public static readonly string[] DefinedHeaderNames = typeof(HeaderNames)
+        .GetFields(BindingFlags.Static | BindingFlags.Public)
+        .Where(h => h.GetCustomAttribute(typeof(ObsoleteAttribute)) == null)
+        .Select(h => h.Name)
+        .ToArray();
 
     public static readonly string[] ObsoleteHeaderNames = new[]
     {
         HeaderNames.DNT,
     };
 
-    public static readonly string[] FormattedPseudoHeaderNames = new[]
+    public static readonly (string, string)[] FormattedPseudoHeaderNames = new[]
     {
-        "Authority", // :authority
-        "Method", // :method
-        "Path", // :path
-        "Scheme", // :scheme
-        "Status", // :status
-        "Protocol" // :protocol
+        ("Authority", PseudoHeaderNames.Authority),
+        ("Method", PseudoHeaderNames.Method),
+        ("Path", PseudoHeaderNames.Path),
+        ("Scheme", PseudoHeaderNames.Scheme),
+        ("Status", PseudoHeaderNames.Status),
+        ("Protocol", PseudoHeaderNames.Protocol)
     };
 
     public static readonly string[] NonApiHeaders =
         ObsoleteHeaderNames
-        .Concat(FormattedPseudoHeaderNames)
+        .Concat(FormattedPseudoHeaderNames.Select(x => x.Item1))
         .ToArray();
 
     public static readonly string[] ApiHeaderNames =
@@ -153,7 +158,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
-            ClassName = FormattedPseudoHeaderNames.Contains(header) ? "InternalHeaderNames" : "HeaderNames",
+            ClassName = FormattedPseudoHeaderNames.Select(x => x.Item2).Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             PrimaryHeader = requestPrimaryHeaders.Contains(header),
@@ -224,7 +229,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
-            ClassName = FormattedPseudoHeaderNames.Contains(header) ? "InternalHeaderNames" : "HeaderNames",
+            ClassName = FormattedPseudoHeaderNames.Select(x => x.Item2).Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             EnhancedSetter = enhancedHeaders.Contains(header),
@@ -251,7 +256,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
-            ClassName = FormattedPseudoHeaderNames.Contains(header) ? "InternalHeaderNames" : "HeaderNames",
+            ClassName = FormattedPseudoHeaderNames.Select(x => x.Item2).Contains(header) ? "PseudoHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             EnhancedSetter = enhancedHeaders.Contains(header),
@@ -275,7 +280,7 @@ public class KnownHeaders
             .Aggregate((a, b) => a | b);
 
         PseudoRequestHeadersBits = RequestHeaders
-            .Where(header => FormattedPseudoHeaderNames.Contains(header.Identifier))
+            .Where(header => FormattedPseudoHeaderNames.Select(x => x.Item1).Contains(header.Identifier))
             .Select(header => 1L << header.Index)
             .Aggregate((a, b) => a | b);
     }

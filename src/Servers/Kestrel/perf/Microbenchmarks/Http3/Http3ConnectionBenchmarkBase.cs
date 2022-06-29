@@ -48,10 +48,10 @@ public abstract class Http3ConnectionBenchmarkBase
         _httpFrame = new Http3FrameWithPayload();
 
         _httpRequestHeaders = new HttpRequestHeaders();
-        _httpRequestHeaders[HeaderNames.Method] = new StringValues("GET");
-        _httpRequestHeaders[HeaderNames.Path] = new StringValues("/");
-        _httpRequestHeaders[HeaderNames.Scheme] = new StringValues("http");
-        _httpRequestHeaders[HeaderNames.Authority] = new StringValues("localhost:80");
+        _httpRequestHeaders[PseudoHeaderNames.Method] = new StringValues("GET");
+        _httpRequestHeaders[PseudoHeaderNames.Path] = new StringValues("/");
+        _httpRequestHeaders[PseudoHeaderNames.Scheme] = new StringValues("http");
+        _httpRequestHeaders[PseudoHeaderNames.Authority] = new StringValues("localhost:80");
 
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
