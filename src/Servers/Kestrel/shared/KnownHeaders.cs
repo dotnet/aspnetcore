@@ -25,11 +25,11 @@ public class KnownHeaders
         HeaderNames.TransferEncoding,
         HeaderNames.ContentLength,
         HeaderNames.Connection,
-        HeaderNames.Scheme,
-        HeaderNames.Path,
-        HeaderNames.Protocol,
-        HeaderNames.Method,
-        HeaderNames.Authority,
+        PseudoHeaderNames.Scheme,
+        PseudoHeaderNames.Path,
+        PseudoHeaderNames.Protocol,
+        PseudoHeaderNames.Method,
+        PseudoHeaderNames.Authority,
         HeaderNames.Host,
     };
 
@@ -40,7 +40,7 @@ public class KnownHeaders
         HeaderNames.DNT,
     };
 
-    public static readonly string[] PseudoHeaderNames = new[]
+    public static readonly string[] FormattedPseudoHeaderNames = new[]
     {
         "Authority", // :authority
         "Method", // :method
@@ -52,7 +52,7 @@ public class KnownHeaders
 
     public static readonly string[] NonApiHeaders =
         ObsoleteHeaderNames
-        .Concat(PseudoHeaderNames)
+        .Concat(FormattedPseudoHeaderNames)
         .ToArray();
 
     public static readonly string[] ApiHeaderNames =
@@ -113,10 +113,10 @@ public class KnownHeaders
         };
         RequestHeaders = commonHeaders.Concat(new[]
         {
-            HeaderNames.Authority,
-            HeaderNames.Method,
-            HeaderNames.Path,
-            HeaderNames.Scheme,
+            PseudoHeaderNames.Authority,
+            PseudoHeaderNames.Method,
+            PseudoHeaderNames.Path,
+            PseudoHeaderNames.Scheme,
             HeaderNames.Accept,
             HeaderNames.AcceptCharset,
             HeaderNames.AcceptEncoding,
@@ -134,7 +134,7 @@ public class KnownHeaders
             HeaderNames.IfRange,
             HeaderNames.IfUnmodifiedSince,
             HeaderNames.MaxForwards,
-            HeaderNames.Protocol,
+            PseudoHeaderNames.Protocol,
             HeaderNames.ProxyAuthorization,
             HeaderNames.Referer,
             HeaderNames.Range,
@@ -153,6 +153,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
+            ClassName = FormattedPseudoHeaderNames.Contains(header) ? "InternalHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             PrimaryHeader = requestPrimaryHeaders.Contains(header),
@@ -161,6 +162,7 @@ public class KnownHeaders
         })
         .Concat(new[] { new KnownHeader
             {
+                ClassName = "HeaderNames",
                 Name = HeaderNames.ContentLength,
                 Index = -1,
                 PrimaryHeader = requestPrimaryHeaders.Contains(HeaderNames.ContentLength)
@@ -222,6 +224,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
+            ClassName = FormattedPseudoHeaderNames.Contains(header) ? "InternalHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             EnhancedSetter = enhancedHeaders.Contains(header),
@@ -230,6 +233,7 @@ public class KnownHeaders
         })
         .Concat(new[] { new KnownHeader
             {
+                ClassName = "HeaderNames",
                 Name = HeaderNames.ContentLength,
                 Index = 63,
                 EnhancedSetter = enhancedHeaders.Contains(HeaderNames.ContentLength),
@@ -247,6 +251,7 @@ public class KnownHeaders
         .ThenBy(header => header)
         .Select((header, index) => new KnownHeader
         {
+            ClassName = FormattedPseudoHeaderNames.Contains(header) ? "InternalHeaderNames" : "HeaderNames",
             Name = header,
             Index = index,
             EnhancedSetter = enhancedHeaders.Contains(header),
@@ -270,7 +275,7 @@ public class KnownHeaders
             .Aggregate((a, b) => a | b);
 
         PseudoRequestHeadersBits = RequestHeaders
-            .Where(header => PseudoHeaderNames.Contains(header.Identifier))
+            .Where(header => FormattedPseudoHeaderNames.Contains(header.Identifier))
             .Select(header => 1L << header.Index)
             .Aggregate((a, b) => a | b);
     }
@@ -363,7 +368,7 @@ public class KnownHeaders
         {
             return $@"flag = {header.FlagBit()};
                     values = ref _headers._{header.Identifier};
-                    nameStr = HeaderNames.{header.Identifier};
+                    nameStr = {header.StaticIdentifier};
                     break;";
         }
     }
@@ -407,7 +412,7 @@ public class KnownHeaders
                 return $@"
                         {extraIndent}flag = {header.FlagBit()};
                         {extraIndent}values = ref _headers._{header.Identifier};
-                        {extraIndent}nameStr = HeaderNames.{header.Identifier};";
+                        {extraIndent}nameStr = {header.StaticIdentifier};";
             }
         }
 
@@ -432,9 +437,12 @@ public class KnownHeaders
     [DebuggerDisplay("{Name}")]
     public class KnownHeader
     {
+        public string ClassName { get; set; }
         public string Name { get; set; }
         public int Index { get; set; }
         public string Identifier => ResolveIdentifier(Name);
+
+        public string StaticIdentifier => ResolveIdentifier(Name, ClassName);
 
         public byte[] Bytes => Encoding.ASCII.GetBytes($"\r\n{Name}: ");
         public int BytesOffset { get; set; }
@@ -452,17 +460,15 @@ public class KnownHeaders
         public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
         public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x", CultureInfo.InvariantCulture)}L";
 
-        private static string ResolveIdentifier(string name)
+        private static string ResolveIdentifier(string name, string prefix = "")
         {
-            // Check the 3 lowercase headers
-            switch (name)
+            var identifier = name switch
             {
-                case "baggage": return "Baggage";
-                case "traceparent": return "TraceParent";
-                case "tracestate": return "TraceState";
-            }
-
-            var identifier = name.Replace("-", "");
+                "baggage" => "Baggage",
+                "traceparent" => "TraceParent",
+                "tracestate" => "TraceState",
+                _ => name.Replace("-", "")
+            };
 
             // Pseudo headers start with a colon. A colon isn't valid in C# names so
             // remove it and pascal case the header name. e.g. :path -> Path, :scheme -> Scheme.
@@ -472,7 +478,7 @@ public class KnownHeaders
                 identifier = char.ToUpperInvariant(identifier[1]) + identifier.Substring(2);
             }
 
-            return identifier;
+            return prefix.Length != 0 ? $"{prefix}.{identifier}" : identifier;
         }
 
         private static void GetMaskAndComp(string name, int offset, int count, out ulong mask, out ulong comp)
@@ -895,7 +901,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var flag = {header.FlagBit()};
                 if (value.Count > 0)
                 {{{(loop.ClassName != "HttpRequestHeaders" ? $@"
-                    ValidateHeaderValueCharacters(HeaderNames.{header.Identifier}, value, EncodingSelector);" : "")}
+                    ValidateHeaderValueCharacters({header.StaticIdentifier}, value, EncodingSelector);" : "")}
                     _bits |= flag;
                     _headers._{header.Identifier} = value;
                 }}
@@ -945,7 +951,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
-                    if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
+                    if (ReferenceEquals({header.StaticIdentifier}, key))
                     {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
@@ -961,7 +967,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return false;")}
                     }}")}
 {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
-                    if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if ({header.StaticIdentifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
@@ -990,7 +996,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
-                    if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
+                    if (ReferenceEquals({header.StaticIdentifier}, key))
                     {{{(header.Name == HeaderNames.ContentLength ? $@"
                         _contentLength = ParseContentLength(value.ToString());" : $@"
                         {header.SetBit()};
@@ -999,7 +1005,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return;
                     }}")}
 {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
-                    if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if ({header.StaticIdentifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {{{(header.Name == HeaderNames.ContentLength ? $@"
                         _contentLength = ParseContentLength(value.ToString());" : $@"
                         {header.SetBit()};
@@ -1021,7 +1027,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
-                    if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
+                    if (ReferenceEquals({header.StaticIdentifier}, key))
                     {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
@@ -1039,7 +1045,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return false;")}
                     }}")}
     {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
-                    if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if ({header.StaticIdentifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {{{(header.Name == HeaderNames.ContentLength ? $@"
                         if (!_contentLength.HasValue)
                         {{
@@ -1069,7 +1075,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                 {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
-                    if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
+                    if (ReferenceEquals({header.StaticIdentifier}, key))
                     {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
@@ -1087,7 +1093,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return false;")}
                     }}")}
     {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
-                    if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if ({header.StaticIdentifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
                     {{{(header.Name == HeaderNames.ContentLength ? @"
                         if (_contentLength.HasValue)
                         {
@@ -1164,7 +1170,7 @@ $@"        private void Clear(long bitsToClear)
                     {{
                         return false;
                     }}
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.{header.Identifier}, _headers._{header.Identifier});
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>({header.StaticIdentifier}, _headers._{header.Identifier});
                     ++arrayIndex;
                 }}")}
                 if (_contentLength.HasValue)
@@ -1229,7 +1235,7 @@ $@"        private void Clear(long bitsToClear)
                             values = ref _headers._{header.Identifier};
                             keyStart = {header.BytesOffset};
                             keyLength = {header.BytesCount};
-                            headerName = HeaderNames.{header.Identifier};
+                            headerName = {header.StaticIdentifier};
                         }}")}
                         break; // OutputHeader
 ")}
@@ -1369,7 +1375,7 @@ $@"        private void Clear(long bitsToClear)
                 {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
                     case {header.Index}: // Header: ""{header.Name}""
                         Debug.Assert({header.TestBitCore("_currentBits")});
-                        _current = new KeyValuePair<string, StringValues>(HeaderNames.{header.Identifier}, _collection._headers._{header.Identifier});
+                        _current = new KeyValuePair<string, StringValues>({header.StaticIdentifier}, _collection._headers._{header.Identifier});
                         {(loop.ClassName.Contains("Request") ? "" : @$"_currentKnownType = KnownHeaderType.{header.Identifier};
                         ")}_currentBits ^= {"0x" + (1L << header.Index).ToString("x", CultureInfo.InvariantCulture)}L;
                         break;")}
