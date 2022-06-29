@@ -63,7 +63,7 @@ public class AuthorizationBuilderTests
         // Arrange
         var builder = TestHelpers.CreateAuthorizationBuilder()
         // Act
-            .InvokeHandlersAfterFailure(invoke);
+            .SetInvokeHandlersAfterFailure(invoke);
 
         var options = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<AuthorizationOptions>>().Value;
 
