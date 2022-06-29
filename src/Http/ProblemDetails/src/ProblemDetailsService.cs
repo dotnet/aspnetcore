@@ -22,6 +22,10 @@ internal sealed class ProblemDetailsService : IProblemDetailsService
 
     public async ValueTask WriteAsync(ProblemDetailsContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(context.ProblemDetails);
+        ArgumentNullException.ThrowIfNull(context.HttpContext);
+
         if (_options.AllowedProblemTypes != ProblemDetailsTypes.None && _writers is { Length: > 0 })
         {
             var problemStatusCode = context.ProblemDetails?.Status ?? context.HttpContext.Response.StatusCode;

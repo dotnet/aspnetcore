@@ -45,6 +45,19 @@ Microsoft.AspNetCore.Http.Metadata.IProblemDetailsMetadata.ProblemType.get -> Mi
 Microsoft.AspNetCore.Http.Metadata.IProblemDetailsMetadata.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata.MaxRequestBodySize.get -> long?
+Microsoft.AspNetCore.Http.ProblemDetailsContext
+Microsoft.AspNetCore.Http.ProblemDetailsContext.AdditionalMetadata.get -> Microsoft.AspNetCore.Http.EndpointMetadataCollection?
+Microsoft.AspNetCore.Http.ProblemDetailsContext.AdditionalMetadata.init -> void
+Microsoft.AspNetCore.Http.ProblemDetailsContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.get -> Microsoft.AspNetCore.Mvc.ProblemDetails!
+Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.init -> void
+Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetailsContext(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
+Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.ProblemDetailsTypes.All = Microsoft.AspNetCore.Http.ProblemDetailsTypes.Server | Microsoft.AspNetCore.Http.ProblemDetailsTypes.Routing | Microsoft.AspNetCore.Http.ProblemDetailsTypes.Client -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.ProblemDetailsTypes.Client = 4 -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.ProblemDetailsTypes.None = 0 -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.ProblemDetailsTypes.Routing = 2 -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
+Microsoft.AspNetCore.Http.ProblemDetailsTypes.Server = 1 -> Microsoft.AspNetCore.Http.ProblemDetailsTypes
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(Microsoft.AspNetCore.Routing.RouteValueDictionary? dictionary) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? values) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string?>>? values) -> void

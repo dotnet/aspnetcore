@@ -33,5 +33,5 @@ public class ProblemDetailsContext
     /// A instance of <see cref="ProblemDetails"/> that will be
     /// used during the response payload generation.
     /// </summary>
-    public ProblemDetails? ProblemDetails { get; init; }
+    public ProblemDetails ProblemDetails { get; init; } = new ProblemDetails();
 }
