@@ -19,7 +19,7 @@ internal static class BufferExtensions
     private static byte[]? _numericBytesScratch;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<byte> ToSpan(in this ReadOnlySequence<byte> buffer)
+    public static ReadOnlySpan<byte> ToSpan(scoped in this ReadOnlySequence<byte> buffer)
     {
         if (buffer.IsSingleSegment)
         {
