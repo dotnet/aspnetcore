@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Represent the current problem detatils context for the request.
 /// </summary>
-public class ProblemDetailsContext
+public sealed class ProblemDetailsContext
 {
     /// <summary>
     /// Creates a new instance of the <see cref="ProblemDetailsContext"/>.
@@ -16,6 +16,8 @@ public class ProblemDetailsContext
     /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request being processed by the filter.</param>
     public ProblemDetailsContext(HttpContext httpContext)
     {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
         HttpContext = httpContext;
     }
 
