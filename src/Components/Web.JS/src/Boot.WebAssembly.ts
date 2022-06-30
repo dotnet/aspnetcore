@@ -18,6 +18,7 @@ import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAtt
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
+import { WebAssemblyProgressReporter } from './Platform/WebAssemblyProgressReporter';
 
 let started = false;
 
@@ -72,6 +73,10 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
       heapLock.release();
     }
   };
+
+  // Call WebAssemblyProgressReporter constructor if default loading implementation exists
+  if (document.getElementById ("blazor-default-loading"))
+    WebAssemblyProgressReporter.init();
 
   // Configure navigation via JS Interop
   const getBaseUri = Blazor._internal.navigationManager.getBaseURI;

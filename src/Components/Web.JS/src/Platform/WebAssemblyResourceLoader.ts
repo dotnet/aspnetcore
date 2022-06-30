@@ -4,6 +4,7 @@
 import { toAbsoluteUri } from '../Services/NavigationManager';
 import { BootJsonData, ResourceList } from './BootConfig';
 import { WebAssemblyStartOptions, WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
+import { WebAssemblyProgressService } from './WebAssemblyProgressService';
 const networkFetchCacheMode = 'no-cache';
 
 export class WebAssemblyResourceLoader {
@@ -30,7 +31,8 @@ export class WebAssemblyResourceLoader {
     const response = this.cacheIfUsed
       ? this.loadResourceWithCaching(this.cacheIfUsed, name, url, contentHash, resourceType)
       : this.loadResourceWithoutCaching(name, url, contentHash, resourceType);
-
+    // Updating resource count every time a resource is loaded:
+    WebAssemblyProgressService.resourceLoaded();
     return { name, url, response };
   }
 
