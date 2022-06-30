@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 

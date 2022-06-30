@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 using HttpCharacters = Microsoft.AspNetCore.Http.HttpCharacters;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;

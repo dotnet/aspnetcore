@@ -5,11 +5,11 @@
 
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http.HPack;
 using System.Net.Http.QPack;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Net.Http.Headers;
 
 namespace CodeGenerator;
