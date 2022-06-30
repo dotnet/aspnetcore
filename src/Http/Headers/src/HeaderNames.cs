@@ -192,10 +192,6 @@ public static class HeaderNames
     /// <summary>Gets the <c>Pragma</c> HTTP header name.</summary>
     public static readonly string Pragma = "Pragma";
 
-    /// <summary>Gets the <c>Protocol</c> HTTP header name.</summary>
-    [Obsolete("For infrastructure use only", false)]
-    public static readonly string Protocol = ":protocol";
-
     /// <summary>Gets the <c>Proxy-Authenticate</c> HTTP header name.</summary>
     public static readonly string ProxyAuthenticate = "Proxy-Authenticate";
 
