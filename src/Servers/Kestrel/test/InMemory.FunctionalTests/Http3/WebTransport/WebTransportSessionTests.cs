@@ -7,11 +7,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class WebTransportSessionTests : Http3TestBase
 {
-    public override void Dispose()
-    {
-        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = false;
-    }
-
     [Fact]
     public async Task WebTransportSession_CanOpenNewStream()
     {

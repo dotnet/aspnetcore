@@ -16,14 +16,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class WebTransportHandshakeTests : Http3TestBase
 {
-    public WebTransportHandshakeTests() : base()
-    {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", true);
-    }
-
     [Fact]
     public async Task WebTransportHandshake_ClientToServerPasses()
     {
+        _serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
+
         var appCompletedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await Http3Api.InitializeConnectionAsync(async context =>
