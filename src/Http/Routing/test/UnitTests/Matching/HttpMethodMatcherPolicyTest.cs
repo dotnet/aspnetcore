@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using static Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy;
 
@@ -169,7 +170,9 @@ public class HttpMethodMatcherPolicyTest
 
         await policy.ApplyAsync(httpContext, candidates);
 
-        Assert.Equal(httpContext.GetEndpoint().Metadata, EndpointMetadataCollection.Empty);
+        var metadata = Assert.Single(httpContext.GetEndpoint().Metadata);
+        var problemMetadata = Assert.IsAssignableFrom<IProblemDetailsMetadata>(metadata);
+        Assert.Equal(405, problemMetadata.StatusCode);
         Assert.True(string.Equals(httpContext.GetEndpoint().DisplayName, Http405EndpointDisplayName, StringComparison.OrdinalIgnoreCase));
     }
 
