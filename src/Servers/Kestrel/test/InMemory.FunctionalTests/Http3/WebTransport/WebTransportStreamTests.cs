@@ -10,19 +10,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class WebTransportStreamTests : Http3TestBase
 {
-    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
-    {
-        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
-
-        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
-        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = false;
-    }
-
     [Theory]
     [InlineData(WebTransportStreamType.Bidirectional, true, true)]
     [InlineData(WebTransportStreamType.Input, true, false)]
