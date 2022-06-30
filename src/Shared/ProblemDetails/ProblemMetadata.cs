@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http.Metadata;
 
-internal class ProblemMetadata : IProblemDetailsMetadata
+internal sealed class ProblemMetadata : IProblemDetailsMetadata
 {
     public ProblemMetadata(int? statusCode = null, ProblemDetailsTypes problemType = ProblemDetailsTypes.All)
     {
