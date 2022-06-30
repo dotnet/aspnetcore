@@ -1,12 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace DeveloperExceptionPageSample;
 
 public class Startup
 {
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddProblemDetails();
+    }
+
     public void Configure(IApplicationBuilder app)
     {
         app.Use((context, next) =>
@@ -21,7 +27,9 @@ public class Startup
                 c => null,
                 RoutePatternFactory.Parse("/"),
                 0,
-                new EndpointMetadataCollection(new HttpMethodMetadata(new[] { "GET", "POST" })),
+                new EndpointMetadataCollection(
+                    new HttpMethodMetadata(new[] { "GET", "POST" }),
+                    new ProblemMetadata()),
                 "Endpoint display name");
 
             context.SetEndpoint(endpoint);

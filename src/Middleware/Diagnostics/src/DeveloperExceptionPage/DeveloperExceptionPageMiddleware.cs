@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.StackTrace.Sources;
@@ -193,11 +194,20 @@ public class DeveloperExceptionPageMiddleware
         {
             var problemDetails = new ProblemDetails
             {
+                Title = TypeNameHelper.GetTypeDisplayName(errorContext.Exception.GetType()),
+                Detail = errorContext.Exception.Message,
                 Status = httpContext.Response.StatusCode
             };
 
+            var exceptionDetails = _exceptionDetailsProvider.GetDetails(errorContext.Exception);
             problemDetails.Extensions["exception"] = new
             {
+                Details = exceptionDetails.Select(d => new
+                {
+                    Message = d.ErrorMessage ?? d.Error?.Message,
+                    Type = TypeNameHelper.GetTypeDisplayName(d.Error),
+                    StackFrames = d.StackFrames,
+                }),
                 Headers = httpContext.Request.Headers,
                 Error = errorContext.Exception.ToString(),
                 Path = httpContext.Request.Path,
