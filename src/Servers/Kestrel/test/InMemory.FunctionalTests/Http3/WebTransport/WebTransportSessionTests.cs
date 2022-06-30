@@ -1,15 +1,26 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
+using Microsoft.AspNetCore.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class WebTransportSessionTests : Http3TestBase
 {
-    public WebTransportSessionTests() : base()
+    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = false;
     }
 
     [Fact]
