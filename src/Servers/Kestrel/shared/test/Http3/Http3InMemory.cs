@@ -427,7 +427,6 @@ internal class Http3InMemory
 
         _runningStreams[stream.StreamId] = stream;
 
-
         MultiplexedConnectionContext.ToServerAcceptQueue.Writer.TryWrite(stream.StreamContext);
 
         return stream;
