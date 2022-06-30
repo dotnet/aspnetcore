@@ -86,7 +86,6 @@ public sealed class HttpLoggingOptions
             HeaderNames.LastModified,
             HeaderNames.Location,
             HeaderNames.Server,
-            PseudoHeaderNames.Status,
             HeaderNames.TransferEncoding,
             HeaderNames.Upgrade,
             HeaderNames.XPoweredBy
