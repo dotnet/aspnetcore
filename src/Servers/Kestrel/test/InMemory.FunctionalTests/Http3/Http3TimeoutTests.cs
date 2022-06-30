@@ -27,7 +27,7 @@ public class Http3TimeoutTests : Http3TestBase
         var now = _serviceContext.MockSystemClock.UtcNow;
         var limits = _serviceContext.ServerOptions.Limits;
 
-        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication).DefaultTimeout();
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, true).DefaultTimeout();
 
         var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
         await controlStream.ExpectSettingsAsync().DefaultTimeout();
@@ -146,16 +146,12 @@ public class Http3TimeoutTests : Http3TestBase
         var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
         await controlStream.ExpectSettingsAsync().DefaultTimeout();
 
-        var outboundControlStream = await Http3Api.CreateControlStream(id: null);
+        Http3Api.TriggerTick(now);
+        Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
+
+        var outboundControlStream = await Http3Api.CreateControlStream(id: 0);
 
         await outboundControlStream.OnStreamCreatedTask.DefaultTimeout();
-
-        Http3Api.TriggerTick(now);
-        Http3Api.TriggerTick(now + limits.RequestHeadersTimeout);
-
-        await outboundControlStream.WriteStreamIdAsync(id: 0);
-
-        await outboundControlStream.OnHeaderReceivedTask.DefaultTimeout();
 
         Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
     }

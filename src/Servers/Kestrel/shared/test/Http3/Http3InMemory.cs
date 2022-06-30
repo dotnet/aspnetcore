@@ -261,13 +261,13 @@ internal class Http3InMemory
         }
     }
 
-    internal async ValueTask<Http3RequestStream> InitializeConnectionAndStreamsAsync(RequestDelegate application)
+    internal async ValueTask<Http3RequestStream> InitializeConnectionAndStreamsAsync(RequestDelegate application, bool sendStreamType = false)
     {
         await InitializeConnectionAsync(application);
 
         OutboundControlStream = await CreateControlStream();
 
-        return await CreateRequestStream();
+        return await CreateRequestStream(null, sendStreamType);
     }
 
     private class LifetimeHandlerInterceptor : IHttp3StreamLifetimeHandler
@@ -402,7 +402,7 @@ internal class Http3InMemory
         return stream;
     }
 
-    internal ValueTask<Http3RequestStream> CreateRequestStream(Http3RequestHeaderHandler headerHandler = null)
+    internal async ValueTask<Http3RequestStream> CreateRequestStream(Http3RequestHeaderHandler headerHandler = null, bool sendType = false)
     {
         var requestStreamId = GetStreamId(0x00);
         if (!_streamContextPool.TryDequeue(out var testStreamContext))
@@ -416,10 +416,21 @@ internal class Http3InMemory
         testStreamContext.Initialize(requestStreamId);
 
         var stream = new Http3RequestStream(this, Connection, testStreamContext, headerHandler ?? new Http3RequestHeaderHandler());
+
+        if (sendType)
+        {
+            // send some raw data which ould be interpretted as an unknown stream type and thus default to
+            // being a request stream
+            await stream.Pair.Transport.Output.WriteAsync(new Memory<byte>(new byte[] { 40, 10, 0 }));
+            await stream.Pair.Transport.Output.FlushAsync();
+        }
+
         _runningStreams[stream.StreamId] = stream;
 
+
         MultiplexedConnectionContext.ToServerAcceptQueue.Writer.TryWrite(stream.StreamContext);
-        return new ValueTask<Http3RequestStream>(stream);
+
+        return stream;
     }
 }
 

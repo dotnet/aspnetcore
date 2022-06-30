@@ -347,6 +347,10 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                             await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Input);
                             break;
 
+                        case (long)Http3StreamType.WebTransportBidirectional:
+                            await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Bidirectional);
+                            break;
+
                         case (long)Http3StreamType.Control:
                         case (long)Http3StreamType.Push:
                         case (long)Http3StreamType.QPackDecoder:
@@ -354,10 +358,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                             var controlStream = new Http3ControlStream<TContext>(application, context);
                             _streamLifetimeHandler.OnStreamCreated(controlStream);
                             ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
-                            break;
-
-                        case (long)Http3StreamType.WebTransportBidirectional:
-                            await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Bidirectional);
                             break;
 
                         default: // http request stream
@@ -399,6 +399,13 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                             break;
                     }
                 }
+                catch (Exception ex)
+                {
+                    if (ex.Data.Contains("StreamId"))
+                    {
+                        _unidentifiedStreams.Remove((long)ex.Data["StreamId"]!, out _);
+                    }
+                }
                 finally
                 {
                     UpdateConnectionState();
@@ -435,11 +442,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         catch (Exception ex)
         {
             error = ex;
-
-            if (ex.Data.Contains("StreamId"))
-            {
-                _unidentifiedStreams.Remove((long)ex.Data["StreamId"]!, out _);
-            }
         }
         finally
         {
