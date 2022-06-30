@@ -55,13 +55,9 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
     private IEnumerable<AuthenticationScheme> _requestHandlersCopy = Array.Empty<AuthenticationScheme>();
 
     private Task<AuthenticationScheme?> GetDefaultSchemeAsync()
-    {
-        if (_options.DefaultScheme != null)
-        {
-            return GetSchemeAsync(_options.DefaultScheme);
-        }
-        return _autoDefaultScheme;
-    }
+        => _options.DefaultScheme != null
+        ? GetSchemeAsync(_options.DefaultScheme)
+        : _autoDefaultScheme;
 
     /// <summary>
     /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
