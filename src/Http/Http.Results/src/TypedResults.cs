@@ -795,13 +795,8 @@ public static class TypedResults
     /// </summary>
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
-    public static Created Created(string uri)
+    public static Created Created(string? uri)
     {
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(uri));
-        }
-
         return new(uri);
     }
 
@@ -812,13 +807,8 @@ public static class TypedResults
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.Created{TValue}"/> for the response.</returns>
-    public static Created<TValue> Created<TValue>(string uri, TValue? value)
+    public static Created<TValue> Created<TValue>(string? uri, TValue? value)
     {
-        if (string.IsNullOrEmpty(uri))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(uri));
-        }
-
         return new(uri, value);
     }
 
@@ -827,10 +817,8 @@ public static class TypedResults
     /// </summary>
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
-    public static Created Created(Uri uri)
+    public static Created Created(Uri? uri)
     {
-        ArgumentNullException.ThrowIfNull(uri);
-
         return new(uri);
     }
 
@@ -841,10 +829,8 @@ public static class TypedResults
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.Created{TValue}"/> for the response.</returns>
-    public static Created<TValue> Created<TValue>(Uri uri, TValue? value)
+    public static Created<TValue> Created<TValue>(Uri? uri, TValue? value)
     {
-        ArgumentNullException.ThrowIfNull(uri);
-
         return new(uri, value);
     }
 
