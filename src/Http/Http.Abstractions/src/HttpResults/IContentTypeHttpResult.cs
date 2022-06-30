@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Defines a contract that represents the result of an HTTP endpoint
-/// that constains a <see cref="ContentType"/>.
+/// that contains a <see cref="ContentType"/>.
 /// </summary>
 public interface IContentTypeHttpResult
 {
