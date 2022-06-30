@@ -15,7 +15,7 @@ public class CreatedResult : ObjectResult
 {
     private const int DefaultStatusCode = StatusCodes.Status201Created;
 
-    private string _location;
+    private string? _location;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreatedResult"/> class with the values
@@ -23,15 +23,14 @@ public class CreatedResult : ObjectResult
     /// </summary>
     /// <param name="location">The location at which the content has been created.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public CreatedResult(string location, object? value)
+    public CreatedResult(string? location, object? value)
         : base(value)
     {
-        if (location == null)
+        if (location != null)
         {
-            throw new ArgumentNullException(nameof(location));
+            Location = location;
         }
-
-        Location = location;
+        
         StatusCode = DefaultStatusCode;
     }
 
@@ -41,21 +40,19 @@ public class CreatedResult : ObjectResult
     /// </summary>
     /// <param name="location">The location at which the content has been created.</param>
     /// <param name="value">The value to format in the entity body.</param>
-    public CreatedResult(Uri location, object? value)
+    public CreatedResult(Uri? location, object? value)
         : base(value)
     {
-        if (location == null)
+        if (location != null)
         {
-            throw new ArgumentNullException(nameof(location));
-        }
-
-        if (location.IsAbsoluteUri)
-        {
-            Location = location.AbsoluteUri;
-        }
-        else
-        {
-            Location = location.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            if (location.IsAbsoluteUri)
+            {
+                Location = location.AbsoluteUri;
+            }
+            else
+            {
+                Location = location.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            }
         }
 
         StatusCode = DefaultStatusCode;
@@ -64,19 +61,10 @@ public class CreatedResult : ObjectResult
     /// <summary>
     /// Gets or sets the location at which the content has been created.
     /// </summary>
-    public string Location
+    public string? Location
     {
         get => _location;
-        [MemberNotNull(nameof(_location))]
-        set
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            _location = value;
-        }
+        set => _location = value;
     }
 
     /// <inheritdoc />
