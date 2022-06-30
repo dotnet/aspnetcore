@@ -47,7 +47,9 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
 
     private readonly IDictionary<string, AuthenticationScheme> _schemes;
     private readonly List<AuthenticationScheme> _requestHandlers;
-    private AuthenticationScheme? _autoDefaultScheme;
+    private static readonly Task<AuthenticationScheme?> _nullScheme = Task.FromResult<AuthenticationScheme?>(null);
+    private Task<AuthenticationScheme?> _autoDefaultScheme = _nullScheme;
+
     // Used as a safe return value for enumeration apis
     private IEnumerable<AuthenticationScheme> _schemesCopy = Array.Empty<AuthenticationScheme>();
     private IEnumerable<AuthenticationScheme> _requestHandlersCopy = Array.Empty<AuthenticationScheme>();
@@ -58,7 +60,7 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
         {
             return GetSchemeAsync(_options.DefaultScheme);
         }
-        return Task.FromResult<AuthenticationScheme?>(_autoDefaultScheme);
+        return _autoDefaultScheme;
     }
 
     /// <summary>
@@ -216,11 +218,11 @@ public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
         {
             if (_schemes.Count == 1)
             {
-                _autoDefaultScheme = _schemesCopy.First();
+                _autoDefaultScheme = Task.FromResult<AuthenticationScheme?>(_schemesCopy.First());
             }
             else
             {
-                _autoDefaultScheme = null;
+                _autoDefaultScheme = _nullScheme;
             }
         }
     }
