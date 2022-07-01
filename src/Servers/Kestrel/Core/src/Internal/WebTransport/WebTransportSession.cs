@@ -78,6 +78,12 @@ internal class WebTransportSession : IWebTransportSession
         }
 
         _openStreams.Clear();
+
+        while (_pendingStreams.Reader.TryRead(out var stream))
+        {
+            stream.Close();
+        }
+
         _pendingStreams.Writer.Complete();
     }
 
@@ -106,6 +112,18 @@ internal class WebTransportSession : IWebTransportSession
         }
 
         _openStreams.Clear();
+
+        while (_pendingStreams.Reader.TryRead(out var stream))
+        {
+            if (exception.InnerException is not null)
+            {
+                stream.AbortCore(new ConnectionAbortedException(exception.Message, exception.InnerException), error);
+            }
+            else
+            {
+                stream.AbortCore(new ConnectionAbortedException(exception.Message), error);
+            }
+        }
         _pendingStreams.Writer.Complete();
     }
 
@@ -161,8 +179,7 @@ internal class WebTransportSession : IWebTransportSession
 
         var stream = await _pendingStreams.Reader.ReadAsync(cancellationToken);
 
-        var success2 = _openStreams.TryAdd(stream!.StreamId, stream);
-        if (!success2)
+        if (!_openStreams.TryAdd(stream!.StreamId, stream))
         {
             throw new Exception("A stream with this id is already open");
         }

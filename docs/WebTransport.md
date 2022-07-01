@@ -115,11 +115,15 @@ session.Abort(int errorCode = 256);
 ```
 Aborting a WebTransport session will result in severing the connection with the client and aborting all the streams. You can optionally specify an error code that will be passed down into the logs. The default value (256) represents no error.
 
+**Note:** valid error codes are defined [here](https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes).
+
 - Aborting a WebTransport stream
 ```C#
 stream.Abort(int errorCode = 256);
 ```
 Aborting a WebTransport stream will result in abruptly stopping all data transmission and prevent further communication over this stream. The default value (256) represents no error.
+
+**Note:** valid error codes are defined [here](https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes).
 
 ## Examples
 

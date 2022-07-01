@@ -344,7 +344,7 @@ internal partial class HttpProtocol
     }
 
 #pragma warning disable CA2252 // WebTransport is a preview feature. Suppress this warning
-    bool IHttpWebTransportFeature.IsWebTransportRequest { get; set; }
+    public bool IsWebTransportRequest { get; set; }
     public virtual ValueTask<IWebTransportSession> AcceptAsync(CancellationToken token)
     {
         throw new NotSupportedException();

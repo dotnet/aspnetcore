@@ -14,7 +14,7 @@ public interface IHttpWebTransportFeature
     /// <summary>
     /// Indicates if this request is a WebTransport request.
     /// </summary>
-    public bool IsWebTransportRequest { get; internal set; }
+    bool IsWebTransportRequest { get; }
 
     /// <summary>
     /// Accept the session request and allow streams to start being used.
@@ -22,5 +22,5 @@ public interface IHttpWebTransportFeature
     /// <param name="cancellationToken">The cancellation token to cancel waiting for the session.</param>
     /// <returns>An instance of a WebTransportSession which will be used to control the connection.</returns>
     [RequiresPreviewFeatures("WebTransport is a preview feature")]
-    public ValueTask<IWebTransportSession> AcceptAsync(CancellationToken cancellationToken);
+    ValueTask<IWebTransportSession> AcceptAsync(CancellationToken cancellationToken);
 }

@@ -102,6 +102,7 @@ public class WebTransportStream : Stream
     /// Hard abort the stream and cancel data transmission.
     /// </summary>
     /// <param name="errorCode"> the error code to pass into the logs</param>
+    /// <remarks>Error codes are described here: https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes</remarks>
     public void Abort(int errorCode = (int)Http3ErrorCode.NoError)
     {
         Http3ErrorCode code;

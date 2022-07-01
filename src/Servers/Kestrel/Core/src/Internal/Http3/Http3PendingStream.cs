@@ -11,15 +11,13 @@ internal class Http3PendingStream
     private ConnectionAbortedException? _abortedException;
 
     internal readonly Http3StreamContext Context;
-    internal readonly bool IsRequestStream;
     internal readonly long StreamId;
     internal long StreamTimeoutTicks;
 
-    public Http3PendingStream(Http3StreamContext context, long id, bool isRequestStream)
+    public Http3PendingStream(Http3StreamContext context, long id)
     {
         Context = context;
         StreamTimeoutTicks = 0;
-        IsRequestStream = isRequestStream;
         StreamId = id;
     }
 

@@ -857,13 +857,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             if (string.Equals(HttpRequestHeaders.HeaderProtocol, WebTransportSession.WebTransportProtocolValue, StringComparison.Ordinal))
             {
                 // if the client supports the same version of WebTransport as Kestrel, make this a WebTransport request
-                foreach (var header in HttpRequestHeaders)
+                if (((AspNetCore.Http.IHeaderDictionary)HttpRequestHeaders).TryGetValue(WebTransportSession.CurrentSuppportedVersion, out var version) && string.Equals(version, "1", StringComparison.Ordinal))
                 {
-                    if (string.Equals(header.Key, WebTransportSession.CurrentSuppportedVersion, StringComparison.Ordinal)
-                            && string.Equals(header.Value, "1", StringComparison.Ordinal))
-                    {
-                        _currentIHttpWebTransportFeature!.IsWebTransportRequest = true;
-                    }
+                    IsWebTransportRequest = true;
                 }
             }
         }

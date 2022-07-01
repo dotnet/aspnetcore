@@ -24,8 +24,6 @@ public class Program
             })
             .ConfigureWebHost(webHost =>
             {
-                var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, false);
-
                 webHost.UseKestrel()
                 .ConfigureKestrel((context, options) =>
                 {

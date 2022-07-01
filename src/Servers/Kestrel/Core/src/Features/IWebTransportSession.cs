@@ -13,14 +13,15 @@ public interface IWebTransportSession
     /// <summary>
     /// The id of the WebTransport session.
     /// </summary>
-    public long SessionId { get; }
+    long SessionId { get; }
 
     /// <summary>
     /// Abruptly close the WebTransport session and stop all the streams.
     /// </summary>
     /// <param name="errorCode">HTTP error code that corresponds to the reason for causing the abort.</param>
+    /// <remarks>Error codes are described here: https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes</remarks>
     /// <exception cref="Exception">If This is not a valid WebTransport session.</exception>
-    public void Abort(int errorCode = (int)Http3ErrorCode.NoError);
+    void Abort(int errorCode = (int)Http3ErrorCode.NoError);
 
     /// <summary>
     /// Returns the next incoming stream in the order which Kestel received it. The stream can be either bidirectional or unidirectional.
@@ -29,7 +30,7 @@ public interface IWebTransportSession
     /// <exception cref="Exception">If this is not a valid WebTransport session or it fails to get a stream to accept.</exception>
     /// <param name="cancellationToken">The cancellation token used to cancel the operation.</param>
     /// <returns>The unidirectional or bidirectional stream that is next in the queue.</returns>
-    public ValueTask<WebTransportStream> AcceptStreamAsync(CancellationToken cancellationToken);
+    ValueTask<WebTransportStream> AcceptStreamAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Opens a new unidirectional output stream.
@@ -37,5 +38,5 @@ public interface IWebTransportSession
     /// <param name="cancellationToken">The cancellation token used to cancel the operation.</param>
     /// <exception cref="Exception">If This is not a valid WebTransport session.</exception>
     /// <returns>The unidirectional stream that was opened.</returns>
-    public ValueTask<WebTransportStream> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken);
+    ValueTask<WebTransportStream> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken);
 }

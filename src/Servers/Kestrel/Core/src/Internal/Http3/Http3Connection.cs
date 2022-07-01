@@ -216,14 +216,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                 if (stream.StreamTimeoutTicks < ticks)
                 {
-                    if (stream.IsRequestStream)
-                    {
-                        stream.Abort(new(CoreStrings.BadRequest_RequestHeadersTimeout));
-                    }
-                    else
-                    {
-                        stream.Abort(new(CoreStrings.Http3ControlStreamHeaderTimeout));
-                    }
+                    stream.Abort(new("Stream timed out before its type was determined."));
                 }
             }
         }
@@ -332,7 +325,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     Debug.Assert(streamIdFeature != null);
 
                     var context = CreateHttpStreamContext(streamContext);
-                    var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId, streamDirectionFeature.CanWrite);
+                    var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId);
 
                     _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
 
