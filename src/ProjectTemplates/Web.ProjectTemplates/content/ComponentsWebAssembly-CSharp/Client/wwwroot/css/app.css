@@ -25,7 +25,6 @@ a, .btn-link {
 svg {
     width: 200px;
     height: 200px;
-    transform: rotate(-90deg);
     margin-left: auto;
     margin-right: auto;
     display: block;
@@ -35,12 +34,14 @@ circle {
     fill: none;
     stroke: #e0e0e0;
     stroke-width: 8px;
+    transform: rotate(-90deg);
     transform-origin: 50% 50%;
 }
 
 .progress {
     stroke: #1b6ec2;
     transition: 0.50s stroke-dashoffset ease-in-out;
+    display: none;
 }
 
 .valid.modified:not([type=checkbox]) {

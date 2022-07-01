@@ -265,8 +265,6 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     /* type */ 'dotnetwasm'
   );
 
-
-
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   let timeZoneResource: LoadingResource | undefined;
   if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty(dotnetTimeZoneResourceName)) {
