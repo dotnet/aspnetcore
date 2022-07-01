@@ -1294,7 +1294,7 @@ public class ControllerBaseTest
         var controller = new TestableController();
 
         // Act
-        var result = controller.Created((string?)null, null);
+        var result = controller.Created((string)null, null);
 
         // Assert
         Assert.IsType<CreatedResult>(result);
@@ -1325,7 +1325,7 @@ public class ControllerBaseTest
         var controller = new TestableController();
 
         // Act
-        var result = controller.Created((Uri?)null, null);
+        var result = controller.Created((Uri)null, null);
 
         // Assert
         Assert.IsType<CreatedResult>(result);
