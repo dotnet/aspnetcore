@@ -1982,7 +1982,7 @@ public class WebApplicationTests
         Assert.Contains(builder.Services, service => service.ServiceType == typeof(ILogger<>));
     }
 
-    [Fact]
+    [Fact(Skip = "Reenable when authentication middlewares are registered")]
     public async Task RegisterAuthMiddlewaresCorrectly()
     {
         var helloEndpointCalled = false;
@@ -1994,7 +1994,7 @@ public class WebApplicationTests
         {
             o.DefaultScheme = "testSchemeName";
         });
-        builder.Authentication.AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.AddAuthentication().AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
         builder.WebHost.UseTestServer();
         await using var app = builder.Build();
 

@@ -3,8 +3,6 @@
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -25,14 +23,7 @@ public static class AuthenticationWebApplicationBuilderExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        builder.Services.AddAuthenticationCore();
-        builder.Services.AddDataProtection();
-        builder.Services.AddWebEncoders();
-        builder.Services.TryAddSingleton<ISystemClock, SystemClock>();
-        builder.Services.TryAddSingleton<IAuthenticationConfigurationProvider, DefaultAuthenticationConfigurationProvider>();
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<AuthenticationOptions>, AuthenticationConfigureOptions>());
-
-        return new AuthenticationBuilder(builder.Services);
+        return builder.Services.AddAuthentication();
     }
 
     /// <summary>
@@ -63,8 +54,6 @@ public static class AuthenticationWebApplicationBuilderExtensions
             throw new ArgumentNullException(nameof(configureOptions));
         }
 
-        var authenticationBuilder = builder.AddAuthentication();
-        builder.Services.Configure(configureOptions);
-        return authenticationBuilder;
+        return builder.AddAuthentication(configureOptions);
     }
 }
