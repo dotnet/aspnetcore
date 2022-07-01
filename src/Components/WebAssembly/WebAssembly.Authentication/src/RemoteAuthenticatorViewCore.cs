@@ -346,10 +346,11 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
         var loginUrl = Navigation.ToAbsoluteUri(ApplicationPaths.LogInPath).PathAndQuery;
         var registerUrl = Navigation.ToAbsoluteUri($"{ApplicationPaths.RemoteRegisterPath}?returnUrl={Uri.EscapeDataString(loginUrl)}").PathAndQuery;
 
-        Navigation.NavigateTo(registerUrl, new NavigationOptions { ReplaceHistoryEntry = true });
+        Navigation.NavigateTo(registerUrl, new NavigationOptions { ReplaceHistoryEntry = true, ForceLoad = true });
     }
 
-    private void RedirectToProfile() => Navigation.NavigateTo(Navigation.ToAbsoluteUri(ApplicationPaths.RemoteProfilePath).PathAndQuery, new NavigationOptions { ReplaceHistoryEntry = true });
+    private void RedirectToProfile() =>
+        Navigation.NavigateTo(Navigation.ToAbsoluteUri(ApplicationPaths.RemoteProfilePath).PathAndQuery, new NavigationOptions { ReplaceHistoryEntry = true, ForceLoad = true });
 
     private static void DefaultLogInFragment(RenderTreeBuilder builder)
     {
