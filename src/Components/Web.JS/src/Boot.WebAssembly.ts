@@ -74,8 +74,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   };
 
-  // Call WebAssemblyProgressReporter constructor if default loading implementation exists
-  if (document.getElementById ("blazor-default-loading"))
+  if (document.getElementById ('blazor-default-loading'))
     WebAssemblyProgressReporter.init();
 
   // Configure navigation via JS Interop

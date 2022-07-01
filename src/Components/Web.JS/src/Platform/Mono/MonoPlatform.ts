@@ -250,6 +250,11 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const existingPostRun = moduleConfig.postRun || [];
   (moduleConfig as any).preloadPlugins = [];
 
+    if (resources.pdb != null) {
+      const totalResources = Object.keys(resources.assembly).length +  Object.keys(resources.pdb).length + 1;
+      WebAssemblyProgressService.setTotalResources(totalResources);
+    }
+
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const dotnetWasmResourceName = 'dotnet.wasm';
   const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
@@ -260,8 +265,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
     /* type */ 'dotnetwasm'
   );
-  const totalResources = assembliesBeingLoaded.length + pdbsBeingLoaded.length + 1;
-  WebAssemblyProgressService.setTotalResources(totalResources);
+
+
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   let timeZoneResource: LoadingResource | undefined;
