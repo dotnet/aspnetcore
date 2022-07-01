@@ -10,6 +10,7 @@
     <IsTrimmable>true</IsTrimmable>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>DISABLE_NULLABLE;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
