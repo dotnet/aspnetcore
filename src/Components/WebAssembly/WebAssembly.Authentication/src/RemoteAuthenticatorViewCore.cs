@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Internal;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -329,7 +330,7 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
             return state.ReturnUrl;
         }
 
-        var fromQuery = QueryStringHelper.GetParameter(new Uri(Navigation.Uri).Query, "returnUrl");
+        var fromQuery = GetParameterFromQueryString("returnUrl");
         if (!string.IsNullOrWhiteSpace(fromQuery) && !fromQuery.StartsWith(Navigation.BaseUri, StringComparison.Ordinal))
         {
             // This is an extra check to prevent open redirects.
@@ -337,6 +338,29 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
         }
 
         return fromQuery ?? defaultReturnUrl ?? Navigation.BaseUri;
+
+    }
+
+    private string GetParameterFromQueryString(ReadOnlySpan<char> parameterName)
+    {
+        var url = Navigation.Uri;
+        ReadOnlyMemory<char> query = default;
+        var queryStartPos = url.IndexOf('?');
+        if (queryStartPos >= 0)
+        {
+            var queryEndPos = url.IndexOf('#', queryStartPos);
+            query = url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
+        }
+
+        foreach (var parameter in new QueryStringEnumerable(query))
+        {
+            var decodedName = parameter.DecodeName().Span;
+            if (MemoryExtensions.Equals(parameterName, decodedName, StringComparison.OrdinalIgnoreCase))
+            {
+                return new string(parameter.DecodeValue().Span);
+            }
+        }
+        return null;
     }
 
     private void NavigateToReturnUrl(string returnUrl) => Navigation.NavigateTo(returnUrl, new NavigationOptions { ForceLoad = false, ReplaceHistoryEntry = true });
