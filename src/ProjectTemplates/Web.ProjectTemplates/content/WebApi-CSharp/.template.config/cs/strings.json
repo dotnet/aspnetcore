@@ -1,7 +1,11 @@
-﻿{
+{
   "version": "1.0.0.0",
   "strings": {
-    "name": "ASP.NET Core Web API",
-    "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers."
+    "name": "Webové rozhraní API pro ASP.NET Core",
+    "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core s ukázkovým kontrolerem pro službu RESTful HTTP. Tato šablona se dá použít i pro zobrazení a kontrolery ASP.NET Core MVC.",
+    "parameter.DisableOpenAPI.name": "Povolit podporu _OpenAPI",
+    "parameter.DisableOpenAPI.description": "Povolení podpory OpenAPI (Swagger)",
+    "parameter.UseMinimalAPIs.name": "Používání kontrolérů (pokud chcete používat minimální rozhraní API, zrušte zaškrtnutí)",
+    "parameter.UseMinimalAPIs.description": "Určuje, jestli se místo kontrolérů mají používat minimální rozhraní API."
   }
 }
