@@ -96,12 +96,10 @@ public class NotFoundOfTResultTests
     }
 
     [Fact]
-    public void NotFoundResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void NotFoundResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new NotFound<object>(null) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new NotFound<object>(null));
         Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
     }
 
@@ -110,9 +108,9 @@ public class NotFoundOfTResultTests
     {
         // Arrange & Act
         var value = "Foo";
-        var result = new NotFound<string>(value) as IValueHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new NotFound<string>(value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -122,9 +120,9 @@ public class NotFoundOfTResultTests
     {
         // Arrange & Act
         var value = "Foo";
-        var result = new NotFound<string>(value) as IValueHttpResult<string>;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new NotFound<string>(value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }

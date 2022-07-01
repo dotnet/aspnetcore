@@ -46,12 +46,10 @@ public class UnauthorizedResultTests
     }
 
     [Fact]
-    public void UnauthorizedResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void UnauthorizedResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new UnauthorizedHttpResult() as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new UnauthorizedHttpResult());
         Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
     }
 

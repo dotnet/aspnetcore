@@ -74,12 +74,10 @@ public class OkResultTests
     }
 
     [Fact]
-    public void OkObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void OkObjectResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new Ok() as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Ok());
         Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
     }
 

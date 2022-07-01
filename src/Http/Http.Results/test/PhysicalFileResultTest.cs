@@ -39,15 +39,12 @@ public class PhysicalFileResultTest : PhysicalFileResultTestBase
     [Fact]
     public void PhysicalFileResult_Implements_IFileHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/x-zip";
         var downloadName = "sample.zip";
-        var result = new PhysicalFileHttpResult("file.zip", contentType)
-        {
-            FileDownloadName = downloadName
-        } as IFileHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IFileHttpResult>(new PhysicalFileHttpResult("file.zip", contentType) { FileDownloadName = downloadName });
         Assert.Equal(contentType, result.ContentType);
         Assert.Equal(downloadName, result.FileDownloadName);
     }
@@ -55,15 +52,12 @@ public class PhysicalFileResultTest : PhysicalFileResultTestBase
     [Fact]
     public void PhysicalFileResult_Implements_IContentTypeHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/x-zip";
         var downloadName = "sample.zip";
-        var result = new PhysicalFileHttpResult("file.zip", contentType)
-        {
-            FileDownloadName = downloadName
-        } as IContentTypeHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new PhysicalFileHttpResult("file.zip", contentType) { FileDownloadName = downloadName });
         Assert.Equal(contentType, result.ContentType);
     }
 }

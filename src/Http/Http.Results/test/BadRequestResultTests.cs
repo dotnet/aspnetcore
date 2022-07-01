@@ -74,12 +74,10 @@ public class BadRequestResultTests
     }
 
     [Fact]
-    public void BadRequestObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void BadRequestObjectResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new BadRequest() as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new BadRequest());
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
     }
 

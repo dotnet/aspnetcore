@@ -94,23 +94,21 @@ public class AcceptedOfTResultTests
     }
 
     [Fact]
-    public void AcceptedResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void AcceptedResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new Accepted<string>("location", null) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Accepted<string>("location", null));
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
     }
 
     [Fact]
     public void AcceptedResult_Implements_IValueHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var value = "Foo";
-        var result = new Accepted<string>("location", value) as IValueHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new Accepted<string>("location", value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -120,9 +118,9 @@ public class AcceptedOfTResultTests
     {
         // Arrange & Act
         var value = "Foo";
-        var result = new Accepted<string>("location", value) as IValueHttpResult<string>;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new Accepted<string>("location", value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }

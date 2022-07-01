@@ -153,33 +153,33 @@ public class AcceptedAtRouteOfTResultTests
     }
 
     [Fact]
-    public void AcceptedAtRouteResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void AcceptedAtRouteResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
         {
             { "test", "case" },
             { "sample", "route" }
         });
-        var result = new AcceptedAtRoute<string>(routeValues, null) as IStatusCodeHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new AcceptedAtRoute<string>(routeValues, null));
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
     }
 
     [Fact]
     public void AcceptedAtRouteResult_Implements_IValueHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var routeValues = new RouteValueDictionary(new Dictionary<string, string>()
         {
             { "test", "case" },
             { "sample", "route" }
         });
         var value = "Foo";
-        var result = new AcceptedAtRoute<string>(routeValues, value) as IValueHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new AcceptedAtRoute<string>(routeValues, value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -194,9 +194,9 @@ public class AcceptedAtRouteOfTResultTests
             { "sample", "route" }
         });
         var value = "Foo";
-        var result = new AcceptedAtRoute<string>(routeValues, value) as IValueHttpResult<string>;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new AcceptedAtRoute<string>(routeValues, value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }

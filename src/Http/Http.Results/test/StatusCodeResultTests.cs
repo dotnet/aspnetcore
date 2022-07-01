@@ -36,12 +36,10 @@ public class StatusCodeResultTests
     }
 
     [Fact]
-    public void StatusCodeResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void StatusCodeResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new StatusCodeHttpResult(StatusCodes.Status406NotAcceptable) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new StatusCodeHttpResult(StatusCodes.Status406NotAcceptable));
         Assert.Equal(StatusCodes.Status406NotAcceptable, result.StatusCode);
     }
 

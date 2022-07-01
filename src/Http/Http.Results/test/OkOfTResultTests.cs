@@ -113,23 +113,21 @@ public class OkOfTResultTests
     }
 
     [Fact]
-    public void OkResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void OkResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new Ok<object>(null) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Ok<object>(null));
         Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
     }
 
     [Fact]
     public void OkResult_Implements_IValueHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var value = "Foo";
-        var result = new Ok<string>(value) as IValueHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new Ok<string>(value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -137,11 +135,11 @@ public class OkOfTResultTests
     [Fact]
     public void OkResult_Implements_IValueHttpResultOfT_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var value = "Foo";
-        var result = new Ok<string>(value) as IValueHttpResult<string>;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new Ok<string>(value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }

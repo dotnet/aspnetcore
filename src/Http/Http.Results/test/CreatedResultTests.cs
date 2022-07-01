@@ -94,11 +94,11 @@ public class CreatedResultTests
     [Fact]
     public void CreatedResult_Implements_IValueHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var location = "/test/";
-        var result = new Created(location) as IStatusCodeHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Created(location));
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
     }
 

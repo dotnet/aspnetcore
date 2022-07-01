@@ -103,11 +103,12 @@ public partial class CreatedAtRouteResultTests
     public void CreatedAtRouteResult_Implements_IValueHttpResult_Correctly()
     {
         // Arrange & Act
-        var result = new CreatedAtRoute(
+        var rawResult = new CreatedAtRoute(
             routeName: null,
-            routeValues: new Dictionary<string, object>()) as IStatusCodeHttpResult;
+            routeValues: new Dictionary<string, object>());
 
         // Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(rawResult);
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
     }
 

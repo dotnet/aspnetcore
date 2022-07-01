@@ -113,23 +113,21 @@ public class UnprocessableEntityOfTResultTests
     }
 
     [Fact]
-    public void UnprocessableEntityObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void UnprocessableEntityObjectResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new UnprocessableEntity<object>(null) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new UnprocessableEntity<object>(null));
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
     }
 
     [Fact]
     public void UnprocessableEntityObjectResult_Implements_IValueHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var value = "Foo";
-        var result = new UnprocessableEntity<string>(value) as IValueHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new UnprocessableEntity<string>(value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -137,11 +135,11 @@ public class UnprocessableEntityOfTResultTests
     [Fact]
     public void UnprocessableEntityObjectResult_Implements_IValueHttpResultOfT_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var value = "Foo";
-        var result = new UnprocessableEntity<string>(value) as IValueHttpResult<string>;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new UnprocessableEntity<string>(value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }

@@ -104,12 +104,10 @@ public class AcceptedAtRouteResultTests
     }
 
     [Fact]
-    public void AcceptedAtRouteResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void AcceptedAtRouteResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new AcceptedAtRoute(null) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new AcceptedAtRoute(null));
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
     }
 

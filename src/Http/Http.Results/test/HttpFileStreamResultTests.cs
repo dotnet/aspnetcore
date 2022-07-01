@@ -95,12 +95,9 @@ public class HttpFileStreamResultTests : FileStreamResultTestBase
         // Arrange & Act
         var contentType = "application/x-zip";
         var downloadName = "sample.zip";
-        var result = new FileStreamHttpResult(new MemoryStream(), contentType)
-        {
-            FileDownloadName = downloadName
-        } as IFileHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IFileHttpResult>(new FileStreamHttpResult(new MemoryStream(), contentType) { FileDownloadName = downloadName });
         Assert.Equal(contentType, result.ContentType);
         Assert.Equal(downloadName, result.FileDownloadName);
     }
@@ -108,15 +105,12 @@ public class HttpFileStreamResultTests : FileStreamResultTestBase
     [Fact]
     public void FileStreamHttpResult_Implements_IContentTypeHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/x-zip";
-        var downloadName = "sample.zip";
-        var result = new FileStreamHttpResult(new MemoryStream(), contentType)
-        {
-            FileDownloadName = downloadName
-        } as IContentTypeHttpResult;
+        var downloadName = "sample.zip";;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new FileStreamHttpResult(new MemoryStream(), contentType) { FileDownloadName = downloadName });
         Assert.Equal(contentType, result.ContentType);
     }
 }

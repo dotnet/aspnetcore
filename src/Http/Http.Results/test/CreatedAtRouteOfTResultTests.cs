@@ -120,15 +120,16 @@ public partial class CreatedAtRouteOfTResultTests
     }
 
     [Fact]
-    public void CreatedAtRouteResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void CreatedAtRouteResult_Implements_IStatusCodeHttpResult_Correctly()
     {
         // Arrange & Act
-        var result = new CreatedAtRoute<object>(
+        var rawResult = new CreatedAtRoute<object>(
             routeName: null,
             routeValues: new Dictionary<string, object>(),
-            value: null) as IStatusCodeHttpResult;
+            value: null);
 
         // Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(rawResult);
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
     }
 
@@ -137,12 +138,13 @@ public partial class CreatedAtRouteOfTResultTests
     {
         // Arrange & Act
         var value = "Foo";
-        var result = new CreatedAtRoute<string>(
+        var rawResult = new CreatedAtRoute<string>(
             routeName: null,
             routeValues: new Dictionary<string, object>(),
-            value: value) as IValueHttpResult;
+            value: value);
 
         // Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(rawResult);
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -152,12 +154,13 @@ public partial class CreatedAtRouteOfTResultTests
     {
         // Arrange & Act
         var value = "Foo";
-        var result = new CreatedAtRoute<string>(
+        var rawResult = new CreatedAtRoute<string>(
             routeName: null,
             routeValues: new Dictionary<string, object>(),
-            value: value) as IValueHttpResult<string>;
+            value: value);
 
         // Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(rawResult);
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }

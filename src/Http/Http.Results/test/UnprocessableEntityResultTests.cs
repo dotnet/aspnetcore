@@ -74,12 +74,10 @@ public class UnprocessableEntityResultTests
     }
 
     [Fact]
-    public void UnprocessableEntityObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void UnprocessableEntityObjectResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new UnprocessableEntity() as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new UnprocessableEntity());
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
     }
 

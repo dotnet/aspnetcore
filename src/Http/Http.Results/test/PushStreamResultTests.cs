@@ -81,15 +81,12 @@ public class PushStreamResultTests
     [Fact]
     public void PushStreamResult_Implements_IFileHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/x-zip";
         var downloadName = "sample.zip";
-        var result = new PushStreamHttpResult(s => Task.CompletedTask, contentType)
-        {
-            FileDownloadName = downloadName
-        } as IFileHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IFileHttpResult>(new PushStreamHttpResult(s => Task.CompletedTask, contentType) { FileDownloadName = downloadName });
         Assert.Equal(contentType, result.ContentType);
         Assert.Equal(downloadName, result.FileDownloadName);
     }
@@ -97,15 +94,12 @@ public class PushStreamResultTests
     [Fact]
     public void PushStreamResult_Implements_IContentTypeHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/x-zip";
         var downloadName = "sample.zip";
-        var result = new PushStreamHttpResult(s => Task.CompletedTask, contentType)
-        {
-            FileDownloadName = downloadName
-        } as IContentTypeHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new PushStreamHttpResult(s => Task.CompletedTask, contentType) { FileDownloadName = downloadName });
         Assert.Equal(contentType, result.ContentType);
     }
 }

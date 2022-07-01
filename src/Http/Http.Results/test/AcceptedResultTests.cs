@@ -60,12 +60,10 @@ public class AcceptedResultTests
     }
 
     [Fact]
-    public void AcceptedResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void AcceptedResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new Accepted("location") as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Accepted("location"));
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
     }
 

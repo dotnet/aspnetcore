@@ -135,33 +135,29 @@ public class ProblemResultTests
     }
 
     [Fact]
-    public void ProblemResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void ProblemResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new ProblemHttpResult(new() { Status = StatusCodes.Status416RangeNotSatisfiable }) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ProblemHttpResult(new() { Status = StatusCodes.Status416RangeNotSatisfiable }));
         Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, result.StatusCode);
     }
 
     [Fact]
-    public void ProblemResult_Implements_IStatusCodeHttpResult_Correctlys_WithDefaultStatusCode()
+    public void ProblemResult_Implements_IStatusCodeHttpResult_Correctly_WithDefaultStatusCode()
     {
-        // Arrange & Act
-        var result = new ProblemHttpResult(new()) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ProblemHttpResult(new()));
         Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
     }
 
     [Fact]
     public void ProblemResult_Implements_IValueHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var value = new ProblemDetails();
-        var result = new ProblemHttpResult(value) as IValueHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new ProblemHttpResult(value));
         Assert.IsType<ProblemDetails>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -169,11 +165,11 @@ public class ProblemResultTests
     [Fact]
     public void ProblemResult_Implements_IValueHttpResultOfT_Correctly()
     {
-        // Arrange & Act
+        // Arrange 
         var value = new ProblemDetails();
-        var result = new ProblemHttpResult(value) as IValueHttpResult<ProblemDetails>;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<ProblemDetails>>(new ProblemHttpResult(value));
         Assert.IsType<ProblemDetails>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -181,12 +177,9 @@ public class ProblemResultTests
     [Fact]
     public void ProblemResult_Implements_IContentTypeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var contentType = "application/problem+json";
-        var result = new ProblemHttpResult(new()) as IContentTypeHttpResult;
-
-        // Assert
-        Assert.Equal(contentType, result.ContentType);
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new ProblemHttpResult(new()));
+        Assert.Equal("application/problem+json", result.ContentType);
     }
 
     private static IServiceProvider CreateServices()

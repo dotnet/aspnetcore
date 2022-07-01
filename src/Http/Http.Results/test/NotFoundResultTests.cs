@@ -70,12 +70,10 @@ public class NotFoundResultTests
     }
 
     [Fact]
-    public void NotFoundResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void NotFoundResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new NotFound() as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new NotFound());
         Assert.Equal(StatusCodes.Status404NotFound, result.StatusCode);
     }
 

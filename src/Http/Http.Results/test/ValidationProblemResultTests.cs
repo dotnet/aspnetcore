@@ -94,23 +94,21 @@ public class ValidationProblemResultTests
     }
 
     [Fact]
-    public void ValidationProblemResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void ValidationProblemResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new ValidationProblem(new HttpValidationProblemDetails()) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ValidationProblem(new HttpValidationProblemDetails()));
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
     }
 
     [Fact]
     public void ValidationProblemResult_Implements_IValueHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var value = new HttpValidationProblemDetails();
-        var result = new ValidationProblem(value) as IValueHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new ValidationProblem(value));
         Assert.IsType<HttpValidationProblemDetails>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -118,11 +116,11 @@ public class ValidationProblemResultTests
     [Fact]
     public void ValidationProblemResult_Implements_IValueHttpResultOfT_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var value = new HttpValidationProblemDetails();
-        var result = new ValidationProblem(value) as IValueHttpResult<HttpValidationProblemDetails>;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<HttpValidationProblemDetails>>(new ValidationProblem(value));
         Assert.IsType<HttpValidationProblemDetails>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -130,11 +128,11 @@ public class ValidationProblemResultTests
     [Fact]
     public void ValidationProblemResult_Implements_IContentTypeHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/problem+json";
-        var result = new ValidationProblem(new()) as IContentTypeHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new ValidationProblem(new()));
         Assert.Equal(contentType, result.ContentType);
     }
 

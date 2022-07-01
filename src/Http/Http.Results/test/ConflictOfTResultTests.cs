@@ -114,23 +114,21 @@ public class ConflictOfTResultTests
     }
 
     [Fact]
-    public void ConflictObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void ConflictObjectResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new Conflict<string>(null) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Conflict<string>(null));
         Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
     }
 
     [Fact]
     public void ConflictObjectResult_Implements_IValueHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var value = "Foo";
-        var result = new Conflict<string>(value) as IValueHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new Conflict<string>(value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -140,9 +138,9 @@ public class ConflictOfTResultTests
     {
         // Arrange & Act
         var value = "Foo";
-        var result = new Conflict<string>(value) as IValueHttpResult<string>;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new Conflict<string>(value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }

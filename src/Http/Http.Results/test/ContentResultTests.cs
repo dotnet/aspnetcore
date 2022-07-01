@@ -137,33 +137,33 @@ public class ContentResultTests
     [Fact]
     public void ContentResult_Implements_IContentTypeHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/custom";
-        var result = new ContentHttpResult("content", contentType) as IContentTypeHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new ContentHttpResult("content", contentType));
         Assert.Equal(contentType, result.ContentType);
     }
 
     [Fact]
     public void ContentResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/custom";
-        var result = new ContentHttpResult("content", contentType, StatusCodes.Status202Accepted) as IStatusCodeHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ContentHttpResult("content", contentType, StatusCodes.Status202Accepted));
         Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
     }
 
     [Fact]
     public void ContentResult_Implements_IStatusCodeHttpResult_Correctly_WithDefaultStatus()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/custom";
-        var result = new ContentHttpResult("content", contentType) as IStatusCodeHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ContentHttpResult("content", contentType));
         Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
     }
 

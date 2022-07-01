@@ -23,15 +23,12 @@ public class VirtualFileResultTests : VirtualFileResultTestBase
     [Fact]
     public void VirtualFileHttpResult_Implements_IFileHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/x-zip";
         var downloadName = "sample.zip";
-        var result = new VirtualFileHttpResult("~/file.zip", contentType)
-        {
-            FileDownloadName = downloadName
-        } as IFileHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IFileHttpResult>(new VirtualFileHttpResult("~/file.zip", contentType) { FileDownloadName = downloadName });
         Assert.Equal(contentType, result.ContentType);
         Assert.Equal(downloadName, result.FileDownloadName);
     }
@@ -39,15 +36,12 @@ public class VirtualFileResultTests : VirtualFileResultTestBase
     [Fact]
     public void VirtualFileHttpResult_Implements_IContentTypeHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var contentType = "application/x-zip";
         var downloadName = "sample.zip";
-        var result = new VirtualFileHttpResult("~/file.zip", contentType)
-        {
-            FileDownloadName = downloadName
-        } as IContentTypeHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new VirtualFileHttpResult("~/file.zip", contentType) { FileDownloadName = downloadName });
         Assert.Equal(contentType, result.ContentType);
     }
 }

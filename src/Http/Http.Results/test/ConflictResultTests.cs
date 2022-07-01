@@ -75,12 +75,10 @@ public class ConflictResultTests
     }
 
     [Fact]
-    public void ConflictObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void ConflictObjectResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new Conflict() as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Conflict());
         Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
     }
 

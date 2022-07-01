@@ -136,23 +136,21 @@ public class BadRequestOfTResultTests
     }
 
     [Fact]
-    public void BadRequestObjectResult_Implements_IStatusCodeHttpResult_Correctlys()
+    public void BadRequestObjectResult_Implements_IStatusCodeHttpResult_Correctly()
     {
-        // Arrange & Act
-        var result = new BadRequest<string>(null) as IStatusCodeHttpResult;
-
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new BadRequest<string>(null));
         Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
     }
 
     [Fact]
     public void BadRequestObjectResult_Implements_IValueHttpResult_Correctly()
     {
-        // Arrange & Act
+        // Arrange
         var value = "Foo";
-        var result = new BadRequest<string>(value) as IValueHttpResult;
 
-        // Assert
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new BadRequest<string>(value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
@@ -162,9 +160,9 @@ public class BadRequestOfTResultTests
     {
         // Arrange & Act
         var value = "Foo";
-        var result = new BadRequest<string>(value) as IValueHttpResult<string>;
 
         // Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new BadRequest<string>(value));
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
