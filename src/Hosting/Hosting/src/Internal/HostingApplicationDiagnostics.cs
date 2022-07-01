@@ -5,6 +5,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -413,6 +414,19 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
+    // DynamicDependency matches the properties selected in:
+    // https://github.com/dotnet/diagnostics/blob/7cc6fbef613cdfe5ff64393120d59d7a15e98bd6/src/Microsoft.Diagnostics.Monitoring.EventPipe/Configuration/HttpRequestSourceConfiguration.cs#L20-L33
+    [DynamicDependency(nameof(HttpContext.Request), typeof(HttpContext))]
+    [DynamicDependency(nameof(HttpRequest.Scheme), typeof(HttpRequest))]
+    [DynamicDependency(nameof(HttpRequest.Host), typeof(HttpRequest))]
+    [DynamicDependency(nameof(HttpRequest.PathBase), typeof(HttpRequest))]
+    [DynamicDependency(nameof(HttpRequest.QueryString), typeof(HttpRequest))]
+    [DynamicDependency(nameof(HttpRequest.Path), typeof(HttpRequest))]
+    [DynamicDependency(nameof(HttpRequest.Method), typeof(HttpRequest))]
+    [DynamicDependency(nameof(HttpRequest.Headers), typeof(HttpRequest))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(QueryString))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HostString))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PathString))]
     private Activity StartActivity(Activity activity, HttpContext httpContext)
     {
         activity.Start();
@@ -420,6 +434,11 @@ internal sealed class HostingApplicationDiagnostics
         return activity;
     }
 
+    // DynamicDependency matches the properties selected in:
+    // https://github.com/dotnet/diagnostics/blob/7cc6fbef613cdfe5ff64393120d59d7a15e98bd6/src/Microsoft.Diagnostics.Monitoring.EventPipe/Configuration/HttpRequestSourceConfiguration.cs#L35-L38
+    [DynamicDependency(nameof(HttpContext.Response), typeof(HttpContext))]
+    [DynamicDependency(nameof(HttpResponse.StatusCode), typeof(HttpResponse))]
+    [DynamicDependency(nameof(HttpResponse.Headers), typeof(HttpResponse))]
     private void StopActivity(Activity activity, HttpContext httpContext)
     {
         // Stop sets the end time if it was unset, but we want it set before we issue the write
