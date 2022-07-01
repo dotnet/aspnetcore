@@ -7,10 +7,13 @@ internal sealed class DefaultKeyType<TKey> : DefaultKeyType
 {
     private readonly TKey _key;
 
-    public DefaultKeyType(TKey key)
+    public DefaultKeyType(string policyName, TKey key)
     {
+        PolicyName = policyName;
         _key = key;
     }
+
+    public override string PolicyName { get; }
 
     public override object? GetKey()
     {

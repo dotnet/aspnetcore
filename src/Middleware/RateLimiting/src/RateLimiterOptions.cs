@@ -110,35 +110,12 @@ public sealed class RateLimiterOptions
     }
 
     // Converts a Partition<TKey> to a Partition<DefaultKeyType<TKey>> to prevent accidental collisions with the keys we create in the the RateLimiterOptionsExtensions.
-    private Func<HttpContext, RateLimitPartition<DefaultKeyType>> ConvertPartitioner<TPartitionKey>(string policyName, Func<HttpContext, RateLimitPartition<TPartitionKey>> partitioner)
+    private static Func<HttpContext, RateLimitPartition<DefaultKeyType>> ConvertPartitioner<TPartitionKey>(string policyName, Func<HttpContext, RateLimitPartition<TPartitionKey>> partitioner)
     {
         return (context =>
         {
             RateLimitPartition<TPartitionKey> partition = partitioner(context);
-            // If we've already created this key for this policy, re-use it. DefaultKeyType uses reference equality, so we can't re-create the key on every call to the partitioner.
-            bool found = false;
-            DefaultKeyType partitionKey = new DefaultKeyType<TPartitionKey>(partition.PartitionKey);
-            ISet<DefaultKeyType>? keys;
-
-            if (!_partitionKeys.TryGetValue(policyName, out keys))
-            {
-                keys = new HashSet<DefaultKeyType>();
-                _partitionKeys.Add(policyName, keys);
-            }
-
-            foreach (var k in keys)
-            {
-                if (k.GetKey()!.Equals(partition.PartitionKey))
-                {
-                    partitionKey = (DefaultKeyType)k;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                keys.Add(partitionKey);
-            }
+            var partitionKey = new DefaultKeyType<TPartitionKey>(policyName, partition.PartitionKey);
             return new RateLimitPartition<DefaultKeyType>(partitionKey, key => partition.Factory(partition.PartitionKey));
         });
     }

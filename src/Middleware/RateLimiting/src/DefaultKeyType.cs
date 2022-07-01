@@ -6,4 +6,6 @@ namespace Microsoft.AspNetCore.RateLimiting;
 internal abstract class DefaultKeyType
 {
     public abstract object? GetKey();
+
+    public abstract string PolicyName { get; }
 }
