@@ -49,7 +49,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
 
         app.Run(new[] { "list", "--project", project });
-        Assert.Contains("Set UserSecretsId to ", _console.GetOutput());
+        Assert.DoesNotContain("Set UserSecretsId to ", _console.GetOutput());
         Assert.Contains("No JWTs created yet!", _console.GetOutput());
     }
 
@@ -62,7 +62,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         app.Run(new[] { "create", "--project", project });
         var output = _console.GetOutput();
         Assert.DoesNotContain("could not find SecretManager.targets", output);
-        Assert.Contains("Set UserSecretsId to ", output);
+        Assert.DoesNotContain("Set UserSecretsId to ", output);
         Assert.Contains("New JWT saved", output);
     }
 
