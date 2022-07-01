@@ -32,7 +32,7 @@ public class CreatedResultTests
     public void CreatedResult_SetsLocationNull()
     {
         // Act
-        var result = new CreatedResult((string?)null, "testInput");
+        var result = new CreatedResult((string)null, "testInput");
 
         // Assert
         Assert.Null(result.Location);
@@ -61,7 +61,7 @@ public class CreatedResultTests
         // Arrange        
         var httpContext = GetHttpContext();
         var actionContext = GetActionContext(httpContext);
-        var result = new CreatedResult((string?)null, "testInput");
+        var result = new CreatedResult((string)null, "testInput");
 
         // Act
         await result.ExecuteResultAsync(actionContext);
