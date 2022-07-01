@@ -24,6 +24,6 @@ internal class DefaultKeyTypeEqualityComparer : IEqualityComparer<DefaultKeyType
 
     public int GetHashCode([DisallowNull] DefaultKeyType obj)
     {
-        return (obj.Key?.GetHashCode() ?? 0) + obj.PolicyName.GetHashCode();
+        return HashCode.Combine(obj.Key, obj.PolicyName);
     }
 }
