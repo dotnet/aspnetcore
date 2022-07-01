@@ -352,7 +352,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                             break;
 
                         case (long)Http3StreamType.Control:
-                        case (long)Http3StreamType.Push:
                         case (long)Http3StreamType.QPackDecoder:
                         case (long)Http3StreamType.QPackEncoder:
                             var controlStream = new Http3ControlStream<TContext>(application, context);
@@ -360,7 +359,16 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                             ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
                             break;
 
-                        default: // http request stream
+                        default:
+
+                            if (!streamDirectionFeature.CanWrite)
+                            {
+                                // this is either a push stream or something else that we don't support
+                                // ignore it and move on
+                                continue;
+                            }
+
+                            // http request stream
                             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
                             if (_gracefulCloseStarted)
                             {
