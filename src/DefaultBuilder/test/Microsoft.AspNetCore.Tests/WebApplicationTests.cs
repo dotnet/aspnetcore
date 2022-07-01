@@ -1990,11 +1990,10 @@ public class WebApplicationTests
         var username = "foobar";
 
         var builder = WebApplication.CreateBuilder();
-        builder.Services.AddAuthenticationCore(o =>
+        builder.AddAuthentication(o =>
         {
             o.DefaultScheme = "testSchemeName";
-        });
-        builder.AddAuthentication().AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
+        }).AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
         builder.WebHost.UseTestServer();
         await using var app = builder.Build();
 

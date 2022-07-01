@@ -1,7 +1,9 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.AuthenticationWebApplicationBuilderExtensions
+Microsoft.AspNetCore.Builder.AuthorizationWebApplicationBuilderExtensions
 Microsoft.AspNetCore.Builder.WebApplication.Use(System.Func<Microsoft.AspNetCore.Http.RequestDelegate!, Microsoft.AspNetCore.Http.RequestDelegate!>! middleware) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.AuthenticationWebApplicationBuilderExtensions.AddAuthentication(this Microsoft.AspNetCore.Builder.WebApplicationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.AspNetCore.Builder.AuthenticationWebApplicationBuilderExtensions.AddAuthentication(this Microsoft.AspNetCore.Builder.WebApplicationBuilder! builder, string! defaultScheme) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.AspNetCore.Builder.AuthenticationWebApplicationBuilderExtensions.AddAuthentication(this Microsoft.AspNetCore.Builder.WebApplicationBuilder! builder, System.Action<Microsoft.AspNetCore.Authentication.AuthenticationOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.AspNetCore.Builder.AuthorizationWebApplicationBuilderExtensions.AddAuthorization(this Microsoft.AspNetCore.Builder.WebApplicationBuilder! builder) -> Microsoft.AspNetCore.Authorization.AuthorizationBuilder!
 static Microsoft.Extensions.Hosting.GenericHostBuilderExtensions.ConfigureWebHostDefaults(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder!>! configure, System.Action<Microsoft.Extensions.Hosting.WebHostBuilderOptions!>! configureOptions) -> Microsoft.Extensions.Hosting.IHostBuilder!
