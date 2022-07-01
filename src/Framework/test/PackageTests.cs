@@ -22,28 +22,30 @@ public class PackageTests
 
     public PackageTests(ITestOutputHelper output)
     {
-        // Do nothing if this is a dev build
+        // In official builds, only run this test on Helix. The test will work locally so long as we're building w/ shipping versions.
         if (!TestData.VerifyPackageAssemblyVersions() && !SkipOnHelixAttribute.OnHelix())
         {
             return;
         }
 
         _output = output;
-        var packageRoot = SkipOnHelixAttribute.OnHelix() ?
-            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
-            TestData.GetPackagesFolder();
         _packageLayoutRoot = SkipOnHelixAttribute.OnHelix() ?
             Path.Combine(
                 Environment.GetEnvironmentVariable("DOTNET_ROOT"),
                 "Packages.Layout") :
             TestData.GetPackageLayoutRoot();
+        var packageRoot = SkipOnHelixAttribute.OnHelix() ?
+            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            TestData.GetPackagesFolder();
         var packages = Directory
                         .GetFiles(packageRoot, "*.nupkg", SearchOption.AllDirectories)
                         .Where(file => !file.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase));
+
         if (Directory.Exists(_packageLayoutRoot))
         {
             Directory.Delete(_packageLayoutRoot, true);
         }
+
         foreach (var package in packages)
         {
             var outputPath = Path.Combine(_packageLayoutRoot, Path.GetFileNameWithoutExtension(package));
@@ -54,7 +56,7 @@ public class PackageTests
     [Fact]
     public void PackageAssembliesHaveExpectedAssemblyVersions()
     {
-        // Do nothing if this is a dev build
+        // In official builds, only run this test on Helix. The test will work locally so long as we're building w/ shipping versions.
         if (!TestData.VerifyPackageAssemblyVersions() && !SkipOnHelixAttribute.OnHelix())
         {
             return;
@@ -73,18 +75,20 @@ public class PackageTests
             {
                 continue;
             }
+
             // Don't test helix test runner tool packages
             if (helixTestRunnerToolPackages.Any(s => packageDir.Contains(s, StringComparison.OrdinalIgnoreCase)))
             {
                 continue;
             }
+
             // Test lib assemblies
             var packageAssembliesDir = Path.Combine(packageDir, "lib");
             if (Directory.Exists(packageAssembliesDir))
             {
                 foreach (var tfmDir in Directory.GetDirectories(packageAssembliesDir))
                 {
-                    var tfm = new DirectoryInfo(tfmDir).Name;
+                    var isNetFx = IsNetFx(new DirectoryInfo(tfmDir).Name);
                     foreach (var assembly in Directory.GetFiles(tfmDir, "*.dll"))
                     {
                         using var fileStream = File.OpenRead(assembly);
@@ -96,7 +100,7 @@ public class PackageTests
                         // netfx assembly versions should match Major.Minor.Patch.0
                         Assert.Equal(expectedVersion.Major, assemblyVersion.Major);
                         Assert.Equal(expectedVersion.Minor, assemblyVersion.Minor);
-                        if (IsNetFx(tfm))
+                        if (isNetFx)
                         {
                             Assert.Equal(expectedVersion.Build, assemblyVersion.Build);
                         }
@@ -133,7 +137,7 @@ public class PackageTests
 
     private bool IsNetFx(string tfm)
     {
-        return (tfm.StartsWith("net4", StringComparison.OrdinalIgnoreCase));
+        return tfm.StartsWith("net4", StringComparison.OrdinalIgnoreCase);
     }
 }
 
