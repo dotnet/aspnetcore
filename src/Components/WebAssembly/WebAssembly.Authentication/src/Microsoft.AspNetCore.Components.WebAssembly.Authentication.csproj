@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <Import Project="Sdk.props" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
 
@@ -9,6 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +23,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <PropertyGroup>
