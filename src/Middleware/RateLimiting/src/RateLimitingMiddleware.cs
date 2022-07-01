@@ -20,7 +20,7 @@ internal sealed partial class RateLimitingMiddleware
     private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
     private readonly int _rejectionStatusCode;
     private readonly IDictionary<string, DefaultRateLimiterPolicy> _policyMap;
-    private readonly DefaultKeyType _defaultPolicyKey = new DefaultKeyType<PolicyNameKey>("__defaultPolicy", new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
+    private readonly DefaultKeyType _defaultPolicyKey = new DefaultKeyType("__defaultPolicy", new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
 
     /// <summary>
     /// Creates a new <see cref="RateLimitingMiddleware"/>.

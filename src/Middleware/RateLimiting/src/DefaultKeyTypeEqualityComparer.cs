@@ -6,19 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNetCore.RateLimiting;
 internal class DefaultKeyTypeEqualityComparer : IEqualityComparer<DefaultKeyType>
 {
-    public bool Equals(DefaultKeyType? x, DefaultKeyType? y)
+    public bool Equals(DefaultKeyType x, DefaultKeyType y)
     {
-        if (x == null && y == null)
-        {
-            return true;
-        }
-        else if (x == null || y == null)
-        {
-            return false;
-        }
-
-        var xKey = x.GetKey();
-        var yKey = y.GetKey();
+        var xKey = x.Key;
+        var yKey = y.Key;
         if (xKey == null && yKey == null)
         {
             return true;
@@ -33,12 +24,6 @@ internal class DefaultKeyTypeEqualityComparer : IEqualityComparer<DefaultKeyType
 
     public int GetHashCode([DisallowNull] DefaultKeyType obj)
     {
-        var key = obj.GetKey();
-        if (key is not null)
-        {
-            return key.GetHashCode();
-        }
-        // REVIEW - is this reasonable?
-        return default;
+        return (obj.Key?.GetHashCode() ?? 0) + obj.PolicyName.GetHashCode();
     }
 }

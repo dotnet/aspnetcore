@@ -3,9 +3,15 @@
 
 namespace Microsoft.AspNetCore.RateLimiting;
 
-internal abstract class DefaultKeyType
+internal struct DefaultKeyType
 {
-    public abstract object? GetKey();
+    public DefaultKeyType(string policyName, object? key)
+    {
+        PolicyName = policyName;
+        Key = key;
+    }
 
-    public abstract string PolicyName { get; }
+    public string PolicyName { get; }
+
+    public object? Key { get; }
 }
