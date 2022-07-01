@@ -582,9 +582,6 @@ Microsoft.AspNetCore.Mvc.CreatedAtRouteResult.RouteValues.set -> void
 Microsoft.AspNetCore.Mvc.CreatedAtRouteResult.UrlHelper.get -> Microsoft.AspNetCore.Mvc.IUrlHelper?
 Microsoft.AspNetCore.Mvc.CreatedAtRouteResult.UrlHelper.set -> void
 Microsoft.AspNetCore.Mvc.CreatedResult
-Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(string! location, object? value) -> void
-Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(System.Uri! location, object? value) -> void
-Microsoft.AspNetCore.Mvc.CreatedResult.Location.get -> string!
 Microsoft.AspNetCore.Mvc.CreatedResult.Location.set -> void
 Microsoft.AspNetCore.Mvc.DefaultApiConventions
 Microsoft.AspNetCore.Mvc.Diagnostics.AfterActionEventData
@@ -2256,8 +2253,6 @@ virtual Microsoft.AspNetCore.Mvc.ControllerBase.Content(string! content) -> Micr
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Content(string! content, Microsoft.Net.Http.Headers.MediaTypeHeaderValue? contentType) -> Microsoft.AspNetCore.Mvc.ContentResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Content(string! content, string! contentType) -> Microsoft.AspNetCore.Mvc.ContentResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Content(string! content, string! contentType, System.Text.Encoding! contentEncoding) -> Microsoft.AspNetCore.Mvc.ContentResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(string! uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(System.Uri! uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.CreatedAtAction(string? actionName, object? routeValues, object? value) -> Microsoft.AspNetCore.Mvc.CreatedAtActionResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.CreatedAtAction(string? actionName, object? value) -> Microsoft.AspNetCore.Mvc.CreatedAtActionResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.CreatedAtAction(string? actionName, string? controllerName, object? routeValues, object? value) -> Microsoft.AspNetCore.Mvc.CreatedAtActionResult!

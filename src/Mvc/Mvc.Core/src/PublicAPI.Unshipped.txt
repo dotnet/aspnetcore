@@ -9,6 +9,7 @@ Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! mode
 Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, params System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(string? location, object? value) -> void
 Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(System.Uri? location, object? value) -> void
+Microsoft.AspNetCore.Mvc.CreatedResult.Location.get -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.TryParseModelBinderProvider() -> void
@@ -19,7 +20,6 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataP
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.SystemTextJsonValidationMetadataProvider(System.Text.Json.JsonNamingPolicy! namingPolicy) -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.get -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.set -> void
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created() -> Microsoft.AspNetCore.Mvc.CreatedResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(string? uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(System.Uri? uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
 virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.PostConfigure(string? name, TOptions! options) -> void
