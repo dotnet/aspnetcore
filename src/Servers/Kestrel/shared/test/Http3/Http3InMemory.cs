@@ -89,7 +89,7 @@ internal class Http3InMemory
     private long _currentStreamId;
     internal Http3Connection Connection { get; private set; }
 
-    internal Http3ControlStream OutboundControlStream { get; private set; }
+    internal Http3ControlStream OutboundControlStream { get; set; }
 
     internal ChannelReader<KeyValuePair<Http3SettingType, long>> ServerReceivedSettingsReader => _serverReceivedSettings.Reader;
 
@@ -261,13 +261,13 @@ internal class Http3InMemory
         }
     }
 
-    internal async ValueTask<Http3RequestStream> InitializeConnectionAndStreamsAsync(RequestDelegate application, bool sendStreamType = false)
+    internal async ValueTask<Http3RequestStream> InitializeConnectionAndStreamsAsync(RequestDelegate application, IEnumerable<KeyValuePair<string, string>> headers, bool endStream = false)
     {
         await InitializeConnectionAsync(application);
 
         OutboundControlStream = await CreateControlStream();
 
-        return await CreateRequestStream(null, sendStreamType);
+        return await CreateRequestStream(headers, endStream: endStream);
     }
 
     private class LifetimeHandlerInterceptor : IHttp3StreamLifetimeHandler
@@ -339,6 +339,16 @@ internal class Http3InMemory
                 testStream.OnHeaderReceivedTcs.TrySetResult();
             }
         }
+
+        public void OnUnidentifiedStreamReceived(Http3PendingStream stream)
+        {
+            _inner.OnUnidentifiedStreamReceived(stream);
+
+            if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
+            {
+                testStream.OnUnidentifiedStreamCreatedTcs.TrySetResult();
+            }
+        }
     }
 
     protected void ConnectionClosed()
@@ -402,7 +412,7 @@ internal class Http3InMemory
         return stream;
     }
 
-    internal async ValueTask<Http3RequestStream> CreateRequestStream(Http3RequestHeaderHandler headerHandler = null, bool sendType = false)
+    internal async ValueTask<Http3RequestStream> CreateRequestStream(IEnumerable<KeyValuePair<string, string>> headers, Http3RequestHeaderHandler headerHandler = null, bool endStream = false)
     {
         var requestStreamId = GetStreamId(0x00);
         if (!_streamContextPool.TryDequeue(out var testStreamContext))
@@ -417,12 +427,11 @@ internal class Http3InMemory
 
         var stream = new Http3RequestStream(this, Connection, testStreamContext, headerHandler ?? new Http3RequestHeaderHandler());
 
-        if (sendType)
+        if (headers.Any())
         {
             // send some raw data which ould be interpretted as an unknown stream type and thus default to
             // being a request stream
-            await stream.Pair.Transport.Output.WriteAsync(new Memory<byte>(new byte[] { 40, 10, 0 }));
-            await stream.Pair.Transport.Output.FlushAsync();
+            await stream.SendHeadersAsync(headers, endStream);
         }
 
         _runningStreams[stream.StreamId] = stream;
@@ -435,6 +444,7 @@ internal class Http3InMemory
 
 internal class Http3StreamBase
 {
+    internal TaskCompletionSource OnUnidentifiedStreamCreatedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     internal TaskCompletionSource OnStreamCreatedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     internal TaskCompletionSource OnStreamCompletedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     internal TaskCompletionSource OnHeaderReceivedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -450,6 +460,7 @@ internal class Http3StreamBase
         set => StreamContext.Error = value;
     }
 
+    public Task OnUnidentifiedStreamCreatedTask => OnUnidentifiedStreamCreatedTcs.Task;
     public Task OnStreamCreatedTask => OnStreamCreatedTcs.Task;
     public Task OnStreamCompletedTask => OnStreamCompletedTcs.Task;
     public Task OnHeaderReceivedTask => OnHeaderReceivedTcs.Task;

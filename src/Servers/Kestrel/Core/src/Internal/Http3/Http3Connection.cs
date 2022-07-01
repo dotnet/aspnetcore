@@ -332,10 +332,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     Debug.Assert(streamIdFeature != null);
 
                     var context = CreateHttpStreamContext(streamContext);
-                    var pendingStream = new Http3PendingStream(context, streamDirectionFeature.CanWrite);
+                    var pendingStream = new Http3PendingStream(context, streamIdFeature.StreamId, streamDirectionFeature.CanWrite);
 
-                    // place in a pending stream dictionary so we can track it (and timeout if necessary) as we don't have a proper stream instance yet
-                    _unidentifiedStreams.Add(streamIdFeature.StreamId, pendingStream);
+                    _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
 
                     var streamType = await pendingStream.ReadNextStreamHeader(context, streamIdFeature.StreamId);
 
@@ -699,6 +698,15 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 return true;
             }
             return false;
+        }
+    }
+
+    void IHttp3StreamLifetimeHandler.OnUnidentifiedStreamReceived(Http3PendingStream stream)
+    {
+        lock (_unidentifiedStreams)
+        {
+            // place in a pending stream dictionary so we can track it (and timeout if necessary) as we don't have a proper stream instance yet
+            _unidentifiedStreams.Add(stream.StreamId, stream);
         }
     }
 

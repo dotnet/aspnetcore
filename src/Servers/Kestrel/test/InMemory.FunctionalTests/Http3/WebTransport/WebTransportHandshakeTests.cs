@@ -63,8 +63,7 @@ public class WebTransportHandshakeTests : Http3TestBase
 
         Assert.Equal(1, response1[(long)Http3SettingType.EnableWebTransport]);
 
-        var requestStream = await Http3Api.CreateRequestStream();
-        var headersConnectFrame = new[]
+        var requestStream = await Http3Api.CreateRequestStream(new[]
         {
             new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
             new KeyValuePair<string, string>(HeaderNames.Protocol, "webtransport"),
@@ -73,9 +72,7 @@ public class WebTransportHandshakeTests : Http3TestBase
             new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
             new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
-        };
-
-        await requestStream.SendHeadersAsync(headersConnectFrame);
+        });
         var response2 = await requestStream.ExpectHeadersAsync();
 
         Assert.Equal((int)HttpStatusCode.OK, Convert.ToInt32(response2[HeaderNames.Status], null));
@@ -131,14 +128,13 @@ public class WebTransportHandshakeTests : Http3TestBase
 
         Assert.Equal(1, response1[(long)Http3SettingType.EnableWebTransport]);
 
-        var requestStream = await Http3Api.CreateRequestStream();
-
         var headersConnectFrame = new List<KeyValuePair<string, string>>();
         for (var i = 0; i < headers.Length; i += 2)
         {
             headersConnectFrame.Add(new KeyValuePair<string, string>(GetHeaderFromName(headers[i]), headers[i + 1]));
         }
-        await requestStream.SendHeadersAsync(headersConnectFrame);
+
+        var requestStream = await Http3Api.CreateRequestStream(headersConnectFrame);
 
         await requestStream.WaitForStreamErrorAsync((Http3ErrorCode)error, AssertExpectedErrorMessages, GetCoreStringFromName(targetErrorMessage));
     }

@@ -55,8 +55,7 @@ internal class WebTransportTestUtilities
 
         await inMemory.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
 
-        var requestStream = await inMemory.CreateRequestStream();
-        var headersConnectFrame = new[]
+        var requestStream = await inMemory.CreateRequestStream(new[]
         {
             new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
             new KeyValuePair<string, string>(HeaderNames.Protocol, "webtransport"),
@@ -65,9 +64,7 @@ internal class WebTransportTestUtilities
             new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
             new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
-        };
-
-        await requestStream.SendHeadersAsync(headersConnectFrame);
+        });
         //_ = await requestStream.ExpectHeadersAsync();
 
         return (WebTransportSession)await appCompletedTcs.Task;
