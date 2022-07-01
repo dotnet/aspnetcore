@@ -85,11 +85,6 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
     [Parameter] public EventCallback<TAuthenticationState> OnLogOutSucceeded { get; set; }
 
     /// <summary>
-    /// Gets or sets the <see cref="IJSRuntime"/> to use for performing JavaScript interop.
-    /// </summary>
-    [Inject] internal IJSRuntime JS { get; set; }
-
-    /// <summary>
     /// Gets or sets the <see cref="NavigationManager"/> to use for redirecting the browser.
     /// </summary>
     [Inject] internal NavigationManager Navigation { get; set; }
@@ -183,7 +178,7 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
                 else
                 {
                     UserProfile ??= LoggingIn;
-                    await RedirectToProfile();
+                    RedirectToProfile();
                 }
                 break;
             case RemoteAuthenticationActions.Register:
@@ -194,7 +189,7 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
                 else
                 {
                     Registering ??= LoggingIn;
-                    await RedirectToRegister();
+                    RedirectToRegister();
                 }
                 break;
             case RemoteAuthenticationActions.LogOut:
@@ -226,7 +221,7 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
                 break;
             case RemoteAuthenticationStatus.Success:
                 await OnLogInSucceeded.InvokeAsync(result.State);
-                await NavigateToReturnUrl(GetReturnUrl(result.State, returnUrl));
+                NavigateToReturnUrl(GetReturnUrl(result.State, returnUrl));
                 break;
             case RemoteAuthenticationStatus.Failure:
                 _message = result.ErrorMessage;
@@ -250,13 +245,13 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
                 throw new InvalidOperationException("Should not redirect.");
             case RemoteAuthenticationStatus.Success:
                 await OnLogInSucceeded.InvokeAsync(result.State);
-                await NavigateToReturnUrl(GetReturnUrl(result.State));
+                NavigateToReturnUrl(GetReturnUrl(result.State));
                 break;
             case RemoteAuthenticationStatus.OperationCompleted:
                 break;
             case RemoteAuthenticationStatus.Failure:
                 var uri = Navigation.ToAbsoluteUri($"{ApplicationPaths.LogInFailedPath}?message={Uri.EscapeDataString(result.ErrorMessage)}").ToString();
-                await NavigateToReturnUrl(uri);
+                NavigateToReturnUrl(uri);
                 break;
             default:
                 throw new InvalidOperationException($"Invalid authentication result status '{result.Status}'.");
@@ -286,7 +281,7 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
                     break;
                 case RemoteAuthenticationStatus.Success:
                     await OnLogOutSucceeded.InvokeAsync(result.State);
-                    await NavigateToReturnUrl(returnUrl);
+                    NavigateToReturnUrl(returnUrl);
                     break;
                 case RemoteAuthenticationStatus.OperationCompleted:
                     break;
@@ -300,7 +295,7 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
         }
         else
         {
-            await NavigateToReturnUrl(returnUrl);
+            NavigateToReturnUrl(returnUrl);
         }
     }
 
@@ -315,13 +310,13 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
                 throw new InvalidOperationException("Should not redirect.");
             case RemoteAuthenticationStatus.Success:
                 await OnLogOutSucceeded.InvokeAsync(result.State);
-                await NavigateToReturnUrl(GetReturnUrl(result.State, Navigation.ToAbsoluteUri(ApplicationPaths.LogOutSucceededPath).ToString()));
+                NavigateToReturnUrl(GetReturnUrl(result.State, Navigation.ToAbsoluteUri(ApplicationPaths.LogOutSucceededPath).ToString()));
                 break;
             case RemoteAuthenticationStatus.OperationCompleted:
                 break;
             case RemoteAuthenticationStatus.Failure:
                 var uri = Navigation.ToAbsoluteUri($"{ApplicationPaths.LogOutFailedPath}?message={Uri.EscapeDataString(result.ErrorMessage)}").ToString();
-                await NavigateToReturnUrl(uri);
+                NavigateToReturnUrl(uri);
                 break;
             default:
                 throw new InvalidOperationException($"Invalid authentication result status.");
@@ -345,17 +340,17 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
         return fromQuery ?? defaultReturnUrl ?? Navigation.BaseUri;
     }
 
-    private async Task NavigateToReturnUrl(string returnUrl) => await JS.InvokeVoidAsync("Blazor.navigateTo", returnUrl, false, true);
+    private void NavigateToReturnUrl(string returnUrl) => Navigation.NavigateTo(returnUrl, new NavigationOptions { ForceLoad = false, ReplaceHistoryEntry = true });
 
-    private ValueTask RedirectToRegister()
+    private void RedirectToRegister()
     {
         var loginUrl = Navigation.ToAbsoluteUri(ApplicationPaths.LogInPath).PathAndQuery;
         var registerUrl = Navigation.ToAbsoluteUri($"{ApplicationPaths.RemoteRegisterPath}?returnUrl={Uri.EscapeDataString(loginUrl)}").PathAndQuery;
 
-        return JS.InvokeVoidAsync("location.replace", registerUrl);
+        Navigation.NavigateTo(registerUrl, new NavigationOptions { ReplaceHistoryEntry = true });
     }
 
-    private ValueTask RedirectToProfile() => JS.InvokeVoidAsync("location.replace", Navigation.ToAbsoluteUri(ApplicationPaths.RemoteProfilePath).PathAndQuery);
+    private void RedirectToProfile() => Navigation.NavigateTo(Navigation.ToAbsoluteUri(ApplicationPaths.RemoteProfilePath).PathAndQuery, new NavigationOptions { ReplaceHistoryEntry = true });
 
     private static void DefaultLogInFragment(RenderTreeBuilder builder)
     {

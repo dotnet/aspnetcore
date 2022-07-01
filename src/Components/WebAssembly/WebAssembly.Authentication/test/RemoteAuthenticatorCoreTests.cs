@@ -587,8 +587,7 @@ public class RemoteAuthenticatorCoreTests
     {
         // Arrange
         var renderer = new TestRenderer(new ServiceCollection().BuildServiceProvider());
-        var jsRuntime = new TestJsRuntime();
-        var authenticator = new TestRemoteAuthenticatorView(new RemoteAuthenticationApplicationPathsOptions(), jsRuntime);
+        var authenticator = new TestRemoteAuthenticatorView(new RemoteAuthenticationApplicationPathsOptions());
         renderer.Attach(authenticator);
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
@@ -605,7 +604,6 @@ public class RemoteAuthenticatorCoreTests
         // Assert
         Assert.True(validator.WasCalled);
         Assert.Equal(methodName, validator.OriginalRender.Method.Name);
-        Assert.Equal(default, jsRuntime.LastInvocation);
     }
 
     public class UIValidator
@@ -655,7 +653,6 @@ public class RemoteAuthenticatorCoreTests
 
         remoteAuthenticator.AuthenticationService = authenticationServiceMock;
         remoteAuthenticator.AuthenticationProvider = authenticationServiceMock;
-        remoteAuthenticator.JS = jsRuntime;
         return (remoteAuthenticator, renderer, authenticationServiceMock, jsRuntime);
     }
 
@@ -714,7 +711,6 @@ public class RemoteAuthenticatorCoreTests
         public TestRemoteAuthenticatorView(RemoteAuthenticationApplicationPathsOptions applicationPaths, IJSRuntime jsRuntime = default)
         {
             ApplicationPaths = applicationPaths;
-            JS = jsRuntime;
         }
 
         protected override Task OnParametersSetAsync()
