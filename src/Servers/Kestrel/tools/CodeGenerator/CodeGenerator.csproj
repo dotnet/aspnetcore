@@ -18,10 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Reference Include="..\..\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
   </ItemGroup>
