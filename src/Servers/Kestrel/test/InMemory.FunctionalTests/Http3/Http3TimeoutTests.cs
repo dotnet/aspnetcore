@@ -231,7 +231,6 @@ public class Http3TimeoutTests : Http3TestBase
         var inboundControlStream = await Http3Api.GetInboundControlStream();
         await inboundControlStream.ExpectSettingsAsync();
 
-
         var requestStream = await Http3Api.CreateRequestStream(new[]
         {
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),

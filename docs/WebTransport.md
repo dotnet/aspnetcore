@@ -125,6 +125,13 @@ Aborting a WebTransport stream will result in abruptly stopping all data transmi
 
 **Note:** valid error codes are defined [here](https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes).
 
+- Soft closing a WebTransport stream
+```C#
+await stream.DisposeAsync();
+```
+Disposing a WebTransport stream will result in ending data transmission and closing the stream gracefully.
+
+
 ## Examples
 
 ### Example 1

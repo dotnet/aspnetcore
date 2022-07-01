@@ -414,6 +414,32 @@ internal class Http3InMemory
 
     internal async ValueTask<Http3RequestStream> CreateRequestStream(IEnumerable<KeyValuePair<string, string>> headers, Http3RequestHeaderHandler headerHandler = null, bool endStream = false)
     {
+        var stream = CreateRequestStreamCore(headerHandler);
+
+        await stream.SendHeadersAsync(headers, endStream);
+
+        _runningStreams[stream.StreamId] = stream;
+
+        MultiplexedConnectionContext.ToServerAcceptQueue.Writer.TryWrite(stream.StreamContext);
+
+        return stream;
+    }
+
+    internal async ValueTask<Http3RequestStream> CreateRequestStream(Http3HeadersEnumerator headers, Http3RequestHeaderHandler headerHandler = null, bool endStream = false)
+    {
+        var stream = CreateRequestStreamCore(headerHandler);
+
+        await stream.SendHeadersAsync(headers, endStream);
+
+        _runningStreams[stream.StreamId] = stream;
+
+        MultiplexedConnectionContext.ToServerAcceptQueue.Writer.TryWrite(stream.StreamContext);
+
+        return stream;
+    }
+
+    private Http3RequestStream CreateRequestStreamCore(Http3RequestHeaderHandler headerHandler)
+    {
         var requestStreamId = GetStreamId(0x00);
         if (!_streamContextPool.TryDequeue(out var testStreamContext))
         {
@@ -425,18 +451,7 @@ internal class Http3InMemory
         }
         testStreamContext.Initialize(requestStreamId);
 
-        var stream = new Http3RequestStream(this, Connection, testStreamContext, headerHandler ?? new Http3RequestHeaderHandler());
-
-        if (headers.Any())
-        {
-            await stream.SendHeadersAsync(headers, endStream);
-        }
-
-        _runningStreams[stream.StreamId] = stream;
-
-        MultiplexedConnectionContext.ToServerAcceptQueue.Writer.TryWrite(stream.StreamContext);
-
-        return stream;
+        return new Http3RequestStream(this, Connection, testStreamContext, headerHandler ?? new Http3RequestHeaderHandler());
     }
 }
 

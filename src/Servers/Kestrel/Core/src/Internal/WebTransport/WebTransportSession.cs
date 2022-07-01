@@ -47,16 +47,7 @@ internal class WebTransportSession : IWebTransportSession
 
     void IWebTransportSession.Abort(int errorCode)
     {
-        Http3ErrorCode code;
-        try
-        {
-            code = (Http3ErrorCode)errorCode;
-        }
-        catch (Exception)
-        {
-            code = Http3ErrorCode.InternalError;
-        }
-        Abort(new(), code);
+        Abort(new(), (Http3ErrorCode)errorCode);
     }
 
     internal void OnClientConnectionClosed()

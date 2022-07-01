@@ -13,7 +13,7 @@ Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.StreamId.get -> long
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.CanRead.get -> bool
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.CanSeek.get -> bool
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.CanWrite.get -> bool
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Close() -> void
+override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.DisposeAsync() -> System.Threading.Tasks.ValueTask
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Flush() -> void
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.FlushAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Length.get -> long

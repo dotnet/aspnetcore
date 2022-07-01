@@ -71,7 +71,7 @@ public abstract class Http3ConnectionBenchmarkBase
     {
         _requestHeadersEnumerator.Initialize(_httpRequestHeaders);
 
-        var stream = await _http3.CreateRequestStream(_headerHandler);
+        var stream = await _http3.CreateRequestStream(_requestHeadersEnumerator, _headerHandler);
 
         await stream.SendHeadersAsync(_requestHeadersEnumerator);
 

@@ -105,26 +105,18 @@ public class WebTransportStream : Stream
     /// <remarks>Error codes are described here: https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes</remarks>
     public void Abort(int errorCode = (int)Http3ErrorCode.NoError)
     {
-        Http3ErrorCode code;
-        try
-        {
-            code = (Http3ErrorCode)errorCode;
-        }
-        catch (Exception)
-        {
-            code = Http3ErrorCode.InternalError;
-        }
-        AbortCore(new(), code);
+        AbortCore(new(), (Http3ErrorCode)errorCode);
     }
 
     /// <summary>
     /// Soft close the stream and end data transmission.
     /// </summary>
-    public override void Close()
+    public override ValueTask DisposeAsync()
     {
         if (_isClosed)
         {
-            return;
+            GC.SuppressFinalize(this);
+            return ValueTask.CompletedTask;
         }
 
         _isClosed = true;
@@ -138,6 +130,9 @@ public class WebTransportStream : Stream
         {
             Output.Complete();
         }
+
+        GC.SuppressFinalize(this);
+        return ValueTask.CompletedTask;
     }
 
     /// <summary>
