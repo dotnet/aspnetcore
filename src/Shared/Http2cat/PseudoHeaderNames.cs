@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Net.Http.Headers;
+namespace Microsoft.AspNetCore.Http2Cat;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1802:Use literals where appropriate", Justification = "So referenceEquals works")]
 internal static class PseudoHeaderNames
