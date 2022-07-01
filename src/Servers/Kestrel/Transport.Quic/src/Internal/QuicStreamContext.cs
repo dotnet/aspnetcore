@@ -378,7 +378,26 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                 var isCompleted = result.IsCompleted;
                 if (!buffer.IsEmpty)
                 {
-                    await _stream.WriteAsync(buffer, endStream: isCompleted);
+                    if (buffer.IsSingleSegment)
+                    {
+                        // Fast path when the buffer is a single segment.
+                        await _stream.WriteAsync(buffer.First, endStream: isCompleted);
+                    }
+                    else
+                    {
+                        // When then buffer has multiple segments then write them in a loop.
+                        // We're not using a standard foreach here because we want to detect
+                        // the final write and pass end stream flag with that write.
+                        var enumerator = buffer.GetEnumerator();
+                        var isLastSegment = !enumerator.MoveNext();
+
+                        while (!isLastSegment)
+                        {
+                            var currentSegment = enumerator.Current;
+                            isLastSegment = !enumerator.MoveNext();
+                            await _stream.WriteAsync(currentSegment, endStream: isLastSegment && isCompleted);
+                        }
+                    }
                 }
 
                 output.AdvanceTo(end);
