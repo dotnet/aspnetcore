@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -74,7 +73,7 @@ internal sealed partial class RateLimitingMiddleware
             // then call OnRejected in case it wants to do any further modification of the status code.
             context.Response.StatusCode = _rejectionStatusCode;
 
-            // If this request was rejected by the endpoint limiter, use its OnRejected if available. Else 
+            // If this request was rejected by the endpoint limiter, use its OnRejected if available.
             if (leaseContext.GlobalRejected == false)
             {
                 DefaultRateLimiterPolicy? policy;
@@ -179,7 +178,7 @@ internal sealed partial class RateLimitingMiddleware
                 return policy.GetPartition(context);
             }
             return RateLimitPartition.CreateNoLimiter<DefaultKeyType>(_defaultPolicyKey);
-        }, new DefaultKeyTypeEqualityComparer());
+        });
     }
 
     private static partial class RateLimiterLog

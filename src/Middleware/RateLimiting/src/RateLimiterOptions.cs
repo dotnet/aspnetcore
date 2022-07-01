@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// </summary>
 public sealed class RateLimiterOptions
 {
+    // Stores all of the keys for each partition so that we reuse the same objects.
+    internal IDictionary<string, ISet<DefaultKeyType>> _partitionKeys = new Dictionary<string, ISet<DefaultKeyType>>();
+
     internal IDictionary<string, DefaultRateLimiterPolicy> PolicyMap { get; }
         = new Dictionary<string, DefaultRateLimiterPolicy>(StringComparer.Ordinal);
 
@@ -44,7 +47,7 @@ public sealed class RateLimiterOptions
     /// Adds a new rate limiting policy with the given <paramref name="policyName"/>
     /// </summary>
     /// <param name="policyName">The name to be associated with the given <see cref="RateLimiter"/>.</param>
-    /// <param name="partitioner">Method called every time an Acquire or WaitAsync call is made to figure out what rate limiter to apply to the request.</param>
+    /// <param name="partitioner">Method called every time an Acquire or WaitAsync call is made to determine what rate limiter to apply to the request.</param>
     public RateLimiterOptions AddPolicy<TPartitionKey>(string policyName, Func<HttpContext, RateLimitPartition<TPartitionKey>> partitioner)
     {
         ArgumentNullException.ThrowIfNull(policyName);
@@ -52,10 +55,10 @@ public sealed class RateLimiterOptions
 
         if (PolicyMap.ContainsKey(policyName) || UnactivatedPolicyMap.ContainsKey(policyName))
         {
-            throw new ArgumentException($"There already exists a policy with the name {policyName}");
+            throw new ArgumentException($"There already exists a policy with the name {policyName}.", nameof(policyName));
         }
 
-        PolicyMap.Add(policyName, new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(partitioner), null));
+        PolicyMap.Add(policyName, new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(policyName, partitioner), null));
 
         return this;
     }
@@ -70,14 +73,14 @@ public sealed class RateLimiterOptions
 
         if (PolicyMap.ContainsKey(policyName) || UnactivatedPolicyMap.ContainsKey(policyName))
         {
-            throw new ArgumentException($"There already exists a policy with the name {policyName}");
+            throw new ArgumentException($"There already exists a policy with the name {policyName}.", nameof(policyName));
         }
 
         var policyType = new PolicyTypeState(typeof(TPolicy));
         Func<IServiceProvider, DefaultRateLimiterPolicy> policyFunc = serviceProvider =>
         {
             var instance = (IRateLimiterPolicy<TPartitionKey>)ActivatorUtilities.CreateInstance(serviceProvider, policyType.PolicyType);
-            return new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(instance.GetPartition), instance.OnRejected);
+            return new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(policyName, instance.GetPartition), instance.OnRejected);
         };
 
         UnactivatedPolicyMap.Add(policyName, policyFunc);
@@ -96,38 +99,47 @@ public sealed class RateLimiterOptions
 
         if (PolicyMap.ContainsKey(policyName) || UnactivatedPolicyMap.ContainsKey(policyName))
         {
-            throw new ArgumentException($"There already exists a policy with the name {policyName}");
+            throw new ArgumentException($"There already exists a policy with the name {policyName}.", nameof(policyName));
         }
 
         ArgumentNullException.ThrowIfNull(policy);
 
-        PolicyMap.Add(policyName, new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(policy.GetPartition), policy.OnRejected));
-
-        return this;
-    }
-
-    internal RateLimiterOptions InternalAddPolicy(string policyName, Func<HttpContext, RateLimitPartition<DefaultKeyType>> partitioner)
-    {
-        ArgumentNullException.ThrowIfNull(policyName);
-        ArgumentNullException.ThrowIfNull(partitioner);
-
-        if (PolicyMap.ContainsKey(policyName) || UnactivatedPolicyMap.ContainsKey(policyName))
-        {
-            throw new ArgumentException($"There already exists a policy with the name {policyName}");
-        }
-
-        PolicyMap.Add(policyName, new DefaultRateLimiterPolicy(partitioner, null));
+        PolicyMap.Add(policyName, new DefaultRateLimiterPolicy(ConvertPartitioner<TPartitionKey>(policyName, policy.GetPartition), policy.OnRejected));
 
         return this;
     }
 
     // Converts a Partition<TKey> to a Partition<DefaultKeyType<TKey>> to prevent accidental collisions with the keys we create in the the RateLimiterOptionsExtensions.
-    private static Func<HttpContext, RateLimitPartition<DefaultKeyType>> ConvertPartitioner<TPartitionKey>(Func<HttpContext, RateLimitPartition<TPartitionKey>> partitioner)
+    private Func<HttpContext, RateLimitPartition<DefaultKeyType>> ConvertPartitioner<TPartitionKey>(string policyName, Func<HttpContext, RateLimitPartition<TPartitionKey>> partitioner)
     {
         return (context =>
         {
             RateLimitPartition<TPartitionKey> partition = partitioner(context);
-            return new RateLimitPartition<DefaultKeyType>(new DefaultKeyType<TPartitionKey>(partition.PartitionKey), key => partition.Factory(partition.PartitionKey));
+            // If we've already created this key for this policy, re-use it. DefaultKeyType uses reference equality, so we can't re-create the key on every call to the partitioner.
+            bool found = false;
+            DefaultKeyType partitionKey = new DefaultKeyType<TPartitionKey>(partition.PartitionKey);
+            ISet<DefaultKeyType>? keys;
+
+            if (!_partitionKeys.TryGetValue(policyName, out keys))
+            {
+                keys = new HashSet<DefaultKeyType>();
+                _partitionKeys.Add(policyName, keys);
+            }
+
+            foreach (var k in keys)
+            {
+                if (k.GetKey()!.Equals(partition.PartitionKey))
+                {
+                    partitionKey = (DefaultKeyType)k;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                keys.Add(partitionKey);
+            }
+            return new RateLimitPartition<DefaultKeyType>(partitionKey, key => partition.Factory(partition.PartitionKey));
         });
     }
 

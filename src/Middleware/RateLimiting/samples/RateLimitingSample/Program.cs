@@ -8,12 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using RateLimitingSample;
+using Microsoft.Extensions.Logging.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<TodoDb>(opt => opt.UseInMemoryDatabase("TodoList"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-// This will be the partitionKey passed to the policy with name helloName
-builder.Services.AddSingleton<string>("myPartitionKey");
+// Inject an ILogger<SampleRateLimiterPolicy>
+builder.Services.AddLogging();
 
 var app = builder.Build();
 
@@ -24,7 +25,7 @@ var helloName = "helloPolicy";
 // Define endpoint limiters and a global limiter.
 var options = new RateLimiterOptions()
         .AddTokenBucketLimiter(todoName, new TokenBucketRateLimiterOptions(1, QueueProcessingOrder.OldestFirst, 1, TimeSpan.FromSeconds(10), 1))
-        .AddPolicy<string>(completeName, new SampleRateLimiterPolicy(completeName))
+        .AddPolicy<string>(completeName, new SampleRateLimiterPolicy(NullLogger<SampleRateLimiterPolicy>.Instance))
         .AddPolicy<string, SampleRateLimiterPolicy>(helloName);
 // The global limiter will be a concurrency limiter with a max permit count of 10 and a queue depth of 5.
 options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>

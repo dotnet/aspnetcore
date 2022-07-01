@@ -19,8 +19,8 @@ public static class RateLimiterOptionsExtensions
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
     public static RateLimiterOptions AddTokenBucketLimiter(this RateLimiterOptions options, string policyName, TokenBucketRateLimiterOptions tokenBucketRateLimiterOptions)
     {
-        var key = (DefaultKeyType)new DefaultKeyType<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName });
-        return options.InternalAddPolicy(policyName, context =>
+        var key = new PolicyNameKey() { PolicyName = policyName };
+        return options.AddPolicy(policyName, context =>
         {
             return RateLimitPartition.CreateTokenBucketLimiter(key,
                 _ => tokenBucketRateLimiterOptions);
@@ -36,8 +36,8 @@ public static class RateLimiterOptionsExtensions
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
     public static RateLimiterOptions AddFixedWindowLimiter(this RateLimiterOptions options, string policyName, FixedWindowRateLimiterOptions fixedWindowRateLimiterOptions)
     {
-        var key = (DefaultKeyType)new DefaultKeyType<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName });
-        return options.InternalAddPolicy(policyName, context =>
+        var key = new PolicyNameKey() { PolicyName = policyName };
+        return options.AddPolicy(policyName, context =>
         {
             return RateLimitPartition.CreateFixedWindowLimiter(key,
                 _ => fixedWindowRateLimiterOptions);
@@ -53,8 +53,8 @@ public static class RateLimiterOptionsExtensions
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
     public static RateLimiterOptions AddSlidingWindowLimiter(this RateLimiterOptions options, string policyName, SlidingWindowRateLimiterOptions slidingWindowRateLimiterOptions)
     {
-        var key = (DefaultKeyType)new DefaultKeyType<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName });
-        return options.InternalAddPolicy(policyName, context =>
+        var key = new PolicyNameKey() { PolicyName = policyName };
+        return options.AddPolicy(policyName, context =>
         {
             return RateLimitPartition.CreateSlidingWindowLimiter(key,
                 _ => slidingWindowRateLimiterOptions);
@@ -70,8 +70,8 @@ public static class RateLimiterOptionsExtensions
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
     public static RateLimiterOptions AddConcurrencyLimiter(this RateLimiterOptions options, string policyName, ConcurrencyLimiterOptions concurrencyLimiterOptions)
     {
-        var key = (DefaultKeyType)new DefaultKeyType<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName });
-        return options.InternalAddPolicy(policyName, context =>
+        var key = new PolicyNameKey() { PolicyName = policyName };
+        return options.AddPolicy(policyName, context =>
         {
             return RateLimitPartition.CreateConcurrencyLimiter(key,
                 _ => concurrencyLimiterOptions);
@@ -86,8 +86,8 @@ public static class RateLimiterOptionsExtensions
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
     public static RateLimiterOptions AddNoLimiter(this RateLimiterOptions options, string policyName)
     {
-        var key = (DefaultKeyType)new DefaultKeyType<PolicyNameKey>(new PolicyNameKey() { PolicyName = policyName });
-        return options.InternalAddPolicy(policyName, context =>
+        var key = new PolicyNameKey() { PolicyName = policyName };
+        return options.AddPolicy(policyName, context =>
         {
             return RateLimitPartition.CreateNoLimiter(key);
         });

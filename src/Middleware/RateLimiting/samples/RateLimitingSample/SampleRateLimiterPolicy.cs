@@ -11,14 +11,15 @@ public class SampleRateLimiterPolicy : IRateLimiterPolicy<string>
     private Func<OnRejectedContext, CancellationToken, ValueTask>? _onRejected;
     private string _partitionKey;
 
-    public SampleRateLimiterPolicy(string partitionKey)
+    public SampleRateLimiterPolicy(ILogger<SampleRateLimiterPolicy> logger)
     {
-        _partitionKey = partitionKey;
         _onRejected = (context, token) =>
         {
             context.HttpContext.Response.StatusCode = 429;
+            logger.LogInformation($"Request rejected by {nameof(SampleRateLimiterPolicy)}");
             return ValueTask.CompletedTask;
         };
+        _partitionKey = Guid.NewGuid().ToString("n");
     }
 
     public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected { get => _onRejected; }

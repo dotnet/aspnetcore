@@ -374,6 +374,105 @@ public class RateLimitingMiddlewareTests : LoggedTest
         Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
     }
 
+    [Fact]
+    public async Task EndpointLimiter_DuplicatePartitionKey_NoCollision()
+    {
+        var globalOnRejectedInvoked = false;
+        var options = CreateOptionsAccessor();
+        var endpointName1 = "myEndpoint1";
+        var endpointName2 = "myEndpoint2";
+        var duplicateKey = "myKey";
+        // Two policies with the same partition key should not collide, because DefaultKeyType has reference equality
+        options.Value.AddPolicy<string>(endpointName1, new TestRateLimiterPolicy(duplicateKey, 404, false));
+        options.Value.AddPolicy<string>(endpointName2, new TestRateLimiterPolicy(duplicateKey, 400, false));
+        // This OnRejected should be ignored in favor of the ones on the policy
+        options.Value.OnRejected = (context, token) =>
+        {
+            globalOnRejectedInvoked = true;
+            context.HttpContext.Response.StatusCode = 429;
+            return ValueTask.CompletedTask;
+        };
+
+        var middleware = new RateLimitingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
+
+        var context = new DefaultHttpContext();
+        var endpoint1 = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(endpointName1)), "Test endpoint 1");
+        var endpoint2 = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(endpointName2)), "Test endpoint 2");
+
+        context.SetEndpoint(endpoint1);
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.False(globalOnRejectedInvoked);
+        // This should hit endpointName1
+        Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
+
+        context.SetEndpoint(endpoint2);
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.False(globalOnRejectedInvoked);
+        // This should hit endpointName2
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task EndpointLimiter_DuplicatePartitionKey_Lambda_NoCollision()
+    {
+        var globalOnRejectedInvoked = false;
+        var options = CreateOptionsAccessor();
+        var endpointName1 = "myEndpoint1";
+        var endpointName2 = "myEndpoint2";
+        var duplicateKey = "myKey";
+        // Two policies with the same partition key should not collide, because DefaultKeyType has reference equality
+        options.Value.AddPolicy<string>(endpointName1, key =>
+        {
+            return new RateLimitPartition<string>(duplicateKey, partitionKey =>
+            {
+                return new TestRateLimiter(false);
+            });
+        });
+        options.Value.AddPolicy<string>(endpointName2, key =>
+        {
+            return new RateLimitPartition<string>(duplicateKey, partitionKey =>
+            {
+                return new TestRateLimiter(true);
+            });
+        });
+        options.Value.OnRejected = (context, token) =>
+        {
+            globalOnRejectedInvoked = true;
+            context.HttpContext.Response.StatusCode = 429;
+            return ValueTask.CompletedTask;
+        };
+
+        var middleware = new RateLimitingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
+
+        var context = new DefaultHttpContext();
+        var endpoint1 = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(endpointName1)), "Test endpoint 1");
+        var endpoint2 = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(endpointName2)), "Test endpoint 2");
+
+        context.SetEndpoint(endpoint1);
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.True(globalOnRejectedInvoked);
+        // This should hit endpointName1
+        Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
+
+        globalOnRejectedInvoked = false;
+
+        context.SetEndpoint(endpoint2);
+        await middleware.Invoke(context).DefaultTimeout();
+        Assert.False(globalOnRejectedInvoked);
+    }
+
     private IOptions<RateLimiterOptions> CreateOptionsAccessor() => Options.Create(new RateLimiterOptions());
 
 }
