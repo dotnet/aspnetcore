@@ -250,10 +250,9 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const existingPostRun = moduleConfig.postRun || [];
   (moduleConfig as any).preloadPlugins = [];
 
-    if (resources.pdb != null) {
-      const totalResources = Object.keys(resources.assembly).length +  Object.keys(resources.pdb).length + 1;
-      WebAssemblyProgressService.setTotalResources(totalResources);
-    }
+  const progressServiceInstance = WebAssemblyProgressService.Instance;
+  const totalResources = Object.keys(resources.assembly).length +  Object.keys(resources.pdb || {}).length + 1;
+  progressServiceInstance.setTotalResources(totalResources);
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const dotnetWasmResourceName = 'dotnet.wasm';

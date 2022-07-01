@@ -31,8 +31,8 @@ export class WebAssemblyResourceLoader {
     const response = this.cacheIfUsed
       ? this.loadResourceWithCaching(this.cacheIfUsed, name, url, contentHash, resourceType)
       : this.loadResourceWithoutCaching(name, url, contentHash, resourceType);
-    // Updating resource count every time a resource is loaded:
-    WebAssemblyProgressService.resourceLoaded();
+    const progressServiceInstance = WebAssemblyProgressService.Instance;
+    progressServiceInstance.resourceLoaded();
     return { name, url, response };
   }
 
