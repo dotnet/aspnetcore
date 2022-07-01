@@ -362,8 +362,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                             if (!streamDirectionFeature.CanWrite)
                             {
-                                // this is either a push stream or something else that we don't support
-                                // ignore it and move on
+                                // this is either a push stream or something else that we don't support.
+                                // To kill it we need to actually make a stream though so we can properly
+                                // handle context dispoing and freeing of resources
+                                var invalidStream = new Http3ControlStream<TContext>(application, context);
+                                _streamLifetimeHandler.OnStreamCreated(invalidStream);
+                                ThreadPool.UnsafeQueueUserWorkItem(invalidStream, preferLocal: false);
                                 continue;
                             }
 

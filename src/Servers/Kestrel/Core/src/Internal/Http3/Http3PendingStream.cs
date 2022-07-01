@@ -59,6 +59,7 @@ internal class Http3PendingStream
                 {
                     Input.AdvanceTo(readableBuffer.Start);
                 }
+                StreamTimeoutTicks = default;
             }
         }
         catch (Exception)

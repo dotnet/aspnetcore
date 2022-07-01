@@ -429,8 +429,6 @@ internal class Http3InMemory
 
         if (headers.Any())
         {
-            // send some raw data which ould be interpretted as an unknown stream type and thus default to
-            // being a request stream
             await stream.SendHeadersAsync(headers, endStream);
         }
 
