@@ -1,11 +1,11 @@
-{
+﻿{
   "version": "1.0.0.0",
   "strings": {
-    "name": "ASP.NET Core Web API'si",
-    "description": "RESTful HTTP hizmetine ait örnek bir Denetleyici içeren bir ASP.NET Core uygulaması oluşturmaya yönelik proje şablonu. Bu şablon aynı zamanda ASP.NET Core MVC Görünümleri ve Denetleyicileri için de kullanılabilir.",
-    "parameter.DisableOpenAPI.name": "_OpenAPI desteğini etkinleştir",
-    "parameter.DisableOpenAPI.description": "OpenAPI (Swagger) desteğini etkinleştirir",
-    "parameter.UseMinimalAPIs.name": "Denetleyicileri kullan (minimal API’leri kullanmak için onay işaretini kaldırın)",
-    "parameter.UseMinimalAPIs.description": "Denetleyiciler yerine minimal API’lerin kullanılıp kullanılmayacağını belirtir."
+    "name": "ASP.NET Core Web API",
+    "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
+    "parameter.DisableOpenAPI.name": "Enable _OpenAPI support",
+    "parameter.DisableOpenAPI.description": "Enables OpenAPI (Swagger) support",
+    "parameter.UseMinimalAPIs.name": "Use controllers (uncheck to use minimal APIs)",
+    "parameter.UseMinimalAPIs.description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
   }
 }

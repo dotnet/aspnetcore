@@ -1,11 +1,11 @@
-{
+﻿{
   "version": "1.0.0.0",
   "strings": {
-    "name": "Веб-API ASP.NET Core",
-    "description": "Шаблон проекта для создания приложения ASP.NET Core с образцом контроллера для службы HTTP RESTful. Этот шаблон можно также использовать для представлений MVC и контроллеров ASP.NET Core.",
-    "parameter.DisableOpenAPI.name": "Включить поддержку _OpenAPI",
-    "parameter.DisableOpenAPI.description": "Включает поддержку OpenAPI (Swagger)",
-    "parameter.UseMinimalAPIs.name": "Использовать контроллеры (снимите флажок, чтобы использовать минимальные API)",
-    "parameter.UseMinimalAPIs.description": "Использование минимальных API вместо контроллеров."
+    "name": "ASP.NET Core Web API",
+    "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
+    "parameter.DisableOpenAPI.name": "Enable _OpenAPI support",
+    "parameter.DisableOpenAPI.description": "Enables OpenAPI (Swagger) support",
+    "parameter.UseMinimalAPIs.name": "Use controllers (uncheck to use minimal APIs)",
+    "parameter.UseMinimalAPIs.description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
   }
 }
