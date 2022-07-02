@@ -1566,10 +1566,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Analyzers.Test", "src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj", "{40F493E2-FE59-4787-BE44-3AED39D585BF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{5420BABA-BDC5-4FBF-81B4-6D7C02C4814D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureAD.WebSite", "src\Azure\AzureAD\test\testassets\AzureAD.WebSite\AzureAD.WebSite.csproj", "{05F4BC5A-060D-49B2-9069-95088402F99B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{97F9F7E9-56DA-49FE-B672-499E68EBB9DA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibraryWithPortablePdbs", "src\Middleware\Diagnostics\test\testassets\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.csproj", "{6F335C66-C1D6-45FA-8529-6503B7CD42CC}"
