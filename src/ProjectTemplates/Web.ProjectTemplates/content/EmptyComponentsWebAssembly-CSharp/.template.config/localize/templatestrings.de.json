@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Blazor WebAssembly App Empty",
   "description": "An empty project template for creating a Blazor app that runs on WebAssembly and is optionally hosted by an ASP.NET Core app. This template does not have any content in it.",
