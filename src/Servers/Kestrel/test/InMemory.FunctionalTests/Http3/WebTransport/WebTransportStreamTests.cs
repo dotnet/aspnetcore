@@ -14,14 +14,14 @@ public class WebTransportStreamTests : Http3TestBase
     [InlineData(WebTransportStreamType.Bidirectional, true, true)]
     [InlineData(WebTransportStreamType.Input, true, false)]
     [InlineData(WebTransportStreamType.Output, false, true)]
-    internal void WebTransportStream_StreamTypesAreDefinedCorrectly(WebTransportStreamType type, bool canRead, bool canWrite)
+    internal async Task WebTransportStream_StreamTypesAreDefinedCorrectly(WebTransportStreamType type, bool canRead, bool canWrite)
     {
         var stream = WebTransportTestUtilities.CreateStream(type);
 
         Assert.Equal(canRead, stream.CanRead);
         Assert.Equal(canWrite, stream.CanWrite);
 
-        stream.Close();
+        await stream.DisposeAsync();
 
         // after closing the stream should not be able to read or write, regardless of type
         Assert.False(stream.CanRead);

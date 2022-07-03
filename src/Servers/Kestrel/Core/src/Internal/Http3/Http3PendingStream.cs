@@ -17,7 +17,7 @@ internal class Http3PendingStream
     public Http3PendingStream(Http3StreamContext context, long id)
     {
         Context = context;
-        StreamTimeoutTicks = 0;
+        StreamTimeoutTicks = default;
         StreamId = id;
     }
 
@@ -62,7 +62,7 @@ internal class Http3PendingStream
         }
         catch (Exception)
         {
-            var exception = new Exception("Attempted to read header on aborted stream", _abortedException);
+            var exception = new Exception(CoreStrings.AttemptedToReadHeaderOnAbortedStream, _abortedException);
             exception.Data.Add("StreamId", streamId);
             throw exception;
         }

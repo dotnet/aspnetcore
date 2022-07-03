@@ -407,7 +407,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 {
                     if (ex.Data.Contains("StreamId"))
                     {
-                        _unidentifiedStreams.Remove((long)ex.Data["StreamId"]!, out _);
+                        _unidentifiedStreams.Remove((long)ex.Data["StreamId"]!, out var stream);
+                        Log.Http3StreamAbort(CoreStrings.FormatUnidentifiedStream(stream?.StreamId), Http3ErrorCode.StreamCreationError, new(ex.Message));
                     }
                 }
                 finally
@@ -525,7 +526,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         if (!_webtransportSessions.ContainsKey(correspondingSession))
         {
-            throw new Exception("Received a loose WebTransport stream");
+            throw new Exception(CoreStrings.ReceivedLooseWebTransportStream);
         }
 
         stream.Context.WebTransportSession = _webtransportSessions[correspondingSession];
@@ -795,7 +796,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     {
         if (_webtransportSessions.ContainsKey(http3Stream.StreamId))
         {
-            throw new Exception("Attempting to open a new WebTransport session on a stream already associated with an existing WebTransport session.");
+            throw new Exception(CoreStrings.AttemptingToOpenDuplicateWebTransportSession);
         }
         var session = new WebTransportSession(this, http3Stream);
         _webtransportSessions[http3Stream.StreamId] = session;

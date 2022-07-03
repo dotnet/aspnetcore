@@ -111,12 +111,11 @@ public class WebTransportStream : Stream
     /// <summary>
     /// Soft close the stream and end data transmission.
     /// </summary>
-    public override ValueTask DisposeAsync()
+    protected override void Dispose(bool disposing)
     {
         if (_isClosed)
         {
-            GC.SuppressFinalize(this);
-            return ValueTask.CompletedTask;
+            return;
         }
 
         _isClosed = true;
@@ -130,9 +129,6 @@ public class WebTransportStream : Stream
         {
             Output.Complete();
         }
-
-        GC.SuppressFinalize(this);
-        return ValueTask.CompletedTask;
     }
 
     /// <summary>
@@ -219,7 +215,7 @@ public class WebTransportStream : Stream
 
             if (result.IsCanceled)
             {
-                throw new OperationCanceledException("The read was canceled");
+                throw new OperationCanceledException(CoreStrings.WebTransportReadCancelled);
             }
 
             var resultBuffer = result.Buffer;

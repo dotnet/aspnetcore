@@ -689,4 +689,28 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="ConnectStatusMustBe200" xml:space="preserve">
     <value>The response status code for a Extended CONNECT request must be 200.</value>
   </data>
+  <data name="AttemptedToReadHeaderOnAbortedStream" xml:space="preserve">
+    <value>Attempted to read header on aborted stream.</value>
+  </data>
+  <data name="AttemptingToOpenDuplicateWebTransportSession" xml:space="preserve">
+    <value>Attempting to open a new WebTransport session on a stream already associated with an existing WebTransport session.</value>
+  </data>
+  <data name="ReceivedLooseWebTransportStream" xml:space="preserve">
+    <value>Received a loose WebTransport stream.</value>
+  </data>
+  <data name="UnidentifiedStream" xml:space="preserve">
+    <value>Unidentified stream {stream}</value>
+  </data>
+  <data name="WebTransportFailedToAddStreamToPendingQueue" xml:space="preserve">
+    <value>Failed to add incoming stream to pending queue.</value>
+  </data>
+  <data name="WebTransportIsClosing" xml:space="preserve">
+    <value>WebTransport is closing the session.</value>
+  </data>
+  <data name="WebTransportReadCancelled" xml:space="preserve">
+    <value>The read was cancelled.</value>
+  </data>
+  <data name="WebTransportStreamAlreadyOpen" xml:space="preserve">
+    <value>A stream with this id is already open.</value>
+  </data>
 </root>

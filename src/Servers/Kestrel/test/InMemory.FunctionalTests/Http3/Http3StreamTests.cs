@@ -2081,9 +2081,16 @@ public class Http3StreamTests : Http3TestBase
     [InlineData(nameof(Http3FrameType.GoAway))]
     public async Task UnexpectedRequestFrame(string frameType)
     {
-        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, new List<KeyValuePair<string, string>>());
+        // todo this violates the test right?
+        //var headers = new[]
+        //{
+        //        new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+        //        new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+        //        new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+        //    };
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, new List<KeyValuePair<string, string>>()/*headers*/);
 
-        await requestStream.OnUnidentifiedStreamCreatedTask;
+        await requestStream.OnStreamCreatedTask;
 
         var f = Enum.Parse<Http3FrameType>(frameType);
         await requestStream.SendFrameAsync(f, Memory<byte>.Empty);

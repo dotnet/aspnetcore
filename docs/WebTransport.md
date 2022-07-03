@@ -127,7 +127,7 @@ Aborting a WebTransport stream will result in abruptly stopping all data transmi
 
 - Soft closing a WebTransport stream
 ```C#
-await stream.DisposeAsync();
+stream.Dispose();
 ```
 Disposing a WebTransport stream will result in ending data transmission and closing the stream gracefully.
 

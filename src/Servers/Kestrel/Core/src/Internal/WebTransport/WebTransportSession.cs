@@ -63,7 +63,7 @@ internal class WebTransportSession : IWebTransportSession
         {
             foreach (var stream in _openStreams)
             {
-                stream.Value.Close();
+                stream.Value.Dispose();
             }
 
         }
@@ -72,7 +72,7 @@ internal class WebTransportSession : IWebTransportSession
 
         while (_pendingStreams.Reader.TryRead(out var stream))
         {
-            stream.Close();
+            stream.Dispose();
         }
 
         _pendingStreams.Writer.Complete();
@@ -122,7 +122,7 @@ internal class WebTransportSession : IWebTransportSession
     {
         if (_isClosing)
         {
-            throw new ObjectDisposedException("WebTransport is closing the session");
+            throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
         }
         // create the stream
         var features = new FeatureCollection();
@@ -147,12 +147,12 @@ internal class WebTransportSession : IWebTransportSession
     {
         if (_isClosing)
         {
-            throw new ObjectDisposedException("WebTransport is closing the session");
+            throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
         }
 
         if (!_pendingStreams.Writer.TryWrite(stream))
         {
-            throw new Exception("Failed to add incoming stream to pending queue");
+            throw new Exception(CoreStrings.WebTransportFailedToAddStreamToPendingQueue);
         }
     }
 
@@ -165,14 +165,14 @@ internal class WebTransportSession : IWebTransportSession
     {
         if (_isClosing)
         {
-            throw new ObjectDisposedException("WebTransport is closing the session");
+            throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
         }
 
         var stream = await _pendingStreams.Reader.ReadAsync(cancellationToken);
 
         if (!_openStreams.TryAdd(stream!.StreamId, stream))
         {
-            throw new Exception("A stream with this id is already open");
+            throw new Exception(CoreStrings.WebTransportStreamAlreadyOpen);
         }
 
         return stream!;
@@ -189,7 +189,7 @@ internal class WebTransportSession : IWebTransportSession
 
         if (stream is not null && (stream.CanRead || stream.CanWrite))
         {
-            stream.Close();
+            stream.Dispose();
         }
 
         return success;

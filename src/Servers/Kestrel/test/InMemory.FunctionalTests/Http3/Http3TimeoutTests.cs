@@ -103,24 +103,20 @@ public class Http3TimeoutTests : Http3TestBase
         var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
         await controlStream.ExpectSettingsAsync().DefaultTimeout();
 
-        Http3Api.TriggerTick(now);
-
         var outboundControlStream = await Http3Api.CreateControlStream(id: null);
 
         await outboundControlStream.OnUnidentifiedStreamCreatedTask.DefaultTimeout();
 
         var serverInboundControlStream = Http3Api.Connection._unidentifiedStreams[outboundControlStream.StreamId];
 
+        Http3Api.TriggerTick(now);
         Http3Api.TriggerTick(now + limits.RequestHeadersTimeout);
 
         Assert.Equal((now + limits.RequestHeadersTimeout).Ticks, serverInboundControlStream.StreamTimeoutTicks);
 
         Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
 
-        await outboundControlStream.WaitForStreamErrorAsync(
-            Http3ErrorCode.StreamCreationError,
-            AssertExpectedErrorMessages,
-            CoreStrings.Http3ControlStreamHeaderTimeout);
+        AssertExpectedErrorMessages(CoreStrings.AttemptedToReadHeaderOnAbortedStream);
     }
 
     [Fact]
