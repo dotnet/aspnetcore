@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Internal;
 
 namespace Microsoft.AspNetCore.Hosting.Infrastructure;
 
@@ -33,7 +32,7 @@ public interface ISupportsStartup
     /// </summary>
     /// <param name="startupType">The <see cref="Type"/> to be used.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    IWebHostBuilder UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType);
+    IWebHostBuilder UseStartup([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)] Type startupType);
 
     /// <summary>
     /// Specify a factory that creates the startup instance to be used by the web host.

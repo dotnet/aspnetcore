@@ -173,7 +173,7 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
         throw new NotSupportedException("Configure() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
     }
 
-    IWebHostBuilder ISupportsStartup.UseStartup(Type startupType)
+    IWebHostBuilder ISupportsStartup.UseStartup([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)] Type startupType)
     {
         throw new NotSupportedException("UseStartup() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
     }
