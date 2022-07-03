@@ -71,6 +71,6 @@ public class CustomValueProviderTest : IClassFixture<MvcTestFixture<BasicWebSite
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
-        Assert.Equal(@"[""foo"",null,""bar"",""baz""]", content);
+        Assert.Equal(@"[null,""foo"",null,""bar"",null,""baz""]", content);
     }
 }

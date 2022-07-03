@@ -222,7 +222,7 @@ public class CollectionModelBinderTest
 
         // Assert
         Assert.NotNull(boundCollection.Model);
-        Assert.Equal(new[] { 42, 100, 200 }, boundCollection.Model);
+        Assert.Equal(new[] { 420, 42, 100, 420, 200 }, boundCollection.Model);
     }
 
     private IActionResult ActionWithListParameter(List<string> parameter) => null;
