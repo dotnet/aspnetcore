@@ -61,8 +61,8 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
     [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "PropertyAsParameterInfo.Flatten requires unreferenced code.")]
     public static ReadOnlySpan<ParameterInfo> Flatten(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
     {
-        ArgumentNullException.ThrowIfNull(parameters, nameof(parameters));
-        ArgumentNullException.ThrowIfNull(cache, nameof(cache));
+        ArgumentNullException.ThrowIfNull(parameters);
+        ArgumentNullException.ThrowIfNull(cache);
 
         if (parameters.Length == 0)
         {
