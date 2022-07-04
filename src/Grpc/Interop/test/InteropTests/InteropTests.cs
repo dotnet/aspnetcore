@@ -1,23 +1,68 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO;
+using System.Reflection;
 using InteropTests.Helpers;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Xunit.Abstractions;
 
 namespace InteropTests;
 
+public class InteropTestsFixture : IDisposable
+{
+    public string ServerPath { get; private set; }
+    public string ClientPath { get; private set; }
+
+    public InteropTestsFixture()
+    {
+        var tempPath = Path.GetTempPath();
+        ServerPath = Path.Combine(tempPath, "InteropWebsite");
+        ClientPath = Path.Combine(tempPath, "InteropClient");
+
+        EnsureDeleted(ServerPath);
+        EnsureDeleted(ClientPath);
+    }
+
+    public void Dispose()
+    {
+        // Retry with delay to avoid file in use errors.
+        for (var i = 0; i < 5; i++)
+        {
+            try
+            {
+                EnsureDeleted(ServerPath);
+                EnsureDeleted(ClientPath);
+            }
+            catch
+            {
+                Thread.Sleep(100);
+            }
+        }
+    }
+
+    private static void EnsureDeleted(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, recursive: true);
+        }
+    }
+}
+
 // All interop test cases, minus GCE authentication specific tests.
 // Tests are separate methods so that they can be quarantined separately.
-public class InteropTests
+public class InteropTests : IClassFixture<InteropTestsFixture>
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
-    private readonly string _clientPath = Path.Combine(Directory.GetCurrentDirectory(), "InteropClient", "InteropClient.dll");
-    private readonly string _serverPath = Path.Combine(Directory.GetCurrentDirectory(), "InteropWebsite", "InteropWebsite.dll");
+    private readonly InteropTestsFixture _fixture;
     private readonly ITestOutputHelper _output;
 
-    public InteropTests(ITestOutputHelper output)
+    public InteropTests(InteropTestsFixture fixture, ITestOutputHelper output)
     {
+        _fixture = fixture;
         _output = output;
     }
 
@@ -75,9 +120,30 @@ public class InteropTests
     [Fact]
     public Task ServerCompressedStreaming() => InteropTestCase("server_compressed_streaming");
 
+    private async Task EnsurePublishedAsync()
+    {
+        if (!Directory.Exists(_fixture.ServerPath) || !Directory.Exists(_fixture.ClientPath))
+        {
+            var projectDirectory = typeof(InteropTests).Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Single(a => a.Key == "ProjectDirectory")
+                .Value;
+
+            var interopWebsiteProject = projectDirectory + @"\..\testassets\InteropWebsite\InteropWebsite.csproj";
+            var interopClientProject = projectDirectory + @"\..\testassets\InteropClient\InteropClient.csproj";
+
+            var publishWebsiteTask = Publisher.PublishAppAsync(_output, projectDirectory, interopWebsiteProject, _fixture.ServerPath);
+            var publishClientTask = Publisher.PublishAppAsync(_output, projectDirectory, interopClientProject, _fixture.ClientPath);
+
+            await Task.WhenAll(publishWebsiteTask, publishClientTask);
+        }
+    }
+
     private async Task InteropTestCase(string name)
     {
-        using (var serverProcess = new WebsiteProcess(_serverPath, _output))
+        await EnsurePublishedAsync();
+
+        using (var serverProcess = new WebsiteProcess(Path.Combine(_fixture.ServerPath, "InteropWebsite.exe"), arguments: string.Empty, _output))
         {
             try
             {
@@ -96,7 +162,8 @@ Server process output:
                 throw new InvalidOperationException(errorMessage, ex);
             }
 
-            using (var clientProcess = new ClientProcess(_output, _clientPath, serverProcess.ServerPort, name))
+            var arguments = @$"--use_tls false --server_port {serverProcess.ServerPort} --client_type httpclient --test_case {name}";
+            using (var clientProcess = new ClientProcess(_output, Path.Combine(_fixture.ClientPath, "InteropClient.exe"), arguments))
             {
                 try
                 {
