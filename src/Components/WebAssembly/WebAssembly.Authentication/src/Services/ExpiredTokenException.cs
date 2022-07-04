@@ -32,5 +32,32 @@ public class AccessTokenNotAvailableException : Exception
     /// <summary>
     /// Navigates to <see cref="AccessTokenResult.RedirectUrl"/> to allow refreshing the access token.
     /// </summary>
-    public void Redirect() => _navigation.NavigateTo(_tokenResult.RedirectUrl);
+    public void Redirect()
+    {
+        if (_tokenResult.InteractiveRequest != null && _tokenResult.InteractiveRequestUrl != null)
+        {
+            _navigation.NavigateToLogin(_tokenResult.InteractiveRequestUrl, _tokenResult.InteractiveRequest);
+        }
+        else
+        {
+            _navigation.NavigateTo(_tokenResult.RedirectUrl);
+        }
+    }
+
+    /// <summary>
+    /// Navigates to <see cref="AccessTokenResult.RedirectUrl"/> to allow refreshing the access token.
+    /// </summary>
+    /// <param name="configureInteractiveRequest">An <see cref="Action{T1}"/> that will be invoked before the redirection to tweak the interactive request.</param>
+    public void Redirect(Action<InteractiveAuthenticationRequest> configureInteractiveRequest)
+    {
+        if (_tokenResult.InteractiveRequest != null && _tokenResult.InteractiveRequestUrl != null)
+        {
+            configureInteractiveRequest(_tokenResult.InteractiveRequest);
+            _navigation.NavigateToLogin(_tokenResult.InteractiveRequestUrl, _tokenResult.InteractiveRequest);
+        }
+        else
+        {
+            _navigation.NavigateTo(_tokenResult.RedirectUrl);
+        }
+    }
 }

@@ -18,6 +18,7 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
     private string _message;
     private RemoteAuthenticationApplicationPathsOptions _applicationPaths;
     private string _action;
+    private InteractiveAuthenticationRequest _cachedRequest = null;
 
     /// <summary>
     /// Gets or sets the <see cref="RemoteAuthenticationActions"/> action the component needs to handle.
@@ -299,6 +300,9 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "Type deserializes InteractiveAuthenticationRequest from NavigationHistory.State")]
     private async Task ProcessLogOutCallback()
     {
         var result = await AuthenticationService.CompleteSignOutAsync(new RemoteAuthenticationContext<TAuthenticationState> { Url = Navigation.Uri });
@@ -310,7 +314,10 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
                 throw new InvalidOperationException("Should not redirect.");
             case RemoteAuthenticationStatus.Success:
                 await OnLogOutSucceeded.InvokeAsync(result.State);
-                NavigateToReturnUrl(GetReturnUrl(result.State, Navigation.ToAbsoluteUri(ApplicationPaths.LogOutSucceededPath).ToString()));
+                Navigation.NavigateTo(
+                    GetReturnUrl(result.State, Navigation.ToAbsoluteUri(ApplicationPaths.LogOutSucceededPath).AbsoluteUri),
+                    AuthenticationNavigationOptions);
+
                 break;
             case RemoteAuthenticationStatus.OperationCompleted:
                 break;
@@ -330,15 +337,26 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
             return state.ReturnUrl;
         }
 
-        var fromQuery = GetParameterFromQueryString("returnUrl");
-        if (!string.IsNullOrWhiteSpace(fromQuery) && !fromQuery.StartsWith(Navigation.BaseUri, StringComparison.Ordinal))
+        var fromNavigationState = GetReturnUrlFromNavigationState();
+
+        return fromNavigationState ?? defaultReturnUrl ?? Navigation.BaseUri;
+
+    }
+
+    private string GetReturnUrlFromNavigationState()
+    {
+        if (_cachedRequest != null)
         {
-            // This is an extra check to prevent open redirects.
-            throw new InvalidOperationException("Invalid return url. The return url needs to have the same origin as the current page.");
+            return _cachedRequest.ReturnUrl;
         }
 
-        return fromQuery ?? defaultReturnUrl ?? Navigation.BaseUri;
+        if (Navigation.State == null)
+        {
+            return null;
+        }
 
+        _cachedRequest = InteractiveAuthenticationRequest.FromState(Navigation.State);
+        return _cachedRequest?.ReturnUrl;
     }
 
     private string GetParameterFromQueryString(ReadOnlySpan<char> parameterName)
@@ -368,9 +386,13 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
     private void RedirectToRegister()
     {
         var loginUrl = Navigation.ToAbsoluteUri(ApplicationPaths.LogInPath).PathAndQuery;
-        var registerUrl = Navigation.ToAbsoluteUri($"{ApplicationPaths.RemoteRegisterPath}?returnUrl={Uri.EscapeDataString(loginUrl)}").PathAndQuery;
+        var registerUrl = Navigation.ToAbsoluteUri(ApplicationPaths.RemoteRegisterPath).PathAndQuery;
 
-        Navigation.NavigateTo(registerUrl, new NavigationOptions { ReplaceHistoryEntry = true, ForceLoad = true });
+        Navigation.NavigateTo(registerUrl, AuthenticationNavigationOptions with
+        {
+            ForceLoad = true,
+            State = new InteractiveAuthenticationRequest(InteractiveAuthenticationRequestType.Authenticate, loginUrl).ToState()
+        });
     }
 
     private void RedirectToProfile() =>

@@ -223,9 +223,12 @@ public class RemoteAuthenticatorCoreTests
 
         // Assert
         Assert.Equal(
-            "https://www.example.com/base/authentication/login-failed?message=There was an error trying to log in",
+            "https://www.example.com/base/authentication/login-failed",
             remoteAuthenticator.Navigation.Uri);
 
+        Assert.Equal(
+            "There was an error trying to log in",
+            ((TestNavigationManager)remoteAuthenticator.Navigation).State);
     }
 
     [Fact]
@@ -332,8 +335,12 @@ public class RemoteAuthenticatorCoreTests
 
         // Assert
         Assert.Equal(
-            "https://www.example.com/base/authentication/logout-failed?message=The%20logout%20was%20not%20initiated%20from%20within%20the%20page.",
+            "https://www.example.com/base/authentication/logout-failed",
             remoteAuthenticator.Navigation.Uri);
+
+        Assert.Equal(
+            "The logout was not initiated from within the page.",
+            ((TestNavigationManager)remoteAuthenticator.Navigation).State);
     }
 
     [Fact]
@@ -474,9 +481,12 @@ public class RemoteAuthenticatorCoreTests
 
         // Assert
         Assert.Equal(
-            "https://www.example.com/base/authentication/logout-failed?message=There was an error trying to log out",
+            "https://www.example.com/base/authentication/logout-failed",
             remoteAuthenticator.Navigation.Uri);
 
+        Assert.Equal(
+            "There was an error trying to log out",
+            ((TestNavigationManager)remoteAuthenticator.Navigation).State);
     }
 
     public static TheoryData<UIValidator> DisplaysRightUIData { get; } = new TheoryData<UIValidator>
@@ -524,7 +534,9 @@ public class RemoteAuthenticatorCoreTests
     {
         // Arrange
         var renderer = new TestRenderer(new ServiceCollection().BuildServiceProvider());
-        var authenticator = new TestRemoteAuthenticatorView();
+        var testNavigationManager = new TestNavigationManager("https://www.example.com/", "https://www.example.com/");
+        testNavigationManager.SetState("Some error message.");
+        var authenticator = new TestRemoteAuthenticatorView(testNavigationManager);
         renderer.Attach(authenticator);
         validator.SetupFakeRender(authenticator);
 
@@ -546,7 +558,9 @@ public class RemoteAuthenticatorCoreTests
     {
         // Arrange
         var renderer = new TestRenderer(new ServiceCollection().BuildServiceProvider());
-        var authenticator = new TestRemoteAuthenticatorView(new RemoteAuthenticationApplicationPathsOptions());
+        var testNavigationManager = new TestNavigationManager("https://www.example.com/", "https://www.example.com/");
+        testNavigationManager.SetState("Some error message.");
+        var authenticator = new TestRemoteAuthenticatorView(new RemoteAuthenticationApplicationPathsOptions(), testNavigationManager);
         renderer.Attach(authenticator);
         validator.SetupFakeRender(authenticator);
 
@@ -587,7 +601,9 @@ public class RemoteAuthenticatorCoreTests
     {
         // Arrange
         var renderer = new TestRenderer(new ServiceCollection().BuildServiceProvider());
-        var authenticator = new TestRemoteAuthenticatorView(new RemoteAuthenticationApplicationPathsOptions());
+        var testNavigationManager = new TestNavigationManager("https://www.example.com/", "https://www.example.com/");
+        testNavigationManager.SetState("Some error message.");
+        var authenticator = new TestRemoteAuthenticatorView(new RemoteAuthenticationApplicationPathsOptions(), testNavigationManager);
         renderer.Attach(authenticator);
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
@@ -665,7 +681,10 @@ public class RemoteAuthenticatorCoreTests
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             Uri = System.Uri.IsWellFormedUriString(uri, UriKind.Absolute) ? uri : new Uri(new Uri(BaseUri), uri).ToString();
+            State = options.State;
         }
+
+        public void SetState(string state) => State = state;
     }
 
     private class TestSignOutSessionStateManager : SignOutSessionStateManager
@@ -704,17 +723,27 @@ public class RemoteAuthenticatorCoreTests
     public class TestRemoteAuthenticatorView : RemoteAuthenticatorViewCore<RemoteAuthenticationState>
     {
         public TestRemoteAuthenticatorView()
-        {
-            ApplicationPaths = new RemoteAuthenticationApplicationPathsOptions()
+            : this(new RemoteAuthenticationApplicationPathsOptions()
             {
                 RemoteProfilePath = "Identity/Account/Manage",
                 RemoteRegisterPath = "Identity/Account/Register",
-            };
+            }, null)
+        {
         }
 
-        public TestRemoteAuthenticatorView(RemoteAuthenticationApplicationPathsOptions applicationPaths, IJSRuntime jsRuntime = default)
+        public TestRemoteAuthenticatorView(NavigationManager manager)
+            : this(new RemoteAuthenticationApplicationPathsOptions()
+            {
+                RemoteProfilePath = "Identity/Account/Manage",
+                RemoteRegisterPath = "Identity/Account/Register",
+            }, manager)
+        {
+        }
+
+        public TestRemoteAuthenticatorView(RemoteAuthenticationApplicationPathsOptions applicationPaths, NavigationManager testNavigationManager)
         {
             ApplicationPaths = applicationPaths;
+            Navigation = testNavigationManager;
         }
 
         protected override Task OnParametersSetAsync()

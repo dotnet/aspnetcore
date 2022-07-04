@@ -1,8 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-
 @inject NavigationManager Navigation
-@inject SignOutSessionStateManager SignOutManager
 
 <AuthorizeView>
 @*#if (Hosted)
@@ -26,9 +24,8 @@
 </AuthorizeView>
 
 @code{
-    private async Task BeginSignOut(MouseEventArgs args)
+    public void BeginSignOut()
     {
-        await SignOutManager.SetSignOutState();
-        Navigation.NavigateTo("authentication/logout");
+        Navigation.NavigateToLogout("authentication/logout");
     }
 }

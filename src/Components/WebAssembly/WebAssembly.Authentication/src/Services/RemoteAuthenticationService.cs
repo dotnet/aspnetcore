@@ -130,7 +130,8 @@ public class RemoteAuthenticationService<
         return new AccessTokenResult(
             result.Status,
             result.Token,
-            result.Status == AccessTokenResultStatus.RequiresRedirect ? GetRedirectUrl(null).ToString() : null);
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? Options.AuthenticationPaths.LogInPath : null,
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? new(InteractiveAuthenticationRequestType.GetToken, GetReturnUrl(null)) : null);
     }
 
     /// <inheritdoc />
@@ -149,16 +150,12 @@ public class RemoteAuthenticationService<
         return new AccessTokenResult(
             result.Status,
             result.Token,
-            result.Status == AccessTokenResultStatus.RequiresRedirect ? GetRedirectUrl(options.ReturnUrl).ToString() : null);
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? Options.AuthenticationPaths.LogInPath : null,
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? new(InteractiveAuthenticationRequestType.GetToken, GetReturnUrl(options.ReturnUrl)) : null);
     }
 
-    private Uri GetRedirectUrl(string customReturnUrl)
-    {
-        var returnUrl = customReturnUrl != null ? Navigation.ToAbsoluteUri(customReturnUrl).ToString() : null;
-        var encodedReturnUrl = Uri.EscapeDataString(returnUrl ?? Navigation.Uri);
-        var redirectUrl = Navigation.ToAbsoluteUri($"{Options.AuthenticationPaths.LogInPath}?returnUrl={encodedReturnUrl}");
-        return redirectUrl;
-    }
+    private string GetReturnUrl(string customReturnUrl) =>
+        customReturnUrl != null ? Navigation.ToAbsoluteUri(customReturnUrl).AbsoluteUri : Navigation.Uri;
 
     private async Task<ClaimsPrincipal> GetUser(bool useCache = false)
     {
