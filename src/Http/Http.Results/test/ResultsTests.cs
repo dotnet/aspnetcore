@@ -573,8 +573,10 @@ public class ResultsTests
     [Fact]
     public void Created_WithNullStringUriAndValue_SetsLocationNull()
     {
-        // Act
+        //Arrange
         object value = new { };
+
+        // Act        
         var result = Results.Created(default(string), value) as Created<object>;
 
         //Assert
@@ -585,8 +587,10 @@ public class ResultsTests
     [Fact]
     public void Created_WithEmptyStringUriAndValue_SetsLocationEmpty()
     {
-        // Act
+        //Arrange
         object value = new { };
+
+        // Act        
         var result = Results.Created(string.Empty, value) as Created<object>;
 
         //Assert
@@ -597,8 +601,10 @@ public class ResultsTests
     [Fact]
     public void Created_WithNullUriAndValue_SetsLocationNull()
     {
-        // Act
+        //Arrange
         object value = new { };
+
+        // Act       
         var result = Results.Created(default(Uri), value) as Created<object>;
 
         //Assert
