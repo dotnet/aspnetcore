@@ -541,39 +541,69 @@ public class ResultsTests
     }
 
     [Fact]
-    public void Created_WithNullStringUri_ThrowsArgException()
+    public void Created_WithNullStringUri_SetsLocationNull()
     {
-        Assert.Throws<ArgumentException>("uri", () => Results.Created(default(string), null));
+        //Act
+        var result = Results.Created(default(string), null) as Created;
+
+        //Assert
+        Assert.Null(result.Location);
     }
 
     [Fact]
-    public void Created_WithEmptyStringUri_ThrowsArgException()
+    public void Created_WithEmptyStringUri_SetsLocationEmpty()
     {
-        Assert.Throws<ArgumentException>("uri", () => Results.Created(string.Empty, null));
+        //Act
+        var result = Results.Created(string.Empty, null) as Created;
+
+        //Assert
+        Assert.Empty(result.Location);
     }
 
     [Fact]
-    public void Created_WithNullUri_ThrowsArgNullException()
+    public void Created_WithNullUri_SetsLocationNull()
     {
-        Assert.Throws<ArgumentNullException>("uri", () => Results.Created(default(Uri), null));
+        // Act
+        var result = Results.Created(default(Uri), null) as Created;
+
+        //Assert
+        Assert.Null(result.Location);
     }
 
     [Fact]
-    public void Created_WithNullStringUriAndValue_ThrowsArgException()
+    public void Created_WithNullStringUriAndValue_SetsLocationNull()
     {
-        Assert.Throws<ArgumentException>("uri", () => Results.Created(default(string), new { }));
+        // Act
+        object value = new { };
+        var result = Results.Created(default(string), value) as Created<object>;
+
+        //Assert
+        Assert.Null(result.Location);
+        Assert.Equal(value, result.Value);
     }
 
     [Fact]
-    public void Created_WithEmptyStringUriAndValue_ThrowsArgException()
+    public void Created_WithEmptyStringUriAndValue_SetsLocationEmpty()
     {
-        Assert.Throws<ArgumentException>("uri", () => Results.Created(string.Empty, new { }));
+        // Act
+        object value = new { };
+        var result = Results.Created(string.Empty, value) as Created<object>;
+
+        //Assert
+        Assert.Empty(result.Location);
+        Assert.Equal(value, result.Value);
     }
 
     [Fact]
-    public void Created_WithNullUriAndValue_ThrowsArgNullException()
+    public void Created_WithNullUriAndValue_SetsLocationNull()
     {
-        Assert.Throws<ArgumentNullException>("uri", () => Results.Created(default(Uri), new { }));
+        // Act
+        object value = new { };
+        var result = Results.Created(default(Uri), value) as Created<object>;
+
+        //Assert
+        Assert.Null(result.Location);
+        Assert.Equal(value, result.Value);
     }
 
     [Fact]
