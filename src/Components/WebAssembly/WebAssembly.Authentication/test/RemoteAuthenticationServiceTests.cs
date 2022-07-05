@@ -25,10 +25,10 @@ public class RemoteAuthenticationServiceTests
             new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
         var state = new RemoteAuthenticationState();
-        testJsRuntime.SignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
+        testJsRuntime.SignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
         {
             State = state,
-            Status = RemoteAuthenticationStatus.Success.ToString()
+            Status = RemoteAuthenticationStatus.Success
         };
 
         // Act
@@ -56,9 +56,9 @@ public class RemoteAuthenticationServiceTests
             new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
         var state = new RemoteAuthenticationState();
-        testJsRuntime.SignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
+        testJsRuntime.SignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
         {
-            Status = value.ToString()
+            Status = value
         };
 
         // Act
@@ -83,10 +83,10 @@ public class RemoteAuthenticationServiceTests
             new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
         var state = new RemoteAuthenticationState();
-        testJsRuntime.CompleteSignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
+        testJsRuntime.CompleteSignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
         {
             State = state,
-            Status = RemoteAuthenticationStatus.Success.ToString()
+            Status = RemoteAuthenticationStatus.Success
         };
 
         // Act
@@ -114,9 +114,9 @@ public class RemoteAuthenticationServiceTests
             new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
         var state = new RemoteAuthenticationState();
-        testJsRuntime.CompleteSignInResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
+        testJsRuntime.CompleteSignInResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
         {
-            Status = value.ToString().ToString()
+            Status = value
         };
 
         // Act
@@ -141,10 +141,10 @@ public class RemoteAuthenticationServiceTests
             new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
         var state = new RemoteAuthenticationState();
-        testJsRuntime.SignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
+        testJsRuntime.SignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
         {
             State = state,
-            Status = RemoteAuthenticationStatus.Success.ToString()
+            Status = RemoteAuthenticationStatus.Success
         };
 
         // Act
@@ -172,9 +172,9 @@ public class RemoteAuthenticationServiceTests
             new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
         var state = new RemoteAuthenticationState();
-        testJsRuntime.SignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
+        testJsRuntime.SignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
         {
-            Status = value.ToString()
+            Status = value
         };
 
         // Act
@@ -199,10 +199,10 @@ public class RemoteAuthenticationServiceTests
             new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
         var state = new RemoteAuthenticationState();
-        testJsRuntime.CompleteSignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
+        testJsRuntime.CompleteSignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
         {
             State = state,
-            Status = RemoteAuthenticationStatus.Success.ToString()
+            Status = RemoteAuthenticationStatus.Success
         };
 
         // Act
@@ -230,9 +230,9 @@ public class RemoteAuthenticationServiceTests
             new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
         var state = new RemoteAuthenticationState();
-        testJsRuntime.CompleteSignOutResult = new InternalRemoteAuthenticationResult<RemoteAuthenticationState>
+        testJsRuntime.CompleteSignOutResult = new RemoteAuthenticationResult<RemoteAuthenticationState>
         {
-            Status = value.ToString()
+            Status = value
         };
 
         // Act
@@ -259,7 +259,7 @@ public class RemoteAuthenticationServiceTests
         var state = new RemoteAuthenticationState();
         testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
         {
-            Status = "success",
+            Status = AccessTokenResultStatus.Success,
             Token = new AccessToken
             {
                 Value = "1234",
@@ -277,8 +277,7 @@ public class RemoteAuthenticationServiceTests
             testJsRuntime.PastInvocations.Select(i => i.identifier).ToArray());
 
         Assert.True(result.TryGetToken(out var token));
-        Assert.Equal(result.Status, Enum.Parse<AccessTokenResultStatus>(testJsRuntime.GetAccessTokenResult.Status, ignoreCase: true));
-        Assert.Equal(result.RedirectUrl, testJsRuntime.GetAccessTokenResult.RedirectUrl);
+        Assert.Equal(result.Status, testJsRuntime.GetAccessTokenResult.Status);
         Assert.Equal(token, testJsRuntime.GetAccessTokenResult.Token);
     }
 
@@ -295,10 +294,7 @@ public class RemoteAuthenticationServiceTests
             new AccountClaimsPrincipalFactory<RemoteUserAccount>(Mock.Of<IAccessTokenProviderAccessor>()));
 
         var state = new RemoteAuthenticationState();
-        testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
-        {
-            Status = "requiresRedirect",
-        };
+        testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult(AccessTokenResultStatus.RequiresRedirect, null);
 
         var tokenOptions = new AccessTokenRequestOptions
         {
@@ -317,7 +313,7 @@ public class RemoteAuthenticationServiceTests
 
         Assert.False(result.TryGetToken(out var token));
         Assert.Null(token);
-        Assert.Equal(result.Status, Enum.Parse<AccessTokenResultStatus>(testJsRuntime.GetAccessTokenResult.Status, ignoreCase: true));
+        Assert.Equal(result.Status, testJsRuntime.GetAccessTokenResult.Status);
         Assert.Equal(expectedRedirectUrl, result.RedirectUrl);
         Assert.Equal(tokenOptions, (AccessTokenRequestOptions)testJsRuntime.PastInvocations[^1].args[0]);
     }
@@ -337,7 +333,7 @@ public class RemoteAuthenticationServiceTests
         var state = new RemoteAuthenticationState();
         testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
         {
-            Status = "requiresRedirect",
+            Status = AccessTokenResultStatus.RequiresRedirect,
         };
 
         var tokenOptions = new AccessTokenRequestOptions
@@ -358,7 +354,7 @@ public class RemoteAuthenticationServiceTests
 
         Assert.False(result.TryGetToken(out var token));
         Assert.Null(token);
-        Assert.Equal(result.Status, Enum.Parse<AccessTokenResultStatus>(testJsRuntime.GetAccessTokenResult.Status, ignoreCase: true));
+        Assert.Equal(result.Status, testJsRuntime.GetAccessTokenResult.Status);
         Assert.Equal(expectedRedirectUrl, result.RedirectUrl);
         Assert.Equal(tokenOptions, (AccessTokenRequestOptions)testJsRuntime.PastInvocations[^1].args[0]);
     }
@@ -450,7 +446,7 @@ public class RemoteAuthenticationServiceTests
         testJsRuntime.GetUserResult = account;
         testJsRuntime.GetAccessTokenResult = new InternalAccessTokenResult
         {
-            Status = "success",
+            Status = AccessTokenResultStatus.Success,
             Token = new AccessToken
             {
                 Value = "1234",
@@ -509,13 +505,13 @@ public class RemoteAuthenticationServiceTests
     {
         public IList<(string identifier, object[] args)> PastInvocations { get; set; } = new List<(string, object[])>();
 
-        public InternalRemoteAuthenticationResult<RemoteAuthenticationState> SignInResult { get; set; }
+        public RemoteAuthenticationResult<RemoteAuthenticationState> SignInResult { get; set; }
 
-        public InternalRemoteAuthenticationResult<RemoteAuthenticationState> CompleteSignInResult { get; set; }
+        public RemoteAuthenticationResult<RemoteAuthenticationState> CompleteSignInResult { get; set; }
 
-        public InternalRemoteAuthenticationResult<RemoteAuthenticationState> SignOutResult { get; set; }
+        public RemoteAuthenticationResult<RemoteAuthenticationState> SignOutResult { get; set; }
 
-        public InternalRemoteAuthenticationResult<RemoteAuthenticationState> CompleteSignOutResult { get; set; }
+        public RemoteAuthenticationResult<RemoteAuthenticationState> CompleteSignOutResult { get; set; }
 
         public InternalAccessTokenResult GetAccessTokenResult { get; set; }
 
