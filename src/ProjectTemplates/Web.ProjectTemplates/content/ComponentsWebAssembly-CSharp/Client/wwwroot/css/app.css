@@ -22,28 +22,6 @@ a, .btn-link {
     padding-top: 1.1rem;
 }
 
-svg {
-    width: 200px;
-    height: 200px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
-}
-
-circle {
-    fill: none;
-    stroke: #e0e0e0;
-    stroke-width: 8px;
-    transform: rotate(-90deg);
-    transform-origin: 50% 50%;
-}
-
-.progress {
-    stroke: #1b6ec2;
-    transition: 0.50s stroke-dashoffset ease-in-out;
-    display: none;
-}
-
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }
@@ -84,3 +62,25 @@ circle {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+#blazor-default-loading svg {
+    width: 120px;
+    height: 120px;
+    stroke-width: 8px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+#blazor-default-loading circle {
+    fill: none;
+    stroke: #e0e0e0;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
+
+#blazor-default-loading circle.progress {
+    stroke: #1b6ec2;
+    transition: 0.50s stroke-dashoffset ease-in-out;
+    display: none;
+}

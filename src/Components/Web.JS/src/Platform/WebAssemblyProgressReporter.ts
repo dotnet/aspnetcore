@@ -1,20 +1,28 @@
 import { Blazor } from "../GlobalExports";
-import { WebAssemblyProgressService } from "./WebAssemblyProgressService";
 
 export class WebAssemblyProgressReporter {
-    static setProgress(resourcesTotal: number, resourcesLoaded: number) {
+    /**
+    * Modifies CSS of the loading ring to reflect linear progress based on the number of resources.
+    * @param resourcesTotal The total number of resources retrieved from MonoPlatform.ts
+    * @param resourcesLoaded The current number of resources loaded retrieved from WebAssemblyResourceLoader.ts
+    */
+    static setProgress(resourcesTotal: number, resourcesLoaded: number): void {
         const circle = document.querySelector('.progress') as SVGCircleElement;
         const circumference = 2 * Math.PI * circle.r.baseVal.value;
         const progressPercentage = resourcesLoaded / resourcesTotal;
-        const ring = (1 - progressPercentage) * circumference;        circle.style.strokeDasharray = circumference.toString() + " " + circumference.toString();
-        circle.style.strokeDashoffset = ring.toString();
+        const ring = (1 - progressPercentage) * circumference;
+        circle.style.strokeDasharray = `${circumference} ${circumference}`;
+        circle.style.strokeDashoffset = `${ring}`;
         circle.style.display = 'block';
         const element = document.getElementById('percentage') as unknown as SVGTextElement;
         const percentage = Math.floor(resourcesLoaded / resourcesTotal * 100);
-        element!.textContent = percentage.toString() + "%";
+        element!.textContent = `${percentage}` + "%";
     }
 
-    static init() {
+    /**
+    * Adds the setProgress function to the list of observers in WebAssemblyProgressService.ts.
+    */
+    static init(): void {
         Blazor.webAssemblyProgressService?.attach(this.setProgress);
     }
 }
