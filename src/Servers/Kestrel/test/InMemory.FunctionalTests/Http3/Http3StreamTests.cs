@@ -1954,7 +1954,7 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task DataBeforeHeaders_UnexpectedFrameError()
     {
-        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, new List<KeyValuePair<string, string>>());
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, null);
 
         await requestStream.OnUnidentifiedStreamCreatedTask;
 
@@ -2081,16 +2081,9 @@ public class Http3StreamTests : Http3TestBase
     [InlineData(nameof(Http3FrameType.GoAway))]
     public async Task UnexpectedRequestFrame(string frameType)
     {
-        // todo this violates the test right?
-        //var headers = new[]
-        //{
-        //        new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-        //        new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-        //        new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-        //    };
-        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, new List<KeyValuePair<string, string>>()/*headers*/);
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, null);
 
-        await requestStream.OnStreamCreatedTask;
+        await requestStream.OnUnidentifiedStreamCreatedTask;
 
         var f = Enum.Parse<Http3FrameType>(frameType);
         await requestStream.SendFrameAsync(f, Memory<byte>.Empty);
@@ -2110,9 +2103,16 @@ public class Http3StreamTests : Http3TestBase
     [InlineData(nameof(Http3FrameType.PushPromise))]
     public async Task UnexpectedServerFrame(string frameType)
     {
-        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, new List<KeyValuePair<string, string>>());
+        var headers = new[]
+        {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
 
-        await requestStream.OnUnidentifiedStreamCreatedTask;
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, headers);
+
+        await requestStream.OnStreamCreatedTask;
 
         var f = Enum.Parse<Http3FrameType>(frameType);
         await requestStream.SendFrameAsync(f, Memory<byte>.Empty);
@@ -2125,9 +2125,9 @@ public class Http3StreamTests : Http3TestBase
     [Fact]
     public async Task RequestIncomplete()
     {
-        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, new List<KeyValuePair<string, string>>(), true);
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, null);
 
-        await requestStream.OnUnidentifiedStreamCreatedTask;
+        await requestStream.EndStreamAsync();
 
         await requestStream.WaitForStreamErrorAsync(
             Http3ErrorCode.RequestIncomplete,

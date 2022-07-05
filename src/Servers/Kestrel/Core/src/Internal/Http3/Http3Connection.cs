@@ -333,26 +333,29 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                     _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
 
-                    switch (streamType)
+                    // unidirectional stream
+                    if (!streamDirectionFeature.CanWrite)
                     {
-                        case (long)Http3StreamType.WebTransportUnidirectional:
+                        if (streamType == (long)Http3StreamType.WebTransportUnidirectional)
+                        {
                             await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Input);
-                            break;
-
-                        case (long)Http3StreamType.WebTransportBidirectional:
-                            await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Bidirectional);
-                            break;
-
-                        case (long)Http3StreamType.Control:
-                        case (long)Http3StreamType.QPackDecoder:
-                        case (long)Http3StreamType.QPackEncoder:
+                        }
+                        else
+                        {
                             var controlStream = new Http3ControlStream<TContext>(application, context);
                             _streamLifetimeHandler.OnStreamCreated(controlStream);
                             ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
-                            break;
-
-                        default:
-
+                        }
+                    }
+                    // bidirectional stream
+                    else
+                    {
+                        if (streamType == (long)Http3StreamType.WebTransportUnidirectional)
+                        {
+                            await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Bidirectional);
+                        }
+                        else
+                        {
                             if (!streamDirectionFeature.CanWrite)
                             {
                                 // this is either a push stream or something else that we don't support.
@@ -400,7 +403,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                             _streamLifetimeHandler.OnStreamCreated(stream);
                             KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
                             ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
-                            break;
+                        }
                     }
                 }
                 catch (Exception ex)

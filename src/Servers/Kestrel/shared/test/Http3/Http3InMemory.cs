@@ -416,7 +416,10 @@ internal class Http3InMemory
     {
         var stream = CreateRequestStreamCore(headerHandler);
 
-        await stream.SendHeadersAsync(headers, endStream);
+        if (headers is not null)
+        {
+            await stream.SendHeadersAsync(headers, endStream);
+        }
 
         _runningStreams[stream.StreamId] = stream;
 
