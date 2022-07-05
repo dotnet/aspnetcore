@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Protocol Buffer File",
   "description": "A protocol buffer file for describing messages and services for gRPC.",
