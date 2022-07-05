@@ -285,7 +285,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         Exception? error = null;
         Http3ControlStream? outboundControlStream = null;
         ValueTask outboundControlStreamTask = default;
-        var clientAbort = false;
+        bool clientAbort = false;
 
         try
         {

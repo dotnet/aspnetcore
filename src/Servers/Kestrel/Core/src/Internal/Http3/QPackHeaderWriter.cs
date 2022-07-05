@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Net.Http.QPack;
 using System.Text;
 
@@ -11,12 +12,7 @@ internal static class QPackHeaderWriter
     public static bool BeginEncodeHeaders(Http3HeadersEnumerator enumerator, Span<byte> buffer, ref int totalHeaderSize, out int length)
     {
         bool hasValue = enumerator.MoveNext();
-
-        if (!hasValue)
-        {
-            length = 0;
-            return true;
-        }
+        Debug.Assert(hasValue == true);
 
         buffer[0] = 0;
         buffer[1] = 0;
