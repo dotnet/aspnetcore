@@ -64,9 +64,14 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         NotifyLocationChanged(intercepted);
     }
 
+    public ValueTask<bool> HandleLocationChanging(string uri, bool intercepted)
+    {
+        return NotifyLocationChanging(uri, intercepted);
+    }
+
     /// <inheritdoc />
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(NavigationOptions))]
-    protected override void NavigateToCore(string uri, NavigationOptions options)
+    protected override async void NavigateToCore(string uri, NavigationOptions options)
     {
         Log.RequestingNavigation(_logger, uri, options);
 
@@ -76,7 +81,21 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
             throw new NavigationException(absoluteUriString);
         }
 
-        _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options).Preserve();
+        var shouldCancel = await NotifyLocationChanging(uri, false);
+
+        if (shouldCancel)
+        {
+            Log.NavigationCanceled(_logger, uri);
+        }
+        else
+        {
+            await _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options);
+        }
+    }
+
+    protected override void SetHasLocationChangingHandlers(bool value)
+    {
+        _jsRuntime?.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, value).Preserve();
     }
 
     private static partial class Log
@@ -89,5 +108,8 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(2, LogLevel.Debug, "Received notification that the URI has changed to {Uri} with isIntercepted={IsIntercepted}", EventName = "ReceivedLocationChangedNotification")]
         public static partial void ReceivedLocationChangedNotification(ILogger logger, string uri, bool isIntercepted);
+
+        [LoggerMessage(3, LogLevel.Debug, "Navigation canceled for URI {Uri}", EventName = "NavigationCanceled")]
+        public static partial void NavigationCanceled(ILogger logger, string uri);
     }
 }

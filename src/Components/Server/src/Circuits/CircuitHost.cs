@@ -536,6 +536,45 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
+    public async Task<bool> OnLocationChangingAsync(string uri, bool intercepted)
+    {
+        AssertInitialized();
+        AssertNotDisposed();
+
+        try
+        {
+            return await Renderer.Dispatcher.InvokeAsync(async () =>
+            {
+                Log.LocationChanging(_logger, uri, CircuitId);
+                var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
+                return await navigationManager.HandleLocationChanging(uri, intercepted);
+            });
+        }
+
+        // A well-behaved client will not send invalid URIs, and we don't really
+        // want to continue processing with the circuit if setting the URI failed inside application
+        // code. The safest thing to do is consider it a critical failure since URI is global state,
+        // and a failure means that an update to global state was partially applied.
+        catch (LocationChangeException ex)
+        {
+            // LocationChangeException means that it failed in user-code. Treat this like an unhandled
+            // exception in user-code.
+            Log.LocationChangeFailedInCircuit(_logger, uri, CircuitId, ex);
+            await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Location changing failed."));
+            UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            return false;
+        }
+        catch (Exception ex)
+        {
+            // Any other exception means that it failed inside the NavigationManager. Treat
+            // this like bad data.
+            Log.LocationChangeFailed(_logger, uri, CircuitId, ex);
+            await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, $"Location changing to '{uri}' failed."));
+            UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            return false;
+        }
+    }
+
     public void SetCircuitUser(ClaimsPrincipal user)
     {
         // This can be called before the circuit is initialized.
@@ -729,6 +768,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(210, LogLevel.Debug, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
         public static partial void LocationChangeFailed(ILogger logger, string uri, CircuitId circuitId, Exception exception);
+
+        [LoggerMessage(211, LogLevel.Debug, "Location is about to change to {URI} in ciruit '{CircuitId}'.", EventName = "LocationChanging")]
+        public static partial void LocationChanging(ILogger logger, string uri, CircuitId circuitId);
 
         [LoggerMessage(212, LogLevel.Debug, "Failed to complete render batch '{RenderId}' in circuit host '{CircuitId}'.", EventName = "OnRenderCompletedFailed")]
         public static partial void OnRenderCompletedFailed(ILogger logger, long renderId, CircuitId circuitId, Exception e);

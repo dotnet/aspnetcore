@@ -28,15 +28,30 @@ internal sealed class WebAssemblyNavigationManager : NavigationManager
         NotifyLocationChanged(isInterceptedLink);
     }
 
+    public ValueTask<bool> HandleLocationChanging(string uri, bool intercepted)
+    {
+        return NotifyLocationChanging(uri, intercepted);
+    }
+
     /// <inheritdoc />
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(NavigationOptions))]
-    protected override void NavigateToCore(string uri, NavigationOptions options)
+    protected override async void NavigateToCore(string uri, NavigationOptions options)
     {
         if (uri == null)
         {
             throw new ArgumentNullException(nameof(uri));
         }
 
-        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
+        var shouldCancel = await NotifyLocationChanging(uri, false);
+
+        if (!shouldCancel)
+        {
+            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
+        }
+    }
+
+    protected override void SetHasLocationChangingHandlers(bool value)
+    {
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.SetHasLocationChangingListeners, value);
     }
 }

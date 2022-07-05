@@ -86,6 +86,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
       uri,
       intercepted
     );
+  }, async (uri: string, intercepted: boolean): Promise<boolean> => {
+    return await DotNet.invokeMethodAsync(
+      'Microsoft.AspNetCore.Components.WebAssembly',
+      'NotifyLocationChanging',
+      uri,
+      intercepted
+    );
   });
 
   const candidateOptions = options ?? {};

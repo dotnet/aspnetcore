@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
@@ -30,6 +31,8 @@ public abstract class NavigationManager
     }
 
     private EventHandler<LocationChangedEventArgs>? _locationChanged;
+
+    private readonly List<IHandleLocationChanging> _locationChangingHandlers = new();
 
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
@@ -260,6 +263,77 @@ public abstract class NavigationManager
         {
             throw new LocationChangeException("An exception occurred while dispatching a location changed event.", ex);
         }
+    }
+
+    public async ValueTask<bool> NotifyLocationChanging(string uri, bool intercepted)
+    {
+        if (_locationChangingHandlers.Count == 0)
+        {
+            return false;
+        }
+
+        var context = new LocationChangingContext(uri, intercepted, false);
+        var handlerCount = _locationChangingHandlers.Count;
+        var locationChangingHandlersCopy = ArrayPool<IHandleLocationChanging>.Shared.Rent(handlerCount);
+        _locationChangingHandlers.CopyTo(locationChangingHandlersCopy);
+
+        try
+        {
+            for (var i = 0; i < handlerCount; i++)
+            {
+                var shouldCancel = await locationChangingHandlersCopy[i].OnLocationChanging(context);
+
+                if (shouldCancel)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            throw new LocationChangeException("An exception occurred while dispatching a location changing event.", ex);
+        }
+        finally
+        {
+            ArrayPool<IHandleLocationChanging>.Shared.Return(locationChangingHandlersCopy);
+        }
+    }
+
+    protected virtual void SetHasLocationChangingHandlers(bool value)
+    {
+    }
+
+    public void AddLocationChangingHandler(IHandleLocationChanging locationChangingHandler)
+    {
+        AssertInitialized();
+
+        var shouldUpdateHasLocationChangingHandlers = _locationChangingHandlers.Count == 0;
+
+        _locationChangingHandlers.Add(locationChangingHandler);
+
+        if (shouldUpdateHasLocationChangingHandlers)
+        {
+            SetHasLocationChangingHandlers(true);
+        }
+    }
+
+    public bool RemoveLocationChangingHandler(IHandleLocationChanging locationChangingHandler)
+    {
+        AssertInitialized();
+
+        if (_locationChangingHandlers.Remove(locationChangingHandler))
+        {
+            if (_locationChangingHandlers.Count == 0)
+            {
+                SetHasLocationChangingHandlers(false);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private void AssertInitialized()
