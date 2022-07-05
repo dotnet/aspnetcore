@@ -313,7 +313,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         }
 
         SequencePosition lineEnd;
-        ReadOnlySpan<byte> headerSpan;
+        scoped ReadOnlySpan<byte> headerSpan;
         if (currentSlice.Slice(reader.Position, lineEndPosition.Value).Length == currentSlice.Length - 1)
         {
             // No enough data, so CRLF can't currently be there.
@@ -321,7 +321,8 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
             // Advance 1 to include CR/LF in lineEnd
             lineEnd = currentSlice.GetPosition(1, lineEndPosition.Value);
-            headerSpan = currentSlice.Slice(reader.Position, lineEnd).ToSpan();
+            var header = currentSlice.Slice(reader.Position, lineEnd);
+            headerSpan = header.IsSingleSegment ? header.FirstSpan : header.ToArray();
             if (headerSpan[^1] != ByteCR)
             {
                 RejectRequestHeader(headerSpan);
