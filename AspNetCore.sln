@@ -1758,7 +1758,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomElements", "CustomEle
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.WebAssembly.Tests", "src\ProjectTemplates\test\Templates.Blazor.WebAssembly.Tests\Templates.Blazor.WebAssembly.Tests.csproj", "{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTransportSampleApp", "src\Servers\Kestrel\samples\WebTransportSampleApp\WebTransportSampleApp\WebTransportSampleApp.csproj", "{8BCE0DEC-A7CB-40F2-9678-B1C6E9B679D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTransportSampleApp", "src\Servers\Kestrel\samples\WebTransportSampleApp\WebTransportSampleApp.csproj", "{8BCE0DEC-A7CB-40F2-9678-B1C6E9B679D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

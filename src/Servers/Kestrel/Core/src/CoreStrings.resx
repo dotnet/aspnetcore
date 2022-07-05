@@ -713,4 +713,10 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="WebTransportStreamAlreadyOpen" xml:space="preserve">
     <value>A stream with this id is already open.</value>
   </data>
+  <data name="FailedToNegotiateCommonWebTransportVersion" xml:space="preserve">
+    <value>Failed to negotiate a common WebTransport version with client. Kestrel only supports {currentSuppportedVersion}.</value>
+  </data>
+  <data name="WebTransportIsDisabled" xml:space="preserve">
+    <value>WebTransport is disabled. Please enable it before starting a session.</value>
+  </data>
 </root>

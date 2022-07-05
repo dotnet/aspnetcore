@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 /// </summary>
 internal class WebTransportSession : IWebTransportSession
 {
+    private readonly CancellationTokenRegistration _connectionClosedRegistration;
+
     private readonly ConcurrentDictionary<long, WebTransportStream> _openStreams = new();
     private readonly Channel<WebTransportStream> _pendingStreams;
     private readonly Http3Connection _connection;
@@ -43,6 +45,13 @@ internal class WebTransportSession : IWebTransportSession
         _isClosing = false;
         // unbounded as limits to number of streams is enforced elsewhere
         _pendingStreams = Channel.CreateUnbounded<WebTransportStream>();
+
+        // listener to abort if this connection is closed
+        _connectionClosedRegistration = connection._multiplexedContext.ConnectionClosed.Register(state =>
+        {
+            var session = (WebTransportSession)state!;
+            session.OnClientConnectionClosed();
+        }, this);
     }
 
     void IWebTransportSession.Abort(int errorCode)
@@ -58,6 +67,8 @@ internal class WebTransportSession : IWebTransportSession
         }
 
         _isClosing = true;
+
+        _connectionClosedRegistration.Dispose();
 
         lock (_openStreams)
         {
@@ -86,6 +97,9 @@ internal class WebTransportSession : IWebTransportSession
         }
 
         _isClosing = true;
+
+        _connectionClosedRegistration.Dispose();
+
         lock (_openStreams)
         {
             _connectStream.Abort(exception, error);

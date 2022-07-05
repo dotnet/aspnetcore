@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 /// </summary>
 public class WebTransportStream : Stream
 {
+    private readonly CancellationTokenRegistration _connectionClosedRegistration;
+
     private bool _canRead;
     private bool _isClosed;
 
@@ -65,7 +67,7 @@ public class WebTransportStream : Stream
 
         // will not trigger if closed only of of the directions of a stream. Stream must be fully
         // ended before this will be called. Then it will be considered an abort
-        context.StreamContext.ConnectionClosed.Register(state =>
+        _connectionClosedRegistration = context.StreamContext.ConnectionClosed.Register(state =>
         {
             var stream = (WebTransportStream)state!;
             stream._context.WebTransportSession?.TryRemoveStream(stream._streamIdFeature.StreamId);
@@ -119,6 +121,8 @@ public class WebTransportStream : Stream
         }
 
         _isClosed = true;
+
+        _connectionClosedRegistration.Dispose();
 
         if (CanRead)
         {

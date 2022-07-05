@@ -54,6 +54,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private int _isClosed;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
+    private bool _isWebTransportSessionAccepted;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
     private readonly object _completionLock = new();
@@ -66,21 +67,16 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
     public Pipe RequestBodyPipe { get; private set; } = default!;
-
     public long? InputRemaining { get; internal set; }
-
     public QPackDecoder QPackDecoder { get; private set; } = default!;
 
     public PipeReader Input => _context.Transport.Input;
-
     public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
     public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
     public long StreamId => _streamIdFeature.StreamId;
-
     public long StreamTimeoutTicks { get; set; }
     public bool IsReceivingHeader => _requestHeaderParsingState <= RequestHeaderParsingState.Headers; // Assigned once headers are received
     public bool IsDraining => _appCompletedTaskSource.GetStatus() != ValueTaskSourceStatus.Pending; // Draining starts once app is complete
-
     public bool IsRequestStream => true;
 
     public void Initialize(Http3StreamContext context)
@@ -1178,33 +1174,33 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     public override async ValueTask<IWebTransportSession> AcceptAsync(CancellationToken token)
     {
+        if (_isWebTransportSessionAccepted)
+        {
+            throw new InvalidOperationException(CoreStrings.AcceptCannotBeCalledMultipleTimes);
+        }
+        _isWebTransportSessionAccepted = true;
+
+
         // check if WebTransport was enabled
         if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
         {
-            throw new Exception("WebTransport is disabled. Please enable it before starting a session.");
+            throw new Exception(CoreStrings.WebTransportIsDisabled);
         }
 
         // version negotiation
         if (!_currentIHttpWebTransportFeature!.IsWebTransportRequest)
         {
-            throw new Exception($"Failed to negotiate a common WebTransport version with client. Kestrel only supports ${WebTransportSession.CurrentSuppportedVersion}.");
+            throw new Exception(CoreStrings.FormatFailedToNegotiateCommonWebTransportVersion(WebTransportSession.CurrentSuppportedVersion));
         }
 
         var version = WebTransportSession.CurrentSuppportedVersion[WebTransportSession.SecPrefix.Length..];
 
         // send version negotiation resulting version
-        ResponseHeaders.TryAdd(WebTransportSession.VersionHeaderPrefix, version);
+        ResponseHeaders.Add(WebTransportSession.VersionHeaderPrefix, version);
         Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (HttpResponseHeaders)ResponseHeaders, false, false);
         await Output.FlushAsync(token);
 
         _context.WebTransportSession = _context.Connection!.OpenNewWebTransportSession(this);
-
-        // listener to abort if this connection is closed
-        _context.StreamContext.ConnectionClosed.Register(state =>
-        {
-            var session = (WebTransportSession)state!;
-            session.OnClientConnectionClosed();
-        }, _context.WebTransportSession);
 
         return _context.WebTransportSession;
     }
