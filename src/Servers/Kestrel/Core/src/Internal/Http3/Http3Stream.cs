@@ -1180,7 +1180,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
         _isWebTransportSessionAccepted = true;
 
-
         // check if WebTransport was enabled
         if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
         {

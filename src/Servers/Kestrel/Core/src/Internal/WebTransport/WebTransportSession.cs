@@ -171,25 +171,32 @@ internal class WebTransportSession : IWebTransportSession
     }
 
     /// <summary>
-    /// Pops the first stream from the list of pending streams.
+    /// Pops the first stream from the list of pending streams. Returns null if it failed to retrieve a pending stream.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token to abort waiting for a stream</param>
     /// <returns>An instance of WebTransportStream that corresponds to the new stream to accept</returns>
-    public async ValueTask<WebTransportStream> AcceptStreamAsync(CancellationToken cancellationToken)
+    public async ValueTask<WebTransportStream?> AcceptStreamAsync(CancellationToken cancellationToken)
     {
         if (_isClosing)
         {
             throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
         }
 
-        var stream = await _pendingStreams.Reader.ReadAsync(cancellationToken);
-
-        if (!_openStreams.TryAdd(stream!.StreamId, stream))
+        try
         {
-            throw new Exception(CoreStrings.WebTransportStreamAlreadyOpen);
-        }
+            var stream = await _pendingStreams.Reader.ReadAsync(cancellationToken);
 
-        return stream!;
+            if (!_openStreams.TryAdd(stream!.StreamId, stream))
+            {
+                throw new Exception(CoreStrings.WebTransportStreamAlreadyOpen);
+            }
+
+            return stream;
+        }
+        catch (ChannelClosedException)
+        {
+            return null;
+        }
     }
 
     /// <summary>

@@ -27,10 +27,11 @@ public interface IWebTransportSession
     /// Returns the next incoming stream in the order which Kestel received it. The stream can be either bidirectional or unidirectional.
     /// </summary>
     /// <remarks>To use WebTransport, you must first enable the Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams AppContextSwitch</remarks>
-    /// <exception cref="Exception">If this is not a valid WebTransport session or it fails to get a stream to accept.</exception>
+    /// <exception cref="ObjectDisposedException">If this WebTransport session is closing</exception>
+    /// <exception cref="Exception">If a stream with this id is already open</exception>
     /// <param name="cancellationToken">The cancellation token used to cancel the operation.</param>
     /// <returns>The unidirectional or bidirectional stream that is next in the queue.</returns>
-    ValueTask<WebTransportStream> AcceptStreamAsync(CancellationToken cancellationToken);
+    ValueTask<WebTransportStream?> AcceptStreamAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Opens a new unidirectional output stream.
