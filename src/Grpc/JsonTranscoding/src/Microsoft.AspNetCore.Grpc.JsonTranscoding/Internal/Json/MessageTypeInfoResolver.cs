@@ -32,22 +32,27 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
         typeInfo.CreateObject = () => Activator.CreateInstance(type)!;
 
         var fields = messageDescriptor.Fields.InFieldNumberOrder();
+
+        // The field map can have multiple entries for a property:
+        // 1. The JSON field name, e.g. firstName. This is used to serialize and deserialize JSON.
+        // 2. The original field name, e.g. first_name. This might be different. It is only used to deserialize JSON.
         var mappings = CreateJsonFieldMap(fields);
 
         foreach (var field in fields)
         {
-            mappings.Remove(field.JsonName);
-
-            var propertyInfo = CreatePropertyInfo(typeInfo, field.JsonName, field, isWritable: true);
+            var propertyInfo = CreatePropertyInfo(typeInfo, field.JsonName, field, isSerializable: true);
             typeInfo.Properties.Add(propertyInfo);
+
+            // We have a property for reading and writing the JSON name so remove from mappings.
+            mappings.Remove(field.JsonName);
         }
 
         // Fields have two mappings: the original field name and the camelcased JSON name.
         // The JSON name can also be customized in proto with json_name option.
-        // Add extra setter only properties for mappings that haven't already been added.
+        // Remaining mappings are for extra setter only properties.
         foreach (var mapping in mappings)
         {
-            var propertyInfo = CreatePropertyInfo(typeInfo, mapping.Key, mapping.Value, isWritable: false);
+            var propertyInfo = CreatePropertyInfo(typeInfo, mapping.Key, mapping.Value, isSerializable: false);
             typeInfo.Properties.Add(propertyInfo);
         }
 
@@ -81,13 +86,14 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
         return true;
     }
 
-    private JsonPropertyInfo CreatePropertyInfo(JsonTypeInfo typeInfo, string name, FieldDescriptor field, bool isWritable)
+    private JsonPropertyInfo CreatePropertyInfo(JsonTypeInfo typeInfo, string name, FieldDescriptor field, bool isSerializable)
     {
         var propertyInfo = typeInfo.CreateJsonPropertyInfo(
             JsonConverterHelper.GetFieldType(field),
             name);
 
-        if (isWritable)
+        // Properties that don't have this flag set are only used to deserialize incoming JSON.
+        if (isSerializable)
         {
             propertyInfo.ShouldSerialize = (o, v) =>
             {
@@ -160,6 +166,6 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
             map[field.Name] = field;
             map[field.JsonName] = field;
         }
-        return new Dictionary<string, FieldDescriptor>(map);
+        return map;
     }
 }

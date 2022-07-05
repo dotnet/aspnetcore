@@ -27,7 +27,8 @@ public class JsonConverterReadTests
   ""field_name"": ""A field name""
 }";
 
-        AssertReadJson<HelloRequest>(json);
+        var m = AssertReadJson<HelloRequest>(json);
+        Assert.Equal("A field name", m.FieldName);
     }
 
     [Fact]
@@ -37,7 +38,8 @@ public class JsonConverterReadTests
   ""json_customized_name"": ""A field name""
 }";
 
-        AssertReadJson<HelloRequest>(json);
+        var m = AssertReadJson<HelloRequest>(json);
+        Assert.Equal("A field name", m.FieldName);
     }
 
     [Fact]

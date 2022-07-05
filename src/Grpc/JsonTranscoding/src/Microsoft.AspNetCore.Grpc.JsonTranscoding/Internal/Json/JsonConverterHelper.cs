@@ -210,7 +210,7 @@ internal static class JsonConverterHelper
             case FieldType.Bytes:
                 return (ByteString)value == ByteString.Empty;
             case FieldType.String:
-                return (string)value == "";
+                return (string)value == string.Empty;
             case FieldType.Double:
                 return (double)value == 0.0;
             case FieldType.SInt32:
