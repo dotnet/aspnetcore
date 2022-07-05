@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<string> Audiences, string ClaimsIssuer)
 {
     private const string AuthenticationKey = "Authentication";
-    private const string DefaultSchemeKey = "DefaultScheme";
     private const string SchemesKey = "Schemes";
 
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
@@ -36,7 +35,7 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
             {
                 // If a scheme with the same name has already been registered, we
                 // override with the latest token's options
-                schemes[SchemeName] = settingsObject;
+                schemes[SchemeName] = settingsObject;    
             }
             else
             {
@@ -57,15 +56,6 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
             };
         }
 
-        // Set the DefaultScheme if it has not already been set
-        // and only a single scheme has been configured thus far
-        if (config[AuthenticationKey][DefaultSchemeKey] is null
-            && config[AuthenticationKey][SchemesKey] is JsonObject setSchemes
-            && setSchemes.Count == 1)
-        {
-            config[AuthenticationKey][DefaultSchemeKey] = SchemeName;
-        }
-
         using var writer = new FileStream(filePath, FileMode.Open, FileAccess.Write);
         JsonSerializer.Serialize(writer, config, _jsonSerializerOptions);
     }
@@ -80,11 +70,6 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
             authentication[SchemesKey] is JsonObject schemes)
         {
             schemes.Remove(name);
-            if (authentication[DefaultSchemeKey] is JsonValue defaultScheme
-                && defaultScheme.GetValue<string>() == name)
-            {
-                authentication.Remove(DefaultSchemeKey);
-            }
         }
 
         using var writer = new FileStream(filePath, FileMode.Create, FileAccess.Write);

@@ -45,7 +45,7 @@ internal sealed class ClearCommand
 
         if (!force)
         {
-            reporter.Output(Resources.FormatClearCommand_Permission(count, project));
+            reporter.Output(Resources.ClearCommand_Permission);
             reporter.Output("[Y]es / [N]o");
             if (Console.ReadLine().Trim().ToUpperInvariant() != "Y")
             {
