@@ -162,11 +162,8 @@ public class AuthenticationMiddlewareTests
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ClaimsIssuer", "SomeIssuer"),
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:Audiences:0", "https://localhost:5001")
         });
-        builder.Authentication.AddJwtBearer();
+        builder.Services.AddAuthentication().AddJwtBearer();
         await using var app = builder.Build();
-
-        var webAppAuthBuilder = Assert.IsType<WebApplicationAuthenticationBuilder>(builder.Authentication);
-        Assert.True(webAppAuthBuilder.IsAuthenticationConfigured);
 
         // Authentication middleware isn't registered until application
         // is built on startup
@@ -174,7 +171,8 @@ public class AuthenticationMiddlewareTests
 
         await app.StartAsync();
 
-        Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        // TODO: Validate after restructuring auto-registration of middlewares.
+        // Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
 
         var options = app.Services.GetService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
         Assert.Equal(new[] { "SomeIssuer" }, options.TokenValidationParameters.ValidIssuers);

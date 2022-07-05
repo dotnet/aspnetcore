@@ -1982,51 +1982,6 @@ public class WebApplicationTests
         Assert.Contains(builder.Services, service => service.ServiceType == typeof(ILogger<>));
     }
 
-    [Fact]
-    public async Task RegisterAuthMiddlewaresCorrectly()
-    {
-        var helloEndpointCalled = false;
-        var customMiddlewareExecuted = false;
-        var username = "foobar";
-
-        var builder = WebApplication.CreateBuilder();
-        builder.Services.AddAuthenticationCore(o =>
-        {
-            o.DefaultScheme = "testSchemeName";
-        });
-        builder.Authentication.AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
-        builder.WebHost.UseTestServer();
-        await using var app = builder.Build();
-
-        app.Use(next =>
-        {
-            return async context =>
-            {
-                // IAuthenticationFeature is added by the authentication middleware
-                // during invocation. This middleware should run after authentication
-                // and be able to access the feature.
-                var authFeature = context.Features.Get<IAuthenticationFeature>();
-                Assert.NotNull(authFeature);
-                customMiddlewareExecuted = true;
-                Assert.Equal(username, context.User.Identity.Name);
-                await next(context);
-            };
-        });
-
-        app.MapGet("/hello", (ClaimsPrincipal user) =>
-        {
-            helloEndpointCalled = true;
-            Assert.Equal(username, user.Identity.Name);
-        }).AllowAnonymous();
-
-        await app.StartAsync();
-        var client = app.GetTestClient();
-        await client.GetStringAsync($"/hello?username={username}");
-
-        Assert.True(helloEndpointCalled);
-        Assert.True(customMiddlewareExecuted);
-    }
-
     private class UberHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         public UberHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock) { }
