@@ -15,6 +15,7 @@ import { Platform, Pointer, System_String, System_Array, System_Object, System_B
 import { getNextChunk, receiveDotNetDataStream } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
+import { WebAssemblyProgressService } from './Platform/WebAssemblyProgressService';
 
 interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
@@ -26,6 +27,7 @@ interface IBlazor {
   start?: ((userOptions?: Partial<CircuitStartOptions>) => Promise<void>) | ((options?: Partial<WebAssemblyStartOptions>) => Promise<void>);
   platform?: Platform;
   rootComponents: typeof RootComponentsFunctions;
+  webAssemblyProgressService?: WebAssemblyProgressService;
 
   _internal: {
     navigationManager: typeof navigationManagerInternalFunctions | any,

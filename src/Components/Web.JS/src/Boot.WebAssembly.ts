@@ -19,6 +19,7 @@ import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescrip
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
 import { WebAssemblyProgressReporter } from './Platform/WebAssemblyProgressReporter';
+import { WebAssemblyProgressService } from './Platform/WebAssemblyProgressService';
 
 let started = false;
 
@@ -60,6 +61,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);
   Blazor.platform = platform;
+  Blazor.webAssemblyProgressService = new WebAssemblyProgressService;
   Blazor._internal.renderBatch = (browserRendererId: number, batchAddress: Pointer) => {
     // We're going to read directly from the .NET memory heap, so indicate to the platform
     // that we don't want anything to modify the memory contents during this time. Currently this
@@ -74,8 +76,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   };
 
-  if (document.getElementById ('blazor-default-loading'))
+  if (document.getElementById ('blazor-default-loading')) {
     WebAssemblyProgressReporter.init();
+  }
 
   // Configure navigation via JS Interop
   const getBaseUri = Blazor._internal.navigationManager.getBaseURI;

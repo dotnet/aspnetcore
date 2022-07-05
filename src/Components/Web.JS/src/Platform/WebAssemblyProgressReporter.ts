@@ -1,21 +1,20 @@
+import { Blazor } from "../GlobalExports";
 import { WebAssemblyProgressService } from "./WebAssemblyProgressService";
 
 export class WebAssemblyProgressReporter {
-    static setProgress(resourcesTotal: number, resourcesLoaded: number): void {
+    static setProgress(resourcesTotal: number, resourcesLoaded: number) {
         const circle = document.querySelector('.progress') as SVGCircleElement;
         const circumference = 2 * Math.PI * circle.r.baseVal.value;
-        const ring = circumference - resourcesLoaded / resourcesTotal * circumference;
-        circle.style.strokeDasharray = circumference.toString() + " " + circumference.toString();
-        circle.style.strokeDashoffset = ring + '';
+        const progressPercentage = resourcesLoaded / resourcesTotal;
+        const ring = (1 - progressPercentage) * circumference;        circle.style.strokeDasharray = circumference.toString() + " " + circumference.toString();
+        circle.style.strokeDashoffset = ring.toString();
         circle.style.display = 'block';
-        const element = document.getElementById('percentage') as SVGTextElement | null;
+        const element = document.getElementById('percentage') as unknown as SVGTextElement;
         const percentage = Math.floor(resourcesLoaded / resourcesTotal * 100);
-        if (element != null)
-            element.textContent = percentage.toString() + "%";
+        element!.textContent = percentage.toString() + "%";
     }
 
     static init() {
-        const progressServiceInstance = WebAssemblyProgressService.Instance;
-        progressServiceInstance.attach(this.setProgress);
+        Blazor.webAssemblyProgressService?.attach(this.setProgress);
     }
 }
