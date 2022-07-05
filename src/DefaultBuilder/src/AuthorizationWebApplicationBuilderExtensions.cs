@@ -7,12 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
-/// Extension methods for setting up authorization services in an <see cref="WebApplicationBuilder" />.
+/// Extension methods for setting up authorization services in a <see cref="WebApplicationBuilder" />.
 /// </summary>
 public static class AuthorizationWebApplicationBuilderExtensions
 {
     /// <summary>
-    /// Registers services required by authentication services.
+    /// Adds authorization services to the specified <see cref="WebApplicationBuilder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="WebApplicationBuilder"/>.</param>
     /// <returns>A <see cref="AuthorizationBuilder"/> that can be used to further configure authentication.</returns>
@@ -24,5 +24,21 @@ public static class AuthorizationWebApplicationBuilderExtensions
         }
 
         return builder.Services.AddAuthorizationBuilder();
+    }
+
+    /// <summary>
+    /// Adds authorization services to the specified <see cref="WebApplicationBuilder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="WebApplicationBuilder"/>.</param>
+    /// <param name="configure">An action delegate to configure the provided <see cref="AuthorizationOptions"/>.</param>
+    /// <returns>A <see cref="AuthorizationBuilder"/> that can be used to further configure authentication.</returns>
+    public static AuthorizationBuilder AddAuthorization(this WebApplicationBuilder builder, Action<AuthorizationOptions> configure)
+    {
+        if (builder == null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        return new AuthorizationBuilder(builder.Services.AddAuthorization(configure));
     }
 }
