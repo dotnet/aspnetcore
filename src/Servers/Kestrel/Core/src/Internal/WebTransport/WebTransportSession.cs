@@ -20,8 +20,11 @@ internal class WebTransportSession : IWebTransportSession
 {
     private readonly CancellationTokenRegistration _connectionClosedRegistration;
 
+    // stores all created streams (pending or accepted)
     private readonly ConcurrentDictionary<long, WebTransportStream> _openStreams = new();
+    // stores all pending streams that have not been accepted yet
     private readonly Channel<WebTransportStream> _pendingStreams;
+
     private readonly Http3Connection _connection;
     private readonly Http3Stream _connectStream = default!;
     private bool _isClosing;
@@ -78,13 +81,7 @@ internal class WebTransportSession : IWebTransportSession
             }
 
         }
-
         _openStreams.Clear();
-
-        while (_pendingStreams.Reader.TryRead(out var stream))
-        {
-            stream.Dispose();
-        }
 
         _pendingStreams.Writer.Complete();
     }
@@ -118,17 +115,6 @@ internal class WebTransportSession : IWebTransportSession
 
         _openStreams.Clear();
 
-        while (_pendingStreams.Reader.TryRead(out var stream))
-        {
-            if (exception.InnerException is not null)
-            {
-                stream.AbortCore(new ConnectionAbortedException(exception.Message, exception.InnerException), error);
-            }
-            else
-            {
-                stream.AbortCore(new ConnectionAbortedException(exception.Message), error);
-            }
-        }
         _pendingStreams.Writer.Complete();
     }
 
@@ -150,6 +136,11 @@ internal class WebTransportSession : IWebTransportSession
         await stream.WriteAsync(OutputStreamHeader, cancellationToken);
         await stream.FlushAsync(cancellationToken);
 
+        if (!_openStreams.TryAdd(stream.StreamId, stream))
+        {
+            throw new Exception(CoreStrings.WebTransportStreamAlreadyOpen);
+        }
+
         return stream;
     }
 
@@ -164,7 +155,7 @@ internal class WebTransportSession : IWebTransportSession
             throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
         }
 
-        if (!_pendingStreams.Writer.TryWrite(stream))
+        if (!_pendingStreams.Writer.TryWrite(stream) || !_openStreams.TryAdd(stream.StreamId, stream))
         {
             throw new Exception(CoreStrings.WebTransportFailedToAddStreamToPendingQueue);
         }
@@ -184,14 +175,7 @@ internal class WebTransportSession : IWebTransportSession
 
         try
         {
-            var stream = await _pendingStreams.Reader.ReadAsync(cancellationToken);
-
-            if (!_openStreams.TryAdd(stream!.StreamId, stream))
-            {
-                throw new Exception(CoreStrings.WebTransportStreamAlreadyOpen);
-            }
-
-            return stream;
+            return await _pendingStreams.Reader.ReadAsync(cancellationToken);
         }
         catch (ChannelClosedException)
         {
