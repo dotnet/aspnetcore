@@ -35,7 +35,7 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
             {
                 // If a scheme with the same name has already been registered, we
                 // override with the latest token's options
-                schemes[SchemeName] = settingsObject;    
+                schemes[SchemeName] = settingsObject;
             }
             else
             {
