@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
@@ -67,6 +66,6 @@ public static class NavigationManagerExtensions
         Justification = "Serializes InteractiveAuthenticationRequest into the state entry.")]
     public static void NavigateToLogin(this NavigationManager manager, string loginPath)
     {
-        manager.NavigateToLogin(loginPath, new InteractiveAuthenticationRequest(InteractiveAuthenticationRequestType.Authenticate, manager.Uri));
+        manager.NavigateToLogin(loginPath, new InteractiveAuthenticationRequest(InteractiveAuthenticationRequestType.Authenticate, manager.Uri, Array.Empty<string>()));
     }
 }

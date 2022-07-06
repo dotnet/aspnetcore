@@ -14,6 +14,12 @@ public sealed class InteractiveAuthenticationRequest
 {
     private Dictionary<string, object> _additionalRequestParameters;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="InteractiveAuthenticationRequest"/>.
+    /// </summary>
+    /// <param name="request">The <see cref="InteractiveAuthenticationRequestType"/>.</param>
+    /// <param name="returnUrl">The URL to return to after the interactive operation.</param>
+    /// <param name="scopes">The scopes to request interactively.</param>
     public InteractiveAuthenticationRequest(InteractiveAuthenticationRequestType request, string returnUrl, IEnumerable<string> scopes)
     {
         RequestType = request;
@@ -39,6 +45,15 @@ public sealed class InteractiveAuthenticationRequest
     /// </summary>
     public InteractiveAuthenticationRequestType RequestType { get; }
 
+    /// <summary>
+    /// Adds an additional parameter to the interactive request.
+    /// </summary>
+    /// <remarks>
+    /// The parameter will be received by the provider which can decide to honor or ignore it.
+    /// </remarks>
+    /// <typeparam name="TParameter">The parameter type.</typeparam>
+    /// <param name="name">The parameter name.</param>
+    /// <param name="value"> The parameter value.</param>
     public void AddAdditionalParameter<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TParameter>(string name, TParameter value)
     {
         ArgumentNullException.ThrowIfNull(name, nameof(name));
@@ -46,6 +61,13 @@ public sealed class InteractiveAuthenticationRequest
         _additionalRequestParameters.Add(name, value);
     }
 
+    /// <summary>
+    /// Retrieves an additional parameter previously added from the request.
+    /// </summary>
+    /// <typeparam name="TParameter">The expected parameter type.</typeparam>
+    /// <param name="name">The parameter name.</param>
+    /// <returns>The parameter value.</returns>
+    /// <exception cref="InvalidOperationException">The parameter has a different type than the expected type.</exception>
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",

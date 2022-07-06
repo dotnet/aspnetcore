@@ -131,7 +131,7 @@ public class RemoteAuthenticationService<
             result.Status,
             result.Token,
             result.Status == AccessTokenResultStatus.RequiresRedirect ? Options.AuthenticationPaths.LogInPath : null,
-            result.Status == AccessTokenResultStatus.RequiresRedirect ? new(InteractiveAuthenticationRequestType.GetToken, GetReturnUrl(null)) : null);
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? new(InteractiveAuthenticationRequestType.GetToken, GetReturnUrl(null), Array.Empty<string>()) : null);
     }
 
     /// <inheritdoc />
@@ -151,7 +151,7 @@ public class RemoteAuthenticationService<
             result.Status,
             result.Token,
             result.Status == AccessTokenResultStatus.RequiresRedirect ? Options.AuthenticationPaths.LogInPath : null,
-            result.Status == AccessTokenResultStatus.RequiresRedirect ? new(InteractiveAuthenticationRequestType.GetToken, GetReturnUrl(options.ReturnUrl)) : null);
+            result.Status == AccessTokenResultStatus.RequiresRedirect ? new(InteractiveAuthenticationRequestType.GetToken, GetReturnUrl(options.ReturnUrl), options.Scopes) : null);
     }
 
     private string GetReturnUrl(string customReturnUrl) =>

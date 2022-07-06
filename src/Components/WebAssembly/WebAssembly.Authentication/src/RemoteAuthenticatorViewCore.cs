@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Internal;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -18,7 +17,10 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
     private string _message;
     private RemoteAuthenticationApplicationPathsOptions _applicationPaths;
     private string _action;
-    private InteractiveAuthenticationRequest _cachedRequest = null;
+    private InteractiveAuthenticationRequest _cachedRequest;
+
+    private static readonly NavigationOptions AuthenticationNavigationOptions =
+        new NavigationOptions { ReplaceHistoryEntry = true, ForceLoad = false };
 
     /// <summary>
     /// Gets or sets the <see cref="RemoteAuthenticationActions"/> action the component needs to handle.
@@ -359,28 +361,6 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
         return _cachedRequest?.ReturnUrl;
     }
 
-    private string GetParameterFromQueryString(ReadOnlySpan<char> parameterName)
-    {
-        var url = Navigation.Uri;
-        ReadOnlyMemory<char> query = default;
-        var queryStartPos = url.IndexOf('?');
-        if (queryStartPos >= 0)
-        {
-            var queryEndPos = url.IndexOf('#', queryStartPos);
-            query = url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
-        }
-
-        foreach (var parameter in new QueryStringEnumerable(query))
-        {
-            var decodedName = parameter.DecodeName().Span;
-            if (MemoryExtensions.Equals(parameterName, decodedName, StringComparison.OrdinalIgnoreCase))
-            {
-                return new string(parameter.DecodeValue().Span);
-            }
-        }
-        return null;
-    }
-
     private void NavigateToReturnUrl(string returnUrl) => Navigation.NavigateTo(returnUrl, new NavigationOptions { ForceLoad = false, ReplaceHistoryEntry = true });
 
     private void RedirectToRegister()
@@ -391,7 +371,7 @@ public class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(JsonSeriali
         Navigation.NavigateTo(registerUrl, AuthenticationNavigationOptions with
         {
             ForceLoad = true,
-            State = new InteractiveAuthenticationRequest(InteractiveAuthenticationRequestType.Authenticate, loginUrl).ToState()
+            State = new InteractiveAuthenticationRequest(InteractiveAuthenticationRequestType.Authenticate, loginUrl, Array.Empty<string>()).ToState()
         });
     }
 

@@ -10,7 +10,6 @@
     <IsTrimmable>true</IsTrimmable>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DefineConstants>DISABLE_NULLABLE;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +23,6 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <PropertyGroup>
