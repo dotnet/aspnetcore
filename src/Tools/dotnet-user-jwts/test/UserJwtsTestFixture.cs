@@ -62,7 +62,7 @@ public class UserJwtsTestFixture : IDisposable
   }
 }";
 
-    public string CreateProject(bool hasSecret = true, string appSettingsContent = "{}")
+    public string CreateProject(bool hasSecret = true)
     {
         var projectPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
         Directory.CreateDirectory(Path.Combine(projectPath.FullName, "Properties"));
@@ -81,7 +81,7 @@ public class UserJwtsTestFixture : IDisposable
 
         File.WriteAllText(
             Path.Combine(projectPath.FullName, "appsettings.Development.json"),
-            appSettingsContent);
+            "{}");
 
         if (hasSecret)
         {
