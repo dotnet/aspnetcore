@@ -1583,9 +1583,6 @@ public static partial class RequestDelegateFactory
         var localVariableExpression = Expression.Variable(typeof(object), $"{parameter.Name}_BindAsync_local");
         factoryContext.AsyncParameters.Add((localVariableExpression, bindAsyncDelegate));
 
-        // If BindAsync returns a non-nullable struct, we have no way to check if a value was set even if it is optional.
-        // We have to assume these BindAsync methods always return a valid value if they do not throw.
-        // We have assume BindAsync methods that cannot return null always return a valid value if they do not throw.
         if (!IsOptionalParameter(parameter, factoryContext))
         {
             var typeName = TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false);
