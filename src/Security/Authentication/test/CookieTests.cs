@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -145,6 +146,43 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.True(transaction.Response.Headers.CacheControl.NoCache);
         Assert.True(transaction.Response.Headers.CacheControl.NoStore);
         Assert.Equal("no-cache", transaction.Response.Headers.Pragma.ToString());
+    }
+
+    [Fact]
+    public async Task TicketStoreRequiresSessionId()
+    {
+        var ticketStore = new Mock<ITicketStore>();
+        using var host = await CreateHostWithServices(s =>
+        {
+            s.AddAuthentication().AddCookie(o =>
+            {
+                o.LoginPath = new PathString("/login");
+                o.Cookie.Name = "TestCookie";
+            });
+            s.AddSingleton(ticketStore.Object);
+        }, SignInAsAlice);
+
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/checkforerrors", "boguscookie");
+        transaction.Response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task SignInStoresTicket()
+    {
+        var ticketStore = new Mock<ITicketStore>();
+        using var host = await CreateHostWithServices(s =>
+        {
+            s.AddAuthentication().AddCookie(o =>
+            {
+                o.LoginPath = new PathString("/login");
+                o.Cookie.Name = "TestCookie";
+            });
+            s.AddSingleton(ticketStore.Object);
+        }, SignInAsAlice);
+
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/checkforerrors");
     }
 
     [Fact]
@@ -1665,17 +1703,6 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
             return null;
         }
         return property.Attribute("value").Value;
-    }
-
-    private static async Task<XElement> GetAuthData(TestServer server, string url, string cookie)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
-        request.Headers.Add("Cookie", cookie);
-
-        var response2 = await server.CreateClient().SendAsync(request);
-        var text = await response2.Content.ReadAsStringAsync();
-        var me = XElement.Parse(text);
-        return me;
     }
 
     private class ClaimsTransformer : IClaimsTransformation
