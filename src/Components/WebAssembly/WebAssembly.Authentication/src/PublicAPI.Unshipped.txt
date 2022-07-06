@@ -1,1 +1,19 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest.RequestType.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequestType
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequestType
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequestType.Authenticate = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequestType
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequestType.GetToken = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequestType
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.NavigationManagerExtensions
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenNotAvailableException.Redirect(System.Action<Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest> configureInteractiveRequest) -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.AccessTokenResult(Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus status, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken token, string interactiveRequestUrl, Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest interactiveRequest) -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.InteractiveRequest.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.InteractiveRequestUrl.get -> string
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest.AddAdditionalParameter<TParameter>(string name, TParameter value) -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest.GetAdditionalParameter<TParameter>(string name) -> TParameter
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest.InteractiveAuthenticationRequest(Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequestType request, string returnUrl, System.Collections.Generic.IEnumerable<string> scopes) -> void
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest.ReturnUrl.get -> string
+~Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest.Scopes.get -> System.Collections.Generic.IEnumerable<string>
+~static Microsoft.AspNetCore.Components.WebAssembly.Authentication.NavigationManagerExtensions.NavigateToLogin(this Microsoft.AspNetCore.Components.NavigationManager manager, string loginPath) -> void
+~static Microsoft.AspNetCore.Components.WebAssembly.Authentication.NavigationManagerExtensions.NavigateToLogin(this Microsoft.AspNetCore.Components.NavigationManager manager, string loginPath, Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveAuthenticationRequest request) -> void
+~static Microsoft.AspNetCore.Components.WebAssembly.Authentication.NavigationManagerExtensions.NavigateToLogout(this Microsoft.AspNetCore.Components.NavigationManager manager, string logoutPath) -> void
