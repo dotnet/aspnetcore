@@ -124,13 +124,16 @@ public static class Publisher
         }
         finally
         {
-            var exitCode = processEx.HasExited ? (int?)processEx.ExitCode : null;
-
-            processEx.Dispose();
-
-            if (exitCode != null && exitCode.Value != 0)
+            if (processEx != null)
             {
-                throw new Exception($"Non-zero exit code returned: {exitCode}");
+                var exitCode = processEx.HasExited ? (int?)processEx.ExitCode : null;
+
+                processEx.Dispose();
+
+                if (exitCode != null && exitCode.Value != 0)
+                {
+                    throw new Exception($"Non-zero exit code returned: {exitCode}");
+                }
             }
         }
     }
