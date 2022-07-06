@@ -1076,7 +1076,7 @@ public class TypedResultsTests
     public void Text_WithUtf8ContentAndContentType_ResultHasCorrectValues()
     {
         // Arrange
-        var content = "test content"u8;
+        var content = "test content"u8.ToArray();
         var contentType = "text/plain";
 
         // Act
@@ -1092,7 +1092,7 @@ public class TypedResultsTests
     public void Text_WithUtf8ContentAndContentTypeAndStatusCode_ResultHasCorrectValues()
     {
         // Arrange
-        var content = "test content"u8;
+        var content = "test content"u8.ToArray();
         var contentType = "text/plain";
         var statusCode = 201;
 

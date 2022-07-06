@@ -18,7 +18,7 @@ public class Utf8ContentResultTests
     public void Utf8ContentResultSetsProperties()
     {
         // Arrange
-        var data = """{ "name" : "Hello" }"""u8;
+        var data = """{ "name" : "Hello" }"""u8.ToArray();
         var result = new Utf8ContentHttpResult(data, contentType: "application/json charst=utf-8", statusCode: 401);
 
         // Act
@@ -31,7 +31,7 @@ public class Utf8ContentResultTests
     public async Task Utf8ContentExecutionWorks()
     {
         // Arrange
-        var data = "Hello"u8;
+        var data = "Hello"u8.ToArray();
         var context = GetHttpContext();
         var ms = new MemoryStream();
         context.Response.Body = ms;
@@ -49,7 +49,7 @@ public class Utf8ContentResultTests
     public async Task Utf8TextResultCopiesData()
     {
         // Arrange
-        var data = "Hello"u8;
+        var data = "Hello"u8.ToArray();
         var context = GetHttpContext();
         var ms = new MemoryStream();
         context.Response.Body = ms;
