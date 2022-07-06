@@ -12,11 +12,11 @@ public interface IProblemDetailsMetadata
     /// <summary>
     /// Gets the HTTP status code of the response.
     /// </summary>
-    public int? StatusCode { get; }
+    int? StatusCode { get; }
 
     /// <summary>
     /// Gets the Problem Details Types
     /// associated to the <see cref="StatusCode"/>.
     /// </summary>
-    public ProblemDetailsTypes ProblemType { get; }
+    ProblemDetailsTypes ProblemType { get; }
 }
