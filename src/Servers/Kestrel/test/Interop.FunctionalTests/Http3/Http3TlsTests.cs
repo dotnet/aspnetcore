@@ -34,7 +34,7 @@ public class Http3TlsTests : LoggedTest
                     httpsOptions.ServerCertificateSelector = (context, host) =>
                     {
                         Assert.Null(context); // The context isn't available durring the quic handshake.
-                        Assert.Equal("localhost", host);
+                        Assert.Equal("testhost", host);
                         return TestResources.GetTestCertificate();
                     };
                 });
@@ -46,11 +46,9 @@ public class Http3TlsTests : LoggedTest
 
         await host.StartAsync().DefaultTimeout();
 
-        // Using localhost instead of 127.0.0.1 because IPs don't set SNI and the Host header isn't currently used as an override.
-        var request = new HttpRequestMessage(HttpMethod.Get, $"https://localhost:{host.GetPort()}/");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
         request.Version = HttpVersion.Version30;
         request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
-        // https://github.com/dotnet/runtime/issues/57169 Host isn't used for SNI
         request.Headers.Host = "testhost";
 
         var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
