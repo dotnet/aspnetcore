@@ -1136,6 +1136,39 @@ public class ResultsTests
     }
 
     [Fact]
+    public void Text_WithUtf8ContentAndContentType_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content"u8;
+        var contentType = "text/plain";
+
+        // Act
+        var result = Results.Text(content, contentType) as Utf8ContentHttpResult;
+
+        // Assert
+        Assert.Null(result.StatusCode);
+        Assert.Equal(content, result.ResponseContent.ToArray());
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
+    public void Text_WithUtf8ContentAndContentTypeAndStatusCode_ResultHasCorrectValues()
+    {
+        // Arrange
+        var content = "test content"u8;
+        var contentType = "text/plain";
+        var statusCode = 201;
+
+        // Act
+        var result = Results.Text(content, contentType, statusCode) as Utf8ContentHttpResult;
+
+        // Assert
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(content, result.ResponseContent.ToArray());
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
     public void Text_WithContentAndContentTypeAndEncoding_ResultHasCorrectValues()
     {
         // Arrange
