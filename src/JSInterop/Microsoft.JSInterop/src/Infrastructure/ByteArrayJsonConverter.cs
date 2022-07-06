@@ -76,7 +76,7 @@ internal sealed class ByteArrayJsonConverter : JsonConverter<byte[]>
 
     public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
     {
-        var id = ++_byteArrayId;
+        var id = Interlocked.Increment(ref _byteArrayId);
 
         JSRuntime.SendByteArray(id, value);
 
