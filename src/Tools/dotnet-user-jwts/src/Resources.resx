@@ -246,6 +246,9 @@
   <data name="KeyCommand_ForceOption_Description" xml:space="preserve">
     <value>Don't prompt for confirmation before resetting the signing key.</value>
   </data>
+  <data name="KeyCommand_IssuerOption_Description" xml:space="preserve">
+    <value>The issuer associated with the signing key to be deleted. Defaults to 'dotnet-user-jwts'.</value>
+  </data>
   <data name="KeyCommand_KeyCreated" xml:space="preserve">
     <value>New signing key created: '{0}'</value>
   </data>
@@ -257,6 +260,9 @@
   </data>
   <data name="KeyCommand_ResetOption_Description" xml:space="preserve">
     <value>Reset the signing key. This will invalidate all previously issued JWTs for this project.</value>
+  </data>
+    <data name="KeyCommand_SchemeOption_Description" xml:space="preserve">
+    <value>The scheme name associated with the signing key to be deleted. Defaults to 'Bearer'.</value>
   </data>
   <data name="ListCommand_Description" xml:space="preserve">
     <value>Lists the JWTs issued for the project</value>
