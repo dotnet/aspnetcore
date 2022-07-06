@@ -38,7 +38,6 @@
 ~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestMode(this System.Net.Http.HttpRequestMessage requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode requestMode) -> System.Net.Http.HttpRequestMessage
 ~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestOption(this System.Net.Http.HttpRequestMessage requestMessage, string name, object value) -> System.Net.Http.HttpRequestMessage
 ~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserResponseStreamingEnabled(this System.Net.Http.HttpRequestMessage requestMessage, bool streamingEnabled) -> System.Net.Http.HttpRequestMessage
-~static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string uri, bool isInterceptedLink) -> void
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.BaseAddress.get -> string!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.Environment.get -> string!
@@ -115,4 +114,3 @@ static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMe
 static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestMode(this System.Net.Http.HttpRequestMessage! requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode requestMode) -> System.Net.Http.HttpRequestMessage!
 static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestOption(this System.Net.Http.HttpRequestMessage! requestMessage, string! name, object! value) -> System.Net.Http.HttpRequestMessage!
 static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserResponseStreamingEnabled(this System.Net.Http.HttpRequestMessage! requestMessage, bool streamingEnabled) -> System.Net.Http.HttpRequestMessage!
-static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string! uri, bool isInterceptedLink) -> void

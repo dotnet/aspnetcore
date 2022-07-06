@@ -9,7 +9,7 @@ let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
 
 // Will be initialized once someone registers
-let notifyLocationChangedCallback: ((uri: string, intercepted: boolean) => Promise<void>) | null = null;
+let notifyLocationChangedCallback: ((uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
@@ -20,7 +20,7 @@ export const internalFunctions = {
   getLocationHref: (): string => location.href,
 };
 
-function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>): void {
+function listenForNavigationEvents(callback: (uri: string, state: string | undefined, intercepted: boolean) => Promise<void>): void {
   notifyLocationChangedCallback = callback;
 
   if (hasRegisteredNavigationEventListeners) {
@@ -82,7 +82,7 @@ export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | 
     : { forceLoad: forceLoadOrOptions, replaceHistoryEntry: replaceIfUsingOldOverload };
 
   if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry);
+    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.state);
   } else {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
@@ -107,7 +107,7 @@ function performExternalNavigation(uri: string, replace: boolean) {
   }
 }
 
-function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean) {
+function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined) {
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
@@ -116,9 +116,9 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   resetScrollAfterNextBatch();
 
   if (!replace) {
-    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+    history.pushState(state, /* ignored title */ '', absoluteInternalHref);
   } else {
-    history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
+    history.replaceState(state, /* ignored title */ '', absoluteInternalHref);
   }
 
   notifyLocationChanged(interceptedLink);
@@ -126,7 +126,7 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
 
 async function notifyLocationChanged(interceptedLink: boolean) {
   if (notifyLocationChangedCallback) {
-    await notifyLocationChangedCallback(location.href, interceptedLink);
+    await notifyLocationChangedCallback(location.href, history.state, interceptedLink);
   }
 }
 
@@ -195,4 +195,5 @@ function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
 export interface NavigationOptions {
   forceLoad: boolean;
   replaceHistoryEntry: boolean;
+  state?: string;
 }

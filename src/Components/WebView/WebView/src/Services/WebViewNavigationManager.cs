@@ -13,10 +13,10 @@ internal sealed class WebViewNavigationManager : NavigationManager
         Initialize(baseUrl, initialUrl);
     }
 
-    public void LocationUpdated(string newUrl, bool intercepted)
+    public void LocationUpdated(string newUrl, string? state, bool intercepted)
     {
         Uri = newUrl;
-        NotifyLocationChanged(intercepted);
+        NotifyLocationChanged(state, intercepted);
     }
 
     protected override void NavigateToCore(string uri, NavigationOptions options)

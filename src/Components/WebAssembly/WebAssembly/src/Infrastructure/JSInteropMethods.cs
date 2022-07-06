@@ -18,8 +18,8 @@ public static class JSInteropMethods
     /// For framework use only.
     /// </summary>
     [JSInvokable(nameof(NotifyLocationChanged))]
-    public static void NotifyLocationChanged(string uri, bool isInterceptedLink)
+    public static void NotifyLocationChanged(string uri, string? state, bool isInterceptedLink)
     {
-        WebAssemblyNavigationManager.Instance.SetLocation(uri, isInterceptedLink);
+        WebAssemblyNavigationManager.Instance.SetLocation(uri, state, isInterceptedLink);
     }
 }

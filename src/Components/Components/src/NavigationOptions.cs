@@ -18,4 +18,9 @@ public readonly struct NavigationOptions
     /// If false, appends the new entry to the history stack.
     /// </summary>
     public bool ReplaceHistoryEntry { get; init; }
+
+    /// <summary>
+    /// Gets or sets the state to append to the history entry.
+    /// </summary>
+    public string? State { get; init; }
 }

@@ -56,12 +56,12 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         _jsRuntime = jsRuntime;
     }
 
-    public void NotifyLocationChanged(string uri, bool intercepted)
+    public void NotifyLocationChanged(string uri, string state, bool intercepted)
     {
         Log.ReceivedLocationChangedNotification(_logger, uri, intercepted);
 
         Uri = uri;
-        NotifyLocationChanged(intercepted);
+        NotifyLocationChanged(state, intercepted);
     }
 
     /// <inheritdoc />

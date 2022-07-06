@@ -22,10 +22,10 @@ internal sealed class WebAssemblyNavigationManager : NavigationManager
         Initialize(baseUri, uri);
     }
 
-    public void SetLocation(string uri, bool isInterceptedLink)
+    public void SetLocation(string uri, string? state, bool isInterceptedLink)
     {
         Uri = uri;
-        NotifyLocationChanged(isInterceptedLink);
+        NotifyLocationChanged(state, isInterceptedLink);
     }
 
     /// <inheritdoc />
