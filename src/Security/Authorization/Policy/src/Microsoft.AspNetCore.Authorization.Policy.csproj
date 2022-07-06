@@ -21,8 +21,4 @@
     <Reference Include="Microsoft.AspNetCore.Routing" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore" />
-  </ItemGroup>
-
 </Project>

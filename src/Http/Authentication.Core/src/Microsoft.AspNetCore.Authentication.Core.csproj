@@ -16,8 +16,4 @@
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore" />
-  </ItemGroup>
-
 </Project>

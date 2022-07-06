@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization.Policy;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -172,7 +172,7 @@ public sealed class WebApplicationBuilder
 
         // Process authorization and authentication middlewares independently to avoid
         // registering middlewares for services that do not exist
-        if (_builtApplication.Services.GetService<AuthenticationMarkerService>() is not null)
+        if (_builtApplication.Services.GetService<IAuthenticationService>() is not null)
         {
             // Don't add more than one instance of the middleware
             if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
@@ -184,7 +184,7 @@ public sealed class WebApplicationBuilder
             }
         }
 
-        if (_builtApplication.Services.GetService<AuthorizationPolicyMarkerService>() is not null)
+        if (_builtApplication.Services.GetService<IAuthorizationHandlerProvider>() is not null)
         {
             if (!_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
             {

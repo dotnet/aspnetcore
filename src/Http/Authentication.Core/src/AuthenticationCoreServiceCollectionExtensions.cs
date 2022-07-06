@@ -23,7 +23,6 @@ public static class AuthenticationCoreServiceCollectionExtensions
             throw new ArgumentNullException(nameof(services));
         }
 
-        services.TryAddSingleton<AuthenticationMarkerService>();
         services.TryAddScoped<IAuthenticationService, AuthenticationService>();
         services.TryAddSingleton<IClaimsTransformation, NoopClaimsTransformation>(); // Can be replaced with scoped ones that use DbContext
         services.TryAddScoped<IAuthenticationHandlerProvider, AuthenticationHandlerProvider>();
