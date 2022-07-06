@@ -1,11 +1,11 @@
 ﻿{
   "version": "1.0.0.0",
   "strings": {
-    "name": "ASP.NET Core Web API",
-    "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
-    "parameter.DisableOpenAPI.name": "Enable _OpenAPI support",
-    "parameter.DisableOpenAPI.description": "Enables OpenAPI (Swagger) support",
-    "parameter.UseMinimalAPIs.name": "Use controllers (uncheck to use minimal APIs)",
-    "parameter.UseMinimalAPIs.description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+    "name": "API web ASP.NET Core",
+    "description": "Modèle de projet permettant de créer une application ASP.NET Core avec un exemple de contrôleur pour un service HTTP RESTful. Vous pouvez également utiliser ce modèle pour les vues et contrôleurs ASP.NET Core MVC.",
+    "parameter.DisableOpenAPI.name": "Activer la prise en charge d'_OpenAPI",
+    "parameter.DisableOpenAPI.description": "Active la prise en charge d'OpenAPI (Swagger)",
+    "parameter.UseMinimalAPIs.name": "Utiliser des contrôleurs (décocher pour utiliser un minimum d'API)",
+    "parameter.UseMinimalAPIs.description": "Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur."
   }
 }
