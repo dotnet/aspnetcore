@@ -175,7 +175,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
 
         // We added no items, but the user explicitly asked for completion.  Add all the
         // items we can to help them out.
-        var virtualChar = context.Tree.Text.Find(context.Position);
+        _ = context.Tree.Text.Find(context.Position);
     }
 
     private void ProvideCompletionsBasedOffOfPrecedingCharacter(EmbeddedCompletionContext context)
@@ -195,7 +195,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
             return;
         }
 
-        var (parent, token) = result.Value;
+        var (_, token) = result.Value;
         switch (token.Kind)
         {
             case RoutePatternKind.ColonToken:

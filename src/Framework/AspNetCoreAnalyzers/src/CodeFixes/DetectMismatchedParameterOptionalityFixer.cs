@@ -25,7 +25,7 @@ public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
         {
             context.RegisterCodeFix(
                 CodeAction.Create("Fix mismatched route parameter and argument optionality",
-                    cancellationToken => FixMismatchedParameterOptionality(diagnostic, context.Document, cancellationToken),
+                    cancellationToken => FixMismatchedParameterOptionalityAsync(diagnostic, context.Document, cancellationToken),
                     equivalenceKey: DiagnosticDescriptors.DetectMismatchedParameterOptionality.Id),
                 diagnostic);
         }
@@ -33,9 +33,9 @@ public class DetectMismatchedParameterOptionalityFixer : CodeFixProvider
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> FixMismatchedParameterOptionality(Diagnostic diagnostic, Document document, CancellationToken cancellationToken)
+    private static async Task<Document> FixMismatchedParameterOptionalityAsync(Diagnostic diagnostic, Document document, CancellationToken cancellationToken)
     {
-        DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken);
+        var editor = await DocumentEditor.CreateAsync(document, cancellationToken);
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
         if (root == null)
