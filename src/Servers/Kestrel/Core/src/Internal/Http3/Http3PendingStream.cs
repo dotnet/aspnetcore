@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Connections;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal class Http3PendingStream
 {
-    private readonly CancellationTokenSource abortedToken = new();
     private ConnectionAbortedException? _abortedException;
+
+    // internal for testing
+    internal readonly CancellationTokenSource abortedToken = new();
 
     internal readonly Http3StreamContext Context;
     internal readonly long StreamId;

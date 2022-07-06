@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -118,7 +119,21 @@ public class Http3TimeoutTests : Http3TestBase
 
         Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
 
-        AssertExpectedErrorMessages(CoreStrings.AttemptedToReadHeaderOnAbortedStream);
+        var task = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        serverInboundControlStream.abortedToken.Token.Register(() =>
+        {
+            try
+            {
+                AssertExpectedErrorMessages(CoreStrings.AttemptedToReadHeaderOnAbortedStream);
+                task.SetResult(true);
+            }
+            catch (AssertActualExpectedException)
+            {
+                task.SetResult(false);
+            }
+        });
+
+        Assert.True(await task.Task);
     }
 
     [Fact]
