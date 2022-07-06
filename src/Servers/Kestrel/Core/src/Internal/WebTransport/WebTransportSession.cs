@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
@@ -77,7 +78,7 @@ internal class WebTransportSession : IWebTransportSession
         {
             foreach (var stream in _openStreams)
             {
-                stream.Value.Dispose();
+                _ = stream.Value.DisposeAsync().AsTask();
             }
 
         }
@@ -104,11 +105,11 @@ internal class WebTransportSession : IWebTransportSession
             {
                 if (exception.InnerException is not null)
                 {
-                    stream.Value.AbortCore(new ConnectionAbortedException(exception.Message, exception.InnerException), error);
+                    stream.Value.Abort(new ConnectionAbortedException(exception.Message, exception.InnerException));
                 }
                 else
                 {
-                    stream.Value.AbortCore(new ConnectionAbortedException(exception.Message), error);
+                    stream.Value.Abort(new ConnectionAbortedException(exception.Message));
                 }
             }
         }
@@ -118,14 +119,14 @@ internal class WebTransportSession : IWebTransportSession
         _pendingStreams.Writer.Complete();
     }
 
-    public async ValueTask<WebTransportStream> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
+    public async ValueTask<ConnectionContext> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
     {
         if (_isClosing)
         {
             throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
         }
         // create the stream
-        var features = new FeatureCollection();
+        var features = new FeatureCollection(2);
         features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
         var connectionContext = await _connection._multiplexedContext.ConnectAsync(features, cancellationToken);
         var streamContext = _connection.CreateHttpStreamContext(connectionContext);
@@ -133,8 +134,8 @@ internal class WebTransportSession : IWebTransportSession
 
         // send the stream header
         // https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-unidirectional-streams
-        await stream.WriteAsync(OutputStreamHeader, cancellationToken);
-        await stream.FlushAsync(cancellationToken);
+        await stream.Transport.Output.WriteAsync(OutputStreamHeader, cancellationToken);
+        await stream.Transport.Output.FlushAsync( cancellationToken);
 
         if (!_openStreams.TryAdd(stream.StreamId, stream))
         {
@@ -166,7 +167,7 @@ internal class WebTransportSession : IWebTransportSession
     /// </summary>
     /// <param name="cancellationToken">The cancellation token to abort waiting for a stream</param>
     /// <returns>An instance of WebTransportStream that corresponds to the new stream to accept</returns>
-    public async ValueTask<WebTransportStream?> AcceptStreamAsync(CancellationToken cancellationToken)
+    public async ValueTask<ConnectionContext?> AcceptStreamAsync(CancellationToken cancellationToken)
     {
         if (_isClosing)
         {
@@ -192,9 +193,9 @@ internal class WebTransportSession : IWebTransportSession
     {
         var success = _openStreams.Remove(streamId, out var stream);
 
-        if (stream is not null && (stream.CanRead || stream.CanWrite))
+        if (success && stream is not null)
         {
-            stream.Dispose();
+            _ = stream.DisposeAsync().AsTask();
         }
 
         return success;

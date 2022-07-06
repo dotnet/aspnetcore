@@ -22,5 +22,5 @@ public interface IHttpWebTransportFeature
     /// <param name="cancellationToken">The cancellation token to cancel waiting for the session.</param>
     /// <returns>An instance of a WebTransportSession which will be used to control the connection.</returns>
     [RequiresPreviewFeatures("WebTransport is a preview feature")]
-    ValueTask<IWebTransportSession> AcceptAsync(CancellationToken cancellationToken);
+    ValueTask<IWebTransportSession> AcceptAsync(CancellationToken cancellationToken = default);
 }

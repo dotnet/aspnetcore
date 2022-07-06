@@ -1,28 +1,9 @@
 #nullable enable
 Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature
-Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature.AcceptAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession!>
+Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession!>
 Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature.IsWebTransportRequest.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.Abort(int errorCode = 256) -> void
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream?>
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream!>
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
+Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
 Microsoft.AspNetCore.Server.Kestrel.Core.Features.IWebTransportSession.SessionId.get -> long
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Abort(int errorCode = 256) -> void
-Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.StreamId.get -> long
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.CanRead.get -> bool
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.CanSeek.get -> bool
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.CanWrite.get -> bool
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Flush() -> void
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.FlushAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Length.get -> long
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Position.get -> long
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Position.set -> void
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Read(byte[]! buffer, int offset, int count) -> int
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.ReadAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<int>
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.SetLength(long value) -> void
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.Write(byte[]! buffer, int offset, int count) -> void
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.WriteAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Server.Kestrel.Core.WebTransportStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask

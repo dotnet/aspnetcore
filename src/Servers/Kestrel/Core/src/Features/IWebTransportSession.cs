@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
@@ -31,7 +32,7 @@ public interface IWebTransportSession
     /// <exception cref="Exception">If a stream with this id is already open</exception>
     /// <param name="cancellationToken">The cancellation token used to cancel the operation.</param>
     /// <returns>The unidirectional or bidirectional stream that is next in the queue.</returns>
-    ValueTask<WebTransportStream?> AcceptStreamAsync(CancellationToken cancellationToken);
+    ValueTask<ConnectionContext?> AcceptStreamAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Opens a new unidirectional output stream.
@@ -39,5 +40,5 @@ public interface IWebTransportSession
     /// <param name="cancellationToken">The cancellation token used to cancel the operation.</param>
     /// <exception cref="Exception">If This is not a valid WebTransport session.</exception>
     /// <returns>The unidirectional stream that was opened.</returns>
-    ValueTask<WebTransportStream> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken);
+    ValueTask<ConnectionContext> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken = default);
 }
