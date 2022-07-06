@@ -135,6 +135,7 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
                 // The serializer creates a collection. Copy contents to collection on read-only property.
                 // An extra collection is being created here that's then thrown away.
                 // This will be removed once S.T.J supports deserializing onto a read-only property.
+                // https://github.com/dotnet/runtime/issues/30258
                 var existingValue = (IList)field.Accessor.GetValue((IMessage)o);
                 foreach (var item in (IList)v!)
                 {
