@@ -426,6 +426,8 @@ internal sealed class HostingApplicationDiagnostics
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(QueryString))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HostString))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PathString))]
+    // OpenTelemetry gets the context from the context using the DefaultHttpContext.HttpContext property.
+    [DynamicDependency(nameof(DefaultHttpContext.HttpContext), typeof(DefaultHttpContext))]
     private Activity StartActivity(Activity activity, HttpContext httpContext)
     {
         activity.Start();
@@ -438,6 +440,8 @@ internal sealed class HostingApplicationDiagnostics
     [DynamicDependency(nameof(HttpContext.Response), typeof(HttpContext))]
     [DynamicDependency(nameof(HttpResponse.StatusCode), typeof(HttpResponse))]
     [DynamicDependency(nameof(HttpResponse.Headers), typeof(HttpResponse))]
+    // OpenTelemetry gets the context from the context using the DefaultHttpContext.HttpContext property.
+    [DynamicDependency(nameof(DefaultHttpContext.HttpContext), typeof(DefaultHttpContext))]
     private void StopActivity(Activity activity, HttpContext httpContext)
     {
         // Stop sets the end time if it was unset, but we want it set before we issue the write
