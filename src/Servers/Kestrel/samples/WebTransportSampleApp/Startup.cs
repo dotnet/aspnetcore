@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
 namespace WebTransportSample;
 
@@ -37,7 +36,7 @@ public class Startup
 
                 //// READ FROM A STREAM:
                 var memory = new Memory<byte>(new byte[4096]);
-                var test = await stream2.Transport.Input.ReadAsync(memory, CancellationToken.None);
+                var test = await stream2.Transport.Input.AsStream().ReadAsync(memory, CancellationToken.None);
                 Console.WriteLine(System.Text.Encoding.Default.GetString(memory.Span));
             }
             else

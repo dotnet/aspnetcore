@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Http.Features;
 
