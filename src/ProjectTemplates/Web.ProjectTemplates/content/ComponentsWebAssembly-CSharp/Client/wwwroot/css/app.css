@@ -79,7 +79,7 @@ a, .btn-link {
     transform: rotate(-90deg);
 }
 
-#blazor-default-loading circle.progress {
+#blazor-default-loading #blazor-default-loading-progress {
     stroke: #1b6ec2;
     transition: 0.50s stroke-dashoffset ease-in-out;
     display: none;

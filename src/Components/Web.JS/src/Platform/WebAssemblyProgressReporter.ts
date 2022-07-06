@@ -7,14 +7,14 @@ export class WebAssemblyProgressReporter {
     * @param resourcesLoaded The current number of resources loaded retrieved from WebAssemblyResourceLoader.ts
     */
     static setProgress(resourcesTotal: number, resourcesLoaded: number): void {
-        const circle = document.querySelector('.progress') as SVGCircleElement;
+        const circle = document.getElementById('blazor-default-loading-progress') as unknown as SVGCircleElement;
         const circumference = 2 * Math.PI * circle.r.baseVal.value;
         const progressPercentage = resourcesLoaded / resourcesTotal;
         const ring = (1 - progressPercentage) * circumference;
         circle.style.strokeDasharray = `${circumference} ${circumference}`;
         circle.style.strokeDashoffset = `${ring}`;
         circle.style.display = 'block';
-        const element = document.getElementById('percentage') as unknown as SVGTextElement;
+        const element = document.getElementById('blazor-default-loading-percentage') as unknown as SVGTextElement;
         const percentage = Math.floor(resourcesLoaded / resourcesTotal * 100);
         element!.textContent = `${percentage}` + "%";
     }
