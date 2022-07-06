@@ -14,13 +14,13 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
 internal static class DevJwtCliHelpers
 {
-    public static string GetOrSetUserSecretsId(IReporter reporter, string projectFilePath)
+    public static string GetOrSetUserSecretsId(string projectFilePath)
     {
-        var resolver = new ProjectIdResolver(reporter, projectFilePath);
+        var resolver = new ProjectIdResolver(NullReporter.Singleton, projectFilePath);
         var id = resolver.Resolve(projectFilePath, configuration: null);
         if (string.IsNullOrEmpty(id))
         {
-            return UserSecretsCreator.CreateUserSecretsId(reporter, projectFilePath, projectFilePath);
+            return UserSecretsCreator.CreateUserSecretsId(NullReporter.Singleton, projectFilePath, projectFilePath);
         }
         return id;
     }
@@ -52,7 +52,7 @@ internal static class DevJwtCliHelpers
             return false;
         }
 
-        userSecretsId = GetOrSetUserSecretsId(reporter, project);
+        userSecretsId = GetOrSetUserSecretsId(project);
         if (userSecretsId == null)
         {
             reporter.Error($"Project does not contain a user secrets ID.");
