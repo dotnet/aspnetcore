@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
   "name": "Razor Component",
-  "description": "A reusable UI component implemented with Razor",
+  "description": "Razor로 구현된 재사용 가능한 UI 구성 요소",
   "postActions/openInEditor/description": "Opens Component1.razor in the editor"
 }

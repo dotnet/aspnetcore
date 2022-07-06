@@ -2,6 +2,6 @@
   "author": "Microsoft",
   "name": "MVC ViewImports",
   "description": "An MVC View Import Page",
-  "symbols/namespace/description": "namespace for the generated code",
+  "symbols/namespace/description": "oluşturulan kod için ad alanı",
   "postActions/openInEditor/description": "Opens _ViewImports.cshtml in the editor"
 }

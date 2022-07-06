@@ -1,7 +1,7 @@
 ﻿{
-  "author": "Microsoft",
+  "author": "Майкрософт",
   "name": "Protocol Buffer File",
-  "description": "A protocol buffer file for describing messages and services for gRPC.",
-  "symbols/namespace/description": "namespace for the generated code",
+  "description": "Файл буфера протокола для описания сообщений и служб для gRPC.",
+  "symbols/namespace/description": "пространство имен для созданного кода",
   "postActions/openInEditor/description": "Opens protobuf.proto in the editor"
 }

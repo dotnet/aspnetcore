@@ -1,7 +1,7 @@
 ﻿{
-  "author": "Microsoft",
+  "author": "Майкрософт",
   "name": "ASP.NET Core Web API",
-  "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
+  "description": "Шаблон проекта для создания приложения ASP.NET Core с образцом контроллера для службы HTTP RESTful. Этот шаблон можно также использовать для представлений MVC и контроллеров ASP.NET Core.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/IndividualB2C/description": "Individual authentication with Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Organizational authentication for a single tenant",
@@ -24,15 +24,15 @@
   "symbols/NoHttps/description": "Whether to turn off HTTPS. This option only applies if IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth.",
   "symbols/UseLocalDB/description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified.",
   "symbols/UseMinimalAPIs/description": "Whether to use minimal APIs instead of controllers.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
+  "symbols/Framework/description": "Целевая платформа для проекта.",
+  "symbols/Framework/choices/net7.0/description": "Целевая версия net7.0",
+  "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/CalledApiUrl/description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified.",
   "symbols/CallsMicrosoftGraph/description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg is specified.",
   "symbols/CalledApiScopes/description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified.",
   "symbols/DisableOpenAPI/description": "Disable OpenAPI (Swagger) support",
-  "symbols/UseProgramMain/displayName": "Do not use top-level statements",
-  "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "symbols/UseProgramMain/displayName": "Не использовать операторы верхнего уровня",
+  "symbols/UseProgramMain/description": "Следует ли создавать явный класс Program и метод Main вместо операторов верхнего уровня.",
+  "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
+  "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""
 }

@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Blazor Server App",
-  "description": "A project template for creating a Blazor server app that runs server-side inside an ASP.NET Core app and handles user interactions over a SignalR connection. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "description": "Bir ASP.NET Core uygulaması içinde sunucu tarafında çalışan ve bir SignalR bağlantısı üzerinden kullanıcı etkileşimlerini işleyen bir Blazor Server uygulaması oluşturmaya yönelik proje şablonu. Bu şablon, zengin dinamik kullanıcı arabirimlerine (UI) sahip web uygulamaları için kullanılabilir.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/Individual/description": "Individual authentication",
   "symbols/auth/choices/IndividualB2C/description": "Individual authentication with Azure AD B2C",
@@ -28,14 +28,14 @@
   "symbols/iisHttpsPort/description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualB2C or OrganizationalAuth is used).",
   "symbols/NoHttps/description": "Whether to turn off HTTPS. This option only applies if IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth.",
   "symbols/UseLocalDB/description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
+  "symbols/Framework/description": "Projenin hedef çerçevesi.",
+  "symbols/Framework/choices/net7.0/description": "Hedef net7.0",
   "symbols/CalledApiUrl/description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified.",
   "symbols/CallsMicrosoftGraph/description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg or --auth MultiOrg is specified.",
   "symbols/CalledApiScopes/description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "symbols/UseProgramMain/displayName": "Do not use top-level statements",
-  "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
+  "symbols/UseProgramMain/displayName": "Üst düzey deyimler kullanmayın",
+  "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",
+  "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır"
 }

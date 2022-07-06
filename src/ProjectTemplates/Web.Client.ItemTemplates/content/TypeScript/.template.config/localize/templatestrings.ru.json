@@ -1,6 +1,6 @@
 ﻿{
-  "author": "Microsoft",
+  "author": "Майкрософт",
   "name": "TypeScript file",
-  "description": "A blank TypeScript source file",
+  "description": "Пустой исходный файл TypeScript",
   "postActions/openInEditor/description": "Opens file1.ts in the editor"
 }

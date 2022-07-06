@@ -1,10 +1,10 @@
 ﻿{
-  "author": "Microsoft",
+  "author": "Майкрософт",
   "name": "Blazor WebAssembly App Empty",
   "description": "An empty project template for creating a Blazor app that runs on WebAssembly and is optionally hosted by an ASP.NET Core app. This template does not have any content in it.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
+  "symbols/Framework/description": "Целевая платформа для проекта.",
+  "symbols/Framework/choices/net7.0/description": "Целевая версия net7.0",
+  "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/Hosted/displayName": "ASP.NET Core _Hosted",
   "symbols/Hosted/description": "If specified, includes an ASP.NET Core host for the Blazor WebAssembly app.",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
@@ -16,8 +16,8 @@
   "symbols/PWA/description": "If specified, produces a Progressive Web Application (PWA) supporting installation and offline use.",
   "symbols/HasHttpProfile/description": "Always have HTTP profile.",
   "symbols/NoHttps/description": "Whether to turn off HTTPS.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
-  "postActions/restoreClient/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
+  "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\"",
+  "postActions/restoreClient/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
   "postActions/restoreClient/manualInstructions/default/text": "Run 'dotnet restore'"
 }

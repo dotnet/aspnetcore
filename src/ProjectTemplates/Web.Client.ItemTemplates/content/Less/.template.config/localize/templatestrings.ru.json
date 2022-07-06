@@ -1,5 +1,5 @@
 ﻿{
-  "author": "Microsoft",
+  "author": "Майкрософт",
   "name": "LESS Style Sheet",
   "description": "LESS is a language that compiles into CSS",
   "postActions/openInEditor/description": "Opens styleSheet1.less in the editor"

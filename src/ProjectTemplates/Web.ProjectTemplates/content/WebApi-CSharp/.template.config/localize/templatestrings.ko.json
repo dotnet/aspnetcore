@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
-  "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
+  "description": "RESTful HTTP 서비스용 예제 컨트롤러를 사용하여 ASP.NET Core 애플리케이션을 만드는 데 사용되는 프로젝트 템플릿입니다. 이 템플릿은 ASP.NET Core MVC 뷰 및 컨트롤러에도 사용할 수 있습니다.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/IndividualB2C/description": "Individual authentication with Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Organizational authentication for a single tenant",
@@ -24,15 +24,15 @@
   "symbols/NoHttps/description": "Whether to turn off HTTPS. This option only applies if IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth.",
   "symbols/UseLocalDB/description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified.",
   "symbols/UseMinimalAPIs/description": "Whether to use minimal APIs instead of controllers.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
+  "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
+  "symbols/Framework/choices/net7.0/description": "대상 net7.0",
+  "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
   "symbols/CalledApiUrl/description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified.",
   "symbols/CallsMicrosoftGraph/description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg is specified.",
   "symbols/CalledApiScopes/description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified.",
   "symbols/DisableOpenAPI/description": "Disable OpenAPI (Swagger) support",
-  "symbols/UseProgramMain/displayName": "Do not use top-level statements",
-  "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "symbols/UseProgramMain/displayName": "최상위 문 사용 안 함",
+  "symbols/UseProgramMain/description": "최상위 문 대신 명시적 Program 클래스 및 Main 메서드를 생성할지 여부입니다.",
+  "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행"
 }

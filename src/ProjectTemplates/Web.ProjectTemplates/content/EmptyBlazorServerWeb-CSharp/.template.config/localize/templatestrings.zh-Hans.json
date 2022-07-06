@@ -9,9 +9,9 @@
   "symbols/iisHttpsPort/description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used.",
   "symbols/HasHttpProfile/description": "Always have HTTP profile.",
   "symbols/NoHttps/description": "Whether to turn off HTTPS.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "symbols/Framework/description": "项目的目标框架。",
+  "symbols/Framework/choices/net7.0/description": "目标 net7.0",
+  "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
+  "postActions/restore/description": "还原此项目所需的 NuGet 包。",
+  "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
 }
