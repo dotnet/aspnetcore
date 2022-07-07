@@ -3,8 +3,8 @@ import { Blazor } from "../GlobalExports";
 export class WebAssemblyProgressReporter {
     /**
     * Modifies CSS of the loading ring to reflect linear progress based on the number of resources.
-    * @param resourcesTotal The total number of resources retrieved from MonoPlatform.ts
-    * @param resourcesLoaded The current number of resources loaded retrieved from WebAssemblyResourceLoader.ts
+    * @param resourcesTotal The total number of resources retrieved from {@link ./Mono/MonoPlatform.ts} class.
+    * @param resourcesLoaded The current number of resources loaded retrieved from {@link ./WebAssemblyResourceLoader.ts} class.
     */
     static setProgress(resourcesTotal: number, resourcesLoaded: number): void {
         const circle = document.getElementById('blazor-default-loading-progress') as unknown as SVGCircleElement;

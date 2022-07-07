@@ -5,9 +5,6 @@ import { toAbsoluteUri } from '../Services/NavigationManager';
 import { BootJsonData, ResourceList } from './BootConfig';
 import { WebAssemblyStartOptions, WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
 import { Blazor } from '../GlobalExports';
-import { AfterBlazorStartedCallback } from '../JSInitializers/JSInitializers';
-import { WebAssemblyProgressReporter } from './WebAssemblyProgressReporter';
-import { WebAssemblyProgressService } from './WebAssemblyProgressService';
 const networkFetchCacheMode = 'no-cache';
 
 export class WebAssemblyResourceLoader {

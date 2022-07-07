@@ -84,3 +84,8 @@ a, .btn-link {
     transition: 0.50s stroke-dashoffset ease-in-out;
     display: none;
 }
+
+#blazor-default-loading #blazor-default-loading-progress {
+    color: black;
+    font-weight: bold;
+}

@@ -13,7 +13,6 @@ import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
 import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, MONOType } from 'dotnet';
-import { WebAssemblyProgressService } from '../WebAssemblyProgressService';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
@@ -250,7 +249,11 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const existingPostRun = moduleConfig.postRun || [];
   (moduleConfig as any).preloadPlugins = [];
 
-  const totalResources = Object.keys(resources.assembly).length + Object.keys(resources.pdb || {}).length + /* dotnet.wasm */ 1;
+  var totalResources = Object.keys(resources.assembly).length + Object.keys(resources.pdb || {}).length + /* dotnet.wasm */ 1;
+  if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty('dotnet.timezones.blat'))
+    totalResources++;
+  if (resourceLoader.bootConfig.icuDataMode !== ICUDataMode.Invariant)
+    totalResources++;
   Blazor.webAssemblyProgressService?.setTotalResources(totalResources);
 
 
