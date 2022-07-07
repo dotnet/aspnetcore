@@ -17,6 +17,14 @@ public static class JSInteropMethods
     /// <summary>
     /// For framework use only.
     /// </summary>
+    public static void NotifyLocationChanged(string uri, bool isInterceptedLink)
+    {
+        WebAssemblyNavigationManager.Instance.SetLocation(uri, null, isInterceptedLink);
+    }
+
+    /// <summary>
+    /// For framework use only.
+    /// </summary>
     [JSInvokable(nameof(NotifyLocationChanged))]
     public static void NotifyLocationChanged(string uri, string? state, bool isInterceptedLink)
     {
