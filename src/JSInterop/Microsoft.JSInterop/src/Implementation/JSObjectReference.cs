@@ -62,9 +62,6 @@ public class JSObjectReference : IJSObjectReference
     /// <inheritdoc />
     protected void ThrowIfDisposed()
     {
-        if (Disposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedException.ThrowIf(Disposed, this);
     }
 }

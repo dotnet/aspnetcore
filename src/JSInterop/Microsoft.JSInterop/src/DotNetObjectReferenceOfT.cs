@@ -94,9 +94,6 @@ public sealed class DotNetObjectReference<TValue> : IDotNetObjectReference, IDis
 
     internal void ThrowIfDisposed()
     {
-        if (Disposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedException.ThrowIf(Disposed, this);
     }
 }
