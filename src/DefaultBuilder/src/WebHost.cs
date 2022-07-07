@@ -270,6 +270,6 @@ public static class WebHost
     /// <typeparam name ="TStartup">The type containing the startup methods for the application.</typeparam>
     /// <param name="args">The command line args.</param>
     /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
-    public static IWebHostBuilder CreateDefaultBuilder<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)] TStartup>(string[] args) where TStartup : class =>
+    public static IWebHostBuilder CreateDefaultBuilder<[DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] TStartup>(string[] args) where TStartup : class =>
         CreateDefaultBuilder(args).UseStartup<TStartup>();
 }
