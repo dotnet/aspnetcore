@@ -76,6 +76,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   };
 
+  // Only instantiate the WebAssemblyProgressReporter if the loading element exists in the DOM
   if (document.getElementById('blazor-default-loading')) {
     WebAssemblyProgressReporter.init();
   }
