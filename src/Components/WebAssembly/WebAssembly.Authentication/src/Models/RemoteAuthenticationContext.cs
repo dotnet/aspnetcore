@@ -21,4 +21,9 @@ public class RemoteAuthenticationContext<[DynamicallyAccessedMembers(JsonSeriali
     /// Gets or sets the state instance for the current authentication operation.
     /// </summary>
     public TRemoteAuthenticationState State { get; set; }
+
+    /// <summary>
+    /// Gets or sets the interaction request for the current authentication operation.
+    /// </summary>
+    public InteractiveAuthenticationRequest InteractiveRequest { get; set; }
 }

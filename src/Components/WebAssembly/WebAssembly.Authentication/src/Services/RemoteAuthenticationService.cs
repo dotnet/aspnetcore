@@ -82,7 +82,7 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context.State);
+        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context);
         await UpdateUserOnSuccess(result);
 
         return result;
@@ -104,7 +104,7 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context.State);
+        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context);
         await UpdateUserOnSuccess(result);
 
         return result;

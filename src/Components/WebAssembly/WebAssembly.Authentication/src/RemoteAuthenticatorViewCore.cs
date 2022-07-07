@@ -89,6 +89,11 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
     [Parameter] public EventCallback<TAuthenticationState> OnLogOutSucceeded { get; set; }
 
     /// <summary>
+    /// Gets or sets an event callback that will be invoked with the <see cref="InteractiveAuthenticationRequest"/> when an operation is beginning.
+    /// </summary>
+    [Parameter] public EventCallback<InteractiveAuthenticationRequest> OnAuthenticationRequest { get; set; }
+
+    /// <summary>
     /// Gets or sets the <see cref="RemoteAuthenticationApplicationPathsOptions"/> with the paths to different authentication pages.
     /// </summary>
     [Parameter]
@@ -185,7 +190,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 }
                 break;
             case RemoteAuthenticationActions.LogOut:
-                await ProcessLogOut(GetReturnUrl(state: null, Navigation.ToAbsoluteUri(ApplicationPaths.LogOutSucceededPath).AbsoluteUri));
+                await ProcessLogOut(GetReturnUrl(state: null, ApplicationPaths.LogOutSucceededPath));
                 break;
             case RemoteAuthenticationActions.LogOutCallback:
                 await ProcessLogOutCallback();
@@ -202,9 +207,16 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
     private async Task ProcessLogIn(string returnUrl)
     {
         AuthenticationState.ReturnUrl = returnUrl;
+        var interactiveRequest = GetCachedNavigationState();
+        if (OnAuthenticationRequest.HasDelegate)
+        {
+            await OnAuthenticationRequest.InvokeAsync(interactiveRequest);
+        }
+
         var result = await AuthenticationService.SignInAsync(new RemoteAuthenticationContext<TAuthenticationState>
         {
-            State = AuthenticationState
+            State = AuthenticationState,
+            InteractiveRequest = interactiveRequest
         });
 
         switch (result.Status)
@@ -284,7 +296,17 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
         var isauthenticated = state.User.Identity.IsAuthenticated;
         if (isauthenticated)
         {
-            var result = await AuthenticationService.SignOutAsync(new RemoteAuthenticationContext<TAuthenticationState> { State = AuthenticationState });
+            var interactiveRequest = GetCachedNavigationState();
+            if (OnAuthenticationRequest.HasDelegate)
+            {
+                await OnAuthenticationRequest.InvokeAsync(interactiveRequest);
+            }
+
+            var result = await AuthenticationService.SignOutAsync(new RemoteAuthenticationContext<TAuthenticationState>
+            {
+                State = AuthenticationState,
+                InteractiveRequest = interactiveRequest
+            });
             switch (result.Status)
             {
                 case RemoteAuthenticationStatus.Redirect:
@@ -318,9 +340,6 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Type deserializes InteractiveAuthenticationRequest from NavigationHistory.State")]
     private async Task ProcessLogOutCallback()
     {
         var result = await AuthenticationService.CompleteSignOutAsync(new RemoteAuthenticationContext<TAuthenticationState> { Url = Navigation.Uri });

@@ -52,12 +52,22 @@ export interface AuthenticationResult {
     message?: string;
 }
 
+export interface AuthenticationContext {
+    state?: unknown;
+    interactiveRequest: InteractiveAuthenticationRequest;
+}
+
+export interface InteractiveAuthenticationRequest {
+    scopes?: string [];
+    additionalRequestProperties?: { [key: string]: any };
+};
+
 export interface AuthorizeService {
     getUser(): Promise<unknown>;
     getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult>;
-    signIn(state: unknown): Promise<AuthenticationResult>;
+    signIn(context: AuthenticationContext): Promise<AuthenticationResult>;
     completeSignIn(state: unknown): Promise<AuthenticationResult>;
-    signOut(state: unknown): Promise<AuthenticationResult>;
+    signOut(context: AuthenticationContext): Promise<AuthenticationResult>;
     completeSignOut(url: string): Promise<AuthenticationResult>;
 }
 
@@ -153,15 +163,15 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    async signIn(state: unknown) {
+    async signIn(context: AuthenticationContext) {
         try {
             await this._userManager.clearStaleState();
-            await this._userManager.signinSilent(this.createArguments());
-            return this.success(state);
+            await this._userManager.signinSilent(this.createArguments(undefined, context.interactiveRequest));
+            return this.success(context.state);
         } catch (silentError) {
             try {
                 await this._userManager.clearStaleState();
-                await this._userManager.signinRedirect(this.createArguments(state));
+                await this._userManager.signinRedirect(this.createArguments(context.state, context.interactiveRequest));
                 return this.redirect();
             } catch (redirectError) {
                 return this.error(this.getExceptionMessage(redirectError));
@@ -188,13 +198,13 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    async signOut(state: unknown) {
+    async signOut(context: AuthenticationContext) {
         try {
             if (!(await this._userManager.metadataService.getEndSessionEndpoint())) {
                 await this._userManager.removeUser();
-                return this.success(state);
+                return this.success(context.state);
             }
-            await this._userManager.signoutRedirect(this.createArguments(state));
+            await this._userManager.signoutRedirect(this.createArguments(context.state, context.interactiveRequest));
             return this.redirect();
         } catch (redirectSignOutError) {
             return this.error(this.getExceptionMessage(redirectSignOutError));
@@ -251,8 +261,8 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    private createArguments(state?: unknown) {
-        return { useReplaceToNavigate: true, data: state };
+    private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest) {
+        return { useReplaceToNavigate: true, data: state, ...interactiveRequest.additionalRequestProperties };
     }
 
     private error(message: string) {
@@ -336,8 +346,8 @@ export class AuthenticationService {
         return AuthenticationService.instance.getAccessToken(options);
     }
 
-    public static signIn(state: unknown) {
-        return AuthenticationService.instance.signIn(state);
+    public static signIn(context: AuthenticationContext) {
+        return AuthenticationService.instance.signIn(context);
     }
 
     public static async completeSignIn(url: string) {
@@ -351,8 +361,8 @@ export class AuthenticationService {
         return operation;
     }
 
-    public static signOut(state: unknown) {
-        return AuthenticationService.instance.signOut(state);
+    public static signOut(context: AuthenticationContext) {
+        return AuthenticationService.instance.signOut(context);
     }
 
     public static async completeSignOut(url: string) {
