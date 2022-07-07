@@ -67,7 +67,7 @@ internal static class DevJwtCliHelpers
             .AddUserSecrets(userSecretsId)
             .Build();
 
-        var signingKeyMaterial = projectConfiguration[$"{schemeName}:{issuer}:{DevJwtsDefaults.SigningKeyConfigurationKey}"];
+        var signingKeyMaterial = projectConfiguration[GetSigningKeyPropertyName(schemeName, issuer)];
 
         var keyMaterial = new byte[DevJwtsDefaults.SigningKeyLength];
         if (signingKeyMaterial is not null && Convert.TryFromBase64String(signingKeyMaterial, keyMaterial, out var bytesWritten) && bytesWritten == DevJwtsDefaults.SigningKeyLength)
@@ -96,7 +96,7 @@ internal static class DevJwtCliHelpers
         }
 
         secrets ??= new JsonObject();
-        var key = $"{schemeName}:{issuer}:{DevJwtsDefaults.SigningKeyConfigurationKey}";
+        var key = GetSigningKeyPropertyName(schemeName, issuer);
 
         if (reset && secrets.ContainsKey(key))
         {
@@ -251,4 +251,7 @@ internal static class DevJwtCliHelpers
         }
         return true;
     }
+
+    public static string GetSigningKeyPropertyName(string scheme, string issuer)
+        => $"Authentication:Schemes:{scheme}:{issuer}:{DevJwtsDefaults.SigningKeyConfigurationKey}";
 }

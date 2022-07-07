@@ -78,7 +78,7 @@ internal sealed class KeyCommand
         var projectConfiguration = new ConfigurationBuilder()
             .AddUserSecrets(userSecretsId)
             .Build();
-        var signingKeyMaterial = projectConfiguration[$"{schemeName}:{issuer}:{DevJwtsDefaults.SigningKeyConfigurationKey}"];
+        var signingKeyMaterial = projectConfiguration[DevJwtCliHelpers.GetSigningKeyPropertyName(schemeName, issuer)];
 
         if (signingKeyMaterial is null)
         {
