@@ -52,7 +52,7 @@ public sealed partial class Utf8ContentHttpResult : IResult
 
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ContentResult");
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.Utf8ContentHttpResult");
 
         if (StatusCode is { } statusCode)
         {
