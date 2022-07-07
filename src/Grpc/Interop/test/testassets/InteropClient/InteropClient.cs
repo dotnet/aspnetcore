@@ -29,6 +29,7 @@ using Grpc.Testing;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Newtonsoft.Json.Linq;
 
 namespace InteropTestsClient;
@@ -93,12 +94,10 @@ public class InteropClient : IDisposable
         services.AddLogging(configure =>
         {
             configure.SetMinimumLevel(LogLevel.Trace);
-            configure.AddConsole(loggerOptions =>
+            configure.AddSimpleConsole(loggerOptions =>
             {
-#pragma warning disable CS0618 // Type or member is obsolete
+                loggerOptions.ColorBehavior = LoggerColorBehavior.Disabled;
                 loggerOptions.IncludeScopes = true;
-                loggerOptions.DisableColors = true;
-#pragma warning restore CS0618 // Type or member is obsolete
             });
         });
 

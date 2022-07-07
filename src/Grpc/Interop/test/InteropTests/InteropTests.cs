@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Reflection;
-using InteropTests.Helpers;
+using Grpc.Tests.Shared;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Xunit.Abstractions;
 
 namespace InteropTests;
@@ -28,6 +25,7 @@ public class InteropTestsFixture : IDisposable
 
     public void Dispose()
     {
+        // Delete deployed files once tests are complete.
         // Retry with delay to avoid file in use errors.
         for (var i = 0; i < 5; i++)
         {
@@ -35,6 +33,7 @@ public class InteropTestsFixture : IDisposable
             {
                 EnsureDeleted(ServerPath);
                 EnsureDeleted(ClientPath);
+                break;
             }
             catch
             {
@@ -132,10 +131,8 @@ public class InteropTests : IClassFixture<InteropTestsFixture>
             var interopWebsiteProject = projectDirectory + @"\..\testassets\InteropWebsite\InteropWebsite.csproj";
             var interopClientProject = projectDirectory + @"\..\testassets\InteropClient\InteropClient.csproj";
 
-            var publishWebsiteTask = Publisher.PublishAppAsync(_output, projectDirectory, interopWebsiteProject, _fixture.ServerPath);
-            var publishClientTask = Publisher.PublishAppAsync(_output, projectDirectory, interopClientProject, _fixture.ClientPath);
-
-            await Task.WhenAll(publishWebsiteTask, publishClientTask);
+            await AppPublisher.PublishAppAsync(_output, projectDirectory, interopWebsiteProject, _fixture.ServerPath);
+            await AppPublisher.PublishAppAsync(_output, projectDirectory, interopClientProject, _fixture.ClientPath);
         }
     }
 

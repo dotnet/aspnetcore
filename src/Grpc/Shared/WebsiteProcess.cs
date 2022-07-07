@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Internal;
 using Xunit.Abstractions;
 
-namespace InteropTests.Helpers;
+namespace Grpc.Tests.Shared;
 
 public class WebsiteProcess : IDisposable
 {

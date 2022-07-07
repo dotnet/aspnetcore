@@ -9,6 +9,7 @@
     <Compile Include="..\..\..\..\Shared\Process\ProcessExtensions.cs" Link="Helpers\ProcessExtensions.cs" />
     <Compile Include="..\..\..\Shared\ClientProcess.cs" Link="Helpers\ClientProcess.cs" />
     <Compile Include="..\..\..\Shared\WebsiteProcess.cs" Link="Helpers\WebsiteProcess.cs" />
+    <Compile Include="..\..\..\Shared\AppPublisher.cs" Link="Helpers\AppPublisher.cs" />
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>ProjectDirectory</_Parameter1>

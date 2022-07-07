@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Logging.Console;
 
 namespace BasicWebsite;
 
@@ -17,11 +18,9 @@ public class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureLogging(builder =>
             {
-                builder.AddConsole(loggerOptions =>
+                builder.AddSimpleConsole(loggerOptions =>
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    loggerOptions.DisableColors = true;
-#pragma warning restore CS0618 // Type or member is obsolete
+                    loggerOptions.ColorBehavior = LoggerColorBehavior.Disabled;
                 });
                 builder.SetMinimumLevel(LogLevel.Trace);
             })

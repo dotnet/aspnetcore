@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using System.Globalization;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using InteropTests.Helpers;
-using Microsoft.AspNetCore.Internal;
+using Grpc.Tests.Shared;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Xunit.Abstractions;
 
 namespace LinkingTests;
@@ -41,12 +35,18 @@ public class LinkingTests
         EnsureDeleted(clientPath);
         EnsureDeleted(websitePath);
 
-        var publishClientTask = Publisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\..\testassets\BasicClient\BasicClient.csproj", clientPath, enableTrimming: true);
-        var publishWebsiteTask = Publisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\..\testassets\BasicWebsite\BasicWebsite.csproj", websitePath, enableTrimming: true);
+        try
+        {
+            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\..\testassets\BasicClient\BasicClient.csproj", clientPath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
+            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\..\testassets\BasicWebsite\BasicWebsite.csproj", websitePath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
 
-        await Task.WhenAll(publishClientTask, publishWebsiteTask).DefaultTimeout(DefaultTimeout * 2);
-
-        await RunApps(clientPath, websitePath);
+            await RunApps(clientPath, websitePath);
+        }
+        finally
+        {
+            EnsureDeleted(clientPath);
+            EnsureDeleted(websitePath);
+        }
     }
 
     private static void EnsureDeleted(string path)
