@@ -42,7 +42,7 @@ public class LocationChangedEventArgs : EventArgs
     public bool IsNavigationIntercepted { get; }
 
     /// <summary>
-    /// Gets or sets the state associated with the current history entry.
+    /// Gets the state associated with the current history entry.
     /// </summary>
-    public string? State { get; set; }
+    public string? State { get; }
 }
