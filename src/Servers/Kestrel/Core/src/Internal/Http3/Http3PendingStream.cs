@@ -35,7 +35,6 @@ internal class Http3PendingStream
 
         abortedToken.Cancel();
 
-
         Context.Transport.Input.Complete(exception);
         Context.Transport.Output.Complete(exception);
     }
