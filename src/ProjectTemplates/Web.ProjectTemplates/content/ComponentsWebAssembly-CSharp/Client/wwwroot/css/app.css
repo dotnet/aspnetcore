@@ -63,29 +63,34 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
-#blazor-default-loading svg {
-    width: 120px;
-    height: 120px;
-    stroke-width: 8px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
+#blazor-default-loading {
+    height: 90vh;
+    align-items: center;
+    justify-content: center;
+    display: flex;
 }
 
-#blazor-default-loading circle {
-    fill: none;
-    stroke: #e0e0e0;
-    transform-origin: 50% 50%;
-    transform: rotate(-90deg);
-}
+    #blazor-default-loading svg {
+        width: 120px;
+        height: 120px;
+        stroke-width: 8px;
+        display: block;
+    }
 
-#blazor-default-loading #blazor-default-loading-progress {
-    stroke: #1b6ec2;
-    transition: 0.50s stroke-dashoffset ease-in-out;
-    display: none;
-}
+    #blazor-default-loading circle {
+        fill: none;
+        stroke: #e0e0e0;
+        transform-origin: 50% 50%;
+        transform: rotate(-90deg);
+    }
 
-#blazor-default-loading #blazor-default-loading-percentage {
-    color: black;
-    font-weight: bold;
-}
+    #blazor-default-loading #blazor-default-loading-progress {
+        stroke: #1b6ec2;
+        transition: 0.05s stroke-dashoffset ease-in-out;
+        display: none;
+    }
+
+    #blazor-default-loading #blazor-default-loading-percentage {
+        color: black;
+        font-weight: bold;
+    }
