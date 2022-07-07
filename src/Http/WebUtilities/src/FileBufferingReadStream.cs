@@ -500,9 +500,6 @@ public class FileBufferingReadStream : Stream
 
     private void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(FileBufferingReadStream));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(FileBufferingReadStream));
     }
 }

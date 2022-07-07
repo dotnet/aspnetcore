@@ -419,10 +419,7 @@ public class BufferedReadStream : Stream
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(BufferedReadStream));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(BufferedReadStream));
     }
 
     private static void ValidateBuffer(byte[] buffer, int offset, int count)
