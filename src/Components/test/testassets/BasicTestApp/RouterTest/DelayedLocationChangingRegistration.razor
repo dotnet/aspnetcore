@@ -1,0 +1,38 @@
+﻿@page "/DelayedLocationChangingRegistration"
+
+@using Microsoft.AspNetCore.Components.Routing
+
+@if (!_shouldRenderNavigationLock)
+{
+    <p>Locking...</p>
+}
+else
+{
+    <p>Locked!</p>
+    <InternalNavigationLock OnLocationChanging="OnLocationChanging" />
+}
+
+<input type="checkbox" @bind-value="_unblockedNavigation" />Unblock navigation<br />
+
+@code {
+    private bool _unblockedNavigation;
+    private bool _shouldRenderNavigationLock;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(1000);
+            _shouldRenderNavigationLock = true;
+            StateHasChanged();
+        }
+    }
+
+    public void OnLocationChanging(LocationChangingContext context)
+    {
+        if (!_unblockedNavigation)
+        {
+            context.Cancel();
+        }
+    }
+}

@@ -34,6 +34,10 @@ public abstract class NavigationManager
 
     private readonly List<IHandleLocationChanging> _locationChangingHandlers = new();
 
+    private CancellationTokenSource? _locationChangingCts;
+
+    private bool _lastUpdatedHasLocationChangingHandlers;
+
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
     private Uri? _baseUri;
@@ -265,14 +269,20 @@ public abstract class NavigationManager
         }
     }
 
-    public async ValueTask<bool> NotifyLocationChanging(string uri, bool intercepted)
+    public async ValueTask<bool> NotifyLocationChanging(string uri, bool intercepted, bool forceLoad)
     {
+        _locationChangingCts?.Cancel();
+        _locationChangingCts = null;
+
         if (_locationChangingHandlers.Count == 0)
         {
             return false;
         }
 
-        var context = new LocationChangingContext(uri, intercepted, false);
+        _locationChangingCts = new();
+
+        var cancellationToken = _locationChangingCts.Token;
+        var context = new LocationChangingContext(uri, intercepted, forceLoad, cancellationToken);
         var handlerCount = _locationChangingHandlers.Count;
         var locationChangingHandlersCopy = ArrayPool<IHandleLocationChanging>.Shared.Rent(handlerCount);
         _locationChangingHandlers.CopyTo(locationChangingHandlersCopy);
@@ -281,15 +291,20 @@ public abstract class NavigationManager
         {
             for (var i = 0; i < handlerCount; i++)
             {
-                var shouldCancel = await locationChangingHandlersCopy[i].OnLocationChanging(context);
+                await locationChangingHandlersCopy[i].OnLocationChanging(context);
 
-                if (shouldCancel)
+                if (context.IsCanceled || cancellationToken.IsCancellationRequested)
                 {
                     return true;
                 }
             }
 
             return false;
+        }
+        catch (TaskCanceledException ex) when (ex.CancellationToken == cancellationToken)
+        {
+            // If it was our cancellation token, we should gracefully cancel the navigation.
+            return true;
         }
         catch (Exception ex)
         {
@@ -301,22 +316,28 @@ public abstract class NavigationManager
         }
     }
 
-    protected virtual void SetHasLocationChangingHandlers(bool value)
+    protected virtual bool SetHasLocationChangingHandlers(bool value)
     {
+        return true;
+    }
+
+    protected void UpdateHasLocationChangingHandlers()
+    {
+        var hasLocationChangingHandlers = _locationChangingHandlers.Count != 0;
+        if (hasLocationChangingHandlers != _lastUpdatedHasLocationChangingHandlers)
+        {
+            if (SetHasLocationChangingHandlers(hasLocationChangingHandlers))
+            {
+                _lastUpdatedHasLocationChangingHandlers = hasLocationChangingHandlers;
+            }
+        }
     }
 
     public void AddLocationChangingHandler(IHandleLocationChanging locationChangingHandler)
     {
         AssertInitialized();
-
-        var shouldUpdateHasLocationChangingHandlers = _locationChangingHandlers.Count == 0;
-
         _locationChangingHandlers.Add(locationChangingHandler);
-
-        if (shouldUpdateHasLocationChangingHandlers)
-        {
-            SetHasLocationChangingHandlers(true);
-        }
+        UpdateHasLocationChangingHandlers();
     }
 
     public bool RemoveLocationChangingHandler(IHandleLocationChanging locationChangingHandler)
@@ -325,11 +346,7 @@ public abstract class NavigationManager
 
         if (_locationChangingHandlers.Remove(locationChangingHandler))
         {
-            if (_locationChangingHandlers.Count == 0)
-            {
-                SetHasLocationChangingHandlers(false);
-            }
-
+            UpdateHasLocationChangingHandlers();
             return true;
         }
 

@@ -5,5 +5,5 @@ namespace Microsoft.AspNetCore.Components.Routing;
 
 public interface IHandleLocationChanging
 {
-    ValueTask<bool> OnLocationChanging(LocationChangingContext context);
+    ValueTask OnLocationChanging(LocationChangingContext context);
 }

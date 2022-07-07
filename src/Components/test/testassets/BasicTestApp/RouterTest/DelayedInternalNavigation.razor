@@ -1,0 +1,16 @@
+﻿@page "/DelayedInternalNavigation"
+
+@using Microsoft.AspNetCore.Components.Routing
+
+<input type="number" @bind-value="_delayTime" />Delay time (milliseconds)<br />
+
+<InternalNavigationLock OnLocationChanging="OnLocationChanging" />
+
+@code {
+    private int _delayTime = 2000;
+
+    public async Task OnLocationChanging(LocationChangingContext context)
+    {
+        await Task.Delay(_delayTime, context.CancellationToken);
+    }
+}

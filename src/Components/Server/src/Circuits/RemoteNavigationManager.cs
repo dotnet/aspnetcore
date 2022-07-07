@@ -54,6 +54,8 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         }
 
         _jsRuntime = jsRuntime;
+
+        UpdateHasLocationChangingHandlers();
     }
 
     public void NotifyLocationChanged(string uri, bool intercepted)
@@ -64,9 +66,9 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         NotifyLocationChanged(intercepted);
     }
 
-    public ValueTask<bool> HandleLocationChanging(string uri, bool intercepted)
+    public ValueTask<bool> HandleLocationChanging(string uri, bool intercepted, bool forceLoad)
     {
-        return NotifyLocationChanging(uri, intercepted);
+        return NotifyLocationChanging(uri, intercepted, forceLoad);
     }
 
     /// <inheritdoc />
@@ -81,7 +83,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
             throw new NavigationException(absoluteUriString);
         }
 
-        var shouldCancel = await NotifyLocationChanging(uri, false);
+        var shouldCancel = await NotifyLocationChanging(uri, false, options.ForceLoad);
 
         if (shouldCancel)
         {
@@ -93,9 +95,15 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         }
     }
 
-    protected override void SetHasLocationChangingHandlers(bool value)
+    protected override bool SetHasLocationChangingHandlers(bool value)
     {
-        _jsRuntime?.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, value).Preserve();
+        if (_jsRuntime is null)
+        {
+            return false;
+        }
+
+        _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, value).Preserve();
+        return true;
     }
 
     private static partial class Log

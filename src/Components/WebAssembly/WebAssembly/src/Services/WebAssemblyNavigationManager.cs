@@ -28,9 +28,9 @@ internal sealed class WebAssemblyNavigationManager : NavigationManager
         NotifyLocationChanged(isInterceptedLink);
     }
 
-    public ValueTask<bool> HandleLocationChanging(string uri, bool intercepted)
+    public ValueTask<bool> HandleLocationChanging(string uri, bool intercepted, bool forceLoad)
     {
-        return NotifyLocationChanging(uri, intercepted);
+        return NotifyLocationChanging(uri, intercepted, forceLoad);
     }
 
     /// <inheritdoc />
@@ -42,7 +42,7 @@ internal sealed class WebAssemblyNavigationManager : NavigationManager
             throw new ArgumentNullException(nameof(uri));
         }
 
-        var shouldCancel = await NotifyLocationChanging(uri, false);
+        var shouldCancel = await NotifyLocationChanging(uri, false, options.ForceLoad);
 
         if (!shouldCancel)
         {
@@ -50,8 +50,9 @@ internal sealed class WebAssemblyNavigationManager : NavigationManager
         }
     }
 
-    protected override void SetHasLocationChangingHandlers(bool value)
+    protected override bool SetHasLocationChangingHandlers(bool value)
     {
         DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.SetHasLocationChangingListeners, value);
+        return true;
     }
 }

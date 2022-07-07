@@ -5,11 +5,12 @@ namespace Microsoft.AspNetCore.Components.Routing;
 
 public class LocationChangingContext
 {
-    public LocationChangingContext(string location, bool isNavigationIntercepted, bool forceLoad)
+    internal LocationChangingContext(string location, bool isNavigationIntercepted, bool forceLoad, CancellationToken cancellationToken)
     {
         Location = location;
         IsNavigationIntercepted = isNavigationIntercepted;
         ForceLoad = forceLoad;
+        CancellationToken = cancellationToken;
     }
 
     public string Location { get; }
@@ -17,4 +18,13 @@ public class LocationChangingContext
     public bool IsNavigationIntercepted { get; }
 
     public bool ForceLoad { get; }
+
+    public CancellationToken CancellationToken { get; }
+
+    public bool IsCanceled { get; private set; }
+
+    public void Cancel()
+    {
+        IsCanceled = true;
+    }
 }
