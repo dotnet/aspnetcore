@@ -4,7 +4,7 @@
 import { toAbsoluteUri } from '../Services/NavigationManager';
 import { BootJsonData, ResourceList } from './BootConfig';
 import { WebAssemblyStartOptions, WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
-import { Blazor } from '../GlobalExports';
+import { WebAssemblyProgressService } from './WebAssemblyProgressService';
 const networkFetchCacheMode = 'no-cache';
 
 export class WebAssemblyResourceLoader {
@@ -14,12 +14,12 @@ export class WebAssemblyResourceLoader {
 
   private cacheLoads: { [name: string]: LoadLogEntry } = {};
 
-  static async initAsync(bootConfig: BootJsonData, startOptions: Partial<WebAssemblyStartOptions>): Promise<WebAssemblyResourceLoader> {
+  static async initAsync(bootConfig: BootJsonData, startOptions: Partial<WebAssemblyStartOptions>, progressService: WebAssemblyProgressService): Promise<WebAssemblyResourceLoader> {
     const cache = await getCacheToUseIfEnabled(bootConfig);
-    return new WebAssemblyResourceLoader(bootConfig, cache, startOptions);
+    return new WebAssemblyResourceLoader(bootConfig, cache, startOptions, progressService);
   }
 
-  constructor(readonly bootConfig: BootJsonData, readonly cacheIfUsed: Cache | null, readonly startOptions: Partial<WebAssemblyStartOptions>) {
+  constructor(readonly bootConfig: BootJsonData, readonly cacheIfUsed: Cache | null, readonly startOptions: Partial<WebAssemblyStartOptions>, readonly progressService: WebAssemblyProgressService) {
   }
 
   loadResources(resources: ResourceList, url: (name: string) => string, resourceType: WebAssemblyBootResourceType): LoadingResource[] {
@@ -31,7 +31,7 @@ export class WebAssemblyResourceLoader {
     const response = this.cacheIfUsed
       ? this.loadResourceWithCaching(this.cacheIfUsed, name, url, contentHash, resourceType)
       : this.loadResourceWithoutCaching(name, url, contentHash, resourceType);
-    Blazor.webAssemblyProgressService?.resourceLoaded();
+    response.then(_=>this.progressService?.resourceLoaded());
     return { name, url, response };
   }
 

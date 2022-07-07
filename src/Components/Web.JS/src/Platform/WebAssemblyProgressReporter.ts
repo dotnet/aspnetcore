@@ -23,6 +23,6 @@ export class WebAssemblyProgressReporter {
     * Adds the setProgress function to the list of observers in WebAssemblyProgressService.ts.
     */
     static init(): void {
-        Blazor.webAssemblyProgressService?.attach(this.setProgress);
+        Blazor.webAssemblyLoadingSetProgress = this.setProgress;
     }
 }

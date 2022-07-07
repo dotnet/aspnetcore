@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { MonoObject, MonoString, MonoArray } from 'dotnet';
+import { WebAssemblyProgressService } from './WebAssemblyProgressService';
 import { WebAssemblyResourceLoader } from './WebAssemblyResourceLoader';
 
 export interface Platform {
-  start(resourceLoader: WebAssemblyResourceLoader): Promise<void>;
+  start(resourceLoader: WebAssemblyResourceLoader, progressService: WebAssemblyProgressService): Promise<void>;
 
   callEntryPoint(assemblyName: string): Promise<unknown>;
 

@@ -13,6 +13,7 @@ import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
 import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, MONOType } from 'dotnet';
+import { WebAssemblyProgressService } from '../WebAssemblyProgressService';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
@@ -50,10 +51,10 @@ function getValueU64(ptr: number) {
 }
 
 export const monoPlatform: Platform = {
-  start: async function start(resourceLoader: WebAssemblyResourceLoader) {
+  start: async function start(resourceLoader: WebAssemblyResourceLoader, progressService: WebAssemblyProgressService) {
     attachDebuggerHotkey(resourceLoader);
 
-    await createEmscriptenModuleInstance(resourceLoader);
+    await createEmscriptenModuleInstance(resourceLoader, progressService);
   },
 
   callEntryPoint: async function callEntryPoint(assemblyName: string): Promise<any> {
@@ -223,7 +224,7 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
   return await cjsExport;
 }
 
-async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader): Promise<DotnetPublicAPI> {
+async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader, progressService: WebAssemblyProgressService): Promise<DotnetPublicAPI> {
   let runtimeReadyResolve: (data: DotnetPublicAPI) => void = undefined as any;
   let runtimeReadyReject: (reason?: any) => void = undefined as any;
   const runtimeReady = new Promise<DotnetPublicAPI>((resolve, reject) => {
@@ -254,7 +255,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     totalResources++;
   if (resourceLoader.bootConfig.icuDataMode !== ICUDataMode.Invariant)
     totalResources++;
-  Blazor.webAssemblyProgressService?.setTotalResources(totalResources);
+  progressService.setTotalResources(totalResources);
 
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.

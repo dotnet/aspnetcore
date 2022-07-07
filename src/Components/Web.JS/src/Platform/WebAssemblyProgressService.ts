@@ -1,4 +1,4 @@
-type SetProgressFunction = (resourcesTotal: number, resourcesLoaded: number) => void;
+export type SetProgressFunction = (resourcesTotal: number, resourcesLoaded: number) => void;
 
 export class WebAssemblyProgressService {
     private resourcesTotal: number = 0;

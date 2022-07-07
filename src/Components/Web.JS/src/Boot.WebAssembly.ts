@@ -61,7 +61,6 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);
   Blazor.platform = platform;
-  Blazor.webAssemblyProgressService = new WebAssemblyProgressService();
   Blazor._internal.renderBatch = (browserRendererId: number, batchAddress: Pointer) => {
     // We're going to read directly from the .NET memory heap, so indicate to the platform
     // that we don't want anything to modify the memory contents during this time. Currently this
@@ -77,7 +76,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   };
 
   // Only instantiate the WebAssemblyProgressReporter if the loading element exists in the DOM
-  if (document.getElementById('blazor-default-loading')) {
+  if (document.getElementById('blazor-default-loading') && !Blazor.webAssemblyLoadingSetProgress) {
     WebAssemblyProgressReporter.init();
   }
 
@@ -130,14 +129,16 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   const bootConfigResult: BootConfigResult = await bootConfigPromise;
   const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
+  const progressService = new WebAssemblyProgressService();
+  progressService.attach(Blazor.webAssemblyLoadingSetProgress!);
 
   const [resourceLoader] = await Promise.all([
-    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
+    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}, progressService),
     WebAssemblyConfigLoader.initAsync(bootConfigResult),
   ]);
 
   try {
-    await platform.start(resourceLoader);
+    await platform.start(resourceLoader, progressService);
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }
