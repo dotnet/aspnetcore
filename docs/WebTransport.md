@@ -80,38 +80,40 @@ This will await for the next incoming WebTransport session and return an instanc
 
 - Accepting a WebTransport stream
 ```C#
-var stream = await session.AcceptStreamAsync(CancellationToken token);
+var connectionContext = await session.AcceptStreamAsync(CancellationToken token);
 ```
-This will await for the next incoming WebTransport stream and return an instance of `WebTransportStream`. Note that streams are buffered in order and so this call pops from the front of the queue of pending streams. However, if no streams are pending, it will block until it receives one. You can use the cancellation token to stop the operation.
+This will await for the next incoming WebTransport stream and return an instance of `ConnectionContext`. Note that streams are buffered in order and so this call pops from the front of the queue of pending streams. However, if no streams are pending, it will block until it receives one. You can use the cancellation token to stop the operation.
 
-**Note:** This method will return both bidirectional and unidirectional streams. They can be distinguished based on the `stream.CanRead` and `stream.CanWrite` properties.
+**Note:** This method will return both bidirectional and unidirectional streams. They can be distinguished based on the `IStreamDirectionFeature.CanRead` and `IStreamDirectionFeature.CanWrite` properties.
 
 - Opening a new WebTransport stream from the server
 ```C#
-var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken token);
+var connectionContext = await session.OpenUnidirectionalStreamAsync(CancellationToken token);
 ```
-This will attempt to open a new unidirectional stream from the server to the client and return an instance of `WebTransportStream`. You can use the cancellation token to stop the operation.
+This will attempt to open a new unidirectional stream from the server to the client and return an instance of `ConnectionContext`. You can use the cancellation token to stop the operation.
 
 - Sending data over a WebTransport stream
 ```C#
+var stream = connectionContext.Transport.Output;
 await stream.WriteAsync(ReadOnlyMemory<byte> bytes);
 await stream.FlushAsync();
 ```
 `stream.WriteAsync` will write data to the stream but it will not automatically flush (i.e. send it to the client). Therefore, after the `stream.WriteAsync`, you will need to call `stream.FlushAsync`.
 
-**Note:** You can only send data on streams that have `stream.CanWrite` set as `true`. Sending data on non-writable streams will throw an `NotSupportedException` exception.
+**Note:** You can only send data on streams that have `IStreamDirectionFeature.CanWrite` set as `true`. Sending data on non-writable streams will throw an `NotSupportedException` exception.
 
 - Reading data from a WebTransport stream
 ```C#
+var stream = connectionContext.Transport.Input.AsStream();
 var length = await stream.ReadAsync(Memory<byte> memory);
 ```
 `stream.ReadAsync` will read data from the stream and copy it into the provided `memory` parameter. It will then return the number of bytes read.
 
-**Note:** You can only read data from streams that have `stream.CanRead` set as `true`. Reading data on non-readable streams will throw an `NotSupportedException` exception.
+**Note:** You can only read data from streams that have `IStreamDirectionFeature.CanRead` set as `true`. Reading data on non-readable streams will throw an `NotSupportedException` exception.
 
 - Aborting a WebTransport session
 ```C#
-session.Abort(int errorCode = 256);
+session.Abort(int errorCode);
 ```
 Aborting a WebTransport session will result in severing the connection with the client and aborting all the streams. You can optionally specify an error code that will be passed down into the logs. The default value (256) represents no error.
 
@@ -119,7 +121,7 @@ Aborting a WebTransport session will result in severing the connection with the 
 
 - Aborting a WebTransport stream
 ```C#
-stream.Abort(int errorCode = 256);
+stream.Abort(int errorCode);
 ```
 Aborting a WebTransport stream will result in abruptly stopping all data transmission and prevent further communication over this stream. The default value (256) represents no error.
 
@@ -127,7 +129,7 @@ Aborting a WebTransport stream will result in abruptly stopping all data transmi
 
 - Soft closing a WebTransport stream
 ```C#
-stream.Dispose();
+stream.DisposeAsync();
 ```
 Disposing a WebTransport stream will result in ending data transmission and closing the stream gracefully.
 
@@ -156,15 +158,18 @@ public void Configure(IApplicationBuilder app)
                     stream = await session.AcceptStreamAsync(CancellationToken.None);
                 } while (stream.CanRead && stream.CanWrite);
 
+                var inputPipe = stream.Transport.Input;
+                var outputPipe = stream.Transport.Output;
+
                 // read some data from the stream
-                var length = await stream.ReadAsync(memory, CancellationToken.None);
+                var length = await inputPipe.AsStream().ReadAsync(memory, CancellationToken.None);
 
                 // do some operations on the contents of the data
                 memory.Span.Reverse();
 
                 // write back the data to the stream
-                await stream.WriteAsync(memory, CancellationToken.None);
-                await stream.FlushAsync(CancellationToken.None);
+                await outputPipe.WriteAsync(memory, CancellationToken.None);
+                await outputPipe.FlushAsync(CancellationToken.None);
             }
             else
             {
@@ -191,8 +196,9 @@ public void Configure(IApplicationBuilder app)
                 var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
 
                 // write data to the stream
-                await stream.WriteAsync(new Memory<byte>(new byte[] { 65, 66, 67, 68, 69 }), CancellationToken.None);
-                await stream.FlushAsync(CancellationToken.None);
+                var outputPipe = stream.Transport.Output;
+                await outputPipe.WriteAsync(new Memory<byte>(new byte[] { 65, 66, 67, 68, 69 }), CancellationToken.None);
+                await outputPipe.FlushAsync(CancellationToken.None);
             }
             else
             {
