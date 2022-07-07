@@ -680,6 +680,13 @@ public static partial class Results
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>   
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Created()
+        => TypedResults.Created();
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
     /// </summary>
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>

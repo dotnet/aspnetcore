@@ -502,6 +502,17 @@ public class TypedResultsTests
     }
 
     [Fact]
+    public void Created_WithNoArgs_ResultHasCorrectValues()
+    {       
+        // Act
+        var result = TypedResults.Created();
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.Location);
+    }
+
+    [Fact]
     public void Created_WithStringUriAndValue_ResultHasCorrectValues()
     {
         // Arrange

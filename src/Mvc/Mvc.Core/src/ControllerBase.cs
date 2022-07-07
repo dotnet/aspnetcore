@@ -2018,6 +2018,15 @@ public abstract class ControllerBase
             StatusCode = validationProblem?.Status
         };
     }
+    /// <summary>
+    /// Creates a <see cref="CreatedResult"/> object that produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>   
+    /// <returns>The created <see cref="CreatedResult"/> for the response.</returns>
+    [NonAction]
+    public virtual CreatedResult Created()
+    {
+        return new CreatedResult();
+    }
 
     /// <summary>
     /// Creates a <see cref="CreatedResult"/> object that produces a <see cref="StatusCodes.Status201Created"/> response.

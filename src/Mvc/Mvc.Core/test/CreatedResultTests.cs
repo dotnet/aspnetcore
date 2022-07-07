@@ -29,6 +29,16 @@ public class CreatedResultTests
     }
 
     [Fact]
+    public void CreatedResult_WithNoArgs_SetsLocationNull()
+    {
+        // Act
+        var result = new CreatedResult();
+
+        // Assert
+        Assert.Null(result.Location);
+    }
+
+    [Fact]
     public void CreatedResult_SetsLocationNull()
     {
         // Act

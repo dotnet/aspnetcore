@@ -792,6 +792,15 @@ public static class TypedResults
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>   
+    /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
+    public static Created Created()
+    {
+        return new(default(string));
+    }
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
     /// </summary>
     /// <param name="uri">The URI at which the content has been created.</param>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>

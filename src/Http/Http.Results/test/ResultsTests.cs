@@ -449,6 +449,16 @@ public class ResultsTests
     }
 
     [Fact]
+    public void Created_WithNoArgs_SetsLocationNull()
+    {
+        //Act
+        var result = Results.Created() as Created;
+
+        //Assert
+        Assert.Null(result.Location);
+    }
+
+    [Fact]
     public void Created_WithStringUriAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -1331,6 +1341,7 @@ public class ResultsTests
         (() => Results.Content("content", null, null), typeof(ContentHttpResult)),
         (() => Results.Content("content", null, null, null), typeof(ContentHttpResult)),
         (() => Results.Created("/path", null), typeof(Created)),
+        (() => Results.Created(), typeof(Created)),
         (() => Results.Created("/path", new()), typeof(Created<object>)),
         (() => Results.CreatedAtRoute("routeName", null, null), typeof(CreatedAtRoute)),
         (() => Results.CreatedAtRoute("routeName", null, new()), typeof(CreatedAtRoute<object>)),
