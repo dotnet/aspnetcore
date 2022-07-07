@@ -172,7 +172,7 @@ public sealed class WebApplicationBuilder
 
         // Process authorization and authentication middlewares independently to avoid
         // registering middlewares for services that do not exist
-        if (_builtApplication.Services.GetService<IAuthenticationService>() is not null)
+        if (_builtApplication.Services.GetService<IAuthenticationSchemeProvider>() is not null)
         {
             // Don't add more than one instance of the middleware
             if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
