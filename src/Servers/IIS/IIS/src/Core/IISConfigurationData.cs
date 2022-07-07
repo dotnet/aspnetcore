@@ -34,7 +34,6 @@ internal struct IISConfigurationData
             public uint maxRequestBodySize;
         }
 
-        private Native _native;
 
         public static Native ConvertToUnmanaged(IISConfigurationData managed)
         {
