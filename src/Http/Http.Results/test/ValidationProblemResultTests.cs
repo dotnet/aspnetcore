@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -90,6 +91,49 @@ public class ValidationProblemResultTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<ValidationProblem>(null));
+    }
+
+    [Fact]
+    public void ValidationProblemResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ValidationProblem(new HttpValidationProblemDetails()));
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+    }
+
+    [Fact]
+    public void ValidationProblemResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange
+        var value = new HttpValidationProblemDetails();
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new ValidationProblem(value));
+        Assert.IsType<HttpValidationProblemDetails>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void ValidationProblemResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange
+        var value = new HttpValidationProblemDetails();
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<HttpValidationProblemDetails>>(new ValidationProblem(value));
+        Assert.IsType<HttpValidationProblemDetails>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void ValidationProblemResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/problem+json";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new ValidationProblem(new()));
+        Assert.Equal(contentType, result.ContentType);
     }
 
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)

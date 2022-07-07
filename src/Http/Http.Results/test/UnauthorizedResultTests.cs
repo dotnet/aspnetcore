@@ -45,6 +45,14 @@ public class UnauthorizedResultTests
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
+    [Fact]
+    public void UnauthorizedResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new UnauthorizedHttpResult());
+        Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
+    }
+
     private static IServiceCollection CreateServices()
     {
         var services = new ServiceCollection();

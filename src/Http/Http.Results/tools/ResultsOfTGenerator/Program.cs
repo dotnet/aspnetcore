@@ -104,7 +104,7 @@ public class Program
             writer.Write(">");
 
             // Interfaces
-            writer.WriteLine(" : IResult, IEndpointMetadataProvider");
+            writer.WriteLine(" : IResult, INestedHttpResult, IEndpointMetadataProvider");
 
             // Type arg constraints
             for (int j = 1; j <= i; j++)
