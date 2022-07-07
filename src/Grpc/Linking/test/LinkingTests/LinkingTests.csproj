@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ContainsFunctionalTestAssets>true</ContainsFunctionalTestAssets>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -21,6 +21,8 @@
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
+
+    <Content Include="..\testassets\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="testassets" />
 
     <TestAssetProjectReference Include="..\testassets\**\*.csproj" />
   </ItemGroup>

@@ -22,6 +22,8 @@
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
 
+    <Content Include="..\testassets\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="testassets" />
+
     <TestAssetProjectReference Include="..\testassets\**\*.csproj" />
   </ItemGroup>
 </Project>

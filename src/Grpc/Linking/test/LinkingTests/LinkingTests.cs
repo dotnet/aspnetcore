@@ -23,10 +23,9 @@ public class LinkingTests
     [Fact]
     public async Task BasicGrpcApp()
     {
-        var projectDirectory = typeof(LinkingTests).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(a => a.Key == "ProjectDirectory")
-            .Value;
+        var projectDirectory = Directory.GetCurrentDirectory();
+
+        _output.WriteLine($"Project directory resolved from attribute: {projectDirectory}");
 
         var tempPath = Path.GetTempPath();
         var clientPath = Path.Combine(tempPath, "BasicLinkingClient");
@@ -37,8 +36,8 @@ public class LinkingTests
 
         try
         {
-            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\..\testassets\BasicLinkingClient\BasicLinkingClient.csproj", clientPath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
-            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\..\testassets\BasicLinkingWebsite\BasicLinkingWebsite.csproj", websitePath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
+            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\testassets\BasicLinkingClient\BasicLinkingClient.csproj", clientPath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
+            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\testassets\BasicLinkingWebsite\BasicLinkingWebsite.csproj", websitePath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
 
             await RunApps(clientPath, websitePath);
         }
@@ -53,7 +52,20 @@ public class LinkingTests
     {
         if (Directory.Exists(path))
         {
-            Directory.Delete(path, recursive: true);
+            // Retry delete with delay to avoid file in use errors
+            // from processes that are exiting.
+            for (var i = 0; i < 5; i++)
+            {
+                try
+                {
+                    Directory.Delete(path, recursive: true);
+                    break;
+                }
+                catch
+                {
+                    Thread.Sleep(100);
+                }
+            }
         }
     }
 

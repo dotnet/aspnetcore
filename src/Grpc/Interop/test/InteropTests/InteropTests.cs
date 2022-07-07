@@ -25,28 +25,28 @@ public class InteropTestsFixture : IDisposable
 
     public void Dispose()
     {
-        // Delete deployed files once tests are complete.
-        // Retry with delay to avoid file in use errors.
-        for (var i = 0; i < 5; i++)
-        {
-            try
-            {
-                EnsureDeleted(ServerPath);
-                EnsureDeleted(ClientPath);
-                break;
-            }
-            catch
-            {
-                Thread.Sleep(100);
-            }
-        }
+        EnsureDeleted(ServerPath);
+        EnsureDeleted(ClientPath);
     }
 
     private static void EnsureDeleted(string path)
     {
         if (Directory.Exists(path))
         {
-            Directory.Delete(path, recursive: true);
+            // Retry delete with delay to avoid file in use errors
+            // from processes that are exiting.
+            for (var i = 0; i < 5; i++)
+            {
+                try
+                {
+                    Directory.Delete(path, recursive: true);
+                    break;
+                }
+                catch
+                {
+                    Thread.Sleep(100);
+                }
+            }
         }
     }
 }
@@ -123,13 +123,18 @@ public class InteropTests : IClassFixture<InteropTestsFixture>
     {
         if (!Directory.Exists(_fixture.ServerPath) || !Directory.Exists(_fixture.ClientPath))
         {
-            var projectDirectory = typeof(InteropTests).Assembly
+            var projectDirectory = Directory.GetCurrentDirectory();
+
+            _output.WriteLine($"Publish current directory: {projectDirectory}");
+
+            var buildProjectDir = typeof(InteropTests).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
                 .Single(a => a.Key == "ProjectDirectory")
                 .Value;
+            _output.WriteLine($"Project directory resolved from attribute: {buildProjectDir}");
 
-            var interopWebsiteProject = projectDirectory + @"\..\testassets\InteropWebsite\InteropWebsite.csproj";
-            var interopClientProject = projectDirectory + @"\..\testassets\InteropClient\InteropClient.csproj";
+            var interopWebsiteProject = projectDirectory + @"\testassets\InteropWebsite\InteropWebsite.csproj";
+            var interopClientProject = projectDirectory + @"\testassets\InteropClient\InteropClient.csproj";
 
             await AppPublisher.PublishAppAsync(_output, projectDirectory, interopWebsiteProject, _fixture.ServerPath);
             await AppPublisher.PublishAppAsync(_output, projectDirectory, interopClientProject, _fixture.ClientPath);
