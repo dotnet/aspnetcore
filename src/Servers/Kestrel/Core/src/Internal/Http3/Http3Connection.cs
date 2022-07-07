@@ -350,7 +350,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     // bidirectional stream
                     else
                     {
-                        if (streamType == (long)Http3StreamType.WebTransportUnidirectional)
+                        if (streamType == (long)Http3StreamType.WebTransportBidirectional)
                         {
                             await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Bidirectional);
                         }

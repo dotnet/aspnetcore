@@ -2,13 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
@@ -126,7 +124,7 @@ internal class WebTransportSession : IWebTransportSession
             throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
         }
         // create the stream
-        var features = new FeatureCollection(2);
+        var features = new FeatureCollection();
         features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
         var connectionContext = await _connection._multiplexedContext.ConnectAsync(features, cancellationToken);
         var streamContext = _connection.CreateHttpStreamContext(connectionContext);
@@ -135,7 +133,7 @@ internal class WebTransportSession : IWebTransportSession
         // send the stream header
         // https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-unidirectional-streams
         await stream.Transport.Output.WriteAsync(OutputStreamHeader, cancellationToken);
-        await stream.Transport.Output.FlushAsync( cancellationToken);
+        await stream.Transport.Output.FlushAsync(cancellationToken);
 
         if (!_openStreams.TryAdd(stream.StreamId, stream))
         {

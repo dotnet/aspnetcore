@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -17,8 +19,9 @@ public class WebTransportSessionTests : Http3TestBase
         var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
 
         //verify that we opened an output stream
-        Assert.True(stream.CanWrite);
-        Assert.False(stream.CanRead);
+        var streamDirectionFeature = stream.Features.GetRequiredFeature<IStreamDirectionFeature>();
+        Assert.True(streamDirectionFeature.CanWrite);
+        Assert.False(streamDirectionFeature.CanRead);
     }
 
     [Fact]
@@ -34,13 +37,15 @@ public class WebTransportSessionTests : Http3TestBase
 
         // verify that we accepted a bidirectional stream
         var stream = await session.AcceptStreamAsync(CancellationToken.None);
-        Assert.True(stream.CanWrite);
-        Assert.True(stream.CanRead);
+        var streamDirectionFeature = stream.Features.GetRequiredFeature<IStreamDirectionFeature>();
+        Assert.True(streamDirectionFeature.CanWrite);
+        Assert.True(streamDirectionFeature.CanRead);
 
         // verify that we accepted a unidirectional stream
         var stream2 = await session.AcceptStreamAsync(CancellationToken.None);
-        Assert.False(stream2.CanWrite);
-        Assert.True(stream2.CanRead);
+        var streamDirectionFeature2 = stream2.Features.GetRequiredFeature<IStreamDirectionFeature>();
+        Assert.False(streamDirectionFeature2.CanWrite);
+        Assert.True(streamDirectionFeature2.CanRead);
     }
 
     [Fact]

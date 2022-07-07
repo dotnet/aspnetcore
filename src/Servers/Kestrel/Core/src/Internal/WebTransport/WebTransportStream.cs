@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 /// Represents a base WebTransport stream. Do not use directly as it does not
 /// contain logic for handling data.
 /// </summary>
-internal class WebTransportStream : ConnectionContext
+internal class WebTransportStream : ConnectionContext, IStreamDirectionFeature
 {
     private readonly CancellationTokenRegistration _connectionClosedRegistration;
     private readonly bool _canWrite;
@@ -28,8 +28,6 @@ internal class WebTransportStream : ConnectionContext
     private readonly KestrelTrace _log;
 
     private bool _isClosed;
-
-    internal readonly IStreamDirectionFeature _streamDirectionFeature = default!;
 
     public readonly long StreamId;
 
@@ -44,18 +42,21 @@ internal class WebTransportStream : ConnectionContext
 
     public override IDictionary<object, object?> Items { get; set; }
 
+    public bool CanRead => _canRead && !_isClosed;
+
+    public bool CanWrite => _canWrite && !_isClosed;
+
     internal WebTransportStream(Http3StreamContext context, WebTransportStreamType type)
     {
         _canRead = type != WebTransportStreamType.Output;
         _canWrite = type != WebTransportStreamType.Input;
-        _streamDirectionFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamDirectionFeature>();
         _log = context.ServiceContext.Log;
 
         var streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
         StreamId = streamIdFeature!.StreamId;
 
-        _features = new FeatureCollection(1);
-        _features.Set(_streamDirectionFeature);
+        _features = context.ConnectionFeatures;
+        _features[typeof(IStreamDirectionFeature)] = this;
 
         _duplexPipe = new DuplexPipe(context.Transport.Input, context.Transport.Output);
 
@@ -114,59 +115,6 @@ internal class WebTransportStream : ConnectionContext
         if (_canWrite)
         {
             await _duplexPipe.Output.CompleteAsync();
-        }
-    }
-}
-
-/// <summary>
-/// Defines a helper function to make reading from a pipe more elegant.
-/// </summary>
-public static class PipeReaderExtension
-{
-    /// <summary>
-    /// Read data from the input pipe.
-    /// </summary>
-    /// <param name="context">The WebTransport stream object.</param>
-    /// <param name="buffer">buffer to read the data into.</param>
-    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-    /// <returns>The amounts of bytes read.</returns>
-    public static async ValueTask<int> ReadAsync(this PipeReader input, Memory<byte> buffer, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var result = await input.ReadAsync(cancellationToken);
-
-            if (result.IsCanceled)
-            {
-                throw new OperationCanceledException(CoreStrings.WebTransportReadCancelled);
-            }
-
-            var resultBuffer = result.Buffer;
-            var length = resultBuffer.Length;
-
-            var consumed = resultBuffer.End;
-
-            if (length != 0)
-            {
-                var actual = (int)Math.Min(length, buffer.Length);
-
-                var slice = actual == length ? resultBuffer : resultBuffer.Slice(0, actual);
-                consumed = slice.End;
-                slice.CopyTo(buffer.Span);
-
-                input.AdvanceTo(consumed);
-
-                return actual;
-            }
-            else
-            {
-                input.AdvanceTo(consumed);
-                return 0;
-            }
-        }
-        catch (Exception)
-        {
-            return 0;
         }
     }
 }

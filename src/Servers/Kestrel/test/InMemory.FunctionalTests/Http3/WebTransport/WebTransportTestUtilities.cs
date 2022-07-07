@@ -65,7 +65,6 @@ internal class WebTransportTestUtilities
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
             new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
         });
-        //_ = await requestStream.ExpectHeadersAsync();
 
         return (WebTransportSession)await appCompletedTcs.Task;
     }
@@ -74,8 +73,8 @@ internal class WebTransportTestUtilities
     {
         var features = new FeatureCollection();
         features[typeof(IStreamIdFeature)] = new StreamId(streamCounter++);
+        features[typeof(IStreamDirectionFeature)] = new DefaultStreamDirectionFeature(type != WebTransportStreamType.Output, type != WebTransportStreamType.Input);
         features[typeof(IProtocolErrorCodeFeature)] = Mock.Of<IProtocolErrorCodeFeature>();
-        features[typeof(IStreamAbortFeature)] = Mock.Of<IStreamAbortFeature>();
 
         var writer = new HttpResponsePipeWriter(new StreamWriterControl(memory));
         writer.StartAcceptingWrites();
