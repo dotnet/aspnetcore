@@ -119,11 +119,10 @@ public class Http3TimeoutTests : Http3TestBase
 
         Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
 
-        // abort the connection as a synchronization step
-        // to make sure that the log was written
-        Http3Api.MultiplexedConnectionContext.Abort();
-
-        AssertExpectedErrorMessages(CoreStrings.AttemptedToReadHeaderOnAbortedStream);
+        await outboundControlStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.NoError,
+            AssertExpectedErrorMessages,
+            CoreStrings.AttemptedToReadHeaderOnAbortedStream);
     }
 
     [Fact]

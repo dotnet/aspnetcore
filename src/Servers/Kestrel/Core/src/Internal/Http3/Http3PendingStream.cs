@@ -10,6 +10,7 @@ internal class Http3PendingStream
     private readonly CancellationTokenSource abortedToken = new();
 
     private ConnectionAbortedException? _abortedException;
+    private bool _isClosed;
 
     internal readonly Http3StreamContext Context;
     internal readonly long StreamId;
@@ -24,9 +25,19 @@ internal class Http3PendingStream
 
     public void Abort(ConnectionAbortedException exception)
     {
+        if (_isClosed)
+        {
+            return;
+        }
+        _isClosed = true;
+
         _abortedException = exception;
 
         abortedToken.Cancel();
+
+
+        Context.Transport.Input.Complete(exception);
+        Context.Transport.Output.Complete(exception);
     }
 
     public async Task<long> ReadNextStreamHeaderAsync(Http3StreamContext context, long streamId, bool persist = false)

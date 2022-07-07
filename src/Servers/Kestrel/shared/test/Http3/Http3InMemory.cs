@@ -614,17 +614,27 @@ internal class Http3StreamBase
 
     internal async Task WaitForStreamErrorAsync(Http3ErrorCode protocolError, Action<string> matchExpectedErrorMessage = null, string expectedErrorMessage = null)
     {
-        var result = await ReadApplicationInputAsync();
-        if (!result.IsCompleted)
+        try
         {
-            throw new InvalidOperationException("Stream not ended.");
+            var result = await ReadApplicationInputAsync();
+            if (!result.IsCompleted)
+            {
+                throw new InvalidOperationException("Stream not ended.");
+            }
         }
-        if ((Http3ErrorCode)Error != protocolError)
+        catch (ConnectionAbortedException)
         {
-            throw new InvalidOperationException($"Expected error code {protocolError}, got {(Http3ErrorCode)Error}.");
+            // no-op, this just means that the stream was aborted prior to the read ending. This is probably
+            // intentional, so go onto invoking the comparisons
         }
-
-        matchExpectedErrorMessage?.Invoke(expectedErrorMessage);
+        finally
+        {
+            if (protocolError != Http3ErrorCode.NoError && (Http3ErrorCode)Error != protocolError)
+            {
+                throw new InvalidOperationException($"Expected error code {protocolError}, got {(Http3ErrorCode)Error}.");
+            }
+            matchExpectedErrorMessage?.Invoke(expectedErrorMessage);
+        }
     }
 }
 
