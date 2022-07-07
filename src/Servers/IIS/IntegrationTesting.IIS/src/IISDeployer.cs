@@ -371,12 +371,6 @@ public class IISDeployer : IISDeployerBase
                 {
                     var state = site.Stop();
                     Logger.LogInformation($"Stopping site, state: {state}");
-
-                    if (appPool.State != ObjectState.Stopped && appPool.State != ObjectState.Stopping)
-                    {
-                        var state = appPool.Stop();
-                        Logger.LogInformation($"Stopping pool, state: {state}");
-                    }
                 }
 
                 var appPool = serverManager.ApplicationPools.SingleOrDefault();
@@ -391,10 +385,9 @@ public class IISDeployer : IISDeployerBase
                     Logger.LogInformation($"Stopping pool, state: {state}");
                 }
 
-                    if (site.State != ObjectState.Stopped)
-                    {
-                        throw new InvalidOperationException($"Site {site.Name} not stopped yet");
-                    }
+                if (site.State != ObjectState.Stopped)
+                {
+                    throw new InvalidOperationException($"Site {site.Name} not stopped yet");
                 }
 
                 try
