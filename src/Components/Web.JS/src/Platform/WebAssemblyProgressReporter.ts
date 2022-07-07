@@ -16,7 +16,7 @@ export class WebAssemblyProgressReporter {
         circle.style.display = 'block';
         const element = document.getElementById('blazor-default-loading-percentage') as unknown as SVGTextElement;
         const percentage = Math.floor(resourcesLoaded / resourcesTotal * 100);
-        element!.textContent = `${percentage}` + "%";
+        element!.textContent = `${percentage}%`;
     }
 
     /**
