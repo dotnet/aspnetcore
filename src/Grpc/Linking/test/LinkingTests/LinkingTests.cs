@@ -29,16 +29,16 @@ public class LinkingTests
             .Value;
 
         var tempPath = Path.GetTempPath();
-        var clientPath = Path.Combine(tempPath, "BasicClient");
-        var websitePath = Path.Combine(tempPath, "BasicWebsite");
+        var clientPath = Path.Combine(tempPath, "BasicLinkingClient");
+        var websitePath = Path.Combine(tempPath, "BasicLinkingWebsite");
 
         EnsureDeleted(clientPath);
         EnsureDeleted(websitePath);
 
         try
         {
-            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\..\testassets\BasicClient\BasicClient.csproj", clientPath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
-            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\..\testassets\BasicWebsite\BasicWebsite.csproj", websitePath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
+            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\..\testassets\BasicLinkingClient\BasicLinkingClient.csproj", clientPath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
+            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\..\testassets\BasicLinkingWebsite\BasicLinkingWebsite.csproj", websitePath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
 
             await RunApps(clientPath, websitePath);
         }
@@ -59,7 +59,7 @@ public class LinkingTests
 
     private async Task RunApps(string clientPath, string serverPath)
     {
-        using (var serverProcess = new WebsiteProcess(Path.Combine(serverPath, "BasicWebsite.exe"), arguments: string.Empty, _output))
+        using (var serverProcess = new WebsiteProcess(Path.Combine(serverPath, "BasicLinkingWebsite.exe"), arguments: string.Empty, _output))
         {
             try
             {
@@ -79,7 +79,7 @@ Server process output:
 }
 
             var arguments = @$"http://localhost:{serverProcess.ServerPort}";
-            using (var clientProcess = new ClientProcess(_output, Path.Combine(clientPath, "BasicClient.exe"), arguments))
+            using (var clientProcess = new ClientProcess(_output, Path.Combine(clientPath, "BasicLinkingClient.exe"), arguments))
             {
                 try
                 {
