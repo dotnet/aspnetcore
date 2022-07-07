@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
@@ -471,6 +472,7 @@ public partial class IISExpressDeployer : IISDeployerBase
 
                 public void OnInvoked() => GC.KeepAlive(_handle.Wrapper);
 
+                [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This method is part of the marshaller shape and is required to be an instance method.")]
                 public void Free() {}
             }
         }

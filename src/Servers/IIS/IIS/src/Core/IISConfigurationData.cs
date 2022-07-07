@@ -34,7 +34,6 @@ internal struct IISConfigurationData
             public uint maxRequestBodySize;
         }
 
-
         public static Native ConvertToUnmanaged(IISConfigurationData managed)
         {
             Native native;
@@ -70,12 +69,12 @@ internal struct IISConfigurationData
             return new()
             {
                 pNativeApplication = native.pNativeApplication,
-                pwzFullApplicationPath = native.pwzFullApplicationPath == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(_native.pwzFullApplicationPath),
-                pwzVirtualApplicationPath = native.pwzVirtualApplicationPath == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(_native.pwzVirtualApplicationPath),
+                pwzFullApplicationPath = native.pwzFullApplicationPath == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(native.pwzFullApplicationPath),
+                pwzVirtualApplicationPath = native.pwzVirtualApplicationPath == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(native.pwzVirtualApplicationPath),
                 fWindowsAuthEnabled = native.fWindowsAuthEnabled != 0,
                 fBasicAuthEnabled = native.fBasicAuthEnabled != 0,
                 fAnonymousAuthEnable = native.fAnonymousAuthEnable != 0,
-                pwzBindings = native.pwzBindings == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(_native.pwzBindings),
+                pwzBindings = native.pwzBindings == IntPtr.Zero ? string.Empty : Marshal.PtrToStringBSTR(native.pwzBindings),
                 maxRequestBodySize = native.maxRequestBodySize
             };
         }
