@@ -329,7 +329,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                     _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
 
-                    var streamType = await pendingStream.ReadNextStreamHeader(context, streamIdFeature.StreamId);
+                    var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId);
 
                     _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
 
@@ -525,7 +525,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     private async Task CreateAndAddWebTransportStream(Http3PendingStream stream, long streamId, WebTransportStreamType type)
     {
-        var correspondingSession = await stream.ReadNextStreamHeader(stream.Context, streamId, true);
+        var correspondingSession = await stream.ReadNextStreamHeaderAsync(stream.Context, streamId, true);
 
         if (!_webtransportSessions.ContainsKey(correspondingSession))
         {
