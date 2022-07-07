@@ -305,15 +305,6 @@ public class WebAssemblyAuthenticationTests : ServerTestBase<AspNetSiteServerFix
     }
 
     [Fact]
-    public void CanNotRedirect_To_External_ReturnUrl()
-    {
-        Browser.Navigate().GoToUrl(new Uri(new Uri(Browser.Url), "/authentication/login?returnUrl=https%3A%2F%2Fwww.bing.com").AbsoluteUri);
-        WaitUntilLoaded(skipHeader: true);
-        Browser.Exists(By.CssSelector("[style=\"display: block;\"]"));
-        Assert.NotEmpty(Browser.GetBrowserLogs(LogLevel.Severe));
-    }
-
-    [Fact]
     public async Task CanNotTrigger_Logout_WithNavigation()
     {
         Browser.Navigate().GoToUrl(new Uri(new Uri(Browser.Url), "/authentication/logout").AbsoluteUri);

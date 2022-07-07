@@ -17,5 +17,10 @@ public enum InteractiveAuthenticationRequestType
     /// Provisioning a token interactively because silent provisioning failed, either because the end user
     /// has not consented or because the existing credentials have expired.
     /// </summary>
-    GetToken
+    GetToken,
+
+    /// <summary>
+    /// Logging the user out.
+    /// </summary>
+    Logout,
 }

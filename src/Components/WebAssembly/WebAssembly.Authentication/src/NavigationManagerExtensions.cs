@@ -21,11 +21,27 @@ public static class NavigationManagerExtensions
     /// </remarks>
     /// <param name="manager">The <see cref="NavigationManager"/>.</param>
     /// <param name="logoutPath">The path to navigate too.</param>
-    public static void NavigateToLogout(this NavigationManager manager, string logoutPath)
+    public static void NavigateToLogout(this NavigationManager manager, string logoutPath) =>
+        manager.NavigateToLogout(logoutPath, null);
+
+    /// <summary>
+    /// Initiates a logout operation by navigating to the log out endpoint.
+    /// </summary>
+    /// <remarks>
+    /// The navigation includes stated that is added to the browser history entry to
+    /// prevent logout operations performed from different contexts.
+    /// </remarks>
+    /// <param name="manager">The <see cref="NavigationManager"/>.</param>
+    /// <param name="logoutPath">The path to navigate too.</param>
+    /// <param name="returnUrl">The url to redirect the user to after logging out.</param>
+    public static void NavigateToLogout(this NavigationManager manager, string logoutPath, string returnUrl)
     {
         manager.NavigateTo(logoutPath, new NavigationOptions
         {
-            State = LogoutNavigationState
+            State = new InteractiveAuthenticationRequest(
+                InteractiveAuthenticationRequestType.Logout,
+                returnUrl,
+                Array.Empty<string>()).ToState()
         });
     }
 

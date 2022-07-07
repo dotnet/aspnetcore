@@ -301,8 +301,6 @@ public class RemoteAuthenticationServiceTests
             Scopes = new[] { "something" }
         };
 
-        var expectedRedirectUrl = "https://www.example.com/base/login?returnUrl=https%3A%2F%2Fwww.example.com%2Fbase%2Fadd-product";
-
         // Act
         var result = await runtime.RequestAccessToken(tokenOptions);
 
@@ -314,7 +312,9 @@ public class RemoteAuthenticationServiceTests
         Assert.False(result.TryGetToken(out var token));
         Assert.Null(token);
         Assert.Equal(result.Status, testJsRuntime.GetAccessTokenResult.Status);
-        Assert.Equal(expectedRedirectUrl, result.RedirectUrl);
+        Assert.Equal("login", result.InteractiveRequestUrl);
+        Assert.Equal("https://www.example.com/base/add-product", result.InteractiveRequest.ReturnUrl);
+        Assert.Equal(new[] { "something" }, result.InteractiveRequest.Scopes);
         Assert.Equal(tokenOptions, (AccessTokenRequestOptions)testJsRuntime.PastInvocations[^1].args[0]);
     }
 
@@ -342,8 +342,6 @@ public class RemoteAuthenticationServiceTests
             ReturnUrl = "https://www.example.com/base/add-saved-product/123413241234"
         };
 
-        var expectedRedirectUrl = "https://www.example.com/base/login?returnUrl=https%3A%2F%2Fwww.example.com%2Fbase%2Fadd-saved-product%2F123413241234";
-
         // Act
         var result = await runtime.RequestAccessToken(tokenOptions);
 
@@ -355,7 +353,9 @@ public class RemoteAuthenticationServiceTests
         Assert.False(result.TryGetToken(out var token));
         Assert.Null(token);
         Assert.Equal(result.Status, testJsRuntime.GetAccessTokenResult.Status);
-        Assert.Equal(expectedRedirectUrl, result.RedirectUrl);
+        Assert.Equal("login", result.InteractiveRequestUrl);
+        Assert.Equal("https://www.example.com/base/add-saved-product/123413241234", result.InteractiveRequest.ReturnUrl);
+        Assert.Equal(new[] { "something" }, result.InteractiveRequest.Scopes);
         Assert.Equal(tokenOptions, (AccessTokenRequestOptions)testJsRuntime.PastInvocations[^1].args[0]);
     }
 

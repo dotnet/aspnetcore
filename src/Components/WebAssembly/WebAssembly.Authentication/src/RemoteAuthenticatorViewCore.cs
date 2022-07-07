@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -268,7 +269,8 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 
     private async Task ProcessLogOut(string returnUrl)
     {
-        if ((Navigation.State != null && Navigation.State != NavigationManagerExtensions.LogoutNavigationState) ||
+        if ((Navigation.State != null && !ValidateSignOutRequestState()) ||
+            // For backcompat purposes, keep SignOutManager working, even though we now use the history.state for this.
             (Navigation.State == null && !await SignOutManager.ValidateSignOutState()))
         {
             Log.LogoutOperationInitiatedExternally(Logger);
@@ -365,9 +367,19 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 
     private string GetReturnUrlFromNavigationState()
     {
+        return GetCachedNavigationState()?.ReturnUrl;
+    }
+
+    private bool ValidateSignOutRequestState()
+    {
+        return GetCachedNavigationState()?.RequestType == InteractiveAuthenticationRequestType.Logout;
+    }
+
+    private InteractiveAuthenticationRequest GetCachedNavigationState()
+    {
         if (_cachedRequest != null)
         {
-            return _cachedRequest.ReturnUrl;
+            return _cachedRequest;
         }
 
         if (Navigation.State == null)
@@ -376,23 +388,25 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
         }
 
         _cachedRequest = InteractiveAuthenticationRequest.FromState(Navigation.State);
-        return _cachedRequest?.ReturnUrl;
+        return _cachedRequest;
     }
 
     private void RedirectToRegister()
     {
         var loginUrl = Navigation.ToAbsoluteUri(ApplicationPaths.LogInPath).PathAndQuery;
-        var registerUrl = Navigation.ToAbsoluteUri(ApplicationPaths.RemoteRegisterPath).PathAndQuery;
+        var registerUrl = Navigation.ToAbsoluteUri(ApplicationPaths.RemoteRegisterPath).AbsoluteUri;
+        var navigationUrl = Navigation.GetUriWithQueryParameters(
+            registerUrl,
+            new Dictionary<string, object> { ["returnUrl"] = loginUrl });
 
-        Navigation.NavigateTo(registerUrl, AuthenticationNavigationOptions with
+        Navigation.NavigateTo(navigationUrl, AuthenticationNavigationOptions with
         {
             ForceLoad = true,
-            State = new InteractiveAuthenticationRequest(InteractiveAuthenticationRequestType.Authenticate, loginUrl, Array.Empty<string>()).ToState()
         });
     }
 
     private void RedirectToProfile() =>
-        Navigation.NavigateTo(Navigation.ToAbsoluteUri(ApplicationPaths.RemoteProfilePath).PathAndQuery, new NavigationOptions { ReplaceHistoryEntry = true, ForceLoad = true });
+        Navigation.NavigateTo(Navigation.ToAbsoluteUri(ApplicationPaths.RemoteProfilePath).AbsoluteUri, new NavigationOptions { ReplaceHistoryEntry = true, ForceLoad = true });
 
     private static void DefaultLogInFragment(RenderTreeBuilder builder)
     {
