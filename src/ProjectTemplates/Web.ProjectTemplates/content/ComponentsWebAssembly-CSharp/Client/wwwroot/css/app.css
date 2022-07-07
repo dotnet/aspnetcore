@@ -85,7 +85,7 @@ a, .btn-link {
     display: none;
 }
 
-#blazor-default-loading #blazor-default-loading-progress {
+#blazor-default-loading #blazor-default-loading-percentage {
     color: black;
     font-weight: bold;
 }
