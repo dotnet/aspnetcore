@@ -117,5 +117,18 @@ public class AuthenticationOptions
     /// <summary>
     /// If true, DefaultScheme will not automatically use a single registered scheme.
     /// </summary>
-    public bool DisableAutoDefaultScheme { get; set; }
+    private bool? _disableAutoDefaultScheme;
+    internal bool DisableAutoDefaultScheme
+    {
+        get
+        {
+            if (!_disableAutoDefaultScheme.HasValue)
+            {
+                _disableAutoDefaultScheme = AppContext.TryGetSwitch("Microsoft.AspNetCore.Authentication.SuppressAutoDefaultScheme", out var enabled) && enabled;
+            }
+
+            return _disableAutoDefaultScheme.Value;
+        }
+        set => _disableAutoDefaultScheme = value;
+    }
 }
