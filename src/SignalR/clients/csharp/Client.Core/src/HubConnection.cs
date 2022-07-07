@@ -1042,7 +1042,10 @@ public partial class HubConnection : IAsyncDisposable
 
     private void CheckDisposed()
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(HubConnection));
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(HubConnection));
+        }
     }
 
     private async Task HandshakeAsync(ConnectionState startingConnectionState, CancellationToken cancellationToken)

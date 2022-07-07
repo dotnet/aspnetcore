@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
@@ -41,7 +40,10 @@ internal class MemoryPoolViewBufferScope : IViewBufferScope, IDisposable
             throw new ArgumentOutOfRangeException(nameof(pageSize));
         }
 
-        ObjectDisposedException.ThrowIf(_disposed, typeof(MemoryPoolViewBufferScope));
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(typeof(MemoryPoolViewBufferScope).FullName);
+        }
 
         if (_leased == null)
         {
