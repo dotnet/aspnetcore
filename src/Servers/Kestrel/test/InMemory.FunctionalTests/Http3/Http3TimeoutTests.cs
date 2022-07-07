@@ -98,6 +98,8 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task ControlStream_HeaderNotReceivedWithinRequestHeadersTimeout_StreamError()
     {
+        var waitTask = WaitForLogMessage(message => message.Exception?.Message.Contains(CoreStrings.AttemptedToReadHeaderOnAbortedStream) ?? false);
+
         var now = _serviceContext.MockSystemClock.UtcNow;
         var limits = _serviceContext.ServerOptions.Limits;
 
@@ -119,10 +121,7 @@ public class Http3TimeoutTests : Http3TestBase
 
         Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
 
-        await outboundControlStream.WaitForStreamErrorAsync(
-            Http3ErrorCode.NoError,
-            AssertExpectedErrorMessages,
-            CoreStrings.AttemptedToReadHeaderOnAbortedStream);
+        await waitTask;
     }
 
     [Fact]
