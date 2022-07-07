@@ -7,6 +7,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Defines a contract that represents the result of an HTTP endpoint
 /// that contains a nested <see cref="IResult"/> type.
 /// </summary>
+/// <remarks>For example, <c>Results&lt;TResult1, TResult2&gt;</c> is an <see cref="INestedHttpResult"/> and will contain the returned <see cref="IResult"/>.</remarks>
 public interface INestedHttpResult
 {
     /// <summary>
