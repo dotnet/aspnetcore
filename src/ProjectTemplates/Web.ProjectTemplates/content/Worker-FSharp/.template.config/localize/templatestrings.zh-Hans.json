@@ -1,8 +1,8 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Worker Service",
+  "name": "辅助角色服务",
   "description": "用于创建 worker service 的空项目模板。",
-  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
+  "symbols/ExcludeLaunchSettings/description": "是否从生成的模板中排除 launchSettings.json。",
   "symbols/Framework/description": "项目的目标框架。",
   "symbols/Framework/choices/net7.0/description": "目标 net7.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",

@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Razor Component",
+  "name": "Razor Bileşeni",
   "description": "Razor ile birlikte uygulanan yeniden kullanılabilir bir kullanıcı arabirimi bileşeni",
-  "postActions/openInEditor/description": "Opens Component1.razor in the editor"
+  "postActions/openInEditor/description": "Component1.razor'ı düzenleyicide açar"
 }

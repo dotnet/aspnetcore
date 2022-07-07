@@ -2,7 +2,7 @@
   "author": "Майкрософт",
   "name": "Worker Service",
   "description": "Шаблон пустого проекта для создания службы Worker Service.",
-  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
+  "symbols/ExcludeLaunchSettings/description": "Следует ли исключить launchSettings.json из созданного шаблона.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/net7.0/description": "Целевая версия net7.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",

@@ -1,8 +1,8 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Worker Service",
+  "name": "Služba pracovního procesu",
   "description": "Šablona prázdného projektu pro vytvoření služby Worker Service",
-  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
+  "symbols/ExcludeLaunchSettings/description": "Určuje, jestli se má z vygenerované šablony vyloučit soubor launchSettings.json.",
   "symbols/Framework/description": "Cílová architektura pro projekt",
   "symbols/Framework/choices/net7.0/description": "Cílový net7.0",
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",

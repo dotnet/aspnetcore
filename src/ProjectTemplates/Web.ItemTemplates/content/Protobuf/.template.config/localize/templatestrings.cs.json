@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Protocol Buffer File",
+  "name": "Soubor vyrovnávací paměti protokolu",
   "description": "Soubor vyrovnávací paměti protokolu pro popis zpráv a služeb pro gRPC",
   "symbols/namespace/description": "obor názvů pro vygenerovaný kód",
-  "postActions/openInEditor/description": "Opens protobuf.proto in the editor"
+  "postActions/openInEditor/description": "Otevře soubor protobuf.proto v editoru."
 }

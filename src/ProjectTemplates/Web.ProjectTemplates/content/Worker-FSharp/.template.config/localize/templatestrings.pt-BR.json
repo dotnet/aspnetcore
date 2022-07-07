@@ -1,8 +1,8 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Worker Service",
+  "name": "Serviço de Trabalho",
   "description": "Um modelo de projeto vazio para criar um worker service.",
-  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
+  "symbols/ExcludeLaunchSettings/description": "Se deve excluir launchSettings.json do modelo gerado.",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
   "symbols/Framework/choices/net7.0/description": "Alvo .NET7.0",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",

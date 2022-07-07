@@ -1,8 +1,8 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Worker Service",
+  "name": "Servizio del ruolo di lavoro",
   "description": "Modello di progetto vuoto per la creazione di un'istanza di Worker Service.",
-  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
+  "symbols/ExcludeLaunchSettings/description": "Indica se escludere launchSettings.json dal modello generato.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
   "symbols/Framework/choices/net7.0/description": "Destinazione net7.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",

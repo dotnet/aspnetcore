@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "MVC ViewImports",
-  "description": "An MVC View Import Page",
+  "description": "MVC Görünümü İçeri Aktarma Sayfası",
   "symbols/namespace/description": "oluşturulan kod için ad alanı",
-  "postActions/openInEditor/description": "Opens _ViewImports.cshtml in the editor"
+  "postActions/openInEditor/description": "Düzenleyicide _ViewImports.cshtml dosyasını açar"
 }
