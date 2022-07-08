@@ -75,11 +75,6 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   };
 
-  // Only instantiate the WebAssemblyProgressReporter if the loading element exists in the DOM
-  if (document.getElementById('blazor-default-loading') && !Blazor.webAssemblyLoadingSetProgress) {
-    WebAssemblyProgressReporter.init();
-  }
-
   // Configure navigation via JS Interop
   const getBaseUri = Blazor._internal.navigationManager.getBaseURI;
   const getLocationHref = Blazor._internal.navigationManager.getLocationHref;
@@ -129,6 +124,11 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   const bootConfigResult: BootConfigResult = await bootConfigPromise;
   const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
+
+  // Only instantiate the WebAssemblyProgressReporter if the loading element exists in the DOM
+  if (document.getElementById('blazor-default-loading') && !Blazor.webAssemblyLoadingSetProgress) {
+    WebAssemblyProgressReporter.init();
+  }
   const progressService = new WebAssemblyProgressService();
   progressService.attach(Blazor.webAssemblyLoadingSetProgress!);
 
