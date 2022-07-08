@@ -21,7 +21,7 @@ public class ProblemDetailsClientErrorFactoryTest
                     [405] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
         }));
-        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory, Options.Create(new ProblemDetailsOptions()));
+        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
 
         // Act
         var result = factory.GetClientError(GetActionContext(), clientError);
@@ -48,7 +48,7 @@ public class ProblemDetailsClientErrorFactoryTest
                     [415] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
         }));
-        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory, Options.Create(new ProblemDetailsOptions()));
+        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
 
         // Act
         var result = factory.GetClientError(GetActionContext(), clientError);
@@ -78,7 +78,7 @@ public class ProblemDetailsClientErrorFactoryTest
                     [405] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
             }));
-            var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory, Options.Create(new ProblemDetailsOptions()));
+            var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
 
             // Act
             var result = factory.GetClientError(GetActionContext(), clientError);
@@ -104,7 +104,7 @@ public class ProblemDetailsClientErrorFactoryTest
                     [405] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
         }));
-        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory, Options.Create(new ProblemDetailsOptions()));
+        var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
 
         // Act
         var result = factory.GetClientError(GetActionContext(), clientError);

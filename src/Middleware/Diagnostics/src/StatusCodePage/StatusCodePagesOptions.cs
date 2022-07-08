@@ -4,8 +4,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,8 +14,6 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public class StatusCodePagesOptions
 {
-    private static readonly ProblemMetadata NotFoundProblemMetadata = new(StatusCodes.Status404NotFound, ProblemDetailsTypes.Routing | ProblemDetailsTypes.Client);
-
     /// <summary>
     /// Creates a default <see cref="StatusCodePagesOptions"/> which produces a plaintext response
     /// containing the status code and the reason phrase.
@@ -30,10 +26,10 @@ public class StatusCodePagesOptions
 
             if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
             {
-                await problemDetailsService.WriteAsync(new ProblemDetailsContext(context.HttpContext)
+                await problemDetailsService.WriteAsync(new ()
                 {
-                    AdditionalMetadata = new EndpointMetadataCollection(NotFoundProblemMetadata),
-                    ProblemDetails = new ProblemDetails() { Status = statusCode }
+                    HttpContext = context.HttpContext,
+                    ProblemDetails = { Status = statusCode }
                 });
             }
 

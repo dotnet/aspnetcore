@@ -6,7 +6,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.AspNetCore.Http.Extensions;
+namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
 
 public class ProblemDetailsJsonConverterTest
 {

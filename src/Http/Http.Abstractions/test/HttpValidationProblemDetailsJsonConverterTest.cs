@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Json;
 
-namespace Microsoft.AspNetCore.Http.Extensions;
+namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
 
 public class HttpValidationProblemDetailsJsonConverterTest
 {

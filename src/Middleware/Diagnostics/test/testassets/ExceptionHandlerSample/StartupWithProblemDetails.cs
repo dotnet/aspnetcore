@@ -16,13 +16,6 @@ public class StartupWithProblemDetails
 
     public void Configure(IApplicationBuilder app)
     {
-        // Add a problemMetadata to all requests
-        app.Use((context, next) =>
-        {
-            context.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(new ProblemMetadata()), string.Empty));
-            return next(context);
-        });
-
         // Configure the error handler to produces a ProblemDetails.
         app.UseExceptionHandler();
 

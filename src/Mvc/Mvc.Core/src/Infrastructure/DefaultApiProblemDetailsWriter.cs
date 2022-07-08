@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -11,6 +12,8 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
     private readonly OutputFormatterSelector _formatterSelector;
     private readonly IHttpResponseStreamWriterFactory _writerFactory;
     private readonly ProblemDetailsFactory _problemDetailsFactory;
+    private readonly ApiBehaviorOptions _apiBehaviorOptions;
+
     private static readonly MediaTypeCollection _problemContentTypes = new()
     {
         "application/problem+json",
@@ -20,21 +23,33 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
     public DefaultApiProblemDetailsWriter(
         OutputFormatterSelector formatterSelector,
         IHttpResponseStreamWriterFactory writerFactory,
-        ProblemDetailsFactory problemDetailsFactory)
+        ProblemDetailsFactory problemDetailsFactory,
+        IOptions<ApiBehaviorOptions> apiBehaviorOptions)
     {
         _formatterSelector = formatterSelector;
         _writerFactory = writerFactory;
         _problemDetailsFactory = problemDetailsFactory;
+        _apiBehaviorOptions = apiBehaviorOptions.Value;
     }
 
-    public async ValueTask<bool> WriteAsync(ProblemDetailsContext context)
+    public async ValueTask<bool> TryWriteAsync(ProblemDetailsContext context)
     {
+        var controllerAttribute = context.AdditionalMetadata?.GetMetadata<ControllerAttribute>() ??
+            context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ControllerAttribute>();
+
+        if (controllerAttribute == null)
+        {
+            return false;
+        }
+
         var apiControllerAttribute = context.AdditionalMetadata?.GetMetadata<IApiBehaviorMetadata>() ??
             context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IApiBehaviorMetadata>();
 
-        if (apiControllerAttribute is null)
+        if (apiControllerAttribute is null || _apiBehaviorOptions.SuppressMapClientErrors)
         {
-            return false;
+            // In this case we don't want to move
+            // to the next registered writers.
+            return true;
         }
 
         // Recreating the problem details to get all customizations

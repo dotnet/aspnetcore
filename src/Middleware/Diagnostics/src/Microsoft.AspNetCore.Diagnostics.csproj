@@ -15,7 +15,6 @@
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" />
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
-    <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemMetadata.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -23,7 +23,7 @@ public static class ProblemDetailsServiceCollectionExtensions
 
         // Adding default services;
         services.TryAddSingleton<IProblemDetailsService, ProblemDetailsService>();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultProblemDetailsWriter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, ProblemDetailsDefaultWriter>());
 
         return services;
     }

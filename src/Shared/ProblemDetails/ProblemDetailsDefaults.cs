@@ -36,6 +36,12 @@ internal static class ProblemDetailsDefaults
             "Not Found"
         ),
 
+        [405] =
+        (
+            "https://tools.ietf.org/html/rfc7231#section-6.5.5",
+            "Method Not Allowed"
+        ),
+
         [406] =
         (
             "https://tools.ietf.org/html/rfc7231#section-6.5.6",

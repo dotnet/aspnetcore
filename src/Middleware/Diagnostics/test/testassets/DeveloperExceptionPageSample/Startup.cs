@@ -28,8 +28,7 @@ public class Startup
                 RoutePatternFactory.Parse("/"),
                 0,
                 new EndpointMetadataCollection(
-                    new HttpMethodMetadata(new[] { "GET", "POST" }),
-                    new ProblemMetadata()),
+                    new HttpMethodMetadata(new[] { "GET", "POST" })),
                 "Endpoint display name");
 
             context.SetEndpoint(endpoint);

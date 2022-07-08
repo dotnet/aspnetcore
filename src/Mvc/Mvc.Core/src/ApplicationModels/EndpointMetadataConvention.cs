@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -14,40 +12,20 @@ internal sealed class EndpointMetadataConvention : IActionModelConvention
     private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(EndpointMetadataConvention).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(EndpointMetadataConvention).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
     private readonly IServiceProvider _serviceProvider;
-    private readonly Type _defaultErrorType;
 
-    public EndpointMetadataConvention(IServiceProvider serviceProvider, Type defaultErrorType)
+    public EndpointMetadataConvention(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        _defaultErrorType = defaultErrorType;
     }
 
     public void Apply(ActionModel action)
     {
-        // Set the problem metadata when defaultError is ProblemDetails
-        ApplyProblemMetadata(action);
 
         // Get metadata from parameter types
         ApplyParametersMetadata(action);
 
         // Get metadata from return type
         ApplyReturnTypeMetadata(action);
-    }
-
-    private void ApplyProblemMetadata(ActionModel action)
-    {
-        if (_defaultErrorType == typeof(ProblemDetails))
-        {
-            var problemDetailsService = _serviceProvider.GetService<IProblemDetailsService>();
-
-            if (problemDetailsService != null)
-            {
-                for (var i = 0; i < action.Selectors.Count; i++)
-                {
-                    action.Selectors[i].EndpointMetadata.Add(new ProblemMetadata());
-                }
-            }
-        }
     }
 
     private void ApplyReturnTypeMetadata(ActionModel action)

@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 
-namespace Microsoft.AspNetCore.Http.Tests;
+namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
 public class ProblemDetailsServiceCollectionExtensionsTest
 {
@@ -20,7 +20,7 @@ public class ProblemDetailsServiceCollectionExtensionsTest
 
         // Assert
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsService) && sd.ImplementationType == typeof(ProblemDetailsService));
-        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsWriter) && sd.ImplementationType == typeof(DefaultProblemDetailsWriter));
+        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsWriter) && sd.ImplementationType == typeof(ProblemDetailsDefaultWriter));
     }
 
     [Fact]
