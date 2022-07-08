@@ -36,8 +36,8 @@ public class LinkingTests
 
         try
         {
-            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\testassets\BasicLinkingClient\BasicLinkingClient.csproj", clientPath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
-            await AppPublisher.PublishAppAsync(_output, projectDirectory, projectDirectory + @"\testassets\BasicLinkingWebsite\BasicLinkingWebsite.csproj", websitePath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
+            await AppPublisher.PublishAppAsync(_output, projectDirectory + @"\testassets\BasicLinkingClient\BasicLinkingClient.csproj", clientPath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
+            await AppPublisher.PublishAppAsync(_output, projectDirectory + @"\testassets\BasicLinkingWebsite\BasicLinkingWebsite.csproj", websitePath, enableTrimming: true).DefaultTimeout(DefaultTimeout * 2);
 
             await RunApps(clientPath, websitePath);
         }

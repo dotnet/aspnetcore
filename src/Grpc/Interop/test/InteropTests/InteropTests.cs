@@ -127,17 +127,11 @@ public class InteropTests : IClassFixture<InteropTestsFixture>
 
             _output.WriteLine($"Publish current directory: {projectDirectory}");
 
-            var buildProjectDir = typeof(InteropTests).Assembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Single(a => a.Key == "ProjectDirectory")
-                .Value;
-            _output.WriteLine($"Project directory resolved from attribute: {buildProjectDir}");
-
             var interopWebsiteProject = projectDirectory + @"\testassets\InteropWebsite\InteropWebsite.csproj";
             var interopClientProject = projectDirectory + @"\testassets\InteropClient\InteropClient.csproj";
 
-            await AppPublisher.PublishAppAsync(_output, projectDirectory, interopWebsiteProject, _fixture.ServerPath);
-            await AppPublisher.PublishAppAsync(_output, projectDirectory, interopClientProject, _fixture.ClientPath);
+            await AppPublisher.PublishAppAsync(_output, interopWebsiteProject, _fixture.ServerPath);
+            await AppPublisher.PublishAppAsync(_output, interopClientProject, _fixture.ClientPath);
         }
     }
 

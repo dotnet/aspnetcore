@@ -12,7 +12,7 @@ namespace Grpc.Tests.Shared;
 
 public static class AppPublisher
 {
-    public static async Task PublishAppAsync(ITestOutputHelper output, string workingDirectory, string path, string outputPath, bool enableTrimming = false)
+    public static async Task PublishAppAsync(ITestOutputHelper output, string path, string outputPath, bool enableTrimming = false)
     {
         var resolvedPath = Path.GetFullPath(path);
         output.WriteLine($"Publishing {resolvedPath}");
@@ -33,7 +33,7 @@ public static class AppPublisher
 
             processEx = ProcessEx.Run(
                 output,
-                workingDirectory,
+                workingDirectory: string.Empty,
                 "dotnet",
                 arguments,
                 timeout: TimeSpan.FromSeconds(30));
