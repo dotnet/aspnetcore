@@ -251,10 +251,12 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   (moduleConfig as any).preloadPlugins = [];
 
   var totalResources = Object.keys(resources.assembly).length + Object.keys(resources.pdb || {}).length + /* dotnet.wasm */ 1;
-  if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty('dotnet.timezones.blat'))
+  if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty('dotnet.timezones.blat')){
     totalResources++;
-  if (resourceLoader.bootConfig.icuDataMode !== ICUDataMode.Invariant)
+  }
+  if (resourceLoader.bootConfig.icuDataMode !== ICUDataMode.Invariant){
     totalResources++;
+  }
   progressService.setTotalResources(totalResources);
 
 

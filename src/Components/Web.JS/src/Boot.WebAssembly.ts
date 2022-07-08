@@ -130,7 +130,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     WebAssemblyProgressReporter.init();
   }
   const progressService = new WebAssemblyProgressService();
-  progressService.attach(Blazor.webAssemblyLoadingSetProgress!);
+  if (Blazor.webAssemblyLoadingSetProgress){
+    progressService.attach(Blazor.webAssemblyLoadingSetProgress);
+  }
 
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}, progressService),
