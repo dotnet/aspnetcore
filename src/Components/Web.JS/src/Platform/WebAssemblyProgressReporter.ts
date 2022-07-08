@@ -13,7 +13,7 @@ export class WebAssemblyProgressReporter {
         circle.style.strokeDashoffset = `${ring}`;
         circle.style.display = 'block';
         const element = document.getElementById('blazor-default-loading-percentage') as unknown as SVGTextElement;
-        const percentage = Math.floor(progressPercentage * 100);
-        element!.textContent = `${percentage}%`;
+        const displayPercentage = Math.floor(progressPercentage * 100);
+        element!.textContent = `${displayPercentage}%`;
     }
 }
