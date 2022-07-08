@@ -14,7 +14,7 @@ using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class RoutePatternAnalyzer : DiagnosticAnalyzer
+public sealed class RoutePatternAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(new[]
     {
@@ -23,15 +23,12 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
 
     public void Analyze(SemanticModelAnalysisContext context)
     {
-        if (VersionChecker.IsSupported)
-        {
-            var semanticModel = context.SemanticModel;
-            var syntaxTree = semanticModel.SyntaxTree;
-            var cancellationToken = context.CancellationToken;
+        var semanticModel = context.SemanticModel;
+        var syntaxTree = semanticModel.SyntaxTree;
+        var cancellationToken = context.CancellationToken;
 
-            var root = syntaxTree.GetRoot(cancellationToken);
-            Analyze(context, root, cancellationToken);
-        }
+        var root = syntaxTree.GetRoot(cancellationToken);
+        Analyze(context, root, cancellationToken);
     }
 
     private void Analyze(
@@ -80,9 +77,12 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
 
     public override void Initialize(AnalysisContext context)
     {
-        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-        context.EnableConcurrentExecution();
+        if (VersionChecker.IsSupported)
+        {
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
 
-        context.RegisterSemanticModelAction(Analyze);
+            context.RegisterSemanticModelAction(Analyze);
+        }
     }
 }
