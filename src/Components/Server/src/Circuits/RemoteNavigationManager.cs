@@ -61,6 +61,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         Log.ReceivedLocationChangedNotification(_logger, uri, intercepted);
 
         Uri = uri;
+        HistoryEntryState = state;
         NotifyLocationChanged(state, intercepted);
     }
 

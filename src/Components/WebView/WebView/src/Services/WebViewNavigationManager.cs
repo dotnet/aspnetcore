@@ -16,6 +16,7 @@ internal sealed class WebViewNavigationManager : NavigationManager
     public void LocationUpdated(string newUrl, string? state, bool intercepted)
     {
         Uri = newUrl;
+        HistoryEntryState = state;
         NotifyLocationChanged(state, intercepted);
     }
 

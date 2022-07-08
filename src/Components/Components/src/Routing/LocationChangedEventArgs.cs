@@ -14,20 +14,8 @@ public class LocationChangedEventArgs : EventArgs
     /// <param name="location">The location.</param>
     /// <param name="isNavigationIntercepted">A value that determines if navigation for the link was intercepted.</param>
     public LocationChangedEventArgs(string location, bool isNavigationIntercepted)
-        : this(location, null, isNavigationIntercepted)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="LocationChangedEventArgs" />.
-    /// </summary>
-    /// <param name="location">The location.</param>
-    /// <param name="state">The state associated with the current history entry.</param>
-    /// <param name="isNavigationIntercepted">A value that determines if navigation for the link was intercepted.</param>
-    public LocationChangedEventArgs(string location, string? state, bool isNavigationIntercepted)
     {
         Location = location;
-        State = state;
         IsNavigationIntercepted = isNavigationIntercepted;
     }
 
@@ -44,5 +32,5 @@ public class LocationChangedEventArgs : EventArgs
     /// <summary>
     /// Gets the state associated with the current history entry.
     /// </summary>
-    public string? State { get; }
+    public string? HistoryEntryState { get; internal init; }
 }

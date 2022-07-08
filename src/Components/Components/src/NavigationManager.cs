@@ -90,7 +90,7 @@ public abstract class NavigationManager
     /// <remarks>
     /// Setting the state is allowed to support unit testing scenarios, but it will not trigger a navigation.
     /// </remarks>
-    public string? State { get; protected set; }
+    public string? HistoryEntryState { get; protected set; }
 
     /// <summary>
     /// Navigates to the specified URI.
@@ -269,8 +269,7 @@ public abstract class NavigationManager
     {
         try
         {
-            State = state;
-            _locationChanged?.Invoke(this, new LocationChangedEventArgs(_uri!, state, isInterceptedLink));
+            _locationChanged?.Invoke(this, new LocationChangedEventArgs(_uri!, isInterceptedLink) { HistoryEntryState = state });
         }
         catch (Exception ex)
         {

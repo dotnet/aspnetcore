@@ -25,6 +25,7 @@ internal sealed class WebAssemblyNavigationManager : NavigationManager
     public void SetLocation(string uri, string? state, bool isInterceptedLink)
     {
         Uri = uri;
+        HistoryEntryState = state;
         NotifyLocationChanged(state, isInterceptedLink);
     }
 
