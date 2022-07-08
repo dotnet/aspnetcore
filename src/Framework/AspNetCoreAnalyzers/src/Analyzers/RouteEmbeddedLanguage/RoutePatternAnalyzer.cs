@@ -37,12 +37,18 @@ public sealed class RoutePatternAnalyzer : DiagnosticAnalyzer
     {
         public void Analyze(SemanticModelAnalysisContext context)
         {
-            var semanticModel = context.SemanticModel;
-            var syntaxTree = semanticModel.SyntaxTree;
-            var cancellationToken = context.CancellationToken;
+            try
+            {
+                var semanticModel = context.SemanticModel;
+                var syntaxTree = semanticModel.SyntaxTree;
+                var cancellationToken = context.CancellationToken;
 
-            var root = syntaxTree.GetRoot(cancellationToken);
-            Analyze(context, root, cancellationToken);
+                var root = syntaxTree.GetRoot(cancellationToken);
+                Analyze(context, root, cancellationToken);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+            }
         }
 
         private void Analyze(
