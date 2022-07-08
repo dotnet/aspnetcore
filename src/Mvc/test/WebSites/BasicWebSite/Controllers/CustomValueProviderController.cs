@@ -17,6 +17,10 @@ public class CustomValueProviderController : Controller
         => customValueProviderIntValues;
 
     [HttpGet]
+    public int?[] CustomValueProviderNullableIntValues(int?[] customValueProviderNullableIntValues)
+        => customValueProviderNullableIntValues;
+
+    [HttpGet]
     public string[] CustomValueProviderStringValues(string[] customValueProviderStringValues)
         => customValueProviderStringValues;
 }

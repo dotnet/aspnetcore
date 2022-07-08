@@ -58,6 +58,23 @@ public class CustomValueProviderTest : IClassFixture<MvcTestFixture<BasicWebSite
     }
 
     [Fact]
+    public async Task CustomValueProvider_NullableIntValues()
+    {
+        // Arrange
+        var url = "http://localhost/CustomValueProvider/CustomValueProviderNullableIntValues";
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+        // Act
+        var response = await Client.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
+        Assert.Equal("[null,42,null,100,null,200]", content);
+    }
+
+    [Fact]
     public async Task CustomValueProvider_StringValues()
     {
         // Arrange

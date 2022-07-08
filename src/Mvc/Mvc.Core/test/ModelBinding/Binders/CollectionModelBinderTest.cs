@@ -215,7 +215,7 @@ public class CollectionModelBinderTest
                 { "someName", "420" },
             };
         var context = GetModelBindingContext(valueProvider);
-        var valueProviderResult = new ValueProviderResult(new[] { null, "42", "100", null, "200" });
+        var valueProviderResult = new ValueProviderResult(new[] { null, "42", "", "100", null, "200" });
 
         // Act
         var boundCollection = await binder.BindSimpleCollection(context, valueProviderResult);
