@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
@@ -21,12 +23,15 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
 
     public void Analyze(SemanticModelAnalysisContext context)
     {
-        var semanticModel = context.SemanticModel;
-        var syntaxTree = semanticModel.SyntaxTree;
-        var cancellationToken = context.CancellationToken;
+        if (VersionChecker.IsSupported)
+        {
+            var semanticModel = context.SemanticModel;
+            var syntaxTree = semanticModel.SyntaxTree;
+            var cancellationToken = context.CancellationToken;
 
-        var root = syntaxTree.GetRoot(cancellationToken);
-        Analyze(context, root, cancellationToken);
+            var root = syntaxTree.GetRoot(cancellationToken);
+            Analyze(context, root, cancellationToken);
+        }
     }
 
     private void Analyze(

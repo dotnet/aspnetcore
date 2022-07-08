@@ -85,6 +85,14 @@ public class RoutePatternCompletionProvider : CompletionProvider
 
     public override async Task ProvideCompletionsAsync(CompletionContext context)
     {
+        if (VersionChecker.IsSupported)
+        {
+            await ProvideCompletionsCoreAsync(context);
+        }
+    }
+
+    private async Task ProvideCompletionsCoreAsync(CompletionContext context)
+    {
         if (context.Trigger.Kind is not CompletionTriggerKind.Invoke and
             not CompletionTriggerKind.InvokeAndCommitIfUnique and
             not CompletionTriggerKind.Insertion)
