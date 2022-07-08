@@ -1,12 +1,10 @@
 #nullable enable
 Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.set -> void
-Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChanged(string? state, bool isInterceptedLink) -> void
 Microsoft.AspNetCore.Components.NavigationOptions.State.get -> string?
 Microsoft.AspNetCore.Components.NavigationOptions.State.init -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString? markupContent) -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.HistoryEntryState.get -> string?
-Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.LocationChangedEventArgs(string! location, string? state, bool isNavigationIntercepted) -> void
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback<T>(object! receiver, Microsoft.AspNetCore.Components.EventCallback<T> callback, T value) -> Microsoft.AspNetCore.Components.EventCallback<T>
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.InvokeAsynchronousDelegate(System.Action! callback) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.InvokeAsynchronousDelegate(System.Func<System.Threading.Tasks.Task!>! callback) -> System.Threading.Tasks.Task!

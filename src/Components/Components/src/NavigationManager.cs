@@ -259,17 +259,14 @@ public abstract class NavigationManager
     /// </summary>
     protected void NotifyLocationChanged(bool isInterceptedLink)
     {
-        NotifyLocationChanged(null, isInterceptedLink);
-    }
-
-    /// <summary>
-    /// Triggers the <see cref="LocationChanged"/> event with the current URI value.
-    /// </summary>
-    protected void NotifyLocationChanged(string? state, bool isInterceptedLink)
-    {
         try
         {
-            _locationChanged?.Invoke(this, new LocationChangedEventArgs(_uri!, isInterceptedLink) { HistoryEntryState = state });
+            _locationChanged?.Invoke(
+                this,
+                new LocationChangedEventArgs(_uri!, isInterceptedLink)
+                {
+                    HistoryEntryState = HistoryEntryState
+                });
         }
         catch (Exception ex)
         {
