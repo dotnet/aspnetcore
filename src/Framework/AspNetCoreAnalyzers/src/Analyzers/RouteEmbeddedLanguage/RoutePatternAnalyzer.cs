@@ -21,60 +21,6 @@ public sealed class RoutePatternAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.RoutePatternIssue
     });
 
-    public void Analyze(SemanticModelAnalysisContext context)
-    {
-        var semanticModel = context.SemanticModel;
-        var syntaxTree = semanticModel.SyntaxTree;
-        var cancellationToken = context.CancellationToken;
-
-        var root = syntaxTree.GetRoot(cancellationToken);
-        Analyze(context, root, cancellationToken);
-    }
-
-    private void Analyze(
-        SemanticModelAnalysisContext context,
-        SyntaxNode node,
-        CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        foreach (var child in node.ChildNodesAndTokens())
-        {
-            if (child.IsNode)
-            {
-                Analyze(context, child.AsNode()!, cancellationToken);
-            }
-            else
-            {
-                var token = child.AsToken();
-                if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, context.SemanticModel, cancellationToken))
-                {
-                    continue;
-                }
-
-                var usageContext = RoutePatternUsageDetector.BuildContext(token, context.SemanticModel, cancellationToken);
-
-                var virtualChars = AspNetCoreCSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
-                var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
-                if (tree == null)
-                {
-                    continue;
-                }
-
-                foreach (var diag in tree.Diagnostics)
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.RoutePatternIssue,
-                        Location.Create(context.SemanticModel.SyntaxTree, diag.Span),
-                        DiagnosticDescriptors.RoutePatternIssue.DefaultSeverity,
-                        additionalLocations: null,
-                        properties: null,
-                        diag.Message));
-                }
-            }
-        }
-    }
-
     public override void Initialize(AnalysisContext context)
     {
         if (VersionChecker.IsSupported)
@@ -82,7 +28,66 @@ public sealed class RoutePatternAnalyzer : DiagnosticAnalyzer
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
 
-            context.RegisterSemanticModelAction(Analyze);
+            var impl = new RoutePatternAnalyzerImpl();
+            context.RegisterSemanticModelAction(impl.Analyze);
         }
+    }
+
+    private sealed class RoutePatternAnalyzerImpl
+    {
+        public void Analyze(SemanticModelAnalysisContext context)
+        {
+            var semanticModel = context.SemanticModel;
+            var syntaxTree = semanticModel.SyntaxTree;
+            var cancellationToken = context.CancellationToken;
+
+            var root = syntaxTree.GetRoot(cancellationToken);
+            Analyze(context, root, cancellationToken);
+        }
+
+        private void Analyze(
+            SemanticModelAnalysisContext context,
+            SyntaxNode node,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            foreach (var child in node.ChildNodesAndTokens())
+            {
+                if (child.IsNode)
+                {
+                    Analyze(context, child.AsNode()!, cancellationToken);
+                }
+                else
+                {
+                    var token = child.AsToken();
+                    if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, context.SemanticModel, cancellationToken))
+                    {
+                        continue;
+                    }
+
+                    var usageContext = RoutePatternUsageDetector.BuildContext(token, context.SemanticModel, cancellationToken);
+
+                    var virtualChars = AspNetCoreCSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
+                    var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
+                    if (tree == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var diag in tree.Diagnostics)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            DiagnosticDescriptors.RoutePatternIssue,
+                            Location.Create(context.SemanticModel.SyntaxTree, diag.Span),
+                            DiagnosticDescriptors.RoutePatternIssue.DefaultSeverity,
+                            additionalLocations: null,
+                            properties: null,
+                            diag.Message));
+                    }
+                }
+            }
+        }
+
     }
 }
