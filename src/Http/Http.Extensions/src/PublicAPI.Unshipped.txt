@@ -3,6 +3,10 @@
 *REMOVED*Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
 *REMOVED*Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
 *REMOVED*Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext
 Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext.EndpointMetadataContext(System.Reflection.MethodInfo! method, System.Collections.Generic.IList<object!>! endpointMetadata, System.IServiceProvider! applicationServices) -> void
@@ -38,6 +42,19 @@ Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointMetadata.init ->
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string?
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.get -> System.Collections.Generic.IDictionary<string!, object?>! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Status.get -> int? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Status.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Title.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.Extensions.DependencyInjection.ProblemDetailsServiceCollectionExtensions
 Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Type! type, System.Text.Json.Serialization.JsonSerializerContext! context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
