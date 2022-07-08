@@ -31,7 +31,9 @@ export class WebAssemblyResourceLoader {
     const response = this.cacheIfUsed
       ? this.loadResourceWithCaching(this.cacheIfUsed, name, url, contentHash, resourceType)
       : this.loadResourceWithoutCaching(name, url, contentHash, resourceType);
-    response.then(_=>this.progressService?.resourceLoaded());
+
+    response.then(_ => this.progressService.resourceLoaded());
+    
     return { name, url, response };
   }
 
