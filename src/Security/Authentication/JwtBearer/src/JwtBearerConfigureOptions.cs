@@ -39,16 +39,59 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
             return;
         }
 
-        var issuer = configSection["ClaimsIssuer"];
-        var audiences = configSection.GetSection("Audiences").GetChildren().Select(aud => aud.Value).ToArray();
+        var issuer = configSection[nameof(TokenValidationParameters.ValidIssuer)];
+        var issuers = configSection.GetSection(nameof(TokenValidationParameters.ValidIssuers)).GetChildren().Select(iss => iss.Value).ToList();
+        if (issuer is not null)
+        {
+            issuers.Add(issuer);
+        }
+        var audience = configSection[nameof(TokenValidationParameters.ValidAudience)];
+        var audiences = configSection.GetSection(nameof(TokenValidationParameters.ValidAudiences)).GetChildren().Select(aud => aud.Value).ToList();
+        if (audience is not null)
+        {
+            audiences.Add(audience);
+        }
+
+        options.Authority = configSection[nameof(options.Authority)];
+        options.BackchannelTimeout = TimeSpan.TryParse(configSection[nameof(options.BackchannelTimeout)], out var backChannelTimeout)
+            ? backChannelTimeout
+            : options.BackchannelTimeout;
+        options.Challenge = configSection[nameof(options.Challenge)] ?? options.Challenge;
+        options.ForwardAuthenticate = configSection[nameof(options.ForwardAuthenticate)];
+        options.ForwardChallenge = configSection[nameof(options.ForwardChallenge)];
+        options.ForwardDefault = configSection[nameof(options.ForwardDefault)];
+        options.ForwardForbid = configSection[nameof(options.ForwardForbid)];
+        options.ForwardSignIn = configSection[nameof(options.ForwardSignIn)];
+        options.ForwardSignOut = configSection[nameof(options.ForwardSignOut)];
+        options.IncludeErrorDetails = bool.TryParse(configSection[nameof(options.IncludeErrorDetails)], out var includeErrorDetails)
+            ? includeErrorDetails
+            : options.IncludeErrorDetails;
+        options.MapInboundClaims = bool.TryParse(configSection[nameof(options.MapInboundClaims)], out var mapInboundClaims)
+            ? mapInboundClaims
+            : options.MapInboundClaims;
+        options.MetadataAddress = configSection[nameof(options.MetadataAddress)] ?? options.MetadataAddress;
+        options.RefreshInterval = TimeSpan.TryParse(configSection[nameof(options.RefreshInterval)], out var refreshInternval)
+            ? refreshInternval
+            : options.RefreshInterval;
+        options.RefreshOnIssuerKeyNotFound = bool.TryParse(configSection[nameof(options.RefreshOnIssuerKeyNotFound)], out var refreshOnIssuerKeyNotFound)
+            ? refreshOnIssuerKeyNotFound
+            : options.RefreshOnIssuerKeyNotFound;
+        options.RequireHttpsMetadata = bool.TryParse(configSection[nameof(options.RequireHttpsMetadata)], out var requireHttpsMetadata)
+            ? requireHttpsMetadata
+            : options.RequireHttpsMetadata;
+        options.SaveToken = bool.TryParse(configSection[nameof(options.SaveToken)], out var saveToken)
+            ? saveToken
+            : options.SaveToken;
         options.TokenValidationParameters = new()
         {
-            ValidateIssuer = issuer is not null,
-            ValidIssuers = new[] { issuer },
-            ValidateAudience = audiences.Length > 0,
+            ValidateIssuer = issuers.Count > 0,
+            ValidIssuers = issuers,
+            ValidateAudience = audiences.Count > 0,
             ValidAudiences = audiences,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = GetIssuerSigningKey(configSection, issuer),
+            // Even if we have multiple issuers, they must all resolve to the same signing
+            // key under the hood so we just use the first one.
+            IssuerSigningKey = GetIssuerSigningKey(configSection, issuers.FirstOrDefault()),
         };
     }
 

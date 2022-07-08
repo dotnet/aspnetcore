@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -883,6 +884,40 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         using var dom = JsonDocument.Parse(responseBody);
         Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("expires").ValueKind);
         Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("issued").ValueKind);
+    }
+
+    [Fact]
+    public void CanReadJwtBearerOptionsFromConfig()
+    {
+        var services = new ServiceCollection().AddLogging();
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:0", "http://localhost:5000"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:1", "https://localhost:5001"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:BackchannelTimeout", "00:01:00"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:RequireHttpsMetadata", "false"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SaveToken", "True"),
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        var builder = services.AddAuthentication(o =>
+        {
+            o.AddScheme<TestHandler>("Bearer", "Bearer");
+        });
+        builder.AddJwtBearer("Bearer");
+        RegisterAuth(builder, _ => { });
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidIssuers, new[] { "dotnet-user-jwts" });
+        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidAudiences, new[] { "http://localhost:5000", "https://localhost:5001" });
+        Assert.Equal(jwtBearerOptions.BackchannelTimeout, TimeSpan.FromSeconds(60));
+        Assert.False(jwtBearerOptions.RequireHttpsMetadata);
+        Assert.True(jwtBearerOptions.SaveToken);
+        Assert.True(jwtBearerOptions.MapInboundClaims); // Assert default values are respected
     }
 
     class InvalidTokenValidator : ISecurityTokenValidator

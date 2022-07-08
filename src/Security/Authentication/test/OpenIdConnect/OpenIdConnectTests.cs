@@ -7,9 +7,14 @@ using System.Net;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect;
@@ -406,6 +411,75 @@ public class OpenIdConnectTests
         Assert.Equal(utcNow + TimeSpan.FromHours(1), GetNonceExpirationTime(noncePrefix + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)));
 
         Assert.Equal(DateTime.MinValue, GetNonceExpirationTime(utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter + utcNow.Ticks.ToString(CultureInfo.InvariantCulture) + nonceDelimiter, TimeSpan.FromHours(1)));
+    }
+
+    [Fact]
+    public void CanReadOpenIdConnectOptionsFromConfig()
+    {
+        // Arrange
+        var services = new ServiceCollection().AddLogging();
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:Authority", "https://authority.com"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:BackchannelTimeout", "00:05:00"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientId", "client-id"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientSecret", "client-secret"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:RequireHttpsMetadata", "false"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:Domain", "https://localhost:5000"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:Name", "CookieName"),
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        var builder = services.AddAuthentication();
+        builder.AddOpenIdConnect();
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var options = sp.GetRequiredService<IOptionsMonitor<OpenIdConnectOptions>>().Get(OpenIdConnectDefaults.AuthenticationScheme);
+        Assert.Equal("authority.com", options.Authority);
+        Assert.Equal(options.BackchannelTimeout, TimeSpan.FromMinutes(5));
+        Assert.False(options.RequireHttpsMetadata);
+        Assert.False(options.GetClaimsFromUserInfoEndpoint); // Assert default values are respected
+        Assert.Equal(new PathString("/signin-oidc"), options.CallbackPath); // Assert default callback paths are respected
+        Assert.Equal("https://localhost:5000", options.CorrelationCookie.Domain); // Can set nested properties on cookie
+        Assert.Equal("CookieName", options.CorrelationCookie.Name);
+    }
+
+    [Fact]
+    public void CanCreateOpenIdConnectCookiesFromConfig()
+    {
+        // Arrange
+        var services = new ServiceCollection().AddLogging();
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:Authority", "https://authority.com"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientId", "client-id"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientSecret", "client-secret"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:Domain", "https://localhost:5000"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:IsEssential", "False"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:SecurePolicy", "Always"),
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        var builder = services.AddAuthentication();
+        builder.AddOpenIdConnect();
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var options = sp.GetRequiredService<IOptionsMonitor<OpenIdConnectOptions>>().Get(OpenIdConnectDefaults.AuthenticationScheme);
+        Assert.Equal("https://localhost:5000", options.CorrelationCookie.Domain);
+        Assert.False(options.CorrelationCookie.IsEssential);
+        Assert.Equal(CookieSecurePolicy.Always, options.CorrelationCookie.SecurePolicy);
+        // Default values are respected
+        Assert.Equal(".AspNetCore.Correlation.", options.CorrelationCookie.Name);
+        Assert.True(options.CorrelationCookie.HttpOnly);
+        Assert.Equal(SameSiteMode.None, options.CorrelationCookie.SameSite);
+        Assert.Equal(OpenIdConnectDefaults.CookieNoncePrefix, options.NonceCookie.Name);
+        Assert.True(options.NonceCookie.IsEssential);
+        Assert.True(options.NonceCookie.HttpOnly);
+        Assert.Equal(CookieSecurePolicy.SameAsRequest, options.NonceCookie.SecurePolicy);
     }
 
     private static DateTime GetNonceExpirationTime(string keyname, TimeSpan nonceLifetime)
