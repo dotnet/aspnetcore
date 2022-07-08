@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "1.0.0.0",
   "strings": {
     "name": "ASP.NET Core Web API'si",
@@ -6,6 +6,6 @@
     "parameter.DisableOpenAPI.name": "_OpenAPI desteğini etkinleştir",
     "parameter.DisableOpenAPI.description": "OpenAPI (Swagger) desteğini etkinleştirir",
     "parameter.UseMinimalAPIs.name": "Denetleyicileri kullan (minimal API’leri kullanmak için onay işaretini kaldırın)",
-    "parameter.UseMinimalAPIs.description": "Denetleyiciler yerine minimal API’lerin kullanılıp kullanılmayacağını belirtir."
+    "parameter.UseMinimalAPIs.description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir."
   }
 }

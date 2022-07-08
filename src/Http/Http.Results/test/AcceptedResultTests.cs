@@ -59,6 +59,14 @@ public class AcceptedResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Accepted>(null));
     }
 
+    [Fact]
+    public void AcceptedResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Accepted("location"));
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

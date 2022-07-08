@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "1.0.0.0",
   "strings": {
     "name": "API web ASP.NET Core",
@@ -6,6 +6,6 @@
     "parameter.DisableOpenAPI.name": "Activer la prise en charge d'_OpenAPI",
     "parameter.DisableOpenAPI.description": "Active la prise en charge d'OpenAPI (Swagger)",
     "parameter.UseMinimalAPIs.name": "Utiliser des contrôleurs (décocher pour utiliser un minimum d'API)",
-    "parameter.UseMinimalAPIs.description": "S'il faut utiliser des API minimales au lieu de contrôleurs."
+    "parameter.UseMinimalAPIs.description": "Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur."
   }
 }
