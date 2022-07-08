@@ -1,5 +1,3 @@
-import { Blazor } from "../GlobalExports";
-
 export class WebAssemblyProgressReporter {
     /**
     * Modifies CSS of the loading ring to reflect linear progress based on the number of resources.
@@ -15,7 +13,7 @@ export class WebAssemblyProgressReporter {
         circle.style.strokeDashoffset = `${ring}`;
         circle.style.display = 'block';
         const element = document.getElementById('blazor-default-loading-percentage') as unknown as SVGTextElement;
-        const percentage = Math.floor(resourcesLoaded / resourcesTotal * 100);
+        const percentage = Math.floor(progressPercentage * 100);
         element!.textContent = `${percentage}%`;
     }
 }
