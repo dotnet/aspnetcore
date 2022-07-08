@@ -264,7 +264,7 @@ internal sealed class AcceptsMatcherPolicy : MatcherPolicy, IEndpointComparerPol
                 context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                 return Task.CompletedTask;
             },
-            new EndpointMetadataCollection(new RoutingProblemMetadata(StatusCodes.Status415UnsupportedMediaType)),
+            EndpointMetadataCollection.Empty,
             Http415EndpointDisplayName);
     }
 

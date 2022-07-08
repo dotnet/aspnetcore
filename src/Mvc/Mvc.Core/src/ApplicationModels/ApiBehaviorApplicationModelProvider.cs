@@ -20,12 +20,10 @@ internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelPro
     {
         var options = apiBehaviorOptions.Value;
 
-        var defaultErrorType = options.SuppressMapClientErrors ? typeof(void) : typeof(ProblemDetails);
-
         ActionModelConventions = new List<IActionModelConvention>()
         {
             new ApiVisibilityConvention(),
-            new EndpointMetadataConvention(serviceProvider, defaultErrorType)
+            new EndpointMetadataConvention(serviceProvider)
         };
 
         if (!options.SuppressMapClientErrors)
@@ -43,6 +41,7 @@ internal sealed class ApiBehaviorApplicationModelProvider : IApplicationModelPro
             ActionModelConventions.Add(new ConsumesConstraintForFormFileParameterConvention());
         }
 
+        var defaultErrorType = options.SuppressMapClientErrors ? typeof(void) : typeof(ProblemDetails);
         var defaultErrorTypeAttribute = new ProducesErrorResponseTypeAttribute(defaultErrorType);
         ActionModelConventions.Add(new ApiConventionApplicationModelConvention(defaultErrorTypeAttribute));
 

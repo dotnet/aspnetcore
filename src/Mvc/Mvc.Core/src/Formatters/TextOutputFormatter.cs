@@ -138,9 +138,10 @@ public abstract class TextOutputFormatter : OutputFormatter
 
             if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
             {
-                return problemDetailsService.WriteAsync(new ProblemDetailsContext(context.HttpContext)
+                return problemDetailsService.WriteAsync(new ()
                 {
-                    ProblemDetails = new ProblemDetails { Status = statusCode }
+                    HttpContext = context.HttpContext,
+                    ProblemDetails = { Status = statusCode }
                 }).AsTask();
             }
 

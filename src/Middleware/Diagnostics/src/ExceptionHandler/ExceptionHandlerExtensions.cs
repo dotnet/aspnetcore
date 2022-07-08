@@ -133,19 +133,15 @@ public static class ExceptionHandlerExtensions
                     options.Value.ExceptionHandler = builder.Build();
                 }
 
-                return new ExceptionHandlerMiddleware(next, loggerFactory, options, diagnosticListener, problemDetailsService).Invoke;
+                return new ExceptionHandlerMiddlewareImpl(next, loggerFactory, options, diagnosticListener, problemDetailsService).Invoke;
             });
         }
 
         if (options is null)
         {
-            return problemDetailsService is null ?
-                app.UseMiddleware<ExceptionHandlerMiddleware>() :
-                app.UseMiddleware<ExceptionHandlerMiddleware>(problemDetailsService);
+            return app.UseMiddleware<ExceptionHandlerMiddlewareImpl>();
         }
 
-        return problemDetailsService is null ?
-            app.UseMiddleware<ExceptionHandlerMiddleware>(options) :
-            app.UseMiddleware<ExceptionHandlerMiddleware>(options, problemDetailsService);
+        return app.UseMiddleware<ExceptionHandlerMiddlewareImpl>(options);
     }
 }

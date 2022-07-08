@@ -11,20 +11,9 @@ namespace Microsoft.AspNetCore.Http;
 public sealed class ProblemDetailsContext
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="ProblemDetailsContext"/>.
-    /// </summary>
-    /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request being processed by the filter.</param>
-    public ProblemDetailsContext(HttpContext httpContext)
-    {
-        ArgumentNullException.ThrowIfNull(httpContext);
-
-        HttpContext = httpContext;
-    }
-
-    /// <summary>
     /// The <see cref="HttpContext"/> associated with the current request being processed by the filter.
     /// </summary>
-    public HttpContext HttpContext { get; }
+    public required HttpContext HttpContext { get; init; }
 
     /// <summary>
     /// A collection of additional arbitrary metadata associated with the current request endpoint.

@@ -13,60 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public class EndpointMetadataConventionTest
 {
-    [Fact]
-    public void Apply_DefaultErrorTypeMetadata_WhenIProblemDetailsServiceRegistered()
-    {
-        // Arrange
-        var action = GetActionModel(typeof(TestController), nameof(TestController.MultipleSelectorsActionWithMetadataInActionResult));
-        var errorType = typeof(ProblemDetails);
-        var convention = GetConvention(services: CreateServicesWithProblemDetatils(), errorType: errorType);
-
-        //Act
-        convention.Apply(action);
-
-        // Assert
-        foreach (var selector in action.Selectors)
-        {
-            Assert.Contains(selector.EndpointMetadata, m => m is IProblemDetailsMetadata attribute && attribute.ProblemType == ProblemDetailsTypes.All);
-        }
-    }
-
-    [Fact]
-    public void Apply_SkipDefaultErrorTypeMetadata_WhenIProblemDetailsServiceNotRegistered()
-    {
-        // Arrange
-        var action = GetActionModel(typeof(TestController), nameof(TestController.MultipleSelectorsActionWithMetadataInActionResult));
-        var errorType = typeof(ProblemDetails);
-        var convention = GetConvention(errorType: errorType);
-
-        //Act
-        convention.Apply(action);
-
-        // Assert
-        foreach (var selector in action.Selectors)
-        {
-            Assert.DoesNotContain(selector.EndpointMetadata, m => m is IProblemDetailsMetadata);
-        }
-    }
-
-    [Fact]
-    public void Apply_SkipDefaultErrorTypeMetadata_WhenVoid()
-    {
-        // Arrange
-        var action = GetActionModel(typeof(TestController), nameof(TestController.MultipleSelectorsActionWithMetadataInActionResult));
-        var errorType = typeof(void);
-        var convention = GetConvention(errorType: errorType);
-
-        //Act
-        convention.Apply(action);
-
-        // Assert
-        foreach (var selector in action.Selectors)
-        {
-            Assert.DoesNotContain(selector.EndpointMetadata, m => m is IProblemDetailsMetadata);
-        }
-    }
-
     [Theory]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInValueTaskOfResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInValueTaskOfActionResult))]
@@ -240,11 +186,10 @@ public class EndpointMetadataConventionTest
         Assert.DoesNotContain(action.Selectors[0].EndpointMetadata, m => m is IAcceptsMetadata);
     }
 
-    private static EndpointMetadataConvention GetConvention(IServiceProvider services = null, Type errorType = null)
+    private static EndpointMetadataConvention GetConvention(IServiceProvider services = null)
     {
-        errorType ??= typeof(void);
         services ??= Mock.Of<IServiceProvider>();
-        return new EndpointMetadataConvention(services, errorType);
+        return new EndpointMetadataConvention(services);
     }
 
     private static ApplicationModelProviderContext GetContext(Type type)

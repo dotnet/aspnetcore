@@ -19,18 +19,6 @@ public class Startup
 
     public void Configure(IApplicationBuilder app)
     {
-        // Add a problemMetadata to all requests
-        app.Use((context, next) =>
-        {
-            var includeProblemMetadata = context.Request.Query["includeProblemMetadata"];
-            if (includeProblemMetadata == "true")
-            {
-                context.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(new ProblemMetadata()), string.Empty));
-            }
-
-            return next(context);
-        });
-
         app.UseDeveloperExceptionPage();
         app.UseStatusCodePages(); // There is a default response but any of the following can be used to change the behavior.
 

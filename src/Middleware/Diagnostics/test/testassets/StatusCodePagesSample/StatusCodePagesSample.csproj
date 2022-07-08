@@ -6,14 +6,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
-    <Reference Include="Microsoft.AspNetCore.Http.ProblemDetails" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemMetadata.cs" LinkBase="Shared" />
-  </ItemGroup>
-
 
 </Project>

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Http.Tests;
+namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
 public class DefaultProblemDetailsWriterTest
 {
@@ -27,13 +27,14 @@ public class DefaultProblemDetailsWriterTest
             Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1-custom",
             Title = "Custom Bad Request",
         };
-        var problemDetailsContext = new ProblemDetailsContext(context)
+        var problemDetailsContext = new ProblemDetailsContext()
         {
+            HttpContext = context,
             ProblemDetails = expectedProblem
         };
 
         //Act
-        await writer.WriteAsync(problemDetailsContext);
+        await writer.TryWriteAsync(problemDetailsContext);
 
         //Assert
         stream.Position = 0;
@@ -57,13 +58,14 @@ public class DefaultProblemDetailsWriterTest
         expectedProblem.Extensions["Extension1"] = "Extension1-Value";
         expectedProblem.Extensions["Extension2"] = "Extension2-Value";
 
-        var problemDetailsContext = new ProblemDetailsContext(context)
+        var problemDetailsContext = new ProblemDetailsContext()
         {
+            HttpContext = context,
             ProblemDetails = expectedProblem
         };
 
         //Act
-        await writer.WriteAsync(problemDetailsContext);
+        await writer.TryWriteAsync(problemDetailsContext);
 
         //Assert
         stream.Position = 0;
@@ -91,7 +93,7 @@ public class DefaultProblemDetailsWriterTest
         var context = CreateContext(stream, StatusCodes.Status500InternalServerError);
 
         //Act
-        await writer.WriteAsync(new ProblemDetailsContext(context));
+        await writer.TryWriteAsync(new ProblemDetailsContext() { HttpContext = context });
 
         //Assert
         stream.Position = 0;
@@ -108,11 +110,11 @@ public class DefaultProblemDetailsWriterTest
         // Arrange
         var options = new ProblemDetailsOptions()
         {
-            ConfigureDetails = (context, problem) =>
+            CustomizeProblemDetails = (context) =>
             {
-                problem.Status = StatusCodes.Status406NotAcceptable;
-                problem.Title = "Custom Title";
-                problem.Extensions["new-extension"] = new { TraceId = Guid.NewGuid() };
+                context.ProblemDetails.Status = StatusCodes.Status406NotAcceptable;
+                context.ProblemDetails.Title = "Custom Title";
+                context.ProblemDetails.Extensions["new-extension"] = new { TraceId = Guid.NewGuid() };
             }
         };
         var writer = GetWriter(options);
@@ -120,9 +122,10 @@ public class DefaultProblemDetailsWriterTest
         var context = CreateContext(stream, StatusCodes.Status500InternalServerError);
 
         //Act
-        await writer.WriteAsync(new ProblemDetailsContext(context)
+        await writer.TryWriteAsync(new ProblemDetailsContext()
         {
-            ProblemDetails = new() { Status = StatusCodes.Status400BadRequest }
+            HttpContext = context,
+            ProblemDetails = { Status = StatusCodes.Status400BadRequest }
         });
 
         //Assert
@@ -144,9 +147,10 @@ public class DefaultProblemDetailsWriterTest
         var context = CreateContext(stream, StatusCodes.Status500InternalServerError);
 
         //Act
-        await writer.WriteAsync(new ProblemDetailsContext(context)
+        await writer.TryWriteAsync(new ProblemDetailsContext()
         {
-            ProblemDetails = new() { Status = StatusCodes.Status400BadRequest }
+            HttpContext = context,
+            ProblemDetails = { Status = StatusCodes.Status400BadRequest }
         });
 
         //Assert
@@ -158,12 +162,73 @@ public class DefaultProblemDetailsWriterTest
         Assert.Equal("Bad Request", problemDetails.Title);
     }
 
-    private HttpContext CreateContext(Stream body, int statusCode = StatusCodes.Status400BadRequest)
+    [Theory]
+    [InlineData("*/*")]
+    [InlineData("application/*")]
+    [InlineData("application/json")]
+    [InlineData("application/problem+json")]
+    public async Task WriteAsync_Works_WhenJsonAccepted(string contentType)
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        context.Request.Headers.Accept = contentType;
+
+        var expectedProblem = new ProblemDetails()
+        {
+            Detail = "Custom Bad Request",
+            Instance = "Custom Bad Request",
+            Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1-custom",
+            Title = "Custom Bad Request",
+        };
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        //Act
+        await writer.TryWriteAsync(problemDetailsContext);
+
+        //Assert
+        stream.Position = 0;
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(expectedProblem.Status, problemDetails.Status);
+        Assert.Equal(expectedProblem.Type, problemDetails.Type);
+        Assert.Equal(expectedProblem.Title, problemDetails.Title);
+        Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
+        Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
+    }
+
+    [Theory]
+    [InlineData("application/xml")]
+    [InlineData("application/problem+xml")]
+    public async Task WriteAsync_Skips_WhenJsonNotAccepted(string contentType)
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        context.Request.Headers.Accept = contentType;
+
+        //Act
+        var result = await writer.TryWriteAsync(new() { HttpContext = context });
+
+        //Assert
+        Assert.False(result);
+        Assert.Equal(0, stream.Position);
+        Assert.Equal(0, stream.Length);
+    }
+
+    private static HttpContext CreateContext(Stream body, int statusCode = StatusCodes.Status400BadRequest)
     {
         return new DefaultHttpContext()
         {
             Response = { Body = body, StatusCode = statusCode },
-            RequestServices = CreateServices(),
+            RequestServices = CreateServices()
         };
     }
 
@@ -176,9 +241,9 @@ public class DefaultProblemDetailsWriterTest
         return services.BuildServiceProvider();
     }
 
-    private static DefaultProblemDetailsWriter GetWriter(ProblemDetailsOptions options = null)
+    private static ProblemDetailsDefaultWriter GetWriter(ProblemDetailsOptions options = null)
     {
         options ??= new ProblemDetailsOptions();
-        return new DefaultProblemDetailsWriter(Options.Create(options));
+        return new ProblemDetailsDefaultWriter(Options.Create(options));
     }
 }

@@ -14,5 +14,5 @@ public interface IProblemDetailsWriter
     /// </summary>
     /// <param name="context">The <see cref="ProblemDetailsContext"/> associated with the current request/response.</param>
     /// <returns>Flag that indicates if the response was started.</returns>
-    ValueTask<bool> WriteAsync(ProblemDetailsContext context);
+    ValueTask<bool> TryWriteAsync(ProblemDetailsContext context);
 }
