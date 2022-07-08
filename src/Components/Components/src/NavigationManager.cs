@@ -275,7 +275,7 @@ public abstract class NavigationManager
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI.</param>
     /// <param name="isNavigationIntercepted">Whether this navigation was intercepted from a link.</param>
     /// <param name="forceLoad">Whether the navigation is attempting to bypass client-side routing.</param>
-    /// <returns>A <see cref="ValueTask{TResult}"/> representing the completion of the operaiton.</returns>
+    /// <returns>A <see cref="ValueTask{TResult}"/> representing the completion of the operation.</returns>
     public async ValueTask<bool> NotifyLocationChanging(string uri, bool isNavigationIntercepted, bool forceLoad)
     {
         _locationChangingCts?.Cancel();
@@ -329,9 +329,7 @@ public abstract class NavigationManager
     /// <param name="value">Whether there are active location changing handlers.</param>
     /// <returns><see langword="true"/> if the change was applied successfully, otherwise <see langword="false"/>.</returns>
     protected virtual bool SetHasLocationChangingHandlers(bool value)
-    {
-        return true;
-    }
+        => true;
 
     /// <summary>
     /// Invokes <see cref="SetHasLocationChangingHandlers(bool)"/> if the existence of location changing handlers has changed.
