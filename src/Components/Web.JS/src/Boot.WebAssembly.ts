@@ -125,13 +125,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   const bootConfigResult: BootConfigResult = await bootConfigPromise;
   const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
 
-  // Only instantiate the WebAssemblyProgressReporter if the loading element exists in the DOM
-  if (document.getElementById('blazor-default-loading') && !Blazor.webAssemblyLoadingSetProgress) {
-    WebAssemblyProgressReporter.init();
-  }
   const progressService = new WebAssemblyProgressService();
-  if (Blazor.webAssemblyLoadingSetProgress){
-    progressService.attach(Blazor.webAssemblyLoadingSetProgress);
+
+  // Only instantiate the WebAssemblyProgressReporter if the loading element exists in the DOM
+  if (options?.setProgress) {
+    progressService.attach(options?.setProgress);
+  } else if (document.getElementById('blazor-default-loading')) {
+    progressService.attach(WebAssemblyProgressReporter.setProgress);
   }
 
   const [resourceLoader] = await Promise.all([

@@ -18,11 +18,4 @@ export class WebAssemblyProgressReporter {
         const percentage = Math.floor(resourcesLoaded / resourcesTotal * 100);
         element!.textContent = `${percentage}%`;
     }
-
-    /**
-    * Adds the setProgress function to the list of observers in WebAssemblyProgressService.ts.
-    */
-    static init(): void {
-        Blazor.webAssemblyLoadingSetProgress = this.setProgress;
-    }
 }

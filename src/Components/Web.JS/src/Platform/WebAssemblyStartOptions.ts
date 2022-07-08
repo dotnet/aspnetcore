@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { SetProgressFunction } from "./WebAssemblyProgressService";
+
 export interface WebAssemblyStartOptions {
   /**
    * Overrides the built-in boot resource loading mechanism so that boot resources can be fetched
@@ -22,6 +24,13 @@ export interface WebAssemblyStartOptions {
    * Gets the application culture. This is a name specified in the BCP 47 format. See https://tools.ietf.org/html/bcp47
    */
   applicationCulture?: string;
+
+    /**
+   * Overrides the default setProgress method that modifies a loading HTML element in the DOM.
+    * @param resourcesTotal The total number of resources retrieved from {@link ./Mono/MonoPlatform.ts} class.
+    * @param resourcesLoaded The current number of resources loaded retrieved from {@link ./WebAssemblyResourceLoader.ts} class.
+   */
+  setProgress(resourcesTotal: number, resourcesLoaded: number): SetProgressFunction | null | undefined;
 }
 
 // This type doesn't have to align with anything in BootConfig.
