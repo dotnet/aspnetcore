@@ -26,7 +26,7 @@ internal sealed class WebAssemblyNavigationManager : NavigationManager
     {
         Uri = uri;
         HistoryEntryState = state;
-        NotifyLocationChanged(state, isInterceptedLink);
+        NotifyLocationChanged(isInterceptedLink);
     }
 
     /// <inheritdoc />

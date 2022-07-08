@@ -17,7 +17,7 @@ internal sealed class WebViewNavigationManager : NavigationManager
     {
         Uri = newUrl;
         HistoryEntryState = state;
-        NotifyLocationChanged(state, intercepted);
+        NotifyLocationChanged(intercepted);
     }
 
     protected override void NavigateToCore(string uri, NavigationOptions options)

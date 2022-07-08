@@ -62,7 +62,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         Uri = uri;
         HistoryEntryState = state;
-        NotifyLocationChanged(state, intercepted);
+        NotifyLocationChanged(intercepted);
     }
 
     /// <inheritdoc />
