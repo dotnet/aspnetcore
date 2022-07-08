@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
@@ -14,86 +12,78 @@ using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class RoutePatternAnalyzer : DiagnosticAnalyzer
+public class RoutePatternAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(new[]
     {
         DiagnosticDescriptors.RoutePatternIssue
     });
 
-    public override void Initialize(AnalysisContext context)
+    public void Analyze(SemanticModelAnalysisContext context)
     {
-        if (VersionChecker.IsSupported)
+        try
         {
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-            context.EnableConcurrentExecution();
+            var semanticModel = context.SemanticModel;
+            var syntaxTree = semanticModel.SyntaxTree;
+            var cancellationToken = context.CancellationToken;
 
-            var impl = new RoutePatternAnalyzerImpl();
-            context.RegisterSemanticModelAction(impl.Analyze);
+            var root = syntaxTree.GetRoot(cancellationToken);
+            Analyze(context, root, cancellationToken);
+        }
+        catch (System.IO.FileNotFoundException)
+        {
         }
     }
 
-    private sealed class RoutePatternAnalyzerImpl
+    private void Analyze(
+        SemanticModelAnalysisContext context,
+        SyntaxNode node,
+        CancellationToken cancellationToken)
     {
-        public void Analyze(SemanticModelAnalysisContext context)
+        cancellationToken.ThrowIfCancellationRequested();
+
+        foreach (var child in node.ChildNodesAndTokens())
         {
-            try
+            if (child.IsNode)
             {
-                var semanticModel = context.SemanticModel;
-                var syntaxTree = semanticModel.SyntaxTree;
-                var cancellationToken = context.CancellationToken;
-
-                var root = syntaxTree.GetRoot(cancellationToken);
-                Analyze(context, root, cancellationToken);
+                Analyze(context, child.AsNode()!, cancellationToken);
             }
-            catch (System.IO.FileNotFoundException)
+            else
             {
-            }
-        }
-
-        private void Analyze(
-            SemanticModelAnalysisContext context,
-            SyntaxNode node,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            foreach (var child in node.ChildNodesAndTokens())
-            {
-                if (child.IsNode)
+                var token = child.AsToken();
+                if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, context.SemanticModel, cancellationToken))
                 {
-                    Analyze(context, child.AsNode()!, cancellationToken);
+                    continue;
                 }
-                else
+
+                var usageContext = RoutePatternUsageDetector.BuildContext(token, context.SemanticModel, cancellationToken);
+
+                var virtualChars = AspNetCoreCSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
+                var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
+                if (tree == null)
                 {
-                    var token = child.AsToken();
-                    if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, context.SemanticModel, cancellationToken))
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    var usageContext = RoutePatternUsageDetector.BuildContext(token, context.SemanticModel, cancellationToken);
-
-                    var virtualChars = AspNetCoreCSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
-                    var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
-                    if (tree == null)
-                    {
-                        continue;
-                    }
-
-                    foreach (var diag in tree.Diagnostics)
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            DiagnosticDescriptors.RoutePatternIssue,
-                            Location.Create(context.SemanticModel.SyntaxTree, diag.Span),
-                            DiagnosticDescriptors.RoutePatternIssue.DefaultSeverity,
-                            additionalLocations: null,
-                            properties: null,
-                            diag.Message));
-                    }
+                foreach (var diag in tree.Diagnostics)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        DiagnosticDescriptors.RoutePatternIssue,
+                        Location.Create(context.SemanticModel.SyntaxTree, diag.Span),
+                        DiagnosticDescriptors.RoutePatternIssue.DefaultSeverity,
+                        additionalLocations: null,
+                        properties: null,
+                        diag.Message));
                 }
             }
         }
+    }
 
+    public override void Initialize(AnalysisContext context)
+    {
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+        context.EnableConcurrentExecution();
+
+        context.RegisterSemanticModelAction(Analyze);
     }
 }
