@@ -25,12 +25,12 @@ export interface WebAssemblyStartOptions {
    */
   applicationCulture?: string;
 
-    /**
+  /**
    * Overrides the default setProgress method that modifies a loading HTML element in the DOM.
     * @param resourcesTotal The total number of resources retrieved from {@link ./Mono/MonoPlatform.ts} class.
     * @param resourcesLoaded The current number of resources loaded retrieved from {@link ./WebAssemblyResourceLoader.ts} class.
    */
-  setProgress(resourcesTotal: number, resourcesLoaded: number): SetProgressFunction | null | undefined;
+  setProgress(resourcesTotal: number, resourcesLoaded: number): void;
 }
 
 // This type doesn't have to align with anything in BootConfig.
