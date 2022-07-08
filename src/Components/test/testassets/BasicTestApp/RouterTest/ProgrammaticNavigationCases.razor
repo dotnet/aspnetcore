@@ -15,7 +15,7 @@
     Programmatic navigation with force-load
 </button>
 
-<button id="do-other-navigation-forced-state" @onclick="@(() => NavigationManager.NavigateTo("Other", new NavigationOptions{ State = "state", ForceLoad = true }))">
+<button id="do-other-navigation-forced-state" @onclick="@(() => NavigationManager.NavigateTo("Other", new NavigationOptions{ HistoryEntryState = "state", ForceLoad = true }))">
     Programmatic navigation (NavigationOptions overload) with force-load and state
 </button>
 
@@ -27,10 +27,10 @@
     Programmatic navigation with force-load and replace
 </button>
 
-<button id="do-other-navigation-state" @onclick="@(() => NavigationManager.NavigateTo("Other", new NavigationOptions { State = "state" }))">
+<button id="do-other-navigation-state" @onclick="@(() => NavigationManager.NavigateTo("Other", new NavigationOptions { HistoryEntryState = "state" }))">
     Programmatic navigation (NavigationOptions overload) with state
 </button>
 
-<button id="do-other-navigation-state-replacehistoryentry" @onclick="@(() => NavigationManager.NavigateTo("Other", new NavigationOptions { State = "state", ReplaceHistoryEntry = true }))">
+<button id="do-other-navigation-state-replacehistoryentry" @onclick="@(() => NavigationManager.NavigateTo("Other", new NavigationOptions { HistoryEntryState = "state", ReplaceHistoryEntry = true }))">
     Programmatic navigation (NavigationOptions overload) with replace and state
 </button>

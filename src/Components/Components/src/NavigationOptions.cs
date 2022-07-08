@@ -22,5 +22,5 @@ public readonly struct NavigationOptions
     /// <summary>
     /// Gets or sets the state to append to the history entry.
     /// </summary>
-    public string? State { get; init; }
+    public string? HistoryEntryState { get; init; }
 }
