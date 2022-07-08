@@ -82,7 +82,7 @@ export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | 
     : { forceLoad: forceLoadOrOptions, replaceHistoryEntry: replaceIfUsingOldOverload };
 
   if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.state);
+    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState);
   } else {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
@@ -195,5 +195,5 @@ function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
 export interface NavigationOptions {
   forceLoad: boolean;
   replaceHistoryEntry: boolean;
-  state?: string;
+  historyEntryState?: string;
 }
