@@ -88,7 +88,7 @@ public abstract class NavigationManager
     /// Gets or sets the state associated with the current navigation.
     /// </summary>
     /// <remarks>
-    /// Setting the state is allowed to support unit testing scenarios, but it will not trigger a navigation.
+    /// Setting <see cref="HistoryEntryState" /> will not trigger the <see cref="LocationChanged" /> event.
     /// </remarks>
     public string? HistoryEntryState { get; protected set; }
 
