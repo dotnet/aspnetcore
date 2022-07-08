@@ -86,7 +86,7 @@ a, .btn-link {
 
     #blazor-default-loading #blazor-default-loading-progress {
         stroke: #1b6ec2;
-        transition: 0.05s stroke-dashoffset ease-in-out;
+        transition: stroke-dashoffset ease-in-out;
         display: none;
     }
 
