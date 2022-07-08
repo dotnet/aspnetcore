@@ -20,31 +20,29 @@ public static class ProblemDetailsServiceCollectionExtensions
     public static IServiceCollection AddProblemDetails(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-
-        // Adding default services;
-        services.TryAddSingleton<IProblemDetailsService, ProblemDetailsService>();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, ProblemDetailsDefaultWriter>());
-
-        return services;
+        return services.AddProblemDetails(configure: null);
     }
 
     /// <summary>
     /// Adds services required for creation of <see cref="ProblemDetails"/> for failed requests.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="configureOptions">The <see cref="ProblemDetailsOptions"/> to configure the services with.</param>
+    /// <param name="configure">The <see cref="ProblemDetailsOptions"/> to configure the services with.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddProblemDetails(
         this IServiceCollection services,
-        Action<ProblemDetailsOptions> configureOptions)
+        Action<ProblemDetailsOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configureOptions);
 
-        // Adding default services
-        services.AddProblemDetails();
+        // Adding default services;
+        services.TryAddSingleton<IProblemDetailsService, ProblemDetailsService>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, ProblemDetailsDefaultWriter>());
 
-        services.Configure(configureOptions);
+        if (configure != null)
+        {
+            services.Configure(configure);
+        }
 
         return services;
     }

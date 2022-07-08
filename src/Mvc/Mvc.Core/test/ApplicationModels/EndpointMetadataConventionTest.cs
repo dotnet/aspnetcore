@@ -211,13 +211,6 @@ public class EndpointMetadataConventionTest
         return Assert.Single(controller.Actions, m => m.ActionName == actionName);
     }
 
-    private static IServiceProvider CreateServicesWithProblemDetatils()
-    {
-        var services = new ServiceCollection();
-        services.AddSingleton(Mock.Of<IProblemDetailsService>());
-        return services.BuildServiceProvider();
-    }
-
     private class TestController
     {
         public ActionResult ActionWithParameterMetadata(AddsCustomParameterMetadata param1) => null;

@@ -7,13 +7,12 @@ internal sealed class ProblemDetailsClientErrorFactory : IClientErrorFactory
 {
     private readonly ProblemDetailsFactory _problemDetailsFactory;
 
-    public ProblemDetailsClientErrorFactory(
-        ProblemDetailsFactory problemDetailsFactory)
+    public ProblemDetailsClientErrorFactory(ProblemDetailsFactory problemDetailsFactory)
     {
         _problemDetailsFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
     }
 
-    public IActionResult? GetClientError(ActionContext actionContext, IClientErrorActionResult clientError)
+    public IActionResult GetClientError(ActionContext actionContext, IClientErrorActionResult clientError)
     {
         var problemDetails = _problemDetailsFactory.CreateProblemDetails(actionContext.HttpContext, clientError.StatusCode);
 

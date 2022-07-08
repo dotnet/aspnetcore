@@ -20,7 +20,6 @@ internal sealed class EndpointMetadataConvention : IActionModelConvention
 
     public void Apply(ActionModel action)
     {
-
         // Get metadata from parameter types
         ApplyParametersMetadata(action);
 
