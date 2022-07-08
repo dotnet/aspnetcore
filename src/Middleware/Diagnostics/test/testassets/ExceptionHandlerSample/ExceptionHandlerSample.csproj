@@ -11,5 +11,4 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
   </ItemGroup>
-  
 </Project>

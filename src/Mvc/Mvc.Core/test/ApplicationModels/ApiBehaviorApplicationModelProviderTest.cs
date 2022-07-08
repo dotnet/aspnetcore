@@ -3,11 +3,8 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -80,6 +77,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
         Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
         Assert.NotEmpty(actionModel.Selectors);
+        Assert.Empty(actionModel.Selectors[0].EndpointMetadata);
     }
 
     [Fact]
@@ -122,6 +120,7 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
         Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
         Assert.NotEmpty(actionModel.Selectors);
+        Assert.Empty(actionModel.Selectors[0].EndpointMetadata);
     }
 
     [Fact]
