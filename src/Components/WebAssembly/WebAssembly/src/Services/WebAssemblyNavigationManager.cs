@@ -55,4 +55,16 @@ internal sealed class WebAssemblyNavigationManager : NavigationManager
         DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.SetHasLocationChangingListeners, value);
         return true;
     }
+
+    protected override ValueTask EnableNavigationPromptAsync(string message, bool externalNavigationsOnly)
+    {
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.EnableNavigationPrompt, message, externalNavigationsOnly);
+        return ValueTask.CompletedTask;
+    }
+
+    protected override ValueTask DisableNavigationPromptAsync()
+    {
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.DisableNavigationPrompt);
+        return ValueTask.CompletedTask;
+    }
 }

@@ -106,6 +106,28 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         return true;
     }
 
+    protected override async ValueTask EnableNavigationPromptAsync(string message, bool externalNavigationsOnly)
+    {
+        if (_jsRuntime is null)
+        {
+            // TODO: Would be better to handle this case more gracefully.
+            throw new InvalidOperationException("The JavaScript runtime is not initialized.");
+        }
+
+        await _jsRuntime.InvokeVoidAsync(Interop.EnableNavigationPrompt, message, externalNavigationsOnly);
+    }
+
+    protected override async ValueTask DisableNavigationPromptAsync()
+    {
+        if (_jsRuntime is null)
+        {
+            // TODO: Would be better to handle this case more gracefully.
+            throw new InvalidOperationException("The JavaScript runtime is not initialized.");
+        }
+
+        await _jsRuntime.InvokeVoidAsync(Interop.DisableNavigationPrompt);
+    }
+
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Debug, "Requesting navigation to URI {Uri} with forceLoad={ForceLoad}, replace={Replace}", EventName = "RequestingNavigation")]

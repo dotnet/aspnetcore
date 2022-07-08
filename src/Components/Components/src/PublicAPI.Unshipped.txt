@@ -17,6 +17,11 @@ Microsoft.AspNetCore.Components.Routing.LocationChangingContext.ForceLoad.get ->
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.IsCanceled.get -> bool
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.IsNavigationIntercepted.get -> bool
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.Location.get -> string!
+Microsoft.AspNetCore.Components.Routing.NavigationPrompt
+Microsoft.AspNetCore.Components.Routing.NavigationPrompt.ExternalNavigationsOnly.get -> bool
+Microsoft.AspNetCore.Components.Routing.NavigationPrompt.ExternalNavigationsOnly.set -> void
+Microsoft.AspNetCore.Components.Routing.NavigationPrompt.Message.get -> string!
+Microsoft.AspNetCore.Components.Routing.NavigationPrompt.Message.set -> void
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback<T>(object! receiver, Microsoft.AspNetCore.Components.EventCallback<T> callback, T value) -> Microsoft.AspNetCore.Components.EventCallback<T>
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.InvokeAsynchronousDelegate(System.Action! callback) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.InvokeAsynchronousDelegate(System.Func<System.Threading.Tasks.Task!>! callback) -> System.Threading.Tasks.Task!

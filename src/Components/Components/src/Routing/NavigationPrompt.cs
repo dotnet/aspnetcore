@@ -3,10 +3,8 @@
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
-internal class NavigationPrompt : IComponent, IHandleLocationChanging, IDisposable
+public class NavigationPrompt : IComponent, IAsyncDisposable
 {
-    private bool _externalNavigationsOnly;
-
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
 
@@ -21,7 +19,7 @@ internal class NavigationPrompt : IComponent, IHandleLocationChanging, IDisposab
     {
     }
 
-    Task IComponent.SetParametersAsync(ParameterView parameters)
+    async Task IComponent.SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
 
@@ -30,34 +28,11 @@ internal class NavigationPrompt : IComponent, IHandleLocationChanging, IDisposab
             throw new InvalidOperationException($"{nameof(NavigationPrompt)} requires a non-empty value for the parameter {nameof(Message)}.");
         }
 
-        if (_externalNavigationsOnly != ExternalNavigationsOnly)
-        {
-            _externalNavigationsOnly = ExternalNavigationsOnly;
-
-            if (_externalNavigationsOnly)
-            {
-                NavigationManager.RemoveLocationChangingHandler(this);
-            }
-            else
-            {
-                NavigationManager.AddLocationChangingHandler(this);
-            }
-        }
-
-        return Task.CompletedTask;
+        await NavigationManager.EnableNavigationPromptAsync(Message, ExternalNavigationsOnly);
     }
 
-    ValueTask IHandleLocationChanging.OnLocationChanging(LocationChangingContext context)
+    async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        // TODO
-        return ValueTask.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        if (!_externalNavigationsOnly)
-        {
-            NavigationManager.RemoveLocationChangingHandler(this);
-        }
+        await NavigationManager.DisableNavigationPromptAsync();
     }
 }

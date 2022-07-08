@@ -353,6 +353,12 @@ public abstract class NavigationManager
         return false;
     }
 
+    protected internal virtual ValueTask EnableNavigationPromptAsync(string message, bool externalNavigationsOnly)
+        => ValueTask.CompletedTask;
+
+    protected internal virtual ValueTask DisableNavigationPromptAsync()
+        => ValueTask.CompletedTask;
+
     private void AssertInitialized()
     {
         if (!_isInitialized)

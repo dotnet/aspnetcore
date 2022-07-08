@@ -1,0 +1,11 @@
+﻿@page "/BlockedNavigationWithPrompt"
+
+@using Microsoft.AspNetCore.Components.Routing
+
+<input type="checkbox" @bind-value="_externalNavigationsOnly" />Block external navigations only
+
+<NavigationPrompt Message="Are you sure you want to leave?" ExternalNavigationsOnly="_externalNavigationsOnly" />
+
+@code {
+    private bool _externalNavigationsOnly;
+}
