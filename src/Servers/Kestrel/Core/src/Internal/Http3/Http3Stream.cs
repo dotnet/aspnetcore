@@ -1194,9 +1194,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         var version = WebTransportSession.CurrentSuppportedVersion[WebTransportSession.SecPrefix.Length..];
 
         // send version negotiation resulting version
-        ResponseHeaders.Add(WebTransportSession.VersionHeaderPrefix, version);
-        Output.WriteResponseHeaders((int)HttpStatusCode.OK, null, (HttpResponseHeaders)ResponseHeaders, false, false);
-        await Output.FlushAsync(token);
+        ResponseHeaders[WebTransportSession.VersionHeaderPrefix] = version;
+        await FlushAsync(token);
 
         _context.WebTransportSession = _context.Connection!.OpenNewWebTransportSession(this);
 
