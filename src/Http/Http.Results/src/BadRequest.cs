@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with Bad Request (400) status code.
 /// </summary>
-public sealed class BadRequest : IResult, IEndpointMetadataProvider
+public sealed class BadRequest : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="BadRequest"/> class with the values

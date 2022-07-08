@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write an object to the response
 /// with Unprocessable Entity (422) status code.
 /// </summary>
-public sealed class UnprocessableEntity : IResult, IEndpointMetadataProvider
+public sealed class UnprocessableEntity : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="UnprocessableEntity"/> class with the values

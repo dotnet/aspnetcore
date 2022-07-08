@@ -14,7 +14,7 @@ public class AuthorizationOptions
     private Dictionary<string, AuthorizationPolicy> PolicyMap { get; } = new Dictionary<string, AuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Determines whether authentication handlers should be invoked after <see cref="AuthorizationHandlerContext.HasFailed"/>.
+    /// Determines whether authorization handlers should be invoked after <see cref="AuthorizationHandlerContext.HasFailed"/>.
     /// Defaults to true.
     /// </summary>
     public bool InvokeHandlersAfterFailure { get; set; } = true;

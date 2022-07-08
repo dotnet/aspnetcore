@@ -121,6 +121,35 @@ public class EndpointMiddlewareTest
     }
 
     [Fact]
+    public async Task Invoke_WithEndpointWithNullRequestDelegate_ThrowsIfAuthAttributesWereFound_ButAuthMiddlewareNotInvoked()
+    {
+        // Arrange
+        var expected = "Endpoint Test contains authorization metadata, but a middleware was not found that supports authorization." +
+            Environment.NewLine +
+            "Configure your application startup by adding app.UseAuthorization() in the application startup code. " +
+            "If there are calls to app.UseRouting() and app.UseEndpoints(...), the call to app.UseAuthorization() must go between them.";
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceProvider()
+        };
+
+        RequestDelegate throwIfCalled = (c) =>
+        {
+            throw new InvalidTimeZoneException("Should not be called");
+        };
+
+        httpContext.SetEndpoint(new Endpoint(requestDelegate: null, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"));
+
+        var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, throwIfCalled, RouteOptions);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
+
+        // Assert
+        Assert.Equal(expected, ex.Message);
+    }
+
+    [Fact]
     public async Task Invoke_WithEndpoint_WorksIfAuthAttributesWereFound_AndAuthMiddlewareInvoked()
     {
         // Arrange

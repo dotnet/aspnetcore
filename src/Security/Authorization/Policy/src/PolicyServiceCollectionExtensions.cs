@@ -13,6 +13,14 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class PolicyServiceCollectionExtensions
 {
     /// <summary>
+    /// Adds authorization services to the specified <see cref="IServiceCollection" />.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <returns>The <see cref="AuthorizationBuilder"/> so that additional calls can be chained.</returns>
+    public static AuthorizationBuilder AddAuthorizationBuilder(this IServiceCollection services)
+        => new AuthorizationBuilder(services.AddAuthorization());
+
+    /// <summary>
     /// Adds the authorization policy evaluator service to the specified <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>

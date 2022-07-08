@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write Problem Details
 /// HTTP API responses based on <see href="https://tools.ietf.org/html/rfc7807"/>
 /// </summary>
-public sealed class ProblemHttpResult : IResult
+public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContentTypeHttpResult, IValueHttpResult, IValueHttpResult<ProblemDetails>
 {
     /// <summary>
     /// Creates a new <see cref="ProblemHttpResult"/> instance with
@@ -29,6 +29,10 @@ public sealed class ProblemHttpResult : IResult
     /// </summary>
     public ProblemDetails ProblemDetails { get; }
 
+    object? IValueHttpResult.Value => ProblemDetails;
+
+    ProblemDetails? IValueHttpResult<ProblemDetails>.Value => ProblemDetails;
+
     /// <summary>
     /// Gets the value for the <c>Content-Type</c> header: <c>application/problem+json</c>
     /// </summary>
@@ -37,7 +41,7 @@ public sealed class ProblemHttpResult : IResult
     /// <summary>
     /// Gets the HTTP status code.
     /// </summary>
-    public int? StatusCode => ProblemDetails.Status;
+    public int StatusCode => ProblemDetails.Status!.Value;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)

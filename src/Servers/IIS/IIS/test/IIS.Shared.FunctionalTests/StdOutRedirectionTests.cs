@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 #if !IIS_FUNCTIONALS
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -37,19 +33,20 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
 
-        var deploymentResult = await DeployAsync(deploymentParameters);
+        await RunTest(deploymentParameters, async deploymentResult =>
+        {
+            Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
 
-        Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.False(response.IsSuccessStatusCode);
 
-        var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-        Assert.False(response.IsSuccessStatusCode);
+            StopServer();
 
-        StopServer();
-
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            @"Framework: 'Microsoft.NETCore.App', version '2.9.9' \(x64\)", Logger);
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            "To install missing framework, download:", Logger);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                @"Framework: 'Microsoft.NETCore.App', version '2.9.9' \(x64\)", Logger);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                "To install missing framework, download:", Logger);
+        });
     }
 
     [ConditionalFact]
@@ -61,23 +58,24 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
 
         deploymentParameters.EnableLogging(LogFolderPath);
 
-        var deploymentResult = await DeployAsync(deploymentParameters);
+        await RunTest(deploymentParameters, async deploymentResult =>
+        {
+            Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
 
-        Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.False(response.IsSuccessStatusCode);
 
-        var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-        Assert.False(response.IsSuccessStatusCode);
+            StopServer();
 
-        StopServer();
-
-        var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
-        var missingFrameworkString = "To install missing framework, download:";
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            @"Framework: 'Microsoft.NETCore.App', version '2.9.9' \(x64\)", Logger);
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            missingFrameworkString, Logger);
-        Assert.Contains(@"Framework: 'Microsoft.NETCore.App', version '2.9.9' (x64)", contents);
-        Assert.Contains(missingFrameworkString, contents);
+            var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
+            var missingFrameworkString = "To install missing framework, download:";
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                @"Framework: 'Microsoft.NETCore.App', version '2.9.9' \(x64\)", Logger);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                missingFrameworkString, Logger);
+            Assert.Contains(@"Framework: 'Microsoft.NETCore.App', version '2.9.9' (x64)", contents);
+            Assert.Contains(missingFrameworkString, contents);
+        });
     }
 
     [ConditionalFact]
@@ -93,17 +91,18 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
 
         deploymentParameters.EnableLogging(LogFolderPath);
 
-        var deploymentResult = await DeployAsync(deploymentParameters);
+        await RunTest(deploymentParameters, async deploymentResult =>
+        {
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.False(response.IsSuccessStatusCode);
 
-        var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-        Assert.False(response.IsSuccessStatusCode);
+            StopServer();
 
-        StopServer();
-
-        var fileInDirectory = Directory.GetFiles(LogFolderPath).Single();
-        var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
-        Assert.Contains("Invoked hostfxr", contents);
+            var fileInDirectory = Directory.GetFiles(LogFolderPath).Single();
+            var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
+            Assert.Contains("Invoked hostfxr", contents);
+        });
     }
 
     [ConditionalTheory]
@@ -119,15 +118,16 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
         deploymentParameters.EnvironmentVariables["COREHOST_TRACE"] = "1";
         deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
 
-        var deploymentResult = await DeployAsync(deploymentParameters);
+        await RunTest(deploymentParameters, async deploymentResult =>
+        {
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
 
-        var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.False(response.IsSuccessStatusCode);
 
-        Assert.False(response.IsSuccessStatusCode);
+            StopServer();
 
-        StopServer();
-
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
+        });
     }
 
     [ConditionalTheory]
@@ -146,17 +146,18 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
 
         deploymentParameters.EnableLogging(LogFolderPath);
 
-        var deploymentResult = await DeployAsync(deploymentParameters);
+        await RunTest(deploymentParameters, async deploymentResult =>
+        {
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.False(response.IsSuccessStatusCode);
 
-        var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-        Assert.False(response.IsSuccessStatusCode);
+            StopServer();
 
-        StopServer();
+            var fileInDirectory = Directory.GetFiles(LogFolderPath).First();
+            var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
 
-        var fileInDirectory = Directory.GetFiles(LogFolderPath).First();
-        var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
-
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
-        Assert.Contains("Invoked hostfxr", contents);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
+            Assert.Contains("Invoked hostfxr", contents);
+        });
     }
 }

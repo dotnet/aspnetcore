@@ -22,6 +22,18 @@ public class JsonConverterWriteTests
     }
 
     [Fact]
+    public void CustomizedName()
+    {
+        var helloRequest = new HelloRequest
+        {
+            FieldName = "A field name"
+        };
+
+        AssertWrittenJson(helloRequest,
+            new GrpcJsonSettings { IgnoreDefaultValues = true });
+    }
+
+    [Fact]
     public void NonAsciiString()
     {
         var helloRequest = new HelloRequest
