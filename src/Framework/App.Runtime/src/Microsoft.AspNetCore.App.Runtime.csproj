@@ -206,6 +206,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _DownloadAndExtractDotNetRuntime;
       _BatchCopyToSharedFrameworkLayout;
       _BatchCopyToRedistLayout;
+      _BatchCopyToCompositeLayout;
       _CreateInternalSharedFxArchive;
       _CreateRedistSharedFxArchive;
       _CreateRedistCompositeArchive;
@@ -474,7 +475,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <NativeAssetsFullPath>$(RuntimePackageRoot)$(NativeAssetsPackagePath)</NativeAssetsFullPath>
 
       <BaseAssemblies>$(ManagedAssetsFullPath)\*.dll</BaseAssemblies>
-      <BaseAssemblies Condition="Exists('$(ManagedAssetsFullPath)') and '$(TargetOsName)' == 'win'">$(BaseAssemblies) $(NativeAssetsFullPath)\*.dll</BaseAssemblies>
+      <BaseAssemblies Condition="Exists('$(NativeAssetsFullPath)') and '$(TargetOsName)' == 'win'">$(BaseAssemblies) $(NativeAssetsFullPath)\*.dll</BaseAssemblies>
 
       <CompositeArgs>--composite</CompositeArgs>
       <CompositeArgs>$(CompositeArgs) --targetarch:$(TargetArchitecture)</CompositeArgs>
@@ -560,6 +561,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="_BatchCopyToSharedFrameworkLayout"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')">
+
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
@@ -577,10 +579,43 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="_BatchCopyToRedistLayout"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(RedistLayoutTargetDir)%(FileName)%(Extension)')">
+
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(RedistLayoutTargetDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(RedistLayoutTargetDir)" />
+  </Target>
+
+  <Target Name="_BatchCopyToCompositeLayout">
+    <PropertyGroup>
+      <CompositeFrameworkLayoutRoot>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', CompositeFx.Layout, '$(Configuration)', '$(TargetRuntimeIdentifier)'))</CompositeFrameworkLayoutRoot>
+      <LayoutAspnetPath>$(CompositeFrameworkLayoutRoot)\shared\$(SharedFxName)\$(SharedFxVersion)\</LayoutAspnetPath>
+      <LayoutNetcorePath>$(CompositeFrameworkLayoutRoot)\shared\Microsoft$(NETCoreAppFrameworkIdentifier).App\$(MicrosoftNETCoreAppRuntimeVersion)\</LayoutNetcorePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RedistLayoutFiles Include="$(RedistSharedFrameworkLayoutRoot)**\*.*" />
+      <CompositeFiles Include="$(CompositeTargetDir)**\*.*" />
+      <AspnetFiles Include="$(LayoutAspnetPath)**\*.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AspnetFilesByName Include="@(AspnetFiles->'%(Filename)%(Extension)')" />
+      <CompositeFilesByName Include="@(CompositeFiles->'%(Filename)%(Extension)')" />
+      <FrameworkCompositesByName Include="@(CompositeFilesByName)" Exclude="@(AspnetFilesByName)" />
+      <AspnetCompositesByName Include="@(CompositeFilesByName)" Exclude="@(FrameworkCompositesByName)" />
+    </ItemGroup>
+
+    <RemoveDir Directories="$(CompositeFrameworkLayoutRoot)" />
+    <MakeDir Directories="$(CompositeFrameworkLayoutRoot)" />
+
+    <Copy SourceFiles="@(RedistLayoutFiles)" DestinationFolder="$(CompositeFrameworkLayoutRoot)\%(RecursiveDir)" />
+
+    <Copy SourceFiles="@(FrameworkCompositesByName->'$(CompositeTargetDir)%(Filename)%(Extension)')"
+          DestinationFolder="$(LayoutNetcorePath)" />
+
+    <Copy SourceFiles="@(AspnetCompositesByName->'$(CompositeTargetDir)%(Filename)%(Extension)')"
+          DestinationFolder="$(LayoutAspnetPath)" />
   </Target>
 
   <Target Name="_CleanLocalDotNet" BeforeTargets="_InstallFrameworkIntoLocalDotNet">
@@ -600,6 +635,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Condition="'$(DotNetBuildFromSource)' != 'true'"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')">
+
     <Copy SourceFiles="@(SharedFxContent)"
           DestinationFiles="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
@@ -625,6 +661,24 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Inputs="$(CompositeTargetDir)"
           Outputs="$(CompositeArchiveOutputPath)">
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(CompositeArchiveOutputPath)" />
+
+    <Message Importance="High" Text="-------" />
+    <Message Importance="High" Text="MESSAGEY IN _CREATE_REDIST_COMPOSITE_ARCHIVE" />
+    <Message Importance="High" Text="MESSAGEY INSTALLERS OUTPUT PATH: $(InstallersOutputPath)" />
+    <Message Importance="High" Text="MESSAGEY REDIST ARCHIVE OUTPUT FILENAME: $(RedistArchiveOutputFileName)" />
+    <Message Importance="High" Text="MESSAGEY REDIST ARCHIVE OUTPUT PATH: $(RedistArchiveOutputPath)" />
+    <Message Importance="High" Text="MESSAGEY COMPOSITE ARCHIVE OUTPUT FILENAME: $(CompositeArchiveOutputFileName)" />
+    <Message Importance="High" Text="MESSAGEY COMPOSITE ARCHIVE OUTPUT PATH: $(CompositeArchiveOutputPath)" />
+    <Message Importance="High" Text="MESSAGEY REDIST SHARED FRAMEWORK LAYOUT ROOT: $(RedistSharedFrameworkLayoutRoot)" />
+    <Message Importance="High" Text="MESSAGEY REDIST ARCHIVE OUTPUT PATH: $(RedistArchiveOutputPath)" />
+    <Message Importance="High" Text="MESSAGEY SHARED FX LAYOUT TARGET DIR: $(SharedFxLayoutTargetDir)" />
+    <Message Importance="High" Text="MESSAGEY REDIST LAYOUT TARGET DIR: $(RedistLayoutTargetDir)" />
+    <Message Importance="High" Text="MESSAGEY NETCOREAPP FRAMEWORK IDENTIFIER: $(NETCoreAppFrameworkIdentifier)" />
+    <Message Importance="High" Text="MESSAGEY DEFAULT NETCORE TARGET FRAMEWORK: $(DefaultNetCoreTargetFramework)" />
+    <Message Importance="High" Text="MESSAGEY TARGET FRAMEWORK VERSION: $([MSBuild]::GetTargetFrameworkVersion('$(DefaultNetCoreTargetFramework)', 2))" />
+    <Message Importance="High" Text="MESSAGEY MICROSOFT NETCOREAPP RUNTIME VERSION: $(MicrosoftNETCoreAppRuntimeVersion)" />
+    <Message Importance="High" Text="-------" />
+
     <ZipDirectory
       SourceDirectory="$(CompositeTargetDir)"
       DestinationFile="$(CompositeArchiveOutputPath)"
@@ -642,6 +696,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Inputs="@(SharedFxContent)"
           Outputs="$(RedistArchiveOutputPath)">
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(RedistArchiveOutputPath)" />
+
     <ZipDirectory
       SourceDirectory="$(RedistSharedFrameworkLayoutRoot)"
       DestinationFile="$(RedistArchiveOutputPath)"
