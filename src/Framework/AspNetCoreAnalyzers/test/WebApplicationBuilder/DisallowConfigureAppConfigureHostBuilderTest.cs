@@ -3,6 +3,10 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
+using Microsoft.CodeAnalysis.Testing;
+using VerifyCS = Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.CSharpWebApplicationBuilderCodeFixVerifier<
+    Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.WebApplicationBuilderAnalyzer,
+    Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.Fixers.WebApplicationBuilderFixer>;
 
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 public partial class DisallowConfigureAppConfigureHostBuilderTest
@@ -19,113 +23,89 @@ using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile(""foo.json"", optional: true);
 ";
-        // Act
-        var diagnostic = await Runner.GetDiagnosticsAsync(source);
-
+   
         // Assert
-        Assert.Empty(diagnostic);
+        await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
     [Fact]
     public async Task ConfigureAppHostBuilderProducesDiagnostic()
     {
         // Arrange
-        var source = TestSource.Read(@"
+        var source = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
-builder.Host./*MM*/ConfigureAppConfiguration(builder =>
-{
-    builder.AddJsonFile(""foo.json"", optional: true);
-});
-");
+builder.Host.{|#0:ConfigureAppConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
+";
+        var fixedSource = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile(""foo.json"", optional: true);
+";
 
-        // Act
-        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder).WithArguments("ConfigureAppConfiguration").WithLocation(0);
 
         // Assert
-        var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
-        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
     [Fact]
     public async Task ConfigureHostHostBuilderProducesDiagnostic()
     {
         // Arrange
-        var source = TestSource.Read(@"
+        var source = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
-builder.Host./*MM*/ConfigureHostConfiguration(builder =>
-{
-    builder.AddJsonFile(""foo.json"", optional: true);
-});
-");
+builder.Host.{|#0:ConfigureHostConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
+";
+        var fixedSource = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile(""foo.json"", optional: true);
+";
 
-        // Act
-        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder).WithArguments("ConfigureHostConfiguration").WithLocation(0);
 
         // Assert
-        var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
-        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureHostConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
     [Fact]
     public async Task ConfigureAppWebHostBuilderProducesDiagnostic()
     {
         // Arrange
-        var source = TestSource.Read(@"
+        var source = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost./*MM*/ConfigureAppConfiguration(builder =>
-{
-    builder.AddJsonFile(""foo.json"", optional: true);
-});
-");
-
-        // Act
-        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
-
-        // Assert
-        var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
-        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
-    }
-
-    [Fact]
-    public async Task ConfigureAppWebHostBuilderWithContextProducesDiagnostic()
-    {
-        // Arrange
-        var source = TestSource.Read(@"
+builder.WebHost.{|#0:ConfigureAppConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
+";
+        var fixedSource = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost./*MM*/ConfigureAppConfiguration((context, webHostBuilder) => { });
-");
+builder.Configuration.AddJsonFile(""foo.json"", optional: true);
+";
 
-        // Act
-        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder).WithArguments("ConfigureAppConfiguration").WithLocation(0);
 
         // Assert
-        var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
-        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
+
     [Fact]
     public async Task ConfigureAppWebHostBuilderProducesDiagnosticInMain()
     {
         // Arrange
-        var source = TestSource.Read(@"
+        var source = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -133,25 +113,11 @@ public static class Test
 {
     public static void Main(string[]args) {
     var builder = WebApplication.CreateBuilder(args);
-    builder.WebHost./*MM*/ConfigureAppConfiguration(builder => { });
-}
-}
-");
-
-        // Act
-        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
-
-        // Assert
-        var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
-        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+    builder.WebHost.{|#0:ConfigureAppConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
     }
-    [Fact]
-    public async Task ConfigureAppWebHostOnBuilderProducesDiagnosticInMain()
-    {
-        // Arrange
-        var source = TestSource.Read(@"
+}
+";
+        var fixedSource = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -159,52 +125,69 @@ public static class Test
 {
     public static void Main(string[]args) {
     var builder = WebApplication.CreateBuilder(args);
-    var webhost = builder.WebHost;
-    webhost./*MM*/ConfigureAppConfiguration(builder => { });
+    builder.Configuration.AddJsonFile(""foo.json"", optional: true);
+    }
 }
-}
-");
+";
 
-        // Act
-        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder).WithArguments("ConfigureAppConfiguration").WithLocation(0);
 
         // Assert
-        var diagnostic = Assert.Single(diagnostics);
-        Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic.Descriptor);
-        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic.GetMessage(CultureInfo.InvariantCulture));
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
+    
     [Fact]
     public async Task TwoInvocationsProduceTwoDiagnostic()
     {
         // Arrange
-        var source = TestSource.Read(@"
+        var source = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
-builder.Host./*MM1*/ConfigureHostConfiguration(builder =>
-{
-    builder.AddJsonFile(""foo.json"", optional: true);
-});
-builder.WebHost./*MM2*/ConfigureAppConfiguration(builder =>
-{
-    builder.AddJsonFile(""foo.json"", optional: true);
-});
-");
-
-        // Act
-        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+builder.Host.{|#0:ConfigureHostConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
+builder.WebHost.{|#1:ConfigureAppConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
+";
+        var fixedSource = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile(""foo.json"", optional: true);
+builder.Configuration.AddJsonFile(""foo.json"", optional: true);
+";
+       
+        var expectedDiagnostic = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder).WithArguments("ConfigureHostConfiguration").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder).WithArguments("ConfigureAppConfiguration").WithLocation(1)
+        };
 
         // Assert
-        Assert.Equal(2, diagnostics.Length);
-        var diagnostic1 = diagnostics[0];
-        var diagnostic2 = diagnostics[1];
-        Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic1.Descriptor);
-        AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], diagnostic1.Location);
-        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureHostConfiguration", diagnostic1.GetMessage(CultureInfo.InvariantCulture));
-        Assert.Same(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder, diagnostic2.Descriptor);
-        AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM2"], diagnostic2.Location);
-        Assert.Equal("Suggest using WebApplicationBuilder.Configuration instead of ConfigureAppConfiguration", diagnostic2.GetMessage(CultureInfo.InvariantCulture));
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
+    }
+
+    [Fact]
+    public async Task ConfigureAppHostBuilderProducesDiagnosticVerifyCS()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+var builder = WebApplication.CreateBuilder(args);
+builder.Host.{|#0:ConfigureAppConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
+";
+        var fixedSource = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile(""foo.json"", optional: true);
+";
+
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder).WithArguments("ConfigureAppConfiguration").WithLocation(0);
+
+        //Act
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 }
