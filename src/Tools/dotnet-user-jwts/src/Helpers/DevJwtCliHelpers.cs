@@ -61,13 +61,13 @@ internal static class DevJwtCliHelpers
         return true;
     }
 
-    public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId)
+    public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId, string schemeName, string issuer)
     {
         var projectConfiguration = new ConfigurationBuilder()
             .AddUserSecrets(userSecretsId)
             .Build();
 
-        var signingKeyMaterial = projectConfiguration[DevJwtsDefaults.SigningKeyConfigurationKey];
+        var signingKeyMaterial = projectConfiguration[GetSigningKeyPropertyName(schemeName, issuer)];
 
         var keyMaterial = new byte[DevJwtsDefaults.SigningKeyLength];
         if (signingKeyMaterial is not null && Convert.TryFromBase64String(signingKeyMaterial, keyMaterial, out var bytesWritten) && bytesWritten == DevJwtsDefaults.SigningKeyLength)
@@ -75,10 +75,10 @@ internal static class DevJwtCliHelpers
             return keyMaterial;
         }
 
-        return CreateSigningKeyMaterial(userSecretsId);
+        return CreateSigningKeyMaterial(userSecretsId, schemeName, issuer);
     }
 
-    public static byte[] CreateSigningKeyMaterial(string userSecretsId, bool reset = false)
+    public static byte[] CreateSigningKeyMaterial(string userSecretsId, string schemeName, string issuer, bool reset = false)
     {
         // Create signing material and save to user secrets
         var newKeyMaterial = System.Security.Cryptography.RandomNumberGenerator.GetBytes(DevJwtsDefaults.SigningKeyLength);
@@ -96,12 +96,13 @@ internal static class DevJwtCliHelpers
         }
 
         secrets ??= new JsonObject();
+        var key = GetSigningKeyPropertyName(schemeName, issuer);
 
-        if (reset && secrets.ContainsKey(DevJwtsDefaults.SigningKeyConfigurationKey))
+        if (reset && secrets.ContainsKey(key))
         {
-            secrets.Remove(DevJwtsDefaults.SigningKeyConfigurationKey);
+            secrets.Remove(key);
         }
-        secrets.Add(DevJwtsDefaults.SigningKeyConfigurationKey, JsonValue.Create(Convert.ToBase64String(newKeyMaterial)));
+        secrets.Add(key, JsonValue.Create(Convert.ToBase64String(newKeyMaterial)));
 
         using var secretsWriteStream = new FileStream(secretsFilePath, FileMode.Create, FileAccess.Write);
         JsonSerializer.Serialize(secretsWriteStream, secrets);
@@ -250,4 +251,7 @@ internal static class DevJwtCliHelpers
         }
         return true;
     }
+
+    public static string GetSigningKeyPropertyName(string scheme, string issuer)
+        => $"Authentication:Schemes:{scheme}:{issuer}:{DevJwtsDefaults.SigningKeyConfigurationKey}";
 }
