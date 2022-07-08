@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
+/// <summary>
+/// A component that can be used to intercept internal navigation events.
+/// </summary>
 public class InternalNavigationLock : IComponent, IHandleLocationChanging, IDisposable
 {
     private bool _isInitialized;
@@ -10,6 +13,9 @@ public class InternalNavigationLock : IComponent, IHandleLocationChanging, IDisp
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
 
+    /// <summary>
+    /// A callback to be invoked when an internal navigation event occurs.
+    /// </summary>
     [Parameter]
     [EditorRequired]
     public EventCallback<LocationChangingContext> OnLocationChanging { get; set; }

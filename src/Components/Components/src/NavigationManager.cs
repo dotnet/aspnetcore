@@ -269,7 +269,14 @@ public abstract class NavigationManager
         }
     }
 
-    public async ValueTask<bool> NotifyLocationChanging(string uri, bool intercepted, bool forceLoad)
+    /// <summary>
+    /// Notifies the registered <see cref="IHandleLocationChanging"/> handlers of the current location change.
+    /// </summary>
+    /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI.</param>
+    /// <param name="isNavigationIntercepted">Whether this navigation was intercepted from a link.</param>
+    /// <param name="forceLoad">Whether the navigation is attempting to bypass client-side routing.</param>
+    /// <returns>A <see cref="ValueTask{TResult}"/> representing the completion of the operaiton.</returns>
+    public async ValueTask<bool> NotifyLocationChanging(string uri, bool isNavigationIntercepted, bool forceLoad)
     {
         _locationChangingCts?.Cancel();
         _locationChangingCts = null;
@@ -282,7 +289,7 @@ public abstract class NavigationManager
         _locationChangingCts = new();
 
         var cancellationToken = _locationChangingCts.Token;
-        var context = new LocationChangingContext(uri, intercepted, forceLoad, cancellationToken);
+        var context = new LocationChangingContext(uri, isNavigationIntercepted, forceLoad, cancellationToken);
         var handlerCount = _locationChangingHandlers.Count;
         var locationChangingHandlersCopy = ArrayPool<IHandleLocationChanging>.Shared.Rent(handlerCount);
         _locationChangingHandlers.CopyTo(locationChangingHandlersCopy);
@@ -316,11 +323,19 @@ public abstract class NavigationManager
         }
     }
 
+    /// <summary>
+    /// Sets whether there are active location changing handlers.
+    /// </summary>
+    /// <param name="value">Whether there are active location changing handlers.</param>
+    /// <returns><see langword="true"/> if the change was applied successfully, otherwise <see langword="false"/>.</returns>
     protected virtual bool SetHasLocationChangingHandlers(bool value)
     {
         return true;
     }
 
+    /// <summary>
+    /// Invokes <see cref="SetHasLocationChangingHandlers(bool)"/> if the existence of location changing handlers has changed.
+    /// </summary>
     protected void UpdateHasLocationChangingHandlers()
     {
         var hasLocationChangingHandlers = _locationChangingHandlers.Count != 0;
@@ -333,6 +348,10 @@ public abstract class NavigationManager
         }
     }
 
+    /// <summary>
+    /// Adds a handler to process incoming navigation events.
+    /// </summary>
+    /// <param name="locationChangingHandler">The handler to process incoming navigation events.</param>
     public void AddLocationChangingHandler(IHandleLocationChanging locationChangingHandler)
     {
         AssertInitialized();
@@ -340,6 +359,11 @@ public abstract class NavigationManager
         UpdateHasLocationChangingHandlers();
     }
 
+    /// <summary>
+    /// Removes a previously-added location changing handler.
+    /// </summary>
+    /// <param name="locationChangingHandler">The handler to remove.</param>
+    /// <returns><see langword="true"/> if the handler was removed, otherwise <see langword="false"/>.</returns>
     public bool RemoveLocationChangingHandler(IHandleLocationChanging locationChangingHandler)
     {
         AssertInitialized();
@@ -353,9 +377,19 @@ public abstract class NavigationManager
         return false;
     }
 
+    /// <summary>
+    /// Enables a navigation prompt to be displayed before navigation events complete.
+    /// </summary>
+    /// <param name="message">The message to display in the prompt. Note that some browsers will ignore this message for external navigations.</param>
+    /// <param name="externalNavigationsOnly">If <see langword="true"/>, the prompt will not display for internal page navigations.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
     protected internal virtual ValueTask EnableNavigationPromptAsync(string message, bool externalNavigationsOnly)
         => ValueTask.CompletedTask;
 
+    /// <summary>
+    /// Disables the current navigation prompt.
+    /// </summary>
+    /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
     protected internal virtual ValueTask DisableNavigationPromptAsync()
         => ValueTask.CompletedTask;
 
