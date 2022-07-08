@@ -9,7 +9,7 @@ using System.Net.Http.HPack;
 using System.Net.Http.QPack;
 using System.Reflection;
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server;
 using Microsoft.Net.Http.Headers;
 
 namespace CodeGenerator;
