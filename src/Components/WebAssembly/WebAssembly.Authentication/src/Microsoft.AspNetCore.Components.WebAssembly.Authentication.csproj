@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <Import Project="Sdk.props" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
 
@@ -77,14 +77,7 @@
       <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
     </ItemGroup>
 
-    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''"
-      SourceType="Computed"
-      SourceId="$(PackageId)"
-      ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\"
-      BasePath="_content/$(PackageId)"
-      CandidateAssets="@(_InteropBuildOutput)"
-      RelativePathFilter="**.js"
-    >
+    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''" SourceType="Computed" SourceId="$(PackageId)" ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\" BasePath="_content/$(PackageId)" CandidateAssets="@(_InteropBuildOutput)" RelativePathFilter="**.js">
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
     </DefineStaticWebAssets>
 

@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// <summary>
 /// Represents the request to the identity provider for logging in or provisioning a token.
 /// </summary>
+[JsonConverter(typeof(Converter))]
 public sealed class InteractiveAuthenticationRequest
 {
     private Dictionary<string, object> _additionalRequestParameters;
@@ -33,17 +35,17 @@ public sealed class InteractiveAuthenticationRequest
     /// <summary>
     /// Gets the redirect URL this request must return to upon successful completion.
     /// </summary>
-    public string ReturnUrl { get; }
+    public string ReturnUrl { get; private set; }
 
     /// <summary>
     /// Gets the scopes this request must use in the operation.
     /// </summary>
-    public IEnumerable<string> Scopes { get; }
+    public IEnumerable<string> Scopes { get; private set; }
 
     /// <summary>
     /// Gets the request type.
     /// </summary>
-    public InteractiveAuthenticationRequestType RequestType { get; }
+    public InteractiveAuthenticationRequestType RequestType { get; private set; }
 
     /// <summary>
     /// Adds an additional parameter to the interactive request.
@@ -99,13 +101,42 @@ public sealed class InteractiveAuthenticationRequest
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Serializes 'InteractiveAuthenticationRequest' into a string")]
-    internal string ToState() => JsonSerializer.Serialize(new InteractiveAuthenticationRequestRecord(RequestType, ReturnUrl, Scopes, _additionalRequestParameters));
+    internal string ToState() => JsonSerializer.Serialize(this);
 
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Deserializes InteractiveAuthenticationRequestRecord")]
-    internal static InteractiveAuthenticationRequest FromState(string state) => new(JsonSerializer.Deserialize<InteractiveAuthenticationRequestRecord>(state));
+    internal static InteractiveAuthenticationRequest FromState(string state) => JsonSerializer.Deserialize<InteractiveAuthenticationRequest>(state);
+
+    internal class Converter : JsonConverter<InteractiveAuthenticationRequest>
+    {
+        [UnconditionalSuppressMessage(
+            "Trimming",
+            "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+            Justification = "Deserializes 'InteractiveAuthenticationRequest'")]
+        public override InteractiveAuthenticationRequest Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (typeToConvert != typeof(InteractiveAuthenticationRequest))
+            {
+                throw new InvalidProgramException($"wrong type: {typeToConvert.FullName}");
+            }
+
+            return new(JsonSerializer.Deserialize<InteractiveAuthenticationRequestRecord>(ref reader, options));
+        }
+
+        [UnconditionalSuppressMessage(
+            "Trimming",
+            "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+            Justification = "Serializes 'InteractiveAuthenticationRequest'")]
+        public override void Write(Utf8JsonWriter writer, InteractiveAuthenticationRequest value, JsonSerializerOptions options)
+        {
+            JsonSerializer.Serialize(
+                writer,
+                new InteractiveAuthenticationRequestRecord(value.RequestType, value.ReturnUrl, value.Scopes, value._additionalRequestParameters),
+                options);
+        }
+    }
 
     // We use a record to perform serialization due to limitations in System.Text.Json to serialize/deserialize non public properties.
     private record struct InteractiveAuthenticationRequestRecord(

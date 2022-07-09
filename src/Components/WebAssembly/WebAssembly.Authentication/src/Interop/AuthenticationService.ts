@@ -58,8 +58,8 @@ export interface AuthenticationContext {
 }
 
 export interface InteractiveAuthenticationRequest {
-    scopes?: string [];
-    additionalRequestProperties?: { [key: string]: any };
+    scopes?: string[];
+    additionalRequestParameters?: { [key: string]: any };
 };
 
 export interface AuthorizeService {
@@ -71,19 +71,52 @@ export interface AuthorizeService {
     completeSignOut(url: string): Promise<AuthenticationResult>;
 }
 
+export class ManagedLogger {
+    private debug: boolean;
+    private trace: boolean;
+    public constructor(private objectRef: any) {
+        this.debug = objectRef.invokeMethod('IsEnabled', LogLevel.Debug);
+        this.trace = objectRef.invokeMethod('IsEnabled', LogLevel.Trace);
+    }
+
+    log(level: LogLevel, message: string): void {
+        if ((level == LogLevel.Trace && this.trace) ||
+            (level == LogLevel.Debug && this.debug)) {
+            return this.objectRef.invokeMethod('Log', level, message);
+        }
+    }
+}
+
+// These are the values for the .NET logger LogLevel
+export enum LogLevel {
+    Trace = 0,
+    Debug = 1,
+    Information = 2,
+    Warning = 3,
+    Error = 4,
+    Critical = 5,
+}
+
 class OidcAuthorizeService implements AuthorizeService {
     private _userManager: UserManager;
+    private _logger: ManagedLogger | undefined;
     private _intialSilentSignIn: Promise<void> | undefined;
-    constructor(userManager: UserManager) {
+    constructor(userManager: UserManager, logger?: ManagedLogger) {
         this._userManager = userManager;
+        this._logger = logger;
     }
 
     async trySilentSignIn() {
         if (!this._intialSilentSignIn) {
             this._intialSilentSignIn = (async () => {
                 try {
+                    this.debug('Beginning initial silent sign in.');
                     await this._userManager.signinSilent();
+                    this.debug('Initial silent sign in succeeded.');
                 } catch (e) {
+                    if (e instanceof Error) {
+                        this.debug(`Initial silent sign in failed '${e.message}'`);
+                    }
                     // It is ok to swallow the exception here.
                     // The user might not be logged in and in that case it
                     // is expected for signinSilent to fail and throw
@@ -98,7 +131,7 @@ class OidcAuthorizeService implements AuthorizeService {
         if (window.parent === window && !window.opener && !window.frameElement && this._userManager.settings.redirect_uri &&
             !location.href.startsWith(this._userManager.settings.redirect_uri)) {
             // If we are not inside a hidden iframe, try authenticating silently.
-            await AuthenticationService.instance.trySilentSignIn();
+            await this.trySilentSignIn();
         }
 
         const user = await this._userManager.getUser();
@@ -106,8 +139,10 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     async getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult> {
+        this.trace('getAccessToken', request);
         const user = await this._userManager.getUser();
         if (hasValidAccessToken(user) && hasAllScopes(request, user.scopes)) {
+            this.debug(`Valid access token present expiring at '${getExpiration(user.expires_in).toISOString()}'`)
             return {
                 status: AccessTokenResultStatus.Success,
                 token: {
@@ -121,9 +156,13 @@ class OidcAuthorizeService implements AuthorizeService {
                 const parameters = request && request.scopes ?
                     { scope: request.scopes.join(' ') } : undefined;
 
+                this.debug(`Provisioning a token silently for scopes '${parameters?.scope}'`)
+                this.trace('userManager.signinSilent', parameters);
                 const newUser = await this._userManager.signinSilent(parameters);
 
-                return {
+                this.debug(`Provisioned an access token expiring at '${getExpiration(newUser.expires_in).toISOString()}'`)
+
+                const result = {
                     status: AccessTokenResultStatus.Success,
                     token: {
                         grantedScopes: newUser.scopes,
@@ -132,7 +171,14 @@ class OidcAuthorizeService implements AuthorizeService {
                     }
                 };
 
+                this.trace('getAccessToken-result', result);
+                return result;
+
             } catch (e) {
+                if (e instanceof Error) {
+                    this.debug(`Failed to provision a token silently '${e.message}'`)
+                }
+
                 return {
                     status: AccessTokenResultStatus.RequiresRedirect
                 };
@@ -164,22 +210,30 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     async signIn(context: AuthenticationContext) {
+        this.trace('signIn', context);
         try {
             await this._userManager.clearStaleState();
             await this._userManager.signinSilent(this.createArguments(undefined, context.interactiveRequest));
+            this.debug('Silent sign in succeeded');
             return this.success(context.state);
         } catch (silentError) {
             try {
+                if (silentError instanceof Error) {
+                    this.debug(`Silent sign in failed, redirecting to the identity provider '${silentError.message}'.`);
+                }
                 await this._userManager.clearStaleState();
                 await this._userManager.signinRedirect(this.createArguments(context.state, context.interactiveRequest));
                 return this.redirect();
             } catch (redirectError) {
-                return this.error(this.getExceptionMessage(redirectError));
+                const message = this.getExceptionMessage(redirectError);
+                this.debug(`Redirect sign in failed '${message}'.`);
+                return this.error(message);
             }
         }
     }
 
     async completeSignIn(url: string) {
+        this.trace('completeSignIn', url);
         const requiresLogin = await this.loginRequired(url);
         const stateExists = await this.stateExists(url);
         try {
@@ -187,6 +241,7 @@ class OidcAuthorizeService implements AuthorizeService {
             if (window.self !== window.top) {
                 return this.operationCompleted();
             } else {
+                this.trace('completeSignIn-result', user);
                 return this.success(user && user.state);
             }
         } catch (error) {
@@ -261,8 +316,8 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest) {
-        return { useReplaceToNavigate: true, data: state, ...interactiveRequest.additionalRequestProperties };
+    private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest | undefined) {
+        return { useReplaceToNavigate: true, data: state, ...interactiveRequest?.additionalRequestParameters };
     }
 
     private error(message: string) {
@@ -280,6 +335,14 @@ class OidcAuthorizeService implements AuthorizeService {
     private operationCompleted() {
         return { status: AuthenticationResultStatus.OperationCompleted };
     }
+
+    private debug(message: string) {
+        this._logger?.log(LogLevel.Debug, message);
+    }
+
+    private trace(message: string, data: any) {
+        this._logger?.log(LogLevel.Trace, `${message}: ${JSON.stringify(data)}`);
+    }
 }
 
 export class AuthenticationService {
@@ -289,12 +352,12 @@ export class AuthenticationService {
     static instance: OidcAuthorizeService;
     static _pendingOperations: { [key: string]: Promise<AuthenticationResult> | undefined } = {}
 
-    public static init(settings: UserManagerSettings & AuthorizeServiceSettings) {
+    public static init(settings: UserManagerSettings & AuthorizeServiceSettings, logger: any) {
         // Multiple initializations can start concurrently and we want to avoid that.
         // In order to do so, we create an initialization promise and the first call to init
         // tries to initialize the app and sets up a promise other calls can await on.
         if (!AuthenticationService._initialized) {
-            AuthenticationService._initialized = AuthenticationService.initializeCore(settings);
+            AuthenticationService._initialized = AuthenticationService.initializeCore(settings, new ManagedLogger(logger));
         }
 
         return AuthenticationService._initialized;
@@ -304,7 +367,7 @@ export class AuthenticationService {
         return AuthenticationService.initializeCore();
     }
 
-    private static async initializeCore(settings?: UserManagerSettings & AuthorizeServiceSettings) {
+    private static async initializeCore(settings?: UserManagerSettings & AuthorizeServiceSettings, logger?: ManagedLogger) {
         const finalSettings = settings || AuthenticationService.resolveCachedSettings();
         if (!settings && finalSettings) {
             const userManager = AuthenticationService.createUserManagerCore(finalSettings);
@@ -314,7 +377,7 @@ export class AuthenticationService {
                 // If we are inside a hidden iframe, try completing the sign in early.
                 // This prevents loading the blazor app inside a hidden iframe, which speeds up the authentication operations
                 // and avoids wasting resources (CPU and memory from bootstrapping the Blazor app)
-                AuthenticationService.instance = new OidcAuthorizeService(userManager);
+                AuthenticationService.instance = new OidcAuthorizeService(userManager, logger);
 
                 // This makes sure that if the blazor app has time to load inside the hidden iframe,
                 // it is not able to perform another auth operation until this operation has completed.
@@ -325,7 +388,7 @@ export class AuthenticationService {
             }
         } else if (settings) {
             const userManager = await AuthenticationService.createUserManager(settings);
-            AuthenticationService.instance = new OidcAuthorizeService(userManager);
+            AuthenticationService.instance = new OidcAuthorizeService(userManager, logger);
         } else {
             // HandleCallback gets called unconditionally, so we do nothing for normal paths.
             // Cached settings are only used on handling the redirect_uri path and if the settings are not there

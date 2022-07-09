@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -87,11 +86,6 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
     /// Gets or sets an event callback that will be invoked with the stored authentication state when a log out operation succeeds.
     /// </summary>
     [Parameter] public EventCallback<TAuthenticationState> OnLogOutSucceeded { get; set; }
-
-    /// <summary>
-    /// Gets or sets an event callback that will be invoked with the <see cref="InteractiveAuthenticationRequest"/> when an operation is beginning.
-    /// </summary>
-    [Parameter] public EventCallback<InteractiveAuthenticationRequest> OnAuthenticationRequest { get; set; }
 
     /// <summary>
     /// Gets or sets the <see cref="RemoteAuthenticationApplicationPathsOptions"/> with the paths to different authentication pages.
@@ -208,11 +202,6 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
     {
         AuthenticationState.ReturnUrl = returnUrl;
         var interactiveRequest = GetCachedNavigationState();
-        if (OnAuthenticationRequest.HasDelegate)
-        {
-            await OnAuthenticationRequest.InvokeAsync(interactiveRequest);
-        }
-
         var result = await AuthenticationService.SignInAsync(new RemoteAuthenticationContext<TAuthenticationState>
         {
             State = AuthenticationState,
@@ -248,8 +237,8 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 
     private async Task ProcessLogInCallback()
     {
-        var url = Navigation.Uri;
-        var result = await AuthenticationService.CompleteSignInAsync(new RemoteAuthenticationContext<TAuthenticationState> { Url = url });
+        var result = await AuthenticationService.CompleteSignInAsync(
+            new RemoteAuthenticationContext<TAuthenticationState> { Url = Navigation.Uri });
         switch (result.Status)
         {
             case RemoteAuthenticationStatus.Redirect:
@@ -272,7 +261,9 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
             case RemoteAuthenticationStatus.Failure:
                 Log.LoginCallbackFailed(Logger, result.ErrorMessage);
                 Log.NavigatingToUrl(Logger, ApplicationPaths.LogInFailedPath);
-                Navigation.NavigateTo(ApplicationPaths.LogInFailedPath, AuthenticationNavigationOptions with { State = result.ErrorMessage });
+                Navigation.NavigateTo(
+                    ApplicationPaths.LogInFailedPath,
+                    AuthenticationNavigationOptions with { State = result.ErrorMessage });
                 break;
             default:
                 throw new InvalidOperationException($"Invalid authentication result status '{result.Status}'.");
@@ -297,11 +288,6 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
         if (isauthenticated)
         {
             var interactiveRequest = GetCachedNavigationState();
-            if (OnAuthenticationRequest.HasDelegate)
-            {
-                await OnAuthenticationRequest.InvokeAsync(interactiveRequest);
-            }
-
             var result = await AuthenticationService.SignOutAsync(new RemoteAuthenticationContext<TAuthenticationState>
             {
                 State = AuthenticationState,
@@ -378,15 +364,10 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
             return state.ReturnUrl;
         }
 
-        var fromNavigationState = GetReturnUrlFromNavigationState();
+        var fromNavigationState = GetCachedNavigationState()?.ReturnUrl;
 
         return fromNavigationState ?? defaultReturnUrl ?? Navigation.BaseUri;
 
-    }
-
-    private string GetReturnUrlFromNavigationState()
-    {
-        return GetCachedNavigationState()?.ReturnUrl;
     }
 
     private bool ValidateSignOutRequestState()
