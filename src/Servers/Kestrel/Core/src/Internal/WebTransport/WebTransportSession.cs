@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 /// <summary>
 /// Controls the WebTransport session and keeps track of all the streams.
 /// </summary>
-internal class WebTransportSession : IWebTransportSession
+internal sealed class WebTransportSession : IWebTransportSession
 {
     private readonly CancellationTokenRegistration _connectionClosedRegistration;
 

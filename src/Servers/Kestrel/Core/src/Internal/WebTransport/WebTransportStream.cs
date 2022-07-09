@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 /// Represents a base WebTransport stream. Do not use directly as it does not
 /// contain logic for handling data.
 /// </summary>
-internal class WebTransportStream : ConnectionContext, IStreamDirectionFeature
+internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFeature
 {
     private readonly CancellationTokenRegistration _connectionClosedRegistration;
     private readonly bool _canWrite;

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class Http3PendingStream
+internal sealed class Http3PendingStream
 {
     private readonly CancellationTokenSource abortedToken = new();
 
