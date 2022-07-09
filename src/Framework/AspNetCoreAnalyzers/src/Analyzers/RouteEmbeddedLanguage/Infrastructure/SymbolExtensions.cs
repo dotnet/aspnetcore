@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -53,8 +52,8 @@ internal static class SymbolExtensions
     public static ImmutableArray<IParameterSymbol> GetParameters(this ISymbol? symbol)
         => symbol switch
         {
-            IMethodSymbol m => m.Parameters,
-            IPropertySymbol nt => nt.Parameters,
+            IMethodSymbol methodSymbol => methodSymbol.Parameters,
+            IPropertySymbol parameterSymbol => parameterSymbol.Parameters,
             _ => ImmutableArray<IParameterSymbol>.Empty,
         };
 }

@@ -39,7 +39,7 @@ internal static class RoutePatternUsageDetector
             {
                 return default;
             }    
-            return new(mapMethodSymbol, true, false);
+            return new(MethodSymbol: mapMethodSymbol, IsMinimal: true, IsMvcAttribute: false);
         }
         else if (container.Parent.IsKind(SyntaxKind.AttributeArgument))
         {
@@ -52,13 +52,13 @@ internal static class RoutePatternUsageDetector
                 {
                     return default;
                 }
-                return new(actionMethodSymbol, false, true);
+                return new(MethodSymbol: actionMethodSymbol, IsMinimal: false, IsMvcAttribute: true);
             }
             else if (attributeParent is ClassDeclarationSyntax classDeclarationSyntax)
             {
                 var classSymbol = semanticModel.GetDeclaredSymbol(classDeclarationSyntax, cancellationToken);
 
-                return new(null, false, MvcDetector.IsController(classSymbol, semanticModel));
+                return new(MethodSymbol: null, IsMinimal: false, IsMvcAttribute: MvcDetector.IsController(classSymbol, semanticModel));
             }
         }
 
@@ -90,7 +90,7 @@ internal static class RoutePatternUsageDetector
     {
         var methodSymbol = semanticModel.GetDeclaredSymbol(methodDeclaration, cancellationToken);
 
-        if (methodSymbol.ContainingType is not ITypeSymbol typeSymbol)
+        if (methodSymbol.ContainingType is not INamedTypeSymbol typeSymbol)
         {
             return null;
         }
@@ -143,7 +143,7 @@ internal static class RoutePatternUsageDetector
             return null;
         }
 
-        var delegateSymbol = semanticModel.Compilation.GetTypeByMetadataName("System.Delegate");
+        var delegateSymbol = semanticModel.Compilation.GetSpecialType(SpecialType.System_Delegate);
         var endpointRouteBuilderSymbol = semanticModel.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Routing.IEndpointRouteBuilder");
 
         var delegateArgument = method.Parameters.FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(delegateSymbol, a.Type));

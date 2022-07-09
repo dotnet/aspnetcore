@@ -12,7 +12,7 @@ internal static class MvcDetector
 
     // Replicates logic from ControllerFeatureProvider.IsController.
     // https://github.com/dotnet/aspnetcore/blob/785cf9bd845a8d28dce3a079c4fedf4a4c2afe57/src/Mvc/Mvc.Core/src/Controllers/ControllerFeatureProvider.cs#L39
-    public static bool IsController(ITypeSymbol typeSymbol, SemanticModel semanticModel)
+    public static bool IsController(INamedTypeSymbol typeSymbol, SemanticModel semanticModel)
     {
         if (!typeSymbol.IsReferenceType)
         {
@@ -24,26 +24,30 @@ internal static class MvcDetector
             return false;
         }
 
-        // We only consider public top-level classes as controllers. IsPublic returns false for nested
-        // classes, regardless of visibility modifiers
+        // We only consider public top-level classes as controllers.
         if (typeSymbol.DeclaredAccessibility != Accessibility.Public)
+        {
+            return false;
+        }
+        if (typeSymbol.ContainingType != null)
         {
             return false;
         }
 
         // Has generic arguments
-        if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.IsGenericType)
+        if (typeSymbol.IsGenericType)
+        {
+            return false;
+        }
+
+        // Check name before attribute's for performance.
+        if (!typeSymbol.Name.EndsWith(ControllerTypeNameSuffix, StringComparison.OrdinalIgnoreCase) &&
+            !typeSymbol.HasAttribute("Microsoft.AspNetCore.Mvc.ControllerAttribute", semanticModel))
         {
             return false;
         }
 
         if (typeSymbol.HasAttribute("Microsoft.AspNetCore.Mvc.NonControllerAttribute", semanticModel))
-        {
-            return false;
-        }
-
-        if (!typeSymbol.Name.EndsWith(ControllerTypeNameSuffix, StringComparison.OrdinalIgnoreCase) &&
-            !typeSymbol.HasAttribute("Microsoft.AspNetCore.Mvc.ControllerAttribute", semanticModel))
         {
             return false;
         }
@@ -62,26 +66,13 @@ internal static class MvcDetector
 
         // The SpecialName bit is set to flag members that are treated in a special way by some compilers
         // (such as property accessors and operator overloading methods).
-        if (methodSymbol.MethodKind is not MethodKind.Ordinary or MethodKind.DeclareMethod)
-        {
-            return false;
-        }
-
-        if (methodSymbol.HasAttribute("Microsoft.AspNetCore.Mvc.NonActionAttribute", semanticModel))
+        if (methodSymbol.MethodKind is not (MethodKind.Ordinary or MethodKind.DeclareMethod))
         {
             return false;
         }
 
         // Overridden methods from Object class, e.g. Equals(Object), GetHashCode(), etc., are not valid.
-        if (methodSymbol.OriginalDefinition.ContainingType is
-            {
-                Name: "Object",
-                ContainingNamespace:
-                {
-                    Name: "System",
-                    IsGlobalNamespace: true
-                }
-            })
+        if (methodSymbol.ContainingType.SpecialType is SpecialType.System_Object)
         {
             return false;
         }
@@ -101,6 +92,16 @@ internal static class MvcDetector
             return false;
         }
 
-        return methodSymbol.DeclaredAccessibility == Accessibility.Public;
+        if (methodSymbol.DeclaredAccessibility != Accessibility.Public)
+        {
+            return false;
+        }
+
+        if (methodSymbol.HasAttribute("Microsoft.AspNetCore.Mvc.NonActionAttribute", semanticModel))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

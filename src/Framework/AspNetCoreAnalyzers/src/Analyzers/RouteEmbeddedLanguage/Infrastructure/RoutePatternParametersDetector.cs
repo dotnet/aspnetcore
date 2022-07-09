@@ -44,8 +44,7 @@ internal static class RoutePatternParametersDetector
 
     private static bool HasSpecialType(ISymbol child, SemanticModel semanticModel)
     {
-        var type = child.GetParameterType() as INamedTypeSymbol;
-        if (type == null)
+        if (child.GetParameterType() is not INamedTypeSymbol type)
         {
             return false;
         }

@@ -293,6 +293,68 @@ public class TestController
     }
 
     [Fact]
+    public async Task InParameterName_MatchingActionWithNamespace_HighlightParameter()
+    {
+        // Arrange & Act & Assert
+        await TestHighlightingAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+namespace Test
+{
+    public class TestController
+    {
+        [HttpGet(@""{$$[|id|]}"")]
+        public object TestAction(int [|id|])
+        {
+            return null;
+        }
+    }
+}
+");
+    }
+
+    [Fact]
+    public async Task InParameterName_NestedControllerMatchingAction_NoHighlight()
+    {
+        // Arrange & Act & Assert
+        await TestHighlightingAsync(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+public class OuterClass
+{
+    public class TestController
+    {
+        [HttpGet(@""{$$[|id|]}"")]
+        public object TestAction(int id)
+        {
+            return null;
+        }
+    }
+}
+");
+    }
+
+    [Fact]
     public async Task InParameterName_MatchingDelegateWithConflictingIdentifer_DontHighlightConflict()
     {
         // Arrange & Act & Assert
