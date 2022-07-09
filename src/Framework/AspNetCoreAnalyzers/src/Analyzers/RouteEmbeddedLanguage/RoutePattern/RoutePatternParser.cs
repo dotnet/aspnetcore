@@ -67,9 +67,9 @@ internal partial struct RoutePatternParser
 
         var root = new RoutePatternCompilationUnit(rootParts, _currentToken);
 
-        var routeParameters = new Dictionary<string, RouteParameter>(StringComparer.OrdinalIgnoreCase);
+        var routeParameters = ImmutableDictionary.CreateBuilder<string, RouteParameter>(StringComparer.OrdinalIgnoreCase);
         var seenDiagnostics = new HashSet<EmbeddedDiagnostic>();
-        var diagnostics = new List<EmbeddedDiagnostic>();
+        var diagnostics = ImmutableArray.CreateBuilder<EmbeddedDiagnostic>();
 
         CollectDiagnostics(root, seenDiagnostics, diagnostics);
         ValidateStart(root, diagnostics);
@@ -78,10 +78,10 @@ internal partial struct RoutePatternParser
         ValidateCatchAllParameters(root, diagnostics);
         ValidateParameterParts(root, diagnostics, routeParameters);
 
-        return new RoutePatternTree(_lexer.Text, root, diagnostics.ToImmutableArray(), routeParameters.ToImmutableDictionary());
+        return new RoutePatternTree(_lexer.Text, root, diagnostics.ToImmutable(), routeParameters.ToImmutable());
     }
 
-    private static void ValidateStart(RoutePatternCompilationUnit root, List<EmbeddedDiagnostic> diagnostics)
+    private static void ValidateStart(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics)
     {
         if (root.ChildCount > 1 &&
             root.ChildAt(0).Node is var firstNode &&
@@ -122,7 +122,7 @@ internal partial struct RoutePatternParser
         }
     }
 
-    private static void ValidateCatchAllParameters(RoutePatternCompilationUnit root, List<EmbeddedDiagnostic> diagnostics)
+    private static void ValidateCatchAllParameters(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics)
     {
         RoutePatternParameterNode? catchAllParameterNode = null;
         foreach (var part in root)
@@ -156,7 +156,7 @@ internal partial struct RoutePatternParser
         }
     }
 
-    private static void ValidateNoConsecutiveParameters(RoutePatternCompilationUnit root, List<EmbeddedDiagnostic> diagnostics)
+    private static void ValidateNoConsecutiveParameters(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics)
     {
         RoutePatternNode previousNode = null;
         foreach (var part in root)
@@ -211,7 +211,7 @@ internal partial struct RoutePatternParser
         }
     }
 
-    private static void ValidateParameterParts(RoutePatternCompilationUnit root, List<EmbeddedDiagnostic> diagnostics, Dictionary<string, RouteParameter> routeParameters)
+    private static void ValidateParameterParts(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics, IDictionary<string, RouteParameter> routeParameters)
     {
         foreach (var part in root)
         {
@@ -227,7 +227,7 @@ internal partial struct RoutePatternParser
                         var encodeSlashes = true;
                         string? name = null;
                         string? defaultValue = null;
-                        var policies = new List<string>();
+                        var policies = ImmutableArray.CreateBuilder<string>();
                         foreach (var parameterPart in parameterNode)
                         {
                             switch (parameterPart.Kind)
@@ -260,7 +260,7 @@ internal partial struct RoutePatternParser
                             }
                         }
 
-                        var routeParameter = new RouteParameter(name, encodeSlashes, defaultValue, hasOptional, hasCatchAll, policies.ToImmutableArray());
+                        var routeParameter = new RouteParameter(name, encodeSlashes, defaultValue, hasOptional, hasCatchAll, policies.ToImmutable());
                         if (routeParameter.DefaultValue != null && routeParameter.IsOptional)
                         {
                             diagnostics.Add(new EmbeddedDiagnostic(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, parameterNode.GetSpan()));
@@ -287,7 +287,7 @@ internal partial struct RoutePatternParser
         }
     }
 
-    private static void ValidateNoConsecutiveSeparators(RoutePatternCompilationUnit root, List<EmbeddedDiagnostic> diagnostics)
+    private static void ValidateNoConsecutiveSeparators(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics)
     {
         RoutePatternSegmentSeperatorNode? previousNode = null;
         foreach (var part in root)
@@ -311,7 +311,7 @@ internal partial struct RoutePatternParser
         }
     }
 
-    private void CollectDiagnostics(RoutePatternNode node, HashSet<EmbeddedDiagnostic> seenDiagnostics, List<EmbeddedDiagnostic> diagnostics)
+    private void CollectDiagnostics(RoutePatternNode node, HashSet<EmbeddedDiagnostic> seenDiagnostics, IList<EmbeddedDiagnostic> diagnostics)
     {
         foreach (var child in node)
         {
@@ -333,7 +333,7 @@ internal partial struct RoutePatternParser
     /// filter duplicates out here.
     /// </summary>
     private static void AddUniqueDiagnostics(
-        HashSet<EmbeddedDiagnostic> seenDiagnostics, ImmutableArray<EmbeddedDiagnostic> from, List<EmbeddedDiagnostic> to)
+        HashSet<EmbeddedDiagnostic> seenDiagnostics, ImmutableArray<EmbeddedDiagnostic> from, IList<EmbeddedDiagnostic> to)
     {
         foreach (var diagnostic in from)
         {
@@ -346,14 +346,14 @@ internal partial struct RoutePatternParser
 
     private ImmutableArray<RoutePatternRootPartNode> ParseRootParts()
     {
-        var result = new List<RoutePatternRootPartNode>();
+        var result = ImmutableArray.CreateBuilder<RoutePatternRootPartNode>();
 
         while (_currentToken.Kind != RoutePatternKind.EndOfFile)
         {
             result.Add(ParseRootPart());
         }
 
-        return result.ToImmutableArray();
+        return result.ToImmutable();
     }
 
     private RoutePatternRootPartNode ParseRootPart()
@@ -365,7 +365,7 @@ internal partial struct RoutePatternParser
 
     private RoutePatternSegmentNode ParseSegment()
     {
-        var result = new List<RoutePatternNode>();
+        var result = ImmutableArray.CreateBuilder<RoutePatternNode>();
 
         while (_currentToken.Kind != RoutePatternKind.EndOfFile &&
             _currentToken.Kind != RoutePatternKind.SlashToken)
@@ -373,7 +373,7 @@ internal partial struct RoutePatternParser
             result.Add(ParsePart());
         }
 
-        return new(result.ToImmutableArray());
+        return new(result.ToImmutable());
     }
 
     private RoutePatternSegmentPartNode ParsePart()
@@ -490,7 +490,7 @@ internal partial struct RoutePatternParser
 
     private ImmutableArray<RoutePatternParameterPartNode> ParseParameterParts()
     {
-        var parts = new List<RoutePatternParameterPartNode>();
+        var parts = ImmutableArray.CreateBuilder<RoutePatternParameterPartNode>();
 
         // Catch-all, e.g. {*name}
         if (_currentToken.Kind == RoutePatternKind.AsteriskToken)
@@ -548,11 +548,11 @@ internal partial struct RoutePatternParser
                     break;
                 case RoutePatternKind.CloseBraceToken:
                 default:
-                    return parts.ToImmutableArray();
+                    return parts.ToImmutable();
             }
         }
 
-        return parts.ToImmutableArray();
+        return parts.ToImmutable();
     }
 
     private RoutePatternDefaultValueParameterPartNode ParseDefaultValue()
@@ -567,7 +567,7 @@ internal partial struct RoutePatternParser
     {
         var colonToken = ConsumeCurrentToken();
 
-        var fragments = new List<RoutePatternNode>();
+        var fragments = ImmutableArray.CreateBuilder<RoutePatternNode>();
         while (_currentToken.Kind != RoutePatternKind.EndOfFile &&
             _currentToken.Kind != RoutePatternKind.CloseBraceToken &&
             _currentToken.Kind != RoutePatternKind.ColonToken &&
@@ -604,7 +604,7 @@ internal partial struct RoutePatternParser
             ConsumeCurrentToken();
         }
 
-        return new(colonToken, fragments.ToImmutableArray());
+        return new(colonToken, fragments.ToImmutable());
     }
 
     private RoutePatternSegmentSeperatorNode ParseSegmentSeperator()

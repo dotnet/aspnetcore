@@ -2,13 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
@@ -16,7 +12,7 @@ internal static class RoutePatternParametersDetector
 {
     public static ImmutableArray<ISymbol> ResolvedParameters(ISymbol symbol, SemanticModel semanticModel)
     {
-        var resolvedParameterSymbols = new List<ISymbol>();
+        var resolvedParameterSymbols = ImmutableArray.CreateBuilder<ISymbol>();
         var childSymbols = symbol switch
         {
             ITypeSymbol typeSymbol => typeSymbol.GetMembers().OfType<IPropertySymbol>().ToImmutableArray().As<ISymbol>(),
@@ -39,7 +35,7 @@ internal static class RoutePatternParametersDetector
                 resolvedParameterSymbols.Add(child);
             }
         }
-        return resolvedParameterSymbols.ToImmutableArray();
+        return resolvedParameterSymbols.ToImmutable();
     }
 
     private static bool HasSpecialType(ISymbol child, SemanticModel semanticModel)

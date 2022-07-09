@@ -50,7 +50,7 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
             return ImmutableArray<AspNetCoreDocumentHighlights>.Empty;
         }
 
-        var highlightSpans = new List<AspNetCoreHighlightSpan>();
+        var highlightSpans = ImmutableArray.CreateBuilder<AspNetCoreHighlightSpan>();
 
         // Highlight the parameter in the route string, e.g. "{id}" highlights "id".
         highlightSpans.Add(new AspNetCoreHighlightSpan(node.GetSpan(), AspNetCoreHighlightSpanKind.Reference));
@@ -72,10 +72,10 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
             }
         }
 
-        return ImmutableArray.Create(new AspNetCoreDocumentHighlights(highlightSpans.ToImmutableArray()));
+        return ImmutableArray.Create(new AspNetCoreDocumentHighlights(highlightSpans.ToImmutable()));
     }
 
-    private static void HighlightSymbol(SemanticModel semanticModel, IMethodSymbol methodSymbol, List<AspNetCoreHighlightSpan> highlightSpans, ISymbol? matchingParameter, CancellationToken cancellationToken)
+    private static void HighlightSymbol(SemanticModel semanticModel, IMethodSymbol methodSymbol, IList<AspNetCoreHighlightSpan> highlightSpans, ISymbol? matchingParameter, CancellationToken cancellationToken)
     {
         // Highlight parameter in method signature.
         // e.g. "{id}" in route highlights id in "void Foo(string id) {}"
