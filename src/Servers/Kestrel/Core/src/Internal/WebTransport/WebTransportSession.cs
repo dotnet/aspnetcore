@@ -79,8 +79,8 @@ internal class WebTransportSession : IWebTransportSession
                 _ = stream.Value.DisposeAsync().AsTask();
             }
 
+            _openStreams.Clear();
         }
-        _openStreams.Clear();
 
         _pendingStreams.Writer.Complete();
     }
@@ -110,9 +110,8 @@ internal class WebTransportSession : IWebTransportSession
                     stream.Value.Abort(new ConnectionAbortedException(exception.Message));
                 }
             }
+            _openStreams.Clear();
         }
-
-        _openStreams.Clear();
 
         _pendingStreams.Writer.Complete();
     }
@@ -133,7 +132,6 @@ internal class WebTransportSession : IWebTransportSession
         // send the stream header
         // https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-unidirectional-streams
         await stream.Transport.Output.WriteAsync(OutputStreamHeader, cancellationToken);
-        await stream.Transport.Output.FlushAsync(cancellationToken);
 
         if (!_openStreams.TryAdd(stream.StreamId, stream))
         {

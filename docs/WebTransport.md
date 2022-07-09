@@ -10,6 +10,20 @@ To help applications get started on implementing WebTransport, there is the `Web
 ## Using Edge or Chrome DevTools as a client
 The Chromium project has implemented a WebTransport client and can be accessed via their JS API from the Chrome or Edge DevTools console. A good sample app demoing how to use that API can be found [here](https://github.com/myjimmy/google-webtransport-sample/blob/ee13bde656c4d421d1f2a8e88fd71f572272c163/client.js).
 
+# Note about preview features
+WebTransport is a preview feature. Therefore, you must manually enable it via the `EnablePreviewFeatures` property and toggle the `Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams` `AppContextSwitch`. This can be done by either of the following options:
+- Adding the following `ItemGroup` to your csproj file:
+```xml
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams" Value="true" />
+  </ItemGroup>
+```
+- Adding the following C# somewhere in your project:
+```C#
+AppContext.SetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", true);
+```
+**Note:** Setting an `AppContextSwitch` is global. Therefore, the setting applies to all areas of your application, not just the current scope.
+
 # Overview of the Kestrel WebTransport API
 ## Setting up a connection
 To setup a WebTransport connection, you will first need to configure a host upon which you open a port. A very minimal example is shown below:
@@ -37,7 +51,7 @@ public class Program
     }
 }
 ```
-**Note:** As WebTransport uses HTTP/3, you must make sure to select the `listenOptions.UseHttps` setting as well as set the `listenOptions.UseHttps` to include HTTP/3.
+**Note:** As WebTransport uses HTTP/3, you must make sure to select the `listenOptions.UseHttps` setting as well as set the `listenOptions.Protocols` to include HTTP/3.
 
 Next, we defined the `Startup` file. This file will setup the application layer logic that the server will use to accept and manage WebTransport sessions and streams.
 ```C#
@@ -96,9 +110,8 @@ This will attempt to open a new unidirectional stream from the server to the cli
 ```C#
 var stream = connectionContext.Transport.Output;
 await stream.WriteAsync(ReadOnlyMemory<byte> bytes);
-await stream.FlushAsync();
 ```
-`stream.WriteAsync` will write data to the stream but it will not automatically flush (i.e. send it to the client). Therefore, after the `stream.WriteAsync`, you will need to call `stream.FlushAsync`.
+`stream.WriteAsync` will write data to the stream and it will automatically flush (i.e. send it to the client).
 
 **Note:** You can only send data on streams that have `IStreamDirectionFeature.CanWrite` set as `true`. Sending data on non-writable streams will throw an `NotSupportedException` exception.
 
@@ -121,11 +134,9 @@ Aborting a WebTransport session will result in severing the connection with the 
 
 - Aborting a WebTransport stream
 ```C#
-stream.Abort(int errorCode);
+stream.Abort(ConnectionAbortedException exception);
 ```
-Aborting a WebTransport stream will result in abruptly stopping all data transmission and prevent further communication over this stream. The default value (256) represents no error.
-
-**Note:** valid error codes are defined [here](https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes).
+Aborting a WebTransport session will result in severing the connection with the client and aborting all the streams. You can optionally specify an aborted exception that will be passed down into the logs. A default message is used if no message is provided.
 
 - Soft closing a WebTransport stream
 ```C#
@@ -151,25 +162,24 @@ public void Configure(IApplicationBuilder app)
                 // accept a new session
                 var session = await feature.AcceptAsync(CancellationToken.None);
 
-                WebTransportStream stream;
+                ConnectionContext? stream;
                 do
                 {
                     // wait until we get a bidirectional stream
                     stream = await session.AcceptStreamAsync(CancellationToken.None);
-                } while (stream.CanRead && stream.CanWrite);
+                } while (stream is not null && stream.CanRead && stream.CanWrite);
 
                 var inputPipe = stream.Transport.Input;
                 var outputPipe = stream.Transport.Output;
 
                 // read some data from the stream
-                var length = await inputPipe.AsStream().ReadAsync(memory, CancellationToken.None);
+                var length = await inputPipe.AsStream().ReadAsync(memory);
 
                 // do some operations on the contents of the data
                 memory.Span.Reverse();
 
                 // write back the data to the stream
-                await outputPipe.WriteAsync(memory, CancellationToken.None);
-                await outputPipe.FlushAsync(CancellationToken.None);
+                await outputPipe.WriteAsync(memory);
             }
             else
             {

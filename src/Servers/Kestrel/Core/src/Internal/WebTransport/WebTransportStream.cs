@@ -25,7 +25,7 @@ internal class WebTransportStream : ConnectionContext, IStreamDirectionFeature
     private readonly DuplexPipe _duplexPipe;
     private readonly IFeatureCollection _features;
     private readonly KestrelTrace _log;
-
+    private IDictionary<object, object?>? _items;
     private bool _isClosed;
 
     public readonly long StreamId;
@@ -39,7 +39,11 @@ internal class WebTransportStream : ConnectionContext, IStreamDirectionFeature
 
     public override IFeatureCollection Features => _features;
 
-    public override IDictionary<object, object?> Items { get; set; }
+    public override IDictionary<object, object?> Items
+    {
+        get => _items ??= new Dictionary<object, object?>();
+        set => _items = value;
+    }
 
     public bool CanRead => _canRead && !_isClosed;
 
@@ -67,7 +71,6 @@ internal class WebTransportStream : ConnectionContext, IStreamDirectionFeature
         }, null);
 
         ConnectionClosed = _connectionClosedRegistration.Token;
-        Items = new Dictionary<object, object?>();
     }
 
     public override void Abort(ConnectionAbortedException abortReason)

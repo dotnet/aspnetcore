@@ -5,6 +5,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+
 internal class Http3PendingStream
 {
     private readonly CancellationTokenSource abortedToken = new();
@@ -53,7 +54,8 @@ internal class Http3PendingStream
                 {
                     value = VariableLengthIntegerHelper.GetInteger(readableBuffer, out var consumed, out var examined);
 
-                    // if it is a webtransport stream we throw away the headers so we can 
+                    // If it is a WebTransport stream we throw away the headers so we can
+                    // then pass the pipe reader and writer to the application without them.
                     if (persist || value == (long)Http3StreamType.WebTransportBidirectional || value == (long)Http3StreamType.WebTransportUnidirectional)
                     {
                         Input.AdvanceTo(consumed, examined);

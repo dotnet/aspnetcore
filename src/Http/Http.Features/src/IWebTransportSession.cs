@@ -24,13 +24,13 @@ public interface IWebTransportSession
     void Abort(int errorCode);
 
     /// <summary>
-    /// Returns the next incoming stream in the order which Kestel received it. The stream can be either bidirectional or unidirectional.
+    /// Returns the next incoming stream in the order the server received it. The stream can be either bidirectional or unidirectional.
     /// </summary>
-    /// <remarks>To use WebTransport, you must first enable the Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams AppContextSwitch</remarks>
+    /// <remarks>To use WebTransport, you must first enable the <c>Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams</c> AppContextSwitch</remarks>
     /// <exception cref="ObjectDisposedException">If this WebTransport session is closing</exception>
     /// <exception cref="Exception">If a stream with this id is already open</exception>
     /// <param name="cancellationToken">The cancellation token used to cancel the operation.</param>
-    /// <returns>The unidirectional or bidirectional stream that is next in the queue.</returns>
+    /// <returns>The unidirectional or bidirectional stream that is next in the queue, or <c>null</c> if the operation failed.</returns>
     ValueTask<ConnectionContext?> AcceptStreamAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
