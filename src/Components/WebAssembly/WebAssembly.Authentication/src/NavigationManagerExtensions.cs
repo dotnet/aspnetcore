@@ -38,7 +38,7 @@ public static class NavigationManagerExtensions
     {
         manager.NavigateTo(logoutPath, new NavigationOptions
         {
-            State = new InteractiveAuthenticationRequest(
+            HistoryEntryState = new InteractiveAuthenticationRequest(
                 InteractiveAuthenticationRequestType.Logout,
                 returnUrl,
                 Array.Empty<string>()).ToState()
@@ -63,7 +63,7 @@ public static class NavigationManagerExtensions
     {
         manager.NavigateTo(loginPath, new NavigationOptions
         {
-            State = request.ToState(),
+            HistoryEntryState = request.ToState(),
         });
     }
 

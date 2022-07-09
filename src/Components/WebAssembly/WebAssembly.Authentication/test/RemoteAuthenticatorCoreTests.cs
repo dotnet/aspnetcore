@@ -124,7 +124,7 @@ public class RemoteAuthenticatorCoreTests
 
         // Assert
         Assert.Equal("https://www.example.com/base/authentication/login-failed", remoteAuthenticator.Navigation.Uri.ToString());
-        Assert.Equal("There was an error trying to log in.", remoteAuthenticator.Navigation.State);
+        Assert.Equal("There was an error trying to log in.", remoteAuthenticator.Navigation.HistoryEntryState);
     }
 
     [Fact]
@@ -244,7 +244,7 @@ public class RemoteAuthenticatorCoreTests
 
         Assert.Equal(
             "There was an error trying to log in",
-            ((TestNavigationManager)remoteAuthenticator.Navigation).State);
+            ((TestNavigationManager)remoteAuthenticator.Navigation).HistoryEntryState);
     }
 
     [Fact]
@@ -369,7 +369,7 @@ public class RemoteAuthenticatorCoreTests
 
         Assert.Equal(
             "The logout was not initiated from within the page.",
-            ((TestNavigationManager)remoteAuthenticator.Navigation).State);
+            ((TestNavigationManager)remoteAuthenticator.Navigation).HistoryEntryState);
     }
 
     [Fact]
@@ -523,7 +523,7 @@ public class RemoteAuthenticatorCoreTests
 
         Assert.Equal(
             "There was an error trying to log out",
-            ((TestNavigationManager)remoteAuthenticator.Navigation).State);
+            ((TestNavigationManager)remoteAuthenticator.Navigation).HistoryEntryState);
     }
 
     public static TheoryData<UIValidator> DisplaysRightUIData { get; } = new TheoryData<UIValidator>
@@ -720,7 +720,7 @@ public class RemoteAuthenticatorCoreTests
         public TestNavigationManager(string baseUrl, string currentState, string currentUrl)
         {
             Initialize(baseUrl, currentUrl);
-            State = currentState;
+            HistoryEntryState = currentState;
         }
 
         protected override void NavigateToCore(string uri, bool forceLoad)
@@ -729,7 +729,7 @@ public class RemoteAuthenticatorCoreTests
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             Uri = System.Uri.IsWellFormedUriString(uri, UriKind.Absolute) ? uri : new Uri(new Uri(BaseUri), uri).ToString();
-            State = options.State;
+            HistoryEntryState = options.HistoryEntryState;
         }
     }
 

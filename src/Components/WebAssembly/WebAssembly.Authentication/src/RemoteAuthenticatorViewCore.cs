@@ -128,7 +128,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 builder.AddContent(0, CompletingLoggingIn);
                 break;
             case RemoteAuthenticationActions.LogInFailed:
-                builder.AddContent(0, LogInFailed(Navigation.State));
+                builder.AddContent(0, LogInFailed(Navigation.HistoryEntryState));
                 break;
             case RemoteAuthenticationActions.LogOut:
                 builder.AddContent(0, LogOut);
@@ -137,7 +137,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 builder.AddContent(0, CompletingLogOut);
                 break;
             case RemoteAuthenticationActions.LogOutFailed:
-                builder.AddContent(0, LogOutFailed(Navigation.State));
+                builder.AddContent(0, LogOutFailed(Navigation.HistoryEntryState));
                 break;
             case RemoteAuthenticationActions.LogOutSucceeded:
                 builder.AddContent(0, LogOutSucceeded);
@@ -227,7 +227,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
             case RemoteAuthenticationStatus.Failure:
                 Log.LoginFailed(Logger, result.ErrorMessage);
                 Log.NavigatingToUrl(Logger, ApplicationPaths.LogInFailedPath);
-                Navigation.NavigateTo(ApplicationPaths.LogInFailedPath, AuthenticationNavigationOptions with { State = result.ErrorMessage });
+                Navigation.NavigateTo(ApplicationPaths.LogInFailedPath, AuthenticationNavigationOptions with { HistoryEntryState = result.ErrorMessage });
                 break;
             case RemoteAuthenticationStatus.OperationCompleted:
             default:
@@ -263,7 +263,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 Log.NavigatingToUrl(Logger, ApplicationPaths.LogInFailedPath);
                 Navigation.NavigateTo(
                     ApplicationPaths.LogInFailedPath,
-                    AuthenticationNavigationOptions with { State = result.ErrorMessage });
+                    AuthenticationNavigationOptions with { HistoryEntryState = result.ErrorMessage });
                 break;
             default:
                 throw new InvalidOperationException($"Invalid authentication result status '{result.Status}'.");
@@ -272,12 +272,12 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 
     private async Task ProcessLogOut(string returnUrl)
     {
-        if ((Navigation.State != null && !ValidateSignOutRequestState()) ||
+        if ((Navigation.HistoryEntryState != null && !ValidateSignOutRequestState()) ||
             // For backcompat purposes, keep SignOutManager working, even though we now use the history.state for this.
-            (Navigation.State == null && !await SignOutManager.ValidateSignOutState()))
+            (Navigation.HistoryEntryState == null && !await SignOutManager.ValidateSignOutState()))
         {
             Log.LogoutOperationInitiatedExternally(Logger);
-            Navigation.NavigateTo(ApplicationPaths.LogOutFailedPath, AuthenticationNavigationOptions with { State = "The logout was not initiated from within the page." });
+            Navigation.NavigateTo(ApplicationPaths.LogOutFailedPath, AuthenticationNavigationOptions with { HistoryEntryState = "The logout was not initiated from within the page." });
             return;
         }
 
@@ -313,7 +313,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 case RemoteAuthenticationStatus.Failure:
                     Log.LogoutFailed(Logger, result.ErrorMessage);
                     Log.NavigatingToUrl(Logger, ApplicationPaths.LogOutFailedPath);
-                    Navigation.NavigateTo(ApplicationPaths.LogOutFailedPath, AuthenticationNavigationOptions with { State = result.ErrorMessage });
+                    Navigation.NavigateTo(ApplicationPaths.LogOutFailedPath, AuthenticationNavigationOptions with { HistoryEntryState = result.ErrorMessage });
                     break;
                 default:
                     throw new InvalidOperationException($"Invalid authentication result status.");
@@ -350,7 +350,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 break;
             case RemoteAuthenticationStatus.Failure:
                 Log.LogoutCallbackFailed(Logger, result.ErrorMessage);
-                Navigation.NavigateTo(ApplicationPaths.LogOutFailedPath, AuthenticationNavigationOptions with { State = result.ErrorMessage });
+                Navigation.NavigateTo(ApplicationPaths.LogOutFailedPath, AuthenticationNavigationOptions with { HistoryEntryState = result.ErrorMessage });
                 break;
             default:
                 throw new InvalidOperationException($"Invalid authentication result status.");
@@ -382,12 +382,12 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
             return _cachedRequest;
         }
 
-        if (Navigation.State == null)
+        if (Navigation.HistoryEntryState == null)
         {
             return null;
         }
 
-        _cachedRequest = InteractiveAuthenticationRequest.FromState(Navigation.State);
+        _cachedRequest = InteractiveAuthenticationRequest.FromState(Navigation.HistoryEntryState);
         return _cachedRequest;
     }
 
