@@ -107,6 +107,8 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
       if (isWithinBaseUriSpace(absoluteHref)) {
         event.preventDefault();
 
+        ignorePendingNavigations();
+
         // Programmatically-initiated navigations invoke the "location changing" entirely from within .NET code, but
         // since this is a user-initiated navigation, we have to invoke the event from JS.
         if (hasLocationChangingEventListeners) {
@@ -175,16 +177,17 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
-  const stateEntry = {
-    userState: state,
-    index: currentHistoryIndex,
-  };
-
   if (!replace) {
     currentHistoryIndex++;
-    history.pushState(stateEntry, /* ignored title */ '', absoluteInternalHref);
+    history.pushState({
+      userState: state,
+      index: currentHistoryIndex,
+    }, /* ignored title */ '', absoluteInternalHref);
   } else {
-    history.replaceState(stateEntry, /* ignored title */ '', absoluteInternalHref);
+    history.replaceState({
+      userState: state,
+      index: currentHistoryIndex,
+    }, /* ignored title */ '', absoluteInternalHref);
   }
 
   notifyLocationChanged(interceptedLink);
@@ -205,6 +208,19 @@ function navigateHistoryWithoutPopStateCallback(delta: number): Promise<void> {
 
 let currentNotifyLocationChangingPromise: Promise<boolean> | null = null;
 
+function ignorePendingNavigations() {
+  // This method ensures that we don't perform multiple overlapping navigations
+  // that bypassed the .NET cancellation logic due to network latency.
+
+  // It's possible for a JS -> .NET 'location changing' message to be in flight
+  // while a .NET -> JS response for a previous 'location changing' event is on its way.
+  // Since the .NET side only processes one navigation at a time in this case, the navigations
+  // aren't considered "overlapping". It's up to the JS side to recognize this case so we don't
+  // navigate in ways the user did not intend (e.g., we don't want navigations to previous entries
+  // in the browser tab's history to accumulate).
+  currentNotifyLocationChangingPromise = null;
+}
+
 async function notifyLocationChanging(uri: string, intercepted: boolean): Promise<boolean> {
   if (!notifyLocationChangingCallback) {
     return false;
@@ -218,8 +234,7 @@ async function notifyLocationChanging(uri: string, intercepted: boolean): Promis
 }
 
 async function onBrowserInitiatedPopState(state: PopStateEvent) {
-  // Effectively cancels any ongoing 'location changing' event promises.
-  currentNotifyLocationChangingPromise = null;
+  ignorePendingNavigations();
 
   const index = state.state?.index ?? 0;
   const delta = index - currentHistoryIndex;

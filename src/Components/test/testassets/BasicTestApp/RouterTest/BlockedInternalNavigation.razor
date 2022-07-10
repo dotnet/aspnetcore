@@ -9,7 +9,7 @@
 @code {
     private bool _unblockedNavigation;
 
-    public void OnLocationChanging(LocationChangingContext context)
+    private void OnLocationChanging(LocationChangingContext context)
     {
         if (!_unblockedNavigation)
         {
