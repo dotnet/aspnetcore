@@ -154,7 +154,7 @@ public class AuthenticationMiddlewareTests
     }
 
     [Fact]
-    public async Task WebApplicationBuilder_RegistersAuthenticationMiddlewares()
+    public async Task WebApplicationBuilder_RegistersAuthenticationAndAuthorizationMiddlewares()
     {
         var builder = WebApplication.CreateBuilder();
         builder.Configuration.AddInMemoryCollection(new[]
@@ -162,23 +162,39 @@ public class AuthenticationMiddlewareTests
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ClaimsIssuer", "SomeIssuer"),
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:Audiences:0", "https://localhost:5001")
         });
-        builder.Authentication.AddJwtBearer();
+        builder.Services.AddAuthorization();
+        builder.Services.AddAuthentication().AddJwtBearer();
         await using var app = builder.Build();
-
-        var webAppAuthBuilder = Assert.IsType<WebApplicationAuthenticationBuilder>(builder.Authentication);
-        Assert.True(webAppAuthBuilder.IsAuthenticationConfigured);
 
         // Authentication middleware isn't registered until application
         // is built on startup
         Assert.False(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.False(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
 
         await app.StartAsync();
 
         Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
 
         var options = app.Services.GetService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
         Assert.Equal(new[] { "SomeIssuer" }, options.TokenValidationParameters.ValidIssuers);
         Assert.Equal(new[] { "https://localhost:5001" }, options.TokenValidationParameters.ValidAudiences);
+    }
+
+    [Fact]
+    public async Task WebApplicationBuilder_OnlyRegistersMiddlewareWithSupportedServices()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Services.AddAuthentication().AddJwtBearer();
+        await using var app = builder.Build();
+
+        Assert.False(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.False(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
+
+        await app.StartAsync();
+
+        Assert.True(app.Properties.ContainsKey("__AuthenticationMiddlewareSet"));
+        Assert.False(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
     }
 
     private HttpContext GetHttpContext(

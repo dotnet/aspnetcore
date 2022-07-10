@@ -249,24 +249,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antifo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure", "Azure", "{DFDEED51-6B9B-41B9-A684-9F3FFC07C9B4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AzureAD", "AzureAD", "{2757D342-5E89-4C4B-9659-714AC8536FD4}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.AzureAD.UI", "Authentication.AzureAD.UI", "{CE6853C2-73AE-42EB-AD8C-2A094B2A4A36}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureAD.UI", "src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj", "{42E30C98-1358-497F-960B-E1AA17F46704}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureAD.UI.Test", "src\Azure\AzureAD\Authentication.AzureAD.UI\test\Microsoft.AspNetCore.Authentication.AzureAD.UI.Test.csproj", "{4870B11E-7F67-4757-BC9A-45E5895AC712}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.AzureADB2C.UI", "Authentication.AzureADB2C.UI", "{B95A22C8-71B7-49DE-94B2-16402A36B914}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureADB2C.UI", "src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj", "{600BF48B-F5DF-4C9D-A5A7-635A8DD6C32A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Test", "src\Azure\AzureAD\Authentication.AzureADB2C.UI\test\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Test.csproj", "{27DF3ACF-F3ED-4D76-BFCB-57251892ABC0}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{16653D2A-AC79-44ED-B908-2EEB58684C50}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests", "src\Azure\AzureAD\test\FunctionalTests\Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests.csproj", "{B70B1843-4360-4731-9D5C-599189CC1198}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kestrel", "Kestrel", "{4FDDC525-4E60-4CAF-83A3-261C5B43721F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kestrel", "Kestrel", "{89472057-8BB2-44A8-B0FC-D9F3ADB1181C}"
@@ -1583,10 +1565,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.CodeFixes", "src\Framework\AspNetCoreAnalyzers\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj", "{D5F4D764-887D-4EB3-8D00-FCBE23FFDBBC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Analyzers.Test", "src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj", "{40F493E2-FE59-4787-BE44-3AED39D585BF}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{5420BABA-BDC5-4FBF-81B4-6D7C02C4814D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureAD.WebSite", "src\Azure\AzureAD\test\testassets\AzureAD.WebSite\AzureAD.WebSite.csproj", "{05F4BC5A-060D-49B2-9069-95088402F99B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{97F9F7E9-56DA-49FE-B672-499E68EBB9DA}"
 EndProject

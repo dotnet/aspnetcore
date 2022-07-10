@@ -12,7 +12,7 @@ let currentHistoryIndex = 0;
 let navigationPromptOptions: NavigationPromptOptions | null = null;
 
 // Will be initialized once someone registers
-let notifyLocationChangedCallback: ((uri: string, intercepted: boolean) => Promise<void>) | null = null;
+let notifyLocationChangedCallback: ((uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
 let notifyLocationChangingCallback: ((uri: string, intercepted: boolean) => Promise<boolean>) | null = null;
 
 let popStateCallback: ((state: PopStateEvent) => Promise<void> | void) = onBrowserInitiatedPopState;
@@ -29,7 +29,7 @@ export const internalFunctions = {
   getLocationHref: (): string => location.href,
 };
 
-function listenForNavigationEvents(locationChangedCallback: (uri: string, intercepted: boolean) => Promise<void>, locationChangingCallback: (uri: string, intercepted: boolean) => Promise<boolean>): void {
+function listenForNavigationEvents(locationChangedCallback: (uri: string, state: string | undefined, intercepted: boolean) => Promise<void>, locationChangingCallback: (uri: string, intercepted: boolean) => Promise<boolean>): void {
   notifyLocationChangedCallback = locationChangedCallback;
   notifyLocationChangingCallback = locationChangingCallback;
 
@@ -135,7 +135,7 @@ export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | 
     : { forceLoad: forceLoadOrOptions, replaceHistoryEntry: replaceIfUsingOldOverload };
 
   if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry);
+    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState);
   } else {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
@@ -160,7 +160,7 @@ function performExternalNavigation(uri: string, replace: boolean) {
   }
 }
 
-function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean) {
+function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined) {
   // By this point, the "location changing" event has had its opportunity to cancel the navigation,
   // but now we need to display the navigation prompt to the user if necessary.
   const navigationCanceled = displayNavigationPromptIfEnabled();
@@ -175,11 +175,16 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
+  const stateEntry = {
+    userState: state,
+    index: currentHistoryIndex,
+  };
+
   if (!replace) {
     currentHistoryIndex++;
-    history.pushState({ index: currentHistoryIndex }, /* ignored title */ '', absoluteInternalHref);
+    history.pushState(stateEntry, /* ignored title */ '', absoluteInternalHref);
   } else {
-    history.replaceState({ index: currentHistoryIndex }, /* ignored title */ '', absoluteInternalHref);
+    history.replaceState(stateEntry, /* ignored title */ '', absoluteInternalHref);
   }
 
   notifyLocationChanged(interceptedLink);
@@ -251,7 +256,7 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
 
 async function notifyLocationChanged(interceptedLink: boolean) {
   if (notifyLocationChangedCallback) {
-    await notifyLocationChangedCallback(location.href, interceptedLink);
+    await notifyLocationChangedCallback(location.href, history.state?.userState, interceptedLink);
   }
 }
 
@@ -328,6 +333,7 @@ function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
 export interface NavigationOptions {
   forceLoad: boolean;
   replaceHistoryEntry: boolean;
+  historyEntryState?: string;
 }
 
 interface NavigationPromptOptions {

@@ -16,6 +16,15 @@ The following contains a description of each sub-directory in the `ProjectTempla
 - `test`: Contains the end to end template tests.
 - `testassets`: Contains assets used by the tests, like a dotnet tools installer
 
+## Submitting pull requests
+
+You can submit changes for templates in this repo by submitting a pull request. If you make changes to any
+`content/*/.template.config/template.json` files, build locally (see below) and include any
+`content/*/.template.config/localize/` changes in your pull request. (Your build may update the strings in those
+files for later localization.)
+
+## Building locally
+
 ### Build
 
 Some projects in this repository (like SignalR Java Client) require JDK installation and configuration of `JAVA_HOME` environment variable.

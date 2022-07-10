@@ -1,5 +1,9 @@
 #nullable enable
 Microsoft.AspNetCore.Components.NavigationManager.AddLocationChangingHandler(Microsoft.AspNetCore.Components.Routing.IHandleLocationChanging! locationChangingHandler) -> void
+Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.get -> string?
+Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.set -> void
+Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.get -> string?
+Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.init -> void
 Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChanging(string! uri, bool isNavigationIntercepted, bool forceLoad) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Components.NavigationManager.RemoveLocationChangingHandler(Microsoft.AspNetCore.Components.Routing.IHandleLocationChanging! locationChangingHandler) -> bool
 Microsoft.AspNetCore.Components.NavigationManager.UpdateHasLocationChangingHandlers() -> void
@@ -10,6 +14,7 @@ Microsoft.AspNetCore.Components.Routing.InternalNavigationLock
 Microsoft.AspNetCore.Components.Routing.InternalNavigationLock.InternalNavigationLock() -> void
 Microsoft.AspNetCore.Components.Routing.InternalNavigationLock.OnLocationChanging.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.LocationChangingContext!>
 Microsoft.AspNetCore.Components.Routing.InternalNavigationLock.OnLocationChanging.set -> void
+Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.Cancel() -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.CancellationToken.get -> System.Threading.CancellationToken

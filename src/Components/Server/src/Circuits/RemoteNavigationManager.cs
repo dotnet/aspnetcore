@@ -58,11 +58,12 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         UpdateHasLocationChangingHandlers();
     }
 
-    public void NotifyLocationChanged(string uri, bool intercepted)
+    public void NotifyLocationChanged(string uri, string state, bool intercepted)
     {
         Log.ReceivedLocationChangedNotification(_logger, uri, intercepted);
 
         Uri = uri;
+        HistoryEntryState = state;
         NotifyLocationChanged(intercepted);
     }
 

@@ -493,7 +493,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // OnLocationChangedAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public async Task OnLocationChangedAsync(string uri, bool intercepted)
+    public async Task OnLocationChangedAsync(string uri, string state, bool intercepted)
     {
         AssertInitialized();
         AssertNotDisposed();
@@ -504,7 +504,7 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 Log.LocationChange(_logger, uri, CircuitId);
                 var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                navigationManager.NotifyLocationChanged(uri, intercepted);
+                navigationManager.NotifyLocationChanged(uri, state, intercepted);
                 Log.LocationChangeSucceeded(_logger, uri, CircuitId);
             });
         }
