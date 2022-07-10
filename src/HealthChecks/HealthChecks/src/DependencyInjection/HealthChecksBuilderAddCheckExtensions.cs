@@ -48,6 +48,7 @@ public static class HealthChecksBuilderAddCheckExtensions
     /// </param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+    /// <param name="period">An optional <see cref="TimeSpan"/> representing the individual period of the check.</param>
     /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IHealthChecksBuilder AddCheck(
@@ -56,7 +57,8 @@ public static class HealthChecksBuilderAddCheckExtensions
         IHealthCheck instance,
         HealthStatus? failureStatus = null,
         IEnumerable<string>? tags = null,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        TimeSpan? period = null)
     {
         if (builder == null)
         {
@@ -73,7 +75,7 @@ public static class HealthChecksBuilderAddCheckExtensions
             throw new ArgumentNullException(nameof(instance));
         }
 
-        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus, tags, timeout));
+        return builder.Add(new HealthCheckRegistration(name, instance, failureStatus, tags, timeout, period));
     }
 
     /// <summary>
