@@ -13,13 +13,10 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// </summary>
 public sealed class RateLimiterOptions
 {
-    // Stores all of the keys for each partition so that we reuse the same objects.
-    internal IDictionary<string, ISet<DefaultKeyType>> _partitionKeys = new Dictionary<string, ISet<DefaultKeyType>>();
-
-    internal IDictionary<string, DefaultRateLimiterPolicy> PolicyMap { get; }
+    internal Dictionary<string, DefaultRateLimiterPolicy> PolicyMap { get; }
         = new Dictionary<string, DefaultRateLimiterPolicy>(StringComparer.Ordinal);
 
-    internal IDictionary<string, Func<IServiceProvider, DefaultRateLimiterPolicy>> UnactivatedPolicyMap { get; }
+    internal Dictionary<string, Func<IServiceProvider, DefaultRateLimiterPolicy>> UnactivatedPolicyMap { get; }
         = new Dictionary<string, Func<IServiceProvider, DefaultRateLimiterPolicy>>(StringComparer.Ordinal);
 
     /// <summary>
@@ -115,8 +112,8 @@ public sealed class RateLimiterOptions
         return (context =>
         {
             RateLimitPartition<TPartitionKey> partition = partitioner(context);
-            var partitionKey = new DefaultKeyType(policyName, partition.PartitionKey);
-            return new RateLimitPartition<DefaultKeyType>(partitionKey, key => partition.Factory(partition.PartitionKey));
+            var partitionKey = new DefaultKeyType(policyName, partition.PartitionKey, partition.Factory);
+            return new RateLimitPartition<DefaultKeyType>(partitionKey, key => ((Func<TPartitionKey, RateLimiter>)partitionKey.Factory!)((TPartitionKey)partitionKey.Key!));
         });
     }
 

@@ -7,11 +7,11 @@ namespace Microsoft.AspNetCore.RateLimiting;
 
 internal sealed class DefaultCombinedLease : RateLimitLease
 {
-    private readonly RateLimitLease? _globalLease;
+    private readonly RateLimitLease _globalLease;
     private readonly RateLimitLease _endpointLease;
     private HashSet<string>? _metadataNames;
 
-    public DefaultCombinedLease(RateLimitLease? globalLease, RateLimitLease endpointLease)
+    public DefaultCombinedLease(RateLimitLease globalLease, RateLimitLease endpointLease)
     {
         _globalLease = globalLease;
         _endpointLease = endpointLease;
@@ -26,12 +26,9 @@ internal sealed class DefaultCombinedLease : RateLimitLease
             if (_metadataNames is null)
             {
                 _metadataNames = new HashSet<string>();
-                if (_globalLease is not null)
+                foreach (var metadataName in _globalLease.MetadataNames)
                 {
-                    foreach (var metadataName in _globalLease.MetadataNames)
-                    {
-                        _metadataNames.Add(metadataName);
-                    }
+                    _metadataNames.Add(metadataName);
                 }
                 foreach (var metadataName in _endpointLease.MetadataNames)
                 {
@@ -51,12 +48,9 @@ internal sealed class DefaultCombinedLease : RateLimitLease
         {
             return true;
         }
-        if (_globalLease is not null)
+        if (_globalLease.TryGetMetadata(metadataName, out metadata))
         {
-            if (_globalLease.TryGetMetadata(metadataName, out metadata))
-            {
-                return true;
-            }
+            return true;
         }
 
         metadata = null;
@@ -82,11 +76,11 @@ internal sealed class DefaultCombinedLease : RateLimitLease
 
         try
         {
-            _globalLease?.Dispose();
+            _globalLease.Dispose();
         }
         catch (Exception ex)
         {
-            exceptions ??= new List<Exception>();
+            exceptions ??= new List<Exception>(1);
             exceptions.Add(ex);
         }
 

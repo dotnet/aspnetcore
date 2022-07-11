@@ -9,16 +9,16 @@ namespace Microsoft.AspNetCore.RateLimiting;
 internal class RateLimiterMetadata : IRateLimiterMetadata
 {
     /// <summary>
-    /// Creates a new instance of <see cref="RateLimiterMetadata"/> using the specified limiter.
+    /// Creates a new instance of <see cref="RateLimiterMetadata"/> using the specified policy.
     /// </summary>
-    /// <param name="policyName">The name of the limiter which needs to be applied.</param>
+    /// <param name="policyName">The name of the policy which needs to be applied.</param>
     public RateLimiterMetadata(string policyName)
     {
         PolicyName = policyName;
     }
 
     /// <summary>
-    /// The name of the limiter which needs to be applied.
+    /// The name of the policy which needs to be applied.
     /// </summary>
     public string PolicyName { get; }
 }

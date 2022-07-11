@@ -4,6 +4,7 @@
 using System.Threading.RateLimiting;
 
 namespace Microsoft.AspNetCore.RateLimiting;
+
 internal struct LeaseContext : IDisposable
 {
     public bool? GlobalRejected { get; init; }

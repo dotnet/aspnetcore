@@ -5,13 +5,17 @@ namespace Microsoft.AspNetCore.RateLimiting;
 
 internal struct DefaultKeyType
 {
-    public DefaultKeyType(string policyName, object? key)
+    public DefaultKeyType(string policyName, object? key, object? factory = null)
     {
         PolicyName = policyName;
         Key = key;
+        Factory = factory;
     }
 
     public string PolicyName { get; }
 
     public object? Key { get; }
+
+    // This is really a Func<TPartitionKey, RateLimiter>
+    public object? Factory { get; }
 }

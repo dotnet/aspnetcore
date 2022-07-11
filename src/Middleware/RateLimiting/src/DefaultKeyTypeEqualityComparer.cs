@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.RateLimiting;
+
 internal class DefaultKeyTypeEqualityComparer : IEqualityComparer<DefaultKeyType>
 {
     public bool Equals(DefaultKeyType x, DefaultKeyType y)
@@ -12,7 +13,7 @@ internal class DefaultKeyTypeEqualityComparer : IEqualityComparer<DefaultKeyType
         var yKey = y.Key;
         if (xKey == null && yKey == null)
         {
-            return true;
+            return x.PolicyName.Equals(y.PolicyName);
         }
         else if (xKey == null || yKey == null)
         {

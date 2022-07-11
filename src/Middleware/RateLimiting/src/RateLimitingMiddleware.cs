@@ -130,8 +130,7 @@ internal sealed partial class RateLimitingMiddleware
             globalLease?.Dispose();
             throw;
         }
-
-        return new LeaseContext() { Lease = new DefaultCombinedLease(globalLease, endpointLease)};
+        return globalLease is null ? new LeaseContext() { Lease = endpointLease } : new LeaseContext() { Lease = new DefaultCombinedLease(globalLease, endpointLease) };
     }
 
     private async ValueTask<LeaseContext> CombinedWaitAsync(HttpContext context, CancellationToken cancellationToken)
@@ -163,7 +162,7 @@ internal sealed partial class RateLimitingMiddleware
             throw;
         }
 
-        return new LeaseContext() { Lease = new DefaultCombinedLease(globalLease, endpointLease) };
+        return globalLease is null ? new LeaseContext() { Lease = endpointLease } : new LeaseContext() { Lease = new DefaultCombinedLease(globalLease, endpointLease) };
     }
 
     // Create the endpoint-specific PartitionedRateLimiter
