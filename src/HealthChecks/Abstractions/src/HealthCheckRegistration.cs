@@ -42,7 +42,6 @@ public sealed class HealthCheckRegistration
     {
     }
 
-
     /// <summary>
     /// Creates a new <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration" /> for an existing <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck" /> instance.
     /// </summary>
