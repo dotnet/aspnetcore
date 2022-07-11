@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Represent the current problem detatils context for the request.
+/// Represent the current problem details context for the request.
 /// </summary>
 public sealed class ProblemDetailsContext
 {

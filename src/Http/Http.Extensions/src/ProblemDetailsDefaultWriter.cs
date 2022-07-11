@@ -23,7 +23,7 @@ internal sealed partial class ProblemDetailsDefaultWriter : IProblemDetailsWrite
     public async ValueTask<bool> TryWriteAsync(ProblemDetailsContext context)
     {
         var httpContext = context.HttpContext;
-        var acceptHeader = httpContext.Request.GetTypedHeaders().Accept;
+        var acceptHeader = httpContext.Request.Headers.Accept.GetList<MediaTypeHeaderValue>();
 
         if (acceptHeader == null ||
             !acceptHeader.Any(h => _jsonMediaType.IsSubsetOf(h) || _problemDetailsJsonMediaType.IsSubsetOf(h)))
