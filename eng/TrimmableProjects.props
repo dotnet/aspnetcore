@@ -91,6 +91,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Web" />
+    <TrimmableProject Include="Microsoft.Extensions.Localization.Abstractions" />
     <TrimmableProject Include="Microsoft.Extensions.ObjectPool" />
     <TrimmableProject Include="Microsoft.JSInterop" />
     <TrimmableProject Include="Microsoft.Extensions.WebEncoders" />
