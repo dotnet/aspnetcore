@@ -167,7 +167,32 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true);
     }
 
     [Fact]
-    public async Task ConfigureAppHostBuilderProducesDiagnosticVerifyCS()
+    public async Task TwoMethodsInArgumentsProducesTwoProperties()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+var builder = WebApplication.CreateBuilder(args);
+builder.Host.{|#0:ConfigureAppConfiguration((context, builder) => { builder.AddJsonFile(""foo.json"", optional: true); builder.AddEnvironmentVariables();})|};
+";
+        var fixedSource = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile(""foo.json"", optional: true).AddEnvironmentVariables();
+";
+
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder).WithArguments("ConfigureAppConfiguration").WithLocation(0);
+
+        // Assert
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
+    }
+
+    [Fact]
+    public async Task ConfigureAppHostBuilderProducesDiagnosticBadWay()
     {
         // Arrange
         var source = @"
@@ -175,13 +200,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.{|#0:ConfigureAppConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
+var host = builder.Host;
+host.{|#0:ConfigureAppConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
 ";
         var fixedSource = @"
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
+var host = builder.Host;
 builder.Configuration.AddJsonFile(""foo.json"", optional: true);
 ";
 

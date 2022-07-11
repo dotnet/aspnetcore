@@ -48,27 +48,52 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
         var invocation = root.FindNode(diagnostic.Location.SourceSpan);
       
-        if (invocation is InvocationExpressionSyntax { } invocationExpression)
+        if (invocation is InvocationExpressionSyntax { } newInvocationExpr)
         {
-            var expression = invocationExpression.Expression as MemberAccessExpressionSyntax;
-            var configuration = SyntaxFactory.IdentifierName("Configuration");
-            var builder = expression.Expression as MemberAccessExpressionSyntax;
+            if (newInvocationExpr.Expression is MemberAccessExpressionSyntax { } invokedMethodExpr)
+            {
+                var configuration = SyntaxFactory.IdentifierName("Configuration");
+                if (invokedMethodExpr.Expression is MemberAccessExpressionSyntax { } subExpression)
+                {
+                    if (subExpression.Name != null)
+                    {
+                        subExpression = subExpression.WithName(configuration);
+                        invokedMethodExpr = invokedMethodExpr.WithExpression(subExpression);
+                    }
 
-            builder = builder.WithName(configuration);
-            expression = expression.WithExpression(builder);
+                    if (newInvocationExpr.ArgumentList.Arguments.Count == 0)
+                    {
+                        return editor.GetChangedDocument();
+                    }
 
-            var initArgument = invocationExpression.ArgumentList.Arguments[0];
-            var lambdaExpression = initArgument.Expression as SimpleLambdaExpressionSyntax;
-            var body = lambdaExpression.ExpressionBody as InvocationExpressionSyntax;
-            var argument = body.ArgumentList;
-            var bodyExpression = body.Expression as MemberAccessExpressionSyntax;
-            var method = bodyExpression.Name;
+                    static BlockSyntax ExtractArgumentBody(InvocationExpressionSyntax invocationExpression)
+                    {
+                        var initArgument = invocationExpression.ArgumentList.Arguments[0];
+                        if (initArgument.Expression is LambdaExpressionSyntax { } lambdaExpression)
+                        {
+                            var body = lambdaExpression.Block;
+                            var attribute = lambdaExpression.Block.AttributeLists;
+                            var bla = lambdaExpression.Block.Statements;
+                            return body;
+                        }
+                        return null;
+                    }
+                    var exprBodies = ExtractArgumentBody(newInvocationExpr);
+                    //if (ExtractArgumentBody(newInvocationExpr) is InvocationExpressionSyntax { } body)
+                    //{
+                    //    var argument = body.ArgumentList;
+                    //    if (body.Expression is MemberAccessExpressionSyntax { } bodyExpression)
+                    //    {
+                    //        var method = bodyExpression.Name;
 
-            expression = expression.WithName(method);
-            invocationExpression = invocationExpression.WithExpression(expression);
-            invocationExpression = invocationExpression.WithArgumentList(argument);
+                    //        invokedMethodExpr = invokedMethodExpr.WithName(method);
+                    //        newInvocationExpr = newInvocationExpr.WithExpression(invokedMethodExpr).WithArgumentList(argument);
+                    //    }
+                    //}
 
-            editor.ReplaceNode(invocation, invocationExpression);
+                    editor.ReplaceNode(invocation, newInvocationExpr);
+                }
+            }
         }
 
         return editor.GetChangedDocument();
