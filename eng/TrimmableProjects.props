@@ -31,6 +31,9 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Routing" />
     <TrimmableProject Include="Microsoft.AspNetCore.WebUtilities" />
     <TrimmableProject Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Identity" />
+    <TrimmableProject Include="Microsoft.Extensions.Identity.Core" />
+    <TrimmableProject Include="Microsoft.Extensions.Identity.Stores" />
     <TrimmableProject Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.HttpSys" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.IISIntegration" />
