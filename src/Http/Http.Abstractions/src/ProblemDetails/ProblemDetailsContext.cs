@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed class ProblemDetailsContext
 {
+    private ProblemDetails? _problemDetails;
+
     /// <summary>
     /// The <see cref="HttpContext"/> associated with the current request being processed by the filter.
     /// </summary>
@@ -24,5 +26,9 @@ public sealed class ProblemDetailsContext
     /// A instance of <see cref="ProblemDetails"/> that will be
     /// used during the response payload generation.
     /// </summary>
-    public ProblemDetails ProblemDetails { get; init; } = new ProblemDetails();
+    public ProblemDetails ProblemDetails
+    {
+        get => _problemDetails ??= new ProblemDetails();
+        init => _problemDetails = value;
+    }
 }

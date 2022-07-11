@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Http;
 
 internal sealed partial class ProblemDetailsDefaultWriter : IProblemDetailsWriter
 {
-    private readonly MediaTypeHeaderValue _jsonMediaType = new("application/json");
-    private readonly MediaTypeHeaderValue _problemDetailsJsonMediaType = new("application/problem+json");
+    private static readonly MediaTypeHeaderValue _jsonMediaType = new("application/json");
+    private static readonly MediaTypeHeaderValue _problemDetailsJsonMediaType = new("application/problem+json");
     private readonly ProblemDetailsOptions _options;
 
     public ProblemDetailsDefaultWriter(IOptions<ProblemDetailsOptions> options)
