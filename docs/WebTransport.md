@@ -181,7 +181,7 @@ public void Configure(IApplicationBuilder app)
                     }
                     else
                     {
-                        stream.Dispose();
+                        await stream.DisposeAsync();
                     }
                 }
                 else

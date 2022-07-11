@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
@@ -12,9 +13,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
-/// <summary>
-/// Controls the WebTransport session and keeps track of all the streams.
-/// </summary>
 internal sealed class WebTransportSession : IWebTransportSession
 {
     private static readonly IStreamDirectionFeature _outputStreamDirectionFeature = new DefaultStreamDirectionFeature(canRead: false, canWrite: true);
@@ -118,11 +116,11 @@ internal sealed class WebTransportSession : IWebTransportSession
         _pendingStreams.Writer.Complete();
     }
 
-    public async ValueTask<ConnectionContext> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
+    public async ValueTask<ConnectionContext?> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken)
     {
         if (_isClosing)
         {
-            throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
+            return null;
         }
         // create the stream
         var features = new FeatureCollection();
@@ -131,22 +129,16 @@ internal sealed class WebTransportSession : IWebTransportSession
         var streamContext = _connection.CreateHttpStreamContext(connectionContext);
         var stream = new WebTransportStream(streamContext, WebTransportStreamType.Output);
 
+        var success = _openStreams.TryAdd(stream.StreamId, stream);
+        Debug.Assert(success);
+
         // send the stream header
         // https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html#name-unidirectional-streams
         await stream.Transport.Output.WriteAsync(OutputStreamHeader, cancellationToken);
 
-        if (!_openStreams.TryAdd(stream.StreamId, stream))
-        {
-            throw new Exception(CoreStrings.WebTransportStreamAlreadyOpen);
-        }
-
         return stream;
     }
 
-    /// <summary>
-    /// Adds a new stream to the internal list of pending streams.
-    /// </summary>
-    /// <param name="stream">A reference to the new stream that is being added</param>
     internal void AddStream(WebTransportStream stream)
     {
         if (_isClosing)
@@ -160,16 +152,11 @@ internal sealed class WebTransportSession : IWebTransportSession
         }
     }
 
-    /// <summary>
-    /// Pops the first stream from the list of pending streams. Returns null if it failed to retrieve a pending stream.
-    /// </summary>
-    /// <param name="cancellationToken">The cancellation token to abort waiting for a stream</param>
-    /// <returns>An instance of WebTransportStream that corresponds to the new stream to accept</returns>
     public async ValueTask<ConnectionContext?> AcceptStreamAsync(CancellationToken cancellationToken)
     {
         if (_isClosing)
         {
-            throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
+            return null;
         }
 
         try
@@ -182,11 +169,6 @@ internal sealed class WebTransportSession : IWebTransportSession
         }
     }
 
-    /// <summary>
-    /// Tries to remove a stream from the internal list of open streams.
-    /// </summary>
-    /// <param name="streamId">A reference to the new stream that is being added</param>
-    /// <returns>True is the process succeeded. False otherwise</returns>
     internal bool TryRemoveStream(long streamId)
     {
         var success = _openStreams.Remove(streamId, out var stream);

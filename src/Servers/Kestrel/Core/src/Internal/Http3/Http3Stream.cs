@@ -914,6 +914,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _keepAlive = true;
         _connectionAborted = false;
         _userTrailers = null;
+        _isWebTransportSessionAccepted = false;
+        _isMethodConnect = false;
 
         // Reset Http3 Features
         _currentIHttpMinRequestBodyDataRateFeature = this;

@@ -12,5 +12,5 @@ Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature.IsWebTransportReques
 Microsoft.AspNetCore.Http.Features.IWebTransportSession
 Microsoft.AspNetCore.Http.Features.IWebTransportSession.Abort(int errorCode) -> void
 Microsoft.AspNetCore.Http.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
-Microsoft.AspNetCore.Http.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
+Microsoft.AspNetCore.Http.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
 Microsoft.AspNetCore.Http.Features.IWebTransportSession.SessionId.get -> long

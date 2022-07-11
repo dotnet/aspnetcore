@@ -20,15 +20,12 @@ public interface IWebTransportSession
     /// </summary>
     /// <param name="errorCode">HTTP error code that corresponds to the reason for causing the abort.</param>
     /// <remarks>Error codes are described here: https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes</remarks>
-    /// <exception cref="Exception">If This is not a valid WebTransport session.</exception>
     void Abort(int errorCode);
 
     /// <summary>
     /// Returns the next incoming stream in the order the server received it. The stream can be either bidirectional or unidirectional.
     /// </summary>
     /// <remarks>To use WebTransport, you must first enable the <c>Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams</c> AppContextSwitch</remarks>
-    /// <exception cref="ObjectDisposedException">If this WebTransport session is closing</exception>
-    /// <exception cref="Exception">If a stream with this id is already open</exception>
     /// <param name="cancellationToken">The cancellation token used to cancel the operation.</param>
     /// <returns>The unidirectional or bidirectional stream that is next in the queue, or <c>null</c> if the operation failed.</returns>
     ValueTask<ConnectionContext?> AcceptStreamAsync(CancellationToken cancellationToken = default);
@@ -37,7 +34,6 @@ public interface IWebTransportSession
     /// Opens a new unidirectional output stream.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token used to cancel the operation.</param>
-    /// <exception cref="Exception">If This is not a valid WebTransport session.</exception>
     /// <returns>The unidirectional stream that was opened.</returns>
-    ValueTask<ConnectionContext> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken = default);
+    ValueTask<ConnectionContext?> OpenUnidirectionalStreamAsync(CancellationToken cancellationToken = default);
 }

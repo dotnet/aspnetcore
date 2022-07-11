@@ -58,10 +58,10 @@ public class WebTransportSessionTests : Http3TestBase
         session.OnClientConnectionClosed();
 
         // check that all future method calls which are not related to closing throw
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await session.AcceptStreamAsync(CancellationToken.None));
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await session.OpenUnidirectionalStreamAsync(CancellationToken.None));
+        Assert.Null(await session.AcceptStreamAsync(CancellationToken.None));
+        Assert.Null(await session.OpenUnidirectionalStreamAsync(CancellationToken.None));
 
-        var stream = WebTransportTestUtilities.CreateStream(WebTransportStreamType.Bidirectional);
-        Assert.Throws<ObjectDisposedException>(() => session.AddStream(stream));
+        // doublec check that no exceptions are thrown
+        var _ = WebTransportTestUtilities.CreateStream(WebTransportStreamType.Bidirectional);
     }
 }
