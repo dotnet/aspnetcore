@@ -37,7 +37,6 @@ public abstract class NavigationManager
 
     // The URI. Always represented an absolute URI.
     private string? _uri;
-
     private bool _isInitialized;
 
     /// <summary>
@@ -84,6 +83,14 @@ public abstract class NavigationManager
             _uri = value;
         }
     }
+
+    /// <summary>
+    /// Gets or sets the state associated with the current navigation.
+    /// </summary>
+    /// <remarks>
+    /// Setting <see cref="HistoryEntryState" /> will not trigger the <see cref="LocationChanged" /> event.
+    /// </remarks>
+    public string? HistoryEntryState { get; protected set; }
 
     /// <summary>
     /// Navigates to the specified URI.
@@ -254,7 +261,12 @@ public abstract class NavigationManager
     {
         try
         {
-            _locationChanged?.Invoke(this, new LocationChangedEventArgs(_uri!, isInterceptedLink));
+            _locationChanged?.Invoke(
+                this,
+                new LocationChangedEventArgs(_uri!, isInterceptedLink)
+                {
+                    HistoryEntryState = HistoryEntryState
+                });
         }
         catch (Exception ex)
         {

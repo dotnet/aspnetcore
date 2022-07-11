@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// with Unprocessable Entity (422) status code.
 /// </summary>
 /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
-public sealed class UnprocessableEntity<TValue> : IResult, IEndpointMetadataProvider
+public sealed class UnprocessableEntity<TValue> : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="UnprocessableEntity"/> class with the values
@@ -29,6 +29,8 @@ public sealed class UnprocessableEntity<TValue> : IResult, IEndpointMetadataProv
     /// Gets the object result.
     /// </summary>
     public TValue? Value { get; }
+
+    object? IValueHttpResult.Value => Value;
 
     /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status422UnprocessableEntity"/>

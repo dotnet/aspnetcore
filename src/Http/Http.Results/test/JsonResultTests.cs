@@ -217,6 +217,65 @@ public class JsonResultTests
         Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
+    [Fact]
+    public void JsonResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/json+custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new JsonHttpResult<string>(null, StatusCodes.Status200OK, contentType, null));
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/json+custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new JsonHttpResult<string>(null, StatusCodes.Status202Accepted, contentType, null));
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IStatusCodeHttpResult_Correctly_WithDefaultStatus()
+    {
+        // Arrange
+        var contentType = "application/json+custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new JsonHttpResult<string>(null, statusCode: null, contentType, null));
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange & Act
+        var value = "Foo";
+        var contentType = "application/json+custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new JsonHttpResult<string>(value, statusCode: null, contentType, null));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void JsonResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange
+        var value = "Foo";
+        var contentType = "application/json+custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new JsonHttpResult<string>(value, statusCode: null, contentType, null));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
     private static IServiceProvider CreateServices()
     {
         var services = new ServiceCollection();

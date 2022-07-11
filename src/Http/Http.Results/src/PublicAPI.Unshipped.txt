@@ -122,7 +122,7 @@ Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult
 Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult.ContentType.get -> string!
 Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult.ProblemDetails.get -> Microsoft.AspNetCore.Mvc.ProblemDetails!
-Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult.StatusCode.get -> int?
+Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult.StatusCode.get -> int
 Microsoft.AspNetCore.Http.HttpResults.PushStreamHttpResult
 Microsoft.AspNetCore.Http.HttpResults.PushStreamHttpResult.ContentType.get -> string!
 Microsoft.AspNetCore.Http.HttpResults.PushStreamHttpResult.EnableRangeProcessing.get -> bool
