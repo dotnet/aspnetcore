@@ -53,6 +53,6 @@ public class MiddlewareAnalysisTests
         Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareException[0]);
         // reversed "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware"
         Assert.Equal(1, listener.MiddlewareFinished.Count);
-        Assert.Equal("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", listener.MiddlewareFinished[0]);
+        Assert.Equal("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl", listener.MiddlewareFinished[0]);
     }
 }
