@@ -190,31 +190,4 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true).AddEnvironmentVa
         // Assert
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
-
-    [Fact]
-    public async Task ConfigureAppHostBuilderProducesDiagnosticBadWay()
-    {
-        // Arrange
-        var source = @"
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
-var builder = WebApplication.CreateBuilder(args);
-var host = builder.Host;
-host.{|#0:ConfigureAppConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
-";
-        var fixedSource = @"
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
-var builder = WebApplication.CreateBuilder(args);
-var host = builder.Host;
-builder.Configuration.AddJsonFile(""foo.json"", optional: true);
-";
-
-        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder).WithArguments("ConfigureAppConfiguration").WithLocation(0);
-
-        //Act
-        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
-    }
 }
