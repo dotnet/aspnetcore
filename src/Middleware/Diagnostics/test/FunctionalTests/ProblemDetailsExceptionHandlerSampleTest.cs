@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests;
 
@@ -22,6 +23,7 @@ public class ProblemDetailsExceptionHandlerSampleTest : IClassFixture<TestFixtur
     {
         // Arrange
         var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/throw");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
         // Act
         var response = await Client.SendAsync(request);
