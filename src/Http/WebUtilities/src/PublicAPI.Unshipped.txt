@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.BufferAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.FileIOBufferSize.get -> int
+Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.FileIOBufferSize.set -> void
 Microsoft.AspNetCore.WebUtilities.FormMultipartSection.GetValueAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<string!>
 override Microsoft.AspNetCore.WebUtilities.BufferedReadStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 override Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask

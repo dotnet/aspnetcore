@@ -505,6 +505,25 @@ public class FileBufferingReadStreamTests
         Assert.InRange(withBufferMs.NumberOfWrites, 1, mostExpectedWrites);
     }
 
+    [Theory]
+    [InlineData(1024 * 4)]
+    [InlineData(1024 * 16)]
+    [InlineData(1024 * 64)]
+    [InlineData(1024 * 1024)]
+    [InlineData(1024 * 1024 * 16)]
+    public async Task BufferAsyncWorks(int length)
+    {
+        var data = new byte[length];
+        var inner = new MemoryStream(data);
+
+        using var stream = new FileBufferingReadStream(inner, 1024 * 1024 * 5 + 3, // A strange number to ensure we're not lining up cleanly on boundaries.
+            bufferLimit: null, GetCurrentDirectory());
+
+        await stream.BufferAsync();
+        Assert.Equal(inner.Length, stream.Length);
+        Assert.Equal(inner.Position, stream.Position);
+    }
+
     [Fact]
     public async Task ReadAsyncThenCopyToAsyncWorks()
     {

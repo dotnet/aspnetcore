@@ -222,6 +222,11 @@ public class FileBufferingReadStream : Stream
         }
     }
 
+    /// <summary>
+    /// Specifies the IO buffer size used for the FileStream buffer.
+    /// </summary>
+    public int FileIOBufferSize { get; set; } = 16 * 1024;
+
     /// <inheritdoc/>
     public override long Seek(long offset, SeekOrigin origin)
     {
@@ -254,7 +259,7 @@ public class FileBufferingReadStream : Stream
         }
 
         _tempFileName = Path.Combine(_tempFileDirectory, "ASPNETCORE_" + Guid.NewGuid().ToString() + ".tmp");
-        return new FileStream(_tempFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.Delete, 1024 * 16,
+        return new FileStream(_tempFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.Delete, FileIOBufferSize,
             FileOptions.Asynchronous | FileOptions.DeleteOnClose | FileOptions.SequentialScan);
     }
 
@@ -353,44 +358,10 @@ public class FileBufferingReadStream : Stream
             throw new IOException("Buffer limit exceeded.");
         }
 
-        if (_inMemory && _memoryThreshold - read < _buffer.Length)
-        {
-            _inMemory = false;
-            var oldBuffer = _buffer;
-            _buffer = CreateTempFile();
-            if (_rentedBuffer == null)
-            {
-                oldBuffer.Position = 0;
-                var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
-                try
-                {
-                    // oldBuffer is a MemoryStream, no need to do async reads.
-                    var copyRead = oldBuffer.Read(rentedBuffer);
-                    while (copyRead > 0)
-                    {
-                        await _buffer.WriteAsync(rentedBuffer.AsMemory(0, copyRead), cancellationToken);
-                        copyRead = oldBuffer.Read(rentedBuffer);
-                    }
-                }
-                finally
-                {
-                    _bytePool.Return(rentedBuffer);
-                }
-            }
-            else
-            {
-                await _buffer.WriteAsync(_rentedBuffer.AsMemory(0, (int)oldBuffer.Length), cancellationToken);
-                _bytePool.Return(_rentedBuffer);
-                _rentedBuffer = null;
-            }
-        }
+        await StoreAsync(buffer[..read], cancellationToken);
 
-        if (read > 0)
-        {
-            await _buffer.WriteAsync(buffer.Slice(0, read), cancellationToken);
-        }
         // Allow zero-byte reads
-        else if (buffer.Length > 0)
+        if (read == 0 && buffer.Length > 0)
         {
             _completelyBuffered = true;
         }
@@ -465,6 +436,97 @@ public class FileBufferingReadStream : Stream
         }
 
         return CopyToAsyncImpl();
+    }
+
+    /// <summary>
+    /// Reads this stream into the buffer.
+    /// </summary>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    public async Task BufferAsync(CancellationToken cancellationToken = default)
+    {
+        if (_completelyBuffered)
+        {
+            return;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var buffer = _bytePool.Rent(_maxRentedBufferSize);
+        long total = 0;
+        try
+        {
+            var read = 0;
+            do
+            {
+                // Fill a segment
+                var segmentSize = 0;
+                do
+                {
+                    read = await _inner.ReadAsync(buffer.AsMemory(segmentSize), cancellationToken);
+                    segmentSize += read;
+                    // Not all streams support cancellation directly.
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (_bufferLimit.HasValue && _bufferLimit.Value - total < read)
+                    {
+                        throw new InvalidDataException($"The stream exceeded the buffer limit {_bufferLimit.Value}.");
+                    }
+                    total += read;
+                }
+                while (read > 0 && segmentSize < buffer.Length);
+
+                await StoreAsync(buffer.AsMemory(0, segmentSize), cancellationToken);
+            }
+            while (read > 0);
+
+            _completelyBuffered = true;
+        }
+        finally
+        {
+            _bytePool.Return(buffer);
+        }
+    }
+
+    private async Task StoreAsync(Memory<byte> memory, CancellationToken cancellationToken)
+    {
+        if (memory.Length == 0)
+        {
+            return;
+        }
+
+        // Do we need to offload to disk?
+        if (_inMemory && _memoryThreshold - memory.Length < _buffer.Length)
+        {
+            _inMemory = false;
+            var oldBuffer = _buffer;
+            _buffer = CreateTempFile();
+            if (_rentedBuffer == null)
+            {
+                oldBuffer.Position = 0;
+                var rentedBuffer = _bytePool.Rent(Math.Min((int)oldBuffer.Length, _maxRentedBufferSize));
+                try
+                {
+                    // oldBuffer is a MemoryStream, no need to do async reads.
+                    var copyRead = oldBuffer.Read(rentedBuffer);
+                    while (copyRead > 0)
+                    {
+                        await _buffer.WriteAsync(rentedBuffer.AsMemory(0, copyRead), cancellationToken);
+                        copyRead = oldBuffer.Read(rentedBuffer);
+                    }
+                }
+                finally
+                {
+                    _bytePool.Return(rentedBuffer);
+                }
+            }
+            else
+            {
+                await _buffer.WriteAsync(_rentedBuffer.AsMemory(0, (int)oldBuffer.Length), cancellationToken);
+                _bytePool.Return(_rentedBuffer);
+                _rentedBuffer = null;
+            }
+        }
+
+        await _buffer.WriteAsync(memory, cancellationToken);
     }
 
     /// <inheritdoc/>
