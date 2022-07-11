@@ -136,7 +136,7 @@ Aborting a WebTransport session will result in severing the connection with the 
 ```C#
 stream.Abort(ConnectionAbortedException exception);
 ```
-Aborting a WebTransport session will result in severing the connection with the client and aborting all the streams. You can optionally specify an aborted exception that will be passed down into the logs. A default message is used if no message is provided.
+Aborting a WebTransport stream will result in abruptly ending all data transmission over the stream. You can optionally specify an aborted exception that will be passed down into the logs. A default message is used if no message is provided.
 
 - Soft closing a WebTransport stream
 ```C#
@@ -152,11 +152,11 @@ This example waits for a bidirectional stream. Once it receives one, it will rea
 ```C#
 public void Configure(IApplicationBuilder app)
 {
-    // allocate some random amount of memory
-    var memory = new Memory<byte>(new byte[4096]);
-
     app.Use(async (context, next) =>
     {
+        // allocate some random amount of memory
+        var memory = new Memory<byte>(new byte[4096]);
+
         var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
         if (feature.IsWebTransportRequest)
         {
@@ -172,12 +172,24 @@ public void Configure(IApplicationBuilder app)
                 if (stream is not null)
                 {
 
-                    // check that the stream is bidirectional. If yes, keep going, otherwise keep waiting
+                    // check that the stream is bidirectional. If yes, keep going, otherwise
+                    // dispose its resources and keep waiting.
                     direction = stream.Features.GetRequiredFeature<IStreamDirectionFeature>();
                     if (direction.CanRead && direction.CanWrite)
                     {
                         break;
                     }
+                    else
+                    {
+                        stream.Dispose();
+                    }
+                }
+                else
+                {
+                    // if a stream is null, this means that the session failed to get the next one.
+                    // Thus, the session has ended or some other issue has occurred. We end the
+                    // connection in this case.
+                    return;
                 }
             }
 
