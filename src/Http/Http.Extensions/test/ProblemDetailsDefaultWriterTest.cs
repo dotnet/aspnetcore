@@ -172,8 +172,7 @@ public class DefaultProblemDetailsWriterTest
         // Arrange
         var writer = GetWriter();
         var stream = new MemoryStream();
-        var context = CreateContext(stream);
-        context.Request.Headers.Accept = contentType;
+        var context = CreateContext(stream, contentType: contentType);
 
         var expectedProblem = new ProblemDetails()
         {
@@ -211,8 +210,7 @@ public class DefaultProblemDetailsWriterTest
         // Arrange
         var writer = GetWriter();
         var stream = new MemoryStream();
-        var context = CreateContext(stream);
-        context.Request.Headers.Accept = contentType;
+        var context = CreateContext(stream, contentType: contentType);
 
         //Act
         var result = await writer.TryWriteAsync(new() { HttpContext = context });
@@ -223,13 +221,18 @@ public class DefaultProblemDetailsWriterTest
         Assert.Equal(0, stream.Length);
     }
 
-    private static HttpContext CreateContext(Stream body, int statusCode = StatusCodes.Status400BadRequest)
+    private static HttpContext CreateContext(
+        Stream body,
+        int statusCode = StatusCodes.Status400BadRequest,
+        string contentType = "application/json")
     {
-        return new DefaultHttpContext()
+        var context = new DefaultHttpContext()
         {
             Response = { Body = body, StatusCode = statusCode },
             RequestServices = CreateServices()
         };
+        context.Request.Headers.Accept = contentType;
+        return context;
     }
 
     private static IServiceProvider CreateServices()

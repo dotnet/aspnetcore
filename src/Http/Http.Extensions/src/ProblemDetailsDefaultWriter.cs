@@ -25,7 +25,7 @@ internal sealed partial class ProblemDetailsDefaultWriter : IProblemDetailsWrite
         var httpContext = context.HttpContext;
         var acceptHeader = httpContext.Request.GetTypedHeaders().Accept;
 
-        if (acceptHeader is { Count: > 0 } &&
+        if (acceptHeader == null ||
             !acceptHeader.Any(h => _jsonMediaType.IsSubsetOf(h) || _problemDetailsJsonMediaType.IsSubsetOf(h)))
         {
             return false;
