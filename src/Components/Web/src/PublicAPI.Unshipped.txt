@@ -1,4 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.DisplayName() -> void
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.For.set -> void
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputRadio<TValue>.Element.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.SpacerElement.get -> string!
@@ -7,3 +13,6 @@ Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.get -> double
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementX.set -> void
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.get -> double
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.MovementY.set -> void
+override Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+override Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.OnParametersSet() -> void
+virtual Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.Dispose(bool disposing) -> void
