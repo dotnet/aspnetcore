@@ -177,7 +177,7 @@ public sealed class HealthCheckRegistration
 
         if (period <= TimeSpan.Zero && period != System.Threading.Timeout.InfiniteTimeSpan)
         {
-            throw new ArgumentOutOfRangeException(nameof(timeout));
+            throw new ArgumentOutOfRangeException(nameof(period));
         }
 
         _name = name;
