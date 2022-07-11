@@ -175,7 +175,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         using FileStream openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         Assert.NotNull(secretsJson);
-        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName(DevJwtsDefaults.Scheme, DevJwtsDefaults.Issuer)));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyValuePropertyName(DevJwtsDefaults.Scheme)));
         Assert.True(secretsJson.TryGetPropertyValue("Foo", out var fooField));
         Assert.Equal("baz", fooField["Bar"].GetValue<string>());
     }
@@ -374,7 +374,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         using FileStream openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         Assert.NotNull(secretsJson);
-        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName(DevJwtsDefaults.Scheme, DevJwtsDefaults.Issuer)));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyValuePropertyName(DevJwtsDefaults.Scheme)));
         Assert.True(secretsJson.TryGetPropertyValue("Foo", out var fooField));
         Assert.Equal("baz", fooField["Bar"].GetValue<string>());
     }
@@ -414,7 +414,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         using FileStream openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
-        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName("test-scheme", "test-issuer")));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyValuePropertyName("test-scheme")));
     }
 
     [Fact]
@@ -432,8 +432,8 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         using FileStream openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
-        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName("test-scheme", "test-issuer")));
-        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName("test-scheme", "test-issuer-2")));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyValuePropertyName("test-scheme")));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyValuePropertyName("test-scheme")));
     }
 
     [Fact]
@@ -451,8 +451,8 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         using FileStream openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
-        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName("test-scheme", "test-issuer")));
-        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName("test-scheme-2", "test-issuer")));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyValuePropertyName("test-scheme")));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyValuePropertyName("test-scheme-2")));
     }
 
     [Fact]
@@ -470,12 +470,12 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("New JWT saved", _console.GetOutput());
         _console.ClearOutput();
 
-        app.Run(new[] { "key", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme" });
+        app.Run(new[] { "key", "--project", project, "--scheme", "test-scheme" });
         var printMatches = Regex.Matches(_console.GetOutput(), "Signing Key: '(.*?)'");
         var key = printMatches.SingleOrDefault().Groups[1].Value;
         _console.ClearOutput();
 
-        app.Run(new[] { "key", "--project", project, "--reset", "--force", "--issuer", "test-issuer", "--scheme", "test-scheme" });
+        app.Run(new[] { "key", "--project", project, "--reset", "--force", "--scheme", "test-scheme" });
         var resetMatches = Regex.Matches(_console.GetOutput(), "New signing key created: '(.*?)'");
         var resetKey = resetMatches.SingleOrDefault().Groups[1].Value;
         Assert.NotEqual(key, resetKey);

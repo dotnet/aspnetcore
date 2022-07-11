@@ -61,27 +61,32 @@ internal static class DevJwtCliHelpers
         return true;
     }
 
-    public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId, string schemeName, string issuer)
+    public static byte[] GetOrCreateSigningKeyMaterial(string userSecretsId, string schemeName)
     {
         var projectConfiguration = new ConfigurationBuilder()
             .AddUserSecrets(userSecretsId)
             .Build();
 
-        var signingKeyMaterial = projectConfiguration[GetSigningKeyPropertyName(schemeName, issuer)];
+        var signingKeyMaterial = projectConfiguration[GetSigningKeyValuePropertyName(schemeName)];
+        int signingKeyLength = int.TryParse(projectConfiguration[GetSigningKeyLengthPropertyName(schemeName)], out signingKeyLength)
+            ? signingKeyLength
+            : DevJwtsDefaults.SigningKeyLength;
 
-        var keyMaterial = new byte[DevJwtsDefaults.SigningKeyLength];
-        if (signingKeyMaterial is not null && Convert.TryFromBase64String(signingKeyMaterial, keyMaterial, out var bytesWritten) && bytesWritten == DevJwtsDefaults.SigningKeyLength)
+        var keyMaterial = new byte[signingKeyLength];
+        if (signingKeyMaterial is not null
+            && Convert.TryFromBase64String(signingKeyMaterial, keyMaterial, out var bytesWritten)
+            && bytesWritten == signingKeyLength)
         {
             return keyMaterial;
         }
 
-        return CreateSigningKeyMaterial(userSecretsId, schemeName, issuer);
+        return CreateSigningKeyMaterial(userSecretsId, schemeName, signingKeyLength);
     }
 
-    public static byte[] CreateSigningKeyMaterial(string userSecretsId, string schemeName, string issuer, bool reset = false)
+    public static byte[] CreateSigningKeyMaterial(string userSecretsId, string schemeName, int signingKeyLength = 32, bool reset = false)
     {
         // Create signing material and save to user secrets
-        var newKeyMaterial = System.Security.Cryptography.RandomNumberGenerator.GetBytes(DevJwtsDefaults.SigningKeyLength);
+        var newKeyMaterial = System.Security.Cryptography.RandomNumberGenerator.GetBytes(signingKeyLength);
         var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
         Directory.CreateDirectory(Path.GetDirectoryName(secretsFilePath));
 
@@ -96,13 +101,20 @@ internal static class DevJwtCliHelpers
         }
 
         secrets ??= new JsonObject();
-        var key = GetSigningKeyPropertyName(schemeName, issuer);
+        var signingKeyValueName = GetSigningKeyValuePropertyName(schemeName);
+        var signingKeyLengthName = GetSigningKeyLengthPropertyName(schemeName);
 
-        if (reset && secrets.ContainsKey(key))
+        if (reset && secrets.ContainsKey(signingKeyValueName))
         {
-            secrets.Remove(key);
+            secrets.Remove(signingKeyValueName);
         }
-        secrets.Add(key, JsonValue.Create(Convert.ToBase64String(newKeyMaterial)));
+        if (reset && secrets.ContainsKey(signingKeyLengthName))
+        {
+            secrets.Remove(signingKeyLengthName);
+        }
+
+        secrets.Add(signingKeyValueName, JsonValue.Create(Convert.ToBase64String(newKeyMaterial)));
+        secrets.Add(signingKeyLengthName, JsonValue.Create(signingKeyLength));
 
         using var secretsWriteStream = new FileStream(secretsFilePath, FileMode.Create, FileAccess.Write);
         JsonSerializer.Serialize(secretsWriteStream, secrets);
@@ -255,6 +267,12 @@ internal static class DevJwtCliHelpers
         return true;
     }
 
-    public static string GetSigningKeyPropertyName(string scheme, string issuer)
-        => $"Authentication:Schemes:{scheme}:{issuer}:{DevJwtsDefaults.SigningKeyConfigurationKey}";
+    public static string GetSigningKeyValuePropertyName(string scheme)
+        => $"{GetSigningKeyPropertyName(scheme)}:Value";
+
+    public static string GetSigningKeyLengthPropertyName(string scheme)
+        => $"{GetSigningKeyPropertyName(scheme)}:KeyLength";
+
+    public static string GetSigningKeyPropertyName(string scheme)
+        => $"Authentication:Schemes:{scheme}:{DevJwtsDefaults.SigningKeyConfigurationKey}";
 }

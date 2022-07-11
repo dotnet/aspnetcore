@@ -246,9 +246,6 @@
   <data name="KeyCommand_ForceOption_Description" xml:space="preserve">
     <value>Don't prompt for confirmation before resetting the signing key.</value>
   </data>
-  <data name="KeyCommand_IssuerOption_Description" xml:space="preserve">
-    <value>The issuer associated with the signing key to be reset or displayed. Defaults to 'dotnet-user-jwts'.</value>
-  </data>
   <data name="KeyCommand_KeyCreated" xml:space="preserve">
     <value>New signing key created: '{0}'</value>
   </data>

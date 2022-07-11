@@ -8,7 +8,7 @@ internal static class DevJwtsDefaults
     public static string Scheme => "Bearer";
     public static string Issuer => "dotnet-user-jwts";
 
-    public static string SigningKeyConfigurationKey => "KeyMaterial";
+    public static string SigningKeyConfigurationKey => "SigningKey";
 
     public static int SigningKeyLength => 32;
 }

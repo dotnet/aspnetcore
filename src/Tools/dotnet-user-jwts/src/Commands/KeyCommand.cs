@@ -21,12 +21,6 @@ internal sealed class KeyCommand
                 CommandOptionType.SingleValue
             );
 
-            var issuerOption = cmd.Option(
-                "--issuer",
-                Resources.KeyCommand_IssuerOption_Description,
-                CommandOptionType.SingleValue
-            );
-
             var resetOption = cmd.Option(
                 "--reset",
                 Resources.KeyCommand_ResetOption_Description,
@@ -44,13 +38,12 @@ internal sealed class KeyCommand
                 return Execute(cmd.Reporter,
                     cmd.ProjectOption.Value(),
                     schemeOption.Value() ?? DevJwtsDefaults.Scheme,
-                    issuerOption.Value() ?? DevJwtsDefaults.Issuer,
                     resetOption.HasValue(), forceOption.HasValue());
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, string schemeName, string issuer, bool reset, bool force)
+    private static int Execute(IReporter reporter, string projectPath, string schemeName, bool reset, bool force)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var _, out var userSecretsId))
         {
@@ -70,7 +63,7 @@ internal sealed class KeyCommand
                 }
             }
 
-            var key = DevJwtCliHelpers.CreateSigningKeyMaterial(userSecretsId, schemeName, issuer, reset: true);
+            var key = DevJwtCliHelpers.CreateSigningKeyMaterial(userSecretsId, schemeName, reset: true);
             reporter.Output(Resources.FormatKeyCommand_KeyCreated(Convert.ToBase64String(key)));
             return 0;
         }
@@ -78,7 +71,7 @@ internal sealed class KeyCommand
         var projectConfiguration = new ConfigurationBuilder()
             .AddUserSecrets(userSecretsId)
             .Build();
-        var signingKeyMaterial = projectConfiguration[DevJwtCliHelpers.GetSigningKeyPropertyName(schemeName, issuer)];
+        var signingKeyMaterial = projectConfiguration[DevJwtCliHelpers.GetSigningKeyValuePropertyName(schemeName)];
 
         if (signingKeyMaterial is null)
         {

@@ -233,7 +233,7 @@ internal sealed class CreateCommand
         {
             return 1;
         }
-        var keyMaterial = DevJwtCliHelpers.GetOrCreateSigningKeyMaterial(userSecretsId, options.Scheme, options.Issuer);
+        var keyMaterial = DevJwtCliHelpers.GetOrCreateSigningKeyMaterial(userSecretsId, options.Scheme);
 
         var jwtIssuer = new JwtIssuer(options.Issuer, keyMaterial);
         var jwtToken = jwtIssuer.Create(options);
