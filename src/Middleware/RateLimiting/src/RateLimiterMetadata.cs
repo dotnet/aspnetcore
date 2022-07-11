@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.RateLimiting;
 /// <summary>
 /// Metadata that provides endpoint-specific request rate limiting.
 /// </summary>
-internal class RateLimiterMetadata : IRateLimiterMetadata
+internal sealed class RateLimiterMetadata : IRateLimiterMetadata
 {
     /// <summary>
     /// Creates a new instance of <see cref="RateLimiterMetadata"/> using the specified policy.

@@ -19,7 +19,7 @@ internal sealed partial class RateLimitingMiddleware
     private readonly PartitionedRateLimiter<HttpContext>? _globalLimiter;
     private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
     private readonly int _rejectionStatusCode;
-    private readonly IDictionary<string, DefaultRateLimiterPolicy> _policyMap;
+    private readonly Dictionary<string, DefaultRateLimiterPolicy> _policyMap;
     private readonly DefaultKeyType _defaultPolicyKey = new DefaultKeyType("__defaultPolicy", new PolicyNameKey { PolicyName = "__defaultPolicyKey" });
 
     /// <summary>
@@ -39,7 +39,7 @@ internal sealed partial class RateLimitingMiddleware
         _logger = logger;
         _defaultOnRejected = options.Value.OnRejected;
         _rejectionStatusCode = options.Value.RejectionStatusCode;
-        _policyMap = options.Value.PolicyMap;
+        _policyMap = new Dictionary<string, DefaultRateLimiterPolicy>(options.Value.PolicyMap);
 
         // Activate policies passed to AddPolicy<TPartitionKey, TPolicy>
         foreach (var unactivatedPolicy in options.Value.UnactivatedPolicyMap)
