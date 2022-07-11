@@ -44,6 +44,8 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, ISta
     /// </summary>
     public int StatusCode => StatusCodes.Status400BadRequest;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {

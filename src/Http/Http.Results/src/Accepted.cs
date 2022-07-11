@@ -46,6 +46,8 @@ public sealed class Accepted : IResult, IEndpointMetadataProvider, IStatusCodeHt
     /// </summary>
     public int StatusCode => StatusCodes.Status202Accepted;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <summary>
     /// Gets the location at which the status of the requested content can be monitored.
     /// </summary>

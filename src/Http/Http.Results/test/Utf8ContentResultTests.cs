@@ -63,6 +63,28 @@ public class Utf8ContentResultTests
         Assert.Equal("text/plain; charset=utf-8", context.Response.ContentType);
     }
 
+    [Fact]
+    public void Utf8TextResult_Implements_IContentTypeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IContentTypeHttpResult>(new Utf8ContentHttpResult("Hello"u8, contentType, statusCode: null));
+        Assert.Equal(contentType, result.ContentType);
+    }
+
+    [Fact]
+    public void Utf8TextResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Arrange
+        var contentType = "application/custom";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Utf8ContentHttpResult("Hello"u8, contentType, statusCode: StatusCodes.Status202Accepted));
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+    }
+
     private static IServiceCollection CreateServices()
     {
         var services = new ServiceCollection();

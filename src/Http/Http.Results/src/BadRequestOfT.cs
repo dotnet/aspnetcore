@@ -37,6 +37,8 @@ public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider, ISt
     /// </summary>
     public int StatusCode => StatusCodes.Status400BadRequest;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {

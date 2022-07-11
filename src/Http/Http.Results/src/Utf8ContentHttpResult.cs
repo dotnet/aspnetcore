@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="Utf8ContentHttpResult"/> that when executed
 /// will produce a response with content.
 /// </summary>
-public sealed partial class Utf8ContentHttpResult : IResult
+public sealed partial class Utf8ContentHttpResult : IResult, IStatusCodeHttpResult, IContentTypeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Utf8ContentHttpResult"/> class with the values
