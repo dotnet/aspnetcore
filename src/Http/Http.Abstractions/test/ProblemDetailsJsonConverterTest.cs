@@ -57,7 +57,7 @@ public class ProblemDetailsJsonConverterTest
             kvp =>
             {
                 Assert.Equal("traceId", kvp.Key);
-                Assert.Equal(traceId, kvp.Value.ToString());
+                Assert.Equal(traceId, kvp.Value?.ToString());
             });
     }
 
@@ -77,7 +77,8 @@ public class ProblemDetailsJsonConverterTest
         var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(json, JsonSerializerOptions);
 
         // Assert
-        Assert.Equal(type, problemDetails.Type);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(type, problemDetails!.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);
         Assert.Equal(instance, problemDetails.Instance);
@@ -87,7 +88,7 @@ public class ProblemDetailsJsonConverterTest
             kvp =>
             {
                 Assert.Equal("traceId", kvp.Key);
-                Assert.Equal(traceId, kvp.Value.ToString());
+                Assert.Equal(traceId, kvp.Value?.ToString());
             });
     }
 
@@ -116,7 +117,7 @@ public class ProblemDetailsJsonConverterTest
             kvp =>
             {
                 Assert.Equal("traceId", kvp.Key);
-                Assert.Equal(traceId, kvp.Value.ToString());
+                Assert.Equal(traceId, kvp.Value?.ToString());
             });
     }
 
