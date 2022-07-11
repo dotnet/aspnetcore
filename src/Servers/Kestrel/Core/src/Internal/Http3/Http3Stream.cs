@@ -52,6 +52,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
+    private Http3MessageBody? _messageBody;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
 
@@ -921,7 +922,18 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     }
 
     protected override MessageBody CreateMessageBody()
-        => Http3MessageBody.For(this);
+    {
+        if (_messageBody != null)
+        {
+            _messageBody.Reset();
+        }
+        else
+        {
+            _messageBody = new Http3MessageBody(this);
+        }
+
+        return _messageBody;
+    }
 
     protected override bool TryParseRequest(ReadResult result, out bool endConnection)
     {
