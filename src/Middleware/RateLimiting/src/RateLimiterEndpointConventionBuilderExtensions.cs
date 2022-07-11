@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Builder;
 public static class RateLimiterEndpointConventionBuilderExtensions
 {
     /// <summary>
-    /// Adds the specified rate limiter to the endpoint(s).
+    /// Adds the specified rate limiting policy to the endpoint(s).
     /// </summary>
     /// <param name="builder">The endpoint convention builder.</param>
-    /// <param name="policyName">The name of the rate limiter to add to the endpoint.</param>
+    /// <param name="policyName">The name of the rate limiting policy to add to the endpoint.</param>
     /// <returns>The original convention builder parameter.</returns>
     public static TBuilder RequireRateLimiting<TBuilder>(this TBuilder builder, string policyName) where TBuilder : IEndpointConventionBuilder
     {
