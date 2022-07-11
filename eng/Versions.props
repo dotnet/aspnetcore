@@ -199,7 +199,7 @@
     <!--
       Use a compiler new enough to use required keyword
     -->
-    <MicrosoftNetCompilersToolsetVersion>4.4.0-1.22315.13</MicrosoftNetCompilersToolsetVersion>
+    <MicrosoftNetCompilersToolsetVersion>4.4.0-1.22358.14</MicrosoftNetCompilersToolsetVersion>
     <!--
       Versions of Microsoft.CodeAnalysis packages referenced by analyzers shipped in the SDK.
       This need to be pinned since they're used in 3.1 apps and need to be loadable in VS 2019.
