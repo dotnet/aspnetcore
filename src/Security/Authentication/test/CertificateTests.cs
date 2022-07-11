@@ -844,7 +844,7 @@ public class ClientCertificateAuthenticationTests
                     AuthenticationBuilder authBuilder;
                     if (configureOptions != null)
                     {
-                        authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
+                        authBuilder = services.AddAuthentication().AddCertificate(options =>
                         {
                             options.CustomTrustStore = configureOptions.CustomTrustStore;
                             options.ChainTrustValidationMode = configureOptions.ChainTrustValidationMode;
@@ -859,7 +859,7 @@ public class ClientCertificateAuthenticationTests
                     }
                     else
                     {
-                        authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
+                        authBuilder = services.AddAuthentication().AddCertificate();
                     }
                     if (useCache)
                     {

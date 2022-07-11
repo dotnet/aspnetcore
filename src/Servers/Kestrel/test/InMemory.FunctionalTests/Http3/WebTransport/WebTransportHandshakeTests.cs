@@ -65,17 +65,18 @@ public class WebTransportHandshakeTests : Http3TestBase
 
         var requestStream = await Http3Api.CreateRequestStream(new[]
         {
-            new KeyValuePair<string, string>(HeaderNames.Method, "CONNECT"),
-            new KeyValuePair<string, string>(HeaderNames.Protocol, "webtransport"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "server.example.com"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Method, "CONNECT"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Protocol, "webtransport"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
             new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
         });
+
         var response2 = await requestStream.ExpectHeadersAsync();
 
-        Assert.Equal((int)HttpStatusCode.OK, Convert.ToInt32(response2[HeaderNames.Status], null));
+        Assert.Equal((int)HttpStatusCode.OK, Convert.ToInt32(response2[PseudoHeaderNames.Status], null));
 
         await requestStream.OnDisposedTask.DefaultTimeout();
         Assert.True(await appCompletedTcs.Task);
@@ -85,27 +86,27 @@ public class WebTransportHandshakeTests : Http3TestBase
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
         nameof(CoreStrings.Http3MethodMustBeConnectWhenUsingProtocolPseudoHeader),
-        nameof(HeaderNames.Method), "GET", // incorrect method (verifies that webtransport doesn't break regular Http/3 get)
-        nameof(HeaderNames.Protocol), "webtransport",
-        nameof(HeaderNames.Scheme), "http",
-        nameof(HeaderNames.Path), "/",
-        nameof(HeaderNames.Authority), "server.example.com",
+        nameof(PseudoHeaderNames.Method), "GET", // incorrect method (verifies that webtransport doesn't break regular Http/3 get)
+        nameof(PseudoHeaderNames.Protocol), "webtransport",
+        nameof(PseudoHeaderNames.Scheme), "http",
+        nameof(PseudoHeaderNames.Path), "/",
+        nameof(PseudoHeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
         nameof(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders),
-        nameof(HeaderNames.Method), "CONNECT",
-        nameof(HeaderNames.Protocol), "webtransport",
-        nameof(HeaderNames.Scheme), "http",
-        nameof(HeaderNames.Authority), "server.example.com",
+        nameof(PseudoHeaderNames.Method), "CONNECT",
+        nameof(PseudoHeaderNames.Protocol), "webtransport",
+        nameof(PseudoHeaderNames.Scheme), "http",
+        nameof(PseudoHeaderNames.Authority), "server.example.com",
         nameof(HeaderNames.Origin), "server.example.com")]  // no path
     [InlineData(
         ((long)Http3ErrorCode.ProtocolError),
         nameof(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders),
-        nameof(HeaderNames.Method), "CONNECT",
-        nameof(HeaderNames.Protocol), "webtransport",
-        nameof(HeaderNames.Scheme), "http",
-        nameof(HeaderNames.Path), "/",
+        nameof(PseudoHeaderNames.Method), "CONNECT",
+        nameof(PseudoHeaderNames.Protocol), "webtransport",
+        nameof(PseudoHeaderNames.Scheme), "http",
+        nameof(PseudoHeaderNames.Path), "/",
         nameof(HeaderNames.Origin), "server.example.com")]  // no authority
     public async Task WebTransportHandshake_IncorrectHeadersRejects(long error, string targetErrorMessage, params string[] headers)
     {
@@ -153,11 +154,11 @@ public class WebTransportHandshakeTests : Http3TestBase
     {
         return coreStringName switch
         {
-            nameof(HeaderNames.Method) => HeaderNames.Method,
-            nameof(HeaderNames.Protocol) => HeaderNames.Protocol,
-            nameof(HeaderNames.Scheme) => HeaderNames.Scheme,
-            nameof(HeaderNames.Path) => HeaderNames.Path,
-            nameof(HeaderNames.Authority) => HeaderNames.Authority,
+            nameof(PseudoHeaderNames.Method) => PseudoHeaderNames.Method,
+            nameof(PseudoHeaderNames.Protocol) => PseudoHeaderNames.Protocol,
+            nameof(PseudoHeaderNames.Scheme) => PseudoHeaderNames.Scheme,
+            nameof(PseudoHeaderNames.Path) => PseudoHeaderNames.Path,
+            nameof(PseudoHeaderNames.Authority) => PseudoHeaderNames.Authority,
             nameof(HeaderNames.Origin) => HeaderNames.Origin,
             _ => throw new Exception("Header name not mapped yet")
         };

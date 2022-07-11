@@ -1,6 +1,6 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "LESS Style Sheet",
-  "description": "LESS is a language that compiles into CSS",
-  "postActions/openInEditor/description": "Opens styleSheet1.less in the editor"
+  "name": "LESS スタイル シート",
+  "description": "LESS は CSS にコンパイルされる言語です",
+  "postActions/openInEditor/description": "エディターで styleSheet1.less を開きます"
 }

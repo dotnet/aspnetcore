@@ -13,18 +13,15 @@ namespace Microsoft.AspNetCore.Authentication;
 internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBearerOptions>
 {
     private readonly IAuthenticationConfigurationProvider _authenticationConfigurationProvider;
-    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Initializes a new <see cref="JwtBearerConfigureOptions"/> given the configuration
     /// provided by the <paramref name="configurationProvider"/>.
     /// </summary>
-    /// <param name="configurationProvider">An <see cref="IAuthenticationConfigurationProvider"/> instance.</param>
-    /// <param name="configuration">An <see cref="IConfiguration"/> instance for accessing configuration elements not in the schema.</param>
-    public JwtBearerConfigureOptions(IAuthenticationConfigurationProvider configurationProvider, IConfiguration configuration)
+    /// <param name="configurationProvider">An <see cref="IAuthenticationConfigurationProvider"/> instance.</param>\
+    public JwtBearerConfigureOptions(IAuthenticationConfigurationProvider configurationProvider)
     {
         _authenticationConfigurationProvider = configurationProvider;
-        _configuration = configuration;
     }
 
     /// <inheritdoc />
@@ -51,7 +48,7 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
             ValidateAudience = audiences.Length > 0,
             ValidAudiences = audiences,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = GetIssuerSigningKey(_configuration, issuer),
+            IssuerSigningKey = GetIssuerSigningKey(configSection, issuer),
         };
     }
 

@@ -1,10 +1,10 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Blazor WebAssembly App Empty",
   "description": "An empty project template for creating a Blazor app that runs on WebAssembly and is optionally hosted by an ASP.NET Core app. This template does not have any content in it.",
-  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
   "symbols/Hosted/displayName": "ASP.NET Core _Hosted",
   "symbols/Hosted/description": "If specified, includes an ASP.NET Core host for the Blazor WebAssembly app.",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
@@ -16,8 +16,8 @@
   "symbols/PWA/description": "If specified, produces a Progressive Web Application (PWA) supporting installation and offline use.",
   "symbols/HasHttpProfile/description": "Always have HTTP profile.",
   "symbols/NoHttps/description": "Whether to turn off HTTPS.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
-  "postActions/restoreClient/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
+  "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen",
+  "postActions/restoreClient/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
   "postActions/restoreClient/manualInstructions/default/text": "Run 'dotnet restore'"
 }

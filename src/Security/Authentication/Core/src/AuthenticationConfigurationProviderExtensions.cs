@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Authentication;
 /// </summary>
 public static class AuthenticationConfigurationProviderExtensions
 {
-    private const string AuthenticationSchemesKey = "Authentication:Schemes";
+    private const string AuthenticationSchemesKey = "Schemes";
 
     /// <summary>
     /// Returns the specified <see cref="IConfiguration"/> object.
