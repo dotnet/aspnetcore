@@ -10,8 +10,14 @@ namespace Microsoft.AspNetCore.Http;
 public interface IProblemDetailsService
 {
     /// <summary>
-    /// Write a <see cref="Mvc.ProblemDetails"/> response to the current context
+    /// Try to write a <see cref="Mvc.ProblemDetails"/> response to the current context,
+    /// using the registered <see cref="IProblemDetailsWriter"/> services.
     /// </summary>
     /// <param name="context">The <see cref="ProblemDetailsContext"/> associated with the current request/response.</param>
+    /// <remarks>The <see cref="IProblemDetailsWriter"/> registered services
+    /// are processed in sequence and the processing is completed when:
+    /// <list type="bullet">One of them reports that the response was written successfully, or.</list>
+    /// <list type="bullet">All <see cref="IProblemDetailsWriter"/> were executed and none of them was able to write the response successfully.</list>
+    /// </remarks>
     ValueTask WriteAsync(ProblemDetailsContext context);
 }
