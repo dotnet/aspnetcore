@@ -1,14 +1,14 @@
 # Using WebTransport in Kestrel
 
-Kestrel currently implements most of the WebTransport [draft-02](https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html) specification, except for datagrams. Datagrams will be implemented at a later date. This document outlines how to use the functionality.
+Kestrel currently implements most of the WebTransport [draft-02](https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html) specification, except for datagrams. Datagrams will be implemented at a later date. This document outlines how to use the already implemented functionality.
 
 # Running the sample app
-To help applications get started on implementing WebTransport, there is the `WebTransportSampleApp` project. You can find it in `src\Servers\Kestrel\samples\WebTransportSampleApp`. To use it simply run it from VS. This will launch the server and a terminal which will show logs that Kestrel prints. Now you should be able to connect to it from any client that implements the standard WebTransport draft02 specification.
+To help applications get started on implementing WebTransport, there is the `WebTransportSampleApp` project located at `src\Servers\Kestrel\samples\WebTransportSampleApp`. To use it, simply run it from VS. This will launch the server and a terminal which will show logs from Kestrel as it interacts with the client. Now you should be able to connect to the sample from any client that implements the standard WebTransport draft02 specification.
 
-**Note:** Once you run the WebTransportSampleApp, it will print the certificate hash that it is using for the SSL connection. You will need to copy and paste it into your client to make sure that both the server and the client use the same one.
+**Note:** Once you run the `WebTransportSampleApp`, it will print the certificate hash that it is using for the SSL connection. You will need to copy it into your client to make sure that both the server and the client use the same one.
 
 ## Using Edge or Chrome DevTools as a client
-The Chromium project has implemented a WebTransport client and can be accessed via their JS API from the Chrome or Edge DevTools console. A good sample app demoing how to use that API can be found [here](https://github.com/myjimmy/google-webtransport-sample/blob/ee13bde656c4d421d1f2a8e88fd71f572272c163/client.js).
+The Chromium project has implemented a WebTransport client and can be accessed via their JS API from the Chrome or Edge DevTools console. A good sample app demonstrating how to use that API can be found [here](https://github.com/myjimmy/google-webtransport-sample/blob/ee13bde656c4d421d1f2a8e88fd71f572272c163/client.js).
 
 # Note about preview features
 WebTransport is a preview feature. Therefore, you must manually enable it via the `EnablePreviewFeatures` property and toggle the `Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams` `AppContextSwitch`. This can be done by either of the following options:
@@ -18,7 +18,7 @@ WebTransport is a preview feature. Therefore, you must manually enable it via th
     <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams" Value="true" />
   </ItemGroup>
 ```
-- Adding the following C# somewhere in your project:
+- Adding the following C# statement somewhere in your project's setup logic:
 ```C#
 AppContext.SetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", true);
 ```
@@ -71,7 +71,7 @@ public class Startup
             {
                 var session = await feature.AcceptAsync(CancellationToken.None);
 
-                // Do WebTransport stuff
+                // Use WebTransport via the newly established session.
             }
             else
             {
@@ -84,19 +84,19 @@ public class Startup
 The `Configure` method is the main entry-point of your application logic. The `app.Use` block is triggered every time there is a connection request. Once the request is a WebTransport request (which is defined by getting the `IHttpWebTransportFeature` feature and then checking the `IsWebTransportRequest` property), you will be able to accept WebTransport sessions and interact with the client.
 
 ## Available WebTransport Features in Kestrel
-This section highlights some of the most significant features of WebTransport that Kestrel implements. This is not an exhaustive list.
+This section highlights some of the most significant features of WebTransport that Kestrel implements. However, this is not an exhaustive list.
 
 - Accept a WebTransport Session
 ```C#
 var session = await feature.AcceptAsync(CancellationToken token);
 ```
-This will await for the next incoming WebTransport session and return an instance of `IWebTransportSession` when a connection is completed. A session must be created prior to any streams being created or any data is sent. Note that only clients can initiate a session, thus the server passively waits until one is received and cannot initiate its own session. The cancellation token can be used to stop the operation.
+This will wait for the next incoming WebTransport session and return an instance of `IWebTransportSession` when a connection is completed. A session must be created prior to any streams being created or any data is sent. Note that only clients can initiate a session, thus the server passively waits until one is received and cannot initiate its own session. The cancellation token can be used to stop the operation.
 
 - Accepting a WebTransport stream
 ```C#
 var connectionContext = await session.AcceptStreamAsync(CancellationToken token);
 ```
-This will await for the next incoming WebTransport stream and return an instance of `ConnectionContext`. Note that streams are buffered in order and so this call pops from the front of the queue of pending streams. However, if no streams are pending, it will block until it receives one. You can use the cancellation token to stop the operation.
+This will wait for the next incoming WebTransport stream and return an instance of `ConnectionContext`. Note that streams are buffered in order. So, this call will return the next least recently received stream by popping from the front of the queue of pending streams. If no streams are pending, it will block until it receives one. You can use the cancellation token to stop the operation.
 
 **Note:** This method will return both bidirectional and unidirectional streams. They can be distinguished based on the `IStreamDirectionFeature.CanRead` and `IStreamDirectionFeature.CanWrite` properties.
 
@@ -111,7 +111,7 @@ This will attempt to open a new unidirectional stream from the server to the cli
 var stream = connectionContext.Transport.Output;
 await stream.WriteAsync(ReadOnlyMemory<byte> bytes);
 ```
-`stream.WriteAsync` will write data to the stream and it will automatically flush (i.e. send it to the client).
+`stream.WriteAsync` will write data to the stream and then automatically flush (i.e. send it to the client).
 
 **Note:** You can only send data on streams that have `IStreamDirectionFeature.CanWrite` set as `true`. Sending data on non-writable streams will throw an `NotSupportedException` exception.
 
@@ -151,69 +151,84 @@ Disposing a WebTransport stream will result in ending data transmission and clos
 This example waits for a bidirectional stream. Once it receives one, it will read the data from it, reverse it and then write it back to the stream.
 ```C#
 public void Configure(IApplicationBuilder app)
+{
+    // allocate some random amount of memory
+    var memory = new Memory<byte>(new byte[4096]);
+
+    app.Use(async (context, next) =>
     {
-        var memory = new Memory<byte>(new byte[4096]);
-
-        app.Use(async (context, next) =>
+        var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
+        if (feature.IsWebTransportRequest)
         {
-            var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
-            if (feature.IsWebTransportRequest)
-            {
-                // accept a new session
-                var session = await feature.AcceptAsync(CancellationToken.None);
+            // accept a new session
+            var session = await feature.AcceptAsync(CancellationToken.None);
 
-                ConnectionContext? stream;
-                do
+            ConnectionContext? stream = null;
+            IStreamDirectionFeature? direction = null;
+            while (true)
+            {
+                // wait until we get a stream
+                stream = await session.AcceptStreamAsync(CancellationToken.None);
+                if (stream is not null)
                 {
-                    // wait until we get a bidirectional stream
-                    stream = await session.AcceptStreamAsync(CancellationToken.None);
-                } while (stream is not null && stream.CanRead && stream.CanWrite);
 
-                var inputPipe = stream.Transport.Input;
-                var outputPipe = stream.Transport.Output;
-
-                // read some data from the stream
-                var length = await inputPipe.AsStream().ReadAsync(memory);
-
-                // do some operations on the contents of the data
-                memory.Span.Reverse();
-
-                // write back the data to the stream
-                await outputPipe.WriteAsync(memory);
+                    // check that the stream is bidirectional. If yes, keep going, otherwise keep waiting
+                    direction = stream.Features.GetRequiredFeature<IStreamDirectionFeature>();
+                    if (direction.CanRead && direction.CanWrite)
+                    {
+                        break;
+                    }
+                }
             }
-            else
-            {
-                await next(context);
-            }
-        });
-    }
+
+            var inputPipe = stream!.Transport.Input;
+            var outputPipe = stream!.Transport.Output;
+
+            // read some data from the stream into the memory
+            var length = await inputPipe.AsStream().ReadAsync(memory);
+
+            // slice to only keep the relevant parts of the memory
+            var outputMemory = memory[..length];
+
+            // do some operations on the contents of the data
+            outputMemory.Span.Reverse();
+
+            // write back the data to the stream
+            await outputPipe.WriteAsync(outputMemory);
+        }
+        else
+        {
+            await next(context);
+        }
+    });
+}
 ```
 
 ### Example 2
 This example opens a new stream from the server side and then sends data.
 ```C#
 public void Configure(IApplicationBuilder app)
+{
+    app.Use(async (context, next) =>
     {
-        app.Use(async (context, next) =>
+        var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
+        if (feature.IsWebTransportRequest)
         {
-            var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
-            if (feature.IsWebTransportRequest)
-            {
-                // accept a new session
-                var session = await feature.AcceptAsync(CancellationToken.None);
+            // accept a new session
+            var session = await feature.AcceptAsync(CancellationToken.None);
 
-                // open a new stream from the server to the client
-                var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
+            // open a new stream from the server to the client
+            var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
 
-                // write data to the stream
-                var outputPipe = stream.Transport.Output;
-                await outputPipe.WriteAsync(new Memory<byte>(new byte[] { 65, 66, 67, 68, 69 }), CancellationToken.None);
-                await outputPipe.FlushAsync(CancellationToken.None);
-            }
-            else
-            {
-                await next(context);
-            }
-        });
-    }
+            // write data to the stream
+            var outputPipe = stream.Transport.Output;
+            await outputPipe.WriteAsync(new Memory<byte>(new byte[] { 65, 66, 67, 68, 69 }), CancellationToken.None);
+            await outputPipe.FlushAsync(CancellationToken.None);
+        }
+        else
+        {
+            await next(context);
+        }
+    });
+}
 ```

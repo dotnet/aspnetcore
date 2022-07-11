@@ -253,6 +253,8 @@ public class Http3TimeoutTests : Http3TestBase
 
         requestStream.StartStreamDisposeTcs.TrySetResult();
 
+        await requestStream.OnDisposedTask;
+
         await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,
             expectedLastStreamId: 4,
@@ -370,51 +372,51 @@ public class Http3TimeoutTests : Http3TestBase
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
 
-    //[Fact]
-    //public async Task DATA_Received_TooSlowlyOnLargeRead_AbortsConnectionAfterRateTimeout()
-    //{
-    //    var mockSystemClock = _serviceContext.MockSystemClock;
-    //    var limits = _serviceContext.ServerOptions.Limits;
+    [Fact]
+    public async Task DATA_Received_TooSlowlyOnLargeRead_AbortsConnectionAfterRateTimeout()
+    {
+        var mockSystemClock = _serviceContext.MockSystemClock;
+        var limits = _serviceContext.ServerOptions.Limits;
 
-    //    // Use non-default value to ensure the min request and response rates aren't mixed up.
-    //    limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+        // Use non-default value to ensure the min request and response rates aren't mixed up.
+        limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-    //    Http3Api._timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+        Http3Api._timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
-    //    var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_readRateApplication);
+        await Http3Api.InitializeConnectionAsync(_readRateApplication);
 
-    //    var inboundControlStream = await Http3Api.GetInboundControlStream();
-    //    await inboundControlStream.ExpectSettingsAsync();
+        var inboundControlStream = await Http3Api.GetInboundControlStream();
+        await inboundControlStream.ExpectSettingsAsync();
 
-    //    // _maxData is 16 KiB, and 16 KiB / 240 bytes/sec ~= 68 secs which is far above the grace period.
-    //    await requestStream.SendHeadersAsync(ReadRateRequestHeaders(_maxData.Length), endStream: false);
-    //    await requestStream.SendDataAsync(_maxData, endStream: false);
+        // _maxData is 16 KiB, and 16 KiB / 240 bytes/sec ~= 68 secs which is far above the grace period.
+        var requestStream = await Http3Api.CreateRequestStream(ReadRateRequestHeaders(_maxData.Length), endStream: false);
+        await requestStream.SendDataAsync(_maxData, endStream: false);
 
-    //    await requestStream.ExpectHeadersAsync();
+        await requestStream.ExpectHeadersAsync();
 
-    //    await requestStream.ExpectDataAsync();
+        await requestStream.ExpectDataAsync();
 
-    //    // Due to the imprecision of floating point math and the fact that TimeoutControl derives rate from elapsed
-    //    // time for reads instead of vice versa like for writes, use a half-second instead of single-tick cushion.
-    //    var timeToReadMaxData = TimeSpan.FromSeconds(_maxData.Length / limits.MinRequestBodyDataRate.BytesPerSecond) - TimeSpan.FromSeconds(.5);
+        // Due to the imprecision of floating point math and the fact that TimeoutControl derives rate from elapsed
+        // time for reads instead of vice versa like for writes, use a half-second instead of single-tick cushion.
+        var timeToReadMaxData = TimeSpan.FromSeconds(_maxData.Length / limits.MinRequestBodyDataRate.BytesPerSecond) - TimeSpan.FromSeconds(.5);
 
-    //    // Don't send any more data and advance just to and then past the rate timeout.
-    //    Http3Api.AdvanceClock(timeToReadMaxData);
+        // Don't send any more data and advance just to and then past the rate timeout.
+        Http3Api.AdvanceClock(timeToReadMaxData);
 
-    //    _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-    //    Http3Api.AdvanceClock(TimeSpan.FromSeconds(1));
+        Http3Api.AdvanceClock(TimeSpan.FromSeconds(1));
 
-    //    _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
 
-    //    await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
-    //        ignoreNonGoAwayFrames: false,
-    //        expectedLastStreamId: null,
-    //        Http3ErrorCode.InternalError,
-    //        null);
+        await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: null,
+            Http3ErrorCode.InternalError,
+            null);
 
-    //    _mockTimeoutHandler.VerifyNoOtherCalls();
-    //}
+        _mockTimeoutHandler.VerifyNoOtherCalls();
+    }
 
     [Fact]
     public async Task DATA_Received_TooSlowlyOnMultipleStreams_AbortsConnectionAfterAdditiveRateTimeout()

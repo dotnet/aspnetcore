@@ -40,37 +40,21 @@ internal sealed class Http3PendingStream
         Context.Transport.Output.Complete(exception);
     }
 
-    public async Task<long> ReadNextStreamHeaderAsync(Http3StreamContext context, long streamId, bool persist = false)
+    public async ValueTask<(long, SequencePosition, SequencePosition)> ReadNextStreamHeaderAsync(Http3StreamContext context, long streamId)
     {
+        SequencePosition start = default;
+        SequencePosition? end = null;
+        var value = 0L;
         try
         {
             var Input = context.Transport.Input;
             var result = await Input.ReadAsync(abortedToken.Token);
             var readableBuffer = result.Buffer;
-            var value = 0L;
-            try
+            start = readableBuffer.Start;
+            if (!readableBuffer.IsEmpty)
             {
-                if (!readableBuffer.IsEmpty)
-                {
-                    value = VariableLengthIntegerHelper.GetInteger(readableBuffer, out var consumed, out var examined);
-
-                    // If it is a WebTransport stream we throw away the headers so we can
-                    // then pass the pipe reader and writer to the application without them.
-                    if (persist || value == (long)Http3StreamType.WebTransportBidirectional || value == (long)Http3StreamType.WebTransportUnidirectional)
-                    {
-                        Input.AdvanceTo(consumed, examined);
-                    }
-
-                    return value;
-                }
-            }
-            finally
-            {
-                if (!persist && (value != (long)Http3StreamType.WebTransportBidirectional && value != (long)Http3StreamType.WebTransportUnidirectional))
-                {
-                    Input.AdvanceTo(readableBuffer.Start);
-                }
-                StreamTimeoutTicks = default;
+                value = VariableLengthIntegerHelper.GetInteger(readableBuffer, out var consumed, out var examined);
+                end = consumed;
             }
         }
         catch (Exception)
@@ -79,7 +63,10 @@ internal sealed class Http3PendingStream
             exception.Data.Add("StreamId", streamId);
             throw exception;
         }
-
-        return 0;
+        finally
+        {
+            StreamTimeoutTicks = default;
+        }
+        return (value, start, end ?? start);
     }
 }

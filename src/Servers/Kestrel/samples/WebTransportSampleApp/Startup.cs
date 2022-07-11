@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#nullable enable
 
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace WebTransportSample;
@@ -27,17 +30,17 @@ public class Startup
                 //var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
 
                 //// ACCEPT AN INCOMING STREAM
-                var stream2 = await session.AcceptStreamAsync(CancellationToken.None);
+                var stream = await session.AcceptStreamAsync(CancellationToken.None);
 
                 //// WRITE TO A STREAM
-                //await Task.Delay(200);
-                //await stream.Transport.Output.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
-                //await stream.Transport.Output.FlushAsync();
+                await Task.Delay(200);
+                await stream!.Transport.Output.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
+                await stream!.Transport.Output.FlushAsync();
 
                 //// READ FROM A STREAM:
-                var memory = new Memory<byte>(new byte[4096]);
-                var test = await stream2.Transport.Input.AsStream().ReadAsync(memory, CancellationToken.None);
-                Console.WriteLine(System.Text.Encoding.Default.GetString(memory.Span));
+                //var memory = new Memory<byte>(new byte[4096]);
+                //var test = await stream2.Transport.Input.AsStream().ReadAsync(memory, CancellationToken.None);
+                //Console.WriteLine(System.Text.Encoding.Default.GetString(memory.Span));
             }
             else
             {

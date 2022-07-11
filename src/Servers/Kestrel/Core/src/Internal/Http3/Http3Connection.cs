@@ -329,7 +329,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                     _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
 
-                    var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId);
+                    var (streamType, startPosition, endPosition) = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId);
 
                     _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
 
@@ -338,10 +338,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     {
                         if (streamType == (long)Http3StreamType.WebTransportUnidirectional)
                         {
+                            context.Transport.Input.AdvanceTo(endPosition);
                             await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Input);
                         }
                         else
                         {
+                            context.Transport.Input.AdvanceTo(startPosition);
                             var controlStream = new Http3ControlStream<TContext>(application, context);
                             _streamLifetimeHandler.OnStreamCreated(controlStream);
                             ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
@@ -352,10 +354,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     {
                         if (streamType == (long)Http3StreamType.WebTransportBidirectional)
                         {
+                            context.Transport.Input.AdvanceTo(endPosition);
                             await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Bidirectional);
                         }
                         else
                         {
+                            context.Transport.Input.AdvanceTo(startPosition);
                             if (!streamDirectionFeature.CanWrite)
                             {
                                 // this is either a push stream or something else that we don't support.
@@ -525,7 +529,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     private async Task CreateAndAddWebTransportStream(Http3PendingStream stream, long streamId, WebTransportStreamType type)
     {
-        var correspondingSession = await stream.ReadNextStreamHeaderAsync(stream.Context, streamId, true);
+        var (correspondingSession, _, endPosition) = await stream.ReadNextStreamHeaderAsync(stream.Context, streamId);
+
+        stream.Context.Transport.Input.AdvanceTo(endPosition);
 
         if (!_webtransportSessions.ContainsKey(correspondingSession))
         {
