@@ -17,7 +17,7 @@ public sealed partial class Utf8ContentHttpResult : IResult, IStatusCodeHttpResu
     /// </summary>
     /// <param name="utf8Content">The value to format in the entity body.</param>
     /// <param name="statusCode">The HTTP status code of the response.</param>
-    /// <param name="contentType">The Content-Type header for the response</param>
+    /// <param name="contentType">The Content-Type header for the response.</param>
     internal Utf8ContentHttpResult(ReadOnlySpan<byte> utf8Content, string? contentType, int? statusCode)
     {
         // We need to make a copy here since we have to stash it on the heap
