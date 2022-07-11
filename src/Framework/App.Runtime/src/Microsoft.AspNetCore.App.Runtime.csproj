@@ -590,26 +590,25 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <PropertyGroup>
       <CompositeFrameworkLayoutRoot>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', CompositeFx.Layout, '$(Configuration)', '$(TargetRuntimeIdentifier)'))</CompositeFrameworkLayoutRoot>
       <LayoutAspnetPath>$(CompositeFrameworkLayoutRoot)\shared\$(SharedFxName)\$(SharedFxVersion)\</LayoutAspnetPath>
-      <LayoutNetcorePath>$(CompositeFrameworkLayoutRoot)\shared\Microsoft$(NETCoreAppFrameworkIdentifier).App\$(MicrosoftNETCoreAppRuntimeVersion)\</LayoutNetcorePath>
+      <LayoutNetcorePath>$(CompositeFrameworkLayoutRoot)\shared\Microsoft.NETCore.App\$(MicrosoftNETCoreAppRuntimeVersion)\</LayoutNetcorePath>
     </PropertyGroup>
 
     <ItemGroup>
       <RedistLayoutFiles Include="$(RedistSharedFrameworkLayoutRoot)**\*.*" />
       <CompositeFiles Include="$(CompositeTargetDir)**\*.*" />
-      <AspnetFiles Include="$(LayoutAspnetPath)**\*.*" />
     </ItemGroup>
 
+    <RemoveDir Directories="$(CompositeFrameworkLayoutRoot)" />
+    <MakeDir Directories="$(CompositeFrameworkLayoutRoot)" />
+    <Copy SourceFiles="@(RedistLayoutFiles)" DestinationFolder="$(CompositeFrameworkLayoutRoot)\%(RecursiveDir)" />
+
     <ItemGroup>
+      <AspnetFiles Include="$(LayoutAspnetPath)**\*.*" />
       <AspnetFilesByName Include="@(AspnetFiles->'%(Filename)%(Extension)')" />
       <CompositeFilesByName Include="@(CompositeFiles->'%(Filename)%(Extension)')" />
       <FrameworkCompositesByName Include="@(CompositeFilesByName)" Exclude="@(AspnetFilesByName)" />
       <AspnetCompositesByName Include="@(CompositeFilesByName)" Exclude="@(FrameworkCompositesByName)" />
     </ItemGroup>
-
-    <RemoveDir Directories="$(CompositeFrameworkLayoutRoot)" />
-    <MakeDir Directories="$(CompositeFrameworkLayoutRoot)" />
-
-    <Copy SourceFiles="@(RedistLayoutFiles)" DestinationFolder="$(CompositeFrameworkLayoutRoot)\%(RecursiveDir)" />
 
     <Copy SourceFiles="@(FrameworkCompositesByName->'$(CompositeTargetDir)%(Filename)%(Extension)')"
           DestinationFolder="$(LayoutNetcorePath)" />
@@ -661,32 +660,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Inputs="$(CompositeTargetDir)"
           Outputs="$(CompositeArchiveOutputPath)">
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(CompositeArchiveOutputPath)" />
-
-    <Message Importance="High" Text="-------" />
-    <Message Importance="High" Text="MESSAGEY IN _CREATE_REDIST_COMPOSITE_ARCHIVE" />
-    <Message Importance="High" Text="MESSAGEY INSTALLERS OUTPUT PATH: $(InstallersOutputPath)" />
-    <Message Importance="High" Text="MESSAGEY REDIST ARCHIVE OUTPUT FILENAME: $(RedistArchiveOutputFileName)" />
-    <Message Importance="High" Text="MESSAGEY REDIST ARCHIVE OUTPUT PATH: $(RedistArchiveOutputPath)" />
-    <Message Importance="High" Text="MESSAGEY COMPOSITE ARCHIVE OUTPUT FILENAME: $(CompositeArchiveOutputFileName)" />
-    <Message Importance="High" Text="MESSAGEY COMPOSITE ARCHIVE OUTPUT PATH: $(CompositeArchiveOutputPath)" />
-    <Message Importance="High" Text="MESSAGEY REDIST SHARED FRAMEWORK LAYOUT ROOT: $(RedistSharedFrameworkLayoutRoot)" />
-    <Message Importance="High" Text="MESSAGEY REDIST ARCHIVE OUTPUT PATH: $(RedistArchiveOutputPath)" />
-    <Message Importance="High" Text="MESSAGEY SHARED FX LAYOUT TARGET DIR: $(SharedFxLayoutTargetDir)" />
-    <Message Importance="High" Text="MESSAGEY REDIST LAYOUT TARGET DIR: $(RedistLayoutTargetDir)" />
-    <Message Importance="High" Text="MESSAGEY NETCOREAPP FRAMEWORK IDENTIFIER: $(NETCoreAppFrameworkIdentifier)" />
-    <Message Importance="High" Text="MESSAGEY DEFAULT NETCORE TARGET FRAMEWORK: $(DefaultNetCoreTargetFramework)" />
-    <Message Importance="High" Text="MESSAGEY TARGET FRAMEWORK VERSION: $([MSBuild]::GetTargetFrameworkVersion('$(DefaultNetCoreTargetFramework)', 2))" />
-    <Message Importance="High" Text="MESSAGEY MICROSOFT NETCOREAPP RUNTIME VERSION: $(MicrosoftNETCoreAppRuntimeVersion)" />
-    <Message Importance="High" Text="-------" />
-
     <ZipDirectory
-      SourceDirectory="$(CompositeTargetDir)"
+      SourceDirectory="$(CompositeFrameworkLayoutRoot)"
       DestinationFile="$(CompositeArchiveOutputPath)"
       Overwrite="true"
       Condition="'$(ArchiveExtension)' == '.zip'" />
     <Exec
       Command="tar -czf $(CompositeArchiveOutputPath) ."
-      WorkingDirectory="$(CompositeTargetDir)"
+      WorkingDirectory="$(CompositeFrameworkLayoutRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
   </Target>
 
