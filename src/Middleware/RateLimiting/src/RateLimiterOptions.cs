@@ -109,12 +109,12 @@ public sealed class RateLimiterOptions
     // Converts a Partition<TKey> to a Partition<DefaultKeyType<TKey>> to prevent accidental collisions with the keys we create in the the RateLimiterOptionsExtensions.
     private static Func<HttpContext, RateLimitPartition<DefaultKeyType>> ConvertPartitioner<TPartitionKey>(string policyName, Func<HttpContext, RateLimitPartition<TPartitionKey>> partitioner)
     {
-        return (context =>
+        return context =>
         {
             RateLimitPartition<TPartitionKey> partition = partitioner(context);
             var partitionKey = new DefaultKeyType(policyName, partition.PartitionKey, partition.Factory);
-            return new RateLimitPartition<DefaultKeyType>(partitionKey, key => ((Func<TPartitionKey, RateLimiter>)partitionKey.Factory!)((TPartitionKey)partitionKey.Key!));
-        });
+            return new RateLimitPartition<DefaultKeyType>(partitionKey, static key => ((Func<TPartitionKey, RateLimiter>)key.Factory!)((TPartitionKey)key.Key!));
+        };
     }
 
     // Workaround for linker bug: https://github.com/dotnet/linker/issues/1981
