@@ -88,4 +88,14 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
+    internal static readonly DiagnosticDescriptor DisallowConfigureAppConfigureHostBuilder = new(
+        "ASP0013",
+        "Suggest switching from using Configure methods to WebApplicationBuilder.Configuration",
+        "Suggest using WebApplicationBuilder.Configuration instead of {0}",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
 }

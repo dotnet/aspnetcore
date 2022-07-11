@@ -18,7 +18,6 @@ app.MapGet("/", () => $"""
     Username: {Environment.UserName}
     Date and Time: {DateTime.Now}
     """);
-
 var outer = app.MapGroup("/outer");
 var inner = outer.MapGroup("/inner");
 
