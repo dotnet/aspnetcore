@@ -27,20 +27,20 @@ public class Startup
                 var session = await feature.AcceptAsync(CancellationToken.None);
 
                 //// OPEN A NEW UNIDIRECTIONAL OUTPUT STREAM
-                //var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
+                var stream2 = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
 
                 //// ACCEPT AN INCOMING STREAM
-                var stream = await session.AcceptStreamAsync(CancellationToken.None);
+                //var stream = await session.AcceptStreamAsync(CancellationToken.None);
 
                 //// WRITE TO A STREAM
-                await Task.Delay(200);
-                await stream!.Transport.Output.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
-                await stream!.Transport.Output.FlushAsync();
+                //await Task.Delay(200);
+                //await stream!.Transport.Output.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
+                //await stream!.Transport.Output.FlushAsync();
 
                 //// READ FROM A STREAM:
-                //var memory = new Memory<byte>(new byte[4096]);
-                //var test = await stream2.Transport.Input.AsStream().ReadAsync(memory, CancellationToken.None);
-                //Console.WriteLine(System.Text.Encoding.Default.GetString(memory.Span));
+                var memory = new Memory<byte>(new byte[4096]);
+                var test = await stream2.Transport.Input.AsStream().ReadAsync(memory, CancellationToken.None);
+                Console.WriteLine(System.Text.Encoding.Default.GetString(memory.Span));
             }
             else
             {

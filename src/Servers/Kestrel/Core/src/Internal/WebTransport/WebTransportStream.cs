@@ -65,10 +65,15 @@ internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFe
 
         // will not trigger if closed only of of the directions of a stream. Stream must be fully
         // ended before this will be called. Then it will be considered an abort
-        _connectionClosedRegistration = context.StreamContext.ConnectionClosed.Register(state =>
+        _connectionClosedRegistration = context.StreamContext.ConnectionClosed.Register(static state =>
         {
-            context.WebTransportSession?.TryRemoveStream(StreamId);
-        }, null);
+            var localContext = (Http3StreamContext)state!;
+            // get the stream id here again to minimize allocations that would have been created
+            // if we pass stuff via a value tuple
+            var streamId = localContext.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>().StreamId;
+
+            localContext.WebTransportSession?.TryRemoveStream(streamId);
+        }, context);
 
         ConnectionClosed = _connectionClosedRegistration.Token;
     }

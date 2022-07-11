@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 /// </summary>
 internal sealed class WebTransportSession : IWebTransportSession
 {
+    private static readonly IStreamDirectionFeature _outputStreamDirectionFeature = new DefaultStreamDirectionFeature(canRead: false, canWrite: true);
+
     private readonly CancellationTokenRegistration _connectionClosedRegistration;
 
     // stores all created streams (pending or accepted)
@@ -49,7 +51,7 @@ internal sealed class WebTransportSession : IWebTransportSession
         _pendingStreams = Channel.CreateUnbounded<WebTransportStream>();
 
         // listener to abort if this connection is closed
-        _connectionClosedRegistration = connection._multiplexedContext.ConnectionClosed.Register(state =>
+        _connectionClosedRegistration = connection._multiplexedContext.ConnectionClosed.Register(static state =>
         {
             var session = (WebTransportSession)state!;
             session.OnClientConnectionClosed();
@@ -124,7 +126,7 @@ internal sealed class WebTransportSession : IWebTransportSession
         }
         // create the stream
         var features = new FeatureCollection();
-        features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
+        features.Set(_outputStreamDirectionFeature);
         var connectionContext = await _connection._multiplexedContext.ConnectAsync(features, cancellationToken);
         var streamContext = _connection.CreateHttpStreamContext(connectionContext);
         var stream = new WebTransportStream(streamContext, WebTransportStreamType.Output);
