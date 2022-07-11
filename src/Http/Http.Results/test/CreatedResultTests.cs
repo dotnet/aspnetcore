@@ -91,6 +91,17 @@ public class CreatedResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Created>(null));
     }
 
+    [Fact]
+    public void CreatedResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange
+        var location = "/test/";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Created(location));
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

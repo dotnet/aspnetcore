@@ -35,28 +35,28 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
     {
         get
         {
-            IEndpointConventionBuilder MapGet(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
+            IEndpointConventionBuilder MapGet(IEndpointRouteBuilder routes, string template, Delegate action) =>
                 routes.MapGet(template, action);
 
-            IEndpointConventionBuilder MapPost(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
+            IEndpointConventionBuilder MapPost(IEndpointRouteBuilder routes, string template, Delegate action) =>
                 routes.MapPost(template, action);
 
-            IEndpointConventionBuilder MapPut(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
+            IEndpointConventionBuilder MapPut(IEndpointRouteBuilder routes, string template, Delegate action) =>
                 routes.MapPut(template, action);
 
-            IEndpointConventionBuilder MapDelete(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
+            IEndpointConventionBuilder MapDelete(IEndpointRouteBuilder routes, string template, Delegate action) =>
                 routes.MapDelete(template, action);
 
-            IEndpointConventionBuilder Map(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
+            IEndpointConventionBuilder Map(IEndpointRouteBuilder routes, string template, Delegate action) =>
                 routes.Map(template, action);
 
             return new object[][]
             {
-                    new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapGet },
-                    new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapPost },
-                    new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapPut },
-                    new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapDelete },
-                    new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)Map },
+                    new object[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapGet },
+                    new object[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPost },
+                    new object[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPut },
+                    new object[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapDelete },
+                    new object[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)Map },
             };
         }
     }
@@ -81,7 +81,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     [Theory]
     [MemberData(nameof(MapMethods))]
-    public async Task MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
+    public async Task MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate(Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder> map)
     {
         var httpContext = new DefaultHttpContext();
         var responseBodyStream = new MemoryStream();

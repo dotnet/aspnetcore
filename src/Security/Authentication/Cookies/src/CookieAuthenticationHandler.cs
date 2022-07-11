@@ -174,6 +174,9 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
             if (Options.SessionStore != null)
             {
                 await Options.SessionStore.RemoveAsync(_sessionKey!, Context, Context.RequestAborted);
+
+                // Clear out the session key if its expired, so renew doesn't try to use it
+                _sessionKey = null;
             }
             return AuthenticateResult.Fail("Ticket expired");
         }

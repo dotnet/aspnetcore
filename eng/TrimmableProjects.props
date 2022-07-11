@@ -7,6 +7,7 @@
 -->
 <Project>
   <ItemGroup>
+    <TrimmableProject Include="Microsoft.AspNetCore" />
     <TrimmableProject Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Cryptography.Internal" />
     <TrimmableProject Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />

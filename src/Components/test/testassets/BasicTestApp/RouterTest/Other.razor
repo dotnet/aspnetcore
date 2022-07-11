@@ -1,2 +1,4 @@
 ﻿@page "/Other"
+@inject NavigationManager Navigation
 <div id="test-info">This is another page.</div>
+<div id="test-state">@Navigation.HistoryEntryState</div>
