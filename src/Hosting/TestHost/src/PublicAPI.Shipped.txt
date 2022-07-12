@@ -21,7 +21,6 @@ Microsoft.AspNetCore.TestHost.TestServer.BaseAddress.get -> System.Uri!
 Microsoft.AspNetCore.TestHost.TestServer.BaseAddress.set -> void
 Microsoft.AspNetCore.TestHost.TestServer.CreateClient() -> System.Net.Http.HttpClient!
 Microsoft.AspNetCore.TestHost.TestServer.CreateHandler() -> System.Net.Http.HttpMessageHandler!
-Microsoft.AspNetCore.TestHost.TestServer.CreateHandler(System.Action<Microsoft.AspNetCore.Http.HttpContext!>! additionalContextConfiguration) -> System.Net.Http.HttpMessageHandler!
 Microsoft.AspNetCore.TestHost.TestServer.CreateRequest(string! path) -> Microsoft.AspNetCore.TestHost.RequestBuilder!
 Microsoft.AspNetCore.TestHost.TestServer.CreateWebSocketClient() -> Microsoft.AspNetCore.TestHost.WebSocketClient!
 Microsoft.AspNetCore.TestHost.TestServer.Dispose() -> void
