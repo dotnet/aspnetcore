@@ -179,14 +179,14 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             ThrowOnBadRequest = _throwOnBadRequest,
             DisableInferBodyFromParameters = ShouldDisableInferredBodyParameters(entry.HttpMethods),
             EndpointMetadata = builder.Metadata,
-            RouteHandlerFilterFactories = builder.RouteHandlerFilterFactories,
+            EndpointFilterFactories = builder.EndpointFilterFactories,
         };
 
         // We ignore the returned EndpointMetadata has been already populated since we passed in non-null EndpointMetadata.
         factoryCreatedRequestDelegate = RequestDelegateFactory.Create(entry.RouteHandler, factoryOptions).RequestDelegate;
 
         // Clear out any filters so they don't get rerun in Build(). We can rethink how we do this later when exposed as public API.
-        builder.RouteHandlerFilterFactories = null;
+        builder.EndpointFilterFactories = null;
 
         if (ReferenceEquals(builder.RequestDelegate, redirectedRequestDelegate))
         {

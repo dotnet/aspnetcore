@@ -13,10 +13,10 @@ Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider
 Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider.PopulateMetadata(Microsoft.AspNetCore.Http.Metadata.EndpointMetadataContext! context) -> void
 Microsoft.AspNetCore.Http.Metadata.IEndpointParameterMetadataProvider
 Microsoft.AspNetCore.Http.Metadata.IEndpointParameterMetadataProvider.PopulateMetadata(Microsoft.AspNetCore.Http.Metadata.EndpointParameterMetadataContext! parameterContext) -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.EndpointFilterFactoryContext!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!, Microsoft.AspNetCore.Http.EndpointFilterDelegate!>!>?
+Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointFilterFactories.init -> void
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointMetadata.get -> System.Collections.Generic.IList<object!>?
 Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointMetadata.init -> void
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.RouteHandlerContext!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!>!>?
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.init -> void
 Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Type! type, System.Text.Json.Serialization.JsonSerializerContext! context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
 static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! jsonTypeInfo, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<TValue?>

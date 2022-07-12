@@ -102,15 +102,15 @@ public static partial class RequestDelegateFactory
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
     private static readonly UnaryExpression TempSourceStringIsNotNullOrEmptyExpr = Expression.Not(Expression.Call(StringIsNullOrEmptyMethod, TempSourceStringExpr));
 
-    private static readonly ConstructorInfo DefaultRouteHandlerInvocationContextConstructor = typeof(DefaultRouteHandlerInvocationContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
-    private static readonly MethodInfo RouteHandlerInvocationContextGetArgument = typeof(RouteHandlerInvocationContext).GetMethod(nameof(RouteHandlerInvocationContext.GetArgument))!;
+    private static readonly ConstructorInfo DefaultRouteHandlerInvocationContextConstructor = typeof(DefaultEndpointFilterInvocationContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
+    private static readonly MethodInfo EndpointFilterInvocationContextGetArgument = typeof(EndpointFilterInvocationContext).GetMethod(nameof(EndpointFilterInvocationContext.GetArgument))!;
     private static readonly PropertyInfo ListIndexer = typeof(IList<object>).GetProperty("Item")!;
-    private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(RouteHandlerInvocationContext), "context");
-    private static readonly MemberExpression FilterContextHttpContextExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerInvocationContext).GetProperty(nameof(RouteHandlerInvocationContext.HttpContext))!);
-    private static readonly MemberExpression FilterContextArgumentsExpr = Expression.Property(FilterContextExpr, typeof(RouteHandlerInvocationContext).GetProperty(nameof(RouteHandlerInvocationContext.Arguments))!);
+    private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(EndpointFilterInvocationContext), "context");
+    private static readonly MemberExpression FilterContextHttpContextExpr = Expression.Property(FilterContextExpr, typeof(EndpointFilterInvocationContext).GetProperty(nameof(EndpointFilterInvocationContext.HttpContext))!);
+    private static readonly MemberExpression FilterContextArgumentsExpr = Expression.Property(FilterContextExpr, typeof(EndpointFilterInvocationContext).GetProperty(nameof(EndpointFilterInvocationContext.Arguments))!);
     private static readonly MemberExpression FilterContextHttpContextResponseExpr = Expression.Property(FilterContextHttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Response))!);
     private static readonly MemberExpression FilterContextHttpContextStatusCodeExpr = Expression.Property(FilterContextHttpContextResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
-    private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(RouteHandlerInvocationContext), "filterContext");
+    private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(EndpointFilterInvocationContext), "filterContext");
 
     private static readonly string[] DefaultAcceptsContentType = new[] { "application/json" };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
@@ -208,7 +208,7 @@ public static partial class RequestDelegateFactory
             RouteParameters = options?.RouteParameterNames?.ToList(),
             ThrowOnBadRequest = options?.ThrowOnBadRequest ?? false,
             DisableInferredFromBody = options?.DisableInferBodyFromParameters ?? false,
-            FilterFactories = options?.RouteHandlerFilterFactories?.ToList(),
+            FilterFactories = options?.EndpointFilterFactories?.ToList(),
             Metadata = options?.EndpointMetadata ?? new List<object>(),
         };
     }
@@ -252,7 +252,7 @@ public static partial class RequestDelegateFactory
             factoryContext.ServiceProvider,
             CollectionsMarshal.AsSpan(factoryContext.Parameters));
 
-        RouteHandlerFilterDelegate? filterPipeline = null;
+        EndpointFilterDelegate? filterPipeline = null;
 
         // If there are filters registered on the route handler, then we update the method call and
         // return type associated with the request to allow for the filter invocation pipeline.
@@ -262,7 +262,7 @@ public static partial class RequestDelegateFactory
 
             if (filterPipeline is not null)
             {
-                Expression<Func<RouteHandlerInvocationContext, ValueTask<object?>>> invokePipeline = (context) => filterPipeline(context);
+                Expression<Func<EndpointFilterInvocationContext, ValueTask<object?>>> invokePipeline = (context) => filterPipeline(context);
                 returnType = typeof(ValueTask<object?>);
                 // var filterContext = new RouteHandlerInvocationContext<string, int>(httpContext, name_local, int_local);
                 // invokePipeline.Invoke(filterContext);
@@ -298,7 +298,7 @@ public static partial class RequestDelegateFactory
         return HandleRequestBodyAndCompileRequestDelegate(responseWritingMethodCall, factoryContext);
     }
 
-    private static RouteHandlerFilterDelegate? CreateFilterPipeline(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext, Expression<Func<HttpContext, object?>>? targetFactory)
+    private static EndpointFilterDelegate? CreateFilterPipeline(MethodInfo methodInfo, Expression? targetExpression, FactoryContext factoryContext, Expression<Func<HttpContext, object?>>? targetFactory)
     {
         Debug.Assert(factoryContext.FilterFactories is not null);
         // httpContext.Response.StatusCode >= 400
@@ -333,13 +333,13 @@ public static partial class RequestDelegateFactory
                         : Expression.Assign(TargetExpr, Expression.Invoke(targetFactory, FilterContextHttpContextExpr)),
                     handlerReturnMapping
                 );
-        var filteredInvocation = Expression.Lambda<RouteHandlerFilterDelegate>(
+        var filteredInvocation = Expression.Lambda<EndpointFilterDelegate>(
             Expression.Condition(
                 Expression.GreaterThanOrEqual(FilterContextHttpContextStatusCodeExpr, Expression.Constant(400)),
                 CompletedValueTaskExpr,
                 handlerInvocation),
             FilterContextExpr).Compile();
-        var routeHandlerContext = new RouteHandlerContext(
+        var routeHandlerContext = new EndpointFilterFactoryContext(
             methodInfo,
             factoryContext.Metadata,
             factoryContext.ServiceProvider ?? EmptyServiceProvider.Instance);
@@ -453,17 +453,17 @@ public static partial class RequestDelegateFactory
 
         var constructorType = factoryContext.ArgumentTypes?.Length switch
         {
-            1 => typeof(RouteHandlerInvocationContext<>),
-            2 => typeof(RouteHandlerInvocationContext<,>),
-            3 => typeof(RouteHandlerInvocationContext<,,>),
-            4 => typeof(RouteHandlerInvocationContext<,,,>),
-            5 => typeof(RouteHandlerInvocationContext<,,,,>),
-            6 => typeof(RouteHandlerInvocationContext<,,,,,>),
-            7 => typeof(RouteHandlerInvocationContext<,,,,,,>),
-            8 => typeof(RouteHandlerInvocationContext<,,,,,,,>),
-            9 => typeof(RouteHandlerInvocationContext<,,,,,,,,>),
-            10 => typeof(RouteHandlerInvocationContext<,,,,,,,,,>),
-            _ => typeof(DefaultRouteHandlerInvocationContext)
+            1 => typeof(EndpointFilterInvocationContext<>),
+            2 => typeof(EndpointFilterInvocationContext<,>),
+            3 => typeof(EndpointFilterInvocationContext<,,>),
+            4 => typeof(EndpointFilterInvocationContext<,,,>),
+            5 => typeof(EndpointFilterInvocationContext<,,,,>),
+            6 => typeof(EndpointFilterInvocationContext<,,,,,>),
+            7 => typeof(EndpointFilterInvocationContext<,,,,,,>),
+            8 => typeof(EndpointFilterInvocationContext<,,,,,,,>),
+            9 => typeof(EndpointFilterInvocationContext<,,,,,,,,>),
+            10 => typeof(EndpointFilterInvocationContext<,,,,,,,,,>),
+            _ => typeof(DefaultEndpointFilterInvocationContext)
         };
 
         if (constructorType.IsGenericType)
@@ -568,7 +568,7 @@ public static partial class RequestDelegateFactory
                     // construction and route handler invocation.
                     // context.GetArgument<string>(0)
                     // (string, name_local), (int, int_local)
-                    factoryContext.ContextArgAccess.Add(Expression.Call(FilterContextExpr, RouteHandlerInvocationContextGetArgument.MakeGenericMethod(parameters[i].ParameterType), Expression.Constant(i)));
+                    factoryContext.ContextArgAccess.Add(Expression.Call(FilterContextExpr, EndpointFilterInvocationContextGetArgument.MakeGenericMethod(parameters[i].ParameterType), Expression.Constant(i)));
                 }
                 else
                 {
@@ -2126,7 +2126,7 @@ public static partial class RequestDelegateFactory
         public Type[] ArgumentTypes { get; set; } = Array.Empty<Type>();
         public Expression[] ArgumentExpressions { get; set; } = Array.Empty<Expression>();
         public Expression[] BoxedArgs { get; set; } = Array.Empty<Expression>();
-        public List<Func<RouteHandlerContext, RouteHandlerFilterDelegate, RouteHandlerFilterDelegate>>? FilterFactories { get; init; }
+        public List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>? FilterFactories { get; init; }
         public bool FilterFactoriesHaveRunWithoutModifyingPerRequestBehavior { get; set; }
 
         public List<ParameterInfo> Parameters { get; set; } = new();

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Provides an abstraction for wrapping the <see cref="HttpContext"/> and arguments
 /// provided to a route handler.
 /// </summary>
-public abstract class RouteHandlerInvocationContext
+public abstract class EndpointFilterInvocationContext
 {
     /// <summary>
     /// The <see cref="HttpContext"/> associated with the current request being processed by the filter.

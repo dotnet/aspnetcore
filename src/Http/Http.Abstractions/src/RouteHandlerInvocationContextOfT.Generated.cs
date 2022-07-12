@@ -9,9 +9,9 @@ using System.CodeDom.Compiler;
 namespace Microsoft.AspNetCore.Http;
 
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0)
     {
         HttpContext = httpContext;
         Arg0 = arg0;
@@ -115,9 +115,9 @@ internal sealed class RouteHandlerInvocationContext<T0> : RouteHandlerInvocation
     }
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1)
     {
         HttpContext = httpContext;
         Arg0 = arg0;
@@ -228,9 +228,9 @@ internal sealed class RouteHandlerInvocationContext<T0, T1> : RouteHandlerInvoca
     }
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2)
     {
         HttpContext = httpContext;
         Arg0 = arg0;
@@ -348,9 +348,9 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2> : RouteHandlerIn
     }
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
     {
         HttpContext = httpContext;
         Arg0 = arg0;
@@ -475,9 +475,9 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3> : RouteHandl
     }
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
     {
         HttpContext = httpContext;
         Arg0 = arg0;
@@ -609,9 +609,9 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4> : RouteH
     }
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
     {
         HttpContext = httpContext;
         Arg0 = arg0;
@@ -750,9 +750,9 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5> : Ro
     }
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
     {
         HttpContext = httpContext;
         Arg0 = arg0;
@@ -898,9 +898,9 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6> 
     }
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
     {
         HttpContext = httpContext;
         Arg0 = arg0;
@@ -1053,9 +1053,9 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     }
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
     {
         HttpContext = httpContext;
         Arg0 = arg0;
@@ -1215,9 +1215,9 @@ internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, 
     }
 }
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
     {
         HttpContext = httpContext;
         Arg0 = arg0;
