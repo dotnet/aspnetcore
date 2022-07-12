@@ -50,6 +50,8 @@ public sealed class Created : IResult, IEndpointMetadataProvider, IStatusCodeHtt
     /// </summary>
     public int StatusCode => StatusCodes.Status201Created;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc/>
     public string? Location { get; }
 

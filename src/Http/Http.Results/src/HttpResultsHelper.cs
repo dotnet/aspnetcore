@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http;
 
 internal static partial class HttpResultsHelper
 {
-    private const string DefaultContentType = "text/plain; charset=utf-8";
+    internal const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
     public static Task WriteResultAsJsonAsync<T>(

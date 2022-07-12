@@ -25,6 +25,8 @@ public sealed class NotFound : IResult, IEndpointMetadataProvider, IStatusCodeHt
     /// </summary>
     public int StatusCode => StatusCodes.Status404NotFound;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
