@@ -69,6 +69,10 @@ a, .btn-link {
     height: 8rem;
     margin: 20vh auto 1rem auto;
 }
+    .blazor-default-loading #percentage {
+        color: black;
+        font-weight: bold;
+    }
 
     .blazor-default-loading circle {
         fill: none;
@@ -79,6 +83,7 @@ a, .btn-link {
     }
 
         .blazor-default-loading circle:last-child {
+            display: none;
             stroke: #1b6ec2;
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;

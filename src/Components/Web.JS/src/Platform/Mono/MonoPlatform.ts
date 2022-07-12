@@ -13,7 +13,6 @@ import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { BootJsonData, ICUDataMode } from '../BootConfig';
 import { Blazor } from '../../GlobalExports';
 import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, MONOType } from 'dotnet';
-import { WebAssemblyProgressService } from '../WebAssemblyProgressService';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
@@ -51,10 +50,10 @@ function getValueU64(ptr: number) {
 }
 
 export const monoPlatform: Platform = {
-  start: async function start(resourceLoader: WebAssemblyResourceLoader, progressService: WebAssemblyProgressService) {
+  start: async function start(resourceLoader: WebAssemblyResourceLoader) {
     attachDebuggerHotkey(resourceLoader);
 
-    await createEmscriptenModuleInstance(resourceLoader, progressService);
+    await createEmscriptenModuleInstance(resourceLoader);
   },
 
   callEntryPoint: async function callEntryPoint(assemblyName: string): Promise<any> {
@@ -224,7 +223,7 @@ async function importDotnetJs(resourceLoader: WebAssemblyResourceLoader): Promis
   return await cjsExport;
 }
 
-async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader, progressService: WebAssemblyProgressService): Promise<DotnetPublicAPI> {
+async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoader): Promise<DotnetPublicAPI> {
   let runtimeReadyResolve: (data: DotnetPublicAPI) => void = undefined as any;
   let runtimeReadyReject: (reason?: any) => void = undefined as any;
   const runtimeReady = new Promise<DotnetPublicAPI>((resolve, reject) => {
@@ -266,6 +265,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     const targetElement = document.getElementById('app') as HTMLDivElement;
     const percentage = resourcesLoaded / totalResources * 100;
     targetElement.style.setProperty('--blazor-load-percentage', percentage + '%');
+    document.getElementById('progress')!.style.display = 'block';
     document.getElementById('percentage')!.textContent = Math.floor(percentage) + '%';
   }
 

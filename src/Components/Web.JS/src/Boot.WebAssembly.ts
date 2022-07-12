@@ -18,8 +18,6 @@ import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAtt
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebAssembly';
-import { WebAssemblyProgressReporter } from './Platform/WebAssemblyProgressReporter';
-import { WebAssemblyProgressService } from './Platform/WebAssemblyProgressService';
 
 let started = false;
 
@@ -126,22 +124,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   const bootConfigResult: BootConfigResult = await bootConfigPromise;
   const jsInitializer = await fetchAndInvokeInitializers(bootConfigResult.bootConfig, candidateOptions);
 
-  const progressService = new WebAssemblyProgressService();
-
-  // Only instantiate the WebAssemblyProgressReporter if the loading element exists in the DOM
-  if (options?.setProgress) {
-    progressService.attach(options?.setProgress);
-  } else if (document.getElementById('blazor-default-loading')) {
-    progressService.attach(WebAssemblyProgressReporter.setProgress);
-  }
-
   const [resourceLoader] = await Promise.all([
-    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}, progressService),
+    WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, candidateOptions || {}),
     WebAssemblyConfigLoader.initAsync(bootConfigResult),
   ]);
 
   try {
-    await platform.start(resourceLoader, progressService);
+    await platform.start(resourceLoader);
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }

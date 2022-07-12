@@ -4,7 +4,6 @@
 import { toAbsoluteUri } from '../Services/NavigationManager';
 import { BootJsonData, ResourceList } from './BootConfig';
 import { WebAssemblyStartOptions, WebAssemblyBootResourceType } from './WebAssemblyStartOptions';
-import { WebAssemblyProgressService } from './WebAssemblyProgressService';
 const networkFetchCacheMode = 'no-cache';
 
 export class WebAssemblyResourceLoader {
@@ -14,12 +13,12 @@ export class WebAssemblyResourceLoader {
 
   private cacheLoads: { [name: string]: LoadLogEntry } = {};
 
-  static async initAsync(bootConfig: BootJsonData, startOptions: Partial<WebAssemblyStartOptions>, progressService: WebAssemblyProgressService): Promise<WebAssemblyResourceLoader> {
+  static async initAsync(bootConfig: BootJsonData, startOptions: Partial<WebAssemblyStartOptions>): Promise<WebAssemblyResourceLoader> {
     const cache = await getCacheToUseIfEnabled(bootConfig);
-    return new WebAssemblyResourceLoader(bootConfig, cache, startOptions, progressService);
+    return new WebAssemblyResourceLoader(bootConfig, cache, startOptions);
   }
 
-  constructor(readonly bootConfig: BootJsonData, readonly cacheIfUsed: Cache | null, readonly startOptions: Partial<WebAssemblyStartOptions>, readonly progressService: WebAssemblyProgressService) {
+  constructor(readonly bootConfig: BootJsonData, readonly cacheIfUsed: Cache | null, readonly startOptions: Partial<WebAssemblyStartOptions>) {
   }
 
   loadResources(resources: ResourceList, url: (name: string) => string, resourceType: WebAssemblyBootResourceType): LoadingResource[] {
@@ -32,8 +31,6 @@ export class WebAssemblyResourceLoader {
       ? this.loadResourceWithCaching(this.cacheIfUsed, name, url, contentHash, resourceType)
       : this.loadResourceWithoutCaching(name, url, contentHash, resourceType);
 
-    response.then(_ => this.progressService.resourceLoaded());
-    
     return { name, url, response };
   }
 
