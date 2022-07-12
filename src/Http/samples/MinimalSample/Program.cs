@@ -21,7 +21,7 @@ app.MapGet("/", () => $"""
 var outer = app.MapGroup("/outer");
 var inner = outer.MapGroup("/inner");
 
-inner.AddRouteHandlerFilter((routeContext, next) =>
+inner.AddEndpointFilter((routeContext, next) =>
 {
     var tags = routeContext.EndpointMetadata.OfType<ITagsMetadata>().FirstOrDefault();
 
@@ -36,7 +36,7 @@ inner.AddRouteHandlerFilter((routeContext, next) =>
 outer.MapGet("/outerget", () => "I'm nested.");
 inner.MapGet("/innerget", () => "I'm more nested.");
 
-inner.AddRouteHandlerFilter((routeContext, next) =>
+inner.AddEndpointFilter((routeContext, next) =>
 {
     Console.WriteLine($"Building filter! Num args: {routeContext.MethodInfo.GetParameters().Length}"); ;
     return async invocationContext =>

@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Http;
 
 <# foreach (var arity in arities) { #>
 [GeneratedCode("TextTemplatingFileGenerator", "")]
-internal sealed class RouteHandlerInvocationContext<<# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>T<#=argumentCount#><# if (argumentCount < arity - 1) { #>, <# } #><# } #>> : RouteHandlerInvocationContext, IList<object?>
+internal sealed class EndpointFilterInvocationContext<<# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>T<#=argumentCount#><# if (argumentCount < arity - 1) { #>, <# } #><# } #>> : EndpointFilterInvocationContext, IList<object?>
 {
-    internal RouteHandlerInvocationContext(HttpContext httpContext, <# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>T<#=argumentCount#> arg<#=argumentCount#><# if (argumentCount < arity - 1) { #>, <# } #><# } #>)
+    internal EndpointFilterInvocationContext(HttpContext httpContext, <# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>T<#=argumentCount#> arg<#=argumentCount#><# if (argumentCount < arity - 1) { #>, <# } #><# } #>)
     {
         HttpContext = httpContext;
 <# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>        Arg<#=argumentCount#> = arg<#=argumentCount#>;
