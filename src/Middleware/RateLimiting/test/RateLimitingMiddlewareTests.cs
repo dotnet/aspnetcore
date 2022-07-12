@@ -134,6 +134,25 @@ public class RateLimitingMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task EndpointLimiterRequested_NoPolicy_Throws()
+    {
+        var options = CreateOptionsAccessor();
+        var name = "myEndpoint";
+
+        var middleware = new RateLimitingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
+            options,
+            Mock.Of<IServiceProvider>());
+
+        var context = new DefaultHttpContext();
+        context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new RateLimiterMetadata(name)), "Test endpoint"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(context)).DefaultTimeout();
+    }
+
+    [Fact]
     public async Task EndpointLimiter_Rejects()
     {
         var onRejectedInvoked = false;

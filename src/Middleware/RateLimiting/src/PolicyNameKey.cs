@@ -11,7 +11,7 @@ internal sealed class PolicyNameKey
     {
         if (obj is PolicyNameKey key)
         {
-            return PolicyName.Equals(key.PolicyName);
+            return PolicyName == key.PolicyName;
         }
         return false;
     }

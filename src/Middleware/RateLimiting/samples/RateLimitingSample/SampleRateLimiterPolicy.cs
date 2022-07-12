@@ -9,7 +9,6 @@ namespace RateLimitingSample;
 public class SampleRateLimiterPolicy : IRateLimiterPolicy<string>
 {
     private Func<OnRejectedContext, CancellationToken, ValueTask>? _onRejected;
-    private string _partitionKey;
 
     public SampleRateLimiterPolicy(ILogger<SampleRateLimiterPolicy> logger)
     {
@@ -19,7 +18,6 @@ public class SampleRateLimiterPolicy : IRateLimiterPolicy<string>
             logger.LogInformation($"Request rejected by {nameof(SampleRateLimiterPolicy)}");
             return ValueTask.CompletedTask;
         };
-        _partitionKey = Guid.NewGuid().ToString("n");
     }
 
     public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected { get => _onRejected; }
@@ -27,6 +25,6 @@ public class SampleRateLimiterPolicy : IRateLimiterPolicy<string>
     // Use a sliding window limiter allowing 1 request every 10 seconds
     public RateLimitPartition<string> GetPartition(HttpContext httpContext)
     {
-        return RateLimitPartition.CreateSlidingWindowLimiter<string>(_partitionKey, key => new SlidingWindowRateLimiterOptions(1, QueueProcessingOrder.OldestFirst, 1, TimeSpan.FromSeconds(5), 1));
+        return RateLimitPartition.CreateSlidingWindowLimiter<string>(string.Empty, key => new SlidingWindowRateLimiterOptions(1, QueueProcessingOrder.OldestFirst, 1, TimeSpan.FromSeconds(5), 1));
     }
 }

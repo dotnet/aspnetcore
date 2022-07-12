@@ -45,7 +45,7 @@ internal sealed partial class RateLimitingMiddleware
         foreach (var unactivatedPolicy in options.Value.UnactivatedPolicyMap)
         {
             _policyMap.Add(unactivatedPolicy.Key, unactivatedPolicy.Value(serviceProvider));
-        }    
+        }
 
         _globalLimiter = options.Value.GlobalLimiter;
         _endpointLimiter = CreateEndpointLimiter();
@@ -172,9 +172,16 @@ internal sealed partial class RateLimitingMiddleware
         return PartitionedRateLimiter.Create<HttpContext, DefaultKeyType>(context =>
         {
             var name = context.GetEndpoint()?.Metadata.GetMetadata<IRateLimiterMetadata>()?.PolicyName;
-            if (name is not null && _policyMap.TryGetValue(name, out var policy))
+            if (name is not null)
             {
-                return policy.GetPartition(context);
+                if (_policyMap.TryGetValue(name, out var policy))
+                {
+                    return policy.GetPartition(context);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"This endpoint requires a rate limiting policy with name {name}, but no such policy exists.");
+                }
             }
             return RateLimitPartition.CreateNoLimiter<DefaultKeyType>(_defaultPolicyKey);
         }, new DefaultKeyTypeEqualityComparer());
@@ -184,5 +191,8 @@ internal sealed partial class RateLimitingMiddleware
     {
         [LoggerMessage(1, LogLevel.Debug, "Rate limits exceeded, rejecting this request.", EventName = "RequestRejectedLimitsExceeded")]
         internal static partial void RequestRejectedLimitsExceeded(ILogger logger);
+
+        [LoggerMessage(2, LogLevel.Debug, "This endpoint requires a rate limiting policy with name {PolicyName}, but no such policy exists.", EventName = "WarnMissingPolicy")]
+        internal static partial void WarnMissingPolicy(ILogger logger, string policyName);
     }
 }

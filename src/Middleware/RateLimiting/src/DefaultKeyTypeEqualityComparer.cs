@@ -13,14 +13,14 @@ internal sealed class DefaultKeyTypeEqualityComparer : IEqualityComparer<Default
         var yKey = y.Key;
         if (xKey == null && yKey == null)
         {
-            return x.PolicyName.Equals(y.PolicyName);
+            return string.Equals(x.PolicyName, y.PolicyName, StringComparison.Ordinal);
         }
         else if (xKey == null || yKey == null)
         {
             return false;
         }
 
-        return x.PolicyName.Equals(y.PolicyName) && xKey.Equals(yKey);
+        return string.Equals(x.PolicyName, y.PolicyName, StringComparison.Ordinal) && xKey.Equals(yKey);
     }
 
     public int GetHashCode([DisallowNull] DefaultKeyType obj)
