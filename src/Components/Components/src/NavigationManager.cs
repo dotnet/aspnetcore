@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
+
+using LocationChangingHandler = Func<LocationChangingContext, Task>;
 
 /// <summary>
 /// Provides an abstraction for querying and managing URI navigation.
@@ -32,11 +35,9 @@ public abstract class NavigationManager
 
     private EventHandler<LocationChangedEventArgs>? _locationChanged;
 
-    private readonly List<IHandleLocationChanging> _locationChangingHandlers = new();
+    private readonly List<LocationChangingHandler> _locationChangingHandlers = new();
 
     private CancellationTokenSource? _locationChangingCts;
-
-    private bool _lastUpdatedHasLocationChangingHandlers;
 
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
@@ -286,9 +287,8 @@ public abstract class NavigationManager
     /// </summary>
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI.</param>
     /// <param name="isNavigationIntercepted">Whether this navigation was intercepted from a link.</param>
-    /// <param name="forceLoad">Whether the navigation is attempting to bypass client-side routing.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the completion of the operation.</returns>
-    public async ValueTask<bool> NotifyLocationChanging(string uri, bool isNavigationIntercepted, bool forceLoad)
+    protected async ValueTask<bool> NotifyLocationChanging(string uri, bool isNavigationIntercepted)
     {
         _locationChangingCts?.Cancel();
         _locationChangingCts = null;
@@ -300,22 +300,31 @@ public abstract class NavigationManager
 
         _locationChangingCts = new();
 
+        var context = new LocationChangingContext(uri, isNavigationIntercepted, _locationChangingCts);
         var cancellationToken = _locationChangingCts.Token;
-        var context = new LocationChangingContext(uri, isNavigationIntercepted, forceLoad, cancellationToken);
         var handlerCount = _locationChangingHandlers.Count;
-        var locationChangingHandlersCopy = ArrayPool<IHandleLocationChanging>.Shared.Rent(handlerCount);
+        var locationChangingHandlersCopy = ArrayPool<LocationChangingHandler>.Shared.Rent(handlerCount);
+        var locationChangingTasks = ArrayPool<Task>.Shared.Rent(handlerCount);
+
         _locationChangingHandlers.CopyTo(locationChangingHandlersCopy);
 
         try
         {
             for (var i = 0; i < handlerCount; i++)
             {
-                await locationChangingHandlersCopy[i].OnLocationChanging(context);
+                locationChangingTasks[i] = locationChangingHandlersCopy[i].Invoke(context);
 
-                if (context.IsCanceled || cancellationToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     return true;
                 }
+            }
+
+            await Task.WhenAll(locationChangingTasks.Take(handlerCount)).WaitAsync(cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return true;
             }
 
             return false;
@@ -325,13 +334,10 @@ public abstract class NavigationManager
             // If it was our cancellation token, we should gracefully cancel the navigation.
             return true;
         }
-        catch (Exception ex)
-        {
-            throw new LocationChangeException("An exception occurred while dispatching a location changing event.", ex);
-        }
         finally
         {
-            ArrayPool<IHandleLocationChanging>.Shared.Return(locationChangingHandlersCopy);
+            ArrayPool<LocationChangingHandler>.Shared.Return(locationChangingHandlersCopy);
+            ArrayPool<Task>.Shared.Return(locationChangingTasks);
         }
     }
 
@@ -339,34 +345,25 @@ public abstract class NavigationManager
     /// Sets whether there are active location changing handlers.
     /// </summary>
     /// <param name="value">Whether there are active location changing handlers.</param>
-    /// <returns><see langword="true"/> if the change was applied successfully, otherwise <see langword="false"/>.</returns>
-    protected virtual bool SetHasLocationChangingHandlers(bool value)
-        => true;
-
-    /// <summary>
-    /// Invokes <see cref="SetHasLocationChangingHandlers(bool)"/> if the existence of location changing handlers has changed.
-    /// </summary>
-    protected void UpdateHasLocationChangingHandlers()
-    {
-        var hasLocationChangingHandlers = _locationChangingHandlers.Count != 0;
-        if (hasLocationChangingHandlers != _lastUpdatedHasLocationChangingHandlers)
-        {
-            if (SetHasLocationChangingHandlers(hasLocationChangingHandlers))
-            {
-                _lastUpdatedHasLocationChangingHandlers = hasLocationChangingHandlers;
-            }
-        }
-    }
+    protected virtual void SetNavigationLockState(bool value)
+        => throw new NotSupportedException();
 
     /// <summary>
     /// Adds a handler to process incoming navigation events.
     /// </summary>
     /// <param name="locationChangingHandler">The handler to process incoming navigation events.</param>
-    public void AddLocationChangingHandler(IHandleLocationChanging locationChangingHandler)
+    public void AddLocationChangingHandler(LocationChangingHandler locationChangingHandler)
     {
         AssertInitialized();
+
+        var isFirstHandler = _locationChangingHandlers.Count == 0;
+
         _locationChangingHandlers.Add(locationChangingHandler);
-        UpdateHasLocationChangingHandlers();
+
+        if (isFirstHandler)
+        {
+            SetNavigationLockState(true);
+        }
     }
 
     /// <summary>
@@ -374,34 +371,15 @@ public abstract class NavigationManager
     /// </summary>
     /// <param name="locationChangingHandler">The handler to remove.</param>
     /// <returns><see langword="true"/> if the handler was removed, otherwise <see langword="false"/>.</returns>
-    public bool RemoveLocationChangingHandler(IHandleLocationChanging locationChangingHandler)
+    public void RemoveLocationChangingHandler(LocationChangingHandler locationChangingHandler)
     {
         AssertInitialized();
 
-        if (_locationChangingHandlers.Remove(locationChangingHandler))
+        if (_locationChangingHandlers.Remove(locationChangingHandler) && _locationChangingHandlers.Count == 0)
         {
-            UpdateHasLocationChangingHandlers();
-            return true;
+            SetNavigationLockState(false);
         }
-
-        return false;
     }
-
-    /// <summary>
-    /// Enables a navigation prompt to be displayed before navigation events complete.
-    /// </summary>
-    /// <param name="message">The message to display in the prompt. Note that some browsers will ignore this message for external navigations.</param>
-    /// <param name="externalNavigationsOnly">If <see langword="true"/>, the prompt will not display for internal page navigations.</param>
-    /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
-    protected internal virtual ValueTask EnableNavigationPromptAsync(string message, bool externalNavigationsOnly)
-        => ValueTask.CompletedTask;
-
-    /// <summary>
-    /// Disables the current navigation prompt.
-    /// </summary>
-    /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
-    protected internal virtual ValueTask DisableNavigationPromptAsync()
-        => ValueTask.CompletedTask;
 
     private void AssertInitialized()
     {

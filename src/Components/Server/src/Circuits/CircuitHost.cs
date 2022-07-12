@@ -547,7 +547,7 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 Log.LocationChanging(_logger, uri, CircuitId);
                 var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                return await navigationManager.HandleLocationChanging(uri, intercepted, false);
+                return await navigationManager.HandleLocationChanging(uri, intercepted);
             });
         }
 

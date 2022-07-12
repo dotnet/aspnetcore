@@ -1,33 +1,20 @@
 #nullable enable
-Microsoft.AspNetCore.Components.NavigationManager.AddLocationChangingHandler(Microsoft.AspNetCore.Components.Routing.IHandleLocationChanging! locationChangingHandler) -> void
+Microsoft.AspNetCore.Components.NavigationManager.AddLocationChangingHandler(System.Func<Microsoft.AspNetCore.Components.Routing.LocationChangingContext!, System.Threading.Tasks.Task!>! locationChangingHandler) -> void
 Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.set -> void
+Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChanging(string! uri, bool isNavigationIntercepted) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.NavigationManager.RemoveLocationChangingHandler(System.Func<Microsoft.AspNetCore.Components.Routing.LocationChangingContext!, System.Threading.Tasks.Task!>! locationChangingHandler) -> void
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.init -> void
-Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChanging(string! uri, bool isNavigationIntercepted, bool forceLoad) -> System.Threading.Tasks.ValueTask<bool>
-Microsoft.AspNetCore.Components.NavigationManager.RemoveLocationChangingHandler(Microsoft.AspNetCore.Components.Routing.IHandleLocationChanging! locationChangingHandler) -> bool
-Microsoft.AspNetCore.Components.NavigationManager.UpdateHasLocationChangingHandlers() -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString? markupContent) -> void
 Microsoft.AspNetCore.Components.Routing.IHandleLocationChanging
 Microsoft.AspNetCore.Components.Routing.IHandleLocationChanging.OnLocationChanging(Microsoft.AspNetCore.Components.Routing.LocationChangingContext! context) -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.Routing.InternalNavigationLock
-Microsoft.AspNetCore.Components.Routing.InternalNavigationLock.InternalNavigationLock() -> void
-Microsoft.AspNetCore.Components.Routing.InternalNavigationLock.OnLocationChanging.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.LocationChangingContext!>
-Microsoft.AspNetCore.Components.Routing.InternalNavigationLock.OnLocationChanging.set -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext
-Microsoft.AspNetCore.Components.Routing.LocationChangingContext.Cancel() -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.CancellationToken.get -> System.Threading.CancellationToken
-Microsoft.AspNetCore.Components.Routing.LocationChangingContext.ForceLoad.get -> bool
-Microsoft.AspNetCore.Components.Routing.LocationChangingContext.IsCanceled.get -> bool
+Microsoft.AspNetCore.Components.Routing.LocationChangingContext.DestinationUrl.get -> string!
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.IsNavigationIntercepted.get -> bool
-Microsoft.AspNetCore.Components.Routing.LocationChangingContext.Location.get -> string!
-Microsoft.AspNetCore.Components.Routing.NavigationPrompt
-Microsoft.AspNetCore.Components.Routing.NavigationPrompt.ExternalNavigationsOnly.get -> bool
-Microsoft.AspNetCore.Components.Routing.NavigationPrompt.ExternalNavigationsOnly.set -> void
-Microsoft.AspNetCore.Components.Routing.NavigationPrompt.Message.get -> string!
-Microsoft.AspNetCore.Components.Routing.NavigationPrompt.Message.set -> void
-Microsoft.AspNetCore.Components.Routing.NavigationPrompt.NavigationPrompt() -> void
+Microsoft.AspNetCore.Components.Routing.LocationChangingContext.PreventNavigation() -> void
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback<T>(object! receiver, Microsoft.AspNetCore.Components.EventCallback<T> callback, T value) -> Microsoft.AspNetCore.Components.EventCallback<T>
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.InvokeAsynchronousDelegate(System.Action! callback) -> System.Threading.Tasks.Task!
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.InvokeAsynchronousDelegate(System.Func<System.Threading.Tasks.Task!>! callback) -> System.Threading.Tasks.Task!
@@ -64,6 +51,4 @@ static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.Crea
 static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, Microsoft.AspNetCore.Components.EventCallback<short?> setter, short? existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
 static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, Microsoft.AspNetCore.Components.EventCallback<string?> setter, string! existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
 static Microsoft.AspNetCore.Components.EventCallbackFactoryBinderExtensions.CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, Microsoft.AspNetCore.Components.EventCallback<T> setter, T existingValue, System.Globalization.CultureInfo? culture = null) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
-virtual Microsoft.AspNetCore.Components.NavigationManager.DisableNavigationPromptAsync() -> System.Threading.Tasks.ValueTask
-virtual Microsoft.AspNetCore.Components.NavigationManager.EnableNavigationPromptAsync(string! message, bool externalNavigationsOnly) -> System.Threading.Tasks.ValueTask
-virtual Microsoft.AspNetCore.Components.NavigationManager.SetHasLocationChangingHandlers(bool value) -> bool
+virtual Microsoft.AspNetCore.Components.NavigationManager.SetNavigationLockState(bool value) -> void

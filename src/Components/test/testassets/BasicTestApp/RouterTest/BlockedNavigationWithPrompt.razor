@@ -1,11 +1,32 @@
 ﻿@page "/BlockedNavigationWithPrompt"
 
+@inject IJSRuntime JSRuntime
+
 @using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.JSInterop
 
-<input type="checkbox" @bind-value="_externalNavigationsOnly" />Block external navigations only
+<input type="checkbox" @bind-value="_blockInternalNavigations" />Block internal navigations<br />
+<input type="checkbox" @bind-value="_blockExternalNavigations" />Block external navigations
 
-<NavigationPrompt Message="Are you sure you want to leave?" ExternalNavigationsOnly="_externalNavigationsOnly" />
+@{
+    var onBeforeInteralNavigation = _blockInternalNavigations
+            ? OnBeforeInternalNavigation
+            : default(Func<LocationChangingContext, Task>);
+}
+
+<NavigationLock OnBeforeInternalNavigation="onBeforeInteralNavigation" ConfirmExternalNavigation="_blockExternalNavigations" />
 
 @code {
-    private bool _externalNavigationsOnly;
+    private bool _blockInternalNavigations;
+    private bool _blockExternalNavigations;
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        var isConfirmed = await JSRuntime.InvokeAsync<bool>("confirm", CancellationToken.None, "Are you sure you want to continue?");
+
+        if (!isConfirmed)
+        {
+            context.PreventNavigation();
+        }
+    }
 }

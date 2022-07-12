@@ -16,6 +16,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 {
     private readonly ILogger<RemoteNavigationManager> _logger;
     private IJSRuntime _jsRuntime;
+    private bool? _pendingNavigationLockState;
 
     /// <summary>
     /// Creates a new <see cref="RemoteNavigationManager"/> instance.
@@ -55,7 +56,11 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         _jsRuntime = jsRuntime;
 
-        UpdateHasLocationChangingHandlers();
+        if (_pendingNavigationLockState.HasValue)
+        {
+            SetHasLocationChangingListeners(_pendingNavigationLockState.Value);
+            _pendingNavigationLockState = null;
+        }
     }
 
     public void NotifyLocationChanged(string uri, string state, bool intercepted)
@@ -67,9 +72,9 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         NotifyLocationChanged(intercepted);
     }
 
-    public ValueTask<bool> HandleLocationChanging(string uri, bool intercepted, bool forceLoad)
+    public ValueTask<bool> HandleLocationChanging(string uri, bool intercepted)
     {
-        return NotifyLocationChanging(uri, intercepted, forceLoad);
+        return NotifyLocationChanging(uri, intercepted);
     }
 
     /// <inheritdoc />
@@ -84,7 +89,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
             throw new NavigationException(absoluteUriString);
         }
 
-        var shouldCancel = await NotifyLocationChanging(uri, false, options.ForceLoad);
+        var shouldCancel = await NotifyLocationChanging(uri, false);
 
         if (shouldCancel)
         {
@@ -96,38 +101,19 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         }
     }
 
-    protected override bool SetHasLocationChangingHandlers(bool value)
+    protected override void SetNavigationLockState(bool value)
     {
         if (_jsRuntime is null)
         {
-            return false;
+            _pendingNavigationLockState = value;
+            return;
         }
 
-        _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, value).Preserve();
-        return true;
+        SetHasLocationChangingListeners(value);
     }
 
-    protected override async ValueTask EnableNavigationPromptAsync(string message, bool externalNavigationsOnly)
-    {
-        if (_jsRuntime is null)
-        {
-            // TODO: Would be better to handle this case more gracefully.
-            throw new InvalidOperationException("The JavaScript runtime is not initialized.");
-        }
-
-        await _jsRuntime.InvokeVoidAsync(Interop.EnableNavigationPrompt, message, externalNavigationsOnly);
-    }
-
-    protected override async ValueTask DisableNavigationPromptAsync()
-    {
-        if (_jsRuntime is null)
-        {
-            // TODO: Would be better to handle this case more gracefully.
-            throw new InvalidOperationException("The JavaScript runtime is not initialized.");
-        }
-
-        await _jsRuntime.InvokeVoidAsync(Interop.DisableNavigationPrompt);
-    }
+    private void SetHasLocationChangingListeners(bool value)
+        => _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, value).Preserve();
 
     private static partial class Log
     {

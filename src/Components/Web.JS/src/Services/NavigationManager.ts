@@ -9,7 +9,6 @@ let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
 let hasLocationChangingEventListeners = false;
 let currentHistoryIndex = 0;
-let navigationPromptOptions: NavigationPromptOptions | null = null;
 
 // Will be initialized once someone registers
 let notifyLocationChangedCallback: ((uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
@@ -22,8 +21,6 @@ export const internalFunctions = {
   listenForNavigationEvents,
   enableNavigationInterception,
   setHasLocationChangingListeners,
-  enableNavigationPrompt,
-  disableNavigationPrompt,
   navigateTo,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
@@ -39,7 +36,7 @@ function listenForNavigationEvents(locationChangedCallback: (uri: string, state:
 
   hasRegisteredNavigationEventListeners = true;
   window.addEventListener('popstate', onPopState);
-  currentHistoryIndex = history.state?.index ?? 0;
+  currentHistoryIndex = history.state?._index ?? 0;
 }
 
 function enableNavigationInterception(): void {
@@ -48,34 +45,6 @@ function enableNavigationInterception(): void {
 
 function setHasLocationChangingListeners(hasListeners: boolean) {
   hasLocationChangingEventListeners = hasListeners;
-}
-
-function onBeforeUnload(event: BeforeUnloadEvent) {
-  event.preventDefault();
-  return event.returnValue = navigationPromptOptions?.message;
-}
-
-function enableNavigationPrompt(message: string, externalNavigationsOnly: boolean) {
-  if (!navigationPromptOptions) {
-    window.addEventListener('beforeunload', onBeforeUnload);
-  }
-
-  navigationPromptOptions = {
-    message,
-    externalNavigationsOnly,
-  };
-}
-
-function disableNavigationPrompt() {
-  if (navigationPromptOptions) {
-    window.removeEventListener('beforeunload', onBeforeUnload);
-  }
-
-  navigationPromptOptions = null;
-}
-
-function displayNavigationPromptIfEnabled() {
-  return !!navigationPromptOptions && !navigationPromptOptions.externalNavigationsOnly && !window.confirm(navigationPromptOptions.message);
 }
 
 export function attachToEventDelegator(eventDelegator: EventDelegator): void {
@@ -163,13 +132,6 @@ function performExternalNavigation(uri: string, replace: boolean) {
 }
 
 function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined) {
-  // By this point, the "location changing" event has had its opportunity to cancel the navigation,
-  // but now we need to display the navigation prompt to the user if necessary.
-  const navigationCanceled = displayNavigationPromptIfEnabled();
-  if (navigationCanceled) {
-    return;
-  }
-
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
@@ -181,12 +143,12 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
     currentHistoryIndex++;
     history.pushState({
       userState: state,
-      index: currentHistoryIndex,
+      _index: currentHistoryIndex,
     }, /* ignored title */ '', absoluteInternalHref);
   } else {
     history.replaceState({
       userState: state,
-      index: currentHistoryIndex,
+      _index: currentHistoryIndex,
     }, /* ignored title */ '', absoluteInternalHref);
   }
 
@@ -236,34 +198,20 @@ async function notifyLocationChanging(uri: string, intercepted: boolean): Promis
 async function onBrowserInitiatedPopState(state: PopStateEvent) {
   ignorePendingNavigations();
 
-  const index = state.state?.index ?? 0;
-  const delta = index - currentHistoryIndex;
-  const uri = location.href;
-
   if (hasLocationChangingEventListeners) {
+    const index = state.state?._index ?? 0;
+    const delta = index - currentHistoryIndex;
+    const uri = location.href;
+
     // Temporarily revert the navigation until we confirm if the navigation should continue.
     await navigateHistoryWithoutPopStateCallback(-delta);
 
-    // Invoke the "location changing" event first to prioritize programmatic cancellation.
-    let navigationCanceled = await notifyLocationChanging(uri, false);
-    if (navigationCanceled) {
-      return;
-    }
-
-    // Allow the user to cancel the navigation, if necessary.
-    navigationCanceled = displayNavigationPromptIfEnabled();
+    const navigationCanceled = await notifyLocationChanging(uri, false);
     if (navigationCanceled) {
       return;
     }
 
     await navigateHistoryWithoutPopStateCallback(delta);
-  } else {
-    // Allow the user to cancel the navigation, if necessary.
-    const navigationCanceled = displayNavigationPromptIfEnabled();
-    if (navigationCanceled) {
-      await navigateHistoryWithoutPopStateCallback(-delta);
-      return;
-    }
   }
 
   await notifyLocationChanged(false);
@@ -280,7 +228,7 @@ async function onPopState(state: PopStateEvent) {
     await popStateCallback(state);
   }
 
-  currentHistoryIndex = history.state?.index ?? 0;
+  currentHistoryIndex = history.state?._index ?? 0;
 }
 
 let testAnchor: HTMLAnchorElement;
@@ -349,9 +297,4 @@ export interface NavigationOptions {
   forceLoad: boolean;
   replaceHistoryEntry: boolean;
   historyEntryState?: string;
-}
-
-interface NavigationPromptOptions {
-  message: string;
-  externalNavigationsOnly: boolean;
 }

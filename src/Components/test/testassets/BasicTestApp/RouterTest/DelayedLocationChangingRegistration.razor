@@ -9,7 +9,7 @@
 else
 {
     <p>Locked!</p>
-    <InternalNavigationLock OnLocationChanging="OnLocationChanging" />
+    <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
 }
 
 <input type="checkbox" @bind-value="_unblockedNavigation" />Unblock navigation<br />
@@ -28,11 +28,11 @@ else
         }
     }
 
-    public void OnLocationChanging(LocationChangingContext context)
+    public void OnBeforeInternalNavigation(LocationChangingContext context)
     {
         if (!_unblockedNavigation)
         {
-            context.Cancel();
+            context.PreventNavigation();
         }
     }
 }

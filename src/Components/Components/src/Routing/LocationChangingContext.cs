@@ -8,18 +8,20 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// </summary>
 public class LocationChangingContext
 {
-    internal LocationChangingContext(string location, bool isNavigationIntercepted, bool forceLoad, CancellationToken cancellationToken)
+    private readonly CancellationTokenSource _cts;
+
+    internal LocationChangingContext(string destinationUrl, bool isNavigationIntercepted, CancellationTokenSource cts)
     {
-        Location = location;
+        DestinationUrl = destinationUrl;
         IsNavigationIntercepted = isNavigationIntercepted;
-        ForceLoad = forceLoad;
-        CancellationToken = cancellationToken;
+
+        _cts = cts;
     }
 
     /// <summary>
     /// Gets the URI being navigated to.
     /// </summary>
-    public string Location { get; }
+    public string DestinationUrl { get; }
 
     /// <summary>
     /// Gets whether this navigation was intercepted from a link.
@@ -27,26 +29,15 @@ public class LocationChangingContext
     public bool IsNavigationIntercepted { get; }
 
     /// <summary>
-    /// Gets whether the navigation is attempting to bypass client-side routing.
+    /// Gets a <see cref="System.Threading.CancellationToken"/> that can be used to determine if this navigation was canceled.
     /// </summary>
-    public bool ForceLoad { get; }
+    public CancellationToken CancellationToken => _cts.Token;
 
     /// <summary>
-    /// Gets a <see cref="System.Threading.CancellationToken"/> that can be used to determine if this navigation gets canceled
-    /// by a successive navigation.
+    /// Prevents this navigation from continuing.
     /// </summary>
-    public CancellationToken CancellationToken { get; }
-
-    /// <summary>
-    /// Gets whether this navigation has been canceled.
-    /// </summary>
-    public bool IsCanceled { get; private set; }
-
-    /// <summary>
-    /// Cancels this navigation.
-    /// </summary>
-    public void Cancel()
+    public void PreventNavigation()
     {
-        IsCanceled = true;
+        _cts.Cancel();
     }
 }
