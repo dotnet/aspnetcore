@@ -323,8 +323,6 @@ public class Http3RequestTests : LoggedTest
 
             var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
 
-            // Send headers
-
             await requestStream.WriteAsync(new byte[] { 1, 2, 3 }).DefaultTimeout();
 
             requestContent.CompleteStream();
