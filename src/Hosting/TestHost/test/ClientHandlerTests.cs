@@ -260,6 +260,36 @@ public class ClientHandlerTests
     }
 
     [Fact]
+    public Task AdditionalConfigurationAllowsSettingConnectionInfo()
+    {
+        var handler = new ClientHandler(PathString.Empty, new InspectingApplication(features =>
+        {
+            Assert.Equal(IPAddress.Parse("1.1.1.1"), features.Get<IHttpConnectionFeature>().RemoteIpAddress);
+        }), context =>
+        {
+            context.Connection.RemoteIpAddress = IPAddress.Parse("1.1.1.1");
+        });
+
+        var httpClient = new HttpClient(handler);
+        return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
+    }
+
+    [Fact]
+    public Task AdditionalConfigurationAllowsOverridingDefaultBehavior()
+    {
+        var handler = new ClientHandler(PathString.Empty, new InspectingApplication(features =>
+        {
+            Assert.Equal("?and=something", features.Get<IHttpRequestFeature>().QueryString);
+        }), context =>
+        {
+            context.Request.QueryString = new QueryString("?and=something");
+        });
+
+        var httpClient = new HttpClient(handler);
+        return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
+    }
+
+    [Fact]
     public async Task ResponseStartAsync()
     {
         var hasStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
