@@ -84,7 +84,9 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             var identifierMethod = SyntaxFactory.IdentifierName(IDENTIFIER_METHOD_NAME);
 
             subExpression = subExpression.WithName(identifierMethod);
-            hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(subExpression); // replace Host/WebHost with identifier method
+            var indentation = hostBasedInvocationMethodExpr.GetLeadingTrivia();
+            hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(subExpression)
+                .NormalizeWhitespace().WithLeadingTrivia(indentation); // replace Host/WebHost with identifierMethod
 
             if (originalInvocation.ArgumentList.Arguments.Count == 0)
             {
@@ -118,30 +120,10 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
                     var method = bodyExpression.Name; // method_name
 
-                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithName(method); // replace with the method of current iteration
+                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithName(method); 
                     originalInvocation = originalInvocation.Update(hostBasedInvocationMethodExpr, argument); 
-                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(originalInvocation); // replace the expression to have an invocation with duplicated methods
-                                                                                                                      // the right most method would be replaced with the method of the next iteration
-
-                    //Example:
-                    //Orig: builder.Configuration.ConfigureAppConfiguration(builder => { builder.AddJsonFile({some_arguments}); builder.AddEnvironmentVariables()});
-                    //Fixed: builder.Configuration.AddJsonFile({some_arguments}).AddEnvironmentVariables();
-
-                    //first iteration: adding AddJsonFile method
-
-                    //line 104: from builder.Configuration.ConfigureAppConfiguration() to builder.Configuration.AddJsonFile
-                    //line 105: from original diagnosticTarget to builder.Configuration.AddJsonFile(new arguments)
-                    //line 106: from builder.Configuration.AddJsonFile to builder.Configuration.AddJsonFile(new arguments).AddJsonFile
-
-                    //second iteration: adding AddEnvironmentVariables method after AddJsonFile
-                    //line 104: from builder.Configuration.AddJsonFile(new arguments).AddJsonFile to builder.Configuration.AddJsonFile(new arguments).AddEnvironmentVariables
-                    //line 105: from builder.Configuration.AddJsonFile(new arguments) to builder.Configuration.AddJsonFile(new arguments).AddenvironmentVariables()
-                    //line 106: from builder.Configuration.AddJsonFile(new arguments).AddEnvironmentVariables to builder.Configuration.AddJsonFile(new arguments).AddEnvironmentVariables().AddEnvironmentVariables
-
-                    //so basically line 106 is just setting up for the next iteration, where the duplicated method is gonna be replaced with a new method
-                    //so the second AddJsonFile will be replaced with AddEnvironmentVariables
-                    //after the last iteration hostBasedInvocationMethodExpr will become an diagnosticTarget with duplicated methods, which doesn't make any sense
-                    //but since the originalInvocation is already updated with the correct value, we're not gonna need hostBasedInvocationMethodExpr anymore
+                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(originalInvocation); 
+                    
                 }
             }
 
