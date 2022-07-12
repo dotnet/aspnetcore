@@ -28,7 +28,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
         {
             context.RegisterCodeFix(
                 CodeAction.Create("Fix Configure methods",
-                    cancellationToken => FixConfigureMethods(diagnostic, context.Document, cancellationToken),
+                    cancellationToken => FixConfigureMethods(diagnostic, context.Document, cancellationToken, "Configuration"),
                     equivalenceKey: DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder.Id),
                 diagnostic);
         }
@@ -36,7 +36,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> FixConfigureMethods(Diagnostic diagnostic, Document document, CancellationToken cancellationToken)
+    private static async Task<Document> FixConfigureMethods(Diagnostic diagnostic, Document document, CancellationToken cancellationToken, string IDENTIFIER_METHOD_NAME)
     {
         // hey Safia some of the below are just draft comments to help you understand the code easier.
         // We're gonna delete it later before the final commit
@@ -58,7 +58,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                 return editor.OriginalDocument;
             }
 
-            var configuration = SyntaxFactory.IdentifierName("Configuration");
+            var identifierMethod = SyntaxFactory.IdentifierName(IDENTIFIER_METHOD_NAME);
 
             if (hostBasedInvocationMethodExpr.Expression is not MemberAccessExpressionSyntax subExpression)
             {
@@ -66,7 +66,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             }
             if (subExpression.Name != null) //subExpression.Name is Host/Webhost
             {
-                subExpression = subExpression.WithName(configuration);
+                subExpression = subExpression.WithName(identifierMethod);
                 hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(subExpression); //becomes builder.Configuration.ConfigureAppConfiguration
             }
 
