@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -16,7 +16,7 @@ public class ApiBehaviorOptionsSetupTest
     public void Configure_AddsClientErrorMappings()
     {
         // Arrange
-        var expected = new[] { 400, 401, 403, 404, 406, 409, 415, 422, 500, };
+        var expected = new[] { 400, 401, 403, 404, 405, 406, 409, 415, 422, 500, };
         var optionsSetup = new ApiBehaviorOptionsSetup();
         var options = new ApiBehaviorOptions();
 
