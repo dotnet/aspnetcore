@@ -102,7 +102,7 @@ public static partial class RequestDelegateFactory
     private static readonly BinaryExpression TempSourceStringNullExpr = Expression.Equal(TempSourceStringExpr, Expression.Constant(null));
     private static readonly UnaryExpression TempSourceStringIsNotNullOrEmptyExpr = Expression.Not(Expression.Call(StringIsNullOrEmptyMethod, TempSourceStringExpr));
 
-    private static readonly ConstructorInfo DefaultRouteHandlerInvocationContextConstructor = typeof(DefaultEndpointFilterInvocationContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
+    private static readonly ConstructorInfo DefaultEndpointFilterInvocationContextConstructor = typeof(DefaultEndpointFilterInvocationContext).GetConstructor(new[] { typeof(HttpContext), typeof(object[]) })!;
     private static readonly MethodInfo EndpointFilterInvocationContextGetArgument = typeof(EndpointFilterInvocationContext).GetMethod(nameof(EndpointFilterInvocationContext.GetArgument))!;
     private static readonly PropertyInfo ListIndexer = typeof(IList<object>).GetProperty("Item")!;
     private static readonly ParameterExpression FilterContextExpr = Expression.Parameter(typeof(EndpointFilterInvocationContext), "context");
@@ -264,13 +264,13 @@ public static partial class RequestDelegateFactory
             {
                 Expression<Func<EndpointFilterInvocationContext, ValueTask<object?>>> invokePipeline = (context) => filterPipeline(context);
                 returnType = typeof(ValueTask<object?>);
-                // var filterContext = new RouteHandlerInvocationContext<string, int>(httpContext, name_local, int_local);
+                // var filterContext = new EndpointFilterInvocationContext<string, int>(httpContext, name_local, int_local);
                 // invokePipeline.Invoke(filterContext);
                 factoryContext.MethodCall = Expression.Block(
                     new[] { InvokedFilterContextExpr },
                     Expression.Assign(
                         InvokedFilterContextExpr,
-                        CreateRouteHandlerInvocationContextBase(factoryContext)),
+                        CreateEndpointFilterInvocationContextBase(factoryContext)),
                         Expression.Invoke(invokePipeline, InvokedFilterContextExpr)
                     );
             }
@@ -314,10 +314,10 @@ public static partial class RequestDelegateFactory
         //  When `handler` returns an object, we generate the following wrapper
         //  to convert it to `ValueTask<object?>` as expected in the filter
         //  pipeline.
-        //      ValueTask<object?>.FromResult(handler(RouteHandlerInvocationContext.GetArgument<string>(0), RouteHandlerInvocationContext.GetArgument<int>(1)));
+        //      ValueTask<object?>.FromResult(handler(EndpointFilterInvocationContext.GetArgument<string>(0), EndpointFilterInvocationContext.GetArgument<int>(1)));
         //  When the `handler` is a generic Task or ValueTask we await the task and
         //  create a `ValueTask<object?> from the resulting value.
-        //      new ValueTask<object?>(await handler(RouteHandlerInvocationContext.GetArgument<string>(0), RouteHandlerInvocationContext.GetArgument<int>(1)));
+        //      new ValueTask<object?>(await handler(EndpointFilterInvocationContext.GetArgument<string>(0), EndpointFilterInvocationContext.GetArgument<int>(1)));
         //  When the `handler` returns a void or a void-returning Task, then we return an EmptyHttpResult
         //  to as a ValueTask<object?>
         // }
@@ -428,16 +428,16 @@ public static partial class RequestDelegateFactory
         return ExecuteAwaited(task);
     }
 
-    private static Expression CreateRouteHandlerInvocationContextBase(FactoryContext factoryContext)
+    private static Expression CreateEndpointFilterInvocationContextBase(FactoryContext factoryContext)
     {
         // In the event that a constructor matching the arity of the
         // provided parameters is not found, we fall back to using the
-        // non-generic implementation of RouteHandlerInvocationContext.
+        // non-generic implementation of EndpointFilterInvocationContext.
         Expression paramArray = factoryContext.BoxedArgs.Length > 0
             ? Expression.NewArrayInit(typeof(object), factoryContext.BoxedArgs)
             : Expression.Call(ArrayEmptyOfObjectMethod);
         var fallbackConstruction = Expression.New(
-            DefaultRouteHandlerInvocationContextConstructor,
+            DefaultEndpointFilterInvocationContextConstructor,
             new Expression[] { HttpContextExpr, paramArray });
 
         if (!RuntimeFeature.IsDynamicCodeCompiled)
@@ -471,15 +471,15 @@ public static partial class RequestDelegateFactory
             var constructor = constructorType.MakeGenericType(factoryContext.ArgumentTypes!).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).SingleOrDefault();
             if (constructor == null)
             {
-                // new RouteHandlerInvocationContext(httpContext, (object)name_local, (object)int_local);
+                // new EndpointFilterInvocationContext(httpContext, (object)name_local, (object)int_local);
                 return fallbackConstruction;
             }
 
-            // new RouteHandlerInvocationContext<string, int>(httpContext, name_local, int_local);
+            // new EndpointFilterInvocationContext<string, int>(httpContext, name_local, int_local);
             return Expression.New(constructor, arguments);
         }
 
-        // new RouteHandlerInvocationContext(httpContext, (object)name_local, (object)int_local);
+        // new EndpointFilterInvocationContext(httpContext, (object)name_local, (object)int_local);
         return fallbackConstruction;
     }
 
@@ -564,7 +564,7 @@ public static partial class RequestDelegateFactory
                 if (RuntimeFeature.IsDynamicCodeSupported)
                 {
                     // Register expressions containing the boxed and unboxed variants
-                    // of the route handler's arguments for use in RouteHandlerInvocationContext
+                    // of the route handler's arguments for use in EndpointFilterInvocationContext
                     // construction and route handler invocation.
                     // context.GetArgument<string>(0)
                     // (string, name_local), (int, int_local)
