@@ -283,7 +283,7 @@ public abstract class NavigationManager
     }
 
     /// <summary>
-    /// Notifies the registered <see cref="IHandleLocationChanging"/> handlers of the current location change.
+    /// Notifies the registered handlers of the current location change.
     /// </summary>
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI.</param>
     /// <param name="isNavigationIntercepted">Whether this navigation was intercepted from a link.</param>
