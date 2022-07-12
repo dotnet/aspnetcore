@@ -1,4 +1,3 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31606.5
@@ -1735,6 +1734,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomElements", "CustomElements", "{0BB58FB6-8B66-4C6D-BA8A-DF3AFAF9AB8F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.WebAssembly.Tests", "src\ProjectTemplates\test\Templates.Blazor.WebAssembly.Tests\Templates.Blazor.WebAssembly.Tests.csproj", "{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RateLimitingSample", "src\Middleware\RateLimiting\samples\RateLimitingSample\RateLimitingSample.csproj", "{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10417,6 +10418,22 @@ Global
 		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|x64.Build.0 = Release|Any CPU
 		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|x86.ActiveCfg = Release|Any CPU
 		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9}.Release|x86.Build.0 = Release|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Debug|arm64.Build.0 = Debug|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Debug|x64.Build.0 = Debug|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Debug|x86.Build.0 = Debug|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Release|arm64.ActiveCfg = Release|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Release|arm64.Build.0 = Release|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Release|x64.ActiveCfg = Release|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Release|x64.Build.0 = Release|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Release|x86.ActiveCfg = Release|Any CPU
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11274,6 +11291,7 @@ Global
 		{76C3E22D-092B-4E8A-81F0-DCF071BFF4CD} = {0BB58FB6-8B66-4C6D-BA8A-DF3AFAF9AB8F}
 		{0BB58FB6-8B66-4C6D-BA8A-DF3AFAF9AB8F} = {60D51C98-2CC0-40DF-B338-44154EFEE2FF}
 		{7CA0A9AF-9088-471C-B0B6-EBF43F21D3B9} = {08D53E58-4AAE-40C4-8497-63EC8664F304}
+		{91C3C03E-EA56-4ABA-9E73-A3DA4C2833D9} = {1D865E78-7A66-4CA9-92EE-2B350E45281F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
