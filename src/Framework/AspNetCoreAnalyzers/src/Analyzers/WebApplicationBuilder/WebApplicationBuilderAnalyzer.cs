@@ -46,6 +46,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                 wellKnownTypes.HostingAbstractionsWebHostBuilderExtensions,
                 wellKnownTypes.WebHostBuilderExtensions,
             };
+<<<<<<<<< Temporary merge branch 1
             INamedTypeSymbol[] configureAppTypes =
             {
                 wellKnownTypes.ConfigureHostBuilder,
@@ -121,8 +122,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         targetMethod,
                         wellKnownTypes.ConfigureHostBuilder,
                         "ConfigureServices",
-                        configureServicesTypes
-                        ))
+                        configureServicesTypes))
                 {
                     operationAnalysisContext.ReportDiagnostic(
                         CreateDiagnostic(

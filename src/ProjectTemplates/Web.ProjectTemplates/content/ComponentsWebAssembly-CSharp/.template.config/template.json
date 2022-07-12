@@ -293,6 +293,13 @@
             "Client/Shared/NavMenu.NoGraphOrApi.razor",
             "Client/Shared/NavMenu.CallsMicrosoftGraph.razor"
           ]
+        },
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "Client/Properties/launchSettings.json",
+            "Server/Properties/launchSettings.json"
+          ]
         }
       ]
     }

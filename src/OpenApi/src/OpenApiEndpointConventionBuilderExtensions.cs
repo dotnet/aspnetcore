@@ -3,26 +3,26 @@
 
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 
-namespace Microsoft.AspNetCore.OpenApi;
+namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
 /// Extension methods for annotating OpenAPI descriptions on an <see cref="Endpoint" />.
 /// </summary>
-public static class OpenApiRouteHandlerBuilderExtensions
+public static class OpenApiEndpointConventionBuilderExtensions
 {
     /// <summary>
     /// Adds an OpenAPI annotation to <see cref="Endpoint.Metadata" /> associated
     /// with the current endpoint.
     /// </summary>
-    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
-    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static TBuilder WithOpenApi<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
     {
         builder.Add(builder => AddAndConfigureOperationForEndpoint(builder));
@@ -33,9 +33,9 @@ public static class OpenApiRouteHandlerBuilderExtensions
     /// Adds an OpenAPI annotation to <see cref="Endpoint.Metadata" /> associated
     /// with the current endpoint and modifies it with the given <paramref name="configureOperation"/>.
     /// </summary>
-    /// <param name="builder">The <see cref="RouteHandlerBuilder"/>.</param>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <param name="configureOperation">An <see cref="Func{T, TResult}"/> that returns a new OpenAPI annotation given a generated operation.</param>
-    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static TBuilder WithOpenApi<TBuilder>(this TBuilder builder, Func<OpenApiOperation, OpenApiOperation> configureOperation)
         where TBuilder : IEndpointConventionBuilder
     {

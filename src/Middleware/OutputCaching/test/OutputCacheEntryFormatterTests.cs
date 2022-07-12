@@ -38,7 +38,7 @@ public class OutputCacheEntryFormatterTests
         var key = "abc";
         var entry = new OutputCacheEntry()
         {
-            Body = new CachedResponseBody(new List<byte[]>() { "lorem"u8, "ipsum"u8 }, 10),
+            Body = new CachedResponseBody(new List<byte[]>() { "lorem"u8.ToArray(), "ipsum"u8.ToArray() }, 10),
             Created = DateTimeOffset.UtcNow,
             Headers = new HeaderDictionary { [HeaderNames.Accept] = "text/plain", [HeaderNames.AcceptCharset] = "utf8" },
             StatusCode = StatusCodes.Status201Created,

@@ -98,4 +98,6 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
 
+=========
+>>>>>>>>> Temporary merge branch 2
 }
