@@ -82,9 +82,9 @@ a, .btn-link {
         transform: rotate(-90deg);
     }
 
-        .blazor-default-loading circle:last-child {
-            display: none;
-            stroke: #1b6ec2;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
+    .blazor-default-loading #progress {
+        display: none;
+        stroke: #1b6ec2;
+        stroke-dasharray: calc(3.141 * var(--blazor-load-percentage) * 0.8), 500%;
+        transition: stroke-dasharray 0.05s ease-in-out;
+    }
