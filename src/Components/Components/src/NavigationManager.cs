@@ -295,7 +295,7 @@ public abstract class NavigationManager
 
         if (_locationChangingHandlers.Count == 0)
         {
-            continueNavigation(new(false, null));
+            continueNavigation(new(canceled: false, exception: null));
             return;
         }
 

@@ -82,7 +82,7 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
       if (isWithinBaseUriSpace(absoluteHref)) {
         event.preventDefault();
 
-        ignorePendingNavigations();
+        ignorePendingNavigation();
 
         // Programmatically-initiated navigations invoke the "location changing" entirely from within .NET code, but
         // since this is a user-initiated navigation, we have to invoke the event from JS.
@@ -174,16 +174,7 @@ function navigateHistoryWithoutPopStateCallback(delta: number): Promise<void> {
   });
 }
 
-function ignorePendingNavigations() {
-  // This method ensures that we don't perform multiple overlapping navigations
-  // that bypassed the .NET cancellation logic due to network latency.
-
-  // It's possible for a JS -> .NET 'location changing' message to be in flight
-  // while a .NET -> JS response for a previous 'location changing' event is on its way.
-  // Since the .NET side only processes one navigation at a time in this case, the navigations
-  // aren't considered "overlapping". It's up to the JS side to recognize this case so we don't
-  // navigate in ways the user did not intend (e.g., we don't want navigations to previous entries
-  // in the browser tab's history to accumulate).
+function ignorePendingNavigation() {
   if (resolveCurrentNavigation) {
     resolveCurrentNavigation(false);
     resolveCurrentNavigation = null;
@@ -192,7 +183,7 @@ function ignorePendingNavigations() {
 
 function notifyLocationChanging(uri: string, intercepted: boolean): Promise<boolean> {
   return new Promise<boolean>(resolve => {
-    ignorePendingNavigations();
+    ignorePendingNavigation();
 
     if (!notifyLocationChangingCallback) {
       resolve(false);
@@ -213,7 +204,7 @@ function endLocationChanging(callId: number, shouldContinueNavigation: boolean) 
 }
 
 async function onBrowserInitiatedPopState(state: PopStateEvent) {
-  ignorePendingNavigations();
+  ignorePendingNavigation();
 
   if (hasLocationChangingEventListeners) {
     const index = state.state?._index ?? 0;
