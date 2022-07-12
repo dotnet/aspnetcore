@@ -58,7 +58,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         }
     }
 
-    public override IReadOnlyList<RouteEndpoint> GetEndpointGroup(RouteGroupContext context)
+    public override IReadOnlyList<RouteEndpoint> GetGroupedEndpoints(RouteGroupContext context)
     {
         var endpoints = new RouteEndpoint[_routeEntries.Count];
         for (int i = 0; i < _routeEntries.Count; i++)
