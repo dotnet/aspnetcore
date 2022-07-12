@@ -36,7 +36,7 @@ public class ClientHandlerTests
             Assert.Null(features.Get<IHttpResponseFeature>().ReasonPhrase);
             Assert.Equal("example.com", features.Get<IHttpRequestFeature>().Headers["host"]);
             Assert.NotNull(features.Get<IHttpRequestLifetimeFeature>());
-        }), _ => { });
+        }));
         var httpClient = new HttpClient(handler);
         await httpClient.GetAsync("https://example.com/api/a%2Fb%20c");
     }
