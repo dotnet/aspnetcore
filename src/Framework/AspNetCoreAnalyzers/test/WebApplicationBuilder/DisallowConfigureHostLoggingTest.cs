@@ -106,7 +106,6 @@ builder.Logging.AddJsonConsole();
         var expectedDiagnosis = new DiagnosticResult(DiagnosticDescriptors.DoNotUseHostConfigureLogging).WithArguments("ConfigureLogging").WithLocation(0);
 
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
-
     }
 
     [Fact]
@@ -134,14 +133,6 @@ builder.Logging.AddJsonConsole();
         var expectedDiagnosis = new DiagnosticResult(DiagnosticDescriptors.DoNotUseHostConfigureLogging).WithArguments("ConfigureLogging").WithLocation(0);
 
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnosis, fixedSource);
-
-        ////act
-        //var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
-        ////assert
-        //var diagnostic = Assert.Single(diagnostics);
-        //Assert.Same(DiagnosticDescriptors.DoNotUseHostConfigureLogging, diagnostic.Descriptor);
-        //AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
-        //Assert.Equal("Suggest using builder.Logging instead of ConfigureLogging", diagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]

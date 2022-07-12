@@ -21,7 +21,10 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.DoNotUseConfigureWebHostWithConfigureHostBuilder,
         DiagnosticDescriptors.DoNotUseConfigureWithConfigureWebHostBuilder,
         DiagnosticDescriptors.DoNotUseUseStartupWithConfigureWebHostBuilder,
-        DiagnosticDescriptors.DoNotUseHostConfigureLogging
+        DiagnosticDescriptors.DoNotUseHostConfigureLogging,
+        DiagnosticDescriptors.UseTopLevelRouteRegistrationsInsteadOfUseEndpoints,
+        DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder,
+        DiagnosticDescriptors.DoNotUseHostConfigureServices
     });
 
     public override void Initialize(AnalysisContext context)
@@ -49,6 +52,24 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
             {
                 wellKnownTypes.HostingHostBuilderExtensions,
                 wellKnownTypes.WebHostBuilderExtensions
+            };
+            INamedTypeSymbol[] useEndpointTypes = { wellKnownTypes.EndpointRoutingApplicationBuilderExtensions };
+
+            //Thi's Analyzer:
+            INamedTypeSymbol[] configureAppTypes =
+           {
+                wellKnownTypes.ConfigureHostBuilder,
+                wellKnownTypes.ConfigureWebHostBuilder,
+                wellKnownTypes.WebHostBuilderExtensions,
+                wellKnownTypes.HostingHostBuilderExtensions,
+            };
+            INamedTypeSymbol[] configureHostTypes = { wellKnownTypes.ConfigureHostBuilder };
+
+            //Bethel's
+            INamedTypeSymbol[] configureServicesTypes =
+            {
+                wellKnownTypes.HostingHostBuilderExtensions,
+                wellKnownTypes.ConfigureWebHostBuilder
             };
 
             compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
@@ -135,6 +156,107 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.DoNotUseHostConfigureLogging,
                             invocation));
                 }
+
+                //var builder = WebApplication.CreateBuilder(args);
+                //var app= builder.Build();
+                //app.UseRouting();
+                //app.UseEndpoints(x => {})
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.WebApplicationBuilder,
+                        "UseEndpoints",
+                        useEndpointTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.UseTopLevelRouteRegistrationsInsteadOfUseEndpoints,
+                            invocation));
+                }
+
+                //Thi's Analyzer:-------------------------------------------------------------------------------------------------
+                // var builder = WebApplication.CreateBuilder();
+                // builder.WebHost.ConfigureAppConfiguration(builder => {});
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureWebHostBuilder,
+                        "ConfigureAppConfiguration",
+                        configureAppTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder,
+                            invocation));
+                }
+
+                // var builder = WebApplication.CreateBuilder();
+                // builder.Host.ConfigureAppConfiguration(builder => {});
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureHostBuilder,
+                        "ConfigureAppConfiguration",
+                        configureAppTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder,
+                            invocation));
+                }
+
+                // var builder = WebApplication.CreateBuilder();
+                // builder.Host.ConfigureHostConfiguration(builder => {});
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureHostBuilder,
+                        "ConfigureHostConfiguration",
+                        configureHostTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder,
+                            invocation));
+                }
+                //End of Thi's analyzer. ----------------------------------------------------------------------------------------------------
+                //Bethel's:
+                // var builder = WebApplication.CreateBuilder(args);
+                // builder.Host.ConfigureServices(x => {});
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureHostBuilder,
+                        "ConfigureServices",
+                        configureServicesTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DoNotUseHostConfigureServices,
+                            invocation));
+                }
+
+                // var builder = WebApplication.CreateBuilder(args);
+                // builder.WebHost.ConfigureServices(x => {});
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureWebHostBuilder,
+                        "ConfigureServices",
+                        configureServicesTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DoNotUseHostConfigureServices,
+                            invocation));
+                }
+                //-----------------------------------------------------------------------------------------------------
 
                 static Diagnostic CreateDiagnostic(DiagnosticDescriptor descriptor, IInvocationOperation operation)
                 {
