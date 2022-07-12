@@ -258,6 +258,86 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
+    [ConditionalTheory]
+    [MsQuicSupported]
+    [InlineData(HttpProtocols.Http3)]
+    [InlineData(HttpProtocols.Http2)]
+    public async Task POST_MultipleRequests_PooledStreamAndHeaders(HttpProtocols protocol)
+    {
+        // Arrange
+        string contentType = null;
+        string authority = null;
+        var builder = CreateHostBuilder(async context =>
+        {
+            contentType = context.Request.ContentType;
+            authority = context.Request.Host.Value;
+
+            var data = await context.Request.Body.ReadUntilEndAsync();
+            await context.Response.Body.WriteAsync(data);
+        }, protocol: protocol);
+
+        using (var host = builder.Build())
+        using (var client = HttpHelpers.CreateClient())
+        {
+            await host.StartAsync();
+
+            // Act
+            var response1 = await SendRequestAsync(protocol, host, client);
+            var contentType1 = contentType;
+            var authority1 = authority;
+
+            if (protocol == HttpProtocols.Http3)
+            {
+                await WaitForLogAsync(logs =>
+                {
+                    return logs.Any(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
+                                         w.EventId.Name == "StreamPooled");
+                }, "Wait for server to finish pooling stream.");
+            }
+
+            var response2 = await SendRequestAsync(protocol, host, client);
+            var contentType2 = contentType;
+            var authority2 = authority;
+
+            // Assert
+            Assert.NotNull(contentType1);
+            Assert.NotNull(authority1);
+
+            Assert.Same(contentType1, contentType2);
+            Assert.Same(authority1, authority2);
+
+            await host.StopAsync();
+        }
+
+        static async Task<HttpResponseMessage> SendRequestAsync(HttpProtocols protocol, IHost host, HttpMessageInvoker client)
+        {
+            var requestContent = new StreamingHttpContent();
+            requestContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/plain");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, $"https://127.0.0.1:{host.GetPort()}/");
+            request.Content = requestContent;
+            request.Version = GetProtocol(protocol);
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var responseTask = client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+
+            var requestStream = await requestContent.GetStreamAsync().DefaultTimeout();
+
+            // Send headers
+
+            await requestStream.WriteAsync(new byte[] { 1, 2, 3 }).DefaultTimeout();
+
+            requestContent.CompleteStream();
+
+            var response = await responseTask.DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+
+            await response.Content.ReadAsByteArrayAsync();
+
+            return response;
+        }
+    }
+
     [ConditionalFact]
     [MsQuicSupported]
     public async Task POST_ServerCompletesWithoutReadingRequestBody_ClientGetsResponse()

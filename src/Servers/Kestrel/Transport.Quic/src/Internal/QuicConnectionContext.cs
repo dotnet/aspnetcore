@@ -108,14 +108,17 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
             if (context == null)
             {
                 context = new QuicStreamContext(this, _context);
+                context.Initialize(stream);
             }
             else
             {
                 context.ResetFeatureCollection();
                 context.ResetItems();
+                context.Initialize(stream);
+
+                QuicLog.StreamReused(_log, context);
             }
 
-            context.Initialize(stream);
             context.Start();
 
             QuicLog.AcceptedStream(_log, context);
@@ -246,6 +249,8 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
             {
                 stream.PoolExpirationTicks = Volatile.Read(ref _heartbeatTicks) + StreamPoolExpiryTicks;
                 StreamPool.Push(stream);
+
+                QuicLog.StreamPooled(_log, stream);
                 return true;
             }
         }
