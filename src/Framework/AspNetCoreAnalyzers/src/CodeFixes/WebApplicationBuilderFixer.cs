@@ -17,6 +17,8 @@ public class WebApplicationBuilderFixer : CodeFixProvider
     public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(new[]
     {
         // Add other diagnostic descriptor id's
+        DiagnosticDescriptors.DoNotUseHostConfigureServices.Id,
+        DiagnosticDescriptors.DoNotUseHostConfigureLogging.Id,
         DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder.Id
      });
 
@@ -26,17 +28,43 @@ public class WebApplicationBuilderFixer : CodeFixProvider
     {
         foreach (var diagnostic in context.Diagnostics)
         {
-            context.RegisterCodeFix(
-                CodeAction.Create("Fix Configure methods",
-                    cancellationToken => FixConfigureMethods(diagnostic, context.Document, cancellationToken, "Configuration"),
+            string id = diagnostic.Id;
+            switch (id)
+            {
+                case string when id == DiagnosticDescriptors.DoNotUseHostConfigureLogging.Id:
+                    context.RegisterCodeFix(
+                    CodeAction.Create("Fix references to Logging properties on WebApplicationBuilder",
+                    cancellationToken => FixWebApplicationBuilder(diagnostic, context.Document, cancellationToken, "Logging"),
+                    equivalenceKey: DiagnosticDescriptors.DoNotUseHostConfigureLogging.Id),
+                    diagnostic);
+                    break;
+
+
+
+                case string when id == DiagnosticDescriptors.DoNotUseHostConfigureServices.Id:
+                    context.RegisterCodeFix(
+                    CodeAction.Create("Fix references to Services properties on WebApplicationBuilder",
+                    cancellationToken => FixWebApplicationBuilder(diagnostic, context.Document, cancellationToken, "Services"),
+                    equivalenceKey: DiagnosticDescriptors.DoNotUseHostConfigureServices.Id),
+                    diagnostic);
+                    break;
+
+
+
+                case string when id == DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder.Id:
+                    context.RegisterCodeFix(
+                    CodeAction.Create("Fix references to Services properties on WebApplicationBuilder",
+                    cancellationToken => FixWebApplicationBuilder(diagnostic, context.Document, cancellationToken, "Configuration"),
                     equivalenceKey: DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder.Id),
-                diagnostic);
+                    diagnostic);
+                    break;
+            }
         }
 
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> FixConfigureMethods(Diagnostic diagnostic, Document document, CancellationToken cancellationToken, string IDENTIFIER_METHOD_NAME)
+    private static async Task<Document> FixWebApplicationBuilder(Diagnostic diagnostic, Document document, CancellationToken cancellationToken, string IDENTIFIER_METHOD_NAME)
     {
         // hey Safia some of the below are just draft comments to help you understand the code easier.
         // We're gonna delete it later before the final commit
@@ -49,45 +77,45 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             return document;
         }
 
-        var invocation = root.FindNode(diagnostic.Location.SourceSpan); //whole invocation starting from "builder"
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan); //whole diagnosticTarget starting from "builder"
       
-        if (invocation is InvocationExpressionSyntax { } newInvocationExpr)
+        if (diagnosticTarget is InvocationExpressionSyntax { } originalInvocation)
         {
-            if (newInvocationExpr.Expression is not MemberAccessExpressionSyntax hostBasedInvocationMethodExpr)
+            if (originalInvocation.Expression is not MemberAccessExpressionSyntax hostBasedInvocationMethodExpr
+                || hostBasedInvocationMethodExpr.Expression is not MemberAccessExpressionSyntax subExpression)
             {
                 return editor.OriginalDocument;
             }
 
             var identifierMethod = SyntaxFactory.IdentifierName(IDENTIFIER_METHOD_NAME);
 
-            if (hostBasedInvocationMethodExpr.Expression is not MemberAccessExpressionSyntax subExpression)
-            {
-                return editor.OriginalDocument;
-            }
             if (subExpression.Name != null) //subExpression.Name is Host/Webhost
             {
                 subExpression = subExpression.WithName(identifierMethod);
                 hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(subExpression); //becomes builder.Configuration.ConfigureAppConfiguration
             }
 
-            if (newInvocationExpr.ArgumentList.Arguments.Count == 0)
+            if (originalInvocation.ArgumentList.Arguments.Count == 0)
             {
                 return editor.OriginalDocument;
             }
 
-            var initArgumentExpr = newInvocationExpr.ArgumentList.Arguments[0].Expression; // builder => { }
+            var initArgumentExpr = originalInvocation.ArgumentList.Arguments[0].Expression; // builder => { }
 
-            if (initArgumentExpr is ParenthesizedLambdaExpressionSyntax { } parenLambdaExpr)
+            if (initArgumentExpr is not LambdaExpressionSyntax lambdaExpr)
             {
-                var bodyEnum = ExtractParenLambdaBody(parenLambdaExpr).GetEnumerator();
-                while (bodyEnum.MoveNext())
-                {
-                    if (bodyEnum.Current is not ExpressionStatementSyntax currentStatement) //builder.AddJsonFile() or builder.AddEnvironmentVariables()
-                    {
-                        return editor.OriginalDocument;
-                    }
+                return editor.OriginalDocument;
+            }
 
-                    if (currentStatement.Expression is not InvocationExpressionSyntax body) //builder.AddJsonFile() or builder.AddEnvironmentVariables()
+            if (lambdaExpr.Block != null)
+            {
+                var lambdaStatements = lambdaExpr.Block.Statements;
+                foreach (var statement in lambdaStatements)
+                {
+                    if (statement is not ExpressionStatementSyntax currentStatement 
+                        || currentStatement.Expression is not InvocationExpressionSyntax body)
+                    //currentStatement is builder.AddJsonFile() or builder.AddEnvironmentVariables()
+                    //body is builder.AddJsonFile() or builder.AddEnvironmentVariables()
                     {
                         return editor.OriginalDocument;
                     }
@@ -102,14 +130,14 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                     var method = bodyExpression.Name; //AddJsonFile or AddEnvironmentVariables
 
                     hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithName(method); 
-                    newInvocationExpr = newInvocationExpr.Update(hostBasedInvocationMethodExpr, argument); 
-                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(newInvocationExpr);
+                    originalInvocation = originalInvocation.Update(hostBasedInvocationMethodExpr, argument); 
+                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(originalInvocation);
 
 
                     //first iteration: adding AddJsonFile method
 
                     //line 104: from builder.Configuration.ConfigureAppConfiguration() to builder.Configuration.AddJsonFile
-                    //line 105: from original invocation to builder.Configuration.AddJsonFile(new arguments)
+                    //line 105: from original diagnosticTarget to builder.Configuration.AddJsonFile(new arguments)
                     //line 106: from builder.Configuration.AddJsonFile to builder.Configuration.AddJsonFile(new arguments).AddJsonFile
 
                     //second iteration: adding AddEnvironmentVariables method after AddJsonFile
@@ -119,14 +147,14 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
                     //so basically line 106 is just setting up for the next iteration, where the duplicated method is gonna be replaced with a new method
                     //so the second AddJsonFile will be replaced with AddEnvironmentVariables
-                    //after the last iteration hostBasedInvocationMethodExpr will become an invocation with duplicated methods, which doesn't make any sense
-                    //but since the newInvocationExpr is already updated with the correct value, we're not gonna need hostBasedInvocationMethodExpr anymore
+                    //after the last iteration hostBasedInvocationMethodExpr will become an diagnosticTarget with duplicated methods, which doesn't make any sense
+                    //but since the originalInvocation is already updated with the correct value, we're not gonna need hostBasedInvocationMethodExpr anymore
                 }
             }
 
-            else if (initArgumentExpr is SimpleLambdaExpressionSyntax { } simpleLambdaExpr)
+            else if (lambdaExpr.ExpressionBody != null)
             {
-                if (ExtractSimpleLambdaBody(simpleLambdaExpr) is not InvocationExpressionSyntax body)
+                if (lambdaExpr.ExpressionBody is not InvocationExpressionSyntax body)
                 {
                     return editor.OriginalDocument;
                 }
@@ -141,25 +169,17 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                 var method = bodyExpression.Name;
 
                 hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithName(method);
-                newInvocationExpr = newInvocationExpr.WithExpression(hostBasedInvocationMethodExpr).WithArgumentList(argument);
+                originalInvocation = originalInvocation.WithExpression(hostBasedInvocationMethodExpr).WithArgumentList(argument);
             }
 
-            editor.ReplaceNode(invocation, newInvocationExpr);
+            else
+            {
+                return editor.OriginalDocument;
+            }
+
+            editor.ReplaceNode(diagnosticTarget, originalInvocation);
         }
 
         return editor.GetChangedDocument();
-    }
-    private static SyntaxList<StatementSyntax> ExtractParenLambdaBody(ParenthesizedLambdaExpressionSyntax initArgumentExpr)
-    {
-        var body = initArgumentExpr.Block.Statements;
-
-        return body;
-    }
-
-    private static ExpressionSyntax ExtractSimpleLambdaBody(SimpleLambdaExpressionSyntax initArgumentExpr)
-    {
-        var body = initArgumentExpr.ExpressionBody;
-
-        return body;
     }
 }

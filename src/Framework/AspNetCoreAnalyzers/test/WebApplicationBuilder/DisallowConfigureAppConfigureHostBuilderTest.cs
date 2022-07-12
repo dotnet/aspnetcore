@@ -113,7 +113,7 @@ public static class Test
 {
     public static void Main(string[]args) {
     var builder = WebApplication.CreateBuilder(args);
-    builder.WebHost.{|#0:ConfigureAppConfiguration(builder => builder.AddJsonFile(""foo.json"", optional: true))|};
+    builder.WebHost.{|#0:ConfigureAppConfiguration(builder => {builder.AddJsonFile(""foo.json"", optional: true);})|};
     }
 }
 ";
@@ -172,14 +172,18 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true);
         // Arrange
         var source = @"
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.{|#0:ConfigureAppConfiguration((context, builder) => { builder.AddJsonFile(""foo.json"", optional: true); builder.AddEnvironmentVariables();})|};
+builder.Host.{|#0:ConfigureAppConfiguration(builder =>
+{
+    builder.AddJsonFile(""foo.json"", optional: true);
+    builder.AddEnvironmentVariables();
+})|};
 ";
         var fixedSource = @"
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile(""foo.json"", optional: true).AddEnvironmentVariables();
@@ -189,5 +193,6 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true).AddEnvironmentVa
 
         // Assert
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
+
     }
 }
