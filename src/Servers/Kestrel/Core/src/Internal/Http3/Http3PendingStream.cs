@@ -45,7 +45,6 @@ internal sealed class Http3PendingStream
         var Input = context.Transport.Input;
         var advance = false;
         SequencePosition consumed = default;
-        SequencePosition examined = default;
         SequencePosition start = default;
         try
         {
@@ -55,11 +54,10 @@ internal sealed class Http3PendingStream
                 var readableBuffer = result.Buffer;
                 consumed = readableBuffer.Start;
                 start = readableBuffer.Start;
-                examined = readableBuffer.End;
 
                 if (!readableBuffer.IsEmpty)
                 {
-                    var value = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
+                    var value = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out _);
                     if (value != -1)
                     {
                         if (!advanceOn.HasValue || value == (long)advanceOn)

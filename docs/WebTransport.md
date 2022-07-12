@@ -183,97 +183,105 @@ Disposing a WebTransport stream will result in ending data transmission and clos
 ### Example 1
 This example waits for a bidirectional stream. Once it receives one, it will read the data from it, reverse it and then write it back to the stream.
 ```C#
-public void Configure(IApplicationBuilder app)
+var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel((context, options) =>
 {
-    app.Use(async (context, next) =>
+    // Port configured for WebTransport
+    options.Listen(IPAddress.Any, 5007, listenOptions =>
     {
-        // allocate some random amount of memory
-        var memory = new Memory<byte>(new byte[4096]);
+        listenOptions.UseHttps(GenerateManualCertificate());
+        listenOptions.UseConnectionLogging();
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+    });
+});
+var host = builder.Build();
 
-        var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
-        if (feature.IsWebTransportRequest)
+host.Run(async (context) =>
+{
+    var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
+    if (!feature.IsWebTransportRequest)
+    {
+        return;
+    }
+    var session = await feature.AcceptAsync(CancellationToken.None);
+
+    ConnectionContext? stream = null;
+    IStreamDirectionFeature? direction = null;
+    while (true)
+    {
+        // wait until we get a stream
+        stream = await session.AcceptStreamAsync(CancellationToken.None);
+        if (stream is not null)
         {
-            // accept a new session
-            var session = await feature.AcceptAsync(CancellationToken.None);
 
-            ConnectionContext? stream = null;
-            IStreamDirectionFeature? direction = null;
-            while (true)
+            // check that the stream is bidirectional. If yes, keep going, otherwise
+            // dispose its resources and keep waiting.
+            direction = stream.Features.GetRequiredFeature<IStreamDirectionFeature>();
+            if (direction.CanRead && direction.CanWrite)
             {
-                // wait until we get a stream
-                stream = await session.AcceptStreamAsync(CancellationToken.None);
-                if (stream is not null)
-                {
-
-                    // check that the stream is bidirectional. If yes, keep going, otherwise
-                    // dispose its resources and keep waiting.
-                    direction = stream.Features.GetRequiredFeature<IStreamDirectionFeature>();
-                    if (direction.CanRead && direction.CanWrite)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        await stream.DisposeAsync();
-                    }
-                }
-                else
-                {
-                    // if a stream is null, this means that the session failed to get the next one.
-                    // Thus, the session has ended or some other issue has occurred. We end the
-                    // connection in this case.
-                    return;
-                }
+                break;
             }
-
-            var inputPipe = stream!.Transport.Input;
-            var outputPipe = stream!.Transport.Output;
-
-            // read some data from the stream into the memory
-            var length = await inputPipe.AsStream().ReadAsync(memory);
-
-            // slice to only keep the relevant parts of the memory
-            var outputMemory = memory[..length];
-
-            // do some operations on the contents of the data
-            outputMemory.Span.Reverse();
-
-            // write back the data to the stream
-            await outputPipe.WriteAsync(outputMemory);
+            else
+            {
+                await stream.DisposeAsync();
+            }
         }
         else
         {
-            await next(context);
+            // if a stream is null, this means that the session failed to get the next one.
+            // Thus, the session has ended or some other issue has occurred. We end the
+            // connection in this case.
+            return;
         }
-    });
-}
+    }
+
+    var inputPipe = stream!.Transport.Input;
+    var outputPipe = stream!.Transport.Output;
+
+    // read some data from the stream into the memory
+    var length = await inputPipe.AsStream().ReadAsync(memory);
+
+    // slice to only keep the relevant parts of the memory
+    var outputMemory = memory[..length];
+
+    // do some operations on the contents of the data
+    outputMemory.Span.Reverse();
+
+    // write back the data to the stream
+    await outputPipe.WriteAsync(outputMemory);
+});
 ```
 
 ### Example 2
 This example opens a new stream from the server side and then sends data.
 ```C#
-public void Configure(IApplicationBuilder app)
+var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel((context, options) =>
 {
-    app.Use(async (context, next) =>
+    // Port configured for WebTransport
+    options.Listen(IPAddress.Any, 5007, listenOptions =>
     {
-        var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
-        if (feature.IsWebTransportRequest)
-        {
-            // accept a new session
-            var session = await feature.AcceptAsync(CancellationToken.None);
-
-            // open a new stream from the server to the client
-            var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
-
-            // write data to the stream
-            var outputPipe = stream.Transport.Output;
-            await outputPipe.WriteAsync(new Memory<byte>(new byte[] { 65, 66, 67, 68, 69 }), CancellationToken.None);
-            await outputPipe.FlushAsync(CancellationToken.None);
-        }
-        else
-        {
-            await next(context);
-        }
+        listenOptions.UseHttps(GenerateManualCertificate());
+        listenOptions.UseConnectionLogging();
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
     });
-}
+});
+var host = builder.Build();
+
+host.Run(async (context) =>
+{
+    var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
+    if (!feature.IsWebTransportRequest)
+    {
+        return;
+    }
+    var session = await feature.AcceptAsync(CancellationToken.None);
+    // open a new stream from the server to the client
+    var stream = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
+
+    // write data to the stream
+    var outputPipe = stream.Transport.Output;
+    await outputPipe.WriteAsync(new Memory<byte>(new byte[] { 65, 66, 67, 68, 69 }), CancellationToken.None);
+    await outputPipe.FlushAsync(CancellationToken.None);
+});
 ```
