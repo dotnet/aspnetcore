@@ -31,14 +31,14 @@ host.Run(async (context) =>
     var session = await feature.AcceptAsync(CancellationToken.None);
 
     //// OPEN A NEW UNIDIRECTIONAL OUTPUT STREAM
-    var stream2 = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
-    if (stream2 is null)
-    {
-        return;
-    }
+    //var stream2 = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
+    //if (stream2 is null)
+    //{
+    //    return;
+    //}
 
     //// ACCEPT AN INCOMING STREAM
-    //var stream = await session.AcceptStreamAsync(CancellationToken.None);
+    var stream = await session.AcceptStreamAsync(CancellationToken.None);
 
     //// WRITE TO A STREAM
     //await Task.Delay(200);
@@ -47,7 +47,7 @@ host.Run(async (context) =>
 
     //// READ FROM A STREAM:
     var memory = new Memory<byte>(new byte[4096]);
-    var test = await stream2!.Transport.Input.AsStream().ReadAsync(memory, CancellationToken.None);
+    var test = await stream.Transport.Input.AsStream().ReadAsync(memory, CancellationToken.None);
     Console.WriteLine(System.Text.Encoding.Default.GetString(memory.Span));
 });
 

@@ -250,6 +250,8 @@ host.Run(async (context) =>
     // write back the data to the stream
     await outputPipe.WriteAsync(outputMemory);
 });
+
+await host.RunAsync();
 ```
 
 ### Example 2
@@ -284,4 +286,6 @@ host.Run(async (context) =>
     await outputPipe.WriteAsync(new Memory<byte>(new byte[] { 65, 66, 67, 68, 69 }), CancellationToken.None);
     await outputPipe.FlushAsync(CancellationToken.None);
 });
+
+await host.RunAsync();
 ```

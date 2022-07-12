@@ -704,9 +704,6 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="WebTransportFailedToAddStreamToPendingQueue" xml:space="preserve">
     <value>Failed to add incoming stream to pending queue.</value>
   </data>
-  <data name="WebTransportIsClosing" xml:space="preserve">
-    <value>WebTransport is closing the session.</value>
-  </data>
   <data name="FailedToNegotiateCommonWebTransportVersion" xml:space="preserve">
     <value>Failed to negotiate a common WebTransport version with client. Kestrel only supports {currentSuppportedVersion}.</value>
   </data>

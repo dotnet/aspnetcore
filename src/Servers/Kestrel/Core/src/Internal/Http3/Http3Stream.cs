@@ -1191,18 +1191,17 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
         _isWebTransportSessionAccepted = true;
 
-        // check if WebTransport was enabled
         if (!_context.ServiceContext.ServerOptions.EnableWebTransportAndH3Datagrams)
         {
-            throw new Exception(CoreStrings.WebTransportIsDisabled);
+            throw new InvalidOperationException(CoreStrings.WebTransportIsDisabled);
+        }
+
+        if (!_currentIHttpWebTransportFeature!.IsWebTransportRequest)
+        {
+            throw new InvalidOperationException(CoreStrings.FormatFailedToNegotiateCommonWebTransportVersion(WebTransportSession.CurrentSuppportedVersion));
         }
 
         // version negotiation
-        if (!_currentIHttpWebTransportFeature!.IsWebTransportRequest)
-        {
-            throw new Exception(CoreStrings.FormatFailedToNegotiateCommonWebTransportVersion(WebTransportSession.CurrentSuppportedVersion));
-        }
-
         var version = WebTransportSession.CurrentSuppportedVersion[WebTransportSession.SecPrefix.Length..];
 
         // send version negotiation resulting version

@@ -143,11 +143,19 @@ internal sealed class WebTransportSession : IWebTransportSession
     {
         if (_isClosing)
         {
-            throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
+            return;
         }
 
-        if (!_openStreams.TryAdd(stream.StreamId, stream) || !_pendingStreams.Writer.TryWrite(stream))
+        var addedToOpenStreams = _openStreams.TryAdd(stream.StreamId, stream);
+
+        if (!addedToOpenStreams || !_pendingStreams.Writer.TryWrite(stream))
         {
+            if (addedToOpenStreams)
+            {
+                _openStreams.Remove(stream.StreamId, out _);
+            }
+
+            stream.Abort();
             throw new Exception(CoreStrings.WebTransportFailedToAddStreamToPendingQueue);
         }
     }
