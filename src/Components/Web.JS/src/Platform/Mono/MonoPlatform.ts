@@ -259,7 +259,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     totalResources++;
   }
 
-  const targetElement = document.getElementById('circular-progress') as HTMLDivElement;
+  const targetElement = document.getElementById('app') as HTMLDivElement;
   const progressElement = document.getElementById('progress') as unknown as SVGCircleElement;
   const percentageElement = document.getElementById('percentage') as unknown as SVGTextElement;
   const showProgress = progressElement && percentageElement && targetElement;
