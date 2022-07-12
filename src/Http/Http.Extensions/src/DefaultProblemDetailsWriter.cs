@@ -46,7 +46,7 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
                 ProblemDetailsJsonContext.Default.ProblemDetails,
                 contentType: "application/problem+json");
 
-            return httpContext.Response.HasStarted;
+            return true;
         }
 
         await httpContext.Response.WriteAsJsonAsync(
@@ -54,7 +54,7 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
                         options: null,
                         contentType: "application/problem+json");
 
-        return httpContext.Response.HasStarted;
+        return true;
     }
 
     [JsonSerializable(typeof(ProblemDetails))]

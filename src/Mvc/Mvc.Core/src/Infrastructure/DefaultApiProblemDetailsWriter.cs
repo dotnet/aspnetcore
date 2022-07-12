@@ -83,10 +83,10 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
 
         if (selectedFormatter == null)
         {
-            return context.HttpContext.Response.HasStarted;
+            return false;
         }
 
         await selectedFormatter.WriteAsync(formatterContext);
-        return context.HttpContext.Response.HasStarted;
+        return true;
     }
 }
