@@ -89,11 +89,8 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
             var identifierMethod = SyntaxFactory.IdentifierName(IDENTIFIER_METHOD_NAME);
 
-            if (subExpression.Name != null) //subExpression.Name is Host/Webhost
-            {
-                subExpression = subExpression.WithName(identifierMethod);
-                hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(subExpression); //becomes builder.Configuration.ConfigureAppConfiguration
-            }
+            subExpression = subExpression.WithName(identifierMethod);
+            hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(subExpression); //becomes builder.Configuration.ConfigureAppConfiguration
 
             if (originalInvocation.ArgumentList.Arguments.Count == 0)
             {
