@@ -1,4 +1,4 @@
-﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -63,34 +63,23 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
-#blazor-default-loading {
-    height: 90vh;
-    align-items: center;
-    justify-content: center;
-    display: flex;
+.blazor-default-loading {
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    margin: 20vh auto 1rem auto;
 }
 
-    #blazor-default-loading svg {
-        width: 120px;
-        height: 120px;
-        stroke-width: 8px;
-        display: block;
-    }
-
-    #blazor-default-loading circle {
+    .blazor-default-loading circle {
         fill: none;
         stroke: #e0e0e0;
+        stroke-width: 0.6rem;
         transform-origin: 50% 50%;
         transform: rotate(-90deg);
     }
 
-    #blazor-default-loading #blazor-default-loading-progress {
-        stroke: #1b6ec2;
-        transition: stroke-dashoffset ease-in-out;
-        display: none;
-    }
-
-    #blazor-default-loading #blazor-default-loading-percentage {
-        color: black;
-        font-weight: bold;
-    }
+        .blazor-default-loading circle:last-child {
+            stroke: #1b6ec2;
+            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage) * 0.8), 500%;
+            transition: stroke-dasharray 0.05s ease-in-out;
+        }
