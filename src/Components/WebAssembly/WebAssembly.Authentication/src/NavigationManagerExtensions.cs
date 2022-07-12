@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 /// <summary>
@@ -50,10 +48,6 @@ public static class NavigationManagerExtensions
     /// <param name="manager">The <see cref="NavigationManager"/>.</param>
     /// <param name="loginPath">The path to the login url.</param>
     /// <param name="request">The <see cref="InteractiveRequestOptions"/> containing the authorization details.</param>
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Serializes InteractiveAuthenticationRequest into the state entry.")]
     public static void NavigateToLogin(this NavigationManager manager, string loginPath, InteractiveRequestOptions request)
     {
         manager.NavigateTo(loginPath, new NavigationOptions
@@ -72,10 +66,6 @@ public static class NavigationManagerExtensions
     /// </remarks>
     /// <param name="manager">The <see cref="NavigationManager"/>.</param>
     /// <param name="loginPath">The path to the login url.</param>
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Serializes InteractiveAuthenticationRequest into the state entry.")]
     public static void NavigateToLogin(this NavigationManager manager, string loginPath)
     {
         manager.NavigateToLogin(loginPath, InteractiveRequestOptions.SignIn(manager.Uri));

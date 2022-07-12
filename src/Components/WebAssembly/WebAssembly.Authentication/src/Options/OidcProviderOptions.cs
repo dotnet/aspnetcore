@@ -21,11 +21,6 @@ public class OidcProviderOptions
     public string MetadataUrl { get; set; }
 
     /// <summary>
-    /// Gets or sets a value that signals the provider to avoid silent sign-in flows.
-    /// </summary>
-    public bool DisableAutomaticSilentSignIn { get; set; }
-
-    /// <summary>
     /// Gets or sets the client of the application.
     /// </summary>
     [JsonPropertyName("client_id")]
