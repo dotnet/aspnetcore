@@ -2105,9 +2105,9 @@ public class Http3StreamTests : Http3TestBase
     {
         var headers = new[]
         {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
             };
 
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_echoApplication, headers);
