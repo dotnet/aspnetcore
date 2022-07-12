@@ -17,16 +17,13 @@
 @code {
     public void LoginWithOtherUser()
     {
-        var request = new InteractiveAuthenticationRequest(
-        InteractiveAuthenticationRequestType.Authenticate,
-        Navigation.Uri,
-        Array.Empty<string>());
+        var request = InteractiveRequestOptions.SignIn(Navigation.Uri);
+        request.AdditionalRequestParameters = new Dictionary<string, object>
+            {
+                ["prompt"] = "login"
+            };
 
-        request.AddAdditionalParameter("prompt", "login");
-
-        Navigation.NavigateToLogin(
-            "authentication/login",
-            request);
+        Navigation.NavigateToLogin("authentication/login", request);
     }
 
     public void SignOut()

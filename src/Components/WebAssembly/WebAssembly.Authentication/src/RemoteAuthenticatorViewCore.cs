@@ -17,7 +17,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 {
     private RemoteAuthenticationApplicationPathsOptions _applicationPaths;
     private string _action;
-    private InteractiveAuthenticationRequest _cachedRequest;
+    private InteractiveRequestOptions _cachedRequest;
 
     private static readonly NavigationOptions AuthenticationNavigationOptions =
         new() { ReplaceHistoryEntry = true, ForceLoad = false };
@@ -372,10 +372,10 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 
     private bool ValidateSignOutRequestState()
     {
-        return GetCachedNavigationState()?.RequestType == InteractiveAuthenticationRequestType.Logout;
+        return GetCachedNavigationState()?.Interaction == InteractionType.SignOut;
     }
 
-    private InteractiveAuthenticationRequest GetCachedNavigationState()
+    private InteractiveRequestOptions GetCachedNavigationState()
     {
         if (_cachedRequest != null)
         {
@@ -387,7 +387,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
             return null;
         }
 
-        _cachedRequest = InteractiveAuthenticationRequest.FromState(Navigation.HistoryEntryState);
+        _cachedRequest = InteractiveRequestOptions.FromState(Navigation.HistoryEntryState);
         return _cachedRequest;
     }
 

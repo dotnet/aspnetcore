@@ -211,24 +211,34 @@ class OidcAuthorizeService implements AuthorizeService {
 
     async signIn(context: AuthenticationContext) {
         this.trace('signIn', context);
-        try {
-            await this._userManager.clearStaleState();
-            await this._userManager.signinSilent(this.createArguments(undefined, context.interactiveRequest));
-            this.debug('Silent sign in succeeded');
-            return this.success(context.state);
-        } catch (silentError) {
+        if (!context.interactiveRequest) {
             try {
+                this.debug('Silent sign in starting');
+                await this._userManager.clearStaleState();
+                await this._userManager.signinSilent(this.createArguments(undefined, context.interactiveRequest));
+                this.debug('Silent sign in succeeded');
+                return this.success(context.state);
+            } catch (silentError) {
                 if (silentError instanceof Error) {
                     this.debug(`Silent sign in failed, redirecting to the identity provider '${silentError.message}'.`);
                 }
-                await this._userManager.clearStaleState();
-                await this._userManager.signinRedirect(this.createArguments(context.state, context.interactiveRequest));
-                return this.redirect();
-            } catch (redirectError) {
-                const message = this.getExceptionMessage(redirectError);
-                this.debug(`Redirect sign in failed '${message}'.`);
-                return this.error(message);
+                return await this.signInInteractive(context);
             }
+        } else {
+            this.debug('Interactive sign in starting.');
+            return this.signInInteractive(context);
+        }
+    }
+
+    async signInInteractive(context: AuthenticationContext) {
+        try {
+            await this._userManager.clearStaleState();
+            await this._userManager.signinRedirect(this.createArguments(context.state, context.interactiveRequest));
+            return this.redirect();
+        } catch (redirectError) {
+            const message = this.getExceptionMessage(redirectError);
+            this.debug(`Redirect sign in failed '${message}'.`);
+            return this.error(message);
         }
     }
 
@@ -317,7 +327,12 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest | undefined) {
-        return { useReplaceToNavigate: true, data: state, ...interactiveRequest?.additionalRequestParameters };
+        return {
+            useReplaceToNavigate: true,
+            data: state,
+            scope: interactiveRequest?.scopes ? interactiveRequest.scopes.join(' ') : undefined,
+            ...interactiveRequest?.additionalRequestParameters
+        };
     }
 
     private error(message: string) {

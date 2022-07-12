@@ -47,7 +47,7 @@ public class AccessTokenNotAvailableException : Exception
     /// <summary>
     /// Navigates to <see cref="AccessTokenResult.RedirectUrl"/> to allow refreshing the access token.
     /// </summary>
-    public void Redirect(Action<InteractiveAuthenticationRequest> request)
+    public void Redirect(Action<InteractiveRequestOptions> request)
     {
         ArgumentNullException.ThrowIfNull(request);
         _navigation.NavigateToLogin(_tokenResult.InteractiveRequestUrl, _tokenResult.InteractiveRequest);

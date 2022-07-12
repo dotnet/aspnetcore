@@ -222,6 +222,88 @@ public class WebAssemblyAuthenticationTests : ServerTestBase<AspNetSiteServerFix
     }
 
     [Fact]
+    public void CanPassAdditionalParameters_DuringSignIn()
+    {
+        // Register first user
+        ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
+
+        var userName1 = $"{Guid.NewGuid()}@example.com";
+        var password1 = $"[PLACEHOLDER]-1a";
+        RegisterCore(userName1, password1);
+        CompleteProfileDetails();
+
+        ValidateLogout();
+
+        Browser.Navigate().GoToUrl("data:");
+        Navigate("/");
+        WaitUntilLoaded();
+
+        // Register second user
+        ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
+
+        var userName2 = $"{Guid.NewGuid()}@example.com";
+        var password2 = $"[PLACEHOLDER]-1a";
+        RegisterCore(userName2, password2);
+        CompleteProfileDetails();
+
+        ValidateLogout();
+
+        Browser.Navigate().GoToUrl("data:");
+        Navigate("/");
+        WaitUntilLoaded();
+
+        // Log in with the first user
+        ClickAndNavigate(By.PartialLinkText("Log in"), "/Identity/Account/Login");
+        LoginCore(userName1, password1);
+        ValidateLoggedIn(userName1);
+
+        // Log in with the second user
+        ClickAndNavigate(By.PartialLinkText("Log in with another user"), "/Identity/Account/Login");
+        LoginCore(userName2, password2);
+        ValidateLoggedIn(userName2);
+
+        ValidateLogout();
+    }
+
+    [Fact]
+    public void CanRequestAnAdditionalAccessToken_Interactively()
+    {
+        ClickAndNavigate(By.PartialLinkText("Token"), "/Identity/Account/Login");
+
+        var userName = $"{Guid.NewGuid()}@example.com";
+        var password = $"[PLACEHOLDER]-1a";
+        FirstTimeRegister(userName, password, completeProfileDetails: false);
+
+        Browser.Contains("token", () => Browser.Url);
+
+        var claims = Browser.FindElements(By.CssSelector("p.claim"))
+            .Select(e =>
+            {
+                var pair = e.Text.Split(":");
+                return (pair[0].Trim(), pair[1].Trim());
+            })
+            .Where(c => !new[] { "s_hash", "auth_time", "sid", "sub" }.Contains(c.Item1))
+            .OrderBy(o => o.Item1)
+            .ToArray();
+
+        var token = Browser.Exists(By.Id("access-token")).Text;
+        Assert.NotNull(token);
+        var payload = JsonSerializer.Deserialize<JwtPayload>(Base64UrlTextEncoder.Decode(token.Split(".")[1]));
+
+        Assert.StartsWith("http://127.0.0.1", payload.Issuer);
+        Assert.StartsWith("SecondAPI", payload.Audience);
+        Assert.StartsWith("Wasm.Authentication.Client", payload.ClientId);
+        Assert.Equal(new[] { "SecondAPI" }, payload.Scopes.OrderBy(id => id));
+
+        // The browser formats the text using the current language, so the following parsing relies on
+        // the server being set to an equivalent culture. This should be true in our test scenarios.
+        var currentTime = DateTimeOffset.Parse(Browser.Exists(By.Id("current-time")).Text, CultureInfo.CurrentCulture);
+        var tokenExpiration = DateTimeOffset.Parse(Browser.Exists(By.Id("access-token-expires")).Text, CultureInfo.CurrentCulture);
+        Assert.True(currentTime.AddMinutes(50) < tokenExpiration);
+        Assert.True(currentTime.AddMinutes(60) >= tokenExpiration);
+    }
+
+    [Fact]
     public void RegisterAndBack_DoesNotCause_RedirectLoop()
     {
         Browser.Exists(By.PartialLinkText("Register")).Click();
@@ -322,7 +404,7 @@ public class WebAssemblyAuthenticationTests : ServerTestBase<AspNetSiteServerFix
 
     private void LoginCore(string userName, string password)
     {
-        Browser.Exists(By.PartialLinkText("Login")).Click();
+        Browser.Exists(By.Id("login-submit")).Click();
         Browser.Exists(By.Name("Input.Email"));
         Browser.Exists(By.Name("Input.Email")).SendKeys(userName);
         Browser.Exists(By.Name("Input.Password")).SendKeys(password);
@@ -351,11 +433,14 @@ public class WebAssemblyAuthenticationTests : ServerTestBase<AspNetSiteServerFix
         Browser.Equal(5, () => Browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
     }
 
-    private void FirstTimeRegister(string userName, string password)
+    private void FirstTimeRegister(string userName, string password, bool completeProfileDetails = true)
     {
         Browser.Exists(By.PartialLinkText("Register as a new user")).Click();
         RegisterCore(userName, password);
-        CompleteProfileDetails();
+        if (completeProfileDetails)
+        {
+            CompleteProfileDetails();
+        }
     }
 
     private void CompleteProfileDetails()

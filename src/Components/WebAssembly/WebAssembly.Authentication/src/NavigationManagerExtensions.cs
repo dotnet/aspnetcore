@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// </summary>
 public static class NavigationManagerExtensions
 {
-    internal const string LogoutNavigationState = "Logout";
-
     /// <summary>
     /// Initiates a logout operation by navigating to the log out endpoint.
     /// </summary>
@@ -38,10 +36,7 @@ public static class NavigationManagerExtensions
     {
         manager.NavigateTo(logoutPath, new NavigationOptions
         {
-            HistoryEntryState = new InteractiveAuthenticationRequest(
-                InteractiveAuthenticationRequestType.Logout,
-                returnUrl,
-                Array.Empty<string>()).ToState()
+            HistoryEntryState = InteractiveRequestOptions.SignOut(returnUrl).ToState()
         });
     }
 
@@ -54,15 +49,16 @@ public static class NavigationManagerExtensions
     /// </remarks>
     /// <param name="manager">The <see cref="NavigationManager"/>.</param>
     /// <param name="loginPath">The path to the login url.</param>
-    /// <param name="request">The <see cref="InteractiveAuthenticationRequest"/> containing the authorization details.</param>
+    /// <param name="request">The <see cref="InteractiveRequestOptions"/> containing the authorization details.</param>
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Serializes InteractiveAuthenticationRequest into the state entry.")]
-    public static void NavigateToLogin(this NavigationManager manager, string loginPath, InteractiveAuthenticationRequest request)
+    public static void NavigateToLogin(this NavigationManager manager, string loginPath, InteractiveRequestOptions request)
     {
         manager.NavigateTo(loginPath, new NavigationOptions
         {
+            ForceLoad = false,
             HistoryEntryState = request.ToState(),
         });
     }
@@ -82,6 +78,6 @@ public static class NavigationManagerExtensions
         Justification = "Serializes InteractiveAuthenticationRequest into the state entry.")]
     public static void NavigateToLogin(this NavigationManager manager, string loginPath)
     {
-        manager.NavigateToLogin(loginPath, new InteractiveAuthenticationRequest(InteractiveAuthenticationRequestType.Authenticate, manager.Uri, Array.Empty<string>()));
+        manager.NavigateToLogin(loginPath, InteractiveRequestOptions.SignIn(manager.Uri));
     }
 }

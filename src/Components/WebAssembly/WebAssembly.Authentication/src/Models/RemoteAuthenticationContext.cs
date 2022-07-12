@@ -25,5 +25,5 @@ public class RemoteAuthenticationContext<[DynamicallyAccessedMembers(JsonSeriali
     /// <summary>
     /// Gets or sets the interaction request for the current authentication operation.
     /// </summary>
-    public InteractiveAuthenticationRequest InteractiveRequest { get; set; }
+    public InteractiveRequestOptions InteractiveRequest { get; set; }
 }
