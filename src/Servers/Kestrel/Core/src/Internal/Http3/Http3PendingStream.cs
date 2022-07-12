@@ -40,21 +40,40 @@ internal sealed class Http3PendingStream
         Context.Transport.Output.Complete(exception);
     }
 
-    public async ValueTask<(long, SequencePosition, SequencePosition)> ReadNextStreamHeaderAsync(Http3StreamContext context, long streamId)
+    public async ValueTask<long> ReadNextStreamHeaderAsync(Http3StreamContext context, long streamId, Http3StreamType? advanceOn)
     {
+        var Input = context.Transport.Input;
+        var advance = false;
+        SequencePosition consumed = default;
+        SequencePosition examined = default;
         SequencePosition start = default;
-        SequencePosition? end = null;
-        var value = 0L;
         try
         {
-            var Input = context.Transport.Input;
-            var result = await Input.ReadAsync(abortedToken.Token);
-            var readableBuffer = result.Buffer;
-            start = readableBuffer.Start;
-            if (!readableBuffer.IsEmpty)
+            while (!_isClosed)
             {
-                value = VariableLengthIntegerHelper.GetInteger(readableBuffer, out var consumed, out var examined);
-                end = consumed;
+                var result = await Input.ReadAsync(abortedToken.Token);
+                var readableBuffer = result.Buffer;
+                consumed = readableBuffer.Start;
+                start = readableBuffer.Start;
+                examined = readableBuffer.End;
+
+                if (!readableBuffer.IsEmpty)
+                {
+                    var value = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
+                    if (value != -1)
+                    {
+                        if (!advanceOn.HasValue || value == (long)advanceOn)
+                        {
+                            advance = true;
+                        }
+                        return value;
+                    }
+                }
+
+                if (result.IsCompleted)
+                {
+                    return -1L;
+                }
             }
         }
         catch (Exception)
@@ -65,8 +84,19 @@ internal sealed class Http3PendingStream
         }
         finally
         {
+
+            if (advance)
+            {
+                Input.AdvanceTo(consumed);
+            }
+            else
+            {
+                Input.AdvanceTo(start);
+            }
+
             StreamTimeoutTicks = default;
         }
-        return (value, start, end ?? start);
+
+        return -1L;
     }
 }

@@ -6,72 +6,52 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
-var hostBuilder = new HostBuilder()
-    .ConfigureLogging((_, factory) =>
+var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel((context, options) =>
+{
+    // Port configured for WebTransport
+    options.Listen(IPAddress.Any, 5007, listenOptions =>
     {
-        factory.SetMinimumLevel(LogLevel.Trace);
-        factory.AddSimpleConsole(o => o.TimestampFormat = "[HH:mm:ss.fff] ");
-    })
-    .ConfigureWebHost(webHost =>
-    {
-        webHost.UseKestrel()
-        .ConfigureKestrel((context, options) =>
-        {
-            // Port configured for WebTransport
-            options.Listen(IPAddress.Any, 5007, listenOptions =>
-            {
-                listenOptions.UseHttps(GenerateManualCertificate());
-                listenOptions.UseConnectionLogging();
-                listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-            });
-        })
-        .Configure(app =>
-        {
-            app.Use(async (context, next) =>
-            {
-                var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
-                if (feature.IsWebTransportRequest)
-                {
-                    var session = await feature.AcceptAsync(CancellationToken.None);
-
-                    //// OPEN A NEW UNIDIRECTIONAL OUTPUT STREAM
-                    var stream2 = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
-                    if (stream2 is null)
-                    {
-                        return;
-                    }
-
-                    //// ACCEPT AN INCOMING STREAM
-                    //var stream = await session.AcceptStreamAsync(CancellationToken.None);
-
-                    //// WRITE TO A STREAM
-                    //await Task.Delay(200);
-                    //await stream!.Transport.Output.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
-                    //await stream!.Transport.Output.FlushAsync();
-
-                    //// READ FROM A STREAM:
-                    var memory = new Memory<byte>(new byte[4096]);
-                    var test = await stream2!.Transport.Input.AsStream().ReadAsync(memory, CancellationToken.None);
-                    Console.WriteLine(System.Text.Encoding.Default.GetString(memory.Span));
-                }
-                else
-                {
-                    await next(context);
-                }
-                await Task.Delay(TimeSpan.FromMinutes(150));
-            });
-        });
+        listenOptions.UseHttps(GenerateManualCertificate());
+        listenOptions.UseConnectionLogging();
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
     });
+});
+var host = builder.Build();
 
-var host = hostBuilder.Build();
+host.Run(async (context) =>
+{
+    var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
+    if (!feature.IsWebTransportRequest)
+    {
+        return;
+    }
+    var session = await feature.AcceptAsync(CancellationToken.None);
 
-// Listener needs to be configured before host (and HTTP/3 endpoints) start up.
-using var httpEventSource = new HttpEventSourceListener(host.Services.GetRequiredService<ILoggerFactory>());
+    //// OPEN A NEW UNIDIRECTIONAL OUTPUT STREAM
+    var stream2 = await session.OpenUnidirectionalStreamAsync(CancellationToken.None);
+    if (stream2 is null)
+    {
+        return;
+    }
 
-host.Run();
+    //// ACCEPT AN INCOMING STREAM
+    //var stream = await session.AcceptStreamAsync(CancellationToken.None);
+
+    //// WRITE TO A STREAM
+    //await Task.Delay(200);
+    //await stream!.Transport.Output.WriteAsync(new ReadOnlyMemory<byte>(new byte[] { 65, 66, 67, 68, 69 }));
+    //await stream!.Transport.Output.FlushAsync();
+
+    //// READ FROM A STREAM:
+    var memory = new Memory<byte>(new byte[4096]);
+    var test = await stream2!.Transport.Input.AsStream().ReadAsync(memory, CancellationToken.None);
+    Console.WriteLine(System.Text.Encoding.Default.GetString(memory.Span));
+});
+
+await host.RunAsync();
 
 // Adapted from: https://github.com/wegylexy/webtransport
 // We will need to eventually merge this with existing Kestrel certificate generation

@@ -329,22 +329,20 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                     _streamLifetimeHandler.OnUnidentifiedStreamReceived(pendingStream);
 
-                    var (streamType, startPosition, endPosition) = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId);
-
-                    _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
-
                     // unidirectional stream
                     if (!streamDirectionFeature.CanWrite)
                     {
+                        var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId, null);
+
+                        _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
+
                         if (streamType == (long)Http3StreamType.WebTransportUnidirectional)
                         {
-                            context.Transport.Input.AdvanceTo(endPosition);
                             await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Input);
                         }
                         else
                         {
-                            context.Transport.Input.AdvanceTo(startPosition);
-                            var controlStream = new Http3ControlStream<TContext>(application, context);
+                            var controlStream = new Http3ControlStream<TContext>(application, context, streamType);
                             _streamLifetimeHandler.OnStreamCreated(controlStream);
                             ThreadPool.UnsafeQueueUserWorkItem(controlStream, preferLocal: false);
                         }
@@ -352,15 +350,16 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     // bidirectional stream
                     else
                     {
+                        var streamType = await pendingStream.ReadNextStreamHeaderAsync(context, streamIdFeature.StreamId, Http3StreamType.WebTransportBidirectional);
+
+                        _unidentifiedStreams.Remove(streamIdFeature.StreamId, out _);
+
                         if (streamType == (long)Http3StreamType.WebTransportBidirectional)
                         {
-                            context.Transport.Input.AdvanceTo(endPosition);
                             await CreateAndAddWebTransportStream(pendingStream, streamIdFeature.StreamId, WebTransportStreamType.Bidirectional);
                         }
                         else
                         {
-                            context.Transport.Input.AdvanceTo(startPosition);
-
                             // http request stream
                             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-5.2-2
                             if (_gracefulCloseStarted)
@@ -519,9 +518,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     private async Task CreateAndAddWebTransportStream(Http3PendingStream stream, long streamId, WebTransportStreamType type)
     {
-        var (correspondingSession, _, endPosition) = await stream.ReadNextStreamHeaderAsync(stream.Context, streamId);
-
-        stream.Context.Transport.Input.AdvanceTo(endPosition);
+        var correspondingSession = await stream.ReadNextStreamHeaderAsync(stream.Context, streamId, null);
 
         if (!_webtransportSessions.ContainsKey(correspondingSession))
         {
@@ -632,7 +629,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         var streamContext = await _multiplexedContext.ConnectAsync(features);
         var httpConnectionContext = CreateHttpStreamContext(streamContext);
 
-        return new Http3ControlStream<TContext>(application, httpConnectionContext);
+        return new Http3ControlStream<TContext>(application, httpConnectionContext, 0L);
     }
 
     private async ValueTask<FlushResult> SendGoAwayAsync(long id)

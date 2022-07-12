@@ -81,56 +81,40 @@ static X509Certificate2 GenerateManualCertificate()
 ## Setting up a connection
 To setup a WebTransport connection, you will first need to configure a host upon which you open a port. A very minimal example is shown below:
 ```C#
-var hostBuilder = new HostBuilder()
-    .ConfigureWebHost(webHost =>
+var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel((context, options) =>
+{
+    // Port configured for WebTransport
+    options.Listen([SOME IP ADDRESS], [SOME PORT], listenOptions =>
     {
-        webHost.UseKestrel()
-        .ConfigureKestrel((context, options) =>
-        {
-            options.Listen([SOME IP ADDRESS], [SOME PORT], listenOptions =>
-            {
-                listenOptions.UseHttps([YOUR CERTIFICATE]);
-                listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-            });
-        })
-        .UseStartup<Startup>();
+        listenOptions.UseHttps(GenerateManualCertificate());
+        listenOptions.UseConnectionLogging();
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
     });
-var host = hostBuilder.Build();
-host.Run();
+});
+var host = builder.Build();
 ```
 **Note:** As WebTransport uses HTTP/3, you must make sure to select the `listenOptions.UseHttps` setting as well as set the `listenOptions.Protocols` to include HTTP/3.
 
 **Note:** The default Kestrel certificate cannot be used for WebTransport connections. For local testing you can use the workaround described in the [Obtaining a test certificate section](#Obtaining-a-test-certificate).
 
-Next, we defined the `Startup` file. This file will setup the application layer logic that the server will use to accept and manage WebTransport sessions and streams.
+Next, we defined the code that will run when Kestrel receives a connection.
 ```C#
-public class Startup
+host.Run(async (context) =>
 {
-    // This method gets called by the runtime. Use this method to add services to the container.
-    // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-    public void ConfigureServices(IServiceCollection services) { }
-
-    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app)
+    var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
+    if (!feature.IsWebTransportRequest)
     {
-        app.Use(async (context, next) =>
-        {
-            var feature = context.Features.GetRequiredFeature<IHttpWebTransportFeature>();
-            if (feature.IsWebTransportRequest)
-            {
-                var session = await feature.AcceptAsync(CancellationToken.None);
-
-                // Use WebTransport via the newly established session.
-            }
-            else
-            {
-                await next(context);
-            }
-        });
+        return;
     }
-}
+    var session = await feature.AcceptAsync(CancellationToken.None);
+
+    // Use WebTransport via the newly established session.
+});
+
+await host.RunAsync();
 ```
-The `Configure` method is the main entry-point of your application logic. The `app.Use` block is triggered every time there is a connection request. Once the request is a WebTransport request (which is defined by getting the `IHttpWebTransportFeature` feature and then checking the `IsWebTransportRequest` property), you will be able to accept WebTransport sessions and interact with the client.
+The `Run` method is the main entry-point of your application logic. It is triggered every time there is a connection request. Once the request is a WebTransport request (which is defined by getting the `IHttpWebTransportFeature` feature and then checking the `IsWebTransportRequest` property), you will be able to accept WebTransport sessions and interact with the client. The last line (`await host.RunAsync();`) will start the server and start accepting connections.
 
 ## Available WebTransport Features in Kestrel
 This section highlights some of the most significant features of WebTransport that Kestrel implements. However, this is not an exhaustive list.
