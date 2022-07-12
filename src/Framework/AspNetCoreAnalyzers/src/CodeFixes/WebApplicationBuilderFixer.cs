@@ -39,8 +39,6 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                     diagnostic);
                     break;
 
-
-
                 case string when id == DiagnosticDescriptors.DoNotUseHostConfigureServices.Id:
                     context.RegisterCodeFix(
                     CodeAction.Create("Fix references to Services properties on WebApplicationBuilder",
@@ -48,8 +46,6 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                     equivalenceKey: DiagnosticDescriptors.DoNotUseHostConfigureServices.Id),
                     diagnostic);
                     break;
-
-
 
                 case string when id == DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder.Id:
                     context.RegisterCodeFix(
@@ -66,8 +62,6 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
     private static async Task<Document> FixWebApplicationBuilder(Diagnostic diagnostic, Document document, CancellationToken cancellationToken, string IDENTIFIER_METHOD_NAME)
     {
-        // hey Safia some of the below are just draft comments to help you understand the code easier.
-        // We're gonna delete it later before the final commit
         
         DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken);
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
@@ -77,7 +71,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             return document;
         }
 
-        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan); //whole diagnosticTarget starting from "builder"
+        var diagnosticTarget = root.FindNode(diagnostic.Location.SourceSpan); //whole invocation starting from "builder"
       
         if (diagnosticTarget is InvocationExpressionSyntax { } originalInvocation)
         {
@@ -90,7 +84,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
             var identifierMethod = SyntaxFactory.IdentifierName(IDENTIFIER_METHOD_NAME);
 
             subExpression = subExpression.WithName(identifierMethod);
-            hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(subExpression); //becomes builder.Configuration.ConfigureAppConfiguration
+            hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(subExpression); // replace Host/WebHost with identifier method
 
             if (originalInvocation.ArgumentList.Arguments.Count == 0)
             {
@@ -110,26 +104,28 @@ public class WebApplicationBuilderFixer : CodeFixProvider
                 foreach (var statement in lambdaStatements)
                 {
                     if (statement is not ExpressionStatementSyntax currentStatement 
-                        || currentStatement.Expression is not InvocationExpressionSyntax body)
-                    //currentStatement is builder.AddJsonFile() or builder.AddEnvironmentVariables()
-                    //body is builder.AddJsonFile() or builder.AddEnvironmentVariables()
+                        || currentStatement.Expression is not InvocationExpressionSyntax expr)
                     {
                         return editor.OriginalDocument;
                     }
 
-                    var argument = body.ArgumentList; //arguments of builder.AddJsonFile() or builder.AddEnvironmentVariables()
+                    var argument = expr.ArgumentList; // arguments of builder.{method_name}({arguments})
 
-                    if (body.Expression is not MemberAccessExpressionSyntax bodyExpression) //builder.AddJsonFile or builder.AddEnvironmentVariables
+                    if (expr.Expression is not MemberAccessExpressionSyntax bodyExpression) //builder.{method_name} 
                     {
                         return editor.OriginalDocument;
                     }
 
-                    var method = bodyExpression.Name; //AddJsonFile or AddEnvironmentVariables
+                    var method = bodyExpression.Name; // method_name
 
-                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithName(method); 
+                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithName(method); // replace with the method of current iteration
                     originalInvocation = originalInvocation.Update(hostBasedInvocationMethodExpr, argument); 
-                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(originalInvocation);
+                    hostBasedInvocationMethodExpr = hostBasedInvocationMethodExpr.WithExpression(originalInvocation); // replace the expression to have an invocation with duplicated methods
+                                                                                                                      // the right most method would be replaced with the method of the next iteration
 
+                    //Example:
+                    //Orig: builder.Configuration.ConfigureAppConfiguration(builder => { builder.AddJsonFile({some_arguments}); builder.AddEnvironmentVariables()});
+                    //Fixed: builder.Configuration.AddJsonFile({some_arguments}).AddEnvironmentVariables();
 
                     //first iteration: adding AddJsonFile method
 
