@@ -20,7 +20,7 @@ public class ProblemDetailsServiceCollectionExtensionsTest
 
         // Assert
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsService) && sd.ImplementationType == typeof(ProblemDetailsService));
-        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsWriter) && sd.ImplementationType == typeof(ProblemDetailsDefaultWriter));
+        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsWriter) && sd.ImplementationType == typeof(DefaultProblemDetailsWriter));
     }
 
     [Fact]
