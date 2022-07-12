@@ -36,7 +36,7 @@ public class ClientHandlerTests
             Assert.Null(features.Get<IHttpResponseFeature>().ReasonPhrase);
             Assert.Equal("example.com", features.Get<IHttpRequestFeature>().Headers["host"]);
             Assert.NotNull(features.Get<IHttpRequestLifetimeFeature>());
-        }));
+        }), _ => { });
         var httpClient = new HttpClient(handler);
         await httpClient.GetAsync("https://example.com/api/a%2Fb%20c");
     }
@@ -257,6 +257,36 @@ public class ClientHandlerTests
                 Assert.Equal("EndTrailer", kvp.Key);
                 Assert.Equal("Value!", kvp.Value.Single());
             });
+    }
+
+    [Fact]
+    public Task AdditionalConfigurationAllowsSettingConnectionInfo()
+    {
+        var handler = new ClientHandler(PathString.Empty, new InspectingApplication(features =>
+        {
+            Assert.Equal(IPAddress.Parse("1.1.1.1"), features.Get<IHttpConnectionFeature>().RemoteIpAddress);
+        }), context =>
+        {
+            context.Connection.RemoteIpAddress = IPAddress.Parse("1.1.1.1");
+        });
+
+        var httpClient = new HttpClient(handler);
+        return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
+    }
+
+    [Fact]
+    public Task AdditionalConfigurationAllowsOverridingDefaultBehavior()
+    {
+        var handler = new ClientHandler(PathString.Empty, new InspectingApplication(features =>
+        {
+            Assert.Equal("?and=something", features.Get<IHttpRequestFeature>().QueryString);
+        }), context =>
+        {
+            context.Request.QueryString = new QueryString("?and=something");
+        });
+
+        var httpClient = new HttpClient(handler);
+        return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
     }
 
     [Fact]
