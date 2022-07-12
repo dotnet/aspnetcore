@@ -287,15 +287,16 @@ public abstract class NavigationManager
     /// </summary>
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI.</param>
     /// <param name="isNavigationIntercepted">Whether this navigation was intercepted from a link.</param>
-    /// <returns>A <see cref="ValueTask{TResult}"/> representing the completion of the operation.</returns>
-    protected async ValueTask<bool> NotifyLocationChanging(string uri, bool isNavigationIntercepted)
+    /// <param name="continueNavigation">An action that continues the navigation based on the provided <see cref="LocationChangingResult"/>.</param>
+    protected void NotifyLocationChanging(string uri, bool isNavigationIntercepted, Action<LocationChangingResult> continueNavigation)
     {
         _locationChangingCts?.Cancel();
         _locationChangingCts = null;
 
         if (_locationChangingHandlers.Count == 0)
         {
-            return false;
+            continueNavigation(new(false, null));
+            return;
         }
 
         _locationChangingCts = new();
@@ -308,37 +309,18 @@ public abstract class NavigationManager
 
         _locationChangingHandlers.CopyTo(locationChangingHandlersCopy);
 
-        try
+        for (var i = 0; i < handlerCount; i++)
         {
-            for (var i = 0; i < handlerCount; i++)
-            {
-                locationChangingTasks[i] = locationChangingHandlersCopy[i].Invoke(context);
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return true;
-                }
-            }
-
-            await Task.WhenAll(locationChangingTasks.Take(handlerCount)).WaitAsync(cancellationToken);
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return true;
-            }
-
-            return false;
+            locationChangingTasks[i] = locationChangingHandlersCopy[i].Invoke(context);
         }
-        catch (TaskCanceledException ex) when (ex.CancellationToken == cancellationToken)
+
+        Task.WhenAll(locationChangingTasks.Take(handlerCount)).WaitAsync(cancellationToken).ContinueWith(t =>
         {
-            // If it was our cancellation token, we should gracefully cancel the navigation.
-            return true;
-        }
-        finally
-        {
-            ArrayPool<LocationChangingHandler>.Shared.Return(locationChangingHandlersCopy);
-            ArrayPool<Task>.Shared.Return(locationChangingTasks);
-        }
+            continueNavigation(new(cancellationToken.IsCancellationRequested, t.Exception));
+        }, TaskScheduler.Current);
+
+        ArrayPool<LocationChangingHandler>.Shared.Return(locationChangingHandlersCopy);
+        ArrayPool<Task>.Shared.Return(locationChangingTasks);
     }
 
     /// <summary>

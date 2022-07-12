@@ -12,16 +12,16 @@ public class LocationChangingContext
 
     internal LocationChangingContext(string destinationUrl, bool isNavigationIntercepted, CancellationTokenSource cts)
     {
-        DestinationUrl = destinationUrl;
+        TargetLocation = destinationUrl;
         IsNavigationIntercepted = isNavigationIntercepted;
 
         _cts = cts;
     }
 
     /// <summary>
-    /// Gets the URI being navigated to.
+    /// Gets the target location.
     /// </summary>
-    public string DestinationUrl { get; }
+    public string TargetLocation { get; }
 
     /// <summary>
     /// Gets whether this navigation was intercepted from a link.

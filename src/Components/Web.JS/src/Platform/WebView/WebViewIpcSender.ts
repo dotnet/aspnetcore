@@ -41,9 +41,9 @@ export function sendLocationChanged(uri: string, state: string | undefined, inte
   return Promise.resolve(); // Like in Blazor Server, we only issue the notification here - there's no need to wait for a response
 }
 
-export function sendLocationChanging(uri: string, intercepted: boolean): Promise<boolean> {
-  send('OnLocationChanging', uri, intercepted);
-  return Promise.resolve(true); // TODO: Need to do something real here.
+export function sendLocationChanging(callId: number, uri: string, intercepted: boolean): Promise<void> {
+  send('OnLocationChanging', callId, uri, intercepted);
+  return Promise.resolve(); // Like in Blazor Server, we only issue the notification here - there's no need to wait for a response
 }
 
 function send(messageType: string, ...args: unknown[]) {

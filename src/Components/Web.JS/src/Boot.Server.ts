@@ -62,8 +62,8 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     return connection.send('OnLocationChanged', uri, state, intercepted);
-  }, (uri: string, intercepted: boolean): Promise<boolean> => {
-    return connection.invoke('OnLocationChanging', uri, intercepted);
+  }, (callId: number, uri: string, intercepted: boolean): Promise<boolean> => {
+    return connection.invoke('OnLocationChanging', callId, uri, intercepted);
   });
 
   Blazor._internal.forceCloseConnection = () => connection.stop();

@@ -18,6 +18,8 @@ internal static class BrowserNavigationManagerInterop
 
     public const string SetHasLocationChangingListeners = Prefix + "setHasLocationChangingListeners";
 
+    public const string EndLocationChanging = Prefix + "endLocationChanging";
+
     public const string EnableNavigationPrompt = Prefix + "enableNavigationPrompt";
 
     public const string DisableNavigationPrompt = Prefix + "disableNavigationPrompt";

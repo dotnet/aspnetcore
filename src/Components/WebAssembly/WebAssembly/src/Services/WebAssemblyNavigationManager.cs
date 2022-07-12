@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
@@ -10,8 +11,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 /// <summary>
 /// Default client-side implementation of <see cref="NavigationManager"/>.
 /// </summary>
-internal sealed class WebAssemblyNavigationManager : NavigationManager
+internal sealed partial class WebAssemblyNavigationManager : NavigationManager
 {
+    private ILogger<WebAssemblyNavigationManager> _logger = default!;
+
     /// <summary>
     /// Gets the instance of <see cref="WebAssemblyNavigationManager"/>.
     /// </summary>
@@ -22,6 +25,16 @@ internal sealed class WebAssemblyNavigationManager : NavigationManager
         Initialize(baseUri, uri);
     }
 
+    public void CreateLogger(ILoggerFactory loggerFactory)
+    {
+        if (_logger is not null)
+        {
+            throw new InvalidOperationException($"The {nameof(WebAssemblyNavigationManager)} has already created a logger.");
+        }
+
+        _logger = loggerFactory.CreateLogger<WebAssemblyNavigationManager>();
+    }
+
     public void SetLocation(string uri, string? state, bool isInterceptedLink)
     {
         Uri = uri;
@@ -29,28 +42,60 @@ internal sealed class WebAssemblyNavigationManager : NavigationManager
         NotifyLocationChanged(isInterceptedLink);
     }
 
-    public ValueTask<bool> HandleLocationChanging(string uri, bool intercepted)
+    public void HandleLocationChanging(int callId, string uri, bool intercepted)
     {
-        return NotifyLocationChanging(uri, intercepted);
+        NotifyLocationChanging(uri, intercepted, result =>
+        {
+            if (result.Exception is { } exception)
+            {
+                Log.NavigationFailed(_logger, uri, exception);
+            }
+            else if (result.Canceled)
+            {
+                Log.NavigationCanceled(_logger, uri);
+            }
+            else
+            {
+                DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.EndLocationChanging, callId, !result.Canceled);
+            }
+        });
     }
 
     /// <inheritdoc />
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(NavigationOptions))]
-    protected override async void NavigateToCore(string uri, NavigationOptions options)
+    protected override void NavigateToCore(string uri, NavigationOptions options)
     {
         if (uri == null)
         {
             throw new ArgumentNullException(nameof(uri));
         }
 
-        var shouldCancel = await NotifyLocationChanging(uri, false);
-
-        if (!shouldCancel)
+        NotifyLocationChanging(uri, false, result =>
         {
-            DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
-        }
+            if (result.Exception is { } exception)
+            {
+                Log.NavigationFailed(_logger, uri, exception);
+            }
+            else if (result.Canceled)
+            {
+                Log.NavigationCanceled(_logger, uri);
+            }
+            else
+            {
+                DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
+            }
+        });
     }
 
     protected override void SetNavigationLockState(bool value)
         => DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.SetHasLocationChangingListeners, value);
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "Navigation canceled when changing the location to {Uri}", EventName = "NavigationCanceled")]
+        public static partial void NavigationCanceled(ILogger logger, string uri);
+
+        [LoggerMessage(2, LogLevel.Error, "Navigation failed when changing the location to {Uri}", EventName = "NavigationFailed")]
+        public static partial void NavigationFailed(ILogger logger, string uri, Exception exception);
+    }
 }

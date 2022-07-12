@@ -536,18 +536,18 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
-    public async Task<bool> OnLocationChangingAsync(string uri, bool intercepted)
+    public async Task OnLocationChangingAsync(int callId, string uri, bool intercepted)
     {
         AssertInitialized();
         AssertNotDisposed();
 
         try
         {
-            return await Renderer.Dispatcher.InvokeAsync(async () =>
+            await Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.LocationChanging(_logger, uri, CircuitId);
                 var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                return await navigationManager.HandleLocationChanging(uri, intercepted);
+                navigationManager.HandleLocationChanging(callId, uri, intercepted);
             });
         }
 
@@ -562,7 +562,6 @@ internal partial class CircuitHost : IAsyncDisposable
             Log.LocationChangeFailedInCircuit(_logger, uri, CircuitId, ex);
             await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Location changing failed."));
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            return false;
         }
         catch (Exception ex)
         {
@@ -571,7 +570,6 @@ internal partial class CircuitHost : IAsyncDisposable
             Log.LocationChangeFailed(_logger, uri, CircuitId, ex);
             await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, $"Location changing to '{uri}' failed."));
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            return false;
         }
     }
 
