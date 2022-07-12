@@ -244,9 +244,9 @@ public class DefaultProblemDetailsWriterTest
         return services.BuildServiceProvider();
     }
 
-    private static ProblemDetailsDefaultWriter GetWriter(ProblemDetailsOptions options = null)
+    private static DefaultProblemDetailsWriter GetWriter(ProblemDetailsOptions options = null)
     {
         options ??= new ProblemDetailsOptions();
-        return new ProblemDetailsDefaultWriter(Options.Create(options));
+        return new DefaultProblemDetailsWriter(Options.Create(options));
     }
 }

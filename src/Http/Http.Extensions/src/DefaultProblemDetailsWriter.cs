@@ -10,13 +10,13 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
-internal sealed partial class ProblemDetailsDefaultWriter : IProblemDetailsWriter
+internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWriter
 {
     private static readonly MediaTypeHeaderValue _jsonMediaType = new("application/json");
     private static readonly MediaTypeHeaderValue _problemDetailsJsonMediaType = new("application/problem+json");
     private readonly ProblemDetailsOptions _options;
 
-    public ProblemDetailsDefaultWriter(IOptions<ProblemDetailsOptions> options)
+    public DefaultProblemDetailsWriter(IOptions<ProblemDetailsOptions> options)
     {
         _options = options.Value;
     }

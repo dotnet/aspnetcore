@@ -23,7 +23,7 @@ public sealed class ProblemDetailsContext
     public EndpointMetadataCollection? AdditionalMetadata { get; init; }
 
     /// <summary>
-    /// A instance of <see cref="ProblemDetails"/> that will be
+    /// An instance of <see cref="ProblemDetails"/> that will be
     /// used during the response payload generation.
     /// </summary>
     public ProblemDetails ProblemDetails

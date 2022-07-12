@@ -37,7 +37,7 @@ public static class ProblemDetailsServiceCollectionExtensions
 
         // Adding default services;
         services.TryAddSingleton<IProblemDetailsService, ProblemDetailsService>();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, ProblemDetailsDefaultWriter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultProblemDetailsWriter>());
 
         if (configure != null)
         {
