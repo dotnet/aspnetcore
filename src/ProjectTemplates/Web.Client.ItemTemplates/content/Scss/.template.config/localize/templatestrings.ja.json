@@ -1,6 +1,6 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "SCSS Style Sheet (SASS)",
-  "description": "SCSS is a language that compiles into CSS",
-  "postActions/openInEditor/description": "Opens styleSheet1.scss in the editor"
+  "name": "SCSS スタイル シート (SASS)",
+  "description": "SCSS は CSS にコンパイルされる言語です。",
+  "postActions/openInEditor/description": "エディターで styleSheet1.scss を開きます"
 }

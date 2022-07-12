@@ -12,7 +12,33 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test;
 public class AuthenticationSchemeProviderTests
 {
     [Fact]
-    public async Task NoDefaultsByDefault()
+    public async Task NoDefaultsWithoutAutoDefaultScheme()
+    {
+        var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+        {
+            o.DisableAutoDefaultScheme = true;
+            o.AddScheme<SignInHandler>("B", "whatever");
+        }).BuildServiceProvider();
+
+        var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
+        await VerifyAllDefaults(provider, null);
+    }
+
+    [Fact]
+    public async Task NoDefaultsWithMoreSchemes()
+    {
+        var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+        {
+            o.AddScheme<SignInHandler>("A", "whatever");
+            o.AddScheme<SignInHandler>("B", "whatever");
+        }).BuildServiceProvider();
+
+        var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
+        await VerifyAllDefaults(provider, null);
+    }
+
+    [Fact]
+    public async Task DefaultSchemesUsesSingleScheme()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
         {
@@ -20,11 +46,11 @@ public class AuthenticationSchemeProviderTests
         }).BuildServiceProvider();
 
         var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
-        Assert.Null(await provider.GetDefaultForbidSchemeAsync());
-        Assert.Null(await provider.GetDefaultAuthenticateSchemeAsync());
-        Assert.Null(await provider.GetDefaultChallengeSchemeAsync());
-        Assert.Null(await provider.GetDefaultSignInSchemeAsync());
-        Assert.Null(await provider.GetDefaultSignOutSchemeAsync());
+        Assert.Equal("B", (await provider.GetDefaultForbidSchemeAsync())!.Name);
+        Assert.Equal("B", (await provider.GetDefaultAuthenticateSchemeAsync())!.Name);
+        Assert.Equal("B", (await provider.GetDefaultChallengeSchemeAsync())!.Name);
+        Assert.Equal("B", (await provider.GetDefaultSignInSchemeAsync())!.Name);
+        Assert.Equal("B", (await provider.GetDefaultSignOutSchemeAsync())!.Name);
     }
 
     [Fact]
@@ -33,6 +59,7 @@ public class AuthenticationSchemeProviderTests
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
         {
             o.DefaultScheme = "B";
+            o.AddScheme<SignInHandler>("A", "whatever");
             o.AddScheme<SignInHandler>("B", "whatever");
         }).BuildServiceProvider();
 
@@ -162,6 +189,68 @@ public class AuthenticationSchemeProviderTests
         Assert.NotNull(a);
         Assert.Same(a, b);
         Assert.Same(b, c);
+    }
+
+    [Fact]
+    public async Task AutoDefaultSchemeAddRemoveWorks()
+    {
+        var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+        {
+        }).BuildServiceProvider();
+
+        var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
+
+        var scheme1 = new AuthenticationScheme("signin1", "whatever", typeof(Handler));
+        var scheme2 = new AuthenticationScheme("signin2", "whatever", typeof(Handler));
+        var scheme3 = new AuthenticationScheme("signin3", "whatever", typeof(Handler));
+
+        // No schemes, so null default
+        await VerifyAllDefaults(provider, null);
+
+        // One scheme, should be default
+        Assert.True(provider.TryAddScheme(scheme1));
+        await VerifyAllDefaults(provider, scheme1);
+
+        // Still one scheme, should be default
+        Assert.False(provider.TryAddScheme(scheme1));
+        await VerifyAllDefaults(provider, scheme1);
+
+        // Two schemes, should be null
+        Assert.True(provider.TryAddScheme(scheme2));
+        await VerifyAllDefaults(provider, null);
+
+        // Three schemes, should be null
+        Assert.True(provider.TryAddScheme(scheme3));
+        await VerifyAllDefaults(provider, null);
+
+        // Remove one scheme, still two schemes, should be null
+        provider.RemoveScheme(scheme2.Name);
+        await VerifyAllDefaults(provider, null);
+
+        // Remove same scheme, still two schemes, should be null
+        provider.RemoveScheme(scheme2.Name);
+        await VerifyAllDefaults(provider, null);
+
+        // Remove a scheme, now should have a default single
+        provider.RemoveScheme(scheme1.Name);
+        await VerifyAllDefaults(provider, scheme3);
+
+        // Remove last scheme, should be no default
+        provider.RemoveScheme(scheme3.Name);
+        await VerifyAllDefaults(provider, null);
+
+        // Add a scheme again, should be default
+        Assert.True(provider.TryAddScheme(scheme2));
+        await VerifyAllDefaults(provider, scheme2);
+    }
+
+    private async Task VerifyAllDefaults(IAuthenticationSchemeProvider provider, AuthenticationScheme? expected)
+    {
+        Assert.Equal(await provider.GetDefaultForbidSchemeAsync(), expected);
+        Assert.Equal(await provider.GetDefaultAuthenticateSchemeAsync(), expected);
+        Assert.Equal(await provider.GetDefaultChallengeSchemeAsync(), expected);
+        Assert.Equal(await provider.GetDefaultSignInSchemeAsync(), expected);
+        Assert.Equal(await provider.GetDefaultSignOutSchemeAsync(), expected);
     }
 
     private class Handler : IAuthenticationHandler

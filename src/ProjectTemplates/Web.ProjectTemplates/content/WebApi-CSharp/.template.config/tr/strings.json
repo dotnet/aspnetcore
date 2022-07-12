@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "ASP.NET Core Web API'si",
+    "description": "RESTful HTTP hizmetine ait örnek bir Denetleyici içeren bir ASP.NET Core uygulaması oluşturmaya yönelik proje şablonu. Bu şablon aynı zamanda ASP.NET Core MVC Görünümleri ve Denetleyicileri için de kullanılabilir.",
+    "parameter.DisableOpenAPI.name": "_OpenAPI desteğini etkinleştir",
+    "parameter.DisableOpenAPI.description": "OpenAPI (Swagger) desteğini etkinleştirir",
+    "parameter.UseMinimalAPIs.name": "Denetleyicileri kullan (minimal API’leri kullanmak için onay işaretini kaldırın)",
+    "parameter.UseMinimalAPIs.description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir."
+  }
+}

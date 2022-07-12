@@ -86,9 +86,27 @@ internal sealed class AnyConverter<TMessage> : SettingsConverterBase<TMessage> w
         }
         else
         {
-            MessageConverter<Any>.WriteMessageFields(writer, valueMessage, Context.Settings, options);
+            WriteMessageFields(writer, valueMessage, Context.Settings, options);
         }
 
         writer.WriteEndObject();
+    }
+
+    internal static void WriteMessageFields(Utf8JsonWriter writer, IMessage message, GrpcJsonSettings settings, JsonSerializerOptions options)
+    {
+        var fields = message.Descriptor.Fields;
+
+        foreach (var field in fields.InFieldNumberOrder())
+        {
+            var accessor = field.Accessor;
+            var value = accessor.GetValue(message);
+            if (!JsonConverterHelper.ShouldFormatFieldValue(message, field, value, !settings.IgnoreDefaultValues))
+            {
+                continue;
+            }
+
+            writer.WritePropertyName(accessor.Descriptor.JsonName);
+            JsonSerializer.Serialize(writer, value, value.GetType(), options);
+        }
     }
 }
