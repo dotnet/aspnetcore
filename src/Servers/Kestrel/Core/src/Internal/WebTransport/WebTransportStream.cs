@@ -13,10 +13,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
-/// <summary>
-/// Represents a base WebTransport stream. Do not use directly as it does not
-/// contain logic for handling data.
-/// </summary>
 internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFeature
 {
     private readonly CancellationTokenRegistration _connectionClosedRegistration;
@@ -30,9 +26,6 @@ internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFe
 
     public readonly long StreamId;
 
-    /// <summary>
-    /// Use StreamId instead of this whenever possible to avoid the cast from long to string
-    /// </summary>
     public override string ConnectionId { get => StreamId.ToString(NumberFormatInfo.InvariantInfo); set => throw new NotSupportedException(); }
 
     public override IDuplexPipe Transport { get => _duplexPipe; set => throw new NotSupportedException(); }
@@ -100,9 +93,6 @@ internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFe
         }
     }
 
-    /// <summary>
-    /// Soft close the stream and end data transmission.
-    /// </summary>
     public override async ValueTask DisposeAsync()
     {
         if (_isClosed)

@@ -27,7 +27,7 @@ public interface IWebTransportSession
     /// </summary>
     /// <remarks>To use WebTransport, you must first enable the <c>Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams</c> AppContextSwitch</remarks>
     /// <param name="cancellationToken">The cancellation token used to cancel the operation.</param>
-    /// <returns>The unidirectional or bidirectional stream that is next in the queue, or <c>null</c> if the operation failed.</returns>
+    /// <returns>The unidirectional or bidirectional stream that is next in the queue, or <c>null</c> if the session has ended.</returns>
     ValueTask<ConnectionContext?> AcceptStreamAsync(CancellationToken cancellationToken = default);
 
     /// <summary>

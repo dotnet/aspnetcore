@@ -76,7 +76,7 @@ internal sealed class WebTransportSession : IWebTransportSession
         {
             foreach (var stream in _openStreams)
             {
-                _ = stream.Value.DisposeAsync().AsTask();
+                stream.Value.DisposeAsync().AsTask().GetAwaiter().GetResult();
             }
 
             _openStreams.Clear();
@@ -146,7 +146,7 @@ internal sealed class WebTransportSession : IWebTransportSession
             throw new ObjectDisposedException(CoreStrings.WebTransportIsClosing);
         }
 
-        if (!_pendingStreams.Writer.TryWrite(stream) || !_openStreams.TryAdd(stream.StreamId, stream))
+        if (!_openStreams.TryAdd(stream.StreamId, stream) || !_pendingStreams.Writer.TryWrite(stream))
         {
             throw new Exception(CoreStrings.WebTransportFailedToAddStreamToPendingQueue);
         }
@@ -175,7 +175,7 @@ internal sealed class WebTransportSession : IWebTransportSession
 
         if (success && stream is not null)
         {
-            _ = stream.DisposeAsync().AsTask();
+            stream.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
 
         return success;

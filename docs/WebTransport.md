@@ -18,40 +18,89 @@ WebTransport is a preview feature. Therefore, you must manually enable it via th
     <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams" Value="true" />
   </ItemGroup>
 ```
+or via:
 - Adding the following C# statement somewhere in your project's setup logic:
 ```C#
 AppContext.SetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", true);
 ```
 **Note:** Setting an `AppContextSwitch` is global. Therefore, the setting applies to all areas of your application, not just the current scope.
 
+# Obtaining a test certificate
+The current Kestrel default testing certificate cannot be used for WebTransport connections. You can generate a new certificate for testing via the following C#:
+```C#
+static X509Certificate2 GenerateManualCertificate()
+{
+    X509Certificate2 cert = null;
+    var store = new X509Store("KestrelWebTransportCertificates", StoreLocation.CurrentUser);
+    store.Open(OpenFlags.ReadWrite);
+    if (store.Certificates.Count > 0)
+    {
+        cert = store.Certificates[^1];
+
+        // rotate key after it expires
+        if (DateTime.Parse(cert.GetExpirationDateString(), null) < DateTimeOffset.UtcNow)
+        {
+            cert = null;
+        }
+    }
+    if (cert == null)
+    {
+        // generate a new cert
+        var now = DateTimeOffset.UtcNow;
+        SubjectAlternativeNameBuilder sanBuilder = new();
+        sanBuilder.AddDnsName("localhost");
+        using var ec = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        CertificateRequest req = new("CN=localhost", ec, HashAlgorithmName.SHA256);
+        // Adds purpose
+        req.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection
+        {
+            new("1.3.6.1.5.5.7.3.1") // serverAuth
+        }, false));
+        // Adds usage
+        req.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
+        // Adds subject alternate names
+        req.CertificateExtensions.Add(sanBuilder.Build());
+        // Sign
+        using var crt = req.CreateSelfSigned(now, now.AddDays(14)); // 14 days is the max duration of a certificate for this
+        cert = new(crt.Export(X509ContentType.Pfx));
+
+        // Save
+        store.Add(cert);
+    }
+    store.Close();
+
+    var hash = SHA256.HashData(cert.RawData);
+    var certStr = Convert.ToBase64String(hash);
+    Console.WriteLine($"\n\n\n\n\nCertificate: {certStr}\n\n\n\n"); // <-- you will need to put this output into the JS API call to allow the connection
+    return cert;
+}
+// Adapted from: https://github.com/wegylexy/webtransport
+```
+
 # Overview of the Kestrel WebTransport API
 ## Setting up a connection
 To setup a WebTransport connection, you will first need to configure a host upon which you open a port. A very minimal example is shown below:
 ```C#
-public class Program
-{
-    public static void Main(string[] args)
+var hostBuilder = new HostBuilder()
+    .ConfigureWebHost(webHost =>
     {
-        var hostBuilder = new HostBuilder()
-            .ConfigureWebHost(webHost =>
+        webHost.UseKestrel()
+        .ConfigureKestrel((context, options) =>
+        {
+            options.Listen([SOME IP ADDRESS], [SOME PORT], listenOptions =>
             {
-                webHost.UseKestrel()
-                .ConfigureKestrel((context, options) =>
-                {
-                    options.Listen([SOME IP ADDRESS], [SOME PORT], listenOptions =>
-                    {
-                        listenOptions.UseHttps([YOUR CERTIFICATE]);
-                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-                    });
-                })
-                .UseStartup<Startup>();
+                listenOptions.UseHttps([YOUR CERTIFICATE]);
+                listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
             });
-        var host = hostBuilder.Build();
-        host.Run();
-    }
-}
+        })
+        .UseStartup<Startup>();
+    });
+var host = hostBuilder.Build();
+host.Run();
 ```
 **Note:** As WebTransport uses HTTP/3, you must make sure to select the `listenOptions.UseHttps` setting as well as set the `listenOptions.Protocols` to include HTTP/3.
+
+**Note:** The default Kestrel certificate cannot be used for WebTransport connections. For local testing you can use the workaround described in the [Obtaining a test certificate section](#Obtaining-a-test-certificate).
 
 Next, we defined the `Startup` file. This file will setup the application layer logic that the server will use to accept and manage WebTransport sessions and streams.
 ```C#
