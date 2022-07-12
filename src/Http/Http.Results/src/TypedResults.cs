@@ -132,6 +132,18 @@ public static class TypedResults
         => Text(content, contentType, contentEncoding, null);
 
     /// <summary>
+    /// Writes the <paramref name="utf8Content"/> UTF8 text content to the HTTP response.
+    /// </summary>
+    /// <param name="utf8Content">The content to write to the response.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="statusCode">The status code to return.</param>
+    /// <returns>The created <see cref="Utf8ContentHttpResult"/> object for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+    public static Utf8ContentHttpResult Text(ReadOnlySpan<byte> utf8Content, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
+        => new Utf8ContentHttpResult(utf8Content, contentType, statusCode);
+
+    /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.
     /// <para>
     /// This is an alias for <see cref="Content(string?, string?, Encoding?, int?)"/>.
@@ -146,7 +158,9 @@ public static class TypedResults
     /// <param name="contentEncoding">The content encoding.</param>
     /// <param name="statusCode">The status code to return.</param>
     /// <returns>The created <see cref="ContentHttpResult"/> object for the response.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static ContentHttpResult Text(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     {
         MediaTypeHeaderValue? mediaTypeHeaderValue = null;
         if (contentType is not null)

@@ -26,6 +26,8 @@ public sealed class UnprocessableEntity : IResult, IEndpointMetadataProvider, IS
     /// </summary>
     public int StatusCode => StatusCodes.Status422UnprocessableEntity;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {

@@ -43,6 +43,8 @@ public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContent
     /// </summary>
     public int StatusCode => ProblemDetails.Status!.Value;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {

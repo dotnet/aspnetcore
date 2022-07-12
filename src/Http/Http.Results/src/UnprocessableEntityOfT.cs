@@ -37,6 +37,8 @@ public sealed class UnprocessableEntity<TValue> : IResult, IEndpointMetadataProv
     /// </summary>
     public int StatusCode => StatusCodes.Status422UnprocessableEntity;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc />
     public Task ExecuteAsync(HttpContext httpContext)
     {

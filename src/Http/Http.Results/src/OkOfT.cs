@@ -36,6 +36,8 @@ public sealed class Ok<TValue> : IResult, IEndpointMetadataProvider, IStatusCode
     /// </summary>
     public int StatusCode => StatusCodes.Status200OK;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {

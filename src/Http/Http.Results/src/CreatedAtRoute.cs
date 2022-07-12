@@ -54,6 +54,8 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider, IStatus
     /// </summary>
     public int StatusCode => StatusCodes.Status201Created;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {

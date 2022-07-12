@@ -7,30 +7,21 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
-/// An <see cref="ContentHttpResult"/> that when executed
+/// An <see cref="Utf8ContentHttpResult"/> that when executed
 /// will produce a response with content.
 /// </summary>
-public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult, IContentTypeHttpResult
+public sealed partial class Utf8ContentHttpResult : IResult, IStatusCodeHttpResult, IContentTypeHttpResult
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values.
+    /// Initializes a new instance of the <see cref="Utf8ContentHttpResult"/> class with the values
     /// </summary>
-    /// <param name="content">The value to format in the entity body.</param>
-    /// <param name="contentType">The Content-Type header for the response</param>
-    internal ContentHttpResult(string? content, string? contentType)
-        : this(content, contentType, statusCode: null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ContentHttpResult"/> class with the values
-    /// </summary>
-    /// <param name="content">The value to format in the entity body.</param>
+    /// <param name="utf8Content">The value to format in the entity body.</param>
     /// <param name="statusCode">The HTTP status code of the response.</param>
-    /// <param name="contentType">The Content-Type header for the response</param>
-    internal ContentHttpResult(string? content, string? contentType, int? statusCode)
+    /// <param name="contentType">The Content-Type header for the response.</param>
+    internal Utf8ContentHttpResult(ReadOnlySpan<byte> utf8Content, string? contentType, int? statusCode)
     {
-        ResponseContent = content;
+        // We need to make a copy here since we have to stash it on the heap
+        ResponseContent = utf8Content.ToArray();
         StatusCode = statusCode;
         ContentType = contentType;
     }
@@ -38,7 +29,7 @@ public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult, 
     /// <summary>
     /// Gets the content representing the body of the response.
     /// </summary>
-    public string? ResponseContent { get; internal init; }
+    public ReadOnlyMemory<byte> ResponseContent { get; internal init; }
 
     /// <summary>
     /// Gets the Content-Type header for the response.
@@ -61,7 +52,7 @@ public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult, 
 
         // Creating the logger with a string to preserve the category after the refactoring.
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.ContentResult");
+        var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.Utf8ContentHttpResult");
 
         if (StatusCode is { } statusCode)
         {
@@ -69,10 +60,9 @@ public sealed partial class ContentHttpResult : IResult, IStatusCodeHttpResult, 
             httpContext.Response.StatusCode = statusCode;
         }
 
-        return HttpResultsHelper.WriteResultAsContentAsync(
-            httpContext,
-            logger,
-            ResponseContent,
-            ContentType);
+        httpContext.Response.ContentType = ContentType ?? HttpResultsHelper.DefaultContentType;
+
+        httpContext.Response.ContentLength = ResponseContent.Length;
+        return httpContext.Response.Body.WriteAsync(ResponseContent).AsTask();
     }
 }
