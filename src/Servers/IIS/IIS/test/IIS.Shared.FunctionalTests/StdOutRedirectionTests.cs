@@ -47,7 +47,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             StopServer();
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-                @"The framework 'Microsoft.NETCore.App', version '2.9.9' \(x64\) was not found.", Logger);
+                @"Framework: 'Microsoft.NETCore.App', version '2.9.9' \(x64\)", Logger);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                "To install missing framework, download:", Logger);
         }
 
         [ConditionalFact]
@@ -69,10 +71,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             StopServer();
 
             var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
-            var expectedString = "The framework 'Microsoft.NETCore.App', version '2.9.9' (x64) was not found.";
+            var missingFrameworkString = "To install missing framework, download:";
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                @"Framework: 'Microsoft.NETCore.App', version '2.9.9' \(x64\)", Logger);
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, 
-                @"The framework 'Microsoft.NETCore.App', version '2.9.9' \(x64\) was not found.", Logger);
-            Assert.Contains(expectedString, contents);
+                missingFrameworkString, Logger);
+            Assert.Contains(@"Framework: 'Microsoft.NETCore.App', version '2.9.9' (x64)", contents);
+            Assert.Contains(missingFrameworkString, contents);
         }
 
         [ConditionalFact]
