@@ -262,16 +262,17 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const targetElement = document.getElementById('app') as HTMLDivElement;
   const progressElement = document.getElementById('progress') as unknown as SVGCircleElement;
   const percentageElement = document.getElementById('percentage') as unknown as SVGTextElement;
-  const showProgress = progressElement && percentageElement && targetElement;
 
   var resourcesLoaded = 0;
   function setProgress(){
       resourcesLoaded++;
       const percentage = resourcesLoaded / totalResources * 100;
+      
       if (targetElement) {
         targetElement.style.setProperty('--blazor-load-percentage', percentage + '%');
       }
-      if (showProgress) {
+      
+      if (progressElement && percentageElement) {
         progressElement.style.display = 'block';
         percentageElement.textContent = Math.floor(percentage) + '%';
       }
