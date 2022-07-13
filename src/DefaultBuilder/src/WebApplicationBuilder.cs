@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +19,10 @@ public sealed class WebApplicationBuilder
 {
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
     private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
+    private const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
-    private readonly WebApplicationAuthenticationBuilder _webAuthBuilder;
 
     private WebApplication? _builtApplication;
 
@@ -82,7 +83,6 @@ public sealed class WebApplicationBuilder
 
         Host = new ConfigureHostBuilder(bootstrapHostBuilder.Context, Configuration, Services);
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
-        _webAuthBuilder = new WebApplicationAuthenticationBuilder(Services);
     }
 
     /// <summary>
@@ -116,11 +116,6 @@ public sealed class WebApplicationBuilder
     /// To build after configuration, call <see cref="Build"/>.
     /// </summary>
     public ConfigureHostBuilder Host { get; }
-
-    /// <summary>
-    /// An <see cref="AuthenticationBuilder"/> for configuring authentication-related properties.
-    /// </summary>
-    public AuthenticationBuilder Authentication => _webAuthBuilder;
 
     /// <summary>
     /// Builds the <see cref="WebApplication"/>.
@@ -175,15 +170,25 @@ public sealed class WebApplicationBuilder
             }
         }
 
-        if (_webAuthBuilder.IsAuthenticationConfigured)
+        // Process authorization and authentication middlewares independently to avoid
+        // registering middlewares for services that do not exist
+        if (_builtApplication.Services.GetService<IAuthenticationSchemeProvider>() is not null)
         {
             // Don't add more than one instance of the middleware
             if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
             {
                 // The Use invocations will set the property on the outer pipeline,
-                // but we want to set it on the inner pipeline as well
+                // but we want to set it on the inner pipeline as well.
                 _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
                 app.UseAuthentication();
+            }
+        }
+
+        if (_builtApplication.Services.GetService<IAuthorizationHandlerProvider>() is not null)
+        {
+            if (!_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
+            {
+                _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
                 app.UseAuthorization();
             }
         }

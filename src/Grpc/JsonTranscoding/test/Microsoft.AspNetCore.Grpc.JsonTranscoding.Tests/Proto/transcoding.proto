@@ -180,6 +180,7 @@ message HelloRequest {
   google.protobuf.ListValue list_value = 19;
   google.protobuf.NullValue null_value = 20;
   google.protobuf.FieldMask field_mask_value = 21;
+  string field_name = 22 [json_name="json_customized_name"];
 }
 
 message HelloReply {

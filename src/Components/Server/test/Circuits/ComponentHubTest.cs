@@ -79,7 +79,7 @@ public class ComponentHubTest
     {
         var (mockClientProxy, hub) = InitializeComponentHub();
 
-        await hub.OnLocationChanged("https://localhost:5000/subdir/page", false);
+        await hub.OnLocationChanged("https://localhost:5000/subdir/page", null, false);
 
         var errorMessage = "Circuit not initialized.";
         mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());

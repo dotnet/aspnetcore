@@ -127,6 +127,43 @@ public class CreatedOfTResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Created<object>>(null));
     }
 
+    [Fact]
+    public void CreatedResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange
+        var location = "/test/";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Created<string>(location, null));
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange
+        var location = "/test/";
+        var value = "Foo";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new Created<string>(location, value));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void AcceptedResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange
+        var location = "/test/";
+        var value = "Foo";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new Created<string>(location, value));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

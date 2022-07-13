@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// <summary>
 /// An action result which formats the given object as JSON.
 /// </summary>
-public sealed partial class JsonHttpResult<TValue> : IResult
+public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>, IContentTypeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Json"/> class with the values.
@@ -65,6 +65,8 @@ public sealed partial class JsonHttpResult<TValue> : IResult
     /// Gets the object result.
     /// </summary>
     public TValue? Value { get; }
+
+    object? IValueHttpResult.Value => Value;
 
     /// <summary>
     /// Gets the value for the <c>Content-Type</c> header.

@@ -493,10 +493,9 @@ public class KestrelConfigurationLoader
 
     private bool TryGetCertificatePath([NotNullWhen(true)] out string? path)
     {
-        // This will go away when we implement
-        // https://github.com/aspnet/Hosting/issues/1294
+        // See https://github.com/aspnet/Hosting/issues/1294
         var appData = Environment.GetEnvironmentVariable("APPDATA");
-        var home = Environment.GetEnvironmentVariable("HOME");
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var basePath = appData != null ? Path.Combine(appData, "ASP.NET", "https") : null;
         basePath = basePath ?? (home != null ? Path.Combine(home, ".aspnet", "https") : null);
         path = basePath != null ? Path.Combine(basePath, $"{HostEnvironment.ApplicationName}.pfx") : null;

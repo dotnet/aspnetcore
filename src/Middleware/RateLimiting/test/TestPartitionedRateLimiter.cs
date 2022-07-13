@@ -66,7 +66,7 @@ internal class TestPartitionedRateLimiter<TResource> : PartitionedRateLimiter<TR
         var leases = new List<RateLimitLease>();
         foreach (var limiter in limiters)
         {
-            leases.Add(await limiter.WaitAsync().ConfigureAwait(false));
+            leases.Add(await limiter.WaitAsync());
         }
         foreach (var lease in leases)
         {

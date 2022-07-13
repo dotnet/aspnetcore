@@ -112,6 +112,38 @@ public class OkOfTResultTests
         Assert.Throws<ArgumentNullException>("context", () => PopulateMetadata<Ok<object>>(null));
     }
 
+    [Fact]
+    public void OkResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new Ok<object>(null));
+        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+    }
+
+    [Fact]
+    public void OkResult_Implements_IValueHttpResult_Correctly()
+    {
+        // Arrange
+        var value = "Foo";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult>(new Ok<string>(value));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void OkResult_Implements_IValueHttpResultOfT_Correctly()
+    {
+        // Arrange
+        var value = "Foo";
+
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IValueHttpResult<string>>(new Ok<string>(value));
+        Assert.IsType<string>(result.Value);
+        Assert.Equal(value, result.Value);
+    }
+
     private static void PopulateMetadata<TResult>(EndpointMetadataContext context)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(context);
 

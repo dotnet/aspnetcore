@@ -150,7 +150,7 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                             DiagnosticDescriptors.DoNotUseHostConfigureLogging,
                             invocation));
                 }
-
+                
                 // var builder = WebApplication.CreateBuilder(args);
                 // builder.Host.ConfigureServices(x => {});
                 if (IsDisallowedMethod(
@@ -175,15 +175,14 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                         targetMethod,
                         wellKnownTypes.ConfigureWebHostBuilder,
                         "ConfigureServices",
-                        configureServicesTypes
-                        ))
+                        configureServicesTypes))
                 {
                     operationAnalysisContext.ReportDiagnostic(
                         CreateDiagnostic(
                             DiagnosticDescriptors.DoNotUseHostConfigureServices,
                             invocation));
                 }
-
+                
                 // var builder = WebApplication.CreateBuilder();
                 // builder.WebHost.ConfigureAppConfiguration(builder => {});
                 if (IsDisallowedMethod(

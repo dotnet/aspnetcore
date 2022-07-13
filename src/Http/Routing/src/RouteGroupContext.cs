@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
-/// Represents the information accessible to <see cref="EndpointDataSource.GetEndpointGroup(RouteGroupContext)"/>.
+/// Represents the information accessible to <see cref="EndpointDataSource.GetGroupedEndpoints(RouteGroupContext)"/>.
 /// </summary>
 public sealed class RouteGroupContext
 {
@@ -30,7 +30,7 @@ public sealed class RouteGroupContext
 
     /// <summary>
     /// Gets the <see cref="RouteEndpoint.RoutePattern"/> which should prefix the <see cref="RouteEndpoint.RoutePattern"/> of all <see cref="RouteEndpoint"/> instances
-    /// returned by the call to <see cref="EndpointDataSource.GetEndpointGroup(RouteGroupContext)"/>. This accounts for nested groups and gives the full group prefix
+    /// returned by the call to <see cref="EndpointDataSource.GetGroupedEndpoints(RouteGroupContext)"/>. This accounts for nested groups and gives the full group prefix
     /// not just the prefix supplied to the innermost call to <see cref="EndpointRouteBuilderExtensions.MapGroup(IEndpointRouteBuilder, RoutePattern)"/>.
     /// </summary>
     public RoutePattern Prefix { get; }
@@ -38,7 +38,7 @@ public sealed class RouteGroupContext
     /// <summary>
     /// Gets all conventions added to ancestor <see cref="RouteGroupBuilder"/> instances returned from <see cref="EndpointRouteBuilderExtensions.MapGroup(IEndpointRouteBuilder, RoutePattern)"/>
     /// via <see cref="IEndpointConventionBuilder.Add(Action{EndpointBuilder})"/>. These should be applied in order when building every <see cref="RouteEndpoint"/>
-    /// returned from <see cref="EndpointDataSource.GetEndpointGroup(RouteGroupContext)"/>.
+    /// returned from <see cref="EndpointDataSource.GetGroupedEndpoints(RouteGroupContext)"/>.
     /// </summary>
     public IReadOnlyList<Action<EndpointBuilder>> Conventions { get; }
 

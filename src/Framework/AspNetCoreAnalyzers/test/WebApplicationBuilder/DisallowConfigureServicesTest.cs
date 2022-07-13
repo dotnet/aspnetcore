@@ -163,6 +163,9 @@ public static class Program
 public class Startup { }
 ";
 
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
         // Assert
         await VerifyCS.VerifyCodeFixAsync(source, source);
     }
@@ -249,7 +252,7 @@ public class Startup { }
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
 
-[Fact]
+    [Fact]
     public async Task WarnsWhenBuilderHostConfigureServicesIsUsed_Inside_Another_Method()
     {
         // Arrange
@@ -309,7 +312,7 @@ builder.Services.AddAntiforgery();
 builder.Services.AddAntiforgery();
 ";
         var expectedDiagnostic = new[]
-        {
+{
             new DiagnosticResult(DiagnosticDescriptors.DoNotUseHostConfigureServices).WithArguments("ConfigureServices").WithLocation(0),
             new DiagnosticResult(DiagnosticDescriptors.DoNotUseHostConfigureServices).WithArguments("ConfigureServices").WithLocation(1)
         };

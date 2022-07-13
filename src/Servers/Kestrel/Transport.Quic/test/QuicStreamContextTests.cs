@@ -112,6 +112,8 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         var clientStream = await clientConnection.OpenBidirectionalStreamAsync();
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
+        var readTask = clientStream.ReadUntilEndAsync();
+
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
         var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
         serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);
@@ -122,6 +124,8 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         // Complete reading and writing.
         await serverStream.Transport.Input.CompleteAsync();
         await serverStream.Transport.Output.CompleteAsync();
+
+        await readTask.DefaultTimeout();
 
         var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
 
@@ -178,6 +182,9 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         readResult = await serverStream.Transport.Input.ReadAsync().DefaultTimeout();
         Assert.True(readResult.IsCompleted);
 
+        Logger.LogInformation("Client starting to read.");
+        var readingTask = clientStream.ReadUntilEndAsync();
+
         Logger.LogInformation("Server sending data.");
         await serverStream.Transport.Output.WriteAsync(testData).DefaultTimeout();
 
@@ -186,7 +193,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         await serverStream.Transport.Output.CompleteAsync().DefaultTimeout();
 
         Logger.LogInformation("Client reading until end of stream.");
-        var data = await clientStream.ReadUntilEndAsync().DefaultTimeout();
+        var data = await readingTask.DefaultTimeout();
         Assert.Equal(testData.Length, data.Length);
         Assert.Equal(testData, data);
 

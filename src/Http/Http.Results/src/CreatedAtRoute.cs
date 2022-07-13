@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// with status code Created (201) and Location header.
 /// Targets a registered route.
 /// </summary>
-public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider
+public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CreatedAtRoute"/> class with the values
@@ -53,6 +53,8 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider
     /// Gets the HTTP status code: <see cref="StatusCodes.Status201Created"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status201Created;
+
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)

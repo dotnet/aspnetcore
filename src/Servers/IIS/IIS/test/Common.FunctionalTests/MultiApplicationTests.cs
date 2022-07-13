@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 #if !IIS_FUNCTIONALS
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -42,10 +37,12 @@ public class MultiApplicationTests : IISFunctionalTestBase
     {
         var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
         parameters.ServerConfigActionList.Add(DuplicateApplication);
-        var result = await DeployAsync(parameters);
-        var id1 = await result.HttpClient.GetStringAsync("/app1/ProcessId");
-        var id2 = await result.HttpClient.GetStringAsync("/app2/ProcessId");
-        Assert.NotEqual(id2, id1);
+        await RunTest(parameters, async result =>
+        {
+            var id1 = await result.HttpClient.GetStringAsync("/app1/ProcessId");
+            var id2 = await result.HttpClient.GetStringAsync("/app2/ProcessId");
+            Assert.NotEqual(id2, id1);
+        });
     }
 
     [ConditionalFact]
@@ -76,24 +73,25 @@ public class MultiApplicationTests : IISFunctionalTestBase
     {
         var parameters = Fixture.GetBaseDeploymentParameters(firstApp);
         parameters.ServerConfigActionList.Add(DuplicateApplication);
-        var result = await DeployAsync(parameters);
-
-        // Modify hosting model of other app to be the opposite
-        var otherApp = firstApp == HostingModel.InProcess ? HostingModel.OutOfProcess : HostingModel.InProcess;
-        SetHostingModel(_publishedApplication.Path, otherApp);
-
-        var result1 = await result.HttpClient.GetAsync("/app1/HelloWorld");
-        var result2 = await result.HttpClient.GetAsync("/app2/HelloWorld");
-        Assert.Equal(200, (int)result1.StatusCode);
-        Assert.Equal(500, (int)result2.StatusCode);
-        StopServer();
-
-        if (DeployerSelector.HasNewShim)
+        await RunTest(parameters, async result =>
         {
-            Assert.Contains("500.34", await result2.Content.ReadAsStringAsync());
-        }
+            // Modify hosting model of other app to be the opposite
+            var otherApp = firstApp == HostingModel.InProcess ? HostingModel.OutOfProcess : HostingModel.InProcess;
+            SetHostingModel(_publishedApplication.Path, otherApp);
 
-        EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.", Logger);
+            var result1 = await result.HttpClient.GetAsync("/app1/HelloWorld");
+            var result2 = await result.HttpClient.GetAsync("/app2/HelloWorld");
+            Assert.Equal(200, (int)result1.StatusCode);
+            Assert.Equal(500, (int)result2.StatusCode);
+            StopServer();
+
+            if (DeployerSelector.HasNewShim)
+            {
+                Assert.Contains("500.34", await result2.Content.ReadAsStringAsync());
+            }
+
+            EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.", Logger);
+        });
     }
 
     private void SetHostingModel(string directory, HostingModel model)
