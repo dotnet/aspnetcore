@@ -17,13 +17,15 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
 {
     private readonly HealthCheckService _healthCheckService;
     private readonly IOptions<HealthCheckPublisherOptions> _healthCheckPublisherOptions;
+    private readonly IOptions<HealthCheckServiceOptions> _healthCheckServiceOptions;
     private readonly ILogger _logger;
     private readonly IHealthCheckPublisher[] _publishers;
     private readonly IDictionary<string, HealthCheckRegistration> _healthCheckRegistrationsDictionary;
+    private readonly Queue<HealthReport> _healthReportQueue;
 
     private readonly CancellationTokenSource _stopping;
-    private Timer? _timer;
-    private TimeSpan _timerElapsed = TimeSpan.Zero;
+    private Timer? _healthCheckPublisherTimer;
+    private ICollection<Timer> _healthCheckRegistrationTimers;
     private CancellationTokenSource? _runTokenSource;
 
     public HealthCheckPublisherHostedService(
@@ -60,6 +62,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
 
         _healthCheckService = healthCheckService;
         _healthCheckPublisherOptions = healthCheckPublisherOptions;
+        _healthCheckServiceOptions = healthCheckServiceOptions;
         _logger = logger;
         _publishers = publishers.ToArray();
 
@@ -75,12 +78,14 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
                 return r;
             });
 
+        _healthReportQueue = new Queue<HealthReport>();
+
         _stopping = new CancellationTokenSource();
     }
 
     internal bool IsStopping => _stopping.IsCancellationRequested;
 
-    internal bool IsTimerRunning => _timer != null;
+    internal bool IsTimerRunning => _healthCheckPublisherTimer != null;
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -89,9 +94,18 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
             return Task.CompletedTask;
         }
 
+        _healthCheckRegistrationTimers =
+            _healthCheckRegistrationsDictionary
+                .Select(r =>
+                    NonCapturingTimer.Create(
+                        async (state) => await CheckHealthAsync(r.Value.Name).ConfigureAwait(false),
+                        null,
+                        dueTime: _healthCheckPublisherOptions.Value.Delay,
+                        period: r.Value.Period)).ToList();
+
         // IMPORTANT - make sure this is the last thing that happens in this method. The timer can
         // fire before other code runs.
-        _timer = NonCapturingTimer.Create(Timer_Tick, null, dueTime: _healthCheckPublisherOptions.Value.Delay, period: _healthCheckPublisherOptions.Value.Period);
+        _healthCheckPublisherTimer = NonCapturingTimer.Create(Timer_Tick, null, dueTime: _healthCheckPublisherOptions.Value.Delay, period: _healthCheckPublisherOptions.Value.Period);
 
         return Task.CompletedTask;
     }
@@ -112,8 +126,14 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
             return Task.CompletedTask;
         }
 
-        _timer?.Dispose();
-        _timer = null;
+        _healthCheckPublisherTimer?.Dispose();
+        _healthCheckPublisherTimer = null;
+
+        foreach (var timer in _healthCheckRegistrationTimers)
+        {
+            timer.Dispose();
+        }
+        _healthCheckRegistrationTimers = default;
 
         return Task.CompletedTask;
     }
@@ -128,6 +148,28 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
     internal void CancelToken()
     {
         _runTokenSource!.Cancel();
+    }
+
+    private async Task CheckHealthAsync(string healthCheckName)
+    {
+        // Concatenate with exposed predicate
+        var runHealthCheckPredicate = (HealthCheckRegistration hcr) =>
+        {
+            var runHealthCheck = hcr.Name == healthCheckName;
+
+            if (_healthCheckPublisherOptions.Value.Predicate == null)
+            {
+                return runHealthCheck;
+            }
+
+            return _healthCheckPublisherOptions.Value.Predicate(hcr)
+                && runHealthCheck;
+        };
+
+        // The health checks service does it's own logging, and doesn't throw exceptions.
+        var report = await _healthCheckService.CheckHealthAsync(runHealthCheckPredicate).ConfigureAwait(false);
+
+        _healthReportQueue.Enqueue(report);
     }
 
     // Internal for testing
@@ -170,40 +212,17 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         // Forcibly yield - we want to unblock the timer thread.
         await Task.Yield();
 
-        _timerElapsed += _healthCheckPublisherOptions.Value.Period;
-
-        // Filter health check registrations per elapsed
-        var healthCheckRegistrationsElapsed = new HashSet<string>();
-        foreach (var registration in _healthCheckRegistrationsDictionary.Values)
-        {
-            if (_timerElapsed.Ticks % registration.Period.Ticks == 0L)
-            {
-                healthCheckRegistrationsElapsed.Add(registration.Name);
-            }
-        }
-
-        // Concatenate with exposed predicate
-        var elapsedHealthCheckPredicate = (HealthCheckRegistration hcr) =>
-        {
-            var runHealthCheck = healthCheckRegistrationsElapsed.Contains(hcr.Name);
-
-            if (_healthCheckPublisherOptions.Value.Predicate == null)
-            {
-                return runHealthCheck;
-            }
-
-            return _healthCheckPublisherOptions.Value.Predicate(hcr)
-                && runHealthCheck;
-        };
-
         // The health checks service does it's own logging, and doesn't throw exceptions.
-        var report = await _healthCheckService.CheckHealthAsync(elapsedHealthCheckPredicate, cancellationToken).ConfigureAwait(false);
-
         var publishers = _publishers;
-        var tasks = new Task[publishers.Length];
-        for (var i = 0; i < publishers.Length; i++)
+        var tasks = new List<Task>(publishers.Length * _healthReportQueue.Count);
+
+        while (_healthReportQueue.Any())
         {
-            tasks[i] = RunPublisherAsync(publishers[i], report, cancellationToken);
+            var report = _healthReportQueue.Dequeue();
+            foreach (var publisher in publishers)
+            {
+                tasks.Add(RunPublisherAsync(publisher, report, cancellationToken));
+            }
         }
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
