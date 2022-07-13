@@ -304,5 +304,6 @@ builder.Logging.AddJsonConsole();
 
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
+
 }
 
