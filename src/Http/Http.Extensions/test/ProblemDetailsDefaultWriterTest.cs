@@ -34,7 +34,7 @@ public class DefaultProblemDetailsWriterTest
         };
 
         //Act
-        await writer.TryWriteAsync(problemDetailsContext);
+        await writer.WriteAsync(problemDetailsContext);
 
         //Assert
         stream.Position = 0;
@@ -65,7 +65,7 @@ public class DefaultProblemDetailsWriterTest
         };
 
         //Act
-        await writer.TryWriteAsync(problemDetailsContext);
+        await writer.WriteAsync(problemDetailsContext);
 
         //Assert
         stream.Position = 0;
@@ -93,7 +93,7 @@ public class DefaultProblemDetailsWriterTest
         var context = CreateContext(stream, StatusCodes.Status500InternalServerError);
 
         //Act
-        await writer.TryWriteAsync(new ProblemDetailsContext() { HttpContext = context });
+        await writer.WriteAsync(new ProblemDetailsContext() { HttpContext = context });
 
         //Assert
         stream.Position = 0;
@@ -122,7 +122,7 @@ public class DefaultProblemDetailsWriterTest
         var context = CreateContext(stream, StatusCodes.Status500InternalServerError);
 
         //Act
-        await writer.TryWriteAsync(new ProblemDetailsContext()
+        await writer.WriteAsync(new ProblemDetailsContext()
         {
             HttpContext = context,
             ProblemDetails = { Status = StatusCodes.Status400BadRequest }
@@ -147,7 +147,7 @@ public class DefaultProblemDetailsWriterTest
         var context = CreateContext(stream, StatusCodes.Status500InternalServerError);
 
         //Act
-        await writer.TryWriteAsync(new ProblemDetailsContext()
+        await writer.WriteAsync(new ProblemDetailsContext()
         {
             HttpContext = context,
             ProblemDetails = { Status = StatusCodes.Status400BadRequest }
@@ -167,45 +167,24 @@ public class DefaultProblemDetailsWriterTest
     [InlineData("application/*")]
     [InlineData("application/json")]
     [InlineData("application/problem+json")]
-    public async Task WriteAsync_Works_WhenJsonAccepted(string contentType)
+    public void CanWrite_ReturnsTrue_WhenJsonAccepted(string contentType)
     {
         // Arrange
         var writer = GetWriter();
         var stream = new MemoryStream();
         var context = CreateContext(stream, contentType: contentType);
 
-        var expectedProblem = new ProblemDetails()
-        {
-            Detail = "Custom Bad Request",
-            Instance = "Custom Bad Request",
-            Status = StatusCodes.Status400BadRequest,
-            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1-custom",
-            Title = "Custom Bad Request",
-        };
-        var problemDetailsContext = new ProblemDetailsContext()
-        {
-            HttpContext = context,
-            ProblemDetails = expectedProblem
-        };
-
         //Act
-        await writer.TryWriteAsync(problemDetailsContext);
+        var result = writer.CanWrite(new() { HttpContext = context });
 
         //Assert
-        stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream);
-        Assert.NotNull(problemDetails);
-        Assert.Equal(expectedProblem.Status, problemDetails.Status);
-        Assert.Equal(expectedProblem.Type, problemDetails.Type);
-        Assert.Equal(expectedProblem.Title, problemDetails.Title);
-        Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
-        Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
+        Assert.True(result);
     }
 
     [Theory]
     [InlineData("application/xml")]
     [InlineData("application/problem+xml")]
-    public async Task WriteAsync_Skips_WhenJsonNotAccepted(string contentType)
+    public void CanWrite_ReturnsFalse_WhenJsonNotAccepted(string contentType)
     {
         // Arrange
         var writer = GetWriter();
@@ -213,12 +192,10 @@ public class DefaultProblemDetailsWriterTest
         var context = CreateContext(stream, contentType: contentType);
 
         //Act
-        var result = await writer.TryWriteAsync(new() { HttpContext = context });
+        var result = writer.CanWrite(new() { HttpContext = context });
 
         //Assert
         Assert.False(result);
-        Assert.Equal(0, stream.Position);
-        Assert.Equal(0, stream.Length);
     }
 
     private static HttpContext CreateContext(

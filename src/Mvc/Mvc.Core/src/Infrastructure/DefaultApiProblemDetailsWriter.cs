@@ -32,24 +32,23 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
         _apiBehaviorOptions = apiBehaviorOptions.Value;
     }
 
-    public async ValueTask<bool> TryWriteAsync(ProblemDetailsContext context)
+    public bool CanWrite(ProblemDetailsContext context)
     {
         var controllerAttribute = context.AdditionalMetadata?.GetMetadata<ControllerAttribute>() ??
             context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ControllerAttribute>();
 
-        if (controllerAttribute == null)
-        {
-            return false;
-        }
+        return controllerAttribute != null;
+    }
 
+    public ValueTask WriteAsync(ProblemDetailsContext context)
+    {
         var apiControllerAttribute = context.AdditionalMetadata?.GetMetadata<IApiBehaviorMetadata>() ??
             context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IApiBehaviorMetadata>();
 
         if (apiControllerAttribute is null || _apiBehaviorOptions.SuppressMapClientErrors)
         {
-            // In this case we don't want to move
-            // to the next registered writers.
-            return true;
+            // In this case we don't want to write
+            return ValueTask.CompletedTask;
         }
 
         // Recreating the problem details to get all customizations
@@ -83,10 +82,9 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
 
         if (selectedFormatter == null)
         {
-            return false;
+            return ValueTask.CompletedTask;
         }
 
-        await selectedFormatter.WriteAsync(formatterContext);
-        return true;
+        return new ValueTask(selectedFormatter.WriteAsync(formatterContext));
     }
 }

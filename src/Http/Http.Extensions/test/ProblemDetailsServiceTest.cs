@@ -118,18 +118,16 @@ public class ProblemDetailsServiceTest
             _canWrite = canWrite;
         }
 
-        public async ValueTask<bool> TryWriteAsync(ProblemDetailsContext context)
+        public bool CanWrite(ProblemDetailsContext context)
         {
             var metadata = context.AdditionalMetadata?.GetMetadata<SampleMetadata>() ??
                 context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<SampleMetadata>();
 
-            if (metadata != null && _canWrite)
-            {
-                await context.HttpContext.Response.WriteAsJsonAsync(_content);
-                return true;
-            }
+            return metadata != null && _canWrite;
 
-            return false;
         }
+
+        public ValueTask WriteAsync(ProblemDetailsContext context)
+            => new(context.HttpContext.Response.WriteAsJsonAsync(_content));
     }
 }

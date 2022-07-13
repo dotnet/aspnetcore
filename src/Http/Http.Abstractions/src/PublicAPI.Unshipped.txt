@@ -30,18 +30,19 @@ Microsoft.AspNetCore.Http.IEndpointFilter.InvokeAsync(Microsoft.AspNetCore.Http.
 Microsoft.AspNetCore.Http.IFileHttpResult
 Microsoft.AspNetCore.Http.IFileHttpResult.ContentType.get -> string?
 Microsoft.AspNetCore.Http.IFileHttpResult.FileDownloadName.get -> string?
+Microsoft.AspNetCore.Http.IProblemDetailsService
+Microsoft.AspNetCore.Http.IProblemDetailsService.WriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Http.IProblemDetailsWriter
 Microsoft.AspNetCore.Http.INestedHttpResult
 Microsoft.AspNetCore.Http.INestedHttpResult.Result.get -> Microsoft.AspNetCore.Http.IResult!
+Microsoft.AspNetCore.Http.IProblemDetailsWriter.CanWrite(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> bool
+Microsoft.AspNetCore.Http.IProblemDetailsWriter.WriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Http.IStatusCodeHttpResult
 Microsoft.AspNetCore.Http.IStatusCodeHttpResult.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.IValueHttpResult
 Microsoft.AspNetCore.Http.IValueHttpResult.Value.get -> object?
 Microsoft.AspNetCore.Http.IValueHttpResult<TValue>
 Microsoft.AspNetCore.Http.IValueHttpResult<TValue>.Value.get -> TValue?
-Microsoft.AspNetCore.Http.IProblemDetailsService
-Microsoft.AspNetCore.Http.IProblemDetailsService.WriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Http.IProblemDetailsWriter
-Microsoft.AspNetCore.Http.IProblemDetailsWriter.TryWriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata

@@ -38,7 +38,7 @@ public class DefaultApiProblemDetailsWriterTest
         };
 
         //Act
-        await writer.TryWriteAsync(problemDetailsContext);
+        await writer.WriteAsync(problemDetailsContext);
 
         //Assert
         stream.Position = 0;
@@ -69,7 +69,7 @@ public class DefaultApiProblemDetailsWriterTest
         };
 
         //Act
-        await writer.TryWriteAsync(problemDetailsContext);
+        await writer.WriteAsync(problemDetailsContext);
 
         //Assert
         stream.Position = 0;
@@ -80,7 +80,7 @@ public class DefaultApiProblemDetailsWriterTest
     }
 
     [Fact]
-    public async Task WriteAsync_ReturnsFalseAndSkip_WhenNotController()
+    public void CanWrite_ReturnsFalse_WhenNotController()
     {
         // Arrange
         var writer = GetWriter();
@@ -88,16 +88,14 @@ public class DefaultApiProblemDetailsWriterTest
         var context = CreateContext(stream, metadata: EndpointMetadataCollection.Empty);
 
         //Act
-        var result = await writer.TryWriteAsync(new() { HttpContext = context });
+        var result = writer.CanWrite(new() { HttpContext = context });
 
         //Assert
         Assert.False(result);
-        Assert.Equal(0, stream.Position);
-        Assert.Equal(0, stream.Length);
     }
 
     [Fact]
-    public async Task WriteAsync_ReturnsTrueAndSkip_WhenNotApiController()
+    public void CanWrite_ReturnsTrue_WhenController()
     {
         // Arrange
         var writer = GetWriter();
@@ -105,16 +103,30 @@ public class DefaultApiProblemDetailsWriterTest
         var context = CreateContext(stream, metadata: new EndpointMetadataCollection(new ControllerAttribute()));
 
         //Act
-        var result = await writer.TryWriteAsync(new() { HttpContext = context });
+        var result = writer.CanWrite(new() { HttpContext = context });
 
         //Assert
         Assert.True(result);
+    }
+
+    [Fact]
+    public async Task WriteAsync_Skip_WhenNotApiController()
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream, metadata: new EndpointMetadataCollection(new ControllerAttribute()));
+
+        //Act
+        await writer.WriteAsync(new() { HttpContext = context });
+
+        //Assert
         Assert.Equal(0, stream.Position);
         Assert.Equal(0, stream.Length);
     }
 
     [Fact]
-    public async Task WriteAsync_ReturnsTrueAndSkip_WhenSuppressMapClientErrors()
+    public async Task WriteAsync_Skip_WhenSuppressMapClientErrors()
     {
         // Arrange
         var writer = GetWriter(options: new ApiBehaviorOptions() { SuppressMapClientErrors = true });
@@ -122,16 +134,15 @@ public class DefaultApiProblemDetailsWriterTest
         var context = CreateContext(stream);
 
         //Act
-        var result = await writer.TryWriteAsync(new() { HttpContext = context });
+        await writer.WriteAsync(new() { HttpContext = context });
 
         //Assert
-        Assert.True(result);
         Assert.Equal(0, stream.Position);
         Assert.Equal(0, stream.Length);
     }
 
     [Fact]
-    public async Task WriteAsync_ReturnsFalseAndSkip_WhenNoFormatter()
+    public async Task WriteAsync_Skip_WhenNoFormatter()
     {
         // Arrange
         var formatter = new Mock<IOutputFormatter>();
@@ -141,10 +152,9 @@ public class DefaultApiProblemDetailsWriterTest
         var context = CreateContext(stream);
 
         //Act
-        var result = await writer.TryWriteAsync(new() { HttpContext = context });
+        await writer.WriteAsync(new() { HttpContext = context });
 
         //Assert
-        Assert.False(result);
         Assert.Equal(0, stream.Position);
         Assert.Equal(0, stream.Length);
     }
