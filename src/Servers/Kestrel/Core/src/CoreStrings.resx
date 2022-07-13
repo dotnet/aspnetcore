@@ -692,9 +692,6 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="AttemptedToReadHeaderOnAbortedStream" xml:space="preserve">
     <value>Attempted to read header on aborted stream.</value>
   </data>
-  <data name="AttemptingToOpenDuplicateWebTransportSession" xml:space="preserve">
-    <value>Attempting to open a new WebTransport session on a stream already associated with an existing WebTransport session.</value>
-  </data>
   <data name="ReceivedLooseWebTransportStream" xml:space="preserve">
     <value>Received a WebTransport stream that is not associated with an existing WebTransport session.</value>
   </data>

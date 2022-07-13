@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
-internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFeature
+internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFeature, IConnectionItemsFeature
 {
     private readonly CancellationTokenRegistration _connectionClosedRegistration;
     private readonly bool _canWrite;
@@ -34,7 +34,7 @@ internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFe
 
     public override IDictionary<object, object?> Items
     {
-        get => _items ??= new Dictionary<object, object?>();
+        get => _items ??= new ConnectionItems();
         set => _items = value;
     }
 
@@ -52,7 +52,8 @@ internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFe
         StreamId = streamIdFeature!.StreamId;
 
         _features = context.ConnectionFeatures;
-        _features[typeof(IStreamDirectionFeature)] = this;
+        _features.Set<IStreamDirectionFeature>(this);
+        _features.Set<IConnectionItemsFeature>(this);
 
         _duplexPipe = new DuplexPipe(context.Transport.Input, context.Transport.Output);
 

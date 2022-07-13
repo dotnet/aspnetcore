@@ -520,14 +520,18 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     {
         var correspondingSession = await stream.ReadNextStreamHeaderAsync(stream.Context, streamId, null);
 
-        if (!_webtransportSessions.ContainsKey(correspondingSession))
+        lock (_webtransportSessions)
         {
-            throw new Exception(CoreStrings.ReceivedLooseWebTransportStream);
-        }
+            if (!_webtransportSessions.TryGetValue(correspondingSession, out var session))
+            {
+                stream.Abort(new ConnectionAbortedException(CoreStrings.ReceivedLooseWebTransportStream));
+                throw new Http3StreamErrorException(CoreStrings.ReceivedLooseWebTransportStream, Http3ErrorCode.StreamCreationError);
+            }
 
-        stream.Context.WebTransportSession = _webtransportSessions[correspondingSession];
-        var webtransportStream = new WebTransportStream(stream.Context, type);
-        _webtransportSessions[correspondingSession].AddStream(webtransportStream);
+            stream.Context.WebTransportSession = session;
+            var webtransportStream = new WebTransportStream(stream.Context, type);
+            session.AddStream(webtransportStream);
+        }
     }
 
     private static ConnectionAbortedException CreateConnectionAbortError(Exception? error, bool clientAbort)
@@ -790,12 +794,14 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
     internal WebTransportSession OpenNewWebTransportSession(Http3Stream http3Stream)
     {
-        if (_webtransportSessions.ContainsKey(http3Stream.StreamId))
+        WebTransportSession session;
+        lock (_webtransportSessions)
         {
-            throw new Exception(CoreStrings.AttemptingToOpenDuplicateWebTransportSession);
+            Debug.Assert(!_webtransportSessions.ContainsKey(http3Stream.StreamId));
+
+            session = new WebTransportSession(this, http3Stream);
+            _webtransportSessions[http3Stream.StreamId] = session;
         }
-        var session = new WebTransportSession(this, http3Stream);
-        _webtransportSessions[http3Stream.StreamId] = session;
         return session;
     }
 

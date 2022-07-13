@@ -11,19 +11,12 @@ To help applications get started on implementing WebTransport, there is the `Web
 The Chromium project has implemented a WebTransport client and can be accessed via their JS API from the Chrome or Edge DevTools console. A good sample app demonstrating how to use that API can be found [here](https://github.com/myjimmy/google-webtransport-sample/blob/ee13bde656c4d421d1f2a8e88fd71f572272c163/client.js).
 
 # Note about preview features
-WebTransport is a preview feature. Therefore, you must manually enable it via the `EnablePreviewFeatures` property and toggle the `Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams` `AppContextSwitch`. This can be done by either of the following options:
-- Adding the following `ItemGroup` to your csproj file:
+WebTransport is a preview feature. Therefore, you must manually enable it via the `EnablePreviewFeatures` property and toggle the `Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams` `RuntimeHostConfigurationOption`. This can be done by adding the following `ItemGroup` to your csproj file:
 ```xml
-  <ItemGroup>
+<ItemGroup>
     <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams" Value="true" />
-  </ItemGroup>
+</ItemGroup>
 ```
-or via:
-- Adding the following C# statement somewhere in your project's setup logic:
-```C#
-AppContext.SetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", true);
-```
-**Note:** Setting an `AppContextSwitch` is global. Therefore, the setting applies to all areas of your application, not just the current scope.
 
 # Obtaining a test certificate
 The current Kestrel default testing certificate cannot be used for WebTransport connections. You can generate a new certificate for testing via the following C#:

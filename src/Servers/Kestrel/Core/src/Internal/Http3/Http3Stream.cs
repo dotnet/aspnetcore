@@ -706,6 +706,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 ApplyCompletionFlag(StreamCompletionFlags.Completed);
                 _context.StreamLifetimeHandler.OnStreamCompleted(this);
 
+                // If we have a webtransport session on this stream, end it
+                if (IsWebTransportRequest && _context.WebTransportSession is not null)
+                {
+                    _context.WebTransportSession.OnClientConnectionClosed();
+                }
+
                 // TODO this is a hack for .NET 6 pooling.
                 //
                 // Pooling needs to happen after transports have been drained and stream

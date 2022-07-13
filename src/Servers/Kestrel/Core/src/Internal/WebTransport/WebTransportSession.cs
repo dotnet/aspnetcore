@@ -143,6 +143,7 @@ internal sealed class WebTransportSession : IWebTransportSession
     {
         if (_isClosing)
         {
+            stream.Abort();
             return;
         }
 
