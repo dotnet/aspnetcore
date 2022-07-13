@@ -137,7 +137,7 @@ public class ResponseCacheFilterExecutorTest
                             NoStore = false,
                             VaryByHeader = null
                         },
-                        "no-cache,max-age=10"
+                        "no-cache"
                     },
                     {
                         new CacheProfile
