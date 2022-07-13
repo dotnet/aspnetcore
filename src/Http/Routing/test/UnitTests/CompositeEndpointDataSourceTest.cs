@@ -43,7 +43,7 @@ public class CompositeEndpointDataSourceTest
         var conventions = Array.Empty<Action<EndpointBuilder>>();
         var applicationServices = new ServiceCollection().BuildServiceProvider();
 
-        var groupedEndpoints = compositeDataSource.GetEndpointGroup(new RouteGroupContext(prefix, conventions, applicationServices));
+        var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(new RouteGroupContext(prefix, conventions, applicationServices));
 
         var resolvedGroupEndpoints = Assert.Single(dataSource.ResolvedGroupedEndpoints);
         Assert.NotSame(groupedEndpoints, resolvedGroupEndpoints);
@@ -264,7 +264,7 @@ public class CompositeEndpointDataSourceTest
         };
 
         var context = new RouteGroupContext(prefix, conventions, applicationServices);
-        var groupedEndpoints = compositeDataSource.GetEndpointGroup(context);
+        var groupedEndpoints = compositeDataSource.GetGroupedEndpoints(context);
 
         var receivedContext = Assert.Single(dataSource.ReceivedRouteGroupContexts);
         Assert.Same(context, receivedContext);
@@ -299,10 +299,10 @@ public class CompositeEndpointDataSourceTest
 
         public List<IReadOnlyList<Endpoint>> ResolvedGroupedEndpoints { get; } = new();
 
-        public override IReadOnlyList<Endpoint> GetEndpointGroup(RouteGroupContext context)
+        public override IReadOnlyList<Endpoint> GetGroupedEndpoints(RouteGroupContext context)
         {
             ReceivedRouteGroupContexts.Add(context);
-            var resolved = base.GetEndpointGroup(context);
+            var resolved = base.GetGroupedEndpoints(context);
             ResolvedGroupedEndpoints.Add(resolved);
             return resolved;
         }

@@ -7,6 +7,8 @@
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
     {"testName": {"contains": "ReaderThrowsResetExceptionOnInvalidBody" }},
     {"testName": {"contains": "AttributeRouting_RouteNameTokenReplace_Reachable" }},
+    {"testName": {"contains": "ServerCertificateSelector_Invoked"}},
+    {"testName": {"contains": "TraceIdentifierIsUnique"}},
     {"testAssembly": {"contains": "IIS"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found) (Site is started but no worker process found)"}},
     {"failureMessage": {"contains": "network disconnected"}}

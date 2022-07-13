@@ -240,14 +240,14 @@ public class JsonResultTests
     }
 
     [Fact]
-    public void JsonResult_Implements_IStatusCodeHttpResult_Correctly_WithDefaultStatus()
+    public void JsonResult_Implements_IStatusCodeHttpResult_Correctly_WithNullStatus()
     {
         // Arrange
         var contentType = "application/json+custom";
 
         // Act & Assert
         var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new JsonHttpResult<string>(null, statusCode: null, contentType, null));
-        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        Assert.Null(result.StatusCode);
     }
 
     [Fact]

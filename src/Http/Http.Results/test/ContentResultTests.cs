@@ -157,14 +157,14 @@ public class ContentResultTests
     }
 
     [Fact]
-    public void ContentResult_Implements_IStatusCodeHttpResult_Correctly_WithDefaultStatus()
+    public void ContentResult_Implements_IStatusCodeHttpResult_Correctly_WithNullStatus()
     {
         // Arrange
         var contentType = "application/custom";
 
         // Act & Assert
         var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new ContentHttpResult("content", contentType));
-        Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        Assert.Null(result.StatusCode);
     }
 
     private static IServiceCollection CreateServices()

@@ -26,6 +26,8 @@ public sealed class Conflict : IResult, IEndpointMetadataProvider, IStatusCodeHt
     /// </summary>
     public int StatusCode => StatusCodes.Status409Conflict;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {

@@ -7,14 +7,14 @@ namespace Microsoft.AspNetCore.Http;
 /// Provides a default implementation for wrapping the <see cref="HttpContext"/> and parameters
 /// provided to a route handler.
 /// </summary>
-public sealed class DefaultRouteHandlerInvocationContext : RouteHandlerInvocationContext
+public sealed class DefaultEndpointFilterInvocationContext : EndpointFilterInvocationContext
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="DefaultRouteHandlerInvocationContext"/> for a given request.
+    /// Creates a new instance of the <see cref="DefaultEndpointFilterInvocationContext"/> for a given request.
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
     /// <param name="arguments">A list of parameters provided in the current request.</param>
-    public DefaultRouteHandlerInvocationContext(HttpContext httpContext, params object[] arguments)
+    public DefaultEndpointFilterInvocationContext(HttpContext httpContext, params object[] arguments)
     {
         HttpContext = httpContext;
         Arguments = arguments;

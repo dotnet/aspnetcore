@@ -25,6 +25,8 @@ public class NoContent : IResult, IEndpointMetadataProvider, IStatusCodeHttpResu
     /// </summary>
     public int StatusCode => StatusCodes.Status204NoContent;
 
+    int? IStatusCodeHttpResult.StatusCode => StatusCode;
+
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {

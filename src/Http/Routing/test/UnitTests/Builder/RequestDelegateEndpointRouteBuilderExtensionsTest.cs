@@ -109,7 +109,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     [Theory]
     [MemberData(nameof(MapMethods))]
-    public async Task MapEndpoint_CanBeFiltered_ByRouteHandlerFilters(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
+    public async Task MapEndpoint_CanBeFiltered_ByEndpointFilters(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
         var httpContext = new DefaultHttpContext();
@@ -119,7 +119,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
         var filterTag = new TagsAttribute("filter");
 
-        var endpointBuilder = map(builder, "/", initialRequestDelegate).AddRouteHandlerFilter(filterFactory: (routeHandlerContext, next) =>
+        var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilter(filterFactory: (routeHandlerContext, next) =>
         {
             routeHandlerContext.EndpointMetadata.Add(filterTag);
             return async invocationContext =>
@@ -155,7 +155,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
         var filterTag = new TagsAttribute("filter");
 
-        var endpointBuilder = map(builder, "/", initialRequestDelegate).AddRouteHandlerFilter((routeHandlerContext, next) =>
+        var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilter((routeHandlerContext, next) =>
         {
             routeHandlerContext.EndpointMetadata.Add(filterTag);
             return next;

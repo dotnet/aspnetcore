@@ -78,8 +78,6 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
     /// </summary>
     public int? StatusCode { get; }
 
-    int IStatusCodeHttpResult.StatusCode => StatusCode ?? StatusCodes.Status200OK;
-
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
