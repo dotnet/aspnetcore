@@ -21,40 +21,41 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         _options = options.Value;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026",
-        Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed and we need to fallback" +
-        "to reflection-based. The ProblemDetailsConverter is marked as RequiresUnreferencedCode already.")]
-    public async ValueTask<bool> TryWriteAsync(ProblemDetailsContext context)
+    public bool CanWrite(ProblemDetailsContext context)
     {
         var httpContext = context.HttpContext;
         var acceptHeader = httpContext.Request.Headers.Accept.GetList<MediaTypeHeaderValue>();
 
-        if (acceptHeader == null ||
-            !acceptHeader.Any(h => _jsonMediaType.IsSubsetOf(h) || _problemDetailsJsonMediaType.IsSubsetOf(h)))
+        if (acceptHeader?.Any(h => _jsonMediaType.IsSubsetOf(h) || _problemDetailsJsonMediaType.IsSubsetOf(h)) == true)
         {
-            return false;
+            return true;
         }
 
+        return false;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "JSON serialization of ProblemDetails.Extensions might require types that cannot be statically analyzed and we need to fallback" +
+        "to reflection-based. The ProblemDetailsConverter is marked as RequiresUnreferencedCode already.")]
+    public ValueTask WriteAsync(ProblemDetailsContext context)
+    {
+        var httpContext = context.HttpContext;
         ProblemDetailsDefaults.Apply(context.ProblemDetails, httpContext.Response.StatusCode);
         _options.CustomizeProblemDetails?.Invoke(context);
 
         if (context.ProblemDetails.Extensions is { Count: 0 })
         {
             // We can use the source generation in this case
-            await httpContext.Response.WriteAsJsonAsync(
+            return new ValueTask(httpContext.Response.WriteAsJsonAsync(
                 context.ProblemDetails,
                 ProblemDetailsJsonContext.Default.ProblemDetails,
-                contentType: "application/problem+json");
-
-            return true;
+                contentType: "application/problem+json"));
         }
 
-        await httpContext.Response.WriteAsJsonAsync(
+        return new ValueTask(httpContext.Response.WriteAsJsonAsync(
                         context.ProblemDetails,
                         options: null,
-                        contentType: "application/problem+json");
-
-        return true;
+                        contentType: "application/problem+json"));
     }
 
     [JsonSerializable(typeof(ProblemDetails))]

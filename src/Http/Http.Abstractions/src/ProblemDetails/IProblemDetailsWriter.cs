@@ -13,6 +13,12 @@ public interface IProblemDetailsWriter
     /// Write a <see cref="Mvc.ProblemDetails"/> response to the current context
     /// </summary>
     /// <param name="context">The <see cref="ProblemDetailsContext"/> associated with the current request/response.</param>
-    /// <returns>Flag that indicates if the response was started.</returns>
-    ValueTask<bool> TryWriteAsync(ProblemDetailsContext context);
+    ValueTask WriteAsync(ProblemDetailsContext context);
+
+    /// <summary>
+    /// Determines whether this instance can write a <see cref="Mvc.ProblemDetails"/> to the current context.
+    /// </summary>
+    /// <param name="context">The <see cref="ProblemDetailsContext"/> associated with the current request/response.</param>
+    /// <returns>Flag that indicates if that the writer can write to the current <see cref="ProblemDetailsContext"/>.</returns>
+    bool CanWrite(ProblemDetailsContext context);
 }

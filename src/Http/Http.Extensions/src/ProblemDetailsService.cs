@@ -3,33 +3,56 @@
 
 namespace Microsoft.AspNetCore.Http;
 
+using System.Linq;
+
 internal sealed class ProblemDetailsService : IProblemDetailsService
 {
-    private readonly IEnumerable<IProblemDetailsWriter> _writers;
+    private readonly IProblemDetailsWriter[] _writers;
 
     public ProblemDetailsService(
         IEnumerable<IProblemDetailsWriter> writers)
     {
-        _writers = writers;
+        _writers = writers.ToArray();
     }
 
-    public async ValueTask WriteAsync(ProblemDetailsContext context)
+    public ValueTask WriteAsync(ProblemDetailsContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(context.ProblemDetails);
         ArgumentNullException.ThrowIfNull(context.HttpContext);
 
-        if (context.HttpContext.Response.HasStarted || context.HttpContext.Response.StatusCode < 400)
+        if (context.HttpContext.Response.HasStarted ||
+            context.HttpContext.Response.StatusCode < 400 ||
+            _writers.Length == 0)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
-        foreach (var writer in _writers)
+        IProblemDetailsWriter? selectedWriter = null;
+
+        if (_writers.Length == 1)
         {
-            if (await writer.TryWriteAsync(context))
+            selectedWriter = _writers[0];
+
+            return selectedWriter.CanWrite(context) ?
+                selectedWriter.WriteAsync(context) :
+                ValueTask.CompletedTask;
+        }
+
+        for (var i = 0; i < _writers.Length; i++)
+        {
+            if (_writers[i].CanWrite(context))
             {
+                selectedWriter = _writers[i];
                 break;
             }
         }
+
+        if (selectedWriter != null)
+        {
+            return selectedWriter.WriteAsync(context);
+        }
+
+        return ValueTask.CompletedTask;
     }
 }

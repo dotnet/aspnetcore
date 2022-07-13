@@ -37,9 +37,10 @@ Microsoft.AspNetCore.Http.IFileHttpResult.FileDownloadName.get -> string?
 Microsoft.AspNetCore.Http.IProblemDetailsService
 Microsoft.AspNetCore.Http.IProblemDetailsService.WriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Http.IProblemDetailsWriter
-Microsoft.AspNetCore.Http.IProblemDetailsWriter.TryWriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Http.INestedHttpResult
 Microsoft.AspNetCore.Http.INestedHttpResult.Result.get -> Microsoft.AspNetCore.Http.IResult!
+Microsoft.AspNetCore.Http.IProblemDetailsWriter.CanWrite(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> bool
+Microsoft.AspNetCore.Http.IProblemDetailsWriter.WriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Http.IStatusCodeHttpResult
 Microsoft.AspNetCore.Http.IStatusCodeHttpResult.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.IValueHttpResult
