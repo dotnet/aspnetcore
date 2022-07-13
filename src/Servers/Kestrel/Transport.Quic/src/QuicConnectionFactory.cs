@@ -40,7 +40,7 @@ internal sealed class QuicConnectionFactory : IMultiplexedConnectionFactory
         var connection = await QuicConnection.ConnectAsync(new QuicClientConnectionOptions()
         {
             RemoteEndPoint = endPoint,
-            ClientAuthenticationOptions = sslOptions
+            ClientAuthenticationOptions = sslOptions ?? new SslClientAuthenticationOptions()
         }, cancellationToken);
 
         await connection.ConnectAsync(cancellationToken);
