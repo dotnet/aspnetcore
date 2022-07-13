@@ -55,12 +55,12 @@ internal partial struct VirtualCharSequence
     {
         if (span.Start > sequence.Length)
         {
-            throw new ArgumentException();
+            throw new ArgumentException("Span start out of range.");
         }
 
         if (span.End > sequence.Length)
         {
-            throw new ArgumentException();
+            throw new ArgumentException("Span end out of range.");
         }
 
         _leafCharacters = sequence;
