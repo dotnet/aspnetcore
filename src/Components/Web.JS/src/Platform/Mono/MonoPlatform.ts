@@ -249,20 +249,10 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const existingPostRun = moduleConfig.postRun || [];
   (moduleConfig as any).preloadPlugins = [];
 
-  var totalResources = Object.keys(resources.assembly).length + Object.keys(resources.pdb || {}).length + /* dotnet.wasm */ 1;
-
-  if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty('dotnet.timezones.blat')){
-    totalResources++;
-  }
-
-  if (resourceLoader.bootConfig.icuDataMode !== ICUDataMode.Invariant){
-    totalResources++;
-  }
-
   let resourcesLoaded = 0;
   function setProgress(){
       resourcesLoaded++;
-      const percentage = resourcesLoaded / totalResources * 100;
+      const percentage = resourcesLoaded / totalResources.length * 100;
       document.documentElement.style.setProperty('--blazor-load-percentage', percentage + '%');
       document.documentElement.style.setProperty('--blazor-load-percentage-text', '"' + Math.round(percentage) + '%"');
       document.documentElement.style.setProperty('--blazor-load-percentage-color', '#1b6ec2');
@@ -271,15 +261,16 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const dotnetWasmResourceName = 'dotnet.wasm';
   const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
-  assembliesBeingLoaded.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
   const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/${filename}`, 'pdb');
-  pdbsBeingLoaded.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
   const wasmBeingLoaded = resourceLoader.loadResource(
     /* name */ dotnetWasmResourceName,
     /* url */ `_framework/${dotnetWasmResourceName}`,
     /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
     /* type */ 'dotnetwasm'
   );
+  const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, wasmBeingLoaded);
+  assembliesBeingLoaded.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
+  pdbsBeingLoaded.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
   wasmBeingLoaded.response.then(_ => setProgress());
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
@@ -291,6 +282,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName],
       'globalization'
     );
+    totalResources.concat(timeZoneResource);
     timeZoneResource.response.then(_ => setProgress());
   }
 
@@ -304,6 +296,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourceLoader.bootConfig.resources.runtime[icuDataResourceName],
       'globalization'
     );
+    totalResources.concat(icuDataResource);
     icuDataResource.response.then(_ => setProgress());
   }
 
