@@ -188,4 +188,5 @@ builder.Configuration.AddJsonFile(""foo.json"", optional: true).AddEnvironmentVa
         // Assert
         await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostic, fixedSource);
     }
+
 }

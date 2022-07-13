@@ -86,4 +86,5 @@ public static class CSharpWebApplicationBuilderCodeFixVerifier<TAnalyzer, TCodeF
             string TrimAssemblyExtension(string fullPath) => fullPath.Replace(".dll", string.Empty);
         }
     }
+
 }

@@ -22,6 +22,7 @@ public static class CSharpWebApplicationBuilderAnalyzerVerifier<TAnalyzer>
         var test = new Test { TestCode = source };
         test.ExpectedDiagnostics.AddRange(expected);
         return test.RunAsync();
+
     }
 
     public class Test : CSharpCodeFixTest<TAnalyzer, EmptyCodeFixProvider, XUnitVerifier> { }

@@ -237,5 +237,4 @@ builder.ConfigureWebHost(webHostBuilder => { }, optionsBuilder => { });
         // Assert
         Assert.Empty(diagnostics);
     }
-
 }
