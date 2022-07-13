@@ -106,6 +106,8 @@ public static class ExceptionHandlerExtensions
         const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
         var problemDetailsService = app.ApplicationServices.GetService<IProblemDetailsService>();
 
+        app.Properties["analysis.NextMiddlewareName"] = "Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware";
+
         // Only use this path if there's a global router (in the 'WebApplication' case).
         if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
