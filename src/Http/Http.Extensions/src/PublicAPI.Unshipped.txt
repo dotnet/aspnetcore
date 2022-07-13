@@ -25,10 +25,6 @@ Microsoft.AspNetCore.Http.ProblemDetailsOptions
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.CustomizeProblemDetails.get -> System.Action<Microsoft.AspNetCore.Http.ProblemDetailsContext!>?
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.CustomizeProblemDetails.set -> void
 Microsoft.AspNetCore.Http.ProblemDetailsOptions.ProblemDetailsOptions() -> void
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointMetadata.get -> System.Collections.Generic.IList<object!>?
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.EndpointMetadata.init -> void
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.RouteHandlerContext!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!>!>?
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.init -> void
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string?
 *REMOVED*Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void
