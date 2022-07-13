@@ -22,7 +22,7 @@ public static class RateLimiterOptionsExtensions
         var key = new PolicyNameKey() { PolicyName = policyName };
         return options.AddPolicy(policyName, context =>
         {
-            return RateLimitPartition.CreateTokenBucketLimiter(key,
+            return RateLimitPartition.GetTokenBucketLimiter(key,
                 _ => tokenBucketRateLimiterOptions);
         });
     }
@@ -39,7 +39,7 @@ public static class RateLimiterOptionsExtensions
         var key = new PolicyNameKey() { PolicyName = policyName };
         return options.AddPolicy(policyName, context =>
         {
-            return RateLimitPartition.CreateFixedWindowLimiter(key,
+            return RateLimitPartition.GetFixedWindowLimiter(key,
                 _ => fixedWindowRateLimiterOptions);
         });
     }
@@ -56,7 +56,7 @@ public static class RateLimiterOptionsExtensions
         var key = new PolicyNameKey() { PolicyName = policyName };
         return options.AddPolicy(policyName, context =>
         {
-            return RateLimitPartition.CreateSlidingWindowLimiter(key,
+            return RateLimitPartition.GetSlidingWindowLimiter(key,
                 _ => slidingWindowRateLimiterOptions);
         });
     }
@@ -73,7 +73,7 @@ public static class RateLimiterOptionsExtensions
         var key = new PolicyNameKey() { PolicyName = policyName };
         return options.AddPolicy(policyName, context =>
         {
-            return RateLimitPartition.CreateConcurrencyLimiter(key,
+            return RateLimitPartition.GetConcurrencyLimiter(key,
                 _ => concurrencyLimiterOptions);
         });
     }
@@ -89,7 +89,7 @@ public static class RateLimiterOptionsExtensions
         var key = new PolicyNameKey() { PolicyName = policyName };
         return options.AddPolicy(policyName, context =>
         {
-            return RateLimitPartition.CreateNoLimiter(key);
+            return RateLimitPartition.GetNoLimiter(key);
         });
     }
 }

@@ -27,7 +27,7 @@ internal class TestRateLimiterPolicy : IRateLimiterPolicy<string>
 
     public RateLimitPartition<string> GetPartition(HttpContext httpContext)
     {
-        return RateLimitPartition.Create<string>(_key, (key =>
+        return RateLimitPartition.Get<string>(_key, (key =>
         {
             return new TestRateLimiter(_alwaysAccept);
         }));
