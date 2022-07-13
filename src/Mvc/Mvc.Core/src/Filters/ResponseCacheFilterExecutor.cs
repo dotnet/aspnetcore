@@ -61,7 +61,7 @@ internal sealed class ResponseCacheFilterExecutor
 
         if (!(NoStore || _cacheProfile.Location == ResponseCacheLocation.None || _cacheLocation == ResponseCacheLocation.None))
         {
-            // Duration MUST be set (either in the cache profile or in this filter) unless NoStore is true.
+            // Duration MUST be set (either in the cache profile or in this filter) unless NoStore is true or Location is ResponseCacheLocation.None.
             if (_cacheProfile.Duration == null && _cacheDuration == null)
             {
                 throw new InvalidOperationException(
