@@ -8,8 +8,6 @@ Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOpt
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.Interaction.init -> void
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions.InteractiveRequestOptions() -> void
 Microsoft.AspNetCore.Components.WebAssembly.Authentication.NavigationManagerExtensions
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.DisableAutomaticSilentSignIn.get -> bool
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.DisableAutomaticSilentSignIn.set -> void
 virtual Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.Dispose(bool disposing) -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenNotAvailableException.Redirect(System.Action<Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions> request) -> void
 ~Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.AccessTokenResult(Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus status, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken token, string interactiveRequestUrl, Microsoft.AspNetCore.Components.WebAssembly.Authentication.InteractiveRequestOptions interactiveRequest) -> void
