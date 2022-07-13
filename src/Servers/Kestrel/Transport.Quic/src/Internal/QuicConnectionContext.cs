@@ -122,11 +122,11 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
 
             return context;
         }
-        catch (QuicConnectionAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.ConnectionAborted)
         {
             // Shutdown initiated by peer, abortive.
-            _error = ex.ErrorCode;
-            QuicLog.ConnectionAborted(_log, this, ex.ErrorCode, ex);
+            _error = ex.ApplicationErrorCode;
+            QuicLog.ConnectionAborted(_log, this, ex.ApplicationErrorCode.GetValueOrDefault(), ex);
 
             ThreadPool.UnsafeQueueUserWorkItem(state =>
             {
@@ -138,7 +138,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
             // Throw error so consumer sees the connection is aborted by peer.
             throw new ConnectionResetException(ex.Message, ex);
         }
-        catch (QuicOperationAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
         {
             lock (_shutdownLock)
             {

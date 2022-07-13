@@ -44,7 +44,8 @@
       "src\\Servers\\Kestrel\\test\\Interop.FunctionalTests\\Interop.FunctionalTests.csproj",
       "src\\Servers\\Kestrel\\test\\Sockets.BindTests\\Sockets.BindTests.csproj",
       "src\\Servers\\Kestrel\\test\\Sockets.FunctionalTests\\Sockets.FunctionalTests.csproj",
-      "src\\Servers\\Kestrel\\tools\\CodeGenerator\\CodeGenerator.csproj"
+      "src\\Servers\\Kestrel\\tools\\CodeGenerator\\CodeGenerator.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
     ]
   }
 }

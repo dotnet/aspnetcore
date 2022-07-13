@@ -258,29 +258,29 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                 }
             }
         }
-        catch (QuicStreamAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.StreamAborted)
         {
             // Abort from peer.
-            _error = ex.ErrorCode;
-            QuicLog.StreamAbortedRead(_log, this, ex.ErrorCode);
+            _error = ex.ApplicationErrorCode;
+            QuicLog.StreamAbortedRead(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
 
             // This could be ignored if _shutdownReason is already set.
             error = new ConnectionResetException(ex.Message, ex);
 
             _clientAbort = true;
         }
-        catch (QuicConnectionAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.ConnectionAborted)
         {
             // Abort from peer.
-            _error = ex.ErrorCode;
-            QuicLog.StreamAbortedRead(_log, this, ex.ErrorCode);
+            _error = ex.ApplicationErrorCode;
+            QuicLog.StreamAbortedRead(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
 
             // This could be ignored if _shutdownReason is already set.
             error = new ConnectionResetException(ex.Message, ex);
 
             _clientAbort = true;
         }
-        catch (QuicOperationAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
         {
             // AbortRead has been called for the stream.
             error = new ConnectionAbortedException(ex.Message, ex);
@@ -409,29 +409,29 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                 }
             }
         }
-        catch (QuicStreamAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.StreamAborted)
         {
             // Abort from peer.
-            _error = ex.ErrorCode;
-            QuicLog.StreamAbortedWrite(_log, this, ex.ErrorCode);
+            _error = ex.ApplicationErrorCode;
+            QuicLog.StreamAbortedWrite(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
 
             // This could be ignored if _shutdownReason is already set.
             shutdownReason = new ConnectionResetException(ex.Message, ex);
 
             _clientAbort = true;
         }
-        catch (QuicConnectionAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.ConnectionAborted)
         {
             // Abort from peer.
-            _error = ex.ErrorCode;
-            QuicLog.StreamAbortedWrite(_log, this, ex.ErrorCode);
+            _error = ex.ApplicationErrorCode;
+            QuicLog.StreamAbortedWrite(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
 
             // This could be ignored if _shutdownReason is already set.
             shutdownReason = new ConnectionResetException(ex.Message, ex);
 
             _clientAbort = true;
         }
-        catch (QuicOperationAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
         {
             // AbortWrite has been called for the stream.
             // Possibily might also get here from connection closing.
