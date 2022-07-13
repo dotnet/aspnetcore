@@ -259,24 +259,14 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     totalResources++;
   }
 
-  const targetElement = document.getElementById('app') as HTMLDivElement;
-  const progressElement = document.getElementById('progress') as unknown as SVGCircleElement;
-  const percentageElement = document.getElementById('percentage') as unknown as SVGTextElement;
-
-  var resourcesLoaded = 0;
+  let resourcesLoaded = 0;
   function setProgress(){
       resourcesLoaded++;
       const percentage = resourcesLoaded / totalResources * 100;
-      
-      if (targetElement) {
-        targetElement.style.setProperty('--blazor-load-percentage', percentage + '%');
-      }
-      
-      if (progressElement && percentageElement) {
-        progressElement.style.display = 'block';
-        percentageElement.textContent = Math.floor(percentage) + '%';
-      }
-  }
+      document.documentElement.style.setProperty('--blazor-load-percentage', percentage + '%');
+      document.documentElement.style.setProperty('--blazor-load-percentage-text', '"' + Math.round(percentage) + '%"');
+      document.documentElement.style.setProperty('--blazor-load-percentage-color', '#1b6ec2');
+    }
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const dotnetWasmResourceName = 'dotnet.wasm';
