@@ -39,6 +39,8 @@ export function startIpcReceiver(): void {
     'SendByteArrayToJS': receiveBase64ByteArray,
 
     'Navigate': navigationManagerFunctions.navigateTo,
+
+    'EndLocationChanging': navigationManagerFunctions.endLocationChanging,
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
