@@ -63,6 +63,19 @@ Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
 Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointSummaryMetadata.Summary.get -> string!
+Microsoft.AspNetCore.Mvc.ProblemDetails
+Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.get -> System.Collections.Generic.IDictionary<string!, object?>!
+Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Status.get -> int?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Status.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Title.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
+Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string?
+Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.Arguments.get -> System.Collections.Generic.IList<object?>!
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.GetArgument<T>(int index) -> T
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
