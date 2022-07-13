@@ -16,7 +16,6 @@ using VerifyCS = Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.CSharpWebA
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 public partial class DisallowConfigureServicesTest
 {
-
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new WebApplicationBuilderAnalyzer());
 
     [Fact]

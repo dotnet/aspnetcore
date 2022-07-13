@@ -66,7 +66,6 @@ public static class CSharpWebApplicationBuilderCodeFixVerifier<TAnalyzer, TCodeF
             // We populate the ReferenceAssemblies used in the tests with the locally-built AspNetCore
             // assemblies that are referenced in a minimal app to ensure that there are no reference
             // errors during the build. The value used here should be updated on each TFM change.
-
             ReferenceAssemblies = ReferenceAssemblies.Net.Net70.AddAssemblies(ImmutableArray.Create(
                 TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions).Assembly.Location),
                 TrimAssemblyExtension(typeof(Microsoft.Extensions.Hosting.IHostBuilder).Assembly.Location),
