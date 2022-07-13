@@ -253,8 +253,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   function setProgress(){
       resourcesLoaded++;
       const percentage = resourcesLoaded / totalResources.length * 100;
-      document.documentElement.style.setProperty('--blazor-load-percentage', percentage + '%');
-      document.documentElement.style.setProperty('--blazor-load-percentage-text', '"' + Math.round(percentage) + '%"');
+      document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
+      document.documentElement.style.setProperty('--blazor-load-percentage-text', `${Math.round(percentage)}%`);
       document.documentElement.style.setProperty('--blazor-load-percentage-color', '#1b6ec2');
     }
 
