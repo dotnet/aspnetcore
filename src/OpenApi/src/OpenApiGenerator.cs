@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -78,7 +80,8 @@ internal sealed class OpenApiGenerator
             Tags = GetOperationTags(methodInfo, metadata),
             Parameters = GetOpenApiParameters(methodInfo, metadata, pattern, disableInferredBody),
             RequestBody = GetOpenApiRequestBody(methodInfo, metadata, pattern),
-            Responses = GetOpenApiResponses(methodInfo, metadata)
+            Responses = GetOpenApiResponses(methodInfo, metadata),
+            Security = GetOpenApiSecurityRequirement(metadata)
         };
 
         static bool ShouldDisableInferredBody(string method)
@@ -91,6 +94,38 @@ internal sealed class OpenApiGenerator
                    method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
                    method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
         }
+    }
+
+    private static IList<OpenApiSecurityRequirement> GetOpenApiSecurityRequirement(EndpointMetadataCollection metadata)
+    {
+        var authorizationMetadata = metadata.OfType<IAuthorizeData>();
+        var securityRequirements = new List<OpenApiSecurityRequirement>();
+        OpenApiSecurityScheme? scheme = null;
+        List<string> roles = new();
+        foreach (var authorizationItem in authorizationMetadata)
+        {
+            var applicableSchemes = authorizationItem.AuthenticationSchemes?.Split(",");
+            if (applicableSchemes?.Length > 0 && applicableSchemes.Contains(JwtBearerDefaults.AuthenticationScheme))
+            {
+                scheme = new OpenApiSecurityScheme()
+                {
+                    Reference = new()
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = JwtBearerDefaults.AuthenticationScheme
+                    }
+                };
+            }
+            roles.AddRange(authorizationItem.Roles?.Split(','));
+        }
+        if (scheme is not null)
+        {
+            securityRequirements.Add(new() {
+                { scheme, roles }
+            });
+        }
+
+        return securityRequirements;
     }
 
     private static OpenApiResponses GetOpenApiResponses(MethodInfo method, EndpointMetadataCollection metadata)
