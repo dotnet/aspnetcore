@@ -237,9 +237,8 @@ public class Http3TimeoutTests : Http3TestBase
                 new KeyValuePair<string, string>(PseudoHeaderNames.Scheme, "http"),
                 new KeyValuePair<string, string>(PseudoHeaderNames.Method, "GET"),
                 new KeyValuePair<string, string>(PseudoHeaderNames.Authority, "localhost:80"),
-            }, endStream: true);
+            }, null, true, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
 
-        requestStream.StartStreamDisposeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await requestStream.OnDisposingTask.DefaultTimeout();
 
         Http3Api.TriggerTick(now);
@@ -251,8 +250,6 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.TriggerTick(now + limits.MinResponseDataRate.GracePeriod + TimeSpan.FromTicks(1));
 
         requestStream.StartStreamDisposeTcs.TrySetResult();
-
-        await requestStream.OnDisposedTask;
 
         await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
             ignoreNonGoAwayFrames: false,

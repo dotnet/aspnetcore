@@ -412,9 +412,14 @@ internal class Http3InMemory
         return stream;
     }
 
-    internal async ValueTask<Http3RequestStream> CreateRequestStream(IEnumerable<KeyValuePair<string, string>> headers, Http3RequestHeaderHandler headerHandler = null, bool endStream = false)
+    internal async ValueTask<Http3RequestStream> CreateRequestStream(IEnumerable<KeyValuePair<string, string>> headers, Http3RequestHeaderHandler headerHandler = null, bool endStream = false, TaskCompletionSource tsc = null)
     {
         var stream = CreateRequestStreamCore(headerHandler);
+
+        if (tsc is not null)
+        {
+            stream.StartStreamDisposeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
 
         if (headers is not null)
         {
@@ -428,9 +433,14 @@ internal class Http3InMemory
         return stream;
     }
 
-    internal async ValueTask<Http3RequestStream> CreateRequestStream(Http3HeadersEnumerator headers, Http3RequestHeaderHandler headerHandler = null, bool endStream = false)
+    internal async ValueTask<Http3RequestStream> CreateRequestStream(Http3HeadersEnumerator headers, Http3RequestHeaderHandler headerHandler = null, bool endStream = false, TaskCompletionSource tsc = null)
     {
         var stream = CreateRequestStreamCore(headerHandler);
+
+        if (tsc is not null)
+        {
+            stream.StartStreamDisposeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
 
         await stream.SendHeadersAsync(headers, endStream);
 
