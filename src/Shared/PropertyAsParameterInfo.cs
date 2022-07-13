@@ -81,12 +81,14 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
 
             if (parameters[i].CustomAttributes.Any(a => a.AttributeType == typeof(AsParametersAttribute)))
             {
+                var parameterType = Nullable.GetUnderlyingType(parameters[i].ParameterType) ?? parameters[i].ParameterType;
+
                 // Initialize the list with all parameter already processed
                 // to keep the same parameter ordering
                 flattenedParameters ??= new(parameters[0..i]);
                 nullabilityContext ??= new();
 
-                var (constructor, constructorParameters) = cache.FindConstructor(parameters[i].ParameterType);
+                var (constructor, constructorParameters) = cache.FindConstructor(parameterType);
                 if (constructor is not null && constructorParameters is { Length: > 0 })
                 {
                     foreach (var constructorParameter in constructorParameters)
@@ -100,7 +102,7 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
                 }
                 else
                 {
-                    var properties = parameters[i].ParameterType.GetProperties();
+                    var properties = parameterType.GetProperties();
 
                     foreach (var property in properties)
                     {

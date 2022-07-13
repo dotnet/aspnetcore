@@ -4679,6 +4679,11 @@ public class RequestDelegateFactoryTests : LoggedTest
                 args.HttpContext.Items.Add("input", args.Value);
             }
 
+            void TestParameterListNullableStruct([AsParameters] ParameterListStruct? args)
+            {
+                args.Value.HttpContext.Items.Add("input", args.Value.Value);
+            }
+
             void TestParameterListMutableStruct([AsParameters] ParameterListMutableStruct args)
             {
                 args.HttpContext.Items.Add("input", args.Value);
@@ -4710,6 +4715,7 @@ public class RequestDelegateFactoryTests : LoggedTest
                 new object[] { (Action<ParameterListRecordClass>)TestParameterListRecordClass },
                 new object[] { (Action<ParameterListRecordWithoutPositionalParameters>)TestParameterListRecordWithoutPositionalParameters },
                 new object[] { (Action<ParameterListStruct>)TestParameterListStruct },
+                new object[] { (Action<ParameterListStruct?>)TestParameterListNullableStruct },
                 new object[] { (Action<ParameterListMutableStruct>)TestParameterListMutableStruct },
                 new object[] { (Action<ParameterListStructWithParameterizedContructor>)TestParameterListStructWithParameterizedContructor },
                 new object[] { (Action<ParameterListStructWithMultipleParameterizedContructor>)TestParameterListStructWithMultipleParameterizedContructor },

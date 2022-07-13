@@ -1270,7 +1270,10 @@ public static partial class RequestDelegateFactory
     private static Expression BindParameterFromProperties(ParameterInfo parameter, FactoryContext factoryContext)
     {
         var argumentExpression = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
-        var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameter.ParameterType);
+        var parameterType = Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType;
+        var (constructor, parameters) = ParameterBindingMethodCache.FindConstructor(parameterType);
+
+        Expression initExpression;
 
         if (constructor is not null && parameters is { Length: > 0 })
         {
@@ -1286,10 +1289,7 @@ public static partial class RequestDelegateFactory
                 factoryContext.Parameters.Add(parameterInfo);
             }
 
-            factoryContext.ParamCheckExpressions.Add(
-                Expression.Assign(
-                    argumentExpression,
-                    Expression.New(constructor, constructorArguments)));
+            initExpression = Expression.New(constructor, constructorArguments);
         }
         else
         {
@@ -1299,7 +1299,7 @@ public static partial class RequestDelegateFactory
             //      arg_local.Property[n] = expression[n],
             //  }
 
-            var properties = parameter.ParameterType.GetProperties();
+            var properties = parameterType.GetProperties();
             var bindings = new List<MemberBinding>(properties.Length);
 
             for (var i = 0; i < properties.Length; i++)
@@ -1314,14 +1314,19 @@ public static partial class RequestDelegateFactory
             }
 
             var newExpression = constructor is null ?
-                Expression.New(parameter.ParameterType) :
+                Expression.New(parameterType) :
                 Expression.New(constructor);
 
-            factoryContext.ParamCheckExpressions.Add(
-                Expression.Assign(
-                    argumentExpression,
-                    Expression.MemberInit(newExpression, bindings)));
+            initExpression = Expression.MemberInit(newExpression, bindings);
         }
+
+        if (parameterType != parameter.ParameterType)
+        {
+            initExpression = Expression.Convert(initExpression, parameter.ParameterType);
+        }
+
+        factoryContext.ParamCheckExpressions.Add(
+            Expression.Assign(argumentExpression, initExpression));
 
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.PropertyAsParameter);
         factoryContext.ExtraLocals.Add(argumentExpression);
