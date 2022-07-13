@@ -269,7 +269,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         await serverStream.Transport.Output.CompleteAsync();
 
         // Assert
-        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicStreamAbortedException)ex.InnerException).ErrorCode);
+        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicException)ex.InnerException).ApplicationErrorCode.Value);
 
         var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
 
@@ -346,7 +346,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => serverStream.Transport.Input.ReadAsync().AsTask()).DefaultTimeout();
 
         // Assert
-        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicStreamAbortedException)ex.InnerException).ErrorCode);
+        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicException)ex.InnerException).ApplicationErrorCode.Value);
 
         var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
 
@@ -459,10 +459,11 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         ((IProtocolErrorCodeFeature)serverStream).Error = (long)Http3ErrorCode.InternalError;
         serverStream.Abort(new ConnectionAbortedException("Test message"));
 
-        var ex = await Assert.ThrowsAsync<QuicStreamAbortedException>(() => clientStream.ReadAsync(new byte[1024]).AsTask()).DefaultTimeout();
+        var ex = await Assert.ThrowsAsync<QuicException>(() => clientStream.ReadAsync(new byte[1024]).AsTask()).DefaultTimeout();
 
         // Assert
-        Assert.Equal((long)Http3ErrorCode.InternalError, ex.ErrorCode);
+        Assert.Equal(QuicError.StreamAborted, ex.QuicError);
+        Assert.Equal((long)Http3ErrorCode.InternalError, ex.ApplicationErrorCode.Value);
 
         var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
         Assert.True(quicStreamContext.CanWrite);
@@ -514,8 +515,9 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(TestData, data);
 
         // Client errors when writing
-        var clientEx = await Assert.ThrowsAsync<QuicStreamAbortedException>(() => clientStream.WriteAsync(data).AsTask()).DefaultTimeout();
-        Assert.Equal((long)Http3ErrorCode.InternalError, clientEx.ErrorCode);
+        var clientEx = await Assert.ThrowsAsync<QuicException>(() => clientStream.WriteAsync(data).AsTask()).DefaultTimeout();
+        Assert.Equal(QuicError.StreamAborted, clientEx.QuicError);
+        Assert.Equal((long)Http3ErrorCode.InternalError, clientEx.ApplicationErrorCode.Value);
 
         // Server errors when reading
         var serverEx = await Assert.ThrowsAsync<ConnectionAbortedException>(() => serverReadTask).DefaultTimeout();

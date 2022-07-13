@@ -86,8 +86,9 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => acceptStreamTask.AsTask()).DefaultTimeout();
-        var innerEx = Assert.IsType<QuicConnectionAbortedException>(ex.InnerException);
-        Assert.Equal(256, innerEx.ErrorCode);
+        var innerEx = Assert.IsType<QuicException>(ex.InnerException);
+        Assert.Equal(QuicError.ConnectionAborted, innerEx.QuicError);
+        Assert.Equal(256, innerEx.ApplicationErrorCode.Value);
 
         await connectionClosedTcs.Task.DefaultTimeout();
     }
@@ -252,8 +253,9 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => acceptTask).DefaultTimeout();
-        var innerEx = Assert.IsType<QuicConnectionAbortedException>(ex.InnerException);
-        Assert.Equal((long)Http3ErrorCode.NoError, innerEx.ErrorCode);
+        var innerEx = Assert.IsType<QuicException>(ex.InnerException);
+        Assert.Equal(QuicError.ConnectionAborted, innerEx.QuicError);
+        Assert.Equal((long)Http3ErrorCode.NoError, innerEx.ApplicationErrorCode.Value);
 
         Assert.Equal((long)Http3ErrorCode.NoError, serverConnection.Features.Get<IProtocolErrorCodeFeature>().Error);
     }
@@ -380,7 +382,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         // Receive abort form client.
         var ex = await Assert.ThrowsAsync<ConnectionResetException>(() => serverStream.Transport.Input.ReadAsync().AsTask()).DefaultTimeout();
         Assert.Equal("Stream aborted by peer (258).", ex.Message);
-        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicStreamAbortedException)ex.InnerException).ErrorCode);
+        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicException)ex.InnerException).ApplicationErrorCode.Value);
 
         // Complete reading and then abort.
         await serverStream.Transport.Input.CompleteAsync();
@@ -428,7 +430,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         // Receive abort form client.
         var serverEx = await Assert.ThrowsAsync<ConnectionResetException>(() => serverStream.Transport.Input.ReadAsync().AsTask()).DefaultTimeout();
         Assert.Equal("Stream aborted by peer (258).", serverEx.Message);
-        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicStreamAbortedException)serverEx.InnerException).ErrorCode);
+        Assert.Equal((long)Http3ErrorCode.InternalError, ((QuicException)serverEx.InnerException).ApplicationErrorCode.Value);
 
         serverStream.Features.Get<IProtocolErrorCodeFeature>().Error = (long)Http3ErrorCode.RequestRejected;
         serverStream.Abort(new ConnectionAbortedException("Test message."));
@@ -438,8 +440,9 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         await serverStream.Transport.Output.CompleteAsync();
 
         var buffer = new byte[1024];
-        var clientEx = await Assert.ThrowsAsync<QuicStreamAbortedException>(() => clientStream.ReadAsync(buffer).AsTask()).DefaultTimeout();
-        Assert.Equal((long)Http3ErrorCode.RequestRejected, clientEx.ErrorCode);
+        var clientEx = await Assert.ThrowsAsync<QuicException>(() => clientStream.ReadAsync(buffer).AsTask()).DefaultTimeout();
+        Assert.Equal(QuicError.StreamAborted, clientEx.QuicError);
+        Assert.Equal((long)Http3ErrorCode.RequestRejected, clientEx.ApplicationErrorCode.Value);
 
         var quicStreamContext = Assert.IsType<QuicStreamContext>(serverStream);
 

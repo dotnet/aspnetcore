@@ -89,7 +89,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
 
             return connectionContext;
         }
-        catch (QuicOperationAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
         {
             _log.LogDebug("Listener has aborted with exception: {Message}", ex.Message);
         }
