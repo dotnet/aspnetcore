@@ -16,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)\..\src\RouteHandlerInvocationContextOfT.Generated.tt" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(MSBuildThisFileDirectory)\..\src\RouteHandlerInvocationContextOfT.Generated.cs" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
-    <Compile Update="RouteHandlerInvocationContextOfT.Generated.cs" Link="Shared\GeneratedContent\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(MSBuildThisFileDirectory)\..\src\EndpointFilterInvocationContextOfT.Generated.tt" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(MSBuildThisFileDirectory)\..\src\EndpointFilterInvocationContextOfT.Generated.cs" LinkBase="Shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Update="EndpointFilterInvocationContextOfT.Generated.cs" Link="Shared\GeneratedContent\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
