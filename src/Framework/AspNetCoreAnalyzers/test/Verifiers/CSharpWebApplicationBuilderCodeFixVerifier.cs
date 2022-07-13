@@ -63,6 +63,7 @@ public static class CSharpWebApplicationBuilderCodeFixVerifier<TAnalyzer, TCodeF
     {
         public WebApplicationBuilderAnalyzerTest()
         {
+
             // We populate the ReferenceAssemblies used in the tests with the locally-built AspNetCore
             // assemblies that are referenced in a minimal app to ensure that there are no reference
             // errors during the build. The value used here should be updated on each TFM change.

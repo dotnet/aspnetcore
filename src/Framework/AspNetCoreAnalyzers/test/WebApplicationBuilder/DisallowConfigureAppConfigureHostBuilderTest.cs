@@ -11,6 +11,7 @@ using VerifyCS = Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.CSharpWebA
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 public partial class DisallowConfigureAppConfigureHostBuilderTest
 {
+
     [Fact]
     public async Task ConfigurationBuilderRunsWithoutDiagnostic()
     {

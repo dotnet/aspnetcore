@@ -10,6 +10,7 @@ internal sealed class WellKnownTypes
 {
     public static bool TryCreate(Compilation compilation, [NotNullWhen(true)] out WellKnownTypes? wellKnownTypes)
     {
+
         wellKnownTypes = default;
 
         const string ConfigureHostBuilder = "Microsoft.AspNetCore.Builder.ConfigureHostBuilder";

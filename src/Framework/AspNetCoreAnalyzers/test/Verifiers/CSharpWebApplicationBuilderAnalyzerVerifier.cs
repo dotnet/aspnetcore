@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 public static class CSharpWebApplicationBuilderAnalyzerVerifier<TAnalyzer>
     where TAnalyzer : WebApplicationBuilderAnalyzer, new()
 {
+
     public static DiagnosticResult Diagnostic(string diagnosticId = null)
         => CSharpWebApplicationBuilderAnalyzerVerifier<WebApplicationBuilderAnalyzer>.Diagnostic(diagnosticId);
 

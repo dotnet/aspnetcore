@@ -26,6 +26,7 @@ public class WebApplicationBuilderFixer : CodeFixProvider
 
     public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
     {
+
         foreach (var diagnostic in context.Diagnostics)
         {
             string id = diagnostic.Id;
