@@ -5,8 +5,7 @@
 
 using System.Collections.Immutable;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
-using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 
@@ -15,7 +14,7 @@ internal sealed class RoutePatternTree : EmbeddedSyntaxTree<RoutePatternKind, Ro
     public readonly ImmutableDictionary<string, RouteParameter> RouteParameters;
 
     public RoutePatternTree(
-        AspNetCoreVirtualCharSequence text,
+        VirtualCharSequence text,
         RoutePatternCompilationUnit root,
         ImmutableArray<EmbeddedDiagnostic> diagnostics,
         ImmutableDictionary<string, RouteParameter> routeParameters)

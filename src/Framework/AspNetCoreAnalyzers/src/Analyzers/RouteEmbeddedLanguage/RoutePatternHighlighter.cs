@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -25,7 +26,7 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
     {
         var usageContext = RoutePatternUsageDetector.BuildContext(token, semanticModel, cancellationToken);
 
-        var virtualChars = AspNetCoreCSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
+        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
         var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
         if (tree == null)
         {
@@ -111,10 +112,10 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
         }
     }
 
-    private static RoutePatternNameParameterPartNode? FindParameterNode(RoutePatternNode node, AspNetCoreVirtualChar ch)
+    private static RoutePatternNameParameterPartNode? FindParameterNode(RoutePatternNode node, VirtualChar ch)
         => FindNode<RoutePatternNameParameterPartNode>(node, ch, (parameter, c) => parameter.ParameterNameToken.VirtualChars.Contains(c));
 
-    private static TNode? FindNode<TNode>(RoutePatternNode node, AspNetCoreVirtualChar ch, Func<TNode, AspNetCoreVirtualChar, bool> predicate)
+    private static TNode? FindNode<TNode>(RoutePatternNode node, VirtualChar ch, Func<TNode, VirtualChar, bool> predicate)
         where TNode : RoutePatternNode
     {
         if (node is TNode nodeMatch && predicate(nodeMatch, ch))

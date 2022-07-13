@@ -10,11 +10,11 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
@@ -105,7 +105,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
 
         var (methodSymbol, isMinimal, isMvcAttribute) = RoutePatternUsageDetector.BuildContext(stringToken, semanticModel, context.CancellationToken);
 
-        var virtualChars = AspNetCoreCSharpVirtualCharService.Instance.TryConvertToVirtualChars(stringToken);
+        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(stringToken);
         var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: isMvcAttribute);
         if (tree == null)
         {
@@ -244,7 +244,7 @@ If there are two arguments then the string length must be greater than, or equal
         context.AddIfMissing("required", suffix: null, "Used to enforce that a non-parameter value is present during URL generation.", WellKnownTags.Keyword, parentOpt: null);
     }
 
-    private (RoutePatternNode parent, RoutePatternToken Token)? FindToken(RoutePatternNode parent, AspNetCoreVirtualChar ch)
+    private (RoutePatternNode parent, RoutePatternToken Token)? FindToken(RoutePatternNode parent, VirtualChar ch)
     {
         foreach (var child in parent)
         {

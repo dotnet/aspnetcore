@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -106,7 +106,7 @@ internal abstract class EmbeddedSyntaxNode<TSyntaxKind, TSyntaxNode>
         }
     }
 
-    public bool Contains(AspNetCoreVirtualChar virtualChar)
+    public bool Contains(VirtualChar virtualChar)
     {
         foreach (var child in this)
         {

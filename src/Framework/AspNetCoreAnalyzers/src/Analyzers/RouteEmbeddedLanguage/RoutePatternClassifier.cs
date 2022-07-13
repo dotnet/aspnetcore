@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.Classification;
 using RoutePatternToken = Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern.RoutePatternKind>;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -18,7 +19,7 @@ internal class RoutePatternClassifier : IAspNetCoreEmbeddedLanguageClassifier
     {
         var usageContext = RoutePatternUsageDetector.BuildContext(context.SyntaxToken, context.SemanticModel, context.CancellationToken);
 
-        var virtualChars = AspNetCoreCSharpVirtualCharService.Instance.TryConvertToVirtualChars(context.SyntaxToken);
+        var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(context.SyntaxToken);
         var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
 
         if (tree != null)

@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.IO;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
+using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
@@ -22,7 +20,7 @@ internal partial struct RoutePatternParser
     private RoutePatternToken _currentToken;
     private readonly bool _supportTokenReplacement;
 
-    private RoutePatternParser(AspNetCoreVirtualCharSequence text, bool supportTokenReplacement) : this()
+    private RoutePatternParser(VirtualCharSequence text, bool supportTokenReplacement) : this()
     {
         _lexer = new RoutePatternLexer(text, supportTokenReplacement);
 
@@ -47,9 +45,9 @@ internal partial struct RoutePatternParser
     /// and list of diagnostics.  Parsing should always succeed, except in the case of the stack 
     /// overflowing.
     /// </summary>
-    public static RoutePatternTree? TryParse(AspNetCoreVirtualCharSequence text, bool supportTokenReplacement)
+    public static RoutePatternTree? TryParse(VirtualCharSequence text, bool supportTokenReplacement)
     {
-        if (text.IsDefault())
+        if (text.IsDefault)
         {
             return null;
         }
@@ -504,7 +502,7 @@ internal partial struct RoutePatternParser
                 parts.Add(new RoutePatternCatchAllParameterPartNode(
                     CreateToken(
                         RoutePatternKind.AsteriskToken,
-                        AspNetCoreVirtualCharSequence.FromBounds(firstAsteriskToken.VirtualChars, _currentToken.VirtualChars))));
+                        VirtualCharSequence.FromBounds(firstAsteriskToken.VirtualChars, _currentToken.VirtualChars))));
                 ConsumeCurrentToken();
             }
             else

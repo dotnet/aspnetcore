@@ -4,10 +4,10 @@
 using System.Collections.Immutable;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -21,18 +21,12 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
 
     public void Analyze(SemanticModelAnalysisContext context)
     {
-        try
-        {
-            var semanticModel = context.SemanticModel;
-            var syntaxTree = semanticModel.SyntaxTree;
-            var cancellationToken = context.CancellationToken;
+        var semanticModel = context.SemanticModel;
+        var syntaxTree = semanticModel.SyntaxTree;
+        var cancellationToken = context.CancellationToken;
 
-            var root = syntaxTree.GetRoot(cancellationToken);
-            Analyze(context, root, cancellationToken);
-        }
-        catch (System.IO.FileNotFoundException)
-        {
-        }
+        var root = syntaxTree.GetRoot(cancellationToken);
+        Analyze(context, root, cancellationToken);
     }
 
     private void Analyze(
@@ -58,7 +52,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
 
                 var usageContext = RoutePatternUsageDetector.BuildContext(token, context.SemanticModel, cancellationToken);
 
-                var virtualChars = AspNetCoreCSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
+                var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
                 var tree = RoutePatternParser.TryParse(virtualChars, supportTokenReplacement: usageContext.IsMvcAttribute);
                 if (tree == null)
                 {

@@ -3,7 +3,6 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
@@ -12,12 +11,12 @@ internal abstract class EmbeddedSyntaxTree<TSyntaxKind, TSyntaxNode, TCompilatio
     where TSyntaxNode : EmbeddedSyntaxNode<TSyntaxKind, TSyntaxNode>
     where TCompilationUnitSyntax : TSyntaxNode
 {
-    public readonly AspNetCoreVirtualCharSequence Text;
+    public readonly VirtualCharSequence Text;
     public readonly TCompilationUnitSyntax Root;
     public readonly ImmutableArray<EmbeddedDiagnostic> Diagnostics;
 
     protected EmbeddedSyntaxTree(
-        AspNetCoreVirtualCharSequence text,
+        VirtualCharSequence text,
         TCompilationUnitSyntax root,
         ImmutableArray<EmbeddedDiagnostic> diagnostics)
     {

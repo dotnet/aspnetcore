@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using Microsoft;
-
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 
 internal enum RoutePatternKind

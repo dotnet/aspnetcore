@@ -3,9 +3,9 @@
 
 #nullable disable
 
-using Microsoft;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
+using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
@@ -16,29 +16,29 @@ using RoutePatternToken = EmbeddedSyntaxToken<RoutePatternKind>;
 
 internal struct RoutePatternLexer
 {
-    public readonly AspNetCoreVirtualCharSequence Text;
+    public readonly VirtualCharSequence Text;
     public readonly bool SupportTokenReplacement;
     public int Position;
 
-    public RoutePatternLexer(AspNetCoreVirtualCharSequence text, bool supportTokenReplacement) : this()
+    public RoutePatternLexer(VirtualCharSequence text, bool supportTokenReplacement) : this()
     {
         Text = text;
         SupportTokenReplacement = supportTokenReplacement;
     }
 
-    public AspNetCoreVirtualChar CurrentChar => Position < Text.Length ? Text[Position] : default;
+    public VirtualChar CurrentChar => Position < Text.Length ? Text[Position] : default;
 
-    public AspNetCoreVirtualCharSequence GetSubPatternToCurrentPos(int start)
+    public VirtualCharSequence GetSubPatternToCurrentPos(int start)
         => GetSubPattern(start, Position);
 
-    public AspNetCoreVirtualCharSequence GetSubPattern(int start, int end)
+    public VirtualCharSequence GetSubPattern(int start, int end)
         => Text.GetSubSequence(TextSpan.FromBounds(start, end));
 
     public RoutePatternToken ScanNextToken()
     {
         if (Position == Text.Length)
         {
-            return CreateToken(RoutePatternKind.EndOfFile, AspNetCoreVirtualCharSequence.Empty);
+            return CreateToken(RoutePatternKind.EndOfFile, VirtualCharSequence.Empty);
         }
 
         var ch = CurrentChar;
@@ -47,7 +47,7 @@ internal struct RoutePatternLexer
         return CreateToken(GetKind(ch), Text.GetSubSequence(new TextSpan(Position - 1, 1)));
     }
 
-    private static RoutePatternKind GetKind(AspNetCoreVirtualChar ch)
+    private static RoutePatternKind GetKind(VirtualChar ch)
         => ch.Value switch
         {
             '/' => RoutePatternKind.SlashToken,
@@ -242,7 +242,7 @@ internal struct RoutePatternLexer
 
         return token;
 
-        static bool IsInvalidNameChar(AspNetCoreVirtualChar ch) =>
+        static bool IsInvalidNameChar(VirtualChar ch) =>
             ch.Value switch
             {
                 Separator => true,
@@ -254,7 +254,7 @@ internal struct RoutePatternLexer
             };
     }
 
-    private bool IsTrailingQuestionMark(AspNetCoreVirtualChar ch)
+    private bool IsTrailingQuestionMark(VirtualChar ch)
     {
         return ch.Value == '?' && IsAt("?}") && !IsAt("?}}");
     }

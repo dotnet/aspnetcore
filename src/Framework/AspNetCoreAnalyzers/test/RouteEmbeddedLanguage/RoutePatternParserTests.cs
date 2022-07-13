@@ -25,6 +25,7 @@ using Xunit.Abstractions;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
@@ -125,12 +126,12 @@ public partial class RoutePatternParserTests
         }
     }
 
-    private (SyntaxToken, RoutePatternTree, AspNetCoreVirtualCharSequence) JustParseTree(
+    private (SyntaxToken, RoutePatternTree, VirtualCharSequence) JustParseTree(
         string stringText, bool conversionFailureOk, bool runReplaceTokens)
     {
         var token = GetStringToken(stringText);
-        var allChars = AspNetCoreCSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
-        if (allChars.IsDefault())
+        var allChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
+        if (allChars.IsDefault)
         {
             Assert.True(conversionFailureOk, "Failed to convert text to token.");
             return (token, null, allChars);
@@ -149,7 +150,7 @@ public partial class RoutePatternParserTests
         var (token, tree, allChars) = JustParseTree(stringText, conversionFailureOk, runReplaceTokens);
         if (tree == null)
         {
-            Assert.True(allChars.IsDefault());
+            Assert.True(allChars.IsDefault);
             return default;
         }
 
@@ -327,7 +328,7 @@ public partial class RoutePatternParserTests
         return element;
     }
 
-    private static void CheckInvariants(RoutePatternTree tree, AspNetCoreVirtualCharSequence allChars)
+    private static void CheckInvariants(RoutePatternTree tree, VirtualCharSequence allChars)
     {
         var root = tree.Root;
         var position = 0;
@@ -335,7 +336,7 @@ public partial class RoutePatternParserTests
         Assert.Equal(allChars.Length, position);
     }
 
-    private static void CheckInvariants(RoutePatternNode node, ref int position, AspNetCoreVirtualCharSequence allChars)
+    private static void CheckInvariants(RoutePatternNode node, ref int position, VirtualCharSequence allChars)
     {
         foreach (var child in node)
         {
@@ -350,12 +351,12 @@ public partial class RoutePatternParserTests
         }
     }
 
-    private static void CheckInvariants(RoutePatternToken token, ref int position, AspNetCoreVirtualCharSequence allChars)
+    private static void CheckInvariants(RoutePatternToken token, ref int position, VirtualCharSequence allChars)
     {
         CheckCharacters(token.VirtualChars, ref position, allChars);
     }
 
-    private static void CheckCharacters(AspNetCoreVirtualCharSequence virtualChars, ref int position, AspNetCoreVirtualCharSequence allChars)
+    private static void CheckCharacters(VirtualCharSequence virtualChars, ref int position, VirtualCharSequence allChars)
     {
         for (var i = 0; i < virtualChars.Length; i++)
         {

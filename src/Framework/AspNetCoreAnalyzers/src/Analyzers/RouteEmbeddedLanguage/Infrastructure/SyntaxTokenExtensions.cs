@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -30,6 +29,20 @@ internal static class SyntaxTokenExtensions
 
     public static SyntaxNode GetRequiredParent(this SyntaxNode node)
         => node.Parent ?? throw new InvalidOperationException("Node's parent was null");
+
+    public static SyntaxNode? GetParent(this SyntaxNode node, bool ascendOutOfTrivia)
+    {
+        var parent = node.Parent;
+        if (parent == null && ascendOutOfTrivia)
+        {
+            if (node is IStructuredTriviaSyntax structuredTrivia)
+            {
+                parent = structuredTrivia.ParentTrivia.Token.Parent;
+            }
+        }
+
+        return parent;
+    }
 
     [return: NotNullIfNotNull("node")]
     private static SyntaxNode? WalkUpParentheses(SyntaxNode? node)

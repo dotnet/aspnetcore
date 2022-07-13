@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
+using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 internal struct EmbeddedSyntaxToken<TSyntaxKind> where TSyntaxKind : struct
 {
     public readonly TSyntaxKind Kind;
-    public readonly AspNetCoreVirtualCharSequence VirtualChars;
+    public readonly VirtualCharSequence VirtualChars;
     internal readonly ImmutableArray<EmbeddedDiagnostic> Diagnostics;
 
     /// <summary>
@@ -24,7 +24,7 @@ internal struct EmbeddedSyntaxToken<TSyntaxKind> where TSyntaxKind : struct
 
     public EmbeddedSyntaxToken(
         TSyntaxKind kind,
-        AspNetCoreVirtualCharSequence virtualChars,
+        VirtualCharSequence virtualChars,
         ImmutableArray<EmbeddedDiagnostic> diagnostics, object value)
     {
         Debug.Assert(!diagnostics.IsDefault);
@@ -44,7 +44,7 @@ internal struct EmbeddedSyntaxToken<TSyntaxKind> where TSyntaxKind : struct
 
     public EmbeddedSyntaxToken<TSyntaxKind> With(
         Optional<TSyntaxKind> kind = default,
-        Optional<AspNetCoreVirtualCharSequence> virtualChars = default,
+        Optional<VirtualCharSequence> virtualChars = default,
         Optional<ImmutableArray<EmbeddedDiagnostic>> diagnostics = default,
         Optional<object> value = default)
     {

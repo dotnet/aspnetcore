@@ -3,7 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
+using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 internal struct EmbeddedSyntaxTrivia<TSyntaxKind> where TSyntaxKind : struct
 {
     public readonly TSyntaxKind Kind;
-    public readonly AspNetCoreVirtualCharSequence VirtualChars;
+    public readonly VirtualCharSequence VirtualChars;
 
     /// <summary>
     /// A place for diagnostics to be stored during parsing.  Not intended to be accessed 
@@ -22,7 +22,7 @@ internal struct EmbeddedSyntaxTrivia<TSyntaxKind> where TSyntaxKind : struct
     /// </summary> 
     internal readonly ImmutableArray<EmbeddedDiagnostic> Diagnostics;
 
-    public EmbeddedSyntaxTrivia(TSyntaxKind kind, AspNetCoreVirtualCharSequence virtualChars, ImmutableArray<EmbeddedDiagnostic> diagnostics)
+    public EmbeddedSyntaxTrivia(TSyntaxKind kind, VirtualCharSequence virtualChars, ImmutableArray<EmbeddedDiagnostic> diagnostics)
     {
         Debug.Assert(virtualChars.Length > 0);
         Kind = kind;
