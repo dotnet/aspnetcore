@@ -80,6 +80,15 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
 
+    internal static readonly DiagnosticDescriptor DoNotUseHostConfigureLogging = new(
+        "ASP0011",
+        "Suggest using builder.Logging over Host.ConfigureLogging or WebHost.ConfigureLogging",
+        "Suggest using builder.Logging instead of {0}",
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: "https://aka.ms/aspnet/analyzers");
+
     internal static readonly DiagnosticDescriptor DoNotUseHostConfigureServices = new(
         "ASP0012",
         "Suggest using builder.Services over Host.ConfigureServices or WebHost.ConfigureServices",
@@ -97,7 +106,4 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         helpLinkUri: "https://aka.ms/aspnet/analyzers");
-
-=========
->>>>>>>>> Temporary merge branch 2
 }

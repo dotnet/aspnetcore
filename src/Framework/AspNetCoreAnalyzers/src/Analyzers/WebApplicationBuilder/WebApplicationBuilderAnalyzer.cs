@@ -21,8 +21,9 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.DoNotUseConfigureWebHostWithConfigureHostBuilder,
         DiagnosticDescriptors.DoNotUseConfigureWithConfigureWebHostBuilder,
         DiagnosticDescriptors.DoNotUseUseStartupWithConfigureWebHostBuilder,
-        DiagnosticDescriptors.DoNotUseHostConfigureServices
-        DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder,
+        DiagnosticDescriptors.DoNotUseHostConfigureLogging,
+        DiagnosticDescriptors.DoNotUseHostConfigureServices,
+        DiagnosticDescriptors.DisallowConfigureAppConfigureHostBuilder
     });
 
     public override void Initialize(AnalysisContext context)
@@ -46,18 +47,22 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                 wellKnownTypes.HostingAbstractionsWebHostBuilderExtensions,
                 wellKnownTypes.WebHostBuilderExtensions,
             };
-<<<<<<<<< Temporary merge branch 1
+            INamedTypeSymbol[] configureLoggingTypes =
+            {
+                wellKnownTypes.HostingHostBuilderExtensions,
+                wellKnownTypes.WebHostBuilderExtensions
+            };
+            INamedTypeSymbol[] configureServicesTypes =
+            {
+                wellKnownTypes.HostingHostBuilderExtensions,
+                wellKnownTypes.ConfigureWebHostBuilder
+            };
             INamedTypeSymbol[] configureAppTypes =
             {
                 wellKnownTypes.ConfigureHostBuilder,
                 wellKnownTypes.ConfigureWebHostBuilder,
                 wellKnownTypes.WebHostBuilderExtensions,
                 wellKnownTypes.HostingHostBuilderExtensions,
-            };
-            INamedTypeSymbol[] configureServicesTypes =
-            {
-                wellKnownTypes.HostingHostBuilderExtensions,
-                wellKnownTypes.ConfigureWebHostBuilder
             };
             INamedTypeSymbol[] configureHostTypes = { wellKnownTypes.ConfigureHostBuilder };
 
@@ -111,6 +116,38 @@ public class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
                     operationAnalysisContext.ReportDiagnostic(
                         CreateDiagnostic(
                             DiagnosticDescriptors.DoNotUseUseStartupWithConfigureWebHostBuilder,
+                            invocation));
+                }
+
+                //var builder = WebApplication.CreateBuilder(args);
+                //builder.Host.ConfigureLogging(x => {})
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureHostBuilder,
+                        "ConfigureLogging",
+                        configureLoggingTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DoNotUseHostConfigureLogging,
+                            invocation));
+                }
+
+                //var builder = WebApplication.CreateBuilder(args);
+                //builder.WebHost.ConfigureLogging(x => {})
+                if (IsDisallowedMethod(
+                        operationAnalysisContext,
+                        invocation,
+                        targetMethod,
+                        wellKnownTypes.ConfigureWebHostBuilder,
+                        "ConfigureLogging",
+                        configureLoggingTypes))
+                {
+                    operationAnalysisContext.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagnosticDescriptors.DoNotUseHostConfigureLogging,
                             invocation));
                 }
 
