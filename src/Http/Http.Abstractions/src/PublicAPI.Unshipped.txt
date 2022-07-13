@@ -58,14 +58,6 @@ Microsoft.AspNetCore.Http.ProblemDetailsContext.HttpContext.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.get -> Microsoft.AspNetCore.Mvc.ProblemDetails!
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetailsContext() -> void
-Microsoft.AspNetCore.Http.RouteHandlerContext
-Microsoft.AspNetCore.Http.RouteHandlerContext.ApplicationServices.get -> System.IServiceProvider!
-Microsoft.AspNetCore.Http.RouteHandlerContext.EndpointMetadata.get -> System.Collections.Generic.IList<object!>!
-Microsoft.AspNetCore.Http.RouteHandlerContext.MethodInfo.get -> System.Reflection.MethodInfo!
-Microsoft.AspNetCore.Http.RouteHandlerContext.RouteHandlerContext(System.Reflection.MethodInfo! methodInfo, System.Collections.Generic.IList<object!>! endpointMetadata, System.IServiceProvider! applicationServices) -> void
-Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate
-Microsoft.AspNetCore.Http.RouteHandlerInvocationContext
-Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.RouteHandlerInvocationContext() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(Microsoft.AspNetCore.Routing.RouteValueDictionary? dictionary) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? values) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string?>>? values) -> void
@@ -88,12 +80,6 @@ Microsoft.AspNetCore.Mvc.ProblemDetails.Title.get -> string?
 Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string?
 Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void
-abstract Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.Arguments.get -> System.Collections.Generic.IList<object?>!
-abstract Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.GetArgument<T>(int index) -> T
-abstract Microsoft.AspNetCore.Http.RouteHandlerInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
-override Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.Arguments.get -> System.Collections.Generic.IList<object?>!
-override Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.GetArgument<T>(int index) -> T
-override Microsoft.AspNetCore.Http.DefaultRouteHandlerInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.Arguments.get -> System.Collections.Generic.IList<object?>!
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.GetArgument<T>(int index) -> T
 override Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
