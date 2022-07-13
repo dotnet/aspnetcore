@@ -637,9 +637,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
         finally
         {
-            var streamError = error as ConnectionAbortedException
-                ?? new ConnectionAbortedException("The stream has completed.", error!);
-
             await Input.CompleteAsync();
 
             // Once the header is finished being received then the app has started.
@@ -692,6 +689,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
             catch
             {
+                var streamError = error as ConnectionAbortedException
+                   ?? new ConnectionAbortedException("The stream has completed.", error!);
+
                 Abort(streamError, Http3ErrorCode.ProtocolError);
                 throw;
             }

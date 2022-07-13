@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 
 internal partial class QuicStreamContext : TransportConnection, IPooledStream, IDisposable
 {
+    private static readonly ConnectionAbortedException SendGracefullyCompletedException = new ConnectionAbortedException("The QUIC transport's send loop completed gracefully.");
+
     // Internal for testing.
     internal Task _processingTask = Task.CompletedTask;
 
@@ -499,8 +501,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         {
             lock (_shutdownLock)
             {
-                // TODO: Exception is always allocated. Consider only allocating if receive hasn't completed.
-                _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The QUIC transport's send loop completed gracefully.");
+                _shutdownReason = shutdownReason ?? SendGracefullyCompletedException;
                 QuicLog.StreamShutdownWrite(_log, this, _shutdownReason.Message);
 
                 _stream.Shutdown();
