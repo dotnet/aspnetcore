@@ -176,10 +176,9 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         var healthCheckRegistrationsElapsed = new HashSet<string>();
         foreach (var registration in _healthCheckRegistrationsDictionary.Values)
         {
-            if ((registration.Period - _timerElapsed).Ticks % registration.Period.Ticks == 0L)
+            if (_timerElapsed.Ticks % registration.Period.Ticks == 0L)
             {
                 healthCheckRegistrationsElapsed.Add(registration.Name);
-                System.Diagnostics.Debug.WriteLine($"Triggering {registration.Period} after {_timerElapsed.TotalSeconds} seconds");
             }
         }
 
