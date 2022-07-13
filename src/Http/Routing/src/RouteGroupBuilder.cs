@@ -48,7 +48,7 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
         public override IReadOnlyList<Endpoint> Endpoints =>
             GetGroupedEndpointsWithNullablePrefix(null, Array.Empty<Action<EndpointBuilder>>(), _routeGroupBuilder._outerEndpointRouteBuilder.ServiceProvider);
 
-        public override IReadOnlyList<Endpoint> GetEndpointGroup(RouteGroupContext context) =>
+        public override IReadOnlyList<Endpoint> GetGroupedEndpoints(RouteGroupContext context) =>
             GetGroupedEndpointsWithNullablePrefix(context.Prefix, context.Conventions, context.ApplicationServices);
 
         public IReadOnlyList<Endpoint> GetGroupedEndpointsWithNullablePrefix(RoutePattern? prefix, IReadOnlyList<Action<EndpointBuilder>> conventions, IServiceProvider applicationServices)
@@ -56,7 +56,7 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
             return _routeGroupBuilder._dataSources.Count switch
             {
                 0 => Array.Empty<Endpoint>(),
-                1 => _routeGroupBuilder._dataSources[0].GetEndpointGroup(GetNextRouteGroupContext(prefix, conventions, applicationServices)),
+                1 => _routeGroupBuilder._dataSources[0].GetGroupedEndpoints(GetNextRouteGroupContext(prefix, conventions, applicationServices)),
                 _ => SelectEndpointsFromAllDataSources(GetNextRouteGroupContext(prefix, conventions, applicationServices)),
             };
         }
@@ -92,7 +92,7 @@ public sealed class RouteGroupBuilder : IEndpointRouteBuilder, IEndpointConventi
 
             foreach (var dataSource in _routeGroupBuilder._dataSources)
             {
-                groupedEndpoints.AddRange(dataSource.GetEndpointGroup(context));
+                groupedEndpoints.AddRange(dataSource.GetGroupedEndpoints(context));
             }
 
             return groupedEndpoints;

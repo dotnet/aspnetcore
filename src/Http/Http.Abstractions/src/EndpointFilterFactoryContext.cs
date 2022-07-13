@@ -10,15 +10,15 @@ namespace Microsoft.AspNetCore.Http;
 /// Represents the information accessible via the route handler filter
 /// API when the user is constructing a new route handler.
 /// </summary>
-public sealed class RouteHandlerContext
+public sealed class EndpointFilterFactoryContext
 {
     /// <summary>
-    /// Creates a new instance of the <see cref="RouteHandlerContext"/>.
+    /// Creates a new instance of the <see cref="EndpointFilterFactoryContext"/>.
     /// </summary>
     /// <param name="methodInfo">The <see cref="MethodInfo"/> associated with the route handler of the current request.</param>
     /// <param name="endpointMetadata">The <see cref="EndpointBuilder.Metadata"/> associated with the endpoint the filter is targeting.</param>
     /// <param name="applicationServices">The <see cref="IServiceProvider"/> instance used to access the application services.</param>
-    public RouteHandlerContext(MethodInfo methodInfo, IList<object> endpointMetadata, IServiceProvider applicationServices)
+    public EndpointFilterFactoryContext(MethodInfo methodInfo, IList<object> endpointMetadata, IServiceProvider applicationServices)
     {
         ArgumentNullException.ThrowIfNull(methodInfo);
         ArgumentNullException.ThrowIfNull(endpointMetadata);
