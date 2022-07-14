@@ -94,7 +94,7 @@ public class ObjectResultExecutorTest
         // Arrange
         var executor = CreateExecutor();
 
-        var httpContext = new DefaultHttpContext();
+        var httpContext = GetHttpContext();
         var actionContext = new ActionContext() { HttpContext = httpContext };
         httpContext.Request.Headers.Accept = "application/xml"; // This will not be used
         httpContext.Response.ContentType = "application/json";
@@ -258,7 +258,7 @@ public class ObjectResultExecutorTest
 
         var actionContext = new ActionContext()
         {
-            HttpContext = new DefaultHttpContext(),
+            HttpContext = GetHttpContext(),
         };
 
         var result = new ObjectResult("input");

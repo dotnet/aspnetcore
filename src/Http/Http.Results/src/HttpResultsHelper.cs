@@ -3,7 +3,6 @@
 
 using System.Text;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -131,33 +130,7 @@ internal static partial class HttpResultsHelper
     {
         if (value is ProblemDetails problemDetails)
         {
-            ApplyProblemDetailsDefaults(problemDetails, statusCode);
-        }
-    }
-
-    public static void ApplyProblemDetailsDefaults(ProblemDetails problemDetails, int? statusCode)
-    {
-        // We allow StatusCode to be specified either on ProblemDetails or on the ObjectResult and use it to configure the other.
-        // This lets users write <c>return Conflict(new Problem("some description"))</c>
-        // or <c>return Problem("some-problem", 422)</c> and have the response have consistent fields.
-        if (problemDetails.Status is null)
-        {
-            if (statusCode is not null)
-            {
-                problemDetails.Status = statusCode;
-            }
-            else
-            {
-                problemDetails.Status = problemDetails is HttpValidationProblemDetails ?
-                    StatusCodes.Status400BadRequest :
-                    StatusCodes.Status500InternalServerError;
-            }
-        }
-
-        if (ProblemDetailsDefaults.Defaults.TryGetValue(problemDetails.Status.Value, out var defaults))
-        {
-            problemDetails.Title ??= defaults.Title;
-            problemDetails.Type ??= defaults.Type;
+            ProblemDetailsDefaults.Apply(problemDetails, statusCode);
         }
     }
 
