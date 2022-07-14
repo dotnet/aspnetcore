@@ -4,6 +4,7 @@
 using System.Threading.RateLimiting;
 
 namespace Microsoft.AspNetCore.RateLimiting;
+
 internal class TestRateLimiter : RateLimiter
 {
     private readonly bool _alwaysAccept;
@@ -25,7 +26,7 @@ internal class TestRateLimiter : RateLimiter
         return new TestRateLimitLease(_alwaysAccept, null);
     }
 
-    protected override ValueTask<RateLimitLease> WaitAsyncCore(int permitCount, CancellationToken cancellationToken)
+    protected override ValueTask<RateLimitLease> WaitAndAcquireAsyncCore(int permitCount, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return new ValueTask<RateLimitLease>(new TestRateLimitLease(_alwaysAccept, null));

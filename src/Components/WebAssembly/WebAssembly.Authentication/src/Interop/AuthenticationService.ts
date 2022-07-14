@@ -35,15 +35,15 @@ export interface AccessToken {
 }
 
 export enum AccessTokenResultStatus {
-    Success = 'success',
-    RequiresRedirect = 'requiresRedirect'
+    Success = 'Success',
+    RequiresRedirect = 'RequiresRedirect'
 }
 
 export enum AuthenticationResultStatus {
-    Redirect = 'redirect',
-    Success = 'success',
-    Failure = 'failure',
-    OperationCompleted = 'operationCompleted'
+    Redirect = 'Redirect',
+    Success = 'Success',
+    Failure = 'Failure',
+    OperationCompleted = 'OperationCompleted'
 };
 
 export interface AuthenticationResult {

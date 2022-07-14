@@ -49,7 +49,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
 
         app.Run(new[] { "list", "--project", project });
-        Assert.Contains("Set UserSecretsId to ", _console.GetOutput());
+        Assert.DoesNotContain("Set UserSecretsId to ", _console.GetOutput());
         Assert.Contains("No JWTs created yet!", _console.GetOutput());
     }
 
@@ -62,66 +62,20 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         app.Run(new[] { "create", "--project", project });
         var output = _console.GetOutput();
         Assert.DoesNotContain("could not find SecretManager.targets", output);
-        Assert.Contains("Set UserSecretsId to ", output);
+        Assert.DoesNotContain("Set UserSecretsId to ", output);
         Assert.Contains("New JWT saved", output);
     }
 
     [Fact]
-    public async Task Create_SetsDefaultSchemeIfNoOtherSchemesSet()
+    public void Create_WritesGeneratedTokenToDisk()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
-        var appSettingsPath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
         Assert.Contains("New JWT saved", _console.GetOutput());
-
-        using FileStream openStream = File.OpenRead(appSettingsPath);
-        var appSettingsFile = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
-
-        Assert.True(appSettingsFile.TryGetPropertyValue("Authentication", out var authentication));
-        Assert.Equal("Bearer", authentication["DefaultScheme"].GetValue<string>());
-        Assert.Equal("dotnet-user-jwts", authentication["Schemes"]["Bearer"]["ClaimsIssuer"].GetValue<string>());
-    }
-
-    [Fact]
-    public async Task Create_DoesNotOverrideDefaultSchemeIfAlreadySet()
-    {
-        var project = Path.Combine(_fixture.CreateProject(
-            hasSecret: true,
-            appSettingsContent: @"{ ""Authentication"": { ""DefaultScheme"": ""foobar"" } }"), "TestProject.csproj");
-        var appSettingsPath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
-        var app = new Program(_console);
-
-        app.Run(new[] { "create", "--project", project });
-        Assert.Contains("New JWT saved", _console.GetOutput());
-
-        using FileStream openStream = File.OpenRead(appSettingsPath);
-        var appSettingsFile = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
-
-        Assert.True(appSettingsFile.TryGetPropertyValue("Authentication", out var authentication));
-        Assert.Equal("foobar", authentication["DefaultScheme"].GetValue<string>()); //foobar not Bearer
-        Assert.Equal("dotnet-user-jwts", authentication["Schemes"]["Bearer"]["ClaimsIssuer"].GetValue<string>());
-    }
-
-    [Fact]
-    public async Task Create_DoesNotSetDefaultSchemeIfMultipleSchemesConfigured()
-    {
-        var project = Path.Combine(_fixture.CreateProject(
-            hasSecret: true,
-            appSettingsContent: @"{ ""Authentication"": { ""Schemes"": { ""foobar"" : { } } } }"), "TestProject.csproj");
-        var appSettingsPath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
-        var app = new Program(_console);
-
-        app.Run(new[] { "create", "--project", project });
-        Assert.Contains("New JWT saved", _console.GetOutput());
-
-        using FileStream openStream = File.OpenRead(appSettingsPath);
-        var appSettingsFile = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
-
-        Assert.True(appSettingsFile.TryGetPropertyValue("Authentication", out var authentication));
-        Assert.Null(authentication["DefaultScheme"]); // Should not be set beause 2 schemes configured
-        Assert.Equal("dotnet-user-jwts", authentication["Schemes"]["Bearer"]["ClaimsIssuer"].GetValue<string>());
+        Assert.Contains("dotnet-user-jwts", File.ReadAllText(appsettings));
     }
 
     [Fact]
@@ -138,6 +92,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     public void List_ReturnsIdForGeneratedToken()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--scheme", "MyCustomScheme" });
@@ -148,10 +103,10 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     }
 
     [Fact]
-    public async Task Remove_RemovesGeneratedToken()
+    public void Remove_RemovesGeneratedToken()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
-        var appSettingsPath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
@@ -160,45 +115,16 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         app.Run(new[] { "create", "--project", project, "--scheme", "Scheme2" });
 
         app.Run(new[] { "remove", id, "--project", project });
-
-        using FileStream openStream = File.OpenRead(appSettingsPath);
-        var appSettingsFile = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
-
-        Assert.True(appSettingsFile.TryGetPropertyValue("Authentication", out var authentication));
-        Assert.Null(authentication["Schemes"]["Bearer"]);
-        Assert.NotNull(authentication["Schemes"]["Scheme2"]);
-        Assert.Null(authentication["DefaultScheme"]);
+        var appsettingsContent = File.ReadAllText(appsettings);
+        Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
+        Assert.Contains("Scheme2", appsettingsContent);
     }
 
     [Fact]
-    public async Task Remove_DoesNotUnsetDefaultSchemeIfNoMatch()
+    public void Clear_RemovesGeneratedTokens()
     {
         var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
-        var appSettingsPath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
-        var app = new Program(_console);
-
-        app.Run(new[] { "create", "--project", project });
-        _console.ClearOutput();
-        app.Run(new[] { "create", "--project", project, "--scheme", "Scheme2" });
-        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
-        var id = matches.SingleOrDefault().Groups[1].Value;
-
-        app.Run(new[] { "remove", id, "--project", project });
-
-        using FileStream openStream = File.OpenRead(appSettingsPath);
-        var appSettingsFile = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
-
-        Assert.True(appSettingsFile.TryGetPropertyValue("Authentication", out var authentication));
-        Assert.NotNull(authentication["Schemes"]["Bearer"]);
-        Assert.Null(authentication["Schemes"]["Scheme2"]);
-        Assert.NotNull(authentication["DefaultScheme"]); // We haven't removed the Bearer scheme so it's still the default
-    }
-
-    [Fact]
-    public async Task Clear_RemovesGeneratedTokens()
-    {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
-        var appSettingsPath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
@@ -207,14 +133,9 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains("New JWT saved", _console.GetOutput());
 
         app.Run(new[] { "clear", "--project", project, "--force" });
-
-        using FileStream openStream = File.OpenRead(appSettingsPath);
-        var appSettingsFile = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
-
-        Assert.True(appSettingsFile.TryGetPropertyValue("Authentication", out var authentication));
-        Assert.Null(authentication["Schemes"]["Bearer"]);
-        Assert.Null(authentication["Schemes"]["Scheme2"]);
-        Assert.Null(authentication["DefaultScheme"]);
+        var appsettingsContent = File.ReadAllText(appsettings);
+        Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
+        Assert.DoesNotContain("Scheme2", appsettingsContent);
     }
 
     [Fact]
@@ -254,7 +175,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         using FileStream openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         Assert.NotNull(secretsJson);
-        Assert.True(secretsJson.ContainsKey(DevJwtsDefaults.SigningKeyConfigurationKey));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName(DevJwtsDefaults.Scheme, DevJwtsDefaults.Issuer)));
         Assert.True(secretsJson.TryGetPropertyValue("Foo", out var fooField));
         Assert.Equal("baz", fooField["Bar"].GetValue<string>());
     }
@@ -342,7 +263,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         Assert.Contains($"ID: {id}", output);
         Assert.Contains($"Name: {Environment.UserName}", output);
-        Assert.Contains($"Scheme: Bearer", output);
+        Assert.Contains($"Scheme: {DevJwtsDefaults.Scheme}", output);
         Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
     }
 
@@ -361,7 +282,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         Assert.Contains($"ID: {id}", output);
         Assert.Contains($"Name: {Environment.UserName}", output);
-        Assert.Contains($"Scheme: Bearer", output);
+        Assert.Contains($"Scheme: {DevJwtsDefaults.Scheme}", output);
         Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
         Assert.Contains($"Roles: [foobar]", output);
         Assert.DoesNotContain("Custom Claims", output);
@@ -382,7 +303,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         Assert.Contains($"ID: {id}", output);
         Assert.Contains($"Name: {Environment.UserName}", output);
-        Assert.Contains($"Scheme: Bearer", output);
+        Assert.Contains($"Scheme: {DevJwtsDefaults.Scheme}", output);
         Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
         Assert.Contains($"Scopes: none", output);
         Assert.Contains($"Roles: [none]", output);
@@ -400,7 +321,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var deserialized = JsonSerializer.Deserialize<Jwt>(output);
 
         Assert.NotNull(deserialized);
-        Assert.Equal("Bearer", deserialized.Scheme);
+        Assert.Equal(DevJwtsDefaults.Scheme, deserialized.Scheme);
         Assert.Equal(Environment.UserName, deserialized.Name);
     }
 
@@ -453,7 +374,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         using FileStream openStream = File.OpenRead(secretsFilePath);
         var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
         Assert.NotNull(secretsJson);
-        Assert.True(secretsJson.ContainsKey(DevJwtsDefaults.SigningKeyConfigurationKey));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName(DevJwtsDefaults.Scheme, DevJwtsDefaults.Issuer)));
         Assert.True(secretsJson.TryGetPropertyValue("Foo", out var fooField));
         Assert.Equal("baz", fooField["Bar"].GetValue<string>());
     }
@@ -463,7 +384,6 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     {
         var projectPath = _fixture.CreateProject();
         var project = Path.Combine(projectPath, "TestProject.csproj");
-        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
 
         var app = new Program(_console);
         app.Run(new[] { "create", "--project", project});
@@ -474,5 +394,90 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         Assert.Contains("New JWT saved", output);
         Assert.Contains($"Audience(s): http://localhost:23528, https://localhost:44395, https://localhost:5001, http://localhost:5000", output);
+    }
+
+    [Fact]
+    public async Task Create_SupportsSettingACustomIssuerAndScheme()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme" });
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+        app.Run(new[] { "print", id, "--project", project, "--show-all" });
+        var output = _console.GetOutput();
+
+        Assert.Contains("New JWT saved", output);
+
+        using FileStream openStream = File.OpenRead(secretsFilePath);
+        var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName("test-scheme", "test-issuer")));
+    }
+
+    [Fact]
+    public async Task Create_SupportsSettingMutlipleIssuersAndSingleScheme()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme" });
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer-2", "--scheme", "test-scheme" });
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+
+        using FileStream openStream = File.OpenRead(secretsFilePath);
+        var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName("test-scheme", "test-issuer")));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName("test-scheme", "test-issuer-2")));
+    }
+
+    [Fact]
+    public async Task Create_SupportsSettingSingleIssuerAndMultipleSchemes()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme" });
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme-2" });
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+
+        using FileStream openStream = File.OpenRead(secretsFilePath);
+        var secretsJson = await JsonSerializer.DeserializeAsync<JsonObject>(openStream);
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName("test-scheme", "test-issuer")));
+        Assert.True(secretsJson.ContainsKey(DevJwtCliHelpers.GetSigningKeyPropertyName("test-scheme-2", "test-issuer")));
+    }
+
+    [Fact]
+    public void Key_CanPrintAndReset_BySchemeAndIssuer()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme" });
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme-2" });
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer-2", "--scheme", "test-scheme" });
+        app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer-2", "--scheme", "test-scheme-3" });
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+        _console.ClearOutput();
+
+        app.Run(new[] { "key", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme" });
+        var printMatches = Regex.Matches(_console.GetOutput(), "Signing Key: '(.*?)'");
+        var key = printMatches.SingleOrDefault().Groups[1].Value;
+        _console.ClearOutput();
+
+        app.Run(new[] { "key", "--project", project, "--reset", "--force", "--issuer", "test-issuer", "--scheme", "test-scheme" });
+        var resetMatches = Regex.Matches(_console.GetOutput(), "New signing key created: '(.*?)'");
+        var resetKey = resetMatches.SingleOrDefault().Groups[1].Value;
+        Assert.NotEqual(key, resetKey);
     }
 }

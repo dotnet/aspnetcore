@@ -13,10 +13,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
 {
     private readonly ApiBehaviorOptions _options;
+    private readonly Action<ProblemDetailsContext>? _configure;
 
-    public DefaultProblemDetailsFactory(IOptions<ApiBehaviorOptions> options)
+    public DefaultProblemDetailsFactory(
+        IOptions<ApiBehaviorOptions> options,
+        IOptions<ProblemDetailsOptions>? problemDetailsOptions = null)
     {
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _configure = problemDetailsOptions?.Value?.CustomizeProblemDetails;
     }
 
     public override ProblemDetails CreateProblemDetails(
@@ -93,5 +97,7 @@ internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
         {
             problemDetails.Extensions["traceId"] = traceId;
         }
+
+        _configure?.Invoke(new() { HttpContext = httpContext!, ProblemDetails = problemDetails });
     }
 }

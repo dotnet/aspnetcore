@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 using HttpCharacters = Microsoft.AspNetCore.Http.HttpCharacters;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
@@ -52,6 +51,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private PseudoHeaderFields _parsedPseudoHeaderFields;
     private int _totalParsedHeaderSize;
     private bool _isMethodConnect;
+    private Http3MessageBody? _messageBody;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new ManualResetValueTaskSource<object?>();
 
@@ -637,9 +637,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
         finally
         {
-            var streamError = error as ConnectionAbortedException
-                ?? new ConnectionAbortedException("The stream has completed.", error!);
-
             await Input.CompleteAsync();
 
             // Once the header is finished being received then the app has started.
@@ -692,6 +689,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             }
             catch
             {
+                var streamError = error as ConnectionAbortedException
+                   ?? new ConnectionAbortedException("The stream has completed.", error!);
+
                 Abort(streamError, Http3ErrorCode.ProtocolError);
                 throw;
             }
@@ -921,7 +921,18 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     }
 
     protected override MessageBody CreateMessageBody()
-        => Http3MessageBody.For(this);
+    {
+        if (_messageBody != null)
+        {
+            _messageBody.Reset();
+        }
+        else
+        {
+            _messageBody = new Http3MessageBody(this);
+        }
+
+        return _messageBody;
+    }
 
     protected override bool TryParseRequest(ReadResult result, out bool endConnection)
     {
@@ -954,7 +965,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         // CONNECT - :scheme and :path must be excluded=
         if (Method == Http.HttpMethod.Connect && HttpRequestHeaders.HeaderProtocol.Count == 0)
         {
-            if (!string.IsNullOrEmpty(RequestHeaders[HeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[HeaderNames.Path]))
+            if (!string.IsNullOrEmpty(RequestHeaders[PseudoHeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[PseudoHeaderNames.Path]))
             {
                 Abort(new ConnectionAbortedException(CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath), Http3ErrorCode.ProtocolError);
                 return false;

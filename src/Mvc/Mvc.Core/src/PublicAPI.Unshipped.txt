@@ -7,6 +7,19 @@ Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.I
 *REMOVED*Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, params System.Linq.Expressions.Expression<System.Func<TModel!, object!>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider! valueProvider, params System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
 Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, params System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
+Microsoft.AspNetCore.Mvc.ProblemDetails (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.get -> System.Collections.Generic.IDictionary<string!, object?>! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Status.get -> int? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Status.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Title.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.TryParseModelBinderProvider() -> void

@@ -1,15 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 #if !IIS_FUNCTIONALS
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -40,15 +37,16 @@ public class Latin1Tests : IISFunctionalTestBase
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
         deploymentParameters.TransformArguments((a, _) => $"{a} AddLatin1");
 
-        var deploymentResult = await DeployAsync(deploymentParameters);
+        await RunTest(deploymentParameters, async deploymentResult =>
+        {
+            var client = new HttpClient(new LoggingHandler(new WinHttpHandler() { SendTimeout = TimeSpan.FromMinutes(3) }, deploymentResult.Logger));
 
-        var client = new HttpClient(new LoggingHandler(new WinHttpHandler() { SendTimeout = TimeSpan.FromMinutes(3) }, deploymentResult.Logger));
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}Latin1");
+            requestMessage.Headers.Add("foo", "£");
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}Latin1");
-        requestMessage.Headers.Add("foo", "£");
-
-        var result = await client.SendAsync(requestMessage);
-        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            var result = await client.SendAsync(requestMessage);
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        });
     }
 
     [ConditionalFact]
@@ -58,15 +56,16 @@ public class Latin1Tests : IISFunctionalTestBase
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
         deploymentParameters.TransformArguments((a, _) => $"{a}");
 
-        var deploymentResult = await DeployAsync(deploymentParameters);
+        await RunTest(deploymentParameters, async deploymentResult =>
+        {
+            var client = new HttpClient(new LoggingHandler(new WinHttpHandler() { SendTimeout = TimeSpan.FromMinutes(3) }, deploymentResult.Logger));
 
-        var client = new HttpClient(new LoggingHandler(new WinHttpHandler() { SendTimeout = TimeSpan.FromMinutes(3) }, deploymentResult.Logger));
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}InvalidCharacter");
+            requestMessage.Headers.Add("foo", "£");
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"{deploymentResult.ApplicationBaseUri}InvalidCharacter");
-        requestMessage.Headers.Add("foo", "£");
-
-        var result = await client.SendAsync(requestMessage);
-        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            var result = await client.SendAsync(requestMessage);
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        });
     }
 
     [ConditionalFact]
@@ -75,20 +74,20 @@ public class Latin1Tests : IISFunctionalTestBase
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
         deploymentParameters.TransformArguments((a, _) => $"{a} AddLatin1");
-
-        var deploymentResult = await DeployAsync(deploymentParameters);
-
-        using (var connection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port))
+        await RunTest(deploymentParameters, async deploymentResult =>
         {
-            await connection.Send(
-                "GET /ReadAndFlushEcho HTTP/1.1",
-                "Host: localhost",
-                "Connection: close",
-                "foo: £\0a",
-                "",
-                "");
+            using (var connection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port))
+            {
+                await connection.Send(
+                    "GET /ReadAndFlushEcho HTTP/1.1",
+                    "Host: localhost",
+                    "Connection: close",
+                    "foo: £\0a",
+                    "",
+                    "");
 
-            await connection.ReceiveStartsWith("HTTP/1.1 400 Bad Request");
-        }
+                await connection.ReceiveStartsWith("HTTP/1.1 400 Bad Request");
+            }
+        });
     }
 }

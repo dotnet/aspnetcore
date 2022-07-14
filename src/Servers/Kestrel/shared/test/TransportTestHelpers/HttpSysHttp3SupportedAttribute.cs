@@ -11,7 +11,9 @@ namespace Microsoft.AspNetCore.Testing;
 public class HttpSysHttp3SupportedAttribute : Attribute, ITestCondition
 {
     // We have the same OS and TLS version requirements as MsQuic so check that first.
+#pragma warning disable CA2252 // This API requires opting into preview features
     public bool IsMet => QuicListener.IsSupported && IsRegKeySet;
+#pragma warning restore CA2252 // This API requires opting into preview features
 
     public string SkipReason => "HTTP/3 is not supported or enabled on the current test machine";
 

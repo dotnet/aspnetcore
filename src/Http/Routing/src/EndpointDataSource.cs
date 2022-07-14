@@ -32,7 +32,7 @@ public abstract class EndpointDataSource
     /// <returns>
     /// Returns a read-only collection of <see cref="Endpoint"/> instances given the specified group <see cref="RouteGroupContext.Prefix"/> and <see cref="RouteGroupContext.Conventions"/>.
     /// </returns>
-    public virtual IReadOnlyList<Endpoint> GetEndpointGroup(RouteGroupContext context)
+    public virtual IReadOnlyList<Endpoint> GetGroupedEndpoints(RouteGroupContext context)
     {
         // Only evaluate Endpoints once per call.
         var endpoints = Endpoints;

@@ -142,8 +142,22 @@ public static partial class Results
     /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
     /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
     /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
     public static IResult Text(string? content, string? contentType = null, Encoding? contentEncoding = null, int? statusCode = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => TypedResults.Text(content, contentType, contentEncoding, statusCode);
+
+    /// <summary>
+    /// Writes the <paramref name="utf8Content"/> UTF-8 encoded text to the HTTP response.
+    /// </summary>
+    /// <param name="utf8Content">The content to write to the response.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="statusCode">The status code to return.</param>
+    /// <returns>The created <see cref="IResult"/> object for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static IResult Text(ReadOnlySpan<byte> utf8Content, string? contentType = null, int? statusCode = null)
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        => TypedResults.Text(utf8Content, contentType, statusCode);
 
     /// <summary>
     /// Writes the <paramref name="content"/> string to the HTTP response.

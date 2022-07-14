@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 
 internal partial class QuicStreamContext : TransportConnection, IPooledStream, IDisposable
 {
+    private static readonly ConnectionAbortedException SendGracefullyCompletedException = new ConnectionAbortedException("The QUIC transport's send loop completed gracefully.");
+
     // Internal for testing.
     internal Task _processingTask = Task.CompletedTask;
 
@@ -258,29 +260,29 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                 }
             }
         }
-        catch (QuicStreamAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.StreamAborted)
         {
             // Abort from peer.
-            _error = ex.ErrorCode;
-            QuicLog.StreamAbortedRead(_log, this, ex.ErrorCode);
+            _error = ex.ApplicationErrorCode;
+            QuicLog.StreamAbortedRead(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
 
             // This could be ignored if _shutdownReason is already set.
             error = new ConnectionResetException(ex.Message, ex);
 
             _clientAbort = true;
         }
-        catch (QuicConnectionAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.ConnectionAborted)
         {
             // Abort from peer.
-            _error = ex.ErrorCode;
-            QuicLog.StreamAbortedRead(_log, this, ex.ErrorCode);
+            _error = ex.ApplicationErrorCode;
+            QuicLog.StreamAbortedRead(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
 
             // This could be ignored if _shutdownReason is already set.
             error = new ConnectionResetException(ex.Message, ex);
 
             _clientAbort = true;
         }
-        catch (QuicOperationAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
         {
             // AbortRead has been called for the stream.
             error = new ConnectionAbortedException(ex.Message, ex);
@@ -378,7 +380,26 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                 var isCompleted = result.IsCompleted;
                 if (!buffer.IsEmpty)
                 {
-                    await _stream.WriteAsync(buffer, endStream: isCompleted);
+                    if (buffer.IsSingleSegment)
+                    {
+                        // Fast path when the buffer is a single segment.
+                        await _stream.WriteAsync(buffer.First, endStream: isCompleted);
+                    }
+                    else
+                    {
+                        // When then buffer has multiple segments then write them in a loop.
+                        // We're not using a standard foreach here because we want to detect
+                        // the final write and pass end stream flag with that write.
+                        var enumerator = buffer.GetEnumerator();
+                        var isLastSegment = !enumerator.MoveNext();
+
+                        while (!isLastSegment)
+                        {
+                            var currentSegment = enumerator.Current;
+                            isLastSegment = !enumerator.MoveNext();
+                            await _stream.WriteAsync(currentSegment, endStream: isLastSegment && isCompleted);
+                        }
+                    }
                 }
 
                 output.AdvanceTo(end);
@@ -390,29 +411,29 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                 }
             }
         }
-        catch (QuicStreamAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.StreamAborted)
         {
             // Abort from peer.
-            _error = ex.ErrorCode;
-            QuicLog.StreamAbortedWrite(_log, this, ex.ErrorCode);
+            _error = ex.ApplicationErrorCode;
+            QuicLog.StreamAbortedWrite(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
 
             // This could be ignored if _shutdownReason is already set.
             shutdownReason = new ConnectionResetException(ex.Message, ex);
 
             _clientAbort = true;
         }
-        catch (QuicConnectionAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.ConnectionAborted)
         {
             // Abort from peer.
-            _error = ex.ErrorCode;
-            QuicLog.StreamAbortedWrite(_log, this, ex.ErrorCode);
+            _error = ex.ApplicationErrorCode;
+            QuicLog.StreamAbortedWrite(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
 
             // This could be ignored if _shutdownReason is already set.
             shutdownReason = new ConnectionResetException(ex.Message, ex);
 
             _clientAbort = true;
         }
-        catch (QuicOperationAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
         {
             // AbortWrite has been called for the stream.
             // Possibily might also get here from connection closing.
@@ -480,8 +501,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         {
             lock (_shutdownLock)
             {
-                // TODO: Exception is always allocated. Consider only allocating if receive hasn't completed.
-                _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The QUIC transport's send loop completed gracefully.");
+                _shutdownReason = shutdownReason ?? SendGracefullyCompletedException;
                 QuicLog.StreamShutdownWrite(_log, this, _shutdownReason.Message);
 
                 _stream.Shutdown();
