@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
@@ -371,6 +373,103 @@ public class ControllerActionEndpointDataSourceTest : ActionEndpointDataSourceBa
                 Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
                 Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
             });
+    }
+
+    [Fact]
+    public void GroupedEndpoints_AppliesConventions_RouteSpecificMetadata()
+    {
+        // Arrange
+        var actions = new List<ActionDescriptor>
+        {
+            new ControllerActionDescriptor
+            {
+                AttributeRouteInfo = new AttributeRouteInfo()
+                {
+                    Template = "/test",
+                },
+                RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "action", "Test" },
+                    { "controller", "Test" },
+                },
+            },
+            new ControllerActionDescriptor
+            {
+                RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "action", "Index" },
+                    { "controller", "Home" },
+                },
+            }
+        };
+
+        var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+        mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(actions, 0));
+
+        var dataSource = (ControllerActionEndpointDataSource)CreateDataSource(mockDescriptorProvider.Object);
+        dataSource.AddRoute("1", "/1/{controller}/{action}/{id?}", null, null, null).Add(b => b.Metadata.Add("A"));
+        dataSource.AddRoute("2", "/2/{controller}/{action}/{id?}", null, null, null).Add(b => b.Metadata.Add("B"));
+
+        dataSource.DefaultBuilder.Add((b) =>
+        {
+            b.Metadata.Add("Hi there");
+        });
+
+        // Act
+        var groupConventions = new List<Action<EndpointBuilder>>()
+        {
+            b => b.Metadata.Add(new GroupMetadata()),
+            b => b.Metadata.Add("group")
+        };
+        var sp = Mock.Of<IServiceProvider>();
+        var groupPattern = RoutePatternFactory.Parse("/group1");
+        var endpoints = dataSource.GetGroupedEndpoints(new RouteGroupContext(groupPattern, groupConventions, sp));
+
+        // Assert
+        Assert.Collection(
+            endpoints.OfType<RouteEndpoint>().Where(e => !SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
+            e =>
+            {
+                Assert.Equal("/group1/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
+                Assert.Equal(new[] { "group", "Hi there", "A" }, e.Metadata.GetOrderedMetadata<string>());
+                Assert.NotNull(e.Metadata.GetMetadata<GroupMetadata>());
+            },
+            e =>
+            {
+                Assert.Equal("/group1/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
+                Assert.Equal(new[] { "group", "Hi there", "B" }, e.Metadata.GetOrderedMetadata<string>());
+                Assert.NotNull(e.Metadata.GetMetadata<GroupMetadata>());
+            });
+
+        Assert.Collection(
+            endpoints.OfType<RouteEndpoint>().Where(e => SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
+            e =>
+            {
+                Assert.Equal("/group1/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                Assert.Equal(new[] { "group", "Hi there", "A" }, e.Metadata.GetOrderedMetadata<string>());
+                Assert.NotNull(e.Metadata.GetMetadata<GroupMetadata>());
+            },
+            e =>
+            {
+                Assert.Equal("/group1/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                Assert.Equal(new[] { "group", "Hi there", "B" }, e.Metadata.GetOrderedMetadata<string>());
+                Assert.NotNull(e.Metadata.GetMetadata<GroupMetadata>());
+            },
+            e =>
+            {
+                Assert.Equal("/group1/test", e.RoutePattern.RawText);
+                Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
+                Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
+                Assert.NotNull(e.Metadata.GetMetadata<GroupMetadata>());
+            });
+    }
+
+    private class GroupMetadata
+    {
     }
 
     private static bool SupportsLinkGeneration(RouteEndpoint endpoint)

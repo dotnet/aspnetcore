@@ -11,6 +11,11 @@ namespace Microsoft.AspNetCore.Builder;
 public abstract class EndpointBuilder
 {
     /// <summary>
+    /// Gets the list of filters that apply to this endpoint.
+    /// </summary>
+    public IList<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>> FilterFactories { get; } = new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>();
+
+    /// <summary>
     /// Gets or sets the delegate used to process requests for the endpoint.
     /// </summary>
     public RequestDelegate? RequestDelegate { get; set; }

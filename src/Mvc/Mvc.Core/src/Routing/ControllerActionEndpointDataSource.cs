@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
@@ -60,7 +61,7 @@ internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSou
         }
     }
 
-    protected override List<Endpoint> CreateEndpoints(IReadOnlyList<ActionDescriptor> actions, IReadOnlyList<Action<EndpointBuilder>> conventions)
+    protected override List<Endpoint> CreateEndpoints(RoutePattern? groupPrefix, IReadOnlyList<ActionDescriptor> actions, IReadOnlyList<Action<EndpointBuilder>> conventions)
     {
         var endpoints = new List<Endpoint>();
         var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -80,7 +81,7 @@ internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSou
         {
             if (actions[i] is ControllerActionDescriptor action)
             {
-                _endpointFactory.AddEndpoints(endpoints, routeNames, action, _routes, conventions, CreateInertEndpoints);
+                _endpointFactory.AddEndpoints(endpoints, routeNames, action, _routes, conventions, CreateInertEndpoints, groupPrefix);
 
                 if (_routes.Count > 0)
                 {
@@ -99,7 +100,7 @@ internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSou
         for (var i = 0; i < _routes.Count; i++)
         {
             var route = _routes[i];
-            _endpointFactory.AddConventionalLinkGenerationRoute(endpoints, routeNames, keys, route, conventions);
+            _endpointFactory.AddConventionalLinkGenerationRoute(endpoints, routeNames, keys, route, conventions, groupPrefix);
         }
 
         return endpoints;

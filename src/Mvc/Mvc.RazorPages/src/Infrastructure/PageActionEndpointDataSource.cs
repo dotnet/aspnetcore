@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
@@ -40,7 +41,7 @@ internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBas
     // selection. Set to true by builder methods that do dynamic/fallback selection.
     public bool CreateInertEndpoints { get; set; }
 
-    protected override List<Endpoint> CreateEndpoints(IReadOnlyList<ActionDescriptor> actions, IReadOnlyList<Action<EndpointBuilder>> conventions)
+    protected override List<Endpoint> CreateEndpoints(RoutePattern? groupPrefix, IReadOnlyList<ActionDescriptor> actions, IReadOnlyList<Action<EndpointBuilder>> conventions)
     {
         var endpoints = new List<Endpoint>();
         var routeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -48,7 +49,7 @@ internal sealed class PageActionEndpointDataSource : ActionEndpointDataSourceBas
         {
             if (actions[i] is PageActionDescriptor action)
             {
-                _endpointFactory.AddEndpoints(endpoints, routeNames, action, Array.Empty<ConventionalRouteEntry>(), conventions, CreateInertEndpoints);
+                _endpointFactory.AddEndpoints(endpoints, routeNames, action, Array.Empty<ConventionalRouteEntry>(), conventions, CreateInertEndpoints, groupPrefix);
             }
         }
 

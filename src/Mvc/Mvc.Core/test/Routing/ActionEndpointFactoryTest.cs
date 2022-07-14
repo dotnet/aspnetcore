@@ -25,7 +25,7 @@ public class ActionEndpointFactoryTest
         });
 
         Services = serviceCollection.BuildServiceProvider();
-        Factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
+        Factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>(), Services);
     }
 
     internal ActionEndpointFactory Factory { get; }
@@ -266,7 +266,7 @@ public class ActionEndpointFactoryTest
         requestDelegateFactory.Setup(m => m.CreateRequestDelegate(action, It.IsAny<RouteValueDictionary>())).Returns(del);
 
         // Act
-        var factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), new[] { requestDelegateFactory.Object });
+        var factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), new[] { requestDelegateFactory.Object }, Services);
 
         var endpoints = new List<Endpoint>();
         factory.AddEndpoints(endpoints, new HashSet<string>(), action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
