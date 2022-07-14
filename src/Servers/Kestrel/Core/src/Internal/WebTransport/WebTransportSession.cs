@@ -38,7 +38,7 @@ internal sealed class WebTransportSession : IWebTransportSession
     internal static string VersionHeaderPrefix => $"{SecPrefix}draft";
     internal static string CurrentSuppportedVersion => $"{VersionHeaderPrefix}02";
 
-    long IWebTransportSession.SessionId => _connectStream.StreamId;
+    public long SessionId => _connectStream.StreamId;
 
     internal WebTransportSession(Http3Connection connection, Http3Stream connectStream)
     {

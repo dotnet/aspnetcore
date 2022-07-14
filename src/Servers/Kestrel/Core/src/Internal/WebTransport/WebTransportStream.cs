@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
-internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFeature, IConnectionItemsFeature
+internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFeature, IStreamIdFeature, IConnectionItemsFeature
 {
     private readonly CancellationTokenRegistration _connectionClosedRegistration;
     private readonly bool _canWrite;
@@ -21,12 +21,11 @@ internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFe
     private readonly DuplexPipe _duplexPipe;
     private readonly IFeatureCollection _features;
     private readonly KestrelTrace _log;
+    private readonly long _streamId;
     private IDictionary<object, object?>? _items;
     private bool _isClosed;
 
-    public readonly long StreamId;
-
-    public override string ConnectionId { get => StreamId.ToString(NumberFormatInfo.InvariantInfo); set => throw new NotSupportedException(); }
+    public override string ConnectionId { get => _streamId.ToString(NumberFormatInfo.InvariantInfo); set => throw new NotSupportedException(); }
 
     public override IDuplexPipe Transport { get => _duplexPipe; set => throw new NotSupportedException(); }
 
@@ -37,6 +36,8 @@ internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFe
         get => _items ??= new ConnectionItems();
         set => _items = value;
     }
+
+    public long StreamId => _streamId;
 
     public bool CanRead => _canRead && !_isClosed;
 
@@ -49,10 +50,11 @@ internal sealed class WebTransportStream : ConnectionContext, IStreamDirectionFe
         _log = context.ServiceContext.Log;
 
         var streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
-        StreamId = streamIdFeature!.StreamId;
+        _streamId = streamIdFeature!.StreamId;
 
         _features = context.ConnectionFeatures;
         _features.Set<IStreamDirectionFeature>(this);
+        _features.Set<IStreamIdFeature>(this);
         _features.Set<IConnectionItemsFeature>(this);
 
         _duplexPipe = new DuplexPipe(context.Transport.Input, context.Transport.Output);

@@ -20,7 +20,7 @@ internal class WebTransportTestUtilities
 {
     private static int streamCounter;
 
-    public static async ValueTask<WebTransportSession> GenerateSession(Http3InMemory inMemory)
+    public static async ValueTask<WebTransportSession> GenerateSession(Http3InMemory inMemory, TaskCompletionSource exitSessionTcs)
     {
         var appCompletedTcs = new TaskCompletionSource<IWebTransportSession>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -40,6 +40,8 @@ internal class WebTransportTestUtilities
             }
 #pragma warning restore CA2252
 
+            // wait for the test to tell us to kill the application
+            await exitSessionTcs.Task;
         });
         var controlStream = await inMemory.CreateControlStream();
         var controlStream2 = await inMemory.GetInboundControlStream();
@@ -72,9 +74,10 @@ internal class WebTransportTestUtilities
     public static WebTransportStream CreateStream(WebTransportStreamType type, Memory<byte>? memory = null)
     {
         var features = new FeatureCollection();
-        features[typeof(IStreamIdFeature)] = new StreamId(streamCounter++);
-        features[typeof(IStreamDirectionFeature)] = new DefaultStreamDirectionFeature(type != WebTransportStreamType.Output, type != WebTransportStreamType.Input);
-        features[typeof(IProtocolErrorCodeFeature)] = Mock.Of<IProtocolErrorCodeFeature>();
+        features.Set<IStreamIdFeature>(new StreamId(streamCounter++));
+        features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(type != WebTransportStreamType.Output, type != WebTransportStreamType.Input));
+        features.Set(Mock.Of<IConnectionItemsFeature>());
+        features.Set(Mock.Of<IProtocolErrorCodeFeature>());
 
         var writer = new HttpResponsePipeWriter(new StreamWriterControl(memory));
         writer.StartAcceptingWrites();
