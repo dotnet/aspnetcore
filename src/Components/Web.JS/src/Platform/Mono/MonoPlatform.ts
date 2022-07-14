@@ -254,8 +254,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourcesLoaded++;
       const percentage = resourcesLoaded / totalResources.length * 100;
       document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
-      document.documentElement.style.setProperty('--blazor-load-percentage-text', `${Math.round(percentage)}%`);
-      document.documentElement.style.setProperty('--blazor-load-percentage-color', '#1b6ec2');
+      document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
     }
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
@@ -269,9 +268,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     /* type */ 'dotnetwasm'
   );
   const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, wasmBeingLoaded);
-  assembliesBeingLoaded.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
-  pdbsBeingLoaded.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
-  wasmBeingLoaded.response.then(_ => setProgress());
+  totalResources.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   let timeZoneResource: LoadingResource | undefined;

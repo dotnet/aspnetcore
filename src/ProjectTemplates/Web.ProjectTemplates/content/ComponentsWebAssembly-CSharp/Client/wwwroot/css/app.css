@@ -63,6 +63,10 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
+:root {
+    --blazor-load-percentage: 0;
+}
+
 .loading-progress {
     position: relative;
     display: block;
@@ -80,17 +84,18 @@ a, .btn-link {
     }
 
         .loading-progress circle:last-child {
-            stroke: var(--blazor-load-percentage-color);
+            stroke: #1b6ec2;
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;
         }
 
-.loading-progress-text:after {
+.loading-progress-text {
     position: absolute;
-    content: var(--blazor-load-percentage-text);
-    color: black;
-    font-weight: bold;
     text-align: center;
-    margin: -5.7rem 0 0 0.3rem;
-    left: 39.2vh;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
 }
+
+    .loading-progress-text:after {
+        content: var(--blazor-load-percentage-text);
+    }
