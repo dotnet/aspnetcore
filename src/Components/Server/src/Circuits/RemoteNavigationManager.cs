@@ -72,29 +72,26 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         NotifyLocationChanged(intercepted);
     }
 
-    public void HandleLocationChanging(int callId, string uri, bool intercepted)
+    public async ValueTask HandleLocationChangingAsync(int callId, string uri, bool intercepted)
     {
-        NotifyLocationChanging(uri, intercepted, result =>
-        {
-            bool success;
+        bool shouldContinueNavigation;
 
-            if (result.Exception is { } exception)
-            {
-                Log.NavigationFailed(_logger, uri, exception);
-                success = false;
-            }
-            else if (result.Canceled)
+        try
+        {
+            shouldContinueNavigation = await NotifyLocationChangingAsync(uri, intercepted);
+
+            if (!shouldContinueNavigation)
             {
                 Log.NavigationCanceled(_logger, uri);
-                success = false;
             }
-            else
-            {
-                success = true;
-            }
+        }
+        catch (Exception ex)
+        {
+            shouldContinueNavigation = false;
+            Log.NavigationFailed(_logger, uri, ex);
+        }
 
-            _jsRuntime.InvokeVoidAsync(Interop.EndLocationChanging, callId, success).Preserve();
-        });
+        await _jsRuntime.InvokeVoidAsync(Interop.EndLocationChanging, callId, shouldContinueNavigation);
     }
 
     /// <inheritdoc />
@@ -109,13 +106,13 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
             throw new NavigationException(absoluteUriString);
         }
 
-        NotifyLocationChanging(uri, false, result =>
+        NotifyLocationChangingAsync(uri, false).AsTask().ContinueWith(t =>
         {
-            if (result.Exception is { } exception)
+            if (t.Exception is { } exception)
             {
                 Log.NavigationFailed(_logger, uri, exception);
             }
-            else if (result.Canceled)
+            else if (!t.Result)
             {
                 Log.NavigationCanceled(_logger, uri);
             }
@@ -123,7 +120,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
             {
                 _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options).Preserve();
             }
-        });
+        }, TaskScheduler.Current);
     }
 
     protected override void SetNavigationLockState(bool value)

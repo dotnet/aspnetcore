@@ -42,23 +42,26 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         NotifyLocationChanged(isInterceptedLink);
     }
 
-    public void HandleLocationChanging(int callId, string uri, bool intercepted)
+    public async ValueTask HandleLocationChangingAsync(int callId, string uri, bool intercepted)
     {
-        NotifyLocationChanging(uri, intercepted, result =>
+        bool shouldContinueNavigation;
+
+        try
         {
-            if (result.Exception is { } exception)
-            {
-                Log.NavigationFailed(_logger, uri, exception);
-            }
-            else if (result.Canceled)
+            shouldContinueNavigation = await NotifyLocationChangingAsync(uri, intercepted);
+
+            if (!shouldContinueNavigation)
             {
                 Log.NavigationCanceled(_logger, uri);
             }
-            else
-            {
-                DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.EndLocationChanging, callId, !result.Canceled);
-            }
-        });
+        }
+        catch (Exception ex)
+        {
+            shouldContinueNavigation = false;
+            Log.NavigationFailed(_logger, uri, ex);
+        }
+
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.EndLocationChanging, callId, shouldContinueNavigation);
     }
 
     /// <inheritdoc />
@@ -70,13 +73,13 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
             throw new ArgumentNullException(nameof(uri));
         }
 
-        NotifyLocationChanging(uri, false, result =>
+        NotifyLocationChangingAsync(uri, false).AsTask().ContinueWith(t =>
         {
-            if (result.Exception is { } exception)
+            if (t.Exception is { } exception)
             {
                 Log.NavigationFailed(_logger, uri, exception);
             }
-            else if (result.Canceled)
+            else if (!t.Result)
             {
                 Log.NavigationCanceled(_logger, uri);
             }
@@ -84,7 +87,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
             {
                 DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
             }
-        });
+        }, TaskScheduler.Current);
     }
 
     protected override void SetNavigationLockState(bool value)

@@ -543,11 +543,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await Renderer.Dispatcher.InvokeAsync(() =>
+            await Renderer.Dispatcher.InvokeAsync(async () =>
             {
                 Log.LocationChanging(_logger, uri, CircuitId);
                 var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                navigationManager.HandleLocationChanging(callId, uri, intercepted);
+                await navigationManager.HandleLocationChangingAsync(callId, uri, intercepted);
             });
         }
 

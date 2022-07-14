@@ -36,6 +36,6 @@ public static class JSInteropMethods
     [JSInvokable(nameof(NotifyLocationChanging))]
     public static void NotifyLocationChanging(int callId, string uri, bool isInterceptedLink)
     {
-        WebAssemblyNavigationManager.Instance.HandleLocationChanging(callId, uri, isInterceptedLink);
+        WebAssemblyNavigationManager.Instance.HandleLocationChangingAsync(callId, uri, isInterceptedLink).Preserve();
     }
 }

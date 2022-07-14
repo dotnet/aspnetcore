@@ -6,13 +6,22 @@
 @inject NavigationManager NavigationManager
 @implements IDisposable
 
-<button @onclick="Navigate">Navigate</button><br />
+<p>
+    <button @onclick="Navigate">Navigate</button>
+</p>
 
-<button id="programmatic-navigation" @onclick="ProgrammaticNavigation">Programmatic navigation</button><br />
+<p>
+    <button id="programmatic-navigation" @onclick="ProgrammaticNavigation">Programmatic navigation</button><br />
+</p>
 
-<a id="internal-link-navigation" href="some-path-@(nextNavigationIndex - 1)" @onclick="OnInternalLinkNavigation">Internal link navigation</a><br />
+<p>
+    <a id="internal-link-navigation" href="some-path-@nextLinkNavigationIndex">/some-path-@nextLinkNavigationIndex</a>
+    <button id="increment-link-navigation-index" @onclick="IncrementLinkNavigationIndex">Increment path index</button><br />
+</p>
 
-<span id="test-info">@UrlLocation</span>
+<p>
+    <span id="test-info">@UrlLocation</span>
+</p>
 
 <p>
     <button id="add-navigation-lock" @onclick="AddNavigationLock">Add navigation lock</button><br />
@@ -59,7 +68,8 @@
 
     string UrlLocation;
 
-    int nextNavigationIndex;
+    int nextProgrammaticNavigationIndex;
+    int nextLinkNavigationIndex;
 
     protected override void OnInitialized()
     {
@@ -87,21 +97,26 @@
         => navigationLocks.Add(new());
 
     void RemoveNavigationLock()
-        => navigationLocks.RemoveAt(navigationLocks.Count - 1);
+    {
+        if (navigationLocks.Count != 0)
+        {
+            navigationLocks.RemoveAt(navigationLocks.Count - 1);
+        }
+    }
 
     async Task Navigate()
     {
         await JSRuntime.InvokeVoidAsync("navigationManagerNavigate");
     }
 
-    void ProgrammaticNavigation()
+    void IncrementLinkNavigationIndex()
     {
-        NavigationManager.NavigateTo($"/subdir/some-path-{nextNavigationIndex++}");
+        nextLinkNavigationIndex++;
     }
 
-    void OnInternalLinkNavigation()
+    void ProgrammaticNavigation()
     {
-        nextNavigationIndex++;
+        NavigationManager.NavigateTo($"/subdir/some-path-{nextProgrammaticNavigationIndex++}");
     }
 
     class NavigationLockInfo

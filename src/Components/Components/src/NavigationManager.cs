@@ -287,16 +287,15 @@ public abstract class NavigationManager
     /// </summary>
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI.</param>
     /// <param name="isNavigationIntercepted">Whether this navigation was intercepted from a link.</param>
-    /// <param name="continueNavigation">An action that continues the navigation based on the provided <see cref="LocationChangingResult"/>.</param>
-    protected void NotifyLocationChanging(string uri, bool isNavigationIntercepted, Action<LocationChangingResult> continueNavigation)
+    /// <returns>A <see cref="ValueTask{TResult}"/> representing the completion of the operation. If the result is <see langword="true"/>, the navigation should continue.</returns>
+    protected async ValueTask<bool> NotifyLocationChangingAsync(string uri, bool isNavigationIntercepted)
     {
         _locationChangingCts?.Cancel();
         _locationChangingCts = null;
 
         if (_locationChangingHandlers.Count == 0)
         {
-            continueNavigation(new(canceled: false, exception: null));
-            return;
+            return true;
         }
 
         _locationChangingCts = new();
@@ -309,18 +308,31 @@ public abstract class NavigationManager
 
         _locationChangingHandlers.CopyTo(locationChangingHandlersCopy);
 
-        for (var i = 0; i < handlerCount; i++)
+        try
         {
-            locationChangingTasks[i] = locationChangingHandlersCopy[i].Invoke(context);
+            for (var i = 0; i < handlerCount; i++)
+            {
+                locationChangingTasks[i] = locationChangingHandlersCopy[i].Invoke(context);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return false;
+                }
+            }
+
+            await Task.WhenAll(locationChangingTasks.Take(handlerCount)).WaitAsync(cancellationToken);
+
+            return !cancellationToken.IsCancellationRequested;
         }
-
-        Task.WhenAll(locationChangingTasks.Take(handlerCount)).WaitAsync(cancellationToken).ContinueWith(t =>
+        catch (TaskCanceledException ex) when (ex.CancellationToken == cancellationToken)
         {
-            continueNavigation(new(cancellationToken.IsCancellationRequested, t.Exception));
-        }, TaskScheduler.Current);
-
-        ArrayPool<LocationChangingHandler>.Shared.Return(locationChangingHandlersCopy);
-        ArrayPool<Task>.Shared.Return(locationChangingTasks);
+            return false;
+        }
+        finally
+        {
+            ArrayPool<LocationChangingHandler>.Shared.Return(locationChangingHandlersCopy);
+            ArrayPool<Task>.Shared.Return(locationChangingTasks);
+        }
     }
 
     /// <summary>
@@ -328,7 +340,7 @@ public abstract class NavigationManager
     /// </summary>
     /// <param name="value">Whether there are active location changing handlers.</param>
     protected virtual void SetNavigationLockState(bool value)
-        => throw new NotSupportedException();
+        => throw new NotSupportedException($"To support navigation locks, {GetType().Name} must override {nameof(SetNavigationLockState)}");
 
     /// <summary>
     /// Adds a handler to process incoming navigation events.

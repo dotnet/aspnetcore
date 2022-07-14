@@ -38,7 +38,7 @@ public class NavigationLock : IComponent, IAsyncDisposable
     async Task IComponent.SetParametersAsync(ParameterView parameters)
     {
         var lastHasOnBeforeInternalNavigationCallback = HasOnBeforeInternalNavigationCallback;
-        var lastConfirmExteranlNavigation = ConfirmExternalNavigation;
+        var lastConfirmExternalNavigation = ConfirmExternalNavigation;
 
         parameters.SetParameterProperties(this);
 
@@ -56,7 +56,7 @@ public class NavigationLock : IComponent, IAsyncDisposable
         }
 
         var confirmExternalNavigation = ConfirmExternalNavigation;
-        if (confirmExternalNavigation != lastConfirmExteranlNavigation)
+        if (confirmExternalNavigation != lastConfirmExternalNavigation)
         {
             if (confirmExternalNavigation)
             {

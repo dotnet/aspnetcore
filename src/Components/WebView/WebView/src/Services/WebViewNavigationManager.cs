@@ -28,40 +28,37 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
         NotifyLocationChanged(intercepted);
     }
 
-    public void HandleLocationChanging(int callId, string uri, bool intercepted)
+    public async ValueTask HandleLocationChangingAsync(int callId, string uri, bool intercepted)
     {
-        NotifyLocationChanging(uri, intercepted, result =>
-        {
-            bool success;
+        bool shouldContinueNavigation;
 
-            if (result.Exception is { } exception)
+        try
+        {
+            shouldContinueNavigation = await NotifyLocationChangingAsync(uri, intercepted);
+
+            if (!shouldContinueNavigation)
             {
-                success = false;
-                Log.NavigationFailed(_logger, uri, exception);
-            }
-            else if (result.Canceled)
-            {
-                success = false;
                 Log.NavigationCanceled(_logger, uri);
             }
-            else
-            {
-                success = true;
-            }
+        }
+        catch (Exception ex)
+        {
+            shouldContinueNavigation = false;
+            Log.NavigationFailed(_logger, uri, ex);
+        }
 
-            _ipcSender.EndLocationChanging(callId, success);
-        });
+        _ipcSender.EndLocationChanging(callId, shouldContinueNavigation);
     }
 
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
-        NotifyLocationChanging(uri, false, result =>
+        NotifyLocationChangingAsync(uri, false).AsTask().ContinueWith(t =>
         {
-            if (result.Exception is { } exception)
+            if (t.Exception is { } exception)
             {
                 Log.NavigationFailed(_logger, uri, exception);
             }
-            else if (result.Canceled)
+            else if (!t.Result)
             {
                 Log.NavigationCanceled(_logger, uri);
             }
@@ -69,7 +66,7 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
             {
                 _ipcSender.Navigate(uri, options);
             }
-        });
+        }, TaskScheduler.Current);
     }
 
     private static partial class Log
