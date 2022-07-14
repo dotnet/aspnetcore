@@ -16,22 +16,17 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 internal sealed partial class HealthCheckPublisherHostedService : IHostedService
 {
     private readonly HealthCheckService _healthCheckService;
-    private readonly IOptions<HealthCheckPublisherOptions> _healthCheckPublisherOptions;
-    private readonly IOptions<HealthCheckServiceOptions> _healthCheckServiceOptions;
+    private readonly IOptions<HealthCheckPublisherOptions> _options;
     private readonly ILogger _logger;
     private readonly IHealthCheckPublisher[] _publishers;
-    private readonly IDictionary<string, HealthCheckRegistration> _healthCheckRegistrationsDictionary;
-    private readonly Queue<HealthReport> _healthReportQueue;
 
     private readonly CancellationTokenSource _stopping;
-    private Timer? _healthCheckPublisherTimer;
-    private ICollection<Timer> _healthCheckRegistrationTimers;
+    private Timer? _timer;
     private CancellationTokenSource? _runTokenSource;
 
     public HealthCheckPublisherHostedService(
         HealthCheckService healthCheckService,
-        IOptions<HealthCheckPublisherOptions> healthCheckPublisherOptions,
-        IOptions<HealthCheckServiceOptions> healthCheckServiceOptions,
+        IOptions<HealthCheckPublisherOptions> options,
         ILogger<HealthCheckPublisherHostedService> logger,
         IEnumerable<IHealthCheckPublisher> publishers)
     {
@@ -40,14 +35,9 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
             throw new ArgumentNullException(nameof(healthCheckService));
         }
 
-        if (healthCheckPublisherOptions == null)
+        if (options == null)
         {
-            throw new ArgumentNullException(nameof(healthCheckPublisherOptions));
-        }
-
-        if (healthCheckServiceOptions == null)
-        {
-            throw new ArgumentNullException(nameof(healthCheckServiceOptions));
+            throw new ArgumentNullException(nameof(options));
         }
 
         if (logger == null)
@@ -61,31 +51,16 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         }
 
         _healthCheckService = healthCheckService;
-        _healthCheckPublisherOptions = healthCheckPublisherOptions;
-        _healthCheckServiceOptions = healthCheckServiceOptions;
+        _options = options;
         _logger = logger;
         _publishers = publishers.ToArray();
-
-        _healthCheckRegistrationsDictionary =
-            healthCheckServiceOptions.Value.Registrations.ToDictionary(r => r.Name, r =>
-            {
-                // For healthchecks with no individual period, default to publisher period
-                if (r.Period == Timeout.InfiniteTimeSpan)
-                {
-                    r.Period = _healthCheckPublisherOptions.Value.Period;
-                }
-
-                return r;
-            });
-
-        _healthReportQueue = new Queue<HealthReport>();
 
         _stopping = new CancellationTokenSource();
     }
 
     internal bool IsStopping => _stopping.IsCancellationRequested;
 
-    internal bool IsTimerRunning => _healthCheckPublisherTimer != null;
+    internal bool IsTimerRunning => _timer != null;
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -94,18 +69,9 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
             return Task.CompletedTask;
         }
 
-        _healthCheckRegistrationTimers =
-            _healthCheckRegistrationsDictionary
-                .Select(r =>
-                    NonCapturingTimer.Create(
-                        async (state) => await CheckHealthAsync(r.Value.Name).ConfigureAwait(false),
-                        null,
-                        dueTime: _healthCheckPublisherOptions.Value.Delay,
-                        period: r.Value.Period)).ToList();
-
         // IMPORTANT - make sure this is the last thing that happens in this method. The timer can
         // fire before other code runs.
-        _healthCheckPublisherTimer = NonCapturingTimer.Create(Timer_Tick, null, dueTime: _healthCheckPublisherOptions.Value.Delay, period: _healthCheckPublisherOptions.Value.Period);
+        _timer = NonCapturingTimer.Create(Timer_Tick, null, dueTime: _options.Value.Delay, period: _options.Value.Period);
 
         return Task.CompletedTask;
     }
@@ -126,14 +92,8 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
             return Task.CompletedTask;
         }
 
-        _healthCheckPublisherTimer?.Dispose();
-        _healthCheckPublisherTimer = null;
-
-        foreach (var timer in _healthCheckRegistrationTimers)
-        {
-            timer.Dispose();
-        }
-        _healthCheckRegistrationTimers = default;
+        _timer?.Dispose();
+        _timer = null;
 
         return Task.CompletedTask;
     }
@@ -150,28 +110,6 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         _runTokenSource!.Cancel();
     }
 
-    private async Task CheckHealthAsync(string healthCheckName)
-    {
-        // Concatenate with exposed predicate
-        var runHealthCheckPredicate = (HealthCheckRegistration hcr) =>
-        {
-            var runHealthCheck = hcr.Name == healthCheckName;
-
-            if (_healthCheckPublisherOptions.Value.Predicate == null)
-            {
-                return runHealthCheck;
-            }
-
-            return _healthCheckPublisherOptions.Value.Predicate(hcr)
-                && runHealthCheck;
-        };
-
-        // The health checks service does it's own logging, and doesn't throw exceptions.
-        var report = await _healthCheckService.CheckHealthAsync(runHealthCheckPredicate).ConfigureAwait(false);
-
-        _healthReportQueue.Enqueue(report);
-    }
-
     // Internal for testing
     internal async Task RunAsync()
     {
@@ -181,7 +119,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         CancellationTokenSource? cancellation = null;
         try
         {
-            var timeout = _healthCheckPublisherOptions.Value.Timeout;
+            var timeout = _options.Value.Timeout;
 
             cancellation = CancellationTokenSource.CreateLinkedTokenSource(_stopping.Token);
             _runTokenSource = cancellation;
@@ -213,16 +151,13 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         await Task.Yield();
 
         // The health checks service does it's own logging, and doesn't throw exceptions.
-        var publishers = _publishers;
-        var tasks = new List<Task>(publishers.Length * _healthReportQueue.Count);
+        var report = await _healthCheckService.CheckHealthAsync(_options.Value.Predicate, cancellationToken).ConfigureAwait(false);
 
-        while (_healthReportQueue.Any())
+        var publishers = _publishers;
+        var tasks = new Task[publishers.Length];
+        for (var i = 0; i < publishers.Length; i++)
         {
-            var report = _healthReportQueue.Dequeue();
-            foreach (var publisher in publishers)
-            {
-                tasks.Add(RunPublisherAsync(publisher, report, cancellationToken));
-            }
+            tasks[i] = RunPublisherAsync(publishers[i], report, cancellationToken);
         }
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
