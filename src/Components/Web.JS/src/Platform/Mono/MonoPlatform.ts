@@ -282,7 +282,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName],
       'globalization'
     );
-    totalResources.concat(timeZoneResource);
+    totalResources.push(timeZoneResource);
     timeZoneResource.response.then(_ => setProgress());
   }
 
