@@ -293,7 +293,7 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourceLoader.bootConfig.resources.runtime[icuDataResourceName],
       'globalization'
     );
-    totalResources.concat(icuDataResource);
+    totalResources.push(icuDataResource);
     icuDataResource.response.then(_ => setProgress());
   }
 
