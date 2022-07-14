@@ -655,6 +655,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void NavigationLock_CanBlockNavigation_ThenContinue()
     {
+        SetUrlViaPushState("/");
+
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
 
         // Add two navigation locks that block internal navigations
@@ -688,6 +690,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void NavigationLock_CanBlockNavigation_ThenCancel()
     {
+        SetUrlViaPushState("/");
+
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
 
         // Add two navigation locks that block internal navigations
@@ -720,6 +724,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void NavigationLock_CanAddAndRemoveLocationChangingCallback()
     {
+        SetUrlViaPushState("/");
+
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
 
         // Add a navigation lock that blocks internal navigations
@@ -756,6 +762,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void NavigationLock_RemovesLock_WhenDisposed()
     {
+        SetUrlViaPushState("/");
+
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
 
         // Add a navigation lock that blocks internal navigations
@@ -792,6 +800,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_PushState()
     {
+        SetUrlViaPushState("/");
+
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
 
         // Add a navigation lock that blocks internal navigations
@@ -828,6 +838,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
     {
+        SetUrlViaPushState("/");
+
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
 
         // Populate the browser stack
@@ -866,6 +878,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_ProgrammaticNavigation()
     {
+        SetUrlViaPushState("/");
+
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
 
         // Add a navigation lock that blocks internal navigations
@@ -900,6 +914,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     [Fact]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_InternalLinkNavigation()
     {
+        SetUrlViaPushState("/");
+
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
 
         // Add a navigation lock that blocks internal navigations
