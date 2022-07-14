@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Routing;
@@ -10,6 +11,8 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// </summary>
 public class NavigationLock : IComponent, IAsyncDisposable
 {
+    private readonly string _id = Guid.NewGuid().ToString("D", CultureInfo.InvariantCulture);
+
     private bool HasOnBeforeInternalNavigationCallback => OnBeforeInternalNavigation.HasDelegate;
 
     [Inject]
@@ -60,11 +63,11 @@ public class NavigationLock : IComponent, IAsyncDisposable
         {
             if (confirmExternalNavigation)
             {
-                await JSRuntime.InvokeVoidAsync(NavigationLockInterop.EnableNavigationPrompt);
+                await JSRuntime.InvokeVoidAsync(NavigationLockInterop.EnableNavigationPrompt, _id);
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt);
+                await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
             }
         }
     }
@@ -76,14 +79,7 @@ public class NavigationLock : IComponent, IAsyncDisposable
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (HasOnBeforeInternalNavigationCallback)
-        {
-            NavigationManager.RemoveLocationChangingHandler(OnLocationChanging);
-        }
-
-        if (ConfirmExternalNavigation)
-        {
-            await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt);
-        }
+        NavigationManager.RemoveLocationChangingHandler(OnLocationChanging);
+        await JSRuntime.InvokeVoidAsync(NavigationLockInterop.DisableNavigationPrompt, _id);
     }
 }

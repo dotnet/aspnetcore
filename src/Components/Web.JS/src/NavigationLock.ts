@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-let numLocksWithPromptEnabled = 0;
+const registeredLocks = new Set<string>();
 
 export const NavigationLock = {
   enableNavigationPrompt,
@@ -16,22 +16,18 @@ function onBeforeUnload(event: BeforeUnloadEvent) {
   event.returnValue = true;
 }
 
-function enableNavigationPrompt() {
-  if (numLocksWithPromptEnabled === 0) {
+function enableNavigationPrompt(id: string) {
+  if (registeredLocks.size === 0) {
     window.addEventListener('beforeunload', onBeforeUnload);
   }
 
-  numLocksWithPromptEnabled++;
+  registeredLocks.add(id);
 }
 
-function disableNavigationPrompt() {
-  if (numLocksWithPromptEnabled <= 0) {
-    return;
-  }
+function disableNavigationPrompt(id: string) {
+  registeredLocks.delete(id);
 
-  numLocksWithPromptEnabled--;
-
-  if (numLocksWithPromptEnabled === 0) {
+  if (registeredLocks.size === 0) {
     window.removeEventListener('beforeunload', onBeforeUnload);
   }
 }
