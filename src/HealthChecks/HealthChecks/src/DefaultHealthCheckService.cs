@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,58 +21,102 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IOptions<HealthCheckServiceOptions> _options;
     private readonly ILogger<DefaultHealthCheckService> _logger;
+    private ConcurrentQueue<KeyValuePair<string, HealthReportEntry>> _healthReportQueue;
+    private IReadOnlyDictionary<TimeSpan, List<HealthCheckRegistration>> _timeToHCs;
+    private ICollection<Timer> _healthCheckRegistrationTimers;
+    private ICollection<HealthCheckRegistration> _healthCheckRegistrationsDefault;
 
     public DefaultHealthCheckService(
         IServiceScopeFactory scopeFactory,
-        IOptions<HealthCheckServiceOptions> options,
+        IOptions<HealthCheckServiceOptions> _healthCheckServiceOptions,
+        IOptions<HealthCheckPublisherOptions> _healthCheckPublisherOptions,
         ILogger<DefaultHealthCheckService> logger)
     {
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
-        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _options = _healthCheckServiceOptions ?? throw new ArgumentNullException(nameof(_healthCheckServiceOptions));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         // We're specifically going out of our way to do this at startup time. We want to make sure you
         // get any kind of health-check related error as early as possible. Waiting until someone
         // actually tries to **run** health checks would be real baaaaad.
         ValidateRegistrations(_options.Value.Registrations);
+
+        _healthReportQueue = new ConcurrentQueue<KeyValuePair<string, HealthReportEntry>>();
+
+        // TODO add predicate
+        _healthCheckRegistrationsDefault = _options.Value.Registrations.Where(r => r.Period == Timeout.InfiniteTimeSpan).ToList();
+
+        _timeToHCs = (from r in _options.Value.Registrations
+                      where r.Period != Timeout.InfiniteTimeSpan // Skip HCs with no individual period
+                      group r by r.Period).ToDictionary(g => g.Key, g => g.ToList());
+
+        _healthCheckRegistrationTimers = _timeToHCs.Select(t =>
+            NonCapturingTimer.Create(
+                      async (state) =>
+                      {
+                          var entries = await CheckHealthAsyncCore(t.Value).ConfigureAwait(false);
+                          foreach (var entry in entries)
+                          {
+                              _healthReportQueue.Enqueue(entry);
+                          }
+                      },
+                      null,
+                      dueTime: _healthCheckPublisherOptions.Value.Delay,
+                      period: t.Key)).ToList();
     }
+
+    private async Task<List<KeyValuePair<string, HealthReportEntry>>> CheckHealthAsyncCore(ICollection<HealthCheckRegistration> registrations)
+    {
+        var tasks = new Task<HealthReportEntry>[registrations.Count];
+        var index = 0;
+
+        foreach (var registration in registrations)
+        {
+            tasks[index++] = Task.Run(() => RunCheckAsync(registration));
+        }
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        // StringComparer.OrdinalIgnoreCase
+        index = 0;
+        var entries = new List<KeyValuePair<string, HealthReportEntry>>();
+        foreach (var registration in registrations)
+        {
+            entries.Add(new KeyValuePair<string, HealthReportEntry>(registration.Name, tasks[index++].Result));
+        }
+
+        return entries;
+    }
+
     public override async Task<HealthReport> CheckHealthAsync(
         Func<HealthCheckRegistration, bool>? predicate,
         CancellationToken cancellationToken = default)
     {
+        var totalTime = ValueStopwatch.StartNew();
+        Log.HealthCheckProcessingBegin(_logger);
+
         var registrations = _options.Value.Registrations;
         if (predicate != null)
         {
             registrations = registrations.Where(predicate).ToArray();
         }
 
-        var totalTime = ValueStopwatch.StartNew();
-        Log.HealthCheckProcessingBegin(_logger);
-
-        var tasks = new Task<HealthReportEntry>[registrations.Count];
-        var index = 0;
-
-        foreach (var registration in registrations)
+        var healthReportEntriesValues = await CheckHealthAsyncCore(registrations).ConfigureAwait(false); // Run default
+        while (_healthReportQueue.TryDequeue(out var entry))
         {
-            tasks[index++] = Task.Run(() => RunCheckAsync(registration, cancellationToken), cancellationToken);
+            healthReportEntriesValues.Add(entry);
         }
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
-
-        index = 0;
-        var entries = new Dictionary<string, HealthReportEntry>(StringComparer.OrdinalIgnoreCase);
-        foreach (var registration in registrations)
-        {
-            entries[registration.Name] = tasks[index++].Result;
-        }
+        var healthReportEntries = healthReportEntriesValues.ToDictionary(kv => kv.Key, kv => kv.Value);
 
         var totalElapsedTime = totalTime.GetElapsedTime();
-        var report = new HealthReport(entries, totalElapsedTime);
+        var report = new HealthReport(healthReportEntries, totalElapsedTime);
         Log.HealthCheckProcessingEnd(_logger, report.Status, totalElapsedTime);
+
         return report;
     }
 
-    private async Task<HealthReportEntry> RunCheckAsync(HealthCheckRegistration registration, CancellationToken cancellationToken)
+    private async Task<HealthReportEntry> RunCheckAsync(HealthCheckRegistration registration, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
