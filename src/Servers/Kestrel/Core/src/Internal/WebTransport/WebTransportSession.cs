@@ -156,8 +156,7 @@ internal sealed class WebTransportSession : IWebTransportSession
                 _openStreams.Remove(stream.StreamId, out _);
             }
 
-            stream.Abort();
-            throw new Exception(CoreStrings.WebTransportFailedToAddStreamToPendingQueue);
+            stream.Abort(new ConnectionAbortedException(CoreStrings.WebTransportFailedToAddStreamToPendingQueue));
         }
     }
 
