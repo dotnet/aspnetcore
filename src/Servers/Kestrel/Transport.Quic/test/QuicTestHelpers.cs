@@ -71,7 +71,7 @@ internal static class QuicTestHelpers
     public static async ValueTask<MultiplexedConnectionContext> AcceptAndAddFeatureAsync(this IMultiplexedConnectionListener listener)
     {
         var connection = await listener.AcceptAsync();
-        connection.Features.Set<IConnectionHeartbeatFeature>(new TestConnectionHeartbeatFeature());
+        connection?.Features.Set<IConnectionHeartbeatFeature>(new TestConnectionHeartbeatFeature());
         return connection;
     }
 
@@ -91,24 +91,26 @@ internal static class QuicTestHelpers
     {
         return new QuicClientConnectionOptions
         {
-            MaxBidirectionalStreams = 200,
-            MaxUnidirectionalStreams = 200,
+            MaxInboundBidirectionalStreams = 200,
+            MaxInboundUnidirectionalStreams = 200,
             RemoteEndPoint = remoteEndPoint,
             ClientAuthenticationOptions = new SslClientAuthenticationOptions
             {
                 ApplicationProtocols = new List<SslApplicationProtocol>
-                    {
-                        SslApplicationProtocol.Http3
-                    },
+                {
+                    SslApplicationProtocol.Http3
+                },
                 RemoteCertificateValidationCallback = RemoteCertificateValidationCallback
-            }
+            },
+            DefaultStreamErrorCode = 0,
+            DefaultCloseErrorCode = 0,
         };
     }
 
     public static async Task<QuicStreamContext> CreateAndCompleteBidirectionalStreamGracefully(QuicConnection clientConnection, MultiplexedConnectionContext serverConnection)
     {
-        var clientStream = await clientConnection.OpenBidirectionalStreamAsync();
-        await clientStream.WriteAsync(TestData, endStream: true).DefaultTimeout();
+        var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await clientStream.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
         var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
         serverStream.Transport.Input.AdvanceTo(readResult.Buffer.End);

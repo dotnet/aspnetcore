@@ -65,7 +65,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
             _log.LogWarning(ex, "Failed to gracefully shutdown connection.");
         }
 
-        _connection.Dispose();
+        await _connection.DisposeAsync();
     }
 
     public override void Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via MultiplexedConnectionContext.Abort()."));
@@ -91,7 +91,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
     {
         try
         {
-            var stream = await _connection.AcceptStreamAsync(cancellationToken);
+            var stream = await _connection.AcceptInboundStreamAsync(cancellationToken);
 
             QuicStreamContext? context = null;
 
@@ -194,16 +194,16 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         {
             if (streamDirectionFeature.CanRead)
             {
-                quicStream = await _connection.OpenBidirectionalStreamAsync(cancellationToken);
+                quicStream = await _connection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional, cancellationToken);
             }
             else
             {
-                quicStream = await _connection.OpenUnidirectionalStreamAsync(cancellationToken);
+                quicStream = await _connection.OpenOutboundStreamAsync(QuicStreamType.Unidirectional, cancellationToken);
             }
         }
         else
         {
-            quicStream = await _connection.OpenBidirectionalStreamAsync(cancellationToken);
+            quicStream = await _connection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional, cancellationToken);
         }
 
         // Only a handful of control streams are created by the server and they last for the
