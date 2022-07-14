@@ -28,21 +28,35 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
             throw new NotSupportedException("QUIC is not supported or enabled on this platform. See https://aka.ms/aspnet/kestrel/http3reqs for details.");
         }
 
-        _log = log;
-        _context = new QuicTransportContext(_log, options);
-        _quicListenerOptions = new();
-
         if (endpoint is not IPEndPoint listenEndPoint)
         {
             throw new InvalidOperationException($"QUIC doesn't support listening on the configured endpoint type. Expected {nameof(IPEndPoint)} but got {endpoint.GetType().Name}.");
         }
 
-        _quicListenerOptions.ServerAuthenticationOptions = sslServerAuthenticationOptions;
-        _quicListenerOptions.ListenEndPoint = listenEndPoint;
-        _quicListenerOptions.IdleTimeout = options.IdleTimeout;
-        _quicListenerOptions.MaxBidirectionalStreams = options.MaxBidirectionalStreamCount;
-        _quicListenerOptions.MaxUnidirectionalStreams = options.MaxUnidirectionalStreamCount;
-        _quicListenerOptions.ListenBacklog = options.Backlog;
+        if (sslServerAuthenticationOptions.ApplicationProtocols is null || sslServerAuthenticationOptions.ApplicationProtocols.Count == 0)
+        {
+            throw new InvalidOperationException("No application protocols specified.");
+        }
+
+        _log = log;
+        _context = new QuicTransportContext(_log, options);
+        _quicListenerOptions = new QuicListenerOptions
+        {
+            ApplicationProtocols = sslServerAuthenticationOptions.ApplicationProtocols,
+            ListenEndPoint = listenEndPoint,
+            ListenBacklog = options.Backlog,
+            ConnectionOptionsCallback = (connection, helloInfo, cancellationToken) =>
+            {
+                var connectionOptions = new QuicServerConnectionOptions
+                {
+                    ServerAuthenticationOptions = sslServerAuthenticationOptions,
+                    IdleTimeout = options.IdleTimeout,
+                    MaxBidirectionalStreams = options.MaxBidirectionalStreamCount,
+                    MaxUnidirectionalStreams = options.MaxUnidirectionalStreamCount
+                };
+                return ValueTask.FromResult(connectionOptions);
+            }
+        };
 
         // Setting to listenEndPoint to prevent the property from being null.
         // This will be initialized when CreateListenerAsync() is invoked.
@@ -56,7 +70,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
         _listener = await QuicListener.ListenAsync(_quicListenerOptions);
 
         // Listener endpoint will resolve an ephemeral port, e.g. 127.0.0.1:0, into the actual port.
-        EndPoint = _listener.ListenEndPoint;
+        EndPoint = _listener.LocalEndPoint;
     }
 
     public async ValueTask<MultiplexedConnectionContext?> AcceptAsync(IFeatureCollection? features = null, CancellationToken cancellationToken = default)
@@ -75,7 +89,7 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
 
             return connectionContext;
         }
-        catch (QuicOperationAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
         {
             _log.LogDebug("Listener has aborted with exception: {Message}", ex.Message);
         }
@@ -87,16 +101,17 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
         await DisposeAsync();
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (_disposed)
         {
-            return ValueTask.CompletedTask;
+            return;
         }
 
-        _listener?.Dispose();
+        if (_listener != null)
+        {
+            await _listener.DisposeAsync();
+        }
         _disposed = true;
-
-        return ValueTask.CompletedTask;
     }
 }

@@ -174,8 +174,9 @@ public class Http3Tests
         client.DefaultRequestVersion = HttpVersion.Version30;
         client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(address));
-        var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
-        Assert.Equal(0x010b, qex.ErrorCode);
+        var qex = Assert.IsType<QuicException>(ex.InnerException);
+        Assert.Equal(QuicError.StreamAborted, qex.QuicError);
+        Assert.Equal(0x010b, qex.ApplicationErrorCode.Value);
     }
 
     [ConditionalFact]
@@ -206,8 +207,9 @@ public class Http3Tests
         headersReceived.SetResult();
         response.EnsureSuccessStatusCode();
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
-        var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
-        Assert.Equal(0x010c, qex.ErrorCode);
+        var qex = Assert.IsType<QuicException>(ex.InnerException?.InnerException?.InnerException);
+        Assert.Equal(QuicError.StreamAborted, qex.QuicError);
+        Assert.Equal(0x010c, qex.ApplicationErrorCode.Value);
     }
 
     [ConditionalFact]
@@ -231,8 +233,9 @@ public class Http3Tests
         headersReceived.SetResult();
         response.EnsureSuccessStatusCode();
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
-        var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
-        Assert.Equal(0x0102, qex.ErrorCode); // H3_INTERNAL_ERROR
+        var qex = Assert.IsType<QuicException>(ex.InnerException?.InnerException?.InnerException);
+        Assert.Equal(QuicError.StreamAborted, qex.QuicError);
+        Assert.Equal(0x0102, qex.ApplicationErrorCode.Value); // H3_INTERNAL_ERROR
     }
 
     [ConditionalFact]
@@ -251,7 +254,8 @@ public class Http3Tests
         client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(address));
-        var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
-        Assert.Equal(0x010c, qex.ErrorCode); // H3_REQUEST_CANCELLED
+        var qex = Assert.IsType<QuicException>(ex.InnerException);
+        Assert.Equal(QuicError.StreamAborted, qex.QuicError);
+        Assert.Equal(0x010c, qex.ApplicationErrorCode.Value); // H3_REQUEST_CANCELLED
     }
 }

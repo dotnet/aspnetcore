@@ -25,6 +25,6 @@ public class SampleRateLimiterPolicy : IRateLimiterPolicy<string>
     // Use a sliding window limiter allowing 1 request every 10 seconds
     public RateLimitPartition<string> GetPartition(HttpContext httpContext)
     {
-        return RateLimitPartition.CreateSlidingWindowLimiter<string>(string.Empty, key => new SlidingWindowRateLimiterOptions(1, QueueProcessingOrder.OldestFirst, 1, TimeSpan.FromSeconds(5), 1));
+        return RateLimitPartition.GetSlidingWindowLimiter<string>(string.Empty, key => new SlidingWindowRateLimiterOptions(1, QueueProcessingOrder.OldestFirst, 1, TimeSpan.FromSeconds(5), 1));
     }
 }

@@ -160,7 +160,7 @@ public class RateLimitingMiddlewareTests : LoggedTest
         var name = "myEndpoint";
         options.Value.AddPolicy<string>(name, (context =>
         {
-            return RateLimitPartition.Create<string>("myLimiter", (key =>
+            return RateLimitPartition.Get<string>("myLimiter", (key =>
             {
                 return new TestRateLimiter(false);
             }));
