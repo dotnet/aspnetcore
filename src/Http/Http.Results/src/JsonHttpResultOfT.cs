@@ -49,7 +49,7 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
 
         if (value is ProblemDetails problemDetails)
         {
-            HttpResultsHelper.ApplyProblemDetailsDefaults(problemDetails, statusCode);
+            ProblemDetailsDefaults.Apply(problemDetails, statusCode);
             statusCode ??= problemDetails.Status;
         }
 
