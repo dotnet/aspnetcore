@@ -72,26 +72,9 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         NotifyLocationChanged(intercepted);
     }
 
-    public async ValueTask HandleLocationChangingAsync(int callId, string uri, bool intercepted)
+    public async ValueTask<bool> HandleLocationChangingAsync(string uri, bool intercepted)
     {
-        bool shouldContinueNavigation;
-
-        try
-        {
-            shouldContinueNavigation = await NotifyLocationChangingAsync(uri, intercepted);
-
-            if (!shouldContinueNavigation)
-            {
-                Log.NavigationCanceled(_logger, uri);
-            }
-        }
-        catch (Exception ex)
-        {
-            shouldContinueNavigation = false;
-            Log.NavigationFailed(_logger, uri, ex);
-        }
-
-        await _jsRuntime.InvokeVoidAsync(Interop.EndLocationChanging, callId, shouldContinueNavigation);
+        return await NotifyLocationChangingAsync(uri, intercepted);
     }
 
     /// <inheritdoc />

@@ -42,26 +42,9 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         NotifyLocationChanged(isInterceptedLink);
     }
 
-    public async ValueTask HandleLocationChangingAsync(int callId, string uri, bool intercepted)
+    public async ValueTask<bool> HandleLocationChangingAsync(string uri, bool intercepted)
     {
-        bool shouldContinueNavigation;
-
-        try
-        {
-            shouldContinueNavigation = await NotifyLocationChangingAsync(uri, intercepted);
-
-            if (!shouldContinueNavigation)
-            {
-                Log.NavigationCanceled(_logger, uri);
-            }
-        }
-        catch (Exception ex)
-        {
-            shouldContinueNavigation = false;
-            Log.NavigationFailed(_logger, uri, ex);
-        }
-
-        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.EndLocationChanging, callId, shouldContinueNavigation);
+        return await NotifyLocationChangingAsync(uri, intercepted);
     }
 
     /// <inheritdoc />

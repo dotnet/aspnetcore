@@ -28,46 +28,20 @@
     <button id="remove-navigation-lock" @onclick="RemoveNavigationLock">Remove navigation lock</button>
 </p>
 
-@for (var i = 0; i < navigationLocks.Count; i++)
+@for (var i = 0; i < navigationLockCount; i++)
 {
     var lockIndex = i;
-    var navigationLock = navigationLocks[lockIndex];
 
-    <p id="navigation-lock-@lockIndex" style="outline: 2px solid black">
+    <div id="navigation-lock-@lockIndex" style="outline: 2px solid black">
         Navigation lock @lockIndex<br />
-        <input class="block-internal-navigation" type="checkbox" @bind-value="navigationLock.BlockInternalNavigation" />Block internal navigation<br />
-        <input class="confirm-external-navigation" type="checkbox" @bind-value="navigationLock.ConfirmExternalNavigation" />Confirm external navigation<br />
-
-        <p class="navigation-log">
-            @for (var j = 0; j < navigationLock.Log.Count; j++)
-            {
-                var entryIndex = j;
-                <span class="navigation-log-entry-@entryIndex">@navigationLock.Log[entryIndex]</span><br />
-            }
-        </p>
-
-        @if (navigationLock.BlockingUrl is { } blockingUrl)
-        {
-            <div class="blocking-controls">
-                <span style="color: red;">Blocking '@blockingUrl'</span>
-                <button class="navigation-continue" @onclick="navigationLock.Continue">Continue</button>
-                <button class="navigation-cancel" @onclick="navigationLock.Cancel">Cancel</button>
-            </div>
-        }
-    </p>
-
-    var onBeforeInternalNavigation = navigationLock.BlockInternalNavigation
-        ? navigationLock.BlockNavigationAsync
-        : default(Func<LocationChangingContext, Task>);
-
-    <NavigationLock OnBeforeInternalNavigation="onBeforeInternalNavigation" ConfirmExternalNavigation="navigationLock.ConfirmExternalNavigation" />
+        <ConfigurableNavigationLock />
+    </div>
 }
 
 @code{
-    List<NavigationLockInfo> navigationLocks = new();
-
     string UrlLocation;
 
+    int navigationLockCount;
     int nextProgrammaticNavigationIndex;
     int nextLinkNavigationIndex;
 
@@ -94,13 +68,13 @@
     }
 
     void AddNavigationLock()
-        => navigationLocks.Add(new());
+        => navigationLockCount++;
 
     void RemoveNavigationLock()
     {
-        if (navigationLocks.Count != 0)
+        if (navigationLockCount > 0)
         {
-            navigationLocks.RemoveAt(navigationLocks.Count - 1);
+            navigationLockCount--;
         }
     }
 
@@ -117,49 +91,5 @@
     void ProgrammaticNavigation()
     {
         NavigationManager.NavigateTo($"/subdir/some-path-{nextProgrammaticNavigationIndex++}");
-    }
-
-    class NavigationLockInfo
-    {
-        private readonly List<string> _log = new();
-        private TaskCompletionSource _tcs;
-        private LocationChangingContext _context;
-
-        public bool BlockInternalNavigation { get; set; }
-        public bool ConfirmExternalNavigation { get; set; }
-        public string BlockingUrl => _context?.TargetLocation;
-        public IReadOnlyList<string> Log => _log;
-
-        public async Task BlockNavigationAsync(LocationChangingContext context)
-        {
-            if (_tcs is not null)
-            {
-                throw new InvalidOperationException();
-            }
-
-            _tcs = new();
-            _context = context;
-
-            try
-            {
-                await _tcs.Task.WaitAsync(context.CancellationToken);
-                _log.Add($"Continuing '{context.TargetLocation}'");
-            }
-            catch (TaskCanceledException)
-            {
-                _log.Add($"Canceling '{context.TargetLocation}'");
-            }
-            finally
-            {
-                _tcs = null;
-                _context = null;
-            }
-        }
-
-        public void Continue()
-            => _tcs?.TrySetResult();
-
-        public void Cancel()
-            => _context?.PreventNavigation();
     }
 }

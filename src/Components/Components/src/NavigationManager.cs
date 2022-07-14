@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Linq;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
@@ -293,7 +292,9 @@ public abstract class NavigationManager
         _locationChangingCts?.Cancel();
         _locationChangingCts = null;
 
-        if (_locationChangingHandlers.Count == 0)
+        var handlerCount = _locationChangingHandlers.Count;
+
+        if (handlerCount == 0)
         {
             return true;
         }
@@ -302,36 +303,46 @@ public abstract class NavigationManager
 
         var context = new LocationChangingContext(uri, isNavigationIntercepted, _locationChangingCts);
         var cancellationToken = _locationChangingCts.Token;
-        var handlerCount = _locationChangingHandlers.Count;
-        var locationChangingHandlersCopy = ArrayPool<LocationChangingHandler>.Shared.Rent(handlerCount);
-        var locationChangingTasks = ArrayPool<Task>.Shared.Rent(handlerCount);
-
-        _locationChangingHandlers.CopyTo(locationChangingHandlersCopy);
 
         try
         {
-            for (var i = 0; i < handlerCount; i++)
+            if (handlerCount == 1)
             {
-                locationChangingTasks[i] = locationChangingHandlersCopy[i].Invoke(context);
+                await _locationChangingHandlers[0].Invoke(context);
+            }
+            else
+            {
+                var locationChangingHandlersCopy = ArrayPool<LocationChangingHandler>.Shared.Rent(handlerCount);
 
-                if (cancellationToken.IsCancellationRequested)
+                try
                 {
-                    return false;
+                    _locationChangingHandlers.CopyTo(locationChangingHandlersCopy);
+
+                    var locationChangingTasks = new Task[handlerCount];
+
+                    for (var i = 0; i < handlerCount; i++)
+                    {
+                        locationChangingTasks[i] = locationChangingHandlersCopy[i].Invoke(context);
+
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            return false;
+                        }
+                    }
+
+                    await Task.WhenAll(locationChangingTasks).WaitAsync(cancellationToken);
+                }
+                finally
+                {
+                    ArrayPool<LocationChangingHandler>.Shared.Return(locationChangingHandlersCopy);
                 }
             }
-
-            await Task.WhenAll(locationChangingTasks.Take(handlerCount)).WaitAsync(cancellationToken);
 
             return !cancellationToken.IsCancellationRequested;
         }
         catch (TaskCanceledException ex) when (ex.CancellationToken == cancellationToken)
         {
             return false;
-        }
-        finally
-        {
-            ArrayPool<LocationChangingHandler>.Shared.Return(locationChangingHandlersCopy);
-            ArrayPool<Task>.Shared.Return(locationChangingTasks);
         }
     }
 
