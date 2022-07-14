@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Quic;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 
@@ -41,7 +42,7 @@ internal sealed partial class QuicStreamContext : IPersistentStateFeature, IStre
                 {
                     _shutdownReadReason = abortReason;
                     QuicLog.StreamAbortRead(_log, this, errorCode, abortReason.Message);
-                    _stream.AbortRead(errorCode);
+                    _stream.Abort(QuicAbortDirection.Read, errorCode);
                 }
                 else
                 {
@@ -61,7 +62,7 @@ internal sealed partial class QuicStreamContext : IPersistentStateFeature, IStre
                 {
                     _shutdownWriteReason = abortReason;
                     QuicLog.StreamAbortWrite(_log, this, errorCode, abortReason.Message);
-                    _stream.AbortWrite(errorCode);
+                    _stream.Abort(QuicAbortDirection.Write, errorCode);
                 }
                 else
                 {

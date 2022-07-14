@@ -94,7 +94,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         CanRead = _stream.CanRead;
         CanWrite = _stream.CanWrite;
         _error = null;
-        StreamId = _stream.StreamId;
+        StreamId = _stream.Id;
         PoolExpirationTicks = 0;
 
         Transport = _originalTransport;
@@ -176,7 +176,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
 
         try
         {
-            await _stream.WaitForWriteCompletionAsync();
+            await _stream.WritesClosed;
         }
         catch (Exception ex)
         {
@@ -213,7 +213,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
 
                 ValueTask<FlushResult> flushTask;
 
-                if (_stream.ReadsCompleted)
+                if (_stream.ReadsClosed.IsCompletedSuccessfully)
                 {
                     // If the data returned from ReadAsync is the final chunk on the stream then
                     // flush data and end pipe together with CompleteAsync.
@@ -383,7 +383,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                     if (buffer.IsSingleSegment)
                     {
                         // Fast path when the buffer is a single segment.
-                        await _stream.WriteAsync(buffer.First, endStream: isCompleted);
+                        await _stream.WriteAsync(buffer.First, completeWrites: isCompleted);
                     }
                     else
                     {
@@ -397,7 +397,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                         {
                             var currentSegment = enumerator.Current;
                             isLastSegment = !enumerator.MoveNext();
-                            await _stream.WriteAsync(currentSegment, endStream: isLastSegment && isCompleted);
+                            await _stream.WriteAsync(currentSegment, completeWrites: isLastSegment && isCompleted);
                         }
                     }
                 }
@@ -480,11 +480,11 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
             {
                 if (_stream.CanRead)
                 {
-                    _stream.AbortRead(resolvedErrorCode);
+                    _stream.Abort(QuicAbortDirection.Read, resolvedErrorCode);
                 }
                 if (_stream.CanWrite)
                 {
-                    _stream.AbortWrite(resolvedErrorCode);
+                    _stream.Abort(QuicAbortDirection.Write, resolvedErrorCode);
                 }
             }
         }
@@ -504,7 +504,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
                 _shutdownReason = shutdownReason ?? SendGracefullyCompletedException;
                 QuicLog.StreamShutdownWrite(_log, this, _shutdownReason.Message);
 
-                _stream.Shutdown();
+                _stream.CompleteWrites();
             }
         }
         catch (Exception ex)
