@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Authentication;
 internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBearerOptions>
 {
     private readonly IAuthenticationConfigurationProvider _authenticationConfigurationProvider;
+    private static readonly Func<string, TimeSpan> _invariantTimeSpanParse = (string timespanString) => TimeSpan.Parse(timespanString, CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Initializes a new <see cref="JwtBearerConfigureOptions"/> given the configuration
@@ -53,9 +55,7 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
         }
 
         options.Authority = configSection[nameof(options.Authority)];
-        options.BackchannelTimeout = TimeSpan.TryParse(configSection[nameof(options.BackchannelTimeout)], out var backChannelTimeout)
-            ? backChannelTimeout
-            : options.BackchannelTimeout;
+        options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(options.BackchannelTimeout, configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse);
         options.Challenge = configSection[nameof(options.Challenge)] ?? options.Challenge;
         options.ForwardAuthenticate = configSection[nameof(options.ForwardAuthenticate)];
         options.ForwardChallenge = configSection[nameof(options.ForwardChallenge)];
@@ -63,25 +63,13 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
         options.ForwardForbid = configSection[nameof(options.ForwardForbid)];
         options.ForwardSignIn = configSection[nameof(options.ForwardSignIn)];
         options.ForwardSignOut = configSection[nameof(options.ForwardSignOut)];
-        options.IncludeErrorDetails = bool.TryParse(configSection[nameof(options.IncludeErrorDetails)], out var includeErrorDetails)
-            ? includeErrorDetails
-            : options.IncludeErrorDetails;
-        options.MapInboundClaims = bool.TryParse(configSection[nameof(options.MapInboundClaims)], out var mapInboundClaims)
-            ? mapInboundClaims
-            : options.MapInboundClaims;
+        options.IncludeErrorDetails = StringHelpers.ParseValueOrDefault(options.IncludeErrorDetails, configSection[nameof(options.IncludeErrorDetails)], bool.Parse);
+        options.MapInboundClaims = StringHelpers.ParseValueOrDefault(options.MapInboundClaims, configSection[nameof(options.MapInboundClaims)], bool.Parse);
         options.MetadataAddress = configSection[nameof(options.MetadataAddress)] ?? options.MetadataAddress;
-        options.RefreshInterval = TimeSpan.TryParse(configSection[nameof(options.RefreshInterval)], out var refreshInternval)
-            ? refreshInternval
-            : options.RefreshInterval;
-        options.RefreshOnIssuerKeyNotFound = bool.TryParse(configSection[nameof(options.RefreshOnIssuerKeyNotFound)], out var refreshOnIssuerKeyNotFound)
-            ? refreshOnIssuerKeyNotFound
-            : options.RefreshOnIssuerKeyNotFound;
-        options.RequireHttpsMetadata = bool.TryParse(configSection[nameof(options.RequireHttpsMetadata)], out var requireHttpsMetadata)
-            ? requireHttpsMetadata
-            : options.RequireHttpsMetadata;
-        options.SaveToken = bool.TryParse(configSection[nameof(options.SaveToken)], out var saveToken)
-            ? saveToken
-            : options.SaveToken;
+        options.RefreshInterval = StringHelpers.ParseValueOrDefault(options.RefreshInterval, configSection[nameof(options.RefreshInterval)], _invariantTimeSpanParse);
+        options.RefreshOnIssuerKeyNotFound = StringHelpers.ParseValueOrDefault(options.RefreshOnIssuerKeyNotFound, configSection[nameof(options.RefreshOnIssuerKeyNotFound)], bool.Parse);
+        options.RequireHttpsMetadata = StringHelpers.ParseValueOrDefault(options.RequireHttpsMetadata, configSection[nameof(options.RequireHttpsMetadata)], bool.Parse);
+        options.SaveToken = StringHelpers.ParseValueOrDefault(options.SaveToken, configSection[nameof(options.SaveToken)], bool.Parse);
         options.TokenValidationParameters = new()
         {
             ValidateIssuer = issuers.Count > 0,

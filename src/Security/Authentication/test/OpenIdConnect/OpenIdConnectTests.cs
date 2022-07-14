@@ -437,7 +437,7 @@ public class OpenIdConnectTests
 
         // Assert
         var options = sp.GetRequiredService<IOptionsMonitor<OpenIdConnectOptions>>().Get(OpenIdConnectDefaults.AuthenticationScheme);
-        Assert.Equal("authority.com", options.Authority);
+        Assert.Equal("https://authority.com", options.Authority);
         Assert.Equal(options.BackchannelTimeout, TimeSpan.FromMinutes(5));
         Assert.False(options.RequireHttpsMetadata);
         Assert.False(options.GetClaimsFromUserInfoEndpoint); // Assert default values are respected
@@ -454,6 +454,7 @@ public class OpenIdConnectTests
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
             new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:Authority", "https://authority.com"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:BackchannelTimeout", ""),
             new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientId", "client-id"),
             new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientSecret", "client-secret"),
             new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:Domain", "https://localhost:5000"),
@@ -480,6 +481,30 @@ public class OpenIdConnectTests
         Assert.True(options.NonceCookie.IsEssential);
         Assert.True(options.NonceCookie.HttpOnly);
         Assert.Equal(CookieSecurePolicy.SameAsRequest, options.NonceCookie.SecurePolicy);
+        Assert.Equal(TimeSpan.FromMinutes(1), options.BackchannelTimeout);
+    }
+
+    [Fact]
+    public void ThrowsExceptionsWhenParsingInvalidOptionsFromConfig()
+    {
+        var services = new ServiceCollection().AddLogging();
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:Authority", "https://authority.com"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:BackchannelTimeout", "definitelynotatimespan"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientId", "client-id"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientSecret", "client-secret"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:IsEssential", "definitelynotaboolean"),
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        var builder = services.AddAuthentication();
+        builder.AddOpenIdConnect();
+        var sp = services.BuildServiceProvider();
+
+        Assert.Throws<FormatException>(() =>
+            sp.GetRequiredService<IOptionsMonitor<OpenIdConnectOptions>>().Get(OpenIdConnectDefaults.AuthenticationScheme));
     }
 
     private static DateTime GetNonceExpirationTime(string keyname, TimeSpan nonceLifetime)
