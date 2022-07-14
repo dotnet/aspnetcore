@@ -24,7 +24,7 @@ export const internalFunctions = {
   enableNavigationInterception,
   setHasLocationChangingListeners,
   endLocationChanging,
-  navigateTo,
+  navigateTo: navigateToFromDotNet,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
 };
@@ -57,7 +57,7 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   // We need to respond to clicks on <a> elements *after* the EventDelegator has finished
   // running its simulated bubbling process so that we can respect any preventDefault requests.
   // So instead of registering our own native event, register using the EventDelegator.
-  eventDelegator.notifyAfterClick(async event => {
+  eventDelegator.notifyAfterClick(event => {
     if (!hasEnabledNavigationInterception) {
       return;
     }
@@ -81,18 +81,6 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
 
       if (isWithinBaseUriSpace(absoluteHref)) {
         event.preventDefault();
-
-        ignorePendingNavigation();
-
-        // Programmatically-initiated navigations invoke the "location changing" entirely from within .NET code, but
-        // since this is a user-initiated navigation, we have to invoke the event from JS.
-        if (hasLocationChangingEventListeners) {
-          const shouldContinueNavigation = await notifyLocationChanging(absoluteHref, /* interceptedLink */ true);
-          if (!shouldContinueNavigation) {
-            return;
-          }
-        }
-
         performInternalNavigation(absoluteHref, /* interceptedLink */ true, /* replace */ false);
       }
     }
@@ -104,15 +92,25 @@ export function navigateTo(uri: string, options: NavigationOptions): void;
 export function navigateTo(uri: string, forceLoad: boolean): void;
 export function navigateTo(uri: string, forceLoad: boolean, replace: boolean): void;
 export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | boolean, replaceIfUsingOldOverload = false): void {
-  const absoluteUri = toAbsoluteUri(uri);
-
   // Normalize the parameters to the newer overload (i.e., using NavigationOptions)
   const options: NavigationOptions = forceLoadOrOptions instanceof Object
     ? forceLoadOrOptions
     : { forceLoad: forceLoadOrOptions, replaceHistoryEntry: replaceIfUsingOldOverload };
 
+  navigateToCore(uri, options);
+}
+
+function navigateToFromDotNet(uri: string, options: NavigationOptions): void {
+  // The location changing callback is called from .NET for programmatic navigations originating from .NET.
+  // In this case, we shouldn't invoke the callback again from the JS side.
+  navigateToCore(uri, options, /* skipLocationChangingCallback */ true);
+}
+
+function navigateToCore(uri: string, options: NavigationOptions, skipLocationChangingCallback = false): void {
+  const absoluteUri = toAbsoluteUri(uri);
+
   if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState);
+    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
   } else {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
@@ -137,7 +135,16 @@ function performExternalNavigation(uri: string, replace: boolean) {
   }
 }
 
-function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined) {
+async function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined, skipLocationChangingCallback = false) {
+  ignorePendingNavigation();
+
+  if (!skipLocationChangingCallback && hasLocationChangingEventListeners) {
+    const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, interceptedLink);
+    if (!shouldContinueNavigation) {
+      return;
+    }
+  }
+
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
@@ -158,7 +165,7 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
     }, /* ignored title */ '', absoluteInternalHref);
   }
 
-  notifyLocationChanged(interceptedLink);
+  await notifyLocationChanged(interceptedLink);
 }
 
 function navigateHistoryWithoutPopStateCallback(delta: number): Promise<void> {

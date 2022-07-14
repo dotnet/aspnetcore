@@ -2,20 +2,74 @@
 @using Microsoft.AspNetCore.Components.Routing
 
 @inject IJSRuntime JSRuntime
+@inject INavigationInterception NavigationInterception
 @inject NavigationManager NavigationManager
 @implements IDisposable
 
-<button @onclick="Navigate">Navigate</button>
+<button @onclick="Navigate">Navigate</button><br />
+
+<button id="programmatic-navigation" @onclick="ProgrammaticNavigation">Programmatic navigation</button><br />
+
+<a id="internal-link-navigation" href="some-path-@(nextNavigationIndex - 1)" @onclick="OnInternalLinkNavigation">Internal link navigation</a><br />
 
 <span id="test-info">@UrlLocation</span>
 
+<p>
+    <button id="add-navigation-lock" @onclick="AddNavigationLock">Add navigation lock</button><br />
+    <button id="remove-navigation-lock" @onclick="RemoveNavigationLock">Remove navigation lock</button>
+</p>
+
+@for (var i = 0; i < navigationLocks.Count; i++)
+{
+    var lockIndex = i;
+    var navigationLock = navigationLocks[lockIndex];
+
+    <p id="navigation-lock-@lockIndex" style="outline: 2px solid black">
+        Navigation lock @lockIndex<br />
+        <input class="block-internal-navigation" type="checkbox" @bind-value="navigationLock.BlockInternalNavigation" />Block internal navigation<br />
+        <input class="confirm-external-navigation" type="checkbox" @bind-value="navigationLock.ConfirmExternalNavigation" />Confirm external navigation<br />
+
+        <p class="navigation-log">
+            @for (var j = 0; j < navigationLock.Log.Count; j++)
+            {
+                var entryIndex = j;
+                <span class="navigation-log-entry-@entryIndex">@navigationLock.Log[entryIndex]</span><br />
+            }
+        </p>
+
+        @if (navigationLock.BlockingUrl is { } blockingUrl)
+        {
+            <div class="blocking-controls">
+                <span style="color: red;">Blocking '@blockingUrl'</span>
+                <button class="navigation-continue" @onclick="navigationLock.Continue">Continue</button>
+                <button class="navigation-cancel" @onclick="navigationLock.Cancel">Cancel</button>
+            </div>
+        }
+    </p>
+
+    var onBeforeInternalNavigation = navigationLock.BlockInternalNavigation
+        ? navigationLock.BlockNavigationAsync
+        : default(Func<LocationChangingContext, Task>);
+
+    <NavigationLock OnBeforeInternalNavigation="onBeforeInternalNavigation" ConfirmExternalNavigation="navigationLock.ConfirmExternalNavigation" />
+}
+
 @code{
+    List<NavigationLockInfo> navigationLocks = new();
+
     string UrlLocation;
+
+    int nextNavigationIndex;
 
     protected override void OnInitialized()
     {
         UrlLocation = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await NavigationInterception.EnableNavigationInterceptionAsync();
     }
 
     void IDisposable.Dispose()
@@ -29,8 +83,68 @@
         StateHasChanged();
     }
 
+    void AddNavigationLock()
+        => navigationLocks.Add(new());
+
+    void RemoveNavigationLock()
+        => navigationLocks.RemoveAt(navigationLocks.Count - 1);
+
     async Task Navigate()
     {
         await JSRuntime.InvokeVoidAsync("navigationManagerNavigate");
+    }
+
+    void ProgrammaticNavigation()
+    {
+        NavigationManager.NavigateTo($"/subdir/some-path-{nextNavigationIndex++}");
+    }
+
+    void OnInternalLinkNavigation()
+    {
+        nextNavigationIndex++;
+    }
+
+    class NavigationLockInfo
+    {
+        private readonly List<string> _log = new();
+        private TaskCompletionSource _tcs;
+        private LocationChangingContext _context;
+
+        public bool BlockInternalNavigation { get; set; }
+        public bool ConfirmExternalNavigation { get; set; }
+        public string BlockingUrl => _context?.TargetLocation;
+        public IReadOnlyList<string> Log => _log;
+
+        public async Task BlockNavigationAsync(LocationChangingContext context)
+        {
+            if (_tcs is not null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            _tcs = new();
+            _context = context;
+
+            try
+            {
+                await _tcs.Task.WaitAsync(context.CancellationToken);
+                _log.Add($"Continuing '{context.TargetLocation}'");
+            }
+            catch (TaskCanceledException)
+            {
+                _log.Add($"Canceling '{context.TargetLocation}'");
+            }
+            finally
+            {
+                _tcs = null;
+                _context = null;
+            }
+        }
+
+        public void Continue()
+            => _tcs?.TrySetResult();
+
+        public void Cancel()
+            => _context?.PreventNavigation();
     }
 }

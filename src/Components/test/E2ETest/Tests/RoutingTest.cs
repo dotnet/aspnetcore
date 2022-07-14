@@ -653,6 +653,286 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void NavigationLock_CanBlockNavigation_ThenContinue()
+    {
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+
+        // Add two navigation locks that block internal navigations
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("block-internal-navigation")).Click();
+        Browser.FindElement(By.Id("navigation-lock-1")).FindElement(By.ClassName("block-internal-navigation")).Click();
+
+        var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
+        var relativeUriPostNavigation = "/mytestpath";
+        var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir{relativeUriPostNavigation}";
+
+        SetUrlViaPushState(relativeUriPostNavigation);
+
+        // The navigation was blocked
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // Unblock the first navigation lock
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("navigation-continue")).Click();
+
+        // The second navigation lock is still blocking navigation
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // Unblock the second navigation lock
+        Browser.FindElement(By.Id("navigation-lock-1")).FindElement(By.ClassName("navigation-continue")).Click();
+
+        // The navigation finally continues
+        Browser.Equal(expectedAbsoluteUriPostNavigation, () => app.FindElement(By.Id("test-info")).Text);
+    }
+
+    [Fact]
+    public void NavigationLock_CanBlockNavigation_ThenCancel()
+    {
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+
+        // Add two navigation locks that block internal navigations
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("block-internal-navigation")).Click();
+        Browser.FindElement(By.Id("navigation-lock-1")).FindElement(By.ClassName("block-internal-navigation")).Click();
+
+        var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
+
+        SetUrlViaPushState("/mytestpath");
+
+        // The navigation was blocked
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // Both navigation locks have initiated their "location changing" handlers and are displaying navigation controls
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div"));
+        Browser.Exists(By.CssSelector("#navigation-lock-1 > div"));
+
+        // Cancel the navigation using the first navigation lock
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("navigation-cancel")).Click();
+
+        // The second navigation lock callback has completed and has thus removed its navigation controls
+        Browser.DoesNotExist(By.CssSelector("#navigation-lock-1 > div"));
+
+        // The navigation was canceled and the URI has not changed
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+    }
+
+    [Fact]
+    public void NavigationLock_CanAddAndRemoveLocationChangingCallback()
+    {
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+
+        // Add a navigation lock that blocks internal navigations
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("block-internal-navigation")).Click();
+
+        var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
+        var relativeUriPostNavigation = "/mytestpath";
+        var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir{relativeUriPostNavigation}";
+
+        SetUrlViaPushState(relativeUriPostNavigation);
+
+        // The navigation was blocked
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // Cancel the navigation using the first navigation lock
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("navigation-cancel")).Click();
+
+        // The navigation lock callback has completed and so the navigation controls have been removed
+        Browser.DoesNotExist(By.CssSelector("#navigation-lock-0 > div"));
+
+        // The navigation was canceled and the URI has not changed
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // Remove the location changing callback
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("block-internal-navigation")).Click();
+
+        SetUrlViaPushState(relativeUriPostNavigation);
+
+        // The navigation was not blocked because the location changed callback parameter was removed
+        Browser.Equal(expectedAbsoluteUriPostNavigation, () => app.FindElement(By.Id("test-info")).Text);
+    }
+
+    [Fact]
+    public void NavigationLock_RemovesLock_WhenDisposed()
+    {
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+
+        // Add a navigation lock that blocks internal navigations
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("block-internal-navigation")).Click();
+
+        var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
+        var relativeUriPostNavigation = "/mytestpath";
+        var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir{relativeUriPostNavigation}";
+
+        SetUrlViaPushState(relativeUriPostNavigation);
+
+        // The navigation was blocked
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // Cancel the navigation using the first navigation lock
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("navigation-cancel")).Click();
+
+        // The navigation lock callback has completed and so the navigation controls have been removed
+        Browser.DoesNotExist(By.CssSelector("#navigation-lock-0 > div"));
+
+        // The navigation was canceled and the URI has not changed
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // Remove the navigation lock component
+        Browser.FindElement(By.Id("remove-navigation-lock")).Click();
+
+        SetUrlViaPushState(relativeUriPostNavigation);
+
+        // The navigation was not blocked because the lock was removed when the navigation lock component was disposed
+        Browser.Equal(expectedAbsoluteUriPostNavigation, () => app.FindElement(By.Id("test-info")).Text);
+    }
+
+    [Fact]
+    public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_PushState()
+    {
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+
+        // Add a navigation lock that blocks internal navigations
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("block-internal-navigation")).Click();
+        
+        var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
+        var relativeCanceledUri = "/mycanceledtestpath";
+        var expectedCanceledAbsoluteUri = $"{_serverFixture.RootUri}subdir{relativeCanceledUri}";
+
+        SetUrlViaPushState(relativeCanceledUri);
+
+        // The navigation was blocked
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        var relativeUriPostNavigation = "/mytestpath";
+        var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir{relativeUriPostNavigation}";
+
+        SetUrlViaPushState(relativeUriPostNavigation);
+
+        // The navigation was blocked again
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // The navigation was canceled and logged
+        Browser.Equal($"Canceling '{expectedCanceledAbsoluteUri}'", () => app.FindElement(By.CssSelector("#navigation-lock-0 > p > span"))?.Text);
+
+        // Unblock the new navigation
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("navigation-continue")).Click();
+
+        // We navigated to the updated URL
+        Browser.Equal(expectedAbsoluteUriPostNavigation, () => app.FindElement(By.Id("test-info")).Text);
+    }
+
+    [Fact]
+    public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
+    {
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+
+        // Populate the browser stack
+        SetUrlViaPushState("/mytestpath0");
+        SetUrlViaPushState("/mytestpath1");
+        SetUrlViaPushState("/mytestpath2");
+        SetUrlViaPushState("/mytestpath3");
+
+        // Add a navigation lock that blocks internal navigations
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("block-internal-navigation")).Click();
+
+        // We have the expected initial URI
+        var expectedStartingAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath3";
+        Browser.Equal(expectedStartingAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
+
+        NavigateHistoryStack(-3);
+
+        // The navigation was blocked
+        Browser.Equal(expectedStartingAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
+
+        NavigateHistoryStack(-2);
+
+        // The first navigation was canceled and logged
+        var expectedCanceledAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath0";
+        Browser.Equal($"Canceling '{expectedCanceledAbsoluteUri}'", () => app.FindElement(By.CssSelector("#navigation-lock-0 > p > span"))?.Text);
+
+        // Unblock the new navigation
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("navigation-continue")).Click();
+
+        // We navigated to the updated URL
+        var expectedPostNavigationAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath1";
+        Browser.Equal(expectedPostNavigationAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
+    }
+
+    [Fact]
+    public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_ProgrammaticNavigation()
+    {
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+
+        // Add a navigation lock that blocks internal navigations
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("block-internal-navigation")).Click();
+        
+        var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
+        var expectedCanceledRelativeUri = $"/subdir/some-path-0";
+
+        Browser.FindElement(By.Id("programmatic-navigation")).Click();
+
+        // The navigation was blocked
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir/some-path-1";
+
+        Browser.FindElement(By.Id("programmatic-navigation")).Click();
+
+        // The navigation was blocked again
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // The navigation was canceled and logged
+        Browser.Equal($"Canceling '{expectedCanceledRelativeUri}'", () => app.FindElement(By.CssSelector("#navigation-lock-0 > p > span"))?.Text);
+
+        // Unblock the new navigation
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("navigation-continue")).Click();
+
+        // We navigated to the updated URL
+        Browser.Equal(expectedAbsoluteUriPostNavigation, () => app.FindElement(By.Id("test-info")).Text);
+    }
+
+    [Fact]
+    public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_InternalLinkNavigation()
+    {
+        var app = Browser.MountTestComponent<NavigationManagerComponent>();
+
+        // Add a navigation lock that blocks internal navigations
+        Browser.FindElement(By.Id("add-navigation-lock")).Click();
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("block-internal-navigation")).Click();
+        
+        var uriBeforeBlockedNavigation = Browser.FindElement(By.Id("test-info")).Text;
+
+        var expectedCanceledAbsoluteUri = $"{_serverFixture.RootUri}subdir/some-path-0";
+
+        Browser.FindElement(By.Id("internal-link-navigation")).Click();
+
+        // The navigation was blocked
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir/some-path-1";
+
+        Browser.FindElement(By.Id("internal-link-navigation")).Click();
+
+        // The navigation was blocked again
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
+
+        // The navigation was canceled and logged
+        Browser.Equal($"Canceling '{expectedCanceledAbsoluteUri}'", () => app.FindElement(By.CssSelector("#navigation-lock-0 > p > span"))?.Text);
+
+        // Unblock the new navigation
+        Browser.FindElement(By.Id("navigation-lock-0")).FindElement(By.ClassName("navigation-continue")).Click();
+
+        // We navigated to the updated URL
+        Browser.Equal(expectedAbsoluteUriPostNavigation, () => app.FindElement(By.Id("test-info")).Text);
+    }
+
+    [Fact]
     public void CanArriveAtRouteWithExtension()
     {
         // This is an odd test, but it's primarily here to verify routing for routeablecomponentfrompackage isn't available due to
@@ -996,6 +1276,12 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}', {(forceLoad ? "true" : "false")})");
 
         return absoluteUri.AbsoluteUri;
+    }
+
+    private void NavigateHistoryStack(int delta)
+    {
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+        jsExecutor.ExecuteScript($"history.go({delta})");
     }
 
     private void AssertDidNotLog(params string[] messages)
