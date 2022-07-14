@@ -1202,7 +1202,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             throw new InvalidOperationException(CoreStrings.WebTransportIsDisabled);
         }
 
-        if (!_currentIHttpWebTransportFeature!.IsWebTransportRequest)
+        if (!IsWebTransportRequest)
         {
             throw new InvalidOperationException(CoreStrings.FormatFailedToNegotiateCommonWebTransportVersion(WebTransportSession.CurrentSuppportedVersion));
         }
