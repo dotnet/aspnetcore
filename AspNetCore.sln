@@ -1743,7 +1743,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebTransport", "WebTranspor
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7D23BC58-704D-4100-BCF6-1FD34F791B71}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoApp", "src\Middleware\WebTransport\samples\EchoApp\EchoApp.csproj", "{BE5A853E-244B-4CE5-9A95-B706C1FC62E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTransportInteractiveSampleApp", "src\Middleware\WebTransport\samples\WebTransportInteractiveSampleApp\WebTransportInteractiveSampleApp.csproj", "{BE5A853E-244B-4CE5-9A95-B706C1FC62E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

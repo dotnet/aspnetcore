@@ -112,7 +112,7 @@
       "src\\Middleware\\WebSockets\\test\\ConformanceTests\\AutobahnTestApp\\AutobahnTestApp.csproj",
       "src\\Middleware\\WebSockets\\test\\ConformanceTests\\Microsoft.AspNetCore.WebSockets.ConformanceTests.csproj",
       "src\\Middleware\\WebSockets\\test\\UnitTests\\Microsoft.AspNetCore.WebSockets.Tests.csproj",
-      "src\\Middleware\\WebTransport\\samples\\EchoApp\\EchoApp.csproj",
+      "src\\Middleware\\WebTransport\\samples\\WebTransportInteractiveSampleApp\\WebTransportInteractiveSampleApp.csproj",
       "src\\Middleware\\perf\\Microbenchmarks\\Microsoft.AspNetCore.WebSockets.Microbenchmarks.csproj",
       "src\\Middleware\\perf\\ResponseCaching.Microbenchmarks\\Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj",
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",

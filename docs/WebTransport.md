@@ -2,15 +2,26 @@
 
 Kestrel currently implements most of the WebTransport [draft-02](https://ietf-wg-webtrans.github.io/draft-ietf-webtrans-http3/draft-ietf-webtrans-http3.html) specification, except for datagrams. Datagrams will be implemented at a later date. This document outlines how to use the already implemented functionality.
 
-# Running the sample app
-To help applications get started on implementing WebTransport, there is the `WebTransportSampleApp` project located at `src\Servers\Kestrel\samples\WebTransportSampleApp`. To use it, simply run it from VS. This will launch the server and a terminal which will show logs from Kestrel as it interacts with the client. Now you should be able to connect to the sample from any client that implements the standard WebTransport draft02 specification.
+## Running the sample apps
+
+To help applications get started on implementing WebTransport, there are two sample apps.
+
+- ### `WebTransportSampleApp` project located at `src\Servers\Kestrel\samples\WebTransportSampleApp`
+To use it, simply run from VS. This will launch the server and a terminal which will show logs from Kestrel as it interacts with the client. Now you should be able to connect to the sample from any client that implements the standard WebTransport draft02 specification.
 
 **Note:** Once you run the `WebTransportSampleApp`, it will print the certificate hash that it is using for the SSL connection. You will need to copy it into your client to make sure that both the server and the client use the same one.
 
+- ### `WebTransportInteractiveSampleApp` project located at `src\Middleware\WebTransport\samples\WebTransportInteractiveSampleApp`
+To use it, simply run from VS. This will launch the server and terminal. Now you can open any browser that supports WebTransport and navigate to `https://localhost:5001`. You will see an interactive WebTransport test page where you can interact with the API and most of its main functionalities.
+
+**Note:** this sample automatically injects the certificate into the client-side code. Therefore, you do not need to handle it manually.
+
 ## Using Edge or Chrome DevTools as a client
+
 The Chromium project has implemented a WebTransport client and can be accessed via their JS API from the Chrome or Edge DevTools console. A good sample app demonstrating how to use that API can be found [here](https://github.com/myjimmy/google-webtransport-sample/blob/ee13bde656c4d421d1f2a8e88fd71f572272c163/client.js).
 
-# Note about preview features
+## Note about preview features
+
 WebTransport is a preview feature. Therefore, you must manually enable it via the `EnablePreviewFeatures` property and toggle the `Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams` `RuntimeHostConfigurationOption`. This can be done by adding the following `ItemGroup` to your csproj file:
 ```xml
 <ItemGroup>
@@ -18,8 +29,9 @@ WebTransport is a preview feature. Therefore, you must manually enable it via th
 </ItemGroup>
 ```
 
-# Obtaining a test certificate
-The current Kestrel default testing certificate cannot be used for WebTransport connections. You can generate a new certificate for testing via the following C#:
+## Obtaining a test certificate
+
+The current Kestrel default testing certificate cannot be used for WebTransport connections as it does not meet the requirements needed for WebTransport over HTTP/3. You can generate a new certificate for testing via the following C# (this function will also automatically handle cert rotation every time one expires):
 ```C#
 static X509Certificate2 GenerateManualCertificate()
 {
@@ -70,8 +82,10 @@ static X509Certificate2 GenerateManualCertificate()
 // Adapted from: https://github.com/wegylexy/webtransport
 ```
 
-# Overview of the Kestrel WebTransport API
-## Setting up a connection
+## Overview of the Kestrel WebTransport API
+
+### Setting up a connection
+
 To setup a WebTransport connection, you will first need to configure a host upon which you open a port. A very minimal example is shown below:
 ```C#
 var builder = WebApplication.CreateBuilder(args);
@@ -109,7 +123,8 @@ await host.RunAsync();
 ```
 The `Run` method is the main entry-point of your application logic. It is triggered every time there is a connection request. Once the request is a WebTransport request (which is defined by getting the `IHttpWebTransportFeature` feature and then checking the `IsWebTransportRequest` property), you will be able to accept WebTransport sessions and interact with the client. The last line (`await host.RunAsync();`) will start the server and start accepting connections.
 
-## Available WebTransport Features in Kestrel
+### Available WebTransport Features in Kestrel
+
 This section highlights some of the most significant features of WebTransport that Kestrel implements. However, this is not an exhaustive list.
 
 - Accept a WebTransport Session
@@ -171,9 +186,10 @@ stream.DisposeAsync();
 Disposing a WebTransport stream will result in ending data transmission and closing the stream gracefully.
 
 
-## Examples
+### Examples
 
-### Example 1
+#### Example 1
+
 This example waits for a bidirectional stream. Once it receives one, it will read the data from it, reverse it and then write it back to the stream.
 ```C#
 var builder = WebApplication.CreateBuilder(args);
@@ -247,7 +263,8 @@ host.Run(async (context) =>
 await host.RunAsync();
 ```
 
-### Example 2
+#### Example 2
+
 This example opens a new stream from the server side and then sends data.
 ```C#
 var builder = WebApplication.CreateBuilder(args);
