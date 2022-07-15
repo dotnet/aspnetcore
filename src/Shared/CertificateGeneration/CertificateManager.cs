@@ -703,7 +703,7 @@ internal abstract class CertificateManager
         }
     }
 
-    internal abstract CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive);
+    public abstract CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive);
 
     internal abstract void CorrectCertificateState(X509Certificate2 candidate);
 

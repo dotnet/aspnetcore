@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,10 +19,10 @@ internal sealed class MacOSCertificateManager : CertificateManager
 {
     private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
     private static readonly string MacOSUserKeyChain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
-    private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
-    private const string MacOSFindCertificateCommandLine = "security";
-    private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
-    private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
+    // private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
+    // private const string MacOSFindCertificateCommandLine = "security";
+    // private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
+    // private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
     private const string MacOSVerifyCertificateCommandLine = "security";
     private const string MacOSVerifyCertificateCommandLineArgumentsFormat = $"verify-cert -c {{0}} -s {{1}}";
     private const string MacOSRemoveCertificateTrustCommandLine = "security";
@@ -98,52 +100,32 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
     }
 
-    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
+    public override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
     {
-        var sentinelPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dotnet", $"certificates.{candidate.GetCertHashString(HashAlgorithmName.SHA256)}.sentinel");
-        if (!interactive && !File.Exists(sentinelPath))
+        var certificatePath = Path.Combine(MacOSUserHttpsCertificateLocation, GetCertificateFileName(candidate));
+        if (File.Exists(certificatePath))
         {
-            return new CheckCertificateStateResult(false, KeyNotAccessibleWithoutUserInteraction);
-        }
-
-        // Tries to use the certificate key to validate it can't access it
-        try
-        {
-            using var rsa = candidate.GetRSAPrivateKey();
-            if (rsa == null)
-            {
-                return new CheckCertificateStateResult(false, InvalidCertificateState);
-            }
-
-            // Encrypting a random value is the ultimate test for a key validity.
-            // Windows and Mac OS both return HasPrivateKey = true if there is (or there has been) a private key associated
-            // with the certificate at some point.
-            var value = new byte[32];
-            RandomNumberGenerator.Fill(value);
-            rsa.Decrypt(rsa.Encrypt(value, RSAEncryptionPadding.Pkcs1), RSAEncryptionPadding.Pkcs1);
-
-            // If we were able to access the key, create a sentinel so that we don't have to show a prompt
-            // on every kestrel run.
-            if (Directory.Exists(Path.GetDirectoryName(sentinelPath)) && !File.Exists(sentinelPath))
-            {
-                File.WriteAllText(sentinelPath, "true");
-            }
-
-            // Being able to encrypt and decrypt a payload is the strongest guarantee that the key is valid.
             return new CheckCertificateStateResult(true, null);
         }
-        catch (Exception)
+        else
         {
-            return new CheckCertificateStateResult(false, InvalidCertificateState);
+            return new CheckCertificateStateResult(false, KeyNotAccessibleWithoutUserInteraction);
         }
     }
 
     internal override void CorrectCertificateState(X509Certificate2 candidate)
     {
-        var status = CheckCertificateState(candidate, true);
-        if (!status.Success)
+        try
         {
-            throw new InvalidOperationException(InvalidCertificateState);
+            EnsureCertificateFolder();
+            var certificatePath = Path.Combine(MacOSUserHttpsCertificateLocation, GetCertificateFileName(candidate));
+            ExportCertificate(candidate, certificatePath, includePrivateKey: true, null, CertificateKeyExportFormat.Pfx);
+        }
+        catch (Exception ex)
+        {
+            Log.MacOSAddCertificateToKeyChainError($@"There was an error saving the certificate into the user profile folder '{candidate.Thumbprint}'.
+
+{ex.Message}");
         }
     }
 
@@ -324,7 +306,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
         catch (Exception ex)
         {
-                Log.MacOSAddCertificateToKeyChainError($@"There was an error saving the certificate into the user profile folder '{certificate.Thumbprint}'.
+            Log.MacOSAddCertificateToKeyChainError($@"There was an error saving the certificate into the user profile folder '{certificate.Thumbprint}'.
 
 {ex.Message}");
         }
@@ -368,7 +350,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
             process.WaitForExit();
 
             if (process.ExitCode != 0)
-{
+            {
                 Log.MacOSAddCertificateToKeyChainError($"There was an error importing the certificate into the user key chain. The process exited with code '{process.ExitCode}'");
                 throw new InvalidOperationException($@"There was an error importing the certificate into the user key chain '{certificate.Thumbprint}'.
 {output}");
@@ -400,31 +382,49 @@ internal sealed class MacOSCertificateManager : CertificateManager
 
     protected override void PopulateCertificatesFromStore(X509Store store, List<X509Certificate2> certificates)
     {
-        if (store.Name! != StoreName.My.ToString() || store.Location != store.Location)
+        if (store.Name! == StoreName.My.ToString() && store.Location == store.Location && Directory.Exists(MacOSUserHttpsCertificateLocation))
         {
-            base.PopulateCertificatesFromStore(store, certificates);
+            var certificateFiles = Directory.EnumerateFiles(MacOSUserHttpsCertificateLocation, "aspnetcore-localhost-*.pfx")
+                    .Select(f => new X509Certificate2(f));
+
+            var storeCertificates = new List<X509Certificate2>();
+            base.PopulateCertificatesFromStore(store, storeCertificates);
+
+            // Ignore the certificates that we only found on disk, this can be the result of a clean operation with the .NET 6.0 SDK tool.
+            // Cleaning on .NET 6.0 produces the same effect on .NET 7.0 as cleaning with 3.1 produces on .NET 6.0, the system believes no certificate is present.
+            // Left over here is not important because the size is very small and is not a common operation. We can clean this on .NET 7.0 clean if we think this
+            // is important
+            var onlyOnDisk = certificateFiles.Except(storeCertificates, ThumbprintComparer.Instance);
+
+            // This can happen when the certificate was created with .NET 6.0, either because there was a previous .NET 6.0 SDK installation that created it, or
+            // because the existing certificate expired and .NET 6.0 SDK was used to generate a new certificate.
+            var onlyOnKeyChain = storeCertificates.Except(certificateFiles, ThumbprintComparer.Instance);
+
+            // This is the normal case when .NET 7.0 was installed on a clean machine or after a certificate created with .NET 6.0 was "upgraded" to .NET 7.0.
+            // .NET 7.0 always installs the certificate on the user keychain as well as on disk to make sure that .NET 6.0 can reuse the certificate.
+            var onDiskAndKeyChain = certificateFiles.Intersect(storeCertificates, ThumbprintComparer.Instance);
+
+            // The only times we can find a certificate on the keychain and a certificate on keychain + disk is when the certificate on disk and keychain has expired
+            // and .NET 6.0 has been used to create a new certificate or when the .NET 6.0 certificate has expired and .NET 7.0 has been used to create a new certificate.
+            // In both cases, the caller filters the invalid certificates out, so only the valid certificate is selected.
+            certificates.AddRange(onlyOnKeyChain);
+            certificates.AddRange(onDiskAndKeyChain);
         }
         else
         {
-            if (Directory.Exists(MacOSUserHttpsCertificateLocation))
-            {
-                var certificateFiles = Directory.EnumerateFiles(MacOSUserHttpsCertificateLocation, "aspnetcore-localhost-*.pfx");
-                foreach (var file in certificateFiles)
-                {
-                    try
-                    {
-                        var certificate = new X509Certificate2(file);
-                        certificates.Add(certificate);
-                    }
-                    catch (Exception)
-                    {
-                        // Log exception
-                        throw;
-                    }
-                }
-            }
-
+            base.PopulateCertificatesFromStore(store, certificates);
         }
+    }
+
+    private class ThumbprintComparer : IEqualityComparer<X509Certificate2>
+    {
+        public static readonly ThumbprintComparer Instance = new();
+
+        public bool Equals(X509Certificate2? x, X509Certificate2? y) =>
+            EqualityComparer<string>.Default.Equals(x?.Thumbprint, y?.Thumbprint);
+
+        public int GetHashCode([DisallowNull] X509Certificate2 obj) =>
+            EqualityComparer<string>.Default.GetHashCode(obj.Thumbprint);
     }
 
     protected override void RemoveCertificateFromUserStoreCore(X509Certificate2 certificate)
