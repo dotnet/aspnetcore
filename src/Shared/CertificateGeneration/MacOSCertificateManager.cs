@@ -16,21 +16,15 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 internal sealed class MacOSCertificateManager : CertificateManager
 {
     private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
-<<<<<<< HEAD
     private static readonly string MacOSUserKeyChain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
     private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
     private const string MacOSFindCertificateCommandLine = "security";
     private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
     private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
-    private const string MacOSRemoveCertificateTrustCommandLine = "sudo";
-    private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "security remove-trusted-cert -d {0}";
-=======
-    private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";
     private const string MacOSVerifyCertificateCommandLine = "security";
     private const string MacOSVerifyCertificateCommandLineArgumentsFormat = $"verify-cert -c {{0}} -s {{1}}";
     private const string MacOSRemoveCertificateTrustCommandLine = "security";
     private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "remove-trusted-cert {0}";
->>>>>>> 1104c254b6 ([dotnet-dev-certs] Updates Mac OS certificate manager)
     private const string MacOSDeleteCertificateCommandLine = "sudo";
     private const string MacOSDeleteCertificateCommandLineArgumentsFormat = "security delete-certificate -Z {0} {1}";
     private const string MacOSTrustCertificateCommandLine = "security";
