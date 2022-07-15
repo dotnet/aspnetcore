@@ -23,13 +23,6 @@
     <span id="test-info">@UrlLocation</span>
 </p>
 
-@*@if (navigationInterceptionEnabled)
-{
-    <p>
-        <span id="navigation-interception-enabled">Navigation interception enabled</span>
-    </p>
-}
-*@
 <p>
     <button id="add-navigation-lock" @onclick="AddNavigationLock">Add navigation lock</button><br />
     <button id="remove-navigation-lock" @onclick="RemoveNavigationLock">Remove navigation lock</button>
@@ -48,7 +41,6 @@
 @code{
     string UrlLocation;
 
-    //bool navigationInterceptionEnabled;
     int navigationLockCount;
     int nextProgrammaticNavigationIndex;
     int nextLinkNavigationIndex;
@@ -62,7 +54,6 @@
     protected override async Task OnInitializedAsync()
     {
         await NavigationInterception.EnableNavigationInterceptionAsync();
-        //navigationInterceptionEnabled = true;
     }
 
     void IDisposable.Dispose()
