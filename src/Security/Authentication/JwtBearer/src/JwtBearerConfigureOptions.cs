@@ -53,15 +53,15 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
             audiences.Add(audience);
         }
 
-        options.Authority = configSection[nameof(options.Authority)];
+        options.Authority = configSection[nameof(options.Authority)] ?? options.Authority;
         options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse, options.BackchannelTimeout);
         options.Challenge = configSection[nameof(options.Challenge)] ?? options.Challenge;
-        options.ForwardAuthenticate = configSection[nameof(options.ForwardAuthenticate)];
-        options.ForwardChallenge = configSection[nameof(options.ForwardChallenge)];
-        options.ForwardDefault = configSection[nameof(options.ForwardDefault)];
-        options.ForwardForbid = configSection[nameof(options.ForwardForbid)];
-        options.ForwardSignIn = configSection[nameof(options.ForwardSignIn)];
-        options.ForwardSignOut = configSection[nameof(options.ForwardSignOut)];
+        options.ForwardAuthenticate = configSection[nameof(options.ForwardAuthenticate)] ?? options.ForwardAuthenticate;
+        options.ForwardChallenge = configSection[nameof(options.ForwardChallenge)] ?? options.ForwardChallenge;
+        options.ForwardDefault = configSection[nameof(options.ForwardDefault)] ?? options.ForwardDefault;
+        options.ForwardForbid = configSection[nameof(options.ForwardForbid)] ?? options.ForwardForbid;
+        options.ForwardSignIn = configSection[nameof(options.ForwardSignIn)] ?? options.ForwardSignIn;
+        options.ForwardSignOut = configSection[nameof(options.ForwardSignOut)] ?? options.ForwardSignOut;
         options.IncludeErrorDetails = StringHelpers.ParseValueOrDefault(configSection[nameof(options.IncludeErrorDetails)], bool.Parse, options.IncludeErrorDetails);
         options.MapInboundClaims = StringHelpers.ParseValueOrDefault( configSection[nameof(options.MapInboundClaims)], bool.Parse, options.MapInboundClaims);
         options.MetadataAddress = configSection[nameof(options.MetadataAddress)] ?? options.MetadataAddress;

@@ -40,47 +40,43 @@ internal sealed class OpenIdConnectConfigureOptions : IConfigureNamedOptions<Ope
             return;
         }
 
-        options.AccessDeniedPath = new PathString(configSection[nameof(options.AccessDeniedPath.Value)]);
+        options.AccessDeniedPath = new PathString(configSection[nameof(options.AccessDeniedPath)] ?? options.AccessDeniedPath.Value);
         options.Authority = configSection[nameof(options.Authority)];
         options.AutomaticRefreshInterval = StringHelpers.ParseValueOrDefault(configSection[nameof(options.AutomaticRefreshInterval)], _invariantTimeSpanParse, options.AutomaticRefreshInterval);
         options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse, options.BackchannelTimeout);
         options.CallbackPath = new PathString(configSection[nameof(options.CallbackPath)] ?? options.CallbackPath.Value);
-        options.ClaimsIssuer = configSection[nameof(options.ClaimsIssuer)];
-        options.ClientId = configSection[nameof(options.ClientId)];
-        options.ClientSecret = configSection[nameof(options.ClientSecret)];
+        options.ClaimsIssuer = configSection[nameof(options.ClaimsIssuer)] ?? options.ClaimsIssuer;
+        options.ClientId = configSection[nameof(options.ClientId)] ?? options.ClientId;
+        options.ClientSecret = configSection[nameof(options.ClientSecret)] ?? options.ClientSecret;
         SetCookieFromConfig(configSection.GetSection(nameof(options.CorrelationCookie)), options.CorrelationCookie);
         options.DisableTelemetry = StringHelpers.ParseValueOrDefault(configSection[nameof(options.DisableTelemetry)], bool.Parse, options.DisableTelemetry);
-        options.ForwardAuthenticate = configSection[nameof(options.ForwardAuthenticate)];
-        options.ForwardChallenge = configSection[nameof(options.ForwardChallenge)];
-        options.ForwardDefault = configSection[nameof(options.ForwardDefault)];
-        options.ForwardForbid = configSection[nameof(options.ForwardForbid)];
-        options.ForwardSignIn = configSection[nameof(options.ForwardSignIn)];
-        options.ForwardSignOut = configSection[nameof(options.ForwardSignOut)];
+        options.ForwardAuthenticate = configSection[nameof(options.ForwardAuthenticate)] ?? options.ForwardAuthenticate;
+        options.ForwardChallenge = configSection[nameof(options.ForwardChallenge)] ?? options.ForwardChallenge;
+        options.ForwardDefault = configSection[nameof(options.ForwardDefault)] ?? options.ForwardDefault;
+        options.ForwardForbid = configSection[nameof(options.ForwardForbid)] ?? options.ForwardForbid;
+        options.ForwardSignIn = configSection[nameof(options.ForwardSignIn)] ?? options.ForwardSignIn;
+        options.ForwardSignOut = configSection[nameof(options.ForwardSignOut)] ?? options.ForwardSignOut;
         options.GetClaimsFromUserInfoEndpoint = StringHelpers.ParseValueOrDefault(configSection[nameof(options.GetClaimsFromUserInfoEndpoint)], bool.Parse, options.GetClaimsFromUserInfoEndpoint);
         options.MapInboundClaims = StringHelpers.ParseValueOrDefault(configSection[nameof(options.MapInboundClaims)], bool.Parse, options.MapInboundClaims);
         options.MaxAge = StringHelpers.ParseValueOrDefault(configSection[nameof(options.MaxAge)], _invariantNullableTimeSpanParse, options.MaxAge);
-        options.MetadataAddress = configSection[nameof(options.MetadataAddress)];
+        options.MetadataAddress = configSection[nameof(options.MetadataAddress)] ?? options.MetadataAddress;
         SetCookieFromConfig(configSection.GetSection(nameof(options.NonceCookie)), options.NonceCookie);
-        options.Prompt = configSection[nameof(options.Prompt)];
+        options.Prompt = configSection[nameof(options.Prompt)] ?? options.Prompt;
         options.RefreshInterval = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RefreshInterval)], _invariantTimeSpanParse, options.RefreshInterval);
         options.RefreshOnIssuerKeyNotFound = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RefreshOnIssuerKeyNotFound)], bool.Parse, options.RefreshOnIssuerKeyNotFound);
         options.RemoteAuthenticationTimeout = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RemoteAuthenticationTimeout)], _invariantTimeSpanParse, options.RemoteAuthenticationTimeout);
         options.RemoteSignOutPath = new PathString(configSection[nameof(options.RemoteSignOutPath)] ?? options.RemoteSignOutPath.Value);
         options.RequireHttpsMetadata = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RequireHttpsMetadata)], bool.Parse, options.RequireHttpsMetadata);
-        options.Resource = configSection[nameof(options.Resource)];
+        options.Resource = configSection[nameof(options.Resource)] ?? options.Resource;
         options.ResponseMode = configSection[nameof(options.ResponseMode)] ?? options.ResponseMode;
         options.ResponseType = configSection[nameof(options.ResponseType)] ?? options.ResponseType;
         options.ReturnUrlParameter = configSection[nameof(options.ReturnUrlParameter)] ?? options.ReturnUrlParameter;
         options.SaveTokens = StringHelpers.ParseValueOrDefault(configSection[nameof(options.SaveTokens)], bool.Parse, options.SaveTokens);
-        var scopes = configSection.GetSection(nameof(options.Scope)).GetChildren().Select(scope => scope.Value).OfType<string>();
-        foreach (var scope in scopes)
-        {
-            options.Scope.Add(scope);
-        }
+        ClearAndSetListOption(options.Scope, configSection.GetSection(nameof(options.Scope)));
         options.SignedOutCallbackPath = new PathString(configSection[nameof(options.SignedOutCallbackPath)] ?? options.SignedOutCallbackPath.Value);
         options.SignedOutRedirectUri = configSection[nameof(options.SignedOutRedirectUri)] ?? options.SignedOutRedirectUri;
-        options.SignInScheme = configSection[nameof(options.SignInScheme)];
-        options.SignOutScheme = configSection[nameof(options.SignOutScheme)];
+        options.SignInScheme = configSection[nameof(options.SignInScheme)] ?? options.SignInScheme;
+        options.SignOutScheme = configSection[nameof(options.SignOutScheme)] ?? options.SignOutScheme;
         options.SkipUnrecognizedRequests = StringHelpers.ParseValueOrDefault(configSection[nameof(options.SkipUnrecognizedRequests)], bool.Parse, options.SkipUnrecognizedRequests);
         options.UsePkce = StringHelpers.ParseValueOrDefault(configSection[nameof(options.UsePkce)], bool.Parse, options.UsePkce);
         options.UseTokenLifetime = StringHelpers.ParseValueOrDefault(configSection[nameof(options.UseTokenLifetime)], bool.Parse, options.UseTokenLifetime);
@@ -122,10 +118,19 @@ internal sealed class OpenIdConnectConfigureOptions : IConfigureNamedOptions<Ope
             _ => throw new InvalidOperationException($"{nameof(CookieBuilder.SameSite)} option must be a valid {nameof(SameSiteMode)}")
         };
 
-        var extensions = cookieConfigSection.GetSection(nameof(CookieBuilder.Extensions)).GetChildren().Select(ext => ext.Value).OfType<string>();
-        foreach (var extension in extensions)
+        ClearAndSetListOption(cookieBuilder.Extensions, cookieConfigSection.GetSection(nameof(cookieBuilder.Extensions)));
+    }
+
+    private static void ClearAndSetListOption(ICollection<string> listOption, IConfigurationSection listConfigSection)
+    {
+        var elementsFromConfig = listConfigSection.GetChildren().Select(element => element.Value).OfType<string>();
+        if (elementsFromConfig.Any())
         {
-            cookieBuilder.Extensions.Add(extension);
+            listOption.Clear();
+            foreach (var element in elementsFromConfig)
+            {
+                listOption.Add(element);
+            }
         }
     }
 
