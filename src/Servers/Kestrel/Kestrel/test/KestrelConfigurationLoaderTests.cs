@@ -220,7 +220,12 @@ public class KestrelConfigurationLoaderTests
         try
         {
             var serverOptions = CreateServerOptions();
-            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+
+            // We have two different versions of checked-in dev certs because macOS
+            // dev certs have a different OID starting in .NET 7.
+            var devCertFileName = OperatingSystem.IsMacOS() ? "aspnetdevcert_macos.pfx" : "aspnetdevcert.pfx";
+
+            var certificate = new X509Certificate2(TestResources.GetCertPath(devCertFileName), "testPassword", X509KeyStorageFlags.Exportable);
             var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
             var path = GetCertificatePath();
             Directory.CreateDirectory(Path.GetDirectoryName(path));
