@@ -37,7 +37,7 @@ internal sealed class UnixCertificateManager : CertificateManager
         return certificate;
     }
 
-    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
+    public override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
     {
         // Return true as we don't perform any check.
         return new CheckCertificateStateResult(true, null);

@@ -416,14 +416,16 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
     }
 
-    private class ThumbprintComparer : IEqualityComparer<X509Certificate2>
+    private sealed class ThumbprintComparer : IEqualityComparer<X509Certificate2>
     {
-        public static readonly ThumbprintComparer Instance = new();
+        public static readonly IEqualityComparer<X509Certificate2> Instance = new ThumbprintComparer();
 
-        public bool Equals(X509Certificate2? x, X509Certificate2? y) =>
+#pragma warning disable CS8769 // Nullability of reference types in type of parameter doesn't match implemented member (possibly because of nullability attributes).
+        bool IEqualityComparer<X509Certificate2>.Equals(X509Certificate2 x, X509Certificate2 y) =>
             EqualityComparer<string>.Default.Equals(x?.Thumbprint, y?.Thumbprint);
+#pragma warning restore CS8769 // Nullability of reference types in type of parameter doesn't match implemented member (possibly because of nullability attributes).
 
-        public int GetHashCode([DisallowNull] X509Certificate2 obj) =>
+        int IEqualityComparer<X509Certificate2>.GetHashCode([DisallowNull] X509Certificate2 obj) =>
             EqualityComparer<string>.Default.GetHashCode(obj.Thumbprint);
     }
 
