@@ -29,6 +29,7 @@ public static class WebHostBuilderKestrelExtensions
     public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder)
     {
         hostBuilder.UseQuic();
+
         return hostBuilder.ConfigureServices(services =>
         {
             // Don't override an already-configured transport

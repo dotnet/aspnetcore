@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Json;
 
-namespace Microsoft.AspNetCore.Http.Extensions;
+namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
 
 public class HttpValidationProblemDetailsJsonConverterTest
 {
@@ -40,7 +40,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
             kvp =>
             {
                 Assert.Equal("traceId", kvp.Key);
-                Assert.Equal(traceId, kvp.Value.ToString());
+                Assert.Equal(traceId, kvp.Value?.ToString());
             });
         Assert.Collection(
             problemDetails.Errors.OrderBy(kvp => kvp.Key),
@@ -81,7 +81,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
             kvp =>
             {
                 Assert.Equal("traceId", kvp.Key);
-                Assert.Equal(traceId, kvp.Value.ToString());
+                Assert.Equal(traceId, kvp.Value?.ToString());
             });
         Assert.Collection(
             problemDetails.Errors.OrderBy(kvp => kvp.Key),
@@ -111,7 +111,8 @@ public class HttpValidationProblemDetailsJsonConverterTest
         // Act
         var problemDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(json, JsonSerializerOptions);
 
-        Assert.Equal(type, problemDetails.Type);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(type, problemDetails!.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);
         Assert.Collection(
@@ -119,7 +120,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
             kvp =>
             {
                 Assert.Equal("traceId", kvp.Key);
-                Assert.Equal(traceId, kvp.Value.ToString());
+                Assert.Equal(traceId, kvp.Value?.ToString());
             });
         Assert.Collection(
             problemDetails.Errors.OrderBy(kvp => kvp.Key),

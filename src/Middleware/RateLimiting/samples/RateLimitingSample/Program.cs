@@ -30,7 +30,7 @@ var options = new RateLimiterOptions()
 // The global limiter will be a concurrency limiter with a max permit count of 10 and a queue depth of 5.
 options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         {
-            return RateLimitPartition.CreateConcurrencyLimiter<string>("globalLimiter", key => new ConcurrencyLimiterOptions(10, QueueProcessingOrder.NewestFirst, 5));
+            return RateLimitPartition.GetConcurrencyLimiter<string>("globalLimiter", key => new ConcurrencyLimiterOptions(10, QueueProcessingOrder.NewestFirst, 5));
         });
 app.UseRateLimiter(options);
 

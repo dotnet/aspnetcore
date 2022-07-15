@@ -65,7 +65,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
             _log.LogWarning(ex, "Failed to gracefully shutdown connection.");
         }
 
-        _connection.Dispose();
+        await _connection.DisposeAsync();
     }
 
     public override void Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via MultiplexedConnectionContext.Abort()."));
@@ -91,7 +91,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
     {
         try
         {
-            var stream = await _connection.AcceptStreamAsync(cancellationToken);
+            var stream = await _connection.AcceptInboundStreamAsync(cancellationToken);
 
             QuicStreamContext? context = null;
 
@@ -122,11 +122,11 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
 
             return context;
         }
-        catch (QuicConnectionAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.ConnectionAborted)
         {
             // Shutdown initiated by peer, abortive.
-            _error = ex.ErrorCode;
-            QuicLog.ConnectionAborted(_log, this, ex.ErrorCode, ex);
+            _error = ex.ApplicationErrorCode;
+            QuicLog.ConnectionAborted(_log, this, ex.ApplicationErrorCode.GetValueOrDefault(), ex);
 
             ThreadPool.UnsafeQueueUserWorkItem(state =>
             {
@@ -138,7 +138,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
             // Throw error so consumer sees the connection is aborted by peer.
             throw new ConnectionResetException(ex.Message, ex);
         }
-        catch (QuicOperationAbortedException ex)
+        catch (QuicException ex) when (ex.QuicError == QuicError.OperationAborted)
         {
             lock (_shutdownLock)
             {
@@ -194,16 +194,16 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         {
             if (streamDirectionFeature.CanRead)
             {
-                quicStream = await _connection.OpenBidirectionalStreamAsync(cancellationToken);
+                quicStream = await _connection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional, cancellationToken);
             }
             else
             {
-                quicStream = await _connection.OpenUnidirectionalStreamAsync(cancellationToken);
+                quicStream = await _connection.OpenOutboundStreamAsync(QuicStreamType.Unidirectional, cancellationToken);
             }
         }
         else
         {
-            quicStream = await _connection.OpenBidirectionalStreamAsync(cancellationToken);
+            quicStream = await _connection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional, cancellationToken);
         }
 
         // Only a handful of control streams are created by the server and they last for the
