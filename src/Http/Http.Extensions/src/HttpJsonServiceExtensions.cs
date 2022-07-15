@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods to configure JSON serialization behavior.
 /// </summary>
-public static class RouteHandlerJsonServiceExtensions
+public static class HttpJsonServiceExtensions
 {
     /// <summary>
     /// Configures options used for reading and writing JSON by route handlers.
@@ -22,7 +22,7 @@ public static class RouteHandlerJsonServiceExtensions
     /// <param name="configureOptions">The <see cref="Action{JsonOptions}"/> to configure the
     /// <see cref="JsonOptions"/>.</param>
     /// <returns>The modified <see cref="IServiceCollection"/>.</returns>
-    public static IServiceCollection ConfigureRouteHandlerJsonOptions(this IServiceCollection services, Action<JsonOptions> configureOptions)
+    public static IServiceCollection ConfigureHttpJsonOptions(this IServiceCollection services, Action<JsonOptions> configureOptions)
     {
         services.Configure<JsonOptions>(configureOptions);
         return services;
