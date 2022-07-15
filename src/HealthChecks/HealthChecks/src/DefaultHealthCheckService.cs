@@ -19,101 +19,102 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 internal sealed partial class DefaultHealthCheckService : HealthCheckService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IOptions<HealthCheckServiceOptions> _options;
+    private readonly IOptions<HealthCheckServiceOptions> _healthCheckServiceOptions;
+    private readonly IOptions<HealthCheckPublisherOptions> _healthCheckPublisherOptions;
     private readonly ILogger<DefaultHealthCheckService> _logger;
-    private ConcurrentQueue<KeyValuePair<string, HealthReportEntry>> _healthReportQueue;
-    private IReadOnlyDictionary<TimeSpan, List<HealthCheckRegistration>> _timeToHCs;
-    private ICollection<Timer> _healthCheckRegistrationTimers;
-    private ICollection<HealthCheckRegistration> _healthCheckRegistrationsDefault;
+    private readonly ConcurrentQueue<KeyValuePair<string, HealthReportEntry>> _healthReportEntriesQueue;
+    private readonly IReadOnlyDictionary<TimeSpan, List<HealthCheckRegistration>> _periodHealthChecksMap;
+    private readonly ICollection<Timer> _healthCheckRegistrationTimers;
 
     public DefaultHealthCheckService(
         IServiceScopeFactory scopeFactory,
-        IOptions<HealthCheckServiceOptions> _healthCheckServiceOptions,
-        IOptions<HealthCheckPublisherOptions> _healthCheckPublisherOptions,
+        IOptions<HealthCheckServiceOptions> healthCheckServiceOptions,
+        IOptions<HealthCheckPublisherOptions> healthCheckPublisherOptions,
         ILogger<DefaultHealthCheckService> logger)
     {
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
-        _options = _healthCheckServiceOptions ?? throw new ArgumentNullException(nameof(_healthCheckServiceOptions));
+        _healthCheckServiceOptions = healthCheckServiceOptions ?? throw new ArgumentNullException(nameof(healthCheckServiceOptions));
+        _healthCheckPublisherOptions = healthCheckPublisherOptions ?? throw new ArgumentNullException(nameof(healthCheckPublisherOptions));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         // We're specifically going out of our way to do this at startup time. We want to make sure you
         // get any kind of health-check related error as early as possible. Waiting until someone
         // actually tries to **run** health checks would be real baaaaad.
-        ValidateRegistrations(_options.Value.Registrations);
+        ValidateRegistrations(_healthCheckServiceOptions.Value.Registrations);
 
-        _healthReportQueue = new ConcurrentQueue<KeyValuePair<string, HealthReportEntry>>();
+        _healthReportEntriesQueue = new ConcurrentQueue<KeyValuePair<string, HealthReportEntry>>();
 
-        // TODO add predicate
-        _healthCheckRegistrationsDefault = _options.Value.Registrations.Where(r => r.Period == Timeout.InfiniteTimeSpan).ToList();
+        _periodHealthChecksMap = (from r in _healthCheckServiceOptions.Value.Registrations
+                                  where ByPredicate(r, _healthCheckPublisherOptions.Value.Predicate) // Apply publisher predicate
+                                  where r.Period != Timeout.InfiniteTimeSpan // Skip HCs with no individual period
+                                  group r by r.Period).ToDictionary<IGrouping<TimeSpan, HealthCheckRegistration>, TimeSpan, List<HealthCheckRegistration>>(g => g.Key, g => g.ToList());
 
-        _timeToHCs = (from r in _options.Value.Registrations
-                      where r.Period != Timeout.InfiniteTimeSpan // Skip HCs with no individual period
-                      group r by r.Period).ToDictionary(g => g.Key, g => g.ToList());
-
-        _healthCheckRegistrationTimers = _timeToHCs.Select(t =>
+        _healthCheckRegistrationTimers = _periodHealthChecksMap.AsParallel().Select(t =>
             NonCapturingTimer.Create(
-                      async (state) =>
-                      {
-                          var entries = await CheckHealthAsyncCore(t.Value).ConfigureAwait(false);
-                          foreach (var entry in entries)
-                          {
-                              _healthReportQueue.Enqueue(entry);
-                          }
-                      },
-                      null,
-                      dueTime: _healthCheckPublisherOptions.Value.Delay,
-                      period: t.Key)).ToList();
+                async (state) =>
+                {
+                    var entries = await RunChecksAsync(t.Value).ConfigureAwait(false);
+                    foreach (var entry in entries)
+                    {
+                        _healthReportEntriesQueue.Enqueue(entry);
+                    }
+                },
+                null,
+                dueTime: healthCheckPublisherOptions.Value.Delay,
+                period: t.Key)).ToList();
     }
 
-    private async Task<List<KeyValuePair<string, HealthReportEntry>>> CheckHealthAsyncCore(ICollection<HealthCheckRegistration> registrations)
+    public override async Task<HealthReport> CheckHealthAsync(Func<HealthCheckRegistration, bool>? predicate, CancellationToken cancellationToken = default)
+    {
+        // TODO: if we decide for the current design, where HCs with default periodicity are initiated during CheckHealthAsync,
+        // individual-periodicity HCs cannot use the predicate passed in this method (those are initiated in the cctor of DefaultHealthCheckService)
+
+        var totalTime = ValueStopwatch.StartNew();
+        Log.HealthCheckProcessingBegin(_logger);
+
+        var registrations = _healthCheckServiceOptions.Value.Registrations.Where(r => ByPredicate(r, predicate)).ToList();
+
+        // Run healthchecks with default/publisher period
+        var healthReportEntriesValues = await RunChecksAsync(registrations, cancellationToken).ConfigureAwait(false);
+
+        // Collect health report entries from previously run periodic healthchecks within the default period
+        while (_healthReportEntriesQueue.TryDequeue(out var entry))
+        {
+            healthReportEntriesValues.Add(entry);
+        }
+
+        var healthReportEntriesDictionary = new Dictionary<string, HealthReportEntry>(
+            healthReportEntriesValues.ToDictionary(kv => kv.Key, kv => kv.Value),
+            StringComparer.OrdinalIgnoreCase);
+
+        var totalElapsedTime = totalTime.GetElapsedTime();
+        var report = new HealthReport(healthReportEntriesDictionary, totalElapsedTime);
+        Log.HealthCheckProcessingEnd(_logger, report.Status, totalElapsedTime);
+
+        return report;
+    }
+
+    private async Task<List<KeyValuePair<string, HealthReportEntry>>> RunChecksAsync(ICollection<HealthCheckRegistration> registrations, CancellationToken cancellationToken = default)
     {
         var tasks = new Task<HealthReportEntry>[registrations.Count];
         var index = 0;
 
         foreach (var registration in registrations)
         {
-            tasks[index++] = Task.Run(() => RunCheckAsync(registration));
+            tasks[index++] = Task.Run(() => RunCheckAsync(registration, cancellationToken), cancellationToken);
         }
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
-        // StringComparer.OrdinalIgnoreCase
-        index = 0;
         var entries = new List<KeyValuePair<string, HealthReportEntry>>();
+
+        index = 0;
         foreach (var registration in registrations)
         {
             entries.Add(new KeyValuePair<string, HealthReportEntry>(registration.Name, tasks[index++].Result));
         }
 
         return entries;
-    }
-
-    public override async Task<HealthReport> CheckHealthAsync(
-        Func<HealthCheckRegistration, bool>? predicate,
-        CancellationToken cancellationToken = default)
-    {
-        var totalTime = ValueStopwatch.StartNew();
-        Log.HealthCheckProcessingBegin(_logger);
-
-        var registrations = _options.Value.Registrations;
-        if (predicate != null)
-        {
-            registrations = registrations.Where(predicate).ToArray();
-        }
-
-        var healthReportEntriesValues = await CheckHealthAsyncCore(registrations).ConfigureAwait(false); // Run default
-        while (_healthReportQueue.TryDequeue(out var entry))
-        {
-            healthReportEntriesValues.Add(entry);
-        }
-
-        var healthReportEntries = healthReportEntriesValues.ToDictionary(kv => kv.Key, kv => kv.Value);
-
-        var totalElapsedTime = totalTime.GetElapsedTime();
-        var report = new HealthReport(healthReportEntries, totalElapsedTime);
-        Log.HealthCheckProcessingEnd(_logger, report.Status, totalElapsedTime);
-
-        return report;
     }
 
     private async Task<HealthReportEntry> RunCheckAsync(HealthCheckRegistration registration, CancellationToken cancellationToken = default)
@@ -223,6 +224,22 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         {
             throw new ArgumentException(builder.ToString(0, builder.Length - 2), nameof(registrations));
         }
+    }
+
+    private bool ByPredicate(HealthCheckRegistration registration, Func<HealthCheckRegistration, bool>? predicate)
+    {
+        if (predicate == null)
+        {
+            predicate = _healthCheckPublisherOptions.Value.Predicate;
+        }
+
+        // Default to the HealthCheckPublisher predicate
+        if (predicate == null)
+        {
+            return true;
+        }
+
+        return predicate(registration);
     }
 
     internal static class EventIds
