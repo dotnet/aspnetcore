@@ -21,6 +21,10 @@ Microsoft.AspNetCore.Http.EndpointFilterInvocationContext
 Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.EndpointFilterInvocationContext() -> void
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object!
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetRequiredMetadata<T>() -> T!
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Collections.Generic.IDictionary<string!, string![]!>!
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
 Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>
 Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>.BindAsync(Microsoft.AspNetCore.Http.HttpContext! context, System.Reflection.ParameterInfo! parameter) -> System.Threading.Tasks.ValueTask<TSelf?>
 Microsoft.AspNetCore.Http.IContentTypeHttpResult
