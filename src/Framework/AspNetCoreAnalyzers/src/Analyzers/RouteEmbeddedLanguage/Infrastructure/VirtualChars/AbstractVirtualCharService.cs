@@ -68,7 +68,7 @@ internal abstract partial class AbstractVirtualCharService : IVirtualCharService
             // Ensure that we properly broke up the token into a sequence of characters that
             // matches what the compiler did.
             if (token.RawKind == (int)SyntaxKind.StringLiteralToken ||
-                token.RawKind == (int)SyntaxKind.UTF8StringLiteralToken ||
+                token.RawKind == (int)SyntaxKind.Utf8StringLiteralToken ||
                 token.RawKind == (int)SyntaxKind.CharacterLiteralToken)
             {
                 var expectedValueText = token.ValueText;
@@ -113,7 +113,7 @@ internal abstract partial class AbstractVirtualCharService : IVirtualCharService
                 {
                     Debug.Assert(lastVC.Span.End == token.Span.End - "\"".Length, "Last span has to end right before the end of the string token.");
                 }
-                else if (token.RawKind == (int)SyntaxKind.UTF8StringLiteralToken)
+                else if (token.RawKind == (int)SyntaxKind.Utf8StringLiteralToken)
                 {
                     Debug.Assert(lastVC.Span.End == token.Span.End - "\"u8".Length, "Last span has to end right before the end of the string token.");
                 }

@@ -38,9 +38,9 @@ internal static class RouteStringSyntaxDetector
         return rawKind == (int)SyntaxKind.StringLiteralToken ||
                rawKind == (int)SyntaxKind.SingleLineRawStringLiteralToken ||
                rawKind == (int)SyntaxKind.MultiLineRawStringLiteralToken ||
-               rawKind == (int)SyntaxKind.UTF8StringLiteralToken ||
-               rawKind == (int)SyntaxKind.UTF8SingleLineRawStringLiteralToken ||
-               rawKind == (int)SyntaxKind.UTF8MultiLineRawStringLiteralToken;
+               rawKind == (int)SyntaxKind.Utf8StringLiteralToken ||
+               rawKind == (int)SyntaxKind.Utf8SingleLineRawStringLiteralToken ||
+               rawKind == (int)SyntaxKind.Utf8MultiLineRawStringLiteralToken;
     }
 
     private static bool TryGetStringFormat(SyntaxToken token, SemanticModel semanticModel, CancellationToken cancellationToken, [NotNullWhen(true)] out string identifier)
