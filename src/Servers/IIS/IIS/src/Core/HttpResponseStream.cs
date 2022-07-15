@@ -100,8 +100,7 @@ internal class HttpResponseStream : WriteOnlyStreamInternal
                 }
                 break;
             case HttpStreamState.Closed:
-                ObjectDisposedException.ThrowIf(true, nameof(HttpResponseStream));
-                break;
+                throw new ObjectDisposedException(nameof(HttpResponseStream), CoreStrings.WritingToResponseBodyAfterResponseCompleted);
             case HttpStreamState.Aborted:
                 if (cancellationToken.IsCancellationRequested)
                 {

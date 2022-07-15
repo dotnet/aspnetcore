@@ -74,8 +74,7 @@ internal class EmptyStream : ReadOnlyStream
                 }
                 break;
             case HttpStreamState.Closed:
-                ObjectDisposedException.ThrowIf(true, nameof(HttpRequestStream));
-                break;
+                throw new ObjectDisposedException(nameof(HttpRequestStream));
             case HttpStreamState.Aborted:
                 if (_error != null)
                 {
