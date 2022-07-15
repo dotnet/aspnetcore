@@ -783,6 +783,19 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal(expectedName, param.Name);
     }
 
+    [Fact]
+    public void HandlesEndpointWithNoRequestBody()
+    {
+        var operationWithNoParams = GetOpenApiOperation(() => "", "/");
+        var operationWithNoBodyParams = GetOpenApiOperation((int id) => "", "/", httpMethods: new[] { "PUT"});
+
+        Assert.Empty(operationWithNoParams.Parameters);
+        Assert.Null(operationWithNoParams.RequestBody);
+
+        Assert.Single(operationWithNoBodyParams.Parameters);
+        Assert.Null(operationWithNoBodyParams.RequestBody);
+    }
+
     private static OpenApiOperation GetOpenApiOperation(
         Delegate action,
         string pattern = null,
