@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text;
 using BasicTestApp;
 using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -842,26 +843,23 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         var app = Browser.MountTestComponent<NavigationManagerComponent>();
 
-        // Populate the browser stack
         SetUrlViaPushState("/mytestpath0");
         SetUrlViaPushState("/mytestpath1");
-        SetUrlViaPushState("/mytestpath2");
-        SetUrlViaPushState("/mytestpath3");
+
+        // We have the expected initial URI
+        var expectedStartingAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath1";
+        Browser.Equal(expectedStartingAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
 
         // Add a navigation lock that blocks internal navigations
         Browser.FindElement(By.Id("add-navigation-lock")).Click();
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > input.block-internal-navigation")).Click();
 
-        // We have the expected initial URI
-        var expectedStartingAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath3";
-        Browser.Equal(expectedStartingAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
-
-        NavigateHistoryStack(-3);
+        Browser.Navigate().Back();
 
         // The navigation was blocked
         Browser.Equal(expectedStartingAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
 
-        NavigateHistoryStack(-2);
+        Browser.Navigate().Back();
 
         // The first navigation was canceled and logged
         var expectedCanceledAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath0";
@@ -871,7 +869,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-continue")).Click();
 
         // We navigated to the updated URL
-        var expectedPostNavigationAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath1";
+        var expectedPostNavigationAbsoluteUri = $"{_serverFixture.RootUri}subdir/mytestpath0";
         Browser.Equal(expectedPostNavigationAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
     }
 
@@ -1293,12 +1291,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}', {(forceLoad ? "true" : "false")})");
 
         return absoluteUri.AbsoluteUri;
-    }
-
-    private void NavigateHistoryStack(int delta)
-    {
-        var jsExecutor = (IJavaScriptExecutor)Browser;
-        jsExecutor.ExecuteScript($"history.go({delta})");
     }
 
     private void AssertDidNotLog(params string[] messages)
