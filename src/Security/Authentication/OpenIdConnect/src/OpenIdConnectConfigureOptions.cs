@@ -41,7 +41,7 @@ internal sealed class OpenIdConnectConfigureOptions : IConfigureNamedOptions<Ope
         }
 
         options.AccessDeniedPath = new PathString(configSection[nameof(options.AccessDeniedPath)] ?? options.AccessDeniedPath.Value);
-        options.Authority = configSection[nameof(options.Authority)];
+        options.Authority = configSection[nameof(options.Authority)] ?? options.Authority;
         options.AutomaticRefreshInterval = StringHelpers.ParseValueOrDefault(configSection[nameof(options.AutomaticRefreshInterval)], _invariantTimeSpanParse, options.AutomaticRefreshInterval);
         options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse, options.BackchannelTimeout);
         options.CallbackPath = new PathString(configSection[nameof(options.CallbackPath)] ?? options.CallbackPath.Value);
@@ -98,26 +98,12 @@ internal sealed class OpenIdConnectConfigureOptions : IConfigureNamedOptions<Ope
         cookieBuilder.MaxAge = StringHelpers.ParseValueOrDefault<TimeSpan?>(cookieConfigSection[nameof(cookieBuilder.MaxAge)], _invariantNullableTimeSpanParse, cookieBuilder.MaxAge);
         cookieBuilder.Name = cookieConfigSection[nameof(CookieBuilder.Name)] ?? cookieBuilder.Name;
         cookieBuilder.Path = cookieConfigSection[nameof(CookieBuilder.Path)] ?? cookieBuilder.Path;
-        cookieBuilder.SameSite = cookieConfigSection[nameof(CookieBuilder.SameSite)]?.ToLowerInvariant() switch
-        {
-            "lax" => SameSiteMode.Lax,
-            "strict" => SameSiteMode.Strict,
-            "unspecified" => SameSiteMode.Unspecified,
-            "none" => SameSiteMode.None,
-            null => cookieBuilder.SameSite,
-            "" => cookieBuilder.SameSite,
-            _ => throw new InvalidOperationException($"{nameof(CookieBuilder.SameSite)} option must be a valid {nameof(SameSiteMode)}")
-        };
-        cookieBuilder.SecurePolicy = cookieConfigSection[nameof(CookieBuilder.SecurePolicy)]?.ToLowerInvariant() switch
-        {
-            "always" => CookieSecurePolicy.Always,
-            "none" => CookieSecurePolicy.None,
-            "sameasrequest" => CookieSecurePolicy.SameAsRequest,
-            null => cookieBuilder.SecurePolicy,
-            "" => cookieBuilder.SecurePolicy,
-            _ => throw new InvalidOperationException($"{nameof(CookieBuilder.SameSite)} option must be a valid {nameof(SameSiteMode)}")
-        };
-
+        cookieBuilder.SameSite = cookieConfigSection[nameof(CookieBuilder.SameSite)] is string sameSiteMode
+            ? Enum.Parse<SameSiteMode>(sameSiteMode, ignoreCase: true)
+            : cookieBuilder.SameSite;
+        cookieBuilder.SecurePolicy = cookieConfigSection[nameof(CookieBuilder.SecurePolicy)] is string securePolicy
+            ? Enum.Parse<CookieSecurePolicy>(securePolicy, ignoreCase: true)
+            : cookieBuilder.SecurePolicy;
         ClearAndSetListOption(cookieBuilder.Extensions, cookieConfigSection.GetSection(nameof(cookieBuilder.Extensions)));
     }
 

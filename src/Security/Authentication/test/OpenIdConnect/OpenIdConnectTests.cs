@@ -459,7 +459,7 @@ public class OpenIdConnectTests
             new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientSecret", "client-secret"),
             new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:Domain", "https://localhost:5000"),
             new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:IsEssential", "False"),
-            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:SecurePolicy", "Always"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:CorrelationCookie:SecurePolicy", "always"),
         }).Build();
         services.AddSingleton<IConfiguration>(config);
 
