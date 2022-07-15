@@ -979,7 +979,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ItemTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Tests", "src\ProjectTemplates\test\Templates.Tests\Templates.Tests.csproj", "{6DE03095-7EAC-41DF-8AE4-3018ED29BC61}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorTemplates.Tests", "src\ProjectTemplates\BlazorTemplates.Tests\BlazorTemplates.Tests.csproj", "{18CE63FC-3BFE-47DF-A8D7-9D716FEB04C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Blazor.Tests", "src\ProjectTemplates\test\Templates.Blazor.Tests\Templates.Blazor.Tests.csproj", "{18CE63FC-3BFE-47DF-A8D7-9D716FEB04C9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{A4C26078-B6D8-4FD8-87A6-7C15A3482038}"
 EndProject
