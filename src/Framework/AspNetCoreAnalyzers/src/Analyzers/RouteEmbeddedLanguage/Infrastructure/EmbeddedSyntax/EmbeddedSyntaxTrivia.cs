@@ -6,7 +6,7 @@ using System.Diagnostics;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 
 /// <summary>
 /// Trivia on an <see cref="EmbeddedSyntaxToken{TSyntaxKind}"/>.

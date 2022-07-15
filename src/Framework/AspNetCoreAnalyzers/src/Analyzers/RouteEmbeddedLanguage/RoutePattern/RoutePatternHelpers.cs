@@ -4,7 +4,7 @@
 #nullable disable
 
 using System.Collections.Immutable;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;

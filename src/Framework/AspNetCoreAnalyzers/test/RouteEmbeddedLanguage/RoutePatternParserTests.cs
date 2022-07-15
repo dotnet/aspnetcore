@@ -19,13 +19,13 @@ using Microsoft.CodeAnalysis.EmbeddedLanguages.RegularExpressions;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using System.Reflection;
 using Xunit.Abstractions;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 

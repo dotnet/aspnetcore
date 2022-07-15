@@ -4,6 +4,7 @@
 #nullable disable
 
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.VirtualChars;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;

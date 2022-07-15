@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 
 internal struct EmbeddedSyntaxToken<TSyntaxKind> where TSyntaxKind : struct
 {

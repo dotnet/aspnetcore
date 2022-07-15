@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.Virtua
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.EmbeddedLanguages;
-using RoutePatternToken = Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern.RoutePatternKind>;
+using RoutePatternToken = Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax.EmbeddedSyntaxToken<Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern.RoutePatternKind>;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 

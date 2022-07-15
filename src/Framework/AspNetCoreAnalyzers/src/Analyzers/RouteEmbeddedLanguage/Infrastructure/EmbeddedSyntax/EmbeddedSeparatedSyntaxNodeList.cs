@@ -5,7 +5,7 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 
 internal readonly struct EmbeddedSeparatedSyntaxNodeList<TSyntaxKind, TSyntaxNode, TDerivedNode>
     where TSyntaxKind : struct

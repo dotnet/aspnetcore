@@ -14,11 +14,18 @@ internal enum RoutePatternKind
     Seperator,
     Literal,
     Replacement,
+    Parameter,
+    CatchAll,
+    ParameterName,
+    Optional,
+    DefaultValue,
+    PolicyFragment,
+    PolicyFragmentEscaped,
+    ParameterPolicy,
 
     // Tokens
     TextToken,
     SlashToken,
-    NumberToken,
     TildeToken,
     /// <summary>
     /// {
@@ -51,16 +58,8 @@ internal enum RoutePatternKind
     CloseParenToken,
     QuestionMarkToken,
     CommaToken,
-    Parameter,
-    ParameterName,
     ParameterNameToken,
-    CatchAll,
-    ParameterPolicy,
     DefaultValueToken,
     PolicyNameToken,
     PolicyFragmentToken,
-    Optional,
-    DefaultValue,
-    PolicyFragment,
-    PolicyFragmentEscaped,
 }

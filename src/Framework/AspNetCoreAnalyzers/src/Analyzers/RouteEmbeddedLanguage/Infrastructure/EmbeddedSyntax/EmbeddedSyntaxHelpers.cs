@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.VirtualChars;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 
 internal static class EmbeddedSyntaxHelpers
 {

@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure.EmbeddedSyntax;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.RoutePattern;
 
