@@ -5,7 +5,7 @@ namespace System;
 
 internal static class StringHelpers
 {
-    public static T ParseValueOrDefault<T>(T defaultValue, string? stringValue, Func<string, T> parser)
+    public static T ParseValueOrDefault<T>(string? stringValue, Func<string, T> parser, T defaultValue)
     {
         if (string.IsNullOrEmpty(stringValue))
         {

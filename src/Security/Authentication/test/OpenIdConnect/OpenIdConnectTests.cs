@@ -507,6 +507,33 @@ public class OpenIdConnectTests
             sp.GetRequiredService<IOptionsMonitor<OpenIdConnectOptions>>().Get(OpenIdConnectDefaults.AuthenticationScheme));
     }
 
+    [Fact]
+    public void ScopesInOptionsAreAdditive()
+    {
+        var services = new ServiceCollection().AddLogging();
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:Authority", "https://authority.com"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientId", "client-id"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:ClientSecret", "client-secret"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:Scope:0", "given_name"),
+            new KeyValuePair<string, string>("Authentication:Schemes:OpenIdConnect:Scope:1", "birthdate"),
+        }).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        var builder = services.AddAuthentication();
+        builder.AddOpenIdConnect();
+        var sp = services.BuildServiceProvider();
+
+        var options = sp.GetRequiredService<IOptionsMonitor<OpenIdConnectOptions>>().Get(OpenIdConnectDefaults.AuthenticationScheme);
+        Assert.Equal(4, options.Scope.Count);
+        Assert.Contains("openid", options.Scope);
+        Assert.Contains("profile", options.Scope);
+        Assert.Contains("given_name", options.Scope);
+        Assert.Contains("birthdate", options.Scope);
+    }
+
     private static DateTime GetNonceExpirationTime(string keyname, TimeSpan nonceLifetime)
     {
         DateTime nonceTime = DateTime.MinValue;

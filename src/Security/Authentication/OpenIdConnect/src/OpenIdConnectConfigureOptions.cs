@@ -13,6 +13,7 @@ internal sealed class OpenIdConnectConfigureOptions : IConfigureNamedOptions<Ope
 {
     private readonly IAuthenticationConfigurationProvider _authenticationConfigurationProvider;
     private static readonly Func<string, TimeSpan> _invariantTimeSpanParse = (string timespanString) => TimeSpan.Parse(timespanString, CultureInfo.InvariantCulture);
+    private static readonly Func<string, TimeSpan?> _invariantNullableTimeSpanParse = (string timespanString) => TimeSpan.Parse(timespanString, CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Initializes a new <see cref="OpenIdConnectConfigureOptions"/> given the configuration
@@ -39,93 +40,93 @@ internal sealed class OpenIdConnectConfigureOptions : IConfigureNamedOptions<Ope
             return;
         }
 
-        options.AccessDeniedPath = new PathString(configSection[nameof(options.AccessDeniedPath)]);
+        options.AccessDeniedPath = new PathString(configSection[nameof(options.AccessDeniedPath.Value)]);
         options.Authority = configSection[nameof(options.Authority)];
-        options.AutomaticRefreshInterval = StringHelpers.ParseValueOrDefault(options.AutomaticRefreshInterval, configSection[nameof(options.AutomaticRefreshInterval)], _invariantTimeSpanParse);
-        options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(options.BackchannelTimeout, configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse);
-        options.CallbackPath = new PathString(configSection[nameof(options.CallbackPath)] ?? options.CallbackPath);
+        options.AutomaticRefreshInterval = StringHelpers.ParseValueOrDefault(configSection[nameof(options.AutomaticRefreshInterval)], _invariantTimeSpanParse, options.AutomaticRefreshInterval);
+        options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse, options.BackchannelTimeout);
+        options.CallbackPath = new PathString(configSection[nameof(options.CallbackPath)] ?? options.CallbackPath.Value);
         options.ClaimsIssuer = configSection[nameof(options.ClaimsIssuer)];
         options.ClientId = configSection[nameof(options.ClientId)];
         options.ClientSecret = configSection[nameof(options.ClientSecret)];
-        options.CorrelationCookie = GetCookieFromConfig(configSection.GetSection(nameof(options.CorrelationCookie)), options.CorrelationCookie);
-        options.DisableTelemetry = StringHelpers.ParseValueOrDefault(options.DisableTelemetry, configSection[nameof(options.DisableTelemetry)], bool.Parse);
+        SetCookieFromConfig(configSection.GetSection(nameof(options.CorrelationCookie)), options.CorrelationCookie);
+        options.DisableTelemetry = StringHelpers.ParseValueOrDefault(configSection[nameof(options.DisableTelemetry)], bool.Parse, options.DisableTelemetry);
         options.ForwardAuthenticate = configSection[nameof(options.ForwardAuthenticate)];
         options.ForwardChallenge = configSection[nameof(options.ForwardChallenge)];
         options.ForwardDefault = configSection[nameof(options.ForwardDefault)];
         options.ForwardForbid = configSection[nameof(options.ForwardForbid)];
         options.ForwardSignIn = configSection[nameof(options.ForwardSignIn)];
         options.ForwardSignOut = configSection[nameof(options.ForwardSignOut)];
-        options.GetClaimsFromUserInfoEndpoint = StringHelpers.ParseValueOrDefault(options.GetClaimsFromUserInfoEndpoint, configSection[nameof(options.GetClaimsFromUserInfoEndpoint)], bool.Parse);
-        options.MapInboundClaims = StringHelpers.ParseValueOrDefault(options.MapInboundClaims, configSection[nameof(options.MapInboundClaims)], bool.Parse);
-        options.MaxAge = options.MaxAge is TimeSpan maxAge ? StringHelpers.ParseValueOrDefault(maxAge, configSection[nameof(options.MaxAge)], _invariantTimeSpanParse) : options.MaxAge;
+        options.GetClaimsFromUserInfoEndpoint = StringHelpers.ParseValueOrDefault(configSection[nameof(options.GetClaimsFromUserInfoEndpoint)], bool.Parse, options.GetClaimsFromUserInfoEndpoint);
+        options.MapInboundClaims = StringHelpers.ParseValueOrDefault(configSection[nameof(options.MapInboundClaims)], bool.Parse, options.MapInboundClaims);
+        options.MaxAge = StringHelpers.ParseValueOrDefault(configSection[nameof(options.MaxAge)], _invariantNullableTimeSpanParse, options.MaxAge);
         options.MetadataAddress = configSection[nameof(options.MetadataAddress)];
-        options.NonceCookie = GetCookieFromConfig(configSection.GetSection(nameof(options.NonceCookie)), options.NonceCookie);
+        SetCookieFromConfig(configSection.GetSection(nameof(options.NonceCookie)), options.NonceCookie);
         options.Prompt = configSection[nameof(options.Prompt)];
-        options.RefreshInterval = StringHelpers.ParseValueOrDefault(options.RefreshInterval, configSection[nameof(options.RefreshInterval)], _invariantTimeSpanParse);
-        options.RefreshOnIssuerKeyNotFound = StringHelpers.ParseValueOrDefault(options.RefreshOnIssuerKeyNotFound, configSection[nameof(options.RefreshOnIssuerKeyNotFound)], bool.Parse);
-        options.RemoteAuthenticationTimeout = StringHelpers.ParseValueOrDefault(options.RemoteAuthenticationTimeout, configSection[nameof(options.RemoteAuthenticationTimeout)], _invariantTimeSpanParse);
-        options.RemoteSignOutPath = new PathString(configSection[nameof(options.RemoteSignOutPath)] ?? options.RemoteSignOutPath);
-        options.RequireHttpsMetadata = StringHelpers.ParseValueOrDefault(options.RequireHttpsMetadata, configSection[nameof(options.RequireHttpsMetadata)], bool.Parse);
+        options.RefreshInterval = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RefreshInterval)], _invariantTimeSpanParse, options.RefreshInterval);
+        options.RefreshOnIssuerKeyNotFound = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RefreshOnIssuerKeyNotFound)], bool.Parse, options.RefreshOnIssuerKeyNotFound);
+        options.RemoteAuthenticationTimeout = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RemoteAuthenticationTimeout)], _invariantTimeSpanParse, options.RemoteAuthenticationTimeout);
+        options.RemoteSignOutPath = new PathString(configSection[nameof(options.RemoteSignOutPath)] ?? options.RemoteSignOutPath.Value);
+        options.RequireHttpsMetadata = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RequireHttpsMetadata)], bool.Parse, options.RequireHttpsMetadata);
         options.Resource = configSection[nameof(options.Resource)];
         options.ResponseMode = configSection[nameof(options.ResponseMode)] ?? options.ResponseMode;
         options.ResponseType = configSection[nameof(options.ResponseType)] ?? options.ResponseType;
         options.ReturnUrlParameter = configSection[nameof(options.ReturnUrlParameter)] ?? options.ReturnUrlParameter;
-        options.SaveTokens = StringHelpers.ParseValueOrDefault(options.SaveTokens, configSection[nameof(options.SaveTokens)], bool.Parse);
+        options.SaveTokens = StringHelpers.ParseValueOrDefault(configSection[nameof(options.SaveTokens)], bool.Parse, options.SaveTokens);
         var scopes = configSection.GetSection(nameof(options.Scope)).GetChildren().Select(scope => scope.Value).OfType<string>();
         foreach (var scope in scopes)
         {
             options.Scope.Add(scope);
         }
-        options.SignedOutCallbackPath = new PathString(configSection[nameof(options.SignedOutCallbackPath)] ?? options.SignedOutCallbackPath);
+        options.SignedOutCallbackPath = new PathString(configSection[nameof(options.SignedOutCallbackPath)] ?? options.SignedOutCallbackPath.Value);
         options.SignedOutRedirectUri = configSection[nameof(options.SignedOutRedirectUri)] ?? options.SignedOutRedirectUri;
         options.SignInScheme = configSection[nameof(options.SignInScheme)];
         options.SignOutScheme = configSection[nameof(options.SignOutScheme)];
-        options.SkipUnrecognizedRequests = StringHelpers.ParseValueOrDefault(options.SkipUnrecognizedRequests, configSection[nameof(options.SkipUnrecognizedRequests)], bool.Parse);
-        options.UsePkce = StringHelpers.ParseValueOrDefault(options.UsePkce, configSection[nameof(options.UsePkce)], bool.Parse);
-        options.UseTokenLifetime = StringHelpers.ParseValueOrDefault(options.UseTokenLifetime, configSection[nameof(options.UseTokenLifetime)], bool.Parse);
+        options.SkipUnrecognizedRequests = StringHelpers.ParseValueOrDefault(configSection[nameof(options.SkipUnrecognizedRequests)], bool.Parse, options.SkipUnrecognizedRequests);
+        options.UsePkce = StringHelpers.ParseValueOrDefault(configSection[nameof(options.UsePkce)], bool.Parse, options.UsePkce);
+        options.UseTokenLifetime = StringHelpers.ParseValueOrDefault(configSection[nameof(options.UseTokenLifetime)], bool.Parse, options.UseTokenLifetime);
     }
 
-    private static CookieBuilder GetCookieFromConfig(IConfiguration cookieConfigSection, CookieBuilder cookieBuilder)
+    private static void SetCookieFromConfig(IConfiguration cookieConfigSection, CookieBuilder cookieBuilder)
     {
-        if (cookieConfigSection is not null && cookieConfigSection.GetChildren().Any())
+        if (cookieConfigSection is null || !cookieConfigSection.GetChildren().Any())
         {
-            // Override the existing defaults when values are set instead of constructing
-            // an entirely new CookieBuilder.
-            cookieBuilder.Domain = cookieConfigSection[nameof(cookieBuilder.Domain)];
-            cookieBuilder.HttpOnly = StringHelpers.ParseValueOrDefault(cookieBuilder.HttpOnly, cookieConfigSection[nameof(cookieBuilder.HttpOnly)], bool.Parse);
-            cookieBuilder.IsEssential = StringHelpers.ParseValueOrDefault(cookieBuilder.IsEssential, cookieConfigSection[nameof(cookieBuilder.IsEssential)], bool.Parse);
-            cookieBuilder.Expiration = cookieBuilder.Expiration is TimeSpan expiration ? StringHelpers.ParseValueOrDefault(expiration, cookieConfigSection[nameof(cookieBuilder.Expiration)], _invariantTimeSpanParse) : cookieBuilder.Expiration;
-            cookieBuilder.MaxAge = cookieBuilder.MaxAge is TimeSpan maxAge ? StringHelpers.ParseValueOrDefault(maxAge, cookieConfigSection[nameof(cookieBuilder.MaxAge)], _invariantTimeSpanParse) : cookieBuilder.MaxAge;
-            cookieBuilder.Name = cookieConfigSection[nameof(CookieBuilder.Name)] ?? cookieBuilder.Name;
-            cookieBuilder.Path = cookieConfigSection[nameof(CookieBuilder.Path)];
-            cookieBuilder.SameSite = cookieConfigSection[nameof(CookieBuilder.SameSite)]?.ToLowerInvariant() switch
-            {
-                "lax" => SameSiteMode.Lax,
-                "strict" => SameSiteMode.Strict,
-                "unspecified" => SameSiteMode.Unspecified,
-                "none" => SameSiteMode.None,
-                null => cookieBuilder.SameSite,
-                "" => cookieBuilder.SameSite,
-                _ => throw new InvalidOperationException($"{nameof(CookieBuilder.SameSite)} option must be a valid {nameof(SameSiteMode)}")
-            };
-            cookieBuilder.SecurePolicy = cookieConfigSection[nameof(CookieBuilder.SecurePolicy)]?.ToLowerInvariant() switch
-            {
-                "always" => CookieSecurePolicy.Always,
-                "none" => CookieSecurePolicy.None,
-                "sameasrequest" => CookieSecurePolicy.SameAsRequest,
-                null => cookieBuilder.SecurePolicy,
-                "" => cookieBuilder.SecurePolicy,
-                _ => throw new InvalidOperationException($"{nameof(CookieBuilder.SameSite)} option must be a valid {nameof(SameSiteMode)}")
-            };
-
-            var extensions = cookieConfigSection.GetSection(nameof(CookieBuilder.Extensions)).GetChildren().Select(ext => ext.Value).OfType<string>();
-            foreach (var extension in extensions)
-            {
-                cookieBuilder.Extensions.Add(extension);
-            }
+            return;
         }
 
-        return cookieBuilder;
+        // Override the existing defaults when values are set instead of constructing
+        // an entirely new CookieBuilder.
+        cookieBuilder.Domain = cookieConfigSection[nameof(cookieBuilder.Domain)] ?? cookieBuilder.Domain;
+        cookieBuilder.HttpOnly = StringHelpers.ParseValueOrDefault(cookieConfigSection[nameof(cookieBuilder.HttpOnly)], bool.Parse, cookieBuilder.HttpOnly);
+        cookieBuilder.IsEssential = StringHelpers.ParseValueOrDefault(cookieConfigSection[nameof(cookieBuilder.IsEssential)], bool.Parse, cookieBuilder.IsEssential);
+        cookieBuilder.Expiration = StringHelpers.ParseValueOrDefault(cookieConfigSection[nameof(cookieBuilder.Expiration)], _invariantNullableTimeSpanParse, cookieBuilder.Expiration);
+        cookieBuilder.MaxAge = StringHelpers.ParseValueOrDefault<TimeSpan?>(cookieConfigSection[nameof(cookieBuilder.MaxAge)], _invariantNullableTimeSpanParse, cookieBuilder.MaxAge);
+        cookieBuilder.Name = cookieConfigSection[nameof(CookieBuilder.Name)] ?? cookieBuilder.Name;
+        cookieBuilder.Path = cookieConfigSection[nameof(CookieBuilder.Path)] ?? cookieBuilder.Path;
+        cookieBuilder.SameSite = cookieConfigSection[nameof(CookieBuilder.SameSite)]?.ToLowerInvariant() switch
+        {
+            "lax" => SameSiteMode.Lax,
+            "strict" => SameSiteMode.Strict,
+            "unspecified" => SameSiteMode.Unspecified,
+            "none" => SameSiteMode.None,
+            null => cookieBuilder.SameSite,
+            "" => cookieBuilder.SameSite,
+            _ => throw new InvalidOperationException($"{nameof(CookieBuilder.SameSite)} option must be a valid {nameof(SameSiteMode)}")
+        };
+        cookieBuilder.SecurePolicy = cookieConfigSection[nameof(CookieBuilder.SecurePolicy)]?.ToLowerInvariant() switch
+        {
+            "always" => CookieSecurePolicy.Always,
+            "none" => CookieSecurePolicy.None,
+            "sameasrequest" => CookieSecurePolicy.SameAsRequest,
+            null => cookieBuilder.SecurePolicy,
+            "" => cookieBuilder.SecurePolicy,
+            _ => throw new InvalidOperationException($"{nameof(CookieBuilder.SameSite)} option must be a valid {nameof(SameSiteMode)}")
+        };
+
+        var extensions = cookieConfigSection.GetSection(nameof(CookieBuilder.Extensions)).GetChildren().Select(ext => ext.Value).OfType<string>();
+        foreach (var extension in extensions)
+        {
+            cookieBuilder.Extensions.Add(extension);
+        }
     }
 
     /// <inheritdoc />

@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using System.Linq;
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -55,7 +54,7 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
         }
 
         options.Authority = configSection[nameof(options.Authority)];
-        options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(options.BackchannelTimeout, configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse);
+        options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse, options.BackchannelTimeout);
         options.Challenge = configSection[nameof(options.Challenge)] ?? options.Challenge;
         options.ForwardAuthenticate = configSection[nameof(options.ForwardAuthenticate)];
         options.ForwardChallenge = configSection[nameof(options.ForwardChallenge)];
@@ -63,13 +62,13 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
         options.ForwardForbid = configSection[nameof(options.ForwardForbid)];
         options.ForwardSignIn = configSection[nameof(options.ForwardSignIn)];
         options.ForwardSignOut = configSection[nameof(options.ForwardSignOut)];
-        options.IncludeErrorDetails = StringHelpers.ParseValueOrDefault(options.IncludeErrorDetails, configSection[nameof(options.IncludeErrorDetails)], bool.Parse);
-        options.MapInboundClaims = StringHelpers.ParseValueOrDefault(options.MapInboundClaims, configSection[nameof(options.MapInboundClaims)], bool.Parse);
+        options.IncludeErrorDetails = StringHelpers.ParseValueOrDefault(configSection[nameof(options.IncludeErrorDetails)], bool.Parse, options.IncludeErrorDetails);
+        options.MapInboundClaims = StringHelpers.ParseValueOrDefault( configSection[nameof(options.MapInboundClaims)], bool.Parse, options.MapInboundClaims);
         options.MetadataAddress = configSection[nameof(options.MetadataAddress)] ?? options.MetadataAddress;
-        options.RefreshInterval = StringHelpers.ParseValueOrDefault(options.RefreshInterval, configSection[nameof(options.RefreshInterval)], _invariantTimeSpanParse);
-        options.RefreshOnIssuerKeyNotFound = StringHelpers.ParseValueOrDefault(options.RefreshOnIssuerKeyNotFound, configSection[nameof(options.RefreshOnIssuerKeyNotFound)], bool.Parse);
-        options.RequireHttpsMetadata = StringHelpers.ParseValueOrDefault(options.RequireHttpsMetadata, configSection[nameof(options.RequireHttpsMetadata)], bool.Parse);
-        options.SaveToken = StringHelpers.ParseValueOrDefault(options.SaveToken, configSection[nameof(options.SaveToken)], bool.Parse);
+        options.RefreshInterval = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RefreshInterval)], _invariantTimeSpanParse, options.RefreshInterval);
+        options.RefreshOnIssuerKeyNotFound = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RefreshOnIssuerKeyNotFound)], bool.Parse, options.RefreshOnIssuerKeyNotFound);
+        options.RequireHttpsMetadata = StringHelpers.ParseValueOrDefault(configSection[nameof(options.RequireHttpsMetadata)], bool.Parse, options.RequireHttpsMetadata);
+        options.SaveToken = StringHelpers.ParseValueOrDefault(configSection[nameof(options.SaveToken)], bool.Parse, options.SaveToken);
         options.TokenValidationParameters = new()
         {
             ValidateIssuer = issuers.Count > 0,
@@ -77,19 +76,20 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
             ValidateAudience = audiences.Count > 0,
             ValidAudiences = audiences,
             ValidateIssuerSigningKey = true,
-            // Even if we have multiple issuers, they must all resolve to the same signing
-            // key under the hood so we just use the first one.
-            IssuerSigningKey = GetIssuerSigningKey(configSection, issuers.FirstOrDefault()),
+            IssuerSigningKeys = GetIssuerSigningKeys(configSection, issuers),
         };
     }
 
-    private static SecurityKey GetIssuerSigningKey(IConfiguration configuration, string? issuer)
+    private static IEnumerable<SecurityKey> GetIssuerSigningKeys(IConfiguration configuration, List<string?> issuers)
     {
-        var jwtKeyMaterialSecret = configuration[$"{issuer}:KeyMaterial"];
-        var jwtKeyMaterial = !string.IsNullOrEmpty(jwtKeyMaterialSecret)
-            ? Convert.FromBase64String(jwtKeyMaterialSecret)
-            : RandomNumberGenerator.GetBytes(32);
-        return new SymmetricSecurityKey(jwtKeyMaterial);
+        foreach (var issuer in issuers)
+        {
+            var keyFromSecret = configuration[$"{issuer}:KeyMaterial"];
+            if (!string.IsNullOrEmpty(keyFromSecret))
+            {
+                yield return new SymmetricSecurityKey(Convert.FromBase64String(keyFromSecret));
+            }
+        }
     }
 
     /// <inheritdoc />
