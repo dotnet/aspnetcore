@@ -399,13 +399,10 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Http3PendingStreamException ex)
                 {
-                    if (ex.Data.Contains("StreamId"))
-                    {
-                        _unidentifiedStreams.Remove((long)ex.Data["StreamId"]!, out var stream);
-                        Log.Http3StreamAbort(CoreStrings.FormatUnidentifiedStream(stream?.StreamId), Http3ErrorCode.StreamCreationError, new(ex.Message));
-                    }
+                    _unidentifiedStreams.Remove(ex.StreamId, out var stream);
+                    Log.Http3StreamAbort(CoreStrings.FormatUnidentifiedStream(ex.StreamId), Http3ErrorCode.StreamCreationError, new(ex.Message));
                 }
                 finally
                 {

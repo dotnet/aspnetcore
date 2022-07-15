@@ -8,8 +8,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
 internal sealed class Http3PendingStream
 {
-    private readonly CancellationTokenSource abortedToken = new();
-
     private ConnectionAbortedException? _abortedException;
     private bool _isClosed;
 
@@ -34,8 +32,7 @@ internal sealed class Http3PendingStream
 
         _abortedException = exception;
 
-        abortedToken.Cancel();
-
+        Context.Transport.Input.CancelPendingRead();
         Context.Transport.Input.Complete(exception);
         Context.Transport.Output.Complete(exception);
     }
@@ -50,7 +47,13 @@ internal sealed class Http3PendingStream
         {
             while (!_isClosed)
             {
-                var result = await Input.ReadAsync(abortedToken.Token);
+                var result = await Input.ReadAsync();
+
+                if (result.IsCanceled)
+                {
+                    throw new Exception();
+                }
+
                 var readableBuffer = result.Buffer;
                 consumed = readableBuffer.Start;
                 start = readableBuffer.Start;
@@ -76,20 +79,20 @@ internal sealed class Http3PendingStream
         }
         catch (Exception)
         {
-            var exception = new Exception(CoreStrings.AttemptedToReadHeaderOnAbortedStream, _abortedException);
-            exception.Data.Add("StreamId", streamId);
-            throw exception;
+            throw new Http3PendingStreamException(CoreStrings.AttemptedToReadHeaderOnAbortedStream, streamId, _abortedException);
         }
         finally
         {
-
-            if (advance)
+            if (!_isClosed)
             {
-                Input.AdvanceTo(consumed);
-            }
-            else
-            {
-                Input.AdvanceTo(start);
+                if (advance)
+                {
+                    Input.AdvanceTo(consumed);
+                }
+                else
+                {
+                    Input.AdvanceTo(start);
+                }
             }
 
             StreamTimeoutTicks = default;
