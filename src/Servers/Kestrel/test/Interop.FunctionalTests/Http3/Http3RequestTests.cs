@@ -436,7 +436,7 @@ public class Http3RequestTests : LoggedTest
             // Assert
             if (protocol == HttpProtocols.Http3)
             {
-                var innerEx = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
+                var innerEx = Assert.IsType<HttpProtocolException>(ex.InnerException);
                 Assert.Equal(Http3ErrorCode.InternalError, (Http3ErrorCode)innerEx.ErrorCode);
             }
 
@@ -493,7 +493,7 @@ public class Http3RequestTests : LoggedTest
             // Assert
             if (protocol == HttpProtocols.Http3)
             {
-                var innerEx = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
+                var innerEx = Assert.IsType<HttpProtocolException>(ex.InnerException);
                 Assert.Equal(Http3ErrorCode.InternalError, (Http3ErrorCode)innerEx.ErrorCode);
             }
 

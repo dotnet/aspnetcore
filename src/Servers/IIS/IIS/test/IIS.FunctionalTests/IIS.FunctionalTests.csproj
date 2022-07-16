@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -7,6 +7,8 @@
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <SkipTests Condition=" '$(SkipIISTests)' == 'true' ">true</SkipTests>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Required for System.Net.Quic which has a preview API in .NET 7 -->
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />
