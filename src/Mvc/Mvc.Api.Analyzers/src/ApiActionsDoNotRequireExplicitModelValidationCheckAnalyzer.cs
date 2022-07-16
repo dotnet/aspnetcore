@@ -3,8 +3,6 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -75,15 +73,10 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
                 return;
             }
 
-            if (!(parent.Syntax is MethodDeclarationSyntax methodSyntax))
+            if (context.ContainingSymbol is not IMethodSymbol methodSymbol)
             {
                 return;
             }
-
-#pragma warning disable RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
-            var semanticModel = context.Compilation.GetSemanticModel(methodSyntax.SyntaxTree);
-#pragma warning restore RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
-            var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax, context.CancellationToken);
 
             if (!ApiControllerFacts.IsApiControllerAction(symbolCache, methodSymbol))
             {
