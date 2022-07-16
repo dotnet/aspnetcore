@@ -46,6 +46,7 @@
       "src\\Security\\Authentication\\Negotiate\\test\\Negotiate.FunctionalTest\\Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest.csproj",
       "src\\Security\\Authentication\\Negotiate\\test\\Negotiate.Test\\Microsoft.AspNetCore.Authentication.Negotiate.Test.csproj",
       "src\\Security\\Authentication\\OAuth\\src\\Microsoft.AspNetCore.Authentication.OAuth.csproj",
+      "src\\Security\\Authentication\\OpenIdConnect\\samples\\MinimalOpenIdConnectSample\\MinimalOpenIdConnectSample.csproj",
       "src\\Security\\Authentication\\OpenIdConnect\\samples\\OpenIdConnectSample\\OpenIdConnectSample.csproj",
       "src\\Security\\Authentication\\OpenIdConnect\\src\\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj",
       "src\\Security\\Authentication\\Twitter\\src\\Microsoft.AspNetCore.Authentication.Twitter.csproj",
