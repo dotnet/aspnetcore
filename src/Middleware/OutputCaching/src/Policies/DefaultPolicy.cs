@@ -64,7 +64,7 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
 
     private static bool AttemptOutputCaching(OutputCacheContext context)
     {
-        // Check if the current request fulfisls the requirements to be cached
+        // Check if the current request fulfills the requirements to be cached
 
         var request = context.HttpContext.Request;
 
