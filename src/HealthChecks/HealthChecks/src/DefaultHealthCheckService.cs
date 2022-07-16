@@ -44,11 +44,13 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
 
         _healthReportEntriesQueue = new ConcurrentQueue<KeyValuePair<string, HealthReportEntry>>();
 
+        // Group healthcheck registrations by period, to build a Dictionary<TimeSpan, List<HealthCheckRegistration>>
         _periodHealthChecksMap = (from r in _healthCheckServiceOptions.Value.Registrations
                                   where ByPredicate(r, _healthCheckPublisherOptions.Value.Predicate) // Apply publisher predicate
                                   where r.Period != Timeout.InfiniteTimeSpan // Skip HCs with no individual period
-                                  group r by r.Period).ToDictionary<IGrouping<TimeSpan, HealthCheckRegistration>, TimeSpan, List<HealthCheckRegistration>>(g => g.Key, g => g.ToList());
+                                  group r by r.Period).ToDictionary(g => g.Key, g => g.ToList());
 
+        // Aggregate Timers for HealthCheckRegistration having the same period
         _healthCheckRegistrationTimers = _periodHealthChecksMap.AsParallel().Select(t =>
             NonCapturingTimer.Create(
                 async (state) =>
