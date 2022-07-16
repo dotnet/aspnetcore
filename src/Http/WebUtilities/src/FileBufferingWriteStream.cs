@@ -283,18 +283,12 @@ public sealed class FileBufferingWriteStream : Stream
 
     private void ThrowIfDisposed()
     {
-        if (Disposed)
-        {
-            throw new ObjectDisposedException(nameof(FileBufferingWriteStream));
-        }
+        ObjectDisposedException.ThrowIf(Disposed, nameof(FileBufferingWriteStream));
     }
 
     private static void ThrowArgumentException(byte[] buffer, int offset, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
 
         if (offset < 0)
         {

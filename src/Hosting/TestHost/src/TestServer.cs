@@ -252,10 +252,7 @@ public class TestServer : IServer
     {
         _application = new ApplicationWrapper<TContext>(application, () =>
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         });
 
         return Task.CompletedTask;
