@@ -34,6 +34,7 @@ internal sealed class WebTransportSession : IWebTransportSession
             0x00 /*body*/});
 
     internal static string WebTransportProtocolValue => "webtransport";
+    internal static string VersionEnabledIndicator => "1";
     internal static string SecPrefix => "sec-webtransport-http3-";
     internal static string VersionHeaderPrefix => $"{SecPrefix}draft";
     internal static string CurrentSuppportedVersion => $"{VersionHeaderPrefix}02";

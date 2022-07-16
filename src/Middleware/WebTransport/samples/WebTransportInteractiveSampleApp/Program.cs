@@ -68,8 +68,6 @@ app.Use(async (context, next) =>
             stream = await session.AcceptStreamAsync(CancellationToken.None);
             if (stream is not null)
             {
-                // check that the stream is bidirectional. If yes, keep going, otherwise
-                // dispose its resources and keep waiting.
                 direction = stream.Features.GetRequiredFeature<IStreamDirectionFeature>();
                 if (direction.CanRead && direction.CanWrite)
                 {
@@ -128,7 +126,7 @@ static async Task handleBidirectionalStream(ConnectionContext stream)
 // tracked in issue #41762
 static X509Certificate2 GenerateManualCertificate()
 {
-    X509Certificate2 cert = null;
+    X509Certificate2 cert;
     var store = new X509Store("KestrelWebTransportCertificates", StoreLocation.CurrentUser);
     store.Open(OpenFlags.ReadWrite);
     if (store.Certificates.Count > 0)
