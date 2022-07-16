@@ -330,14 +330,10 @@ internal class TestWebSocket : WebSocket
 
         private void ThrowNoReceive()
         {
-            if (_receiverClosed)
-            {
-                ObjectDisposedException.ThrowIf(_receiverClosed, typeof(TestWebSocket));
-            }
-            else // _senderClosed
-            {
-                throw new IOException("The remote end closed the connection.", new ObjectDisposedException(typeof(TestWebSocket).FullName));
-            }
+            ObjectDisposedException.ThrowIf(_receiverClosed, typeof(TestWebSocket));
+            
+            // _senderClosed must be true.
+            throw new IOException("The remote end closed the connection.", new ObjectDisposedException(typeof(TestWebSocket).FullName));
         }
     }
 }
