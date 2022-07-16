@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -23,9 +23,9 @@ public abstract class ViewFeatureAnalyzerBase : DiagnosticAnalyzer
     {
         context.EnableConcurrentExecution();
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-        context.RegisterCompilationStartAction(compilationContext =>
+        context.RegisterCompilationStartAction(context =>
         {
-            var analyzerContext = new ViewFeaturesAnalyzerContext(compilationContext);
+            var analyzerContext = new ViewFeaturesAnalyzerContext(context);
 
             // Only do work if we can locate IHtmlHelper.
             if (analyzerContext.HtmlHelperType == null)

@@ -22,30 +22,30 @@ public class ApiConventionAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-        context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
+        context.RegisterCompilationStartAction(context =>
         {
-            if (!ApiControllerSymbolCache.TryCreate(compilationStartAnalysisContext.Compilation, out var symbolCache))
+            if (!ApiControllerSymbolCache.TryCreate(context.Compilation, out var symbolCache))
             {
                 // No-op if we can't find types we care about.
                 return;
             }
 
-            InitializeWorker(compilationStartAnalysisContext, symbolCache);
+            InitializeWorker(context, symbolCache);
         });
     }
 
-    private static void InitializeWorker(CompilationStartAnalysisContext compilationStartAnalysisContext, ApiControllerSymbolCache symbolCache)
+    private static void InitializeWorker(CompilationStartAnalysisContext context, ApiControllerSymbolCache symbolCache)
     {
-        compilationStartAnalysisContext.RegisterOperationAction(operationStartContext =>
+        context.RegisterOperationAction(context =>
         {
-            var method = (IMethodSymbol)operationStartContext.ContainingSymbol;
+            var method = (IMethodSymbol)context.ContainingSymbol;
             if (!ApiControllerFacts.IsApiControllerAction(symbolCache, method))
             {
                 return;
             }
 
             var declaredResponseMetadata = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
-            var hasUnreadableStatusCodes = !ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, (IMethodBodyOperation)operationStartContext.Operation, out var actualResponseMetadata);
+            var hasUnreadableStatusCodes = !ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(symbolCache, (IMethodBodyOperation)context.Operation, out var actualResponseMetadata);
 
             var hasUndocumentedStatusCodes = false;
             foreach (var actualMetadata in actualResponseMetadata)
@@ -57,13 +57,13 @@ public class ApiConventionAnalyzer : DiagnosticAnalyzer
                     hasUndocumentedStatusCodes = true;
                     if (actualMetadata.IsDefaultResponse)
                     {
-                        operationStartContext.ReportDiagnostic(Diagnostic.Create(
+                        context.ReportDiagnostic(Diagnostic.Create(
                             ApiDiagnosticDescriptors.API1001_ActionReturnsUndocumentedSuccessResult,
                             location));
                     }
                     else
                     {
-                        operationStartContext.ReportDiagnostic(Diagnostic.Create(
+                        context.ReportDiagnostic(Diagnostic.Create(
                             ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode,
                             location,
                                actualMetadata.StatusCode));
@@ -83,7 +83,7 @@ public class ApiConventionAnalyzer : DiagnosticAnalyzer
                 var declaredMetadata = declaredResponseMetadata[i];
                 if (!Contains(actualResponseMetadata, declaredMetadata))
                 {
-                    operationStartContext.ReportDiagnostic(Diagnostic.Create(
+                    context.ReportDiagnostic(Diagnostic.Create(
                         ApiDiagnosticDescriptors.API1002_ActionDoesNotReturnDocumentedStatusCode,
                         method.Locations[0],
                         declaredMetadata.StatusCode));

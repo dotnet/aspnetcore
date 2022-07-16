@@ -30,11 +30,6 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckCodeFixProvider :
         }
 
         var diagnostic = context.Diagnostics[0];
-        if (diagnostic.Id != ApiDiagnosticDescriptors.API1003_ApiActionsDoNotRequireExplicitModelValidationCheck.Id)
-        {
-            return Task.CompletedTask;
-        }
-
         context.RegisterCodeFix(new MyCodeAction(context.Document, context.Span), diagnostic);
         return Task.CompletedTask;
     }

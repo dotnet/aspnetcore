@@ -21,27 +21,23 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
         context.EnableConcurrentExecution();
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-        context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
+        context.RegisterCompilationStartAction(context =>
         {
-            if (!ApiControllerSymbolCache.TryCreate(compilationStartAnalysisContext.Compilation, out var symbolCache))
+            if (!ApiControllerSymbolCache.TryCreate(context.Compilation, out var symbolCache))
             {
                 // No-op if we can't find types we care about.
                 return;
             }
 
-            InitializeWorker(compilationStartAnalysisContext, symbolCache);
+            InitializeWorker(context, symbolCache);
         });
     }
 
     private static void InitializeWorker(CompilationStartAnalysisContext context, ApiControllerSymbolCache symbolCache)
     {
-        context.RegisterOperationAction(operationAnalysisContext =>
+        context.RegisterOperationAction(context =>
         {
-            var ifOperation = (IConditionalOperation)operationAnalysisContext.Operation;
-            if (!(ifOperation.Syntax is IfStatementSyntax ifStatement))
-            {
-                return;
-            }
+            var ifOperation = (IConditionalOperation)context.Operation;
 
             if (ifOperation.WhenTrue == null || ifOperation.WhenFalse != null)
             {
@@ -85,9 +81,9 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
             }
 
 #pragma warning disable RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
-            var semanticModel = operationAnalysisContext.Compilation.GetSemanticModel(methodSyntax.SyntaxTree);
+            var semanticModel = context.Compilation.GetSemanticModel(methodSyntax.SyntaxTree);
 #pragma warning restore RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
-            var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax, operationAnalysisContext.CancellationToken);
+            var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax, context.CancellationToken);
 
             if (!ApiControllerFacts.IsApiControllerAction(symbolCache, methodSymbol))
             {
@@ -121,14 +117,14 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
             var returnStatementSyntax = returnOperation.Syntax;
             var additionalLocations = new[]
             {
-                    ifStatement.GetLocation(),
+                    ifOperation.Syntax.GetLocation(),
                     returnStatementSyntax.GetLocation(),
             };
 
-            operationAnalysisContext.ReportDiagnostic(
+            context.ReportDiagnostic(
                 Diagnostic.Create(
                     ApiDiagnosticDescriptors.API1003_ApiActionsDoNotRequireExplicitModelValidationCheck,
-                    ifStatement.GetLocation(),
+                    ifOperation.Syntax.GetLocation(),
                     additionalLocations: additionalLocations));
         }, OperationKind.Conditional);
     }
