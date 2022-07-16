@@ -514,9 +514,8 @@ public class Http3RequestTests : LoggedTest
             // Assert
             if (protocol == HttpProtocols.Http3)
             {
-                var innerEx = Assert.IsType<QuicException>(ex.InnerException);
-                Assert.Equal(QuicError.StreamAborted, innerEx.QuicError);
-                Assert.Equal(Http3ErrorCode.InternalError, (Http3ErrorCode)innerEx.ApplicationErrorCode.Value);
+                var innerEx = Assert.IsType<HttpProtocolException>(ex.InnerException);
+                Assert.Equal(Http3ErrorCode.InternalError, (Http3ErrorCode)innerEx.ErrorCode);
             }
 
             await cancelledTcs.Task.DefaultTimeout();
@@ -572,9 +571,8 @@ public class Http3RequestTests : LoggedTest
             // Assert
             if (protocol == HttpProtocols.Http3)
             {
-                var innerEx = Assert.IsType<QuicException>(ex.InnerException);
-                Assert.Equal(QuicError.StreamAborted, innerEx.QuicError);
-                Assert.Equal(Http3ErrorCode.InternalError, (Http3ErrorCode)innerEx.ApplicationErrorCode.Value);
+                var innerEx = Assert.IsType<HttpProtocolException>(ex.InnerException);
+                Assert.Equal(Http3ErrorCode.InternalError, (Http3ErrorCode)innerEx.ErrorCode);
             }
 
             await cancelledTcs.Task.DefaultTimeout();
