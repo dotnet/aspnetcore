@@ -249,6 +249,14 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const existingPostRun = moduleConfig.postRun || [];
   (moduleConfig as any).preloadPlugins = [];
 
+  let resourcesLoaded = 0;
+  function setProgress(){
+      resourcesLoaded++;
+      const percentage = resourcesLoaded / totalResources.length * 100;
+      document.documentElement.style.setProperty('--blazor-load-percentage', `${percentage}%`);
+      document.documentElement.style.setProperty('--blazor-load-percentage-text', `"${Math.floor(percentage)}%"`);
+    }
+
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const dotnetWasmResourceName = 'dotnet.wasm';
   const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/${filename}`, 'assembly');
@@ -259,6 +267,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
     /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
     /* type */ 'dotnetwasm'
   );
+  const totalResources = assembliesBeingLoaded.concat(pdbsBeingLoaded, wasmBeingLoaded);
+  totalResources.forEach(loadingResource => loadingResource.response.then(_ => setProgress()));
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   let timeZoneResource: LoadingResource | undefined;
@@ -269,6 +279,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName],
       'globalization'
     );
+    totalResources.push(timeZoneResource);
+    timeZoneResource.response.then(_ => setProgress());
   }
 
   let icuDataResource: LoadingResource | undefined;
@@ -281,6 +293,8 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       resourceLoader.bootConfig.resources.runtime[icuDataResourceName],
       'globalization'
     );
+    totalResources.push(icuDataResource);
+    icuDataResource.response.then(_ => setProgress());
   }
 
   const createDotnetRuntime = await dotnetJsBeingLoaded;
