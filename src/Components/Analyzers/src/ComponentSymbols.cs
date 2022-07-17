@@ -15,6 +15,7 @@ internal sealed class ComponentSymbols
             throw new ArgumentNullException(nameof(compilation));
         }
 
+#pragma warning disable RS0030 // Do not used banned APIs - Tracked by https://github.com/dotnet/aspnetcore/issues/37257
         var parameterAttribute = compilation.GetTypeByMetadataName(ComponentsApi.ParameterAttribute.MetadataName);
         if (parameterAttribute == null)
         {
