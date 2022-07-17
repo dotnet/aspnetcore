@@ -964,9 +964,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         // CONNECT - :scheme and :path must be excluded=
-        if (Method == Http.HttpMethod.Connect && HttpRequestHeaders.HeaderProtocol.Count == 0)
+        if (Method == HttpMethod.Connect && HttpRequestHeaders.HeaderProtocol.Count == 0)
         {
-            if (!string.IsNullOrEmpty(RequestHeaders[PseudoHeaderNames.Scheme]) || !string.IsNullOrEmpty(RequestHeaders[PseudoHeaderNames.Path]))
+            if (!string.IsNullOrEmpty(HttpRequestHeaders.HeaderScheme) || !string.IsNullOrEmpty(HttpRequestHeaders.HeaderPath))
             {
                 Abort(new ConnectionAbortedException(CoreStrings.Http3ErrorConnectMustNotSendSchemeOrPath), Http3ErrorCode.ProtocolError);
                 return false;
@@ -1007,7 +1007,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         // OPTIONS request for an "http" or "https" URI that does not include
         // a path component; these MUST include a ":path" pseudo-header field
         // with a value of '*'.
-        if (Method == Http.HttpMethod.Options && path.Length == 1 && path[0] == '*')
+        if (Method == HttpMethod.Options && path.Length == 1 && path[0] == '*')
         {
             // * is stored in RawTarget only since HttpRequest expects Path to be empty or start with a /.
             Path = string.Empty;
@@ -1037,13 +1037,13 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _methodText = HttpRequestHeaders.HeaderMethod.ToString();
         Method = HttpUtilities.GetKnownMethod(_methodText);
 
-        if (Method == Http.HttpMethod.None)
+        if (Method == HttpMethod.None)
         {
             Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3ErrorMethodInvalid(_methodText)), Http3ErrorCode.ProtocolError);
             return false;
         }
 
-        if (Method == Http.HttpMethod.Custom)
+        if (Method == HttpMethod.Custom)
         {
             if (HttpCharacters.IndexOfInvalidTokenChar(_methodText) >= 0)
             {

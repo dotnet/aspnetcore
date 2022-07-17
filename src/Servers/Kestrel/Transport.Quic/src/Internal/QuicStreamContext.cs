@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Quic;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -152,17 +153,17 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         {
             // Spawn send and receive logic
             // Streams may or may not have reading/writing, so only start tasks accordingly
-            var receiveTask = Task.CompletedTask;
-            var sendTask = Task.CompletedTask;
+            var receiveTask = ValueTask.CompletedTask;
+            var sendTask = ValueTask.CompletedTask;
 
             if (_stream.CanRead)
             {
-                receiveTask = DoReceive();
+                receiveTask = DoReceiveAsync();
             }
 
             if (_stream.CanWrite)
             {
-                sendTask = DoSend();
+                sendTask = DoSendAsync();
             }
 
             // Now wait for both to complete
@@ -196,7 +197,8 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
     }
 
-    private async Task DoReceive()
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    private async ValueTask DoReceiveAsync()
     {
         Debug.Assert(_stream != null);
 
@@ -361,7 +363,8 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
     }
 
-    private async Task DoSend()
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
+    private async ValueTask DoSendAsync()
     {
         Debug.Assert(_stream != null);
 
@@ -532,6 +535,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
     }
 
+    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder))]
     public override async ValueTask DisposeAsync()
     {
         if (_stream == null)
