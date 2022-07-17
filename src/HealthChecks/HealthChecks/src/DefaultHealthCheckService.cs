@@ -74,10 +74,11 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         var totalTime = ValueStopwatch.StartNew();
         Log.HealthCheckProcessingBegin(_logger);
 
-        var registrations = _healthCheckServiceOptions.Value.Registrations.Where(r => ByPredicate(r, predicate)).ToList();
+        // Filter registrations by default publisher period and predicate
+        var registrationsDefaultPeriod = _healthCheckServiceOptions.Value.Registrations.Where(r => r.Period == Timeout.InfiniteTimeSpan && ByPredicate(r, predicate)).ToList();
 
         // Run healthchecks with default/publisher period
-        var healthReportEntriesValues = await RunChecksAsync(registrations, cancellationToken).ConfigureAwait(false);
+        var healthReportEntriesValues = await RunChecksAsync(registrationsDefaultPeriod, cancellationToken).ConfigureAwait(false);
 
         // Collect health report entries from previously run periodic healthchecks within the default period
         while (_healthReportEntriesQueue.TryDequeue(out var entry))
@@ -85,12 +86,8 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
             healthReportEntriesValues.Add(entry);
         }
 
-        var healthReportEntriesDictionary = new Dictionary<string, HealthReportEntry>(
-            healthReportEntriesValues.ToDictionary(kv => kv.Key, kv => kv.Value),
-            StringComparer.OrdinalIgnoreCase);
-
         var totalElapsedTime = totalTime.GetElapsedTime();
-        var report = new HealthReport(healthReportEntriesDictionary, totalElapsedTime);
+        var report = new HealthReport(healthReportEntriesValues.OrderBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase), totalElapsedTime);
         Log.HealthCheckProcessingEnd(_logger, report.Status, totalElapsedTime);
 
         return report;
