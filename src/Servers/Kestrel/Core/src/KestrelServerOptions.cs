@@ -285,16 +285,9 @@ public class KestrelServerOptions
                         Debug.Assert(status.FailureMessage != null, "Status with a failure result must have a message.");
                         logger.DeveloperCertificateFirstRun(status.FailureMessage);
 
-                        // Now that we've displayed a warning in the logs so that the user gets a notification that a prompt might appear, try
-                        // and access the certificate key, which might trigger a prompt.
-                        status = CertificateManager.Instance.CheckCertificateState(DefaultCertificate, interactive: true);
-                        if (!status.Success)
-                        {
-                            logger.BadDeveloperCertificateState();
-                        }
+                        // Prevent binding to HTTPS if the certificate is not valid (avoid the prompt)
+                        DefaultCertificate = null;
                     }
-
-                    logger.LocatedDevelopmentCertificate(DefaultCertificate);
                 }
                 else
                 {

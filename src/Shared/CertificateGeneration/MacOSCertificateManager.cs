@@ -19,14 +19,14 @@ internal sealed class MacOSCertificateManager : CertificateManager
 {
     private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
     private static readonly string MacOSUserKeyChain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
-    // private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
+    private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
     // private const string MacOSFindCertificateCommandLine = "security";
     // private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
     // private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
     private const string MacOSVerifyCertificateCommandLine = "security";
     private const string MacOSVerifyCertificateCommandLineArgumentsFormat = $"verify-cert -c {{0}} -s {{1}}";
     private const string MacOSRemoveCertificateTrustCommandLine = "security";
-    private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "remove-trusted-cert {0}";
+    private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "remove-trusted-cert {1} {0}";
     private const string MacOSDeleteCertificateCommandLine = "sudo";
     private const string MacOSDeleteCertificateCommandLineArgumentsFormat = "security delete-certificate -Z {0} {1}";
     private const string MacOSTrustCertificateCommandLine = "security";
@@ -176,7 +176,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
             // trusted.
             try
             {
-                RemoveCertificateTrustRule(certificate);
+                RemoveCertificateTrustRule(certificate, system: false);
             }
             catch
             {
@@ -194,6 +194,23 @@ internal sealed class MacOSCertificateManager : CertificateManager
         else
         {
             Log.MacOSCertificateUntrusted(GetDescription(certificate));
+        }
+
+        using var systemKeychain = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
+        systemKeychain.Open(OpenFlags.ReadOnly);
+        var existing = systemKeychain.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, validOnly: false);
+        if (existing != null)
+        {
+            try
+            {
+                RemoveCertificateTrustRule(certificate, system: true);
+            }
+            catch
+            {
+            }
+
+            // Making the certificate trusted will automatically added it to the user key chain
+            RemoveCertificateFromKeyChain(MacOSSystemKeyChain, certificate);
         }
     }
 
@@ -234,7 +251,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         Log.MacOSRemoveCertificateFromKeyChainEnd();
     }
 
-    private static void RemoveCertificateTrustRule(X509Certificate2 certificate)
+    private static void RemoveCertificateTrustRule(X509Certificate2 certificate, bool system)
     {
         Log.MacOSRemoveCertificateTrustRuleStart(GetDescription(certificate));
         var certificatePath = Path.GetTempFileName();
@@ -247,7 +264,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
                 string.Format(
                     CultureInfo.InvariantCulture,
                     MacOSRemoveCertificateTrustCommandLineArgumentsFormat,
-                    certificatePath
+                    system ? "-d" : "", certificatePath
                 ));
             using var process = Process.Start(processInfo);
             process!.WaitForExit();
