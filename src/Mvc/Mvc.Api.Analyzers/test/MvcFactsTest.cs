@@ -63,9 +63,9 @@ public class MvcFactsTest
     private async Task IsControllerReturnsFalse(Type type)
     {
         var compilation = await GetIsControllerCompilation();
-        var controllerAttribute = compilation.GetTypeByMetadataName(ControllerAttribute);
-        var nonControllerAttribute = compilation.GetTypeByMetadataName(NonControllerAttribute);
-        var typeSymbol = compilation.GetTypeByMetadataName(type.FullName);
+        var controllerAttribute = compilation.GetBestTypeByMetadataName(ControllerAttribute);
+        var nonControllerAttribute = compilation.GetBestTypeByMetadataName(NonControllerAttribute);
+        var typeSymbol = compilation.GetBestTypeByMetadataName(type.FullName);
 
         // Act
         var isController = MvcFacts.IsController(typeSymbol, controllerAttribute, nonControllerAttribute);
@@ -77,9 +77,9 @@ public class MvcFactsTest
     private async Task IsControllerReturnsTrue(Type type)
     {
         var compilation = await GetIsControllerCompilation();
-        var controllerAttribute = compilation.GetTypeByMetadataName(ControllerAttribute);
-        var nonControllerAttribute = compilation.GetTypeByMetadataName(NonControllerAttribute);
-        var typeSymbol = compilation.GetTypeByMetadataName(type.FullName);
+        var controllerAttribute = compilation.GetBestTypeByMetadataName(ControllerAttribute);
+        var nonControllerAttribute = compilation.GetBestTypeByMetadataName(NonControllerAttribute);
+        var typeSymbol = compilation.GetBestTypeByMetadataName(type.FullName);
 
         // Act
         var isController = MvcFacts.IsController(typeSymbol, controllerAttribute, nonControllerAttribute);
@@ -147,9 +147,9 @@ public class MvcFactsTest
     private async Task IsActionReturnsFalse(Type type, string methodName)
     {
         var compilation = await GetIsControllerActionCompilation();
-        var nonActionAttribute = compilation.GetTypeByMetadataName(NonActionAttribute);
+        var nonActionAttribute = compilation.GetBestTypeByMetadataName(NonActionAttribute);
         var disposableDispose = GetDisposableDispose(compilation);
-        var typeSymbol = compilation.GetTypeByMetadataName(type.FullName);
+        var typeSymbol = compilation.GetBestTypeByMetadataName(type.FullName);
         var method = (IMethodSymbol)typeSymbol.GetMembers(methodName).First();
 
         // Act
@@ -179,9 +179,9 @@ public class MvcFactsTest
     public async Task IsAction_ReturnsTrueForNotDisposableDisposeOnTypeWithImplicitImplementation()
     {
         var compilation = await GetIsControllerActionCompilation();
-        var nonActionAttribute = compilation.GetTypeByMetadataName(NonActionAttribute);
+        var nonActionAttribute = compilation.GetBestTypeByMetadataName(NonActionAttribute);
         var disposableDispose = GetDisposableDispose(compilation);
-        var typeSymbol = compilation.GetTypeByMetadataName(typeof(NotDisposableWithDisposeThatIsNotInterfaceContract).FullName);
+        var typeSymbol = compilation.GetBestTypeByMetadataName(typeof(NotDisposableWithDisposeThatIsNotInterfaceContract).FullName);
         var method = typeSymbol.GetMembers(nameof(IDisposable.Dispose)).OfType<IMethodSymbol>().First(f => !f.ReturnsVoid);
 
         // Act
@@ -194,9 +194,9 @@ public class MvcFactsTest
     private async Task IsActionReturnsTrue(Type type, string methodName)
     {
         var compilation = await GetIsControllerActionCompilation();
-        var nonActionAttribute = compilation.GetTypeByMetadataName(NonActionAttribute);
+        var nonActionAttribute = compilation.GetBestTypeByMetadataName(NonActionAttribute);
         var disposableDispose = GetDisposableDispose(compilation);
-        var typeSymbol = compilation.GetTypeByMetadataName(type.FullName);
+        var typeSymbol = compilation.GetBestTypeByMetadataName(type.FullName);
         var method = (IMethodSymbol)typeSymbol.GetMembers(methodName).First();
 
         // Act

@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.TopLevelParameterNameAnalyzerTestFi
 }";
         var compilation = TestCompilation.Create(source);
 
-        var modelType = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.Analyzers.TopLevelParameterNameAnalyzerTestFiles.TestController");
+        var modelType = compilation.GetBestTypeByMetadataName("Microsoft.AspNetCore.Mvc.Analyzers.TopLevelParameterNameAnalyzerTestFiles.TestController");
         var method = (IMethodSymbol)modelType.GetMembers("ActionMethod").First();
 
         Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.TopLevelParameterNameAnalyzerTestFi
     {
         var compilation = TestCompilation.Create(source);
 
-        var modelType = compilation.Assembly.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.Analyzers.TopLevelParameterNameAnalyzerTestFiles.TestController");
+        var modelType = compilation.Assembly.GetBestTypeByMetadataName("Microsoft.AspNetCore.Mvc.Analyzers.TopLevelParameterNameAnalyzerTestFiles.TestController");
         var method = (IMethodSymbol)modelType.GetMembers("ActionMethod").First();
         var parameter = method.Parameters[0];
 
@@ -433,7 +433,7 @@ namespace TestApp
         var compilation = TestCompilation.Create(source);
         Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var type = compilation.GetTypeByMetadataName("TestApp.GetNameTests");
+        var type = compilation.GetBestTypeByMetadataName("TestApp.GetNameTests");
         var method = (IMethodSymbol)type.GetMembers("Action").First();
 
         var parameter = method.Parameters[0];
@@ -458,7 +458,7 @@ namespace TestApp
         var compilation = TestCompilation.Create(source);
         Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var type = compilation.GetTypeByMetadataName("TestApp.GetNameTests");
+        var type = compilation.GetBestTypeByMetadataName("TestApp.GetNameTests");
         var method = (IMethodSymbol)type.GetMembers("Action").First();
 
         var parameter = method.Parameters[0];
@@ -482,7 +482,7 @@ namespace TestApp
         var compilation = TestCompilation.Create(source);
         Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var type = compilation.GetTypeByMetadataName("TestApp.GetNameTests");
+        var type = compilation.GetBestTypeByMetadataName("TestApp.GetNameTests");
         var method = (IMethodSymbol)type.GetMembers("Action").First();
 
         var parameter = method.Parameters[0];
@@ -506,7 +506,7 @@ namespace TestApp
         var compilation = TestCompilation.Create(source);
         Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var type = compilation.GetTypeByMetadataName("TestApp.GetNameTests");
+        var type = compilation.GetBestTypeByMetadataName("TestApp.GetNameTests");
         var method = (IMethodSymbol)type.GetMembers("Action").First();
 
         var parameter = method.Parameters[0];
@@ -530,7 +530,7 @@ namespace TestApp
         var compilation = TestCompilation.Create(source);
         Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var type = compilation.GetTypeByMetadataName("TestApp.SpecifiesModelTypeTests");
+        var type = compilation.GetBestTypeByMetadataName("TestApp.SpecifiesModelTypeTests");
         var method = (IMethodSymbol)type.GetMembers("Action").First();
 
         var parameter = method.Parameters[0];
@@ -553,7 +553,7 @@ namespace TestApp
         var compilation = TestCompilation.Create(source);
         Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var type = compilation.GetTypeByMetadataName("TestApp.SpecifiesModelTypeTests");
+        var type = compilation.GetBestTypeByMetadataName("TestApp.SpecifiesModelTypeTests");
         var method = (IMethodSymbol)type.GetMembers("Action").First();
 
         var parameter = method.Parameters[0];
@@ -576,7 +576,7 @@ namespace TestApp
         var compilation = TestCompilation.Create(source);
         Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var type = compilation.GetTypeByMetadataName("TestApp.SpecifiesModelTypeTests");
+        var type = compilation.GetBestTypeByMetadataName("TestApp.SpecifiesModelTypeTests");
         var method = (IMethodSymbol)type.GetMembers("Action").First();
 
         var parameter = method.Parameters[0];

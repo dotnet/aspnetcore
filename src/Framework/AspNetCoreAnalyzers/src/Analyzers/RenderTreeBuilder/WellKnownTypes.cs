@@ -13,7 +13,7 @@ internal sealed class WellKnownTypes
         wellKnownTypes = default;
 
         const string RenderTreeBuilder = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
-        if (compilation.GetTypeByMetadataName(RenderTreeBuilder) is not { } renderTreeBuilder)
+        if (compilation.GetBestTypeByMetadataName(RenderTreeBuilder) is not { } renderTreeBuilder)
         {
             return false;
         }

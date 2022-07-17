@@ -1,13 +1,19 @@
 ﻿<Project>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)\BannedSymbols.txt"/>
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- Only build Microsoft.AspNetCore.App, Microsoft.AspNetCore.App.Ref, ref/ assemblies, and ProjectTemplates in source build. -->
     <!-- Analyzer package are needed in source build for WebSDK -->
     <ExcludeFromSourceBuild
-        Condition="'$(ExcludeFromSourceBuild)' == '' and 
-            '$(DotNetBuildFromSource)' == 'true' and 
-            '$(IsAspNetCoreApp)' != 'true' and 
-            '$(MSBuildProjectName)' != '$(TargetingPackName)' and 
-            '$(IsAnalyzersProject)' != 'true' and 
+        Condition="'$(ExcludeFromSourceBuild)' == '' and
+            '$(DotNetBuildFromSource)' == 'true' and
+            '$(IsAspNetCoreApp)' != 'true' and
+            '$(MSBuildProjectName)' != '$(TargetingPackName)' and
+            '$(IsAnalyzersProject)' != 'true' and
             '$(IsProjectTemplateProject)' != 'true'">true</ExcludeFromSourceBuild>
 
     <!-- If the user has specified that they want to skip building any test related projects with SkipTestBuild,

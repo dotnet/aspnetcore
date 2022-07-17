@@ -132,7 +132,7 @@ internal sealed class AddResponseTypeAttributeCodeFixAction : CodeAction
         var methodSyntax = diagnosticNode.FirstAncestorOrSelf<MethodDeclarationSyntax>();
         var method = semanticModel.GetDeclaredSymbol(methodSyntax, cancellationToken);
 
-        var statusCodesType = semanticModel.Compilation.GetTypeByMetadataName(ApiSymbolNames.HttpStatusCodes);
+        var statusCodesType = semanticModel.Compilation.GetBestTypeByMetadataName(ApiSymbolNames.HttpStatusCodes);
         var statusCodeConstants = GetStatusCodeConstants(statusCodesType);
 
         if (!ApiControllerSymbolCache.TryCreate(semanticModel.Compilation, out var symbolCache))

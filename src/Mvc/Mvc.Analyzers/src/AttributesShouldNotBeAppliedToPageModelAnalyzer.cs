@@ -144,11 +144,11 @@ public class AttributesShouldNotBeAppliedToPageModelAnalyzer : DiagnosticAnalyze
     {
         public TypeCache(Compilation compilation)
         {
-            PageModelAttribute = compilation.GetTypeByMetadataName(SymbolNames.PageModelAttributeType);
-            IFilterMetadata = compilation.GetTypeByMetadataName(SymbolNames.IFilterMetadataType);
-            AuthorizeAttribute = compilation.GetTypeByMetadataName(SymbolNames.AuthorizeAttribute);
-            AllowAnonymousAttribute = compilation.GetTypeByMetadataName(SymbolNames.AllowAnonymousAttribute);
-            IRouteTemplateProvider = compilation.GetTypeByMetadataName(SymbolNames.IRouteTemplateProvider);
+            PageModelAttribute = compilation.GetBestTypeByMetadataName(SymbolNames.PageModelAttributeType);
+            IFilterMetadata = compilation.GetBestTypeByMetadataName(SymbolNames.IFilterMetadataType);
+            AuthorizeAttribute = compilation.GetBestTypeByMetadataName(SymbolNames.AuthorizeAttribute);
+            AllowAnonymousAttribute = compilation.GetBestTypeByMetadataName(SymbolNames.AllowAnonymousAttribute);
+            IRouteTemplateProvider = compilation.GetBestTypeByMetadataName(SymbolNames.IRouteTemplateProvider);
         }
 
         public INamedTypeSymbol PageModelAttribute { get; }

@@ -271,8 +271,8 @@ public class SymbolApiConventionMatcherTest
     {
         // Arrange
         var compilation = await GetCompilationAsync();
-        var typeSymbol = compilation.GetTypeByMetadataName(type.FullName);
-        var conventionTypeSymbol = compilation.GetTypeByMetadataName(conventionType.FullName);
+        var typeSymbol = compilation.GetBestTypeByMetadataName(type.FullName);
+        var conventionTypeSymbol = compilation.GetBestTypeByMetadataName(conventionType.FullName);
 
         // Act
         var result = IsTypeMatch(typeSymbol, conventionTypeSymbol, SymbolApiConventionTypeMatchBehavior.Any);
@@ -287,8 +287,8 @@ public class SymbolApiConventionMatcherTest
         // Arrange
         var compilation = await GetCompilationAsync();
 
-        var type = compilation.GetTypeByMetadataName(BaseTypeName);
-        var conventionType = compilation.GetTypeByMetadataName(BaseTypeName);
+        var type = compilation.GetBestTypeByMetadataName(BaseTypeName);
+        var conventionType = compilation.GetBestTypeByMetadataName(BaseTypeName);
 
         // Act
         var result = IsTypeMatch(type, conventionType, SymbolApiConventionTypeMatchBehavior.AssignableFrom);
@@ -303,8 +303,8 @@ public class SymbolApiConventionMatcherTest
         // Arrange
         var compilation = await GetCompilationAsync();
 
-        var type = compilation.GetTypeByMetadataName(DerivedTypeName);
-        var conventionType = compilation.GetTypeByMetadataName(BaseTypeName);
+        var type = compilation.GetBestTypeByMetadataName(DerivedTypeName);
+        var conventionType = compilation.GetBestTypeByMetadataName(BaseTypeName);
 
         // Act
         var result = IsTypeMatch(type, conventionType, SymbolApiConventionTypeMatchBehavior.AssignableFrom);
@@ -319,8 +319,8 @@ public class SymbolApiConventionMatcherTest
         // Arrange
         var compilation = await GetCompilationAsync();
 
-        var type = compilation.GetTypeByMetadataName(BaseTypeName);
-        var conventionType = compilation.GetTypeByMetadataName(DerivedTypeName);
+        var type = compilation.GetBestTypeByMetadataName(BaseTypeName);
+        var conventionType = compilation.GetBestTypeByMetadataName(DerivedTypeName);
 
         // Act
         var result = IsTypeMatch(type, conventionType, SymbolApiConventionTypeMatchBehavior.AssignableFrom);
@@ -336,7 +336,7 @@ public class SymbolApiConventionMatcherTest
         var compilation = await GetCompilationAsync();
 
         var type = compilation.GetSpecialType(SpecialType.System_String);
-        var conventionType = compilation.GetTypeByMetadataName(BaseTypeName);
+        var conventionType = compilation.GetBestTypeByMetadataName(BaseTypeName);
 
         // Act
         var result = IsTypeMatch(type, conventionType, SymbolApiConventionTypeMatchBehavior.AssignableFrom);
@@ -427,8 +427,8 @@ public class SymbolApiConventionMatcherTest
         var compilation = await GetCompilationAsync();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var testController = compilation.GetTypeByMetadataName(TestControllerName);
-        var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
+        var testController = compilation.GetBestTypeByMetadataName(TestControllerName);
+        var testConvention = compilation.GetBestTypeByMetadataName(TestConventionName);
         var method = (IMethodSymbol)testController.GetMembers(methodName).First();
         var conventionMethod = (IMethodSymbol)testConvention.GetMembers(conventionMethodName).First();
 
@@ -447,7 +447,7 @@ public class SymbolApiConventionMatcherTest
         var compilation = await GetCompilationAsync();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
+        var testConvention = compilation.GetBestTypeByMetadataName(TestConventionName);
         var method = testConvention.GetMembers(nameof(TestConvention.MethodWithoutMatchBehavior)).First();
 
         // Act
@@ -465,7 +465,7 @@ public class SymbolApiConventionMatcherTest
         var compilation = await GetCompilationAsync();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
+        var testConvention = compilation.GetBestTypeByMetadataName(TestConventionName);
         var method = testConvention.GetMembers(nameof(TestConvention.MethodWithRandomAttributes)).First();
 
         // Act
@@ -483,7 +483,7 @@ public class SymbolApiConventionMatcherTest
         var compilation = await GetCompilationAsync();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
+        var testConvention = compilation.GetBestTypeByMetadataName(TestConventionName);
         var method = testConvention.GetMembers(nameof(TestConvention.Get)).First();
 
         // Act
@@ -501,7 +501,7 @@ public class SymbolApiConventionMatcherTest
         var compilation = await GetCompilationAsync();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
+        var testConvention = compilation.GetBestTypeByMetadataName(TestConventionName);
         var method = (IMethodSymbol)testConvention.GetMembers(nameof(TestConvention.Get)).First();
         var parameter = method.Parameters[0];
 
@@ -520,7 +520,7 @@ public class SymbolApiConventionMatcherTest
         var compilation = await GetCompilationAsync();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
+        var testConvention = compilation.GetBestTypeByMetadataName(TestConventionName);
         var method = (IMethodSymbol)testConvention.GetMembers(nameof(TestConvention.MethodParameterWithRandomAttributes)).First();
         var parameter = method.Parameters[0];
 
@@ -539,7 +539,7 @@ public class SymbolApiConventionMatcherTest
         var compilation = await GetCompilationAsync();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
+        var testConvention = compilation.GetBestTypeByMetadataName(TestConventionName);
         var method = (IMethodSymbol)testConvention.GetMembers(nameof(TestConvention.MethodWithAnyTypeMatchBehaviorParameter)).First();
         var parameter = method.Parameters[0];
 

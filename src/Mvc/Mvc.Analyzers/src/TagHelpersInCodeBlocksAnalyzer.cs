@@ -174,7 +174,7 @@ public class TagHelpersInCodeBlocksAnalyzer : DiagnosticAnalyzer
 
             bool TryGetType(string typeName, out INamedTypeSymbol typeSymbol)
             {
-                typeSymbol = compilation.GetTypeByMetadataName(typeName);
+                typeSymbol = compilation.GetBestTypeByMetadataName(typeName);
                 return typeSymbol != null && typeSymbol.TypeKind != TypeKind.Error;
             }
         }

@@ -23,7 +23,7 @@ public class ViewFeaturesAnalyzerContext
 
     public INamedTypeSymbol HtmlHelperPartialExtensionsType { get; }
 
-    private INamedTypeSymbol GetType(string name) => Context.Compilation.GetTypeByMetadataName(name);
+    private INamedTypeSymbol GetType(string name) => Context.Compilation.GetBestTypeByMetadataName(name);
 
     public bool IsHtmlHelperExtensionMethod(IMethodSymbol method)
     {

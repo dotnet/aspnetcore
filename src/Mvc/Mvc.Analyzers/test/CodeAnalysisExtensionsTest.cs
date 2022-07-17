@@ -22,8 +22,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestController");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestController");
         var method = (IMethodSymbol)testClass.GetMembers("Method").First();
 
         // Act
@@ -50,8 +50,8 @@ namespace TestApp
 ";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
         var method = (IMethodSymbol)testClass.GetMembers("Method").First();
 
         // Act
@@ -87,8 +87,8 @@ namespace TestApp
 ";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
         var method = (IMethodSymbol)testClass.GetMembers("Method").First();
 
         // Act
@@ -124,8 +124,8 @@ namespace TestApp
 ";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
         var method = (IMethodSymbol)testClass.GetMembers("Method").First();
 
         // Act
@@ -161,8 +161,8 @@ namespace TestApp
 ";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
         var method = (IMethodSymbol)testClass.GetMembers("Method").First();
 
         // Act
@@ -206,8 +206,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
         var method = (IMethodSymbol)testClass.GetMembers("VirtualMethod").First();
 
         // Act
@@ -249,8 +249,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ProducesResponseTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
         var method = (IMethodSymbol)testClass.GetMembers("NotVirtualMethod").First();
 
         // Act
@@ -276,8 +276,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
 
         // Act
         var attributes = CodeAnalysisExtensions.GetAttributes(testClass, attribute, inherit: true);
@@ -303,8 +303,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
 
         // Act
         var attributes = CodeAnalysisExtensions.GetAttributes(testClass, attribute, inherit: true);
@@ -346,8 +346,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
 
         // Act
         var attributes = CodeAnalysisExtensions.GetAttributes(testClass, attribute, inherit: true);
@@ -394,8 +394,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
 
         // Act
         var attributes = CodeAnalysisExtensions.GetAttributes(testClass, attribute, inherit: false);
@@ -432,8 +432,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(ApiConventionTypeAttribute).FullName);
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
 
         // Act
         var attributes = CodeAnalysisExtensions.GetAttributes(symbol: testClass, attribute: attribute);
@@ -470,8 +470,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName("TestApp.HasAttribute_ReturnsFalseIfTypeDoesNotHaveAttribute");
-        var testClass = compilation.GetTypeByMetadataName("TestApp.HasAttribute_ReturnsFalseIfTypeDoesNotHaveAttributeTest");
+        var attribute = compilation.GetBestTypeByMetadataName("TestApp.HasAttribute_ReturnsFalseIfTypeDoesNotHaveAttribute");
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.HasAttribute_ReturnsFalseIfTypeDoesNotHaveAttributeTest");
         var testMethod = (IMethodSymbol)testClass.GetMembers("SomeMethod").First();
         var testProperty = (IPropertySymbol)testClass.GetMembers("SomeProperty").First();
 
@@ -500,8 +500,8 @@ namespace TestApp
 
         var compilation = TestCompilation.Create(source);
 
-        var attribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.ControllerAttribute");
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestController");
+        var attribute = compilation.GetBestTypeByMetadataName("Microsoft.AspNetCore.Mvc.ControllerAttribute");
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestController");
 
         // Act
         var hasAttribute = CodeAnalysisExtensions.HasAttribute(testClass, attribute, inherit: false);
@@ -526,8 +526,8 @@ namespace TestApp
 
         var compilation = TestCompilation.Create(source);
 
-        var attribute = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.ControllerAttribute");
-        var testClass = compilation.GetTypeByMetadataName($"TestApp.TestController");
+        var attribute = compilation.GetBestTypeByMetadataName("Microsoft.AspNetCore.Mvc.ControllerAttribute");
+        var testClass = compilation.GetBestTypeByMetadataName($"TestApp.TestController");
 
         // Act
         var hasAttributeWithoutInherit = CodeAnalysisExtensions.HasAttribute(testClass, attribute, inherit: false);
@@ -557,8 +557,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var @interface = compilation.GetTypeByMetadataName("TestApp.ITestInterface");
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestController");
+        var @interface = compilation.GetBestTypeByMetadataName("TestApp.ITestInterface");
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestController");
 
         // Act
         var hasAttribute = CodeAnalysisExtensions.HasAttribute(testClass, @interface, inherit: true);
@@ -587,8 +587,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName("TestApp.TestAttribute");
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestController");
+        var attribute = compilation.GetBestTypeByMetadataName("TestApp.TestAttribute");
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestController");
         var method = (IMethodSymbol)testClass.GetMembers("SomeMethod").First();
 
         // Act
@@ -621,8 +621,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName("TestApp.TestAttribute");
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestController");
+        var attribute = compilation.GetBestTypeByMetadataName("TestApp.TestAttribute");
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestController");
         var method = (IMethodSymbol)testClass.GetMembers("SomeMethod").First();
 
         // Act
@@ -652,8 +652,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName("TestApp.TestAttribute");
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestController");
+        var attribute = compilation.GetBestTypeByMetadataName("TestApp.TestAttribute");
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestController");
         var property = (IPropertySymbol)testClass.GetMembers("SomeProperty").First();
 
         // Act
@@ -686,8 +686,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var attribute = compilation.GetTypeByMetadataName("TestApp.TestAttribute");
-        var testClass = compilation.GetTypeByMetadataName("TestApp.TestController");
+        var attribute = compilation.GetBestTypeByMetadataName("TestApp.TestAttribute");
+        var testClass = compilation.GetBestTypeByMetadataName("TestApp.TestController");
         var property = (IPropertySymbol)testClass.GetMembers("SomeProperty").First();
 
         // Act
@@ -712,8 +712,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var sourceType = compilation.GetTypeByMetadataName("TestApp.TypeA");
-        var target = compilation.GetTypeByMetadataName("TestApp.TypeB");
+        var sourceType = compilation.GetBestTypeByMetadataName("TestApp.TypeA");
+        var target = compilation.GetBestTypeByMetadataName("TestApp.TypeB");
 
         // Act
         var isAssignableFrom = CodeAnalysisExtensions.IsAssignableFrom(sourceType, target);
@@ -733,8 +733,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var sourceType = compilation.GetTypeByMetadataName("TestApp.TypeA");
-        var target = compilation.GetTypeByMetadataName("System.IDisposable");
+        var sourceType = compilation.GetBestTypeByMetadataName("TestApp.TypeA");
+        var target = compilation.GetBestTypeByMetadataName("System.IDisposable");
 
         // Act
         var isAssignableFrom = CodeAnalysisExtensions.IsAssignableFrom(sourceType, target);
@@ -754,8 +754,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var sourceType = compilation.GetTypeByMetadataName("TestApp.TestType");
-        var target = compilation.GetTypeByMetadataName("TestApp.TestType");
+        var sourceType = compilation.GetBestTypeByMetadataName("TestApp.TestType");
+        var target = compilation.GetBestTypeByMetadataName("TestApp.TestType");
 
         // Act
         var isAssignableFrom = CodeAnalysisExtensions.IsAssignableFrom(sourceType, target);
@@ -779,8 +779,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var sourceType = compilation.GetTypeByMetadataName("TestApp.ITestInterface");
-        var target = compilation.GetTypeByMetadataName("TestApp.TestType");
+        var sourceType = compilation.GetBestTypeByMetadataName("TestApp.ITestInterface");
+        var target = compilation.GetBestTypeByMetadataName("TestApp.TestType");
 
         // Act
         var isAssignableFrom = CodeAnalysisExtensions.IsAssignableFrom(sourceType, target);
@@ -802,8 +802,8 @@ namespace TestApp
 }";
 
         var compilation = TestCompilation.Create(source);
-        var sourceType = compilation.GetTypeByMetadataName("TestApp.ITestInterface");
-        var target = compilation.GetTypeByMetadataName("TestApp.ITestInterface");
+        var sourceType = compilation.GetBestTypeByMetadataName("TestApp.ITestInterface");
+        var target = compilation.GetBestTypeByMetadataName("TestApp.ITestInterface");
 
         // Act
         var isAssignableFrom = CodeAnalysisExtensions.IsAssignableFrom(sourceType, target);
@@ -835,8 +835,8 @@ public class TestClass : ITestInterfaceB
 {
 }";
         var compilation = TestCompilation.Create(source);
-        var sourceType = compilation.GetTypeByMetadataName("TestApp.ITestInterface");
-        var target = compilation.GetTypeByMetadataName("TestApp.TestClass");
+        var sourceType = compilation.GetBestTypeByMetadataName("TestApp.ITestInterface");
+        var target = compilation.GetBestTypeByMetadataName("TestApp.TestClass");
 
         // Act
         var isAssignableFrom = CodeAnalysisExtensions.IsAssignableFrom(sourceType, target);

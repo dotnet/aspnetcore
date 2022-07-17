@@ -13,37 +13,37 @@ internal sealed class WellKnownTypes
         wellKnownTypes = default;
 
         const string ConfigureHostBuilder = "Microsoft.AspNetCore.Builder.ConfigureHostBuilder";
-        if (compilation.GetTypeByMetadataName(ConfigureHostBuilder) is not { } configureHostBuilder)
+        if (compilation.GetBestTypeByMetadataName(ConfigureHostBuilder) is not { } configureHostBuilder)
         {
             return false;
         }
 
         const string ConfigureWebHostBuilder = "Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder";
-        if (compilation.GetTypeByMetadataName(ConfigureWebHostBuilder) is not { } configureWebHostBuilder)
+        if (compilation.GetBestTypeByMetadataName(ConfigureWebHostBuilder) is not { } configureWebHostBuilder)
         {
             return false;
         }
 
         const string GenericHostWebHostBuilderExtensions = "Microsoft.Extensions.Hosting.GenericHostWebHostBuilderExtensions";
-        if (compilation.GetTypeByMetadataName(GenericHostWebHostBuilderExtensions) is not { } genericHostWebHostBuilderExtensions)
+        if (compilation.GetBestTypeByMetadataName(GenericHostWebHostBuilderExtensions) is not { } genericHostWebHostBuilderExtensions)
         {
             return false;
         }
 
         const string WebHostBuilderExtensions = "Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions";
-        if (compilation.GetTypeByMetadataName(WebHostBuilderExtensions) is not { } webHostBuilderExtensions)
+        if (compilation.GetBestTypeByMetadataName(WebHostBuilderExtensions) is not { } webHostBuilderExtensions)
         {
             return false;
         }
 
         const string HostingAbstractionsWebHostBuilderExtensions = "Microsoft.AspNetCore.Hosting.HostingAbstractionsWebHostBuilderExtensions";
-        if (compilation.GetTypeByMetadataName(HostingAbstractionsWebHostBuilderExtensions) is not { } hostingAbstractionsWebHostBuilderExtensions)
+        if (compilation.GetBestTypeByMetadataName(HostingAbstractionsWebHostBuilderExtensions) is not { } hostingAbstractionsWebHostBuilderExtensions)
         {
             return false;
         }
 
         const string HostingHostBuilderExtensions = "Microsoft.Extensions.Hosting.HostingHostBuilderExtensions";
-        if (compilation.GetTypeByMetadataName(HostingHostBuilderExtensions) is not { } hostingHostBuilderExtensions)
+        if (compilation.GetBestTypeByMetadataName(HostingHostBuilderExtensions) is not { } hostingHostBuilderExtensions)
         {
             return false;
         }

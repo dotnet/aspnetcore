@@ -19,7 +19,7 @@ public class ActualApiResponseMetadataFactoryTest
     {
         // Arrange
         var compilation = await GetCompilation("GetDefaultStatusCodeTest");
-        var attribute = compilation.GetTypeByMetadataName(typeof(TestActionResultUsingStatusCodesConstants).FullName).GetAttributes()[0];
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(TestActionResultUsingStatusCodesConstants).FullName).GetAttributes()[0];
 
         // Act
         var actual = ActualApiResponseMetadataFactory.GetDefaultStatusCode(attribute);
@@ -33,7 +33,7 @@ public class ActualApiResponseMetadataFactoryTest
     {
         // Arrange
         var compilation = await GetCompilation("GetDefaultStatusCodeTest");
-        var attribute = compilation.GetTypeByMetadataName(typeof(TestActionResultUsingHttpStatusCodeCast).FullName).GetAttributes()[0];
+        var attribute = compilation.GetBestTypeByMetadataName(typeof(TestActionResultUsingHttpStatusCodeCast).FullName).GetAttributes()[0];
 
         // Act
         var actual = ActualApiResponseMetadataFactory.GetDefaultStatusCode(attribute);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var compilation = await project.GetCompilationAsync();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var returnType = compilation.GetTypeByMetadataName($"{Namespace}.TestController");
+        var returnType = compilation.GetBestTypeByMetadataName($"{Namespace}.TestController");
         var syntaxTree = returnType.DeclaringSyntaxReferences[0].SyntaxTree;
 
         var method = (IMethodSymbol)returnType.GetMembers().First();
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         var compilation = await GetCompilation("TryGetActualResponseMetadataTests");
 
-        var type = compilation.GetTypeByMetadataName(typeName);
+        var type = compilation.GetBestTypeByMetadataName(typeName);
         var method = (IMethodSymbol)type.GetMembers(methodName).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var compilation = await GetCompilation("InspectReturnExpressionTests");
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var controllerType = compilation.GetTypeByMetadataName(typeof(TestFiles.InspectReturnExpressionTests.TestController).FullName);
+        var controllerType = compilation.GetBestTypeByMetadataName(typeof(TestFiles.InspectReturnExpressionTests.TestController).FullName);
         var syntaxTree = controllerType.DeclaringSyntaxReferences[0].SyntaxTree;
 
         var method = (IMethodSymbol)Assert.Single(controllerType.GetMembers(test));
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var compilation = await project.GetCompilationAsync();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var returnType = compilation.GetTypeByMetadataName($"{Namespace}.{test}");
+        var returnType = compilation.GetBestTypeByMetadataName($"{Namespace}.{test}");
         var syntaxTree = returnType.DeclaringSyntaxReferences[0].SyntaxTree;
 
         var method = (IMethodSymbol)returnType.GetMembers().First();

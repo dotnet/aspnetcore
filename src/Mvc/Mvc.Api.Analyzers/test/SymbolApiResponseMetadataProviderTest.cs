@@ -15,7 +15,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerWithoutConvention)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerWithoutConvention)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerWithoutConvention.GetPerson)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -33,7 +33,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerWithoutConvention)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerWithoutConvention)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerWithoutConvention.PostPerson)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -51,7 +51,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithProducesAttribute)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -69,7 +69,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithProducesResponseType_StatusCodeInConstructor)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -92,7 +92,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithProducesResponseType_StatusCodeAndTypeInConstructor)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -115,7 +115,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithProducesResponseType_StatusCodeInConstructorAndProperty)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -138,7 +138,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithProducesResponseType_StatusCodeAndTypeInConstructorAndProperty)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -161,7 +161,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithCustomProducesResponseTypeAttributeWithArguments)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -183,7 +183,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.GetResponseMetadata_ReturnsValuesFromApiConventionMethodAttribute)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -214,7 +214,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.GetResponseMetadata_WithProducesResponseTypeAndApiConventionMethod)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -236,7 +236,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
         var method = (IMethodSymbol)controller.GetMembers(nameof(GetResponseMetadata_ControllerActionWithAttributes.ActionWithCustomApiResponseMetadataProvider)).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -269,7 +269,7 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{typeName}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{typeName}");
         var method = (IMethodSymbol)controller.GetMembers(methodName).First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -292,7 +292,7 @@ public class SymbolApiResponseMetadataProviderTest
         // Arrange
         var type = typeof(GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnType);
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName(type.FullName);
+        var controller = compilation.GetBestTypeByMetadataName(type.FullName);
         var method = (IMethodSymbol)controller.GetMembers().First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -314,7 +314,7 @@ public class SymbolApiResponseMetadataProviderTest
         // Arrange
         var type = typeof(GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnBaseType);
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName(type.FullName);
+        var controller = compilation.GetBestTypeByMetadataName(type.FullName);
         var method = (IMethodSymbol)controller.GetMembers().First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -388,7 +388,7 @@ public class SymbolApiResponseMetadataProviderTest
     private async Task GetStatusCodeTest(string actionName, int expected)
     {
         var compilation = await GetResponseMetadataCompilation();
-        var controller = compilation.GetTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
+        var controller = compilation.GetBestTypeByMetadataName($"{Namespace}.{nameof(GetResponseMetadata_ControllerActionWithAttributes)}");
         var method = (IMethodSymbol)controller.GetMembers(actionName).First();
         var attribute = method.GetAttributes().First();
 
@@ -402,9 +402,9 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetCompilation(nameof(GetErrorResponseType_ReturnsProblemDetails_IfNoAttributeIsDiscovered));
-        var expected = compilation.GetTypeByMetadataName(typeof(ProblemDetails).FullName);
+        var expected = compilation.GetBestTypeByMetadataName(typeof(ProblemDetails).FullName);
 
-        var type = compilation.GetTypeByMetadataName(typeof(GetErrorResponseType_ReturnsProblemDetails_IfNoAttributeIsDiscoveredController).FullName);
+        var type = compilation.GetBestTypeByMetadataName(typeof(GetErrorResponseType_ReturnsProblemDetails_IfNoAttributeIsDiscoveredController).FullName);
         var method = (IMethodSymbol)type.GetMembers("Action").First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -420,9 +420,9 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetCompilation(nameof(GetErrorResponseType_ReturnsTypeDefinedAtAssembly));
-        var expected = compilation.GetTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtAssemblyModel).FullName);
+        var expected = compilation.GetBestTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtAssemblyModel).FullName);
 
-        var type = compilation.GetTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtAssemblyController).FullName);
+        var type = compilation.GetBestTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtAssemblyController).FullName);
         var method = (IMethodSymbol)type.GetMembers("Action").First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -438,9 +438,9 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetCompilation(nameof(GetErrorResponseType_ReturnsTypeDefinedAtController));
-        var expected = compilation.GetTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtControllerModel).FullName);
+        var expected = compilation.GetBestTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtControllerModel).FullName);
 
-        var type = compilation.GetTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtControllerController).FullName);
+        var type = compilation.GetBestTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtControllerController).FullName);
         var method = (IMethodSymbol)type.GetMembers("Action").First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
@@ -456,9 +456,9 @@ public class SymbolApiResponseMetadataProviderTest
     {
         // Arrange
         var compilation = await GetCompilation(nameof(GetErrorResponseType_ReturnsTypeDefinedAtAction));
-        var expected = compilation.GetTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtActionModel).FullName);
+        var expected = compilation.GetBestTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtActionModel).FullName);
 
-        var type = compilation.GetTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtActionController).FullName);
+        var type = compilation.GetBestTypeByMetadataName(typeof(GetErrorResponseType_ReturnsTypeDefinedAtActionController).FullName);
         var method = (IMethodSymbol)type.GetMembers("Action").First();
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 

@@ -87,7 +87,7 @@ internal readonly struct ApiControllerSymbolCache
             return false;
         }
 
-        var statusCodeActionResult = compilation.GetTypeByMetadataName(ApiSymbolNames.IStatusCodeActionResult);
+        var statusCodeActionResult = compilation.GetBestTypeByMetadataName(ApiSymbolNames.IStatusCodeActionResult);
         var statusCodeActionResultStatusProperty = (IPropertySymbol?)statusCodeActionResult?.GetMembers("StatusCode")[0];
         if (statusCodeActionResultStatusProperty == null)
         {
@@ -125,7 +125,7 @@ internal readonly struct ApiControllerSymbolCache
 
         bool TryGetType(string typeName, out INamedTypeSymbol typeSymbol)
         {
-            typeSymbol = compilation.GetTypeByMetadataName(typeName);
+            typeSymbol = compilation.GetBestTypeByMetadataName(typeName);
             return typeSymbol != null && typeSymbol.TypeKind != TypeKind.Error;
         }
     }
