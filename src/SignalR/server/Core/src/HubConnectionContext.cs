@@ -83,7 +83,8 @@ public partial class HubConnectionContext
         var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
         if (maxInvokeLimit != 1)
         {
-            ActiveInvocationLimit = new SemaphoreSlim(maxInvokeLimit, maxInvokeLimit);
+            // Don't specify max count, this is so InvokeAsync inside hub methods will not be able to soft-lock a connection if it's run on a separate thread from the hub method, or just not awaited
+            ActiveInvocationLimit = new SemaphoreSlim(maxInvokeLimit);
         }
     }
 

@@ -16,7 +16,7 @@ public partial class HubConnectionHandlerTests
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
             {
-                // Waiting for a client result blocks the hub dispatcher pipeline, need to allow multiple invocations
+                // Waiting for a client result requires multiple invocations enabled
                 builder.AddSignalR(o => o.MaximumParallelInvocationsPerClient = 2);
             }, LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
@@ -47,7 +47,7 @@ public partial class HubConnectionHandlerTests
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
             {
-                // Waiting for a client result blocks the hub dispatcher pipeline, need to allow multiple invocations
+                // Waiting for a client result requires multiple invocations enabled
                 builder.AddSignalR(o =>
                 {
                     o.MaximumParallelInvocationsPerClient = 2;
@@ -237,7 +237,7 @@ public partial class HubConnectionHandlerTests
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
             {
-                // Waiting for a client result blocks the hub dispatcher pipeline, need to allow multiple invocations
+                // Waiting for a client result requires multiple invocations enabled
                 builder.AddSignalR(o => o.MaximumParallelInvocationsPerClient = 2);
             }, LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubT>>();
@@ -263,6 +263,61 @@ public partial class HubConnectionHandlerTests
 
             var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
             Assert.Equal(new ClientResults(11, 7), completion.Result);
+        }
+    }
+
+    [Fact]
+    public async Task ClientResultFromHubDoesNotBlockReceiveLoop()
+    {
+        using (StartVerifiableLog())
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                // Waiting for a client result requires multiple invocations enabled
+                builder.AddSignalR(o => o.MaximumParallelInvocationsPerClient = 2);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                // block 1 of the 2 parallel invocations
+                _ = await client.SendHubMessageAsync(new InvocationMessage("1", nameof(MethodHub.BlockingMethod), Array.Empty<object>())).DefaultTimeout();
+
+                // make multiple invocations which would normally block the invocation processing
+                var invocationId = await client.SendHubMessageAsync(new InvocationMessage("2", nameof(MethodHub.GetClientResult), new object[] { 5 })).DefaultTimeout();
+                var invocationId2 = await client.SendHubMessageAsync(new InvocationMessage("3", nameof(MethodHub.GetClientResult), new object[] { 5 })).DefaultTimeout();
+                var invocationId3 = await client.SendHubMessageAsync(new InvocationMessage("4", nameof(MethodHub.GetClientResult), new object[] { 5 })).DefaultTimeout();
+
+                // Read all 3 invocation messages from the server, shows that the hub processing continued even though parallel invokes is 2
+                // Hub asks client for a result, this is an invocation message with an ID
+                var invocationMessage = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+                var invocationMessage2 = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+                var invocationMessage3 = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+
+                Assert.NotNull(invocationMessage.InvocationId);
+                Assert.NotNull(invocationMessage2.InvocationId);
+                Assert.NotNull(invocationMessage3.InvocationId);
+                var res = 4 + ((long)invocationMessage.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage.InvocationId, res)).DefaultTimeout();
+                res = 5 + ((long)invocationMessage2.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage2.InvocationId, res)).DefaultTimeout();
+                res = 6 + ((long)invocationMessage3.Arguments[0]);
+                await client.SendHubMessageAsync(CompletionMessage.WithResult(invocationMessage3.InvocationId, res)).DefaultTimeout();
+
+                var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal(9L, completion.Result);
+                Assert.Equal(invocationId, completion.InvocationId);
+
+                completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal(10L, completion.Result);
+                Assert.Equal(invocationId2, completion.InvocationId);
+
+                completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal(11L, completion.Result);
+                Assert.Equal(invocationId3, completion.InvocationId);
+            }
         }
     }
 
