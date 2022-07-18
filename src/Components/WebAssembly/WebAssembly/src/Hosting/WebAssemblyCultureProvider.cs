@@ -3,26 +3,19 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Loader;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "This type loads resx files. We don't expect it's dependencies to be trimmed in the ordinary case.")]
 #pragma warning disable CA1852 // Seal internal types
-internal class WebAssemblyCultureProvider
+internal partial class WebAssemblyCultureProvider
 #pragma warning restore CA1852 // Seal internal types
 {
-    internal const string GetSatelliteAssemblies = "window.Blazor._internal.getSatelliteAssemblies";
-    internal const string ReadSatelliteAssemblies = "window.Blazor._internal.readSatelliteAssemblies";
-
-    private readonly IJSUnmarshalledRuntime _invoker;
-
     // For unit testing.
-    internal WebAssemblyCultureProvider(IJSUnmarshalledRuntime invoker, CultureInfo initialCulture, CultureInfo initialUICulture)
+    internal WebAssemblyCultureProvider(CultureInfo initialCulture, CultureInfo initialUICulture)
     {
-        _invoker = invoker;
         InitialCulture = initialCulture;
         InitialUICulture = initialUICulture;
     }
@@ -36,7 +29,6 @@ internal class WebAssemblyCultureProvider
     internal static void Initialize()
     {
         Instance = new WebAssemblyCultureProvider(
-            DefaultWebAssemblyJSRuntime.Instance,
             initialCulture: CultureInfo.CurrentCulture,
             initialUICulture: CultureInfo.CurrentUICulture);
     }
@@ -74,11 +66,7 @@ internal class WebAssemblyCultureProvider
         // assemblies. We effectively want to resovle a Task<byte[][]> but there is no way to express this
         // using interop. We'll instead do this in two parts:
         // getSatelliteAssemblies resolves when all satellite assemblies to be loaded in .NET are fetched and available in memory.
-        var count = (int)await _invoker.InvokeUnmarshalled<string[], object?, object?, Task<object>>(
-            GetSatelliteAssemblies,
-            culturesToLoad.ToArray(),
-            null,
-            null);
+        var count = await GetSatelliteAssemblies(culturesToLoad.ToArray());
 
         if (count == 0)
         {
@@ -86,15 +74,12 @@ internal class WebAssemblyCultureProvider
         }
 
         // readSatelliteAssemblies resolves the assembly bytes
-        var assemblies = _invoker.InvokeUnmarshalled<object?, object?, object?, object[]>(
-            ReadSatelliteAssemblies,
-            null,
-            null,
-            null);
+        var assembliesCount = ReadSatelliteAssembliesCount();
 
-        for (var i = 0; i < assemblies.Length; i++)
+        for (var i = 0; i < assembliesCount; i++)
         {
-            using var stream = new MemoryStream((byte[])assemblies[i]);
+            var assembly = ReadSatelliteAssembly(i);
+            using var stream = new MemoryStream(assembly);
             AssemblyLoadContext.Default.LoadFromStream(stream);
         }
     }
@@ -122,4 +107,13 @@ internal class WebAssemblyCultureProvider
 
         return culturesToLoad;
     }
+
+    [JSImport("Blazor._internal.getSatelliteAssemblies")]
+    private static partial Task<int> GetSatelliteAssemblies(string[] culturesToLoad);
+
+    [JSImport("Blazor._internal.readSatelliteAssembliesCount")]
+    private static partial int ReadSatelliteAssembliesCount();
+
+    [JSImport("Blazor._internal.readSatelliteAssembly")]
+    private static partial byte[] ReadSatelliteAssembly(int index);
 }

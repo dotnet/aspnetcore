@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Loader;
 using Microsoft.JSInterop;
 
@@ -13,13 +14,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 ///
 /// Supports finding pre-loaded assemblies in a server or pre-rendering context.
 /// </summary>
-public sealed class LazyAssemblyLoader
+public sealed partial class LazyAssemblyLoader
 {
-    internal const string GetLazyAssemblies = "window.Blazor._internal.getLazyAssemblies";
-    internal const string ReadLazyAssemblies = "window.Blazor._internal.readLazyAssemblies";
-    internal const string ReadLazyPDBs = "window.Blazor._internal.readLazyPdbs";
-
-    private readonly IJSRuntime _jsRuntime;
     private HashSet<string>? _loadedAssemblyCache;
 
     /// <summary>
@@ -28,7 +24,6 @@ public sealed class LazyAssemblyLoader
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     public LazyAssemblyLoader(IJSRuntime jsRuntime)
     {
-        _jsRuntime = jsRuntime;
     }
 
     /// <summary>
@@ -104,10 +99,7 @@ public sealed class LazyAssemblyLoader
             return Array.Empty<Assembly>();
         }
 
-        var jsRuntime = (IJSUnmarshalledRuntime)_jsRuntime;
-        var count = (int)await jsRuntime.InvokeUnmarshalled<string[], Task<object>>(
-           GetLazyAssemblies,
-           newAssembliesToLoad.ToArray());
+        var count = await GetLazyAssemblies(newAssembliesToLoad.ToArray());
 
         if (count == 0)
         {
@@ -115,18 +107,17 @@ public sealed class LazyAssemblyLoader
         }
 
         var loadedAssemblies = new List<Assembly>();
-        var assemblies = jsRuntime.InvokeUnmarshalled<byte[][]>(ReadLazyAssemblies);
-        var pdbs = jsRuntime.InvokeUnmarshalled<byte[][]>(ReadLazyPDBs);
+        var assembliesCount = ReadLazyAssembliesCount();
 
-        for (int i = 0; i < assemblies.Length; i++)
+        for (int i = 0; i < assembliesCount; i++)
         {
             // The runtime loads assemblies into an isolated context by default. As a result,
             // assemblies that are loaded via Assembly.Load aren't available in the app's context
             // AKA the default context. To work around this, we explicitly load the assemblies
             // into the default app context.
-            var assembly = assemblies[i];
-            var pdb = pdbs[i];
-            var loadedAssembly = pdb.Length == 0 ?
+            var assembly = ReadLazyAssembly(i);
+            var pdb = ReadLazyPDB(i);
+            var loadedAssembly = pdb == null ?
                 AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(assembly)) :
                 AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(assembly), new MemoryStream(pdb));
             loadedAssemblies.Add(loadedAssembly);
@@ -135,4 +126,16 @@ public sealed class LazyAssemblyLoader
 
         return loadedAssemblies;
     }
+
+    [JSImport("Blazor._internal.getLazyAssemblies")]
+    private static partial Task<int> GetLazyAssemblies(string[] assembliesToLoad);
+
+    [JSImport("Blazor._internal.readLazyAssembliesCount")]
+    private static partial int ReadLazyAssembliesCount();
+
+    [JSImport("Blazor._internal.readLazyAssembly")]
+    private static partial byte[] ReadLazyAssembly(int index);
+
+    [JSImport("Blazor._internal.readLazyPdb")]
+    private static partial byte[]? ReadLazyPDB(int index);
 }

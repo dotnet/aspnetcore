@@ -12,7 +12,7 @@ import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
 import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
-import { Pointer, System_Array, System_Boolean, System_Byte, System_Int, System_Object, System_String } from './Platform/Platform';
+import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { discoverComponents, discoverPersistedState, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
@@ -30,7 +30,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    await new Promise(() => {}); // See inAuthRedirectIframe for explanation
+    await new Promise(() => { }); // See inAuthRedirectIframe for explanation
   }
 
   setDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
@@ -49,9 +49,14 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   };
 
   Blazor._internal.getApplyUpdateCapabilities = () => DotNet.invokeMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities');
+  Blazor._internal.initHotReload = async (url: string) => {
+    const module = await import(/* webpackIgnore: true */ url);
+    return module['receiveHotReload']();
+  };
 
   // Configure JS interop
   Blazor._internal.invokeJSFromDotNet = invokeJSFromDotNet;
+  Blazor._internal.invokeJSJson = invokeJSJson;
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
   Blazor._internal.receiveByteArray = receiveByteArray;
   Blazor._internal.retrieveByteArray = retrieveByteArray;
@@ -76,8 +81,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   // Configure navigation via JS Interop
   const getBaseUri = Blazor._internal.navigationManager.getBaseURI;
   const getLocationHref = Blazor._internal.navigationManager.getLocationHref;
-  Blazor._internal.navigationManager.getUnmarshalledBaseURI = () => BINDING.js_string_to_mono_string(getBaseUri());
-  Blazor._internal.navigationManager.getUnmarshalledLocationHref = () => BINDING.js_string_to_mono_string(getLocationHref());
+  Blazor._internal.navigationManager.getBaseUri = () => getBaseUri();
+  Blazor._internal.navigationManager.getLocationHref = () => getLocationHref();
 
   Blazor._internal.navigationManager.listenForNavigationEvents(async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     await DotNet.invokeMethodAsync(
@@ -104,13 +109,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   Blazor._internal.registeredComponents = {
     getRegisteredComponentsCount: () => componentAttacher.getCount(),
     getId: (index) => componentAttacher.getId(index),
-    getAssembly: (id) => BINDING.js_string_to_mono_string(componentAttacher.getAssembly(id)),
-    getTypeName: (id) => BINDING.js_string_to_mono_string(componentAttacher.getTypeName(id)),
-    getParameterDefinitions: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterDefinitions(id) || ''),
-    getParameterValues: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterValues(id) || ''),
+    getAssembly: (id) => componentAttacher.getAssembly(id),
+    getTypeName: (id) => componentAttacher.getTypeName(id),
+    getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',
+    getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
   };
 
-  Blazor._internal.getPersistedState = () => BINDING.js_string_to_mono_string(discoverPersistedState(document) || '');
+  Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
 
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
@@ -142,6 +147,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
+// obsolete, legacy, don't use for new code!
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {
   const functionIdentifier = monoPlatform.readStringField(callInfo, 0)!;
   const resultType = monoPlatform.readInt32Field(callInfo, 4);
@@ -180,26 +186,29 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
   }
 }
 
-function endInvokeDotNetFromJS(callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String): void {
-  const callIdString = BINDING.conv_string(callId)!;
-  const successBool = (success as any as number) !== 0;
-  const resultJsonOrErrorMessageString = BINDING.conv_string(resultJsonOrErrorMessage)!;
-  DotNet.jsCallDispatcher.endInvokeDotNetFromJS(callIdString, successBool, resultJsonOrErrorMessageString);
+function invokeJSJson(functionIdentifier: string, targetInstanceId: number, resultType: number, marshalledCallArgsJson: string, marshalledCallAsyncHandle: number): string | null {
+  if (marshalledCallAsyncHandle !== 0) {
+    DotNet.jsCallDispatcher.beginInvokeJSFromDotNet(marshalledCallAsyncHandle, functionIdentifier, marshalledCallArgsJson, resultType, targetInstanceId);
+    return null;
+  } else {
+    return DotNet.jsCallDispatcher.invokeJSFromDotNet(functionIdentifier, marshalledCallArgsJson, resultType, targetInstanceId)!;
+  }
 }
 
-function receiveByteArray(id: System_Int, data: System_Array<System_Byte>): void {
-  const idLong = id as unknown as number;
-  const dataByteArray = monoPlatform.toUint8Array(data);
-  DotNet.jsCallDispatcher.receiveByteArray(idLong, dataByteArray);
+function endInvokeDotNetFromJS(callId: string, success: boolean, resultJsonOrErrorMessage: string): void {
+  DotNet.jsCallDispatcher.endInvokeDotNetFromJS(callId, success, resultJsonOrErrorMessage);
 }
 
-function retrieveByteArray(): System_Object {
+function receiveByteArray(id: number, data: Uint8Array): void {
+  DotNet.jsCallDispatcher.receiveByteArray(id, data);
+}
+
+function retrieveByteArray(): Uint8Array {
   if (byteArrayBeingTransferred === null) {
     throw new Error('Byte array not available for transfer');
   }
 
-  const typedArray = BINDING.js_typed_array_to_array(byteArrayBeingTransferred);
-  return typedArray;
+  return byteArrayBeingTransferred;
 }
 
 function inAuthRedirectIframe(): boolean {

@@ -1,21 +1,29 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices.JavaScript;
+
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-internal sealed class RegisteredComponentsInterop
+internal sealed partial class RegisteredComponentsInterop
 {
     private const string Prefix = "Blazor._internal.registeredComponents.";
 
-    public const string GetRegisteredComponentsCount = Prefix + "getRegisteredComponentsCount";
+    [JSImport(Prefix + "getRegisteredComponentsCount")]
+    public static partial int GetRegisteredComponentsCount();
 
-    public const string GetId = Prefix + "getId";
+    [JSImport(Prefix + "getId")]
+    public static partial int GetId(int index);
 
-    public const string GetAssembly = Prefix + "getAssembly";
+    [JSImport(Prefix + "getAssembly")]
+    public static partial string GetAssembly(int id);
 
-    public const string GetTypeName = Prefix + "getTypeName";
+    [JSImport(Prefix + "getTypeName")]
+    public static partial string GetTypeName(int id);
 
-    public const string GetParameterDefinitions = Prefix + "getParameterDefinitions";
+    [JSImport(Prefix + "getParameterDefinitions")]
+    public static partial string GetParameterDefinitions(int id);
 
-    public const string GetParameterValues = Prefix + "getParameterValues";
+    [JSImport(Prefix + "getParameterValues")]
+    public static partial string GetParameterValues(int id);
 }

@@ -16,15 +16,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 /// <summary>
 /// A builder for configuring and creating a <see cref="WebAssemblyHost"/>.
 /// </summary>
-public sealed class WebAssemblyHostBuilder
+public sealed partial class WebAssemblyHostBuilder
 {
-    private readonly JsonSerializerOptions _jsonOptions;
     private Func<IServiceProvider> _createServiceProvider;
     private RootComponentTypeCache? _rootComponentCache;
     private string? _persistedState;
@@ -61,24 +61,26 @@ public sealed class WebAssemblyHostBuilder
     /// <summary>
     /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
     /// </summary>
+    [UnconditionalSuppressMessage("Trim analysis error", "IL2026")]
+#pragma warning disable IDE0060 // Remove unused parameter
     internal WebAssemblyHostBuilder(IJSUnmarshalledRuntime jsRuntime, JsonSerializerOptions jsonOptions)
+#pragma warning restore IDE0060 // Remove unused parameter
     {
         // Private right now because we don't have much reason to expose it. This can be exposed
         // in the future if we want to give people a choice between CreateDefault and something
         // less opinionated.
-        _jsonOptions = jsonOptions;
         Configuration = new WebAssemblyHostConfiguration();
         RootComponents = new RootComponentMappingCollection();
         Services = new ServiceCollection();
         Logging = new LoggingBuilder(Services);
 
         // Retrieve required attributes from JSRuntimeInvoker
-        InitializeNavigationManager(jsRuntime);
-        InitializeRegisteredRootComponents(jsRuntime);
-        InitializePersistedState(jsRuntime);
+        InitializeNavigationManager();
+        InitializeRegisteredRootComponents();
+        InitializePersistedState();
         InitializeDefaultServices();
 
-        var hostEnvironment = InitializeEnvironment(jsRuntime);
+        var hostEnvironment = InitializeEnvironment();
         HostEnvironment = hostEnvironment;
 
         _createServiceProvider = () =>
@@ -88,9 +90,9 @@ public sealed class WebAssemblyHostBuilder
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
-    private void InitializeRegisteredRootComponents(IJSUnmarshalledRuntime jsRuntime)
+    private void InitializeRegisteredRootComponents()
     {
-        var componentsCount = jsRuntime.InvokeUnmarshalled<int>(RegisteredComponentsInterop.GetRegisteredComponentsCount);
+        var componentsCount = RegisteredComponentsInterop.GetRegisteredComponentsCount();
         if (componentsCount == 0)
         {
             return;
@@ -99,11 +101,11 @@ public sealed class WebAssemblyHostBuilder
         var registeredComponents = new WebAssemblyComponentMarker[componentsCount];
         for (var i = 0; i < componentsCount; i++)
         {
-            var id = jsRuntime.InvokeUnmarshalled<int, int>(RegisteredComponentsInterop.GetId, i);
-            var assembly = jsRuntime.InvokeUnmarshalled<int, string>(RegisteredComponentsInterop.GetAssembly, id);
-            var typeName = jsRuntime.InvokeUnmarshalled<int, string>(RegisteredComponentsInterop.GetTypeName, id);
-            var serializedParameterDefinitions = jsRuntime.InvokeUnmarshalled<int, object?, object?, string>(RegisteredComponentsInterop.GetParameterDefinitions, id, null, null);
-            var serializedParameterValues = jsRuntime.InvokeUnmarshalled<int, object?, object?, string>(RegisteredComponentsInterop.GetParameterValues, id, null, null);
+            var id = RegisteredComponentsInterop.GetId(i);
+            var assembly = RegisteredComponentsInterop.GetAssembly(id);
+            var typeName = RegisteredComponentsInterop.GetTypeName(id);
+            var serializedParameterDefinitions = RegisteredComponentsInterop.GetParameterDefinitions( id);
+            var serializedParameterValues = RegisteredComponentsInterop.GetParameterValues(id);
             registeredComponents[i] = new WebAssemblyComponentMarker(WebAssemblyComponentMarker.ClientMarkerType, assembly, typeName, serializedParameterDefinitions, serializedParameterValues, id.ToString(CultureInfo.InvariantCulture));
         }
 
@@ -127,22 +129,22 @@ public sealed class WebAssemblyHostBuilder
         }
     }
 
-    private void InitializePersistedState(IJSUnmarshalledRuntime jsRuntime)
+    private void InitializePersistedState()
     {
-        _persistedState = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getPersistedState");
+        _persistedState = GetPersistedState();
     }
 
-    private static void InitializeNavigationManager(IJSUnmarshalledRuntime jsRuntime)
+    private static void InitializeNavigationManager()
     {
-        var baseUri = jsRuntime.InvokeUnmarshalled<string>(BrowserNavigationManagerInterop.GetBaseUri);
-        var uri = jsRuntime.InvokeUnmarshalled<string>(BrowserNavigationManagerInterop.GetLocationHref);
+        var baseUri = BrowserNavigationManagerInterop.GetBaseUri();
+        var uri = BrowserNavigationManagerInterop.GetLocationHref();
 
         WebAssemblyNavigationManager.Instance = new WebAssemblyNavigationManager(baseUri, uri);
     }
 
-    private WebAssemblyHostEnvironment InitializeEnvironment(IJSUnmarshalledRuntime jsRuntime)
+    private WebAssemblyHostEnvironment InitializeEnvironment()
     {
-        var applicationEnvironment = jsRuntime.InvokeUnmarshalled<string>("Blazor._internal.getApplicationEnvironment");
+        var applicationEnvironment = GetApplicationEnvironment();
         var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, WebAssemblyNavigationManager.Instance.BaseUri);
 
         Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
@@ -155,8 +157,7 @@ public sealed class WebAssemblyHostBuilder
 
         foreach (var configFile in configFiles)
         {
-            var appSettingsJson = jsRuntime.InvokeUnmarshalled<string, byte[]>(
-                "Blazor._internal.getConfig", configFile);
+            var appSettingsJson = GetConfig(configFile);
 
             if (appSettingsJson != null)
             {
@@ -261,4 +262,14 @@ public sealed class WebAssemblyHostBuilder
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
     }
+
+    [JSImport("Blazor._internal.getConfig")]
+    private static partial byte[] GetConfig(string configFile);
+
+    [JSImport("Blazor._internal.getApplicationEnvironment")]
+    private static partial string GetApplicationEnvironment();
+
+    [JSImport("Blazor._internal.getPersistedState")]
+    private static partial string? GetPersistedState();
+
 }

@@ -18,6 +18,7 @@ import { DotnetPublicAPI, BINDINGType, CreateDotnetRuntimeType, DotnetModuleConf
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
+export let IMPORTS: any = undefined as any;
 
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
@@ -144,13 +145,13 @@ export const monoPlatform: Platform = {
     return ((baseAddress as any as number) + (fieldOffset || 0)) as any as T;
   },
 
-  beginHeapLock: function() {
+  beginHeapLock: function () {
     assertHeapIsNotLocked();
     currentHeapLock = new MonoHeapLock();
     return currentHeapLock;
   },
 
-  invokeWhenHeapUnlocked: function(callback) {
+  invokeWhenHeapUnlocked: function (callback) {
     // This is somewhat like a sync context. If we're not locked, just pass through the call directly.
     if (!currentHeapLock) {
       callback();
@@ -286,18 +287,19 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
   const createDotnetRuntime = await dotnetJsBeingLoaded;
 
   await createDotnetRuntime((api) => {
-    const { MONO: mono, BINDING: binding, Module: module } = api;
+    const { MONO: mono, BINDING: binding, Module: module, IMPORTS: imports } = api;
     Module = module;
     BINDING = binding;
     MONO = mono;
+    IMPORTS = imports;
 
     // Override the mechanism for fetching the main wasm file so we can connect it to our cache
-    const instantiateWasm = (imports, successCallback) => {
+    const instantiateWasm = (wasmImports, successCallback) => {
       (async () => {
         let compiledInstance: WebAssembly.Instance;
         try {
           const dotnetWasmResource = await wasmBeingLoaded;
-          compiledInstance = await compileWasmModule(dotnetWasmResource, imports);
+          compiledInstance = await compileWasmModule(dotnetWasmResource, wasmImports);
         } catch (ex) {
           printErr((ex as Error).toString());
           throw ex;
@@ -329,14 +331,11 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       assembliesBeingLoaded.forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
       pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
 
-      Blazor._internal.dotNetCriticalError = (message) => {
-        printErr(BINDING.conv_string(message) || '(null)');
-      };
+      Blazor._internal.dotNetCriticalError = (message) => printErr(message || '(null)');
 
       // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
       // startup sequence to load satellite assemblies for the application's culture.
-      Blazor._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray) => {
-        const culturesToLoad = BINDING.mono_array_to_js_array(culturesToLoadDotNetArray);
+      Blazor._internal.getSatelliteAssemblies = (culturesToLoad: string[]) => {
         const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
 
         if (satelliteResources) {
@@ -346,29 +345,26 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
             .reduce((previous, next) => previous.concat(next), new Array<LoadingResource>())
             .map(async resource => (await resource.response).arrayBuffer()));
 
-          return BINDING.js_to_mono_obj(resourcePromises.then(resourcesToLoad => {
+          return resourcePromises.then(resourcesToLoad => {
             if (resourcesToLoad.length) {
-              Blazor._internal.readSatelliteAssemblies = () => {
-                const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
-                for (let i = 0; i < resourcesToLoad.length; i++) {
-                  BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
-                }
-                return array as any;
+              Blazor._internal.readSatelliteAssembliesCount = () => {
+                return resourcesToLoad.length;
+              };
+              Blazor._internal.readSatelliteAssembly = (index: number) => {
+                return new Uint8Array(resourcesToLoad[index]);
               };
             }
-
             return resourcesToLoad.length;
-          }));
+          });
         }
-        return BINDING.js_to_mono_obj(Promise.resolve(0));
+        return Promise.resolve(0);
       };
 
       const lazyResources: {
         assemblies?: (ArrayBuffer | null)[],
         pdbs?: (ArrayBuffer | null)[]
       } = {};
-      Blazor._internal.getLazyAssemblies = (assembliesToLoadDotNetArray) => {
-        const assembliesToLoad = BINDING.mono_array_to_js_array(assembliesToLoadDotNetArray);
+      Blazor._internal.getLazyAssemblies = (assembliesToLoad: string[]) => {
         const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
 
         if (!lazyAssemblies) {
@@ -398,39 +394,32 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
           .map(async resource => (await resource.response).arrayBuffer()));
 
 
-        return BINDING.js_to_mono_obj(Promise.all([resourcePromises, pdbPromises]).then(values => {
+        return Promise.all([resourcePromises, pdbPromises]).then(values => {
           lazyResources['assemblies'] = values[0];
           lazyResources['pdbs'] = values[1];
           if (lazyResources['assemblies'].length) {
-            Blazor._internal.readLazyAssemblies = () => {
+            Blazor._internal.readLazyAssembliesCount = () => {
+              return lazyResources.assemblies ? lazyResources.assemblies.length : 0;
+            };
+            Blazor._internal.readLazyAssembly = (index: number) => {
               const { assemblies } = lazyResources;
               if (!assemblies) {
-                return BINDING.mono_obj_array_new(0);
+                return null;
               }
-              const assemblyBytes = BINDING.mono_obj_array_new(assemblies.length);
-              for (let i = 0; i < assemblies.length; i++) {
-                const assembly = assemblies[i] as ArrayBuffer;
-                BINDING.mono_obj_array_set(assemblyBytes, i, BINDING.js_typed_array_to_array(new Uint8Array(assembly)));
-              }
-              return assemblyBytes as any;
+              return assemblies[index] ? new Uint8Array(assemblies[index] as ArrayBuffer) : null;
             };
 
-            Blazor._internal.readLazyPdbs = () => {
+            Blazor._internal.readLazyPdb = (index: number) => {
               const { assemblies, pdbs } = lazyResources;
-              if (!assemblies) {
-                return BINDING.mono_obj_array_new(0);
+              if (!assemblies || !pdbs) {
+                return null;
               }
-              const pdbBytes = BINDING.mono_obj_array_new(assemblies.length);
-              for (let i = 0; i < assemblies.length; i++) {
-                const pdb = pdbs && pdbs[i] ? new Uint8Array(pdbs[i] as ArrayBufferLike) : new Uint8Array();
-                BINDING.mono_obj_array_set(pdbBytes, i, BINDING.js_typed_array_to_array(pdb));
-              }
-              return pdbBytes as any;
+              return pdbs[index] ? new Uint8Array(pdbs[index] as ArrayBufferLike) : null;
             };
           }
 
           return lazyResources['assemblies'].length;
-        }));
+        });
       };
     };
 
@@ -467,6 +456,29 @@ async function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourc
       // -1 enables debugging with logging disabled. 0 disables debugging entirely.
       MONO.mono_wasm_load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);
       MONO.mono_wasm_runtime_ready();
+      try {
+        BINDING.bind_static_method('invalid-fqn', '');
+      } catch (e) {
+        // HOTFIX: until https://github.com/dotnet/runtime/pull/72275
+        // this would always throw, but it will initialize runtime interop as side-effect
+      }
+
+      // makes Blazor._internal visible to [JSImport]
+      Object.assign(IMPORTS, {
+        Blazor: {
+          _internal: Blazor._internal,
+        },
+      });
+
+      // makes all [JSExport] functions visible to Blazor._internal
+      MONO.mono_wasm_get_assembly_exports('Microsoft.AspNetCore.Components.WebAssembly').then(exports => {
+        Object.assign(Blazor._internal, {
+          ...exports.Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime,
+        });
+      }).catch(err => {
+        runtimeReadyReject(err);
+      });
+
       attachInteropInvoker();
       runtimeReadyResolve(api);
     };
@@ -521,51 +533,36 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
   return <number><any>array + 12; // First byte from here is length, then following bytes are entries
 }
 
-function bindStaticMethod(assembly: string, typeName: string, method: string) {
-  // Fully qualified name looks like this: "[debugger-test] Math:IntAdd"
-  const fqn = `[${assembly}] ${typeName}:${method}`;
-  return BINDING.bind_static_method(fqn);
-}
 
 export let byteArrayBeingTransferred: Uint8Array | null = null;
 function attachInteropInvoker(): void {
-  const dotNetDispatcherInvokeMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'InvokeDotNet');
-  const dotNetDispatcherBeginInvokeMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'BeginInvokeDotNet');
-  const dotNetDispatcherEndInvokeJSMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'EndInvokeJS');
-  const dotNetDispatcherNotifyByteArrayAvailableMethodHandle = bindStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'Microsoft.AspNetCore.Components.WebAssembly.Services.DefaultWebAssemblyJSRuntime', 'NotifyByteArrayAvailable');
-
   DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
+    beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void => {
       assertHeapIsNotLocked();
       if (!dotNetObjectId && !assemblyName) {
         throw new Error('Either assemblyName or dotNetObjectId must have a non null value.');
       }
-      // As a current limitation, we can only pass 4 args. Fortunately we only need one of
-      // 'assemblyName' or 'dotNetObjectId', so overload them in a single slot
-      const assemblyNameOrDotNetObjectId: string = dotNetObjectId
-        ? dotNetObjectId.toString()
-        : assemblyName;
 
-      dotNetDispatcherBeginInvokeMethodHandle(
+      Blazor._internal.BeginInvokeDotNet!(
         callId ? callId.toString() : null,
-        assemblyNameOrDotNetObjectId,
+        assemblyName, dotNetObjectId || 0,
         methodIdentifier,
         argsJson,
       );
     },
     endInvokeJSFromDotNet: (asyncHandle, succeeded, serializedArgs): void => {
-      dotNetDispatcherEndInvokeJSMethodHandle(serializedArgs);
+      Blazor._internal.EndInvokeJS!(serializedArgs);
     },
     sendByteArray: (id: number, data: Uint8Array): void => {
       byteArrayBeingTransferred = data;
-      dotNetDispatcherNotifyByteArrayAvailableMethodHandle(id);
+      Blazor._internal.NotifyByteArrayAvailable!(id);
     },
     invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
       assertHeapIsNotLocked();
-      return dotNetDispatcherInvokeMethodHandle(
-        assemblyName ? assemblyName : null,
+      return Blazor._internal.InvokeDotNet!(
+        assemblyName,
         methodIdentifier,
-        dotNetObjectId ? dotNetObjectId.toString() : null,
+        dotNetObjectId || 0,
         argsJson,
       ) as string;
     },
