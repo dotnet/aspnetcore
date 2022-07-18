@@ -39,7 +39,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
 #endif
     }
 
-    public override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
+    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
     {
         // Return true as we don't perform any check.
         return new CheckCertificateStateResult(true, null);

@@ -21,9 +21,9 @@ internal sealed class MacOSCertificateManager : CertificateManager
     private static readonly string MacOSUserKeyChain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
     private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
     private const string MacOSVerifyCertificateCommandLine = "security";
-    private const string MacOSVerifyCertificateCommandLineArgumentsFormat = $"verify-cert -c {{0}} -s {{1}}";
+    private const string MacOSVerifyCertificateCommandLineArgumentsFormat = "verify-cert -c {0} -s {1}";
     private const string MacOSRemoveCertificateTrustCommandLine = "security";
-    private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "remove-trusted-cert {1} {0}";
+    private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "remove-trusted-cert {0}";
     private const string MacOSDeleteCertificateCommandLine = "sudo";
     private const string MacOSDeleteCertificateCommandLineArgumentsFormat = "security delete-certificate -Z {0} {1}";
     private const string MacOSTrustCertificateCommandLine = "security";
@@ -92,7 +92,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
     }
 
-    public override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
+    internal override CheckCertificateStateResult CheckCertificateState(X509Certificate2 candidate, bool interactive)
     {
         var certificatePath = Path.Combine(MacOSUserHttpsCertificateLocation, GetCertificateFileName(candidate));
         if (File.Exists(certificatePath))
@@ -166,13 +166,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
             // for some reason the certificate became untrusted.
             // Trying to remove the certificate from the keychain will fail if the certificate is
             // trusted.
-            try
-            {
-                RemoveCertificateTrustRule(certificate, system: false);
-            }
-            catch
-            {
-            }
+            RemoveCertificateTrustRule(certificate);
 
             // Making the certificate trusted will automatically added it to the user key chain
             RemoveCertificateFromKeyChain(MacOSUserKeyChain, certificate);
@@ -226,7 +220,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
             if (process.ExitCode != 0)
             {
                 Log.MacOSRemoveCertificateFromKeyChainError(process.ExitCode);
-                throw new InvalidOperationException($@"There was an error removing the certificate with thumbprint '{certificate.Thumbprint}'.
+                throw new InvalidOperationException($@"There was an error removing the certificate with thumbprint '{certificate.Thumbprint}' from the '{keyChain}' keychain.
 
 {output}");
             }
@@ -235,7 +229,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         Log.MacOSRemoveCertificateFromKeyChainEnd();
     }
 
-    private static void RemoveCertificateTrustRule(X509Certificate2 certificate, bool system)
+    private static void RemoveCertificateTrustRule(X509Certificate2 certificate)
     {
         Log.MacOSRemoveCertificateTrustRuleStart(GetDescription(certificate));
         var certificatePath = Path.GetTempFileName();
@@ -248,7 +242,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
                 string.Format(
                     CultureInfo.InvariantCulture,
                     MacOSRemoveCertificateTrustCommandLineArgumentsFormat,
-                    system ? "-d" : "", certificatePath
+                    certificatePath
                 ));
             using var process = Process.Start(processInfo);
             process!.WaitForExit();
