@@ -36,6 +36,7 @@ public sealed class WebAssemblyHostBuilder
     /// <param name="args">The argument passed to the application's main method.</param>
     /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
     [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChanged), typeof(JSInteropMethods))]
+    [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChangingAsync), typeof(JSInteropMethods))]
     [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
     // The following dependency prevents HeadOutlet from getting trimmed away in
     // WebAssembly prerendered apps.
