@@ -20,9 +20,6 @@ internal sealed class MacOSCertificateManager : CertificateManager
     private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
     private static readonly string MacOSUserKeyChain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
     private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
-    // private const string MacOSFindCertificateCommandLine = "security";
-    // private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
-    // private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
     private const string MacOSVerifyCertificateCommandLine = "security";
     private const string MacOSVerifyCertificateCommandLineArgumentsFormat = $"verify-cert -c {{0}} -s {{1}}";
     private const string MacOSRemoveCertificateTrustCommandLine = "security";
@@ -40,11 +37,6 @@ internal sealed class MacOSCertificateManager : CertificateManager
         "To fix this issue, run the following commands 'dotnet dev-certs https --clean' and 'dotnet dev-certs https' to remove all existing ASP.NET Core development certificates " +
         "and create a new untrusted developer certificate. " +
         "On macOS or Windows, use 'dotnet dev-certs https --trust' to trust the new certificate.";
-
-    public const string KeyNotAccessibleWithoutUserInteraction =
-        "The application is trying to access the ASP.NET Core developer certificate key. " +
-        "A prompt might appear to ask for permission to access the key. " +
-        "When that happens, select 'Always Allow' to grant 'dotnet' access to the certificate key in the future.";
 
     private static readonly TimeSpan MaxRegexTimeout = TimeSpan.FromMinutes(1);
 
@@ -109,7 +101,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
         else
         {
-            return new CheckCertificateStateResult(false, KeyNotAccessibleWithoutUserInteraction);
+            return new CheckCertificateStateResult(false, InvalidCertificateState);
         }
     }
 
@@ -201,14 +193,6 @@ internal sealed class MacOSCertificateManager : CertificateManager
         var existing = systemKeychain.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, validOnly: false);
         if (existing != null)
         {
-            try
-            {
-                RemoveCertificateTrustRule(certificate, system: true);
-            }
-            catch
-            {
-            }
-
             // Making the certificate trusted will automatically added it to the user key chain
             RemoveCertificateFromKeyChain(MacOSSystemKeyChain, certificate);
         }
