@@ -49,6 +49,9 @@
     {
         UrlLocation = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
+
+        // FIXME: Remove. For debugging tests in CI.
+        NavigationManager.AddLocationChangingHandler(AlwaysAllowNavigation);
     }
 
     protected override async Task OnInitializedAsync()
@@ -59,7 +62,14 @@
     void IDisposable.Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+
+        // FIXME: Remove. For debugging tests in CI.
+        NavigationManager.RemoveLocationChangingHandler(AlwaysAllowNavigation);
     }
+
+    // FIXME: Remove. For debugging tests in CI.
+    ValueTask AlwaysAllowNavigation(LocationChangingContext _)
+        => ValueTask.CompletedTask;
 
     void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
