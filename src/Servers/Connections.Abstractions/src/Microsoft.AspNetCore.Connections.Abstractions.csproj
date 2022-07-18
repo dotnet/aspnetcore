@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Core components of ASP.NET Core networking protocol stack.</Description>
@@ -19,10 +19,13 @@
     <Compile Include="$(SharedSourceRoot)CodeAnalysis\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
   <!-- Special case building from source because Microsoft.Bcl.AsyncInterfaces isn't available for source builds. -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR
-      '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR
-      ('$(MSBuildRestoreSessionId)' == '' AND '$(DotNetBuildFromSource)' != 'true') ">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR&#xD;&#xA;      '$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR&#xD;&#xA;      ('$(MSBuildRestoreSessionId)' == '' AND '$(DotNetBuildFromSource)' != 'true') ">
     <Reference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
 
