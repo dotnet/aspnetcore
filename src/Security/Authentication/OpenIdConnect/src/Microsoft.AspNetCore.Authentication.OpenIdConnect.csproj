@@ -13,4 +13,8 @@
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)StringHelpers.cs" LinkBase="Shared" />
+  </ItemGroup>
+
 </Project>
