@@ -26,7 +26,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
     private const string MacOSVerifyCertificateCommandLine = "security";
     private const string MacOSVerifyCertificateCommandLineArgumentsFormat = "verify-cert -c {0} -s {1}";
     private const string MacOSRemoveCertificateTrustCommandLine = "security";
-    private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "remove-trusted-cert {0}";
+    private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "remove-trusted-cert {0} {1}";
     private const string MacOSDeleteCertificateCommandLine = "sudo";
     private const string MacOSDeleteCertificateCommandLineArgumentsFormat = "security delete-certificate -Z {0} {1}";
     private const string MacOSTrustCertificateCommandLine = "security";
@@ -159,17 +159,37 @@ internal sealed class MacOSCertificateManager : CertificateManager
 
     protected override void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
     {
-        if (IsTrusted(certificate)) // On OSX this check just ensures its on the system keychain
+        if (IsInKeyChain(MacOSSystemKeyChain, certificate))
         {
-            // A trusted certificate in OSX is installed into the system keychain and
-            // as a "trust rule" applied to it.
+            // If this was a 6.0 certificate, first remove the system wide trust rule.
+            try
+            {
+                // The only reason the certificate is here is because 6.0 trusted it.
+                RemoveCertificateTrustRule(certificate, systemKeyChain: true);
+            }
+            catch
+            {
+            }
+
+            // Remove the certificate from the system keychain if .NET 6.0 put it there.
+            RemoveCertificateFromKeyChain(MacOSSystemKeyChain, certificate);
+        }
+
+        if (IsTrusted(certificate))
+        {
             // To remove the certificate we first need to remove the "trust rule" and then
             // remove the certificate from the keychain.
             // We don't care if we fail to remove the trust rule if
             // for some reason the certificate became untrusted.
             // Trying to remove the certificate from the keychain will fail if the certificate is
             // trusted.
-            RemoveCertificateTrustRule(certificate);
+            try
+            {
+                RemoveCertificateTrustRule(certificate, systemKeyChain: false);
+            }
+            catch
+            {
+            }
 
             // Making the certificate trusted will automatically added it to the user key chain
             RemoveCertificateFromKeyChain(MacOSUserKeyChain, certificate);
@@ -183,12 +203,6 @@ internal sealed class MacOSCertificateManager : CertificateManager
         else
         {
             Log.MacOSCertificateUntrusted(GetDescription(certificate));
-        }
-
-        if (IsInKeyChain(MacOSSystemKeyChain, certificate))
-        {
-            // Remove the certificate from the system keychain if .NET 6.0 put it there.
-            RemoveCertificateFromKeyChain(MacOSSystemKeyChain, certificate);
         }
     }
 
@@ -229,7 +243,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         Log.MacOSRemoveCertificateFromKeyChainEnd();
     }
 
-    private static void RemoveCertificateTrustRule(X509Certificate2 certificate)
+    private static void RemoveCertificateTrustRule(X509Certificate2 certificate, bool systemKeyChain)
     {
         Log.MacOSRemoveCertificateTrustRuleStart(GetDescription(certificate));
         var certificatePath = Path.GetTempFileName();
@@ -242,6 +256,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
                 string.Format(
                     CultureInfo.InvariantCulture,
                     MacOSRemoveCertificateTrustCommandLineArgumentsFormat,
+                    systemKeyChain ? "-d " : "",
                     certificatePath
                 ));
             using var process = Process.Start(processInfo);
