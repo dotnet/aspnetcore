@@ -21,7 +21,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
     private static readonly string MacOSUserKeyChain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
     private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
     private const string MacOSFindCertificateCommandLine = "security";
-    private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
+    private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p {1}";
     private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
     private const string MacOSVerifyCertificateCommandLine = "security";
     private const string MacOSVerifyCertificateCommandLineArgumentsFormat = "verify-cert -c {0} -s {1}";
@@ -185,7 +185,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
             Log.MacOSCertificateUntrusted(GetDescription(certificate));
         }
 
-        if (IsInSystemKeyChain(certificate))
+        if (IsInKeyChain(MacOSSystemKeyChain, certificate))
         {
             // Remove the certificate from the system keychain if .NET 6.0 put it there.
             RemoveCertificateFromKeyChain(MacOSSystemKeyChain, certificate);
@@ -433,6 +433,13 @@ internal sealed class MacOSCertificateManager : CertificateManager
             {
                 File.Delete(certificatePath);
             }
+
+            if (IsInKeyChain(MacOSUserKeyChain, certificate))
+            {
+                // This only executes if the cert is not trusted, as otherwise removing it from the trusted roots will
+                // remove it from the keychain.
+                RemoveCertificateFromKeyChain(MacOSUserKeyChain, certificate);
+            }
         }
         catch (Exception ex)
         {
@@ -442,7 +449,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         }
     }
 
-    private static bool IsInSystemKeyChain(X509Certificate2 certificate)
+    private static bool IsInKeyChain(string keyChain, X509Certificate2 certificate)
     {
         var subjectMatch = Regex.Match(certificate.Subject, CertificateSubjectRegex, RegexOptions.Singleline, MaxRegexTimeout);
         if (!subjectMatch.Success)
@@ -452,7 +459,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
         var subject = subjectMatch.Groups[1].Value;
         using var checkTrustProcess = Process.Start(new ProcessStartInfo(
             MacOSFindCertificateCommandLine,
-            string.Format(CultureInfo.InvariantCulture, MacOSFindCertificateCommandLineArgumentsFormat, subject))
+            string.Format(CultureInfo.InvariantCulture, MacOSFindCertificateCommandLineArgumentsFormat, subject, keyChain))
         {
             RedirectStandardOutput = true
         });
