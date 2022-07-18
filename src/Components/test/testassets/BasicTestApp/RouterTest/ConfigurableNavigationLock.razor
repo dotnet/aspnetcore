@@ -4,9 +4,9 @@
 <input class="confirm-external-navigation" type="checkbox" @bind-value="_confirmExternalNavigation" />Confirm external navigation<br />
 
 <p class="navigation-log">
-    @for (var j = 0; j < _log.Count; j++)
+    @for (var i = 0; i < _log.Count; i++)
     {
-        var entryIndex = j;
+        var entryIndex = i;
         <span class="navigation-log-entry-@entryIndex">@_log[entryIndex]</span><br />
     }
 </p>
@@ -14,7 +14,11 @@
 @if (BlockingUrl is not null)
 {
     <div class="blocking-controls">
-        <span style="color: red;">Blocking '@BlockingUrl'</span>
+        <span style="color: red;">Blocking '@BlockingUrl'</span><br />
+        @if (_context?.HistoryEntryState is { } state)
+        {
+            <span class="history-state">State = '@state'</span><br />
+        }
         <button class="navigation-continue" @onclick="Continue">Continue</button>
         <button class="navigation-cancel" @onclick="Cancel">Cancel</button>
         <button class="navigation-throw-exception" @onclick="ThrowException">Throw exception</button>

@@ -13,7 +13,7 @@ let currentLocationChangingCallId = 0;
 
 // Will be initialized once someone registers
 let notifyLocationChangedCallback: ((uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
-let notifyLocationChangingCallback: ((callId: number, uri: string, intercepted: boolean) => Promise<void>) | null = null;
+let notifyLocationChangingCallback: ((callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
 
 let popStateCallback: ((state: PopStateEvent) => Promise<void> | void) = onBrowserInitiatedPopState;
 let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | null = null;
@@ -31,7 +31,7 @@ export const internalFunctions = {
 
 function listenForNavigationEvents(
   locationChangedCallback: (uri: string, state: string | undefined, intercepted: boolean) => Promise<void>,
-  locationChangingCallback: (callId: number, uri: string, intercepted: boolean) => Promise<void>
+  locationChangingCallback: (callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>
 ): void {
   notifyLocationChangedCallback = locationChangedCallback;
   notifyLocationChangingCallback = locationChangingCallback;
@@ -139,7 +139,7 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   ignorePendingNavigation();
 
   if (!skipLocationChangingCallback && hasLocationChangingEventListeners) {
-    const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, interceptedLink);
+    const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink);
     if (!shouldContinueNavigation) {
       return;
     }
@@ -188,7 +188,7 @@ function ignorePendingNavigation() {
   }
 }
 
-function notifyLocationChanging(uri: string, intercepted: boolean): Promise<boolean> {
+function notifyLocationChanging(uri: string, state: string | undefined, intercepted: boolean): Promise<boolean> {
   return new Promise<boolean>(resolve => {
     ignorePendingNavigation();
 
@@ -199,7 +199,7 @@ function notifyLocationChanging(uri: string, intercepted: boolean): Promise<bool
 
     currentLocationChangingCallId++;
     resolveCurrentNavigation = resolve;
-    notifyLocationChangingCallback(currentLocationChangingCallId, uri, intercepted);
+    notifyLocationChangingCallback(currentLocationChangingCallId, uri, state, intercepted);
   });
 }
 
@@ -215,13 +215,14 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
 
   if (hasLocationChangingEventListeners) {
     const index = state.state?._index ?? 0;
+    const userState = state.state?.userState;
     const delta = index - currentHistoryIndex;
     const uri = location.href;
 
     // Temporarily revert the navigation until we confirm if the navigation should continue.
     await navigateHistoryWithoutPopStateCallback(-delta);
 
-    const shouldContinueNavigation = await notifyLocationChanging(uri, false);
+    const shouldContinueNavigation = await notifyLocationChanging(uri, userState, false);
     if (!shouldContinueNavigation) {
       return;
     }

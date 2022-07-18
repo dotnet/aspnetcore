@@ -536,7 +536,7 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
-    public async Task OnLocationChangingAsync(int callId, string uri, bool intercepted)
+    public async Task OnLocationChangingAsync(int callId, string uri, string? state, bool intercepted)
     {
         AssertInitialized();
         AssertNotDisposed();
@@ -547,7 +547,7 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 Log.LocationChanging(_logger, uri, CircuitId);
                 var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                return await navigationManager.HandleLocationChangingAsync(uri, intercepted);
+                return await navigationManager.HandleLocationChangingAsync(uri, state, intercepted);
             });
 
             await Client.SendAsync("JS.EndLocationChanging", callId, shouldContinueNavigation);

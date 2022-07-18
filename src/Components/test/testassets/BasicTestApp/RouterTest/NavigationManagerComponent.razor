@@ -20,7 +20,8 @@
 </p>
 
 <p>
-    <span id="test-info">@UrlLocation</span>
+    <span id="test-info">@UrlLocation</span><br />
+    Location changed <span id="location-changed-count">@locationChangedCount</span> times
 </p>
 
 <p>
@@ -42,6 +43,7 @@
     string UrlLocation;
 
     int navigationLockCount;
+    int locationChangedCount;
     int nextProgrammaticNavigationIndex;
     int nextLinkNavigationIndex;
 
@@ -64,6 +66,7 @@
     void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         UrlLocation = NavigationManager.Uri;
+        locationChangedCount++;
         StateHasChanged();
     }
 
@@ -90,6 +93,11 @@
 
     void ProgrammaticNavigation()
     {
-        NavigationManager.NavigateTo($"/subdir/some-path-{nextProgrammaticNavigationIndex++}");
+        NavigationManager.NavigateTo($"/subdir/some-path-{nextProgrammaticNavigationIndex}", new NavigationOptions
+        {
+            HistoryEntryState = $"Navigation index {nextProgrammaticNavigationIndex}",
+        });
+
+        nextProgrammaticNavigationIndex++;
     }
 }

@@ -72,9 +72,9 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         NotifyLocationChanged(intercepted);
     }
 
-    public async ValueTask<bool> HandleLocationChangingAsync(string uri, bool intercepted)
+    public async ValueTask<bool> HandleLocationChangingAsync(string uri, string? state, bool intercepted)
     {
-        return await NotifyLocationChangingAsync(uri, intercepted);
+        return await NotifyLocationChangingAsync(uri, state, intercepted);
     }
 
     /// <inheritdoc />
@@ -89,7 +89,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
             throw new NavigationException(absoluteUriString);
         }
 
-        NotifyLocationChangingAsync(uri, false).AsTask().ContinueWith(t =>
+        NotifyLocationChangingAsync(uri, options.HistoryEntryState, false).AsTask().ContinueWith(t =>
         {
             if (t.Exception is { } exception)
             {

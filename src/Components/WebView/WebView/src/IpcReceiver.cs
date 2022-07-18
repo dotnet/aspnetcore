@@ -64,7 +64,7 @@ internal sealed class IpcReceiver
                     OnLocationChanged(pageContext, args[0].GetString(), args[1].GetString(), args[2].GetBoolean());
                     break;
                 case IpcCommon.IncomingMessageType.OnLocationChanging:
-                    OnLocationChanging(pageContext, args[0].GetInt32(), args[1].GetString(), args[2].GetBoolean());
+                    OnLocationChanging(pageContext, args[0].GetInt32(), args[1].GetString(), args[2].GetString(), args[3].GetBoolean());
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown message type '{messageType}'.");
@@ -105,8 +105,8 @@ internal sealed class IpcReceiver
         pageContext.NavigationManager.LocationUpdated(uri, state, intercepted);
     }
 
-    private static void OnLocationChanging(PageContext pageContext, int callId, string uri, bool intercepted)
+    private static void OnLocationChanging(PageContext pageContext, int callId, string uri, string? state, bool intercepted)
     {
-        pageContext.NavigationManager.HandleLocationChangingAsync(callId, uri, intercepted).Preserve();
+        pageContext.NavigationManager.HandleLocationChangingAsync(callId, uri, state, intercepted).Preserve();
     }
 }

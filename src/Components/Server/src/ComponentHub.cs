@@ -296,7 +296,7 @@ internal sealed partial class ComponentHub : Hub
         _ = circuitHost.OnLocationChangedAsync(uri, state, intercepted);
     }
 
-    public async ValueTask OnLocationChanging(int callId, string uri, bool intercepted)
+    public async ValueTask OnLocationChanging(int callId, string uri, string? state, bool intercepted)
     {
         var circuitHost = await GetActiveCircuitAsync();
         if (circuitHost == null)
@@ -304,7 +304,7 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.OnLocationChangingAsync(callId, uri, intercepted);
+        _ = circuitHost.OnLocationChangingAsync(callId, uri, state, intercepted);
     }
 
     // We store the CircuitHost through a *handle* here because Context.Items is tied to the lifetime

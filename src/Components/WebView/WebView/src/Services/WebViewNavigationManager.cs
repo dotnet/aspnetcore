@@ -28,13 +28,13 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
         NotifyLocationChanged(intercepted);
     }
 
-    public async ValueTask HandleLocationChangingAsync(int callId, string uri, bool intercepted)
+    public async ValueTask HandleLocationChangingAsync(int callId, string uri, string? state, bool intercepted)
     {
         bool shouldContinueNavigation;
 
         try
         {
-            shouldContinueNavigation = await NotifyLocationChangingAsync(uri, intercepted);
+            shouldContinueNavigation = await NotifyLocationChangingAsync(uri, state, intercepted);
 
             if (!shouldContinueNavigation)
             {
@@ -52,7 +52,7 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
 
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
-        NotifyLocationChangingAsync(uri, false).AsTask().ContinueWith(t =>
+        NotifyLocationChangingAsync(uri, options.HistoryEntryState, false).AsTask().ContinueWith(t =>
         {
             if (t.Exception is { } exception)
             {

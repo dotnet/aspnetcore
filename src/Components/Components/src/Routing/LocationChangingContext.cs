@@ -10,15 +10,10 @@ public class LocationChangingContext
 {
     private readonly CancellationTokenSource _cts;
 
-    /// <summary>
-    /// Constructs a new <see cref="LocationChangingContext"/> instance.
-    /// </summary>
-    /// <param name="targetLocation">The new location if the navigation continues.</param>
-    /// <param name="isNavigationIntercepted">Whether this navigation was intercepted from a link.</param>
-    /// <param name="cts">A <see cref="CancellationTokenSource"/> whose token can be used to determine if this navigation gets canceled.</param>
-    public LocationChangingContext(string targetLocation, bool isNavigationIntercepted, CancellationTokenSource cts)
+    internal LocationChangingContext(string targetLocation, string? historyEntryState, bool isNavigationIntercepted, CancellationTokenSource cts)
     {
         TargetLocation = targetLocation;
+        HistoryEntryState = historyEntryState;
         IsNavigationIntercepted = isNavigationIntercepted;
 
         _cts = cts;
@@ -28,6 +23,11 @@ public class LocationChangingContext
     /// Gets the target location.
     /// </summary>
     public string TargetLocation { get; }
+
+    /// <summary>
+    /// Gets the state associated with the target history entry.
+    /// </summary>
+    public string? HistoryEntryState { get; }
 
     /// <summary>
     /// Gets whether this navigation was intercepted from a link.

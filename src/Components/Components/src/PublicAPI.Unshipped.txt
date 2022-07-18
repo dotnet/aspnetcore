@@ -2,7 +2,7 @@
 Microsoft.AspNetCore.Components.NavigationManager.AddLocationChangingHandler(System.Func<Microsoft.AspNetCore.Components.Routing.LocationChangingContext!, System.Threading.Tasks.ValueTask>! locationChangingHandler) -> void
 Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.NavigationManager.HistoryEntryState.set -> void
-Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChangingAsync(string! uri, bool isNavigationIntercepted) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChangingAsync(string! uri, string? state, bool isNavigationIntercepted) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Components.NavigationManager.RemoveLocationChangingHandler(System.Func<Microsoft.AspNetCore.Components.Routing.LocationChangingContext!, System.Threading.Tasks.ValueTask>! locationChangingHandler) -> void
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.NavigationOptions.HistoryEntryState.init -> void
@@ -10,8 +10,8 @@ Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddContent(int seque
 Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.AspNetCore.Components.Routing.LocationChangingContext.HistoryEntryState.get -> string?
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.IsNavigationIntercepted.get -> bool
-Microsoft.AspNetCore.Components.Routing.LocationChangingContext.LocationChangingContext(string! targetLocation, bool isNavigationIntercepted, System.Threading.CancellationTokenSource! cts) -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.PreventNavigation() -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.TargetLocation.get -> string!
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback<T>(object! receiver, Microsoft.AspNetCore.Components.EventCallback<T> callback, T value) -> Microsoft.AspNetCore.Components.EventCallback<T>

@@ -285,9 +285,10 @@ public abstract class NavigationManager
     /// Notifies the registered handlers of the current location change.
     /// </summary>
     /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI.</param>
+    /// <param name="state">The state associated with the target history entry.</param>
     /// <param name="isNavigationIntercepted">Whether this navigation was intercepted from a link.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the completion of the operation. If the result is <see langword="true"/>, the navigation should continue.</returns>
-    protected async ValueTask<bool> NotifyLocationChangingAsync(string uri, bool isNavigationIntercepted)
+    protected async ValueTask<bool> NotifyLocationChangingAsync(string uri, string? state, bool isNavigationIntercepted)
     {
         _locationChangingCts?.Cancel();
         _locationChangingCts = null;
@@ -301,7 +302,7 @@ public abstract class NavigationManager
 
         _locationChangingCts = new();
 
-        var context = new LocationChangingContext(uri, isNavigationIntercepted, _locationChangingCts);
+        var context = new LocationChangingContext(uri, state, isNavigationIntercepted, _locationChangingCts);
         var cancellationToken = _locationChangingCts.Token;
 
         try
@@ -366,7 +367,7 @@ public abstract class NavigationManager
     /// <summary>
     /// Sets whether navigation is currently locked. If it is, then implementations should not update <see cref="Uri"/> and call
     /// <see cref="NotifyLocationChanged(bool)"/> until they have first confirmed the navigation by calling
-    /// <see cref="NotifyLocationChangingAsync(string, bool)"/>.
+    /// <see cref="NotifyLocationChangingAsync(string, string?, bool)"/>.
     /// </summary>
     /// <param name="value">Whether navigation is currently locked.</param>
     protected virtual void SetNavigationLockState(bool value)

@@ -34,8 +34,8 @@ public static class JSInteropMethods
     /// For framework use only.
     /// </summary>
     [JSInvokable(nameof(NotifyLocationChangingAsync))]
-    public static async ValueTask<bool> NotifyLocationChangingAsync(string uri, bool isInterceptedLink)
+    public static async ValueTask<bool> NotifyLocationChangingAsync(string uri, string? state, bool isInterceptedLink)
     {
-        return await WebAssemblyNavigationManager.Instance.HandleLocationChangingAsync(uri, isInterceptedLink);
+        return await WebAssemblyNavigationManager.Instance.HandleLocationChangingAsync(uri, state, isInterceptedLink);
     }
 }
