@@ -20,6 +20,9 @@ internal sealed class MacOSCertificateManager : CertificateManager
     private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
     private static readonly string MacOSUserKeyChain = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/Library/Keychains/login.keychain-db";
     private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
+    private const string MacOSFindCertificateCommandLine = "security";
+    private const string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
+    private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
     private const string MacOSVerifyCertificateCommandLine = "security";
     private const string MacOSVerifyCertificateCommandLineArgumentsFormat = "verify-cert -c {0} -s {1}";
     private const string MacOSRemoveCertificateTrustCommandLine = "security";
@@ -182,12 +185,9 @@ internal sealed class MacOSCertificateManager : CertificateManager
             Log.MacOSCertificateUntrusted(GetDescription(certificate));
         }
 
-        using var systemKeychain = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
-        systemKeychain.Open(OpenFlags.ReadOnly);
-        var existing = systemKeychain.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, validOnly: false);
-        if (existing != null)
+        if (IsInSystemKeyChain(certificate))
         {
-            // Making the certificate trusted will automatically added it to the user key chain
+            // Remove the certificate from the system keychain if .NET 6.0 put it there.
             RemoveCertificateFromKeyChain(MacOSSystemKeyChain, certificate);
         }
     }
@@ -440,5 +440,26 @@ internal sealed class MacOSCertificateManager : CertificateManager
 
 {ex.Message}");
         }
+    }
+
+    private static bool IsInSystemKeyChain(X509Certificate2 certificate)
+    {
+        var subjectMatch = Regex.Match(certificate.Subject, CertificateSubjectRegex, RegexOptions.Singleline, MaxRegexTimeout);
+        if (!subjectMatch.Success)
+        {
+            throw new InvalidOperationException($"Can't determine the subject for the certificate with subject '{certificate.Subject}'.");
+        }
+        var subject = subjectMatch.Groups[1].Value;
+        using var checkTrustProcess = Process.Start(new ProcessStartInfo(
+            MacOSFindCertificateCommandLine,
+            string.Format(CultureInfo.InvariantCulture, MacOSFindCertificateCommandLineArgumentsFormat, subject))
+        {
+            RedirectStandardOutput = true
+        });
+        var output = checkTrustProcess!.StandardOutput.ReadToEnd();
+        checkTrustProcess.WaitForExit();
+        var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
+        var hashes = matches.OfType<Match>().Select(m => m.Groups[1].Value).ToList();
+        return hashes.Any(h => string.Equals(h, certificate.Thumbprint, StringComparison.Ordinal));
     }
 }
