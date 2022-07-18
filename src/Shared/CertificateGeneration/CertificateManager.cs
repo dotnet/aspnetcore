@@ -982,7 +982,7 @@ internal abstract class CertificateManager
         internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, description);
 
         [Event(65, Level = EventLevel.Verbose, Message = "The certificate is already trusted.")]
-        public void MacOSCertificateAlreadyTrusted() => WriteEvent(46);
+        public void MacOSCertificateAlreadyTrusted() => WriteEvent(65);
     }
 
     internal sealed class UserCancelledTrustException : Exception
