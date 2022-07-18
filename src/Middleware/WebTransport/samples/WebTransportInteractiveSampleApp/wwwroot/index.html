@@ -168,8 +168,9 @@
                 let streamReader = session.incomingUnidirectionalStreams.getReader();
                 let stream = await streamReader.read();
                 if (stream.value && confirm("New incoming stream. Would you like to accept it?")) {
-                    addStream(stream, "input unidirectional");
-                    startListeningForIncomingData(stream, openStreams.length, "input unidirectional");
+                    startListeningForIncomingData(stream.value, openStreams.length, "input unidirectional");
+                    // we don't add to the stream list here as the only stream type that we can receive is
+                    // input. As we can't send data over these streams, there is no point in showing them to the user
                 }
             } catch {
                 alert("Failed to accept incoming stream");

@@ -60,6 +60,11 @@ app.Use(async (context, next) =>
 
         var session = await feature.AcceptAsync(CancellationToken.None);
 
+        if (session is null)
+        {
+            return;
+        }
+
         while (true)
         {
             ConnectionContext? stream = null;
@@ -71,11 +76,11 @@ app.Use(async (context, next) =>
                 direction = stream.Features.GetRequiredFeature<IStreamDirectionFeature>();
                 if (direction.CanRead && direction.CanWrite)
                 {
-                    _ = handleBidirectionalStream(stream);
+                    _ = handleBidirectionalStream(session, stream);
                 }
                 else
                 {
-                    _ = handleUnidirectionalStream(stream);
+                    _ = handleUnidirectionalStream(session, stream);
                 }
             }
         }
@@ -84,7 +89,7 @@ app.Use(async (context, next) =>
 
 await app.RunAsync();
 
-static async Task handleUnidirectionalStream(ConnectionContext stream)
+static async Task handleUnidirectionalStream(IWebTransportSession session, ConnectionContext stream)
 {
     var inputPipe = stream.Transport.Input;
 
@@ -94,12 +99,17 @@ static async Task handleUnidirectionalStream(ConnectionContext stream)
     {
         var length = await inputPipe.AsStream().ReadAsync(memory);
 
+        var message = Encoding.Default.GetString(memory[..length].ToArray());
+
+        await ApplySpecialCommands(session, message);
+
         Console.WriteLine("RECEIVED FROM CLIENT:");
-        Console.WriteLine(Encoding.Default.GetString(memory[..length].ToArray()));
+        Console.WriteLine(message);
+
     }
 }
 
-static async Task handleBidirectionalStream(ConnectionContext stream)
+static async Task handleBidirectionalStream(IWebTransportSession session, ConnectionContext stream)
 {
     var inputPipe = stream.Transport.Input;
     var outputPipe = stream.Transport.Output;
@@ -113,11 +123,35 @@ static async Task handleBidirectionalStream(ConnectionContext stream)
         // slice to only keep the relevant parts of the memory
         var outputMemory = memory[..length];
 
+        // handle special commands
+        await ApplySpecialCommands(session, Encoding.Default.GetString(outputMemory.ToArray()));
+
         // do some operations on the contents of the data
         outputMemory.Span.Reverse();
 
         // write back the data to the stream
         await outputPipe.WriteAsync(outputMemory);
+
+        memory.Span.Fill(0);
+    }
+}
+
+static async Task ApplySpecialCommands(IWebTransportSession session, string message)
+{
+    switch (message)
+    {
+        case "Initiate Stream":
+            var stream = await session.OpenUnidirectionalStreamAsync();
+            if (stream is not null)
+            {
+                await stream.Transport.Output.WriteAsync(new("Created a new stream from the client and sent this message then closing the stream."u8.ToArray()));
+            }
+            break;
+        case "Abort":
+            session.Abort(256 /*No error*/);
+            break;
+        default:
+            break; // in all other cases the string is not a special command
     }
 }
 

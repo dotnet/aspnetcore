@@ -33,11 +33,11 @@ internal sealed class WebTransportSession : IWebTransportSession
             (byte)Http3StreamType.WebTransportUnidirectional,
             0x00 /*body*/});
 
-    internal static string WebTransportProtocolValue => "webtransport";
-    internal static string VersionEnabledIndicator => "1";
-    internal static string SecPrefix => "sec-webtransport-http3-";
-    internal static string VersionHeaderPrefix => $"{SecPrefix}draft";
-    internal static string CurrentSuppportedVersion => $"{VersionHeaderPrefix}02";
+    internal const string WebTransportProtocolValue = "webtransport";
+    internal const string VersionEnabledIndicator = "1";
+    internal const string SecPrefix = "sec-webtransport-http3-";
+    internal const string VersionHeaderPrefix = $"{SecPrefix}draft";
+    internal const string CurrentSuppportedVersion = $"{VersionHeaderPrefix}02";
 
     public long SessionId => _connectStream.StreamId;
 
