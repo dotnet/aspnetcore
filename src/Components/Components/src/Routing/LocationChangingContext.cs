@@ -10,9 +10,15 @@ public class LocationChangingContext
 {
     private readonly CancellationTokenSource _cts;
 
-    internal LocationChangingContext(string destinationUrl, bool isNavigationIntercepted, CancellationTokenSource cts)
+    /// <summary>
+    /// Constructs a new <see cref="LocationChangingContext"/> instance.
+    /// </summary>
+    /// <param name="targetLocation">The new location if the navigation continues.</param>
+    /// <param name="isNavigationIntercepted">Whether this navigation was intercepted from a link.</param>
+    /// <param name="cts">A <see cref="CancellationTokenSource"/> whose token can be used to determine if this navigation gets canceled.</param>
+    public LocationChangingContext(string targetLocation, bool isNavigationIntercepted, CancellationTokenSource cts)
     {
-        TargetLocation = destinationUrl;
+        TargetLocation = targetLocation;
         IsNavigationIntercepted = isNavigationIntercepted;
 
         _cts = cts;
@@ -29,7 +35,8 @@ public class LocationChangingContext
     public bool IsNavigationIntercepted { get; }
 
     /// <summary>
-    /// Gets a <see cref="System.Threading.CancellationToken"/> that can be used to determine if this navigation was canceled.
+    /// Gets a <see cref="System.Threading.CancellationToken"/> that can be used to determine if this navigation was canceled
+    /// (for example, because the user has triggered a different navigation).
     /// </summary>
     public CancellationToken CancellationToken => _cts.Token;
 

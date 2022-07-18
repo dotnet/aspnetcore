@@ -72,7 +72,7 @@ public class NavigationLock : IComponent, IAsyncDisposable
         }
     }
 
-    async Task OnLocationChanging(LocationChangingContext context)
+    async ValueTask OnLocationChanging(LocationChangingContext context)
     {
         await OnBeforeInternalNavigation.InvokeAsync(context);
     }

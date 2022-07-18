@@ -16,7 +16,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 {
     private readonly ILogger<RemoteNavigationManager> _logger;
     private IJSRuntime _jsRuntime;
-    private bool? _pendingNavigationLockState;
+    private bool? _navigationLockStateBeforeJsRuntimeAttached;
 
     /// <summary>
     /// Creates a new <see cref="RemoteNavigationManager"/> instance.
@@ -56,10 +56,10 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         _jsRuntime = jsRuntime;
 
-        if (_pendingNavigationLockState.HasValue)
+        if (_navigationLockStateBeforeJsRuntimeAttached.HasValue)
         {
-            SetHasLocationChangingListeners(_pendingNavigationLockState.Value);
-            _pendingNavigationLockState = null;
+            SetHasLocationChangingListeners(_navigationLockStateBeforeJsRuntimeAttached.Value);
+            _navigationLockStateBeforeJsRuntimeAttached = null;
         }
     }
 
@@ -110,7 +110,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     {
         if (_jsRuntime is null)
         {
-            _pendingNavigationLockState = value;
+            _navigationLockStateBeforeJsRuntimeAttached = value;
             return;
         }
 

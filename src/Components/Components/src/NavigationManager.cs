@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
 
-using LocationChangingHandler = Func<LocationChangingContext, Task>;
+using LocationChangingHandler = Func<LocationChangingContext, ValueTask>;
 
 /// <summary>
 /// Provides an abstraction for querying and managing URI navigation.
@@ -308,7 +308,17 @@ public abstract class NavigationManager
         {
             if (handlerCount == 1)
             {
-                await _locationChangingHandlers[0].Invoke(context);
+                var handlerTask = _locationChangingHandlers[0].Invoke(context);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return false;
+                }
+
+                if (!handlerTask.IsCompletedSuccessfully)
+                {
+                    await handlerTask.AsTask().WaitAsync(cancellationToken);
+                }
             }
             else
             {
@@ -322,12 +332,14 @@ public abstract class NavigationManager
 
                     for (var i = 0; i < handlerCount; i++)
                     {
-                        locationChangingTasks[i] = locationChangingHandlersCopy[i].Invoke(context);
+                        var handlerTask = locationChangingHandlersCopy[i].Invoke(context);
 
                         if (cancellationToken.IsCancellationRequested)
                         {
                             return false;
                         }
+
+                        locationChangingTasks[i] = handlerTask.AsTask();
                     }
 
                     await Task.WhenAll(locationChangingTasks).WaitAsync(cancellationToken);
@@ -340,16 +352,23 @@ public abstract class NavigationManager
 
             return !cancellationToken.IsCancellationRequested;
         }
-        catch (TaskCanceledException ex) when (ex.CancellationToken == cancellationToken)
+        catch (TaskCanceledException ex)
         {
-            return false;
+            if (ex.CancellationToken == cancellationToken)
+            {
+                return false;
+            }
+
+            throw;
         }
     }
 
     /// <summary>
-    /// Sets whether there are active location changing handlers.
+    /// Sets whether navigation is currently locked. If it is, then implementations should not update <see cref="Uri"/> and call
+    /// <see cref="NotifyLocationChanged(bool)"/> until they have first confirmed the navigation by calling
+    /// <see cref="NotifyLocationChangingAsync(string, bool)"/>.
     /// </summary>
-    /// <param name="value">Whether there are active location changing handlers.</param>
+    /// <param name="value">Whether navigation is currently locked.</param>
     protected virtual void SetNavigationLockState(bool value)
         => throw new NotSupportedException($"To support navigation locks, {GetType().Name} must override {nameof(SetNavigationLockState)}");
 
@@ -375,7 +394,6 @@ public abstract class NavigationManager
     /// Removes a previously-added location changing handler.
     /// </summary>
     /// <param name="locationChangingHandler">The handler to remove.</param>
-    /// <returns><see langword="true"/> if the handler was removed, otherwise <see langword="false"/>.</returns>
     public void RemoveLocationChangingHandler(LocationChangingHandler locationChangingHandler)
     {
         AssertInitialized();

@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs.HistoryEntrySta
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.CancellationToken.get -> System.Threading.CancellationToken
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.IsNavigationIntercepted.get -> bool
+Microsoft.AspNetCore.Components.Routing.LocationChangingContext.LocationChangingContext(string! targetLocation, bool isNavigationIntercepted, System.Threading.CancellationTokenSource! cts) -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.PreventNavigation() -> void
 Microsoft.AspNetCore.Components.Routing.LocationChangingContext.TargetLocation.get -> string!
 static Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback<T>(object! receiver, Microsoft.AspNetCore.Components.EventCallback<T> callback, T value) -> Microsoft.AspNetCore.Components.EventCallback<T>
