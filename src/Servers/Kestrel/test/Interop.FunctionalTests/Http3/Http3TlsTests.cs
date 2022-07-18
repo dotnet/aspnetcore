@@ -64,7 +64,6 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.RequireCertificate)]
     [InlineData(ClientCertificateMode.AllowCertificate)]
     [MsQuicSupported]
-    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2,
         SkipReason = "Windows versions newer than 20H2 do not enable TLS 1.1: https://github.com/dotnet/aspnetcore/issues/37761")]
     public async Task ClientCertificate_AllowOrRequire_Available_Accepted(ClientCertificateMode mode)
@@ -109,7 +108,6 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.NoCertificate)]
     [InlineData(ClientCertificateMode.DelayCertificate)]
     [MsQuicSupported]
-    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41131")]
     public async Task ClientCertificate_NoOrDelayed_Available_Ignored(ClientCertificateMode mode)
     {
@@ -155,7 +153,6 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.AllowCertificate, false)]
     [InlineData(ClientCertificateMode.AllowCertificate, true)]
     [MsQuicSupported]
-    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public async Task ClientCertificate_AllowOrRequire_Available_Invalid_Refused(ClientCertificateMode mode, bool serverAllowInvalid)
     {
@@ -211,7 +208,6 @@ public class Http3TlsTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/aspnetcore/issues/35800")]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42388")]
     public async Task ClientCertificate_Allow_NotAvailable_Optional()
     {
