@@ -672,11 +672,18 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         SetUrlViaPushState(relativeUriPostNavigation);
 
-        // The navigation was blocked
+        // The navigation was blocked and the navigation controls are displaying
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+        Browser.Exists(By.CssSelector("#navigation-lock-1 > div.blocking-controls"));
+
+        // The location was reverted to what it was before the navigation started
         Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
 
         // Unblock the first navigation lock
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-continue")).Click();
+
+        // Wait until the navigation controls have disappeared before continuing
+        Browser.DoesNotExist(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
 
         // The second navigation lock is still blocking navigation
         Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
@@ -705,12 +712,12 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         SetUrlViaPushState("/mytestpath");
 
-        // The navigation was blocked
-        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
-
         // Both navigation locks have initiated their "location changing" handlers and are displaying navigation controls
         Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
         Browser.Exists(By.CssSelector("#navigation-lock-1 > div.blocking-controls"));
+
+        // The location was reverted to what it was before the navigation started
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
 
         // Cancel the navigation using the first navigation lock
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-cancel")).Click();
@@ -739,7 +746,10 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         SetUrlViaPushState(relativeUriPostNavigation);
 
-        // The navigation was blocked
+        // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+
+        // The location was reverted to what it was before the navigation started
         Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
 
         // Cancel the navigation using the first navigation lock
@@ -776,6 +786,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir{relativeUriPostNavigation}";
 
         SetUrlViaPushState(relativeUriPostNavigation);
+
+        // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
 
         // The navigation was blocked
         Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
@@ -815,7 +828,10 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         SetUrlViaPushState(relativeCanceledUri);
 
-        // The navigation was blocked
+        // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+
+        // The location was reverted to what it was before the navigation started
         Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
 
         var relativeUriPostNavigation = "/mytestpath";
@@ -823,11 +839,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         SetUrlViaPushState(relativeUriPostNavigation);
 
-        // The navigation was blocked again
-        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
-
         // The navigation was canceled and logged
         Browser.Equal($"Canceling '{expectedCanceledAbsoluteUri}'", () => app.FindElement(By.CssSelector("#navigation-lock-0 > p.navigation-log > span.navigation-log-entry-0"))?.Text);
+
+        // The location was reverted again
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
 
         // Unblock the new navigation
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-continue")).Click();
@@ -856,7 +872,10 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         Browser.Navigate().Back();
 
-        // The navigation was blocked
+        // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+
+        // The location was reverted to what it was before the navigation started
         Browser.Equal(expectedStartingAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
 
         Browser.Navigate().Back();
@@ -889,18 +908,21 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         Browser.FindElement(By.Id("programmatic-navigation")).Click();
 
-        // The navigation was blocked
+        // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+
+        // The location was reverted to what it was before the navigation started
         Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
 
         var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir/some-path-1";
 
         Browser.FindElement(By.Id("programmatic-navigation")).Click();
 
-        // The navigation was blocked again
-        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
-
         // The navigation was canceled and logged
         Browser.Equal($"Canceling '{expectedCanceledRelativeUri}'", () => app.FindElement(By.CssSelector("#navigation-lock-0 > p.navigation-log > span.navigation-log-entry-0"))?.Text);
+
+        // The location was reverted again
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
 
         // Unblock the new navigation
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-continue")).Click();
@@ -926,7 +948,10 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         Browser.FindElement(By.Id("internal-link-navigation")).Click();
 
-        // The navigation was blocked
+        // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
+        Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
+
+        // The location was reverted to what it was before the navigation started
         Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
 
         var expectedAbsoluteUriPostNavigation = $"{_serverFixture.RootUri}subdir/some-path-1";
@@ -934,11 +959,11 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.FindElement(By.Id("increment-link-navigation-index")).Click();
         Browser.FindElement(By.Id("internal-link-navigation")).Click();
 
-        // The navigation was blocked again
-        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
-
         // The navigation was canceled and logged
         Browser.Equal($"Canceling '{expectedCanceledAbsoluteUri}'", () => app.FindElement(By.CssSelector("#navigation-lock-0 > p.navigation-log > span.navigation-log-entry-0"))?.Text);
+
+        // The location was reverted again
+        Browser.Equal(uriBeforeBlockedNavigation, () => app.FindElement(By.Id("test-info")).Text);
 
         // Unblock the new navigation
         Browser.FindElement(By.CssSelector("#navigation-lock-0 > div.blocking-controls > button.navigation-continue")).Click();
